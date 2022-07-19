@@ -4,6 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>11990512-0d41-46ce-9ca3-07e293cb7d62</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,6 +12,12 @@
     <PackageReference Include="OpenIddict" Version="3.1.1" />
     <PackageReference Include="OpenIddict.AspNetCore" Version="3.1.1" />
     <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="3.1.1" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
+    <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
   </ItemGroup>
 
 </Project>

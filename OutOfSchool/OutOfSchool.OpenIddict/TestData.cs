@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OpenIddict.Abstractions;
+using OutOfSchool.Services;
 
 namespace OutOfSchool.OpenIddict;
 
@@ -16,7 +17,7 @@ public class TestData : IHostedService
     {
         using var scope = _serviceProvider.CreateScope();
 
-        var context = scope.ServiceProvider.GetRequiredService<DbContext>();
+        var context = scope.ServiceProvider.GetRequiredService<OutOfSchoolDbContext>();
         await context.Database.EnsureCreatedAsync(cancellationToken);
 
         var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();

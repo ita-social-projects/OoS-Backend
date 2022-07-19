@@ -1,9 +1,16 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
+using OutOfSchool.Common;
+using OutOfSchool.Common.Extensions;
+using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.OpenIddict;
+using OutOfSchool.OpenIddict.Config;
+using OutOfSchool.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
+var config = builder.Configuration;
 
 // Add services to the container.
 services.AddControllersWithViews();
@@ -14,14 +21,48 @@ services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
         options.LoginPath = "/account/login";
     });
 
-services.AddDbContext<DbContext>(options =>
-{
-    // Configure the context to use an in-memory store.
-    options.UseInMemoryDatabase(nameof(DbContext));
+var connectionString = config.GetMySqlConnectionString<IdentityConnectionOptions>(
+            "DefaultConnection",
+    options => new MySqlConnectionStringBuilder
+    {
+        Server = options.Server,
+        Port = options.Port,
+        UserID = options.UserId,
+        Password = options.Password,
+        Database = options.Database,
+        GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
+    });
 
-    // Register the entity sets needed by OpenIddict.
-    options.UseOpenIddict();
-});
+var mySQLServerVersion = config["MySQLServerVersion"];
+var serverVersion = new MySqlServerVersion(new Version(mySQLServerVersion));
+if (serverVersion.Version.Major < Constants.MySQLServerMinimalMajorVersion)
+{
+    throw new Exception("MySQL Server version should be 8 or higher.");
+}
+
+services
+    .AddDbContext<OutOfSchoolDbContext>(options =>
+    {
+        options.UseMySql(
+            connectionString,
+            serverVersion,
+            optionsBuilder =>
+                optionsBuilder
+                    .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
+                    .MigrationsAssembly("OutOfSchool.IdentityServer"));
+
+        // Register the entity sets needed by OpenIddict.
+        options.UseOpenIddict();
+    });
+
+//services.AddDbContext<DbContext>(options =>
+//{
+//    // Configure the context to use an in-memory store.
+//    options.UseInMemoryDatabase(nameof(DbContext));
+
+//    // Register the entity sets needed by OpenIddict.
+//    options.UseOpenIddict();
+//});
 
 services.AddOpenIddict()
 
@@ -30,7 +71,7 @@ services.AddOpenIddict()
     {
         // Configure OpenIddict to use the EF Core stores/models.
         options.UseEntityFrameworkCore()
-            .UseDbContext<DbContext>();
+            .UseDbContext<OutOfSchoolDbContext>();
     })
 
     // Register the OpenIddict server components.
