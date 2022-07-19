@@ -28,12 +28,16 @@ public class TestData : IHostedService
                 ClientId = "postman",
                 ClientSecret = "postman-secret",
                 DisplayName = "Postman",
+                RedirectUris = { new Uri("http://localhost:4200") },
                 Permissions =
                 {
+                    OpenIddictConstants.Permissions.Endpoints.Authorization,
                     OpenIddictConstants.Permissions.Endpoints.Token,
+                    OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
                     OpenIddictConstants.Permissions.GrantTypes.ClientCredentials,
 
-                    OpenIddictConstants.Permissions.Prefixes.Scope + "api"
+                    OpenIddictConstants.Permissions.Prefixes.Scope + "api",
+                    OpenIddictConstants.Permissions.ResponseTypes.Code
                 }
             }, cancellationToken);
         }

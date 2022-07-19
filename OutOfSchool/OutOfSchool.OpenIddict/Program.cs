@@ -3,17 +3,18 @@ using Microsoft.EntityFrameworkCore;
 using OutOfSchool.OpenIddict;
 
 var builder = WebApplication.CreateBuilder(args);
+var services = builder.Services;
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+services.AddControllersWithViews();
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-        .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
-        {
-            options.LoginPath = "/account/login";
-        });
+services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.LoginPath = "/account/login";
+    });
 
-builder.Services.AddDbContext<DbContext>(options =>
+services.AddDbContext<DbContext>(options =>
 {
     // Configure the context to use an in-memory store.
     options.UseInMemoryDatabase(nameof(DbContext));
@@ -22,7 +23,8 @@ builder.Services.AddDbContext<DbContext>(options =>
     options.UseOpenIddict();
 });
 
-builder.Services.AddOpenIddict()
+services.AddOpenIddict()
+
     // Register the OpenIddict core components.
     .AddCore(options =>
     {
@@ -35,10 +37,15 @@ builder.Services.AddOpenIddict()
     .AddServer(options =>
     {
         options
-            .AllowClientCredentialsFlow();
+            .AllowClientCredentialsFlow()
+            .AllowAuthorizationCodeFlow()
+                .RequireProofKeyForCodeExchange()
+            .AllowRefreshTokenFlow();
 
         options
-            .SetTokenEndpointUris("/connect/token");
+            .SetTokenEndpointUris("/connect/token")
+            .SetAuthorizationEndpointUris("/connect/authorize")
+            .SetUserinfoEndpointUris("/connect/userinfo");
 
         // Encryption and signing of tokens
         options
@@ -52,10 +59,12 @@ builder.Services.AddOpenIddict()
         // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
         options
             .UseAspNetCore()
-            .EnableTokenEndpointPassthrough();
+            .EnableTokenEndpointPassthrough()
+            .EnableAuthorizationEndpointPassthrough()
+            .EnableUserinfoEndpointPassthrough();
     });
 
-builder.Services.AddHostedService<TestData>();
+services.AddHostedService<TestData>();
 
 var app = builder.Build();
 
@@ -67,16 +76,17 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
 app.UseAuthentication();
+
 app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapDefaultControllerRoute();
+});
 
 app.Run();

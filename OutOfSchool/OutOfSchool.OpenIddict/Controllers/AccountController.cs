@@ -27,9 +27,9 @@ public class AccountController : Controller
         if (ModelState.IsValid)
         {
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, model.Username)
-            };
+                {
+                    new Claim(ClaimTypes.Name, model.Username)
+                };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
