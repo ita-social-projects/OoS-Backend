@@ -452,18 +452,6 @@ public class ApplicationServiceTests
         var userId = Guid.NewGuid().ToString();
         var workshop = WithWorkshop(new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"));
 
-        var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
-
-        applicationRepositoryMock.Setup(r => r.Get(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
-            .Returns(applicationsMock)
-            .Verifiable();
-
         applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>())).ReturnsAsync(changedEntity);
         applicationRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(entity);
         applicationRepositoryMock.Setup(a => a.Count(x => x.WorkshopId == workshop.Id && (x.Status == ApplicationStatus.Approved || x.Status == ApplicationStatus.StudyingForYears))).ReturnsAsync(1);
