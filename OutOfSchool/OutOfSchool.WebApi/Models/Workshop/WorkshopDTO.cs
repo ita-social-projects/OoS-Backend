@@ -100,6 +100,10 @@ public class WorkshopDTO : IValidatableObject
     [EnumDataType(typeof(WorkshopStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public WorkshopStatus Status { get; set; } = WorkshopStatus.Open;
 
+    public uint AvailableSeats { get; set; } = uint.MaxValue;
+
+    public uint TakenSeats { get; set; } = 0;
+
     [Required]
     public Guid ProviderId { get; set; }
 

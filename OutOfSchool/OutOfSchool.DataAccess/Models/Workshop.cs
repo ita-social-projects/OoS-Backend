@@ -101,6 +101,8 @@ public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>
 
     public WorkshopStatus Status { get; set; }
 
+    public uint AvailableSeats { get; set; } = uint.MaxValue;
+
     public virtual Provider Provider { get; set; }
 
     public virtual InstitutionHierarchy InstitutionHierarchy { get; set; }

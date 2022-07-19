@@ -35,6 +35,7 @@ public class ApplicationServiceTests
     private Mock<INotificationService> notificationService;
     private Mock<IProviderAdminService> providerAdminService;
     private Mock<IChangesLogService> changesLogService;
+    private Mock<IWorkshopServicesCombiner> workshopServiceCombinerMock;
 
     private Mock<IOptions<ApplicationsConstraintsConfig>> applicationsConstraintsConfig;
 
@@ -47,6 +48,7 @@ public class ApplicationServiceTests
         notificationService = new Mock<INotificationService>();
         providerAdminService = new Mock<IProviderAdminService>();
         changesLogService = new Mock<IChangesLogService>();
+        workshopServiceCombinerMock = new Mock<IWorkshopServicesCombiner>();
 
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         logger = new Mock<ILogger<ApplicationService>>();
@@ -70,7 +72,8 @@ public class ApplicationServiceTests
             applicationsConstraintsConfig.Object,
             notificationService.Object,
             providerAdminService.Object,
-            changesLogService.Object);
+            changesLogService.Object,
+            workshopServiceCombinerMock.Object);
     }
 
     [Test]
@@ -440,6 +443,30 @@ public class ApplicationServiceTests
     }
 
     [Test]
+    public async Task UpdateApplication_WhenIdIsValidAndNeedUpdateWorkshopStatus_ShouldReturnApplication()
+    {
+        // Arrange
+        var id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd");
+        var entity = WithApplication(id);
+        var changedEntity = WithApplication(id, ApplicationStatus.Approved);
+        var userId = Guid.NewGuid().ToString();
+        var workshop = WithWorkshop(new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"));
+
+        applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>())).ReturnsAsync(changedEntity);
+        applicationRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(entity);
+        applicationRepositoryMock.Setup(a => a.Count(x => x.WorkshopId == workshop.Id && (x.Status == ApplicationStatus.Approved || x.Status == ApplicationStatus.StudyingForYears))).ReturnsAsync(1);
+        workshopRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
+        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto() { Id = id, Status = ApplicationStatus.Approved });
+        var expected = new ApplicationDto() { Id = id, Status = ApplicationStatus.Approved };
+
+        // Act
+        var result = await service.Update(expected, userId).ConfigureAwait(false);
+
+        // Assert
+        AssertApplicationsDTOsAreEqual(expected, result);
+    }
+
+    [Test]
     public void UpdateApplication_WhenThereIsNoApplicationWithId_ShouldTrowArgumentException()
     {
         // Arrange
@@ -658,6 +685,7 @@ public class ApplicationServiceTests
                 It.IsAny<bool>()))
             .Returns(applicationsMock)
             .Verifiable();
+        applicationRepositoryMock.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(application);
         applicationRepositoryMock.Setup(a => a.Delete(It.IsAny<Application>())).Returns(Task.CompletedTask);
     }
     #endregion
@@ -719,13 +747,24 @@ public class ApplicationServiceTests
     };
     }
 
-    private Application WithApplication(Guid id)
+    private Application WithApplication(Guid id, ApplicationStatus status = ApplicationStatus.Pending)
     {
         return new Application()
         {
             Id = id,
             WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-            Status = ApplicationStatus.Pending,
+            Status = status,
+        };
+    }
+
+    private Workshop WithWorkshop(Guid id)
+    {
+        return new Workshop()
+        {
+            Id = id,
+            ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+            Status = WorkshopStatus.Open,
+            AvailableSeats = 1,
         };
     }
 

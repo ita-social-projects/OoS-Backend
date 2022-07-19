@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -9,14 +8,12 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
-using Nest;
 using NUnit.Framework;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
@@ -98,9 +95,12 @@ public class WorkshopServiceTests
     {
         // Arrange
         SetupCreate(WithClassEntity(id));
-        var newWorkshop = new Workshop() { Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e") };
-        newWorkshop.DepartmentId = 10;
-        newWorkshop.DirectionId = 10;
+        var newWorkshop = new Workshop
+        {
+            Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
+            DepartmentId = 10,
+            DirectionId = 10,
+        };
 
         // Act
         var result = await workshopService.Create(newWorkshop.ToModel()).ConfigureAwait(false);
@@ -239,13 +239,14 @@ public class WorkshopServiceTests
     #endregion
 
     #region UpdateStatus
+
     [Test]
     public async Task UpdateStatus_FromOpenToClosed_WhenEntityIsValid_ShouldReturnUpdatedEntity()
     {
         // Arrange
         var workshopStatusDtoMock = WithWorkshopsList()
             .FirstOrDefault(w => w.Status == WorkshopStatus.Open
-                                 && w.ProviderOwnership == OwnershipType.Private);
+                                 && w.AvailableSeats != uint.MaxValue);
         var workshopStatusDto = new WorkshopStatusDto()
         {
             WorkshopId = Guid.NewGuid(),
@@ -253,7 +254,7 @@ public class WorkshopServiceTests
         };
 
         workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshopStatusDtoMock);
-        workshopRepository.Setup(w => w.UnitOfWork.CompleteAsync()).ReturnsAsync(It.IsAny<int>());
+        workshopRepository.Setup(w => w.Update(It.IsAny<Workshop>())).ReturnsAsync(workshopStatusDtoMock);
 
         // Act
         var result = await workshopService.UpdateStatus(workshopStatusDto).ConfigureAwait(false);
@@ -269,7 +270,7 @@ public class WorkshopServiceTests
         // Arrange
         var workshopStatusDtoMock = WithWorkshopsList()
             .FirstOrDefault(w => w.Status == WorkshopStatus.Open
-                                 && (w.ProviderOwnership == OwnershipType.Common || w.ProviderOwnership == OwnershipType.State));
+                                 && w.AvailableSeats == uint.MaxValue);
         var workshopStatusDto = new WorkshopStatusDto()
         {
             WorkshopId = Guid.NewGuid(),
@@ -305,6 +306,7 @@ public class WorkshopServiceTests
         workshopRepository.VerifyAll();
         Assert.AreEqual(expectedStatus, result.Status);
     }
+
     #endregion
 
     #region Delete
@@ -351,6 +353,117 @@ public class WorkshopServiceTests
 
         // Assert
         result.Should().BeEquivalentTo(ExpectedSearchResultGetByFilter(WithWorkshopsList()));
+    }
+
+    #endregion
+
+    #region With
+
+    private static Class WithClassEntity(long id)
+    {
+        return new Class()
+        {
+            Id = id,
+            DepartmentId = 1,
+            Department = new Department() { Id = 1, DirectionId = 1 },
+        };
+    }
+
+    private static Class WithNullClassEntity()
+    {
+        return null;
+    }
+
+    private static IEnumerable<Workshop> WithWorkshopsList()
+    {
+        return new List<Workshop>()
+        {
+            new Workshop()
+            {
+                Id = new Guid("b94f1989-c4e7-4878-ac86-21c4a402fb43"),
+                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                ProviderOwnership = OwnershipType.Private,
+                Status = WorkshopStatus.Open,
+                AvailableSeats = 30,
+            },
+            new Workshop()
+            {
+                Id = new Guid("8c14044b-e30d-4b14-a18b-5b3b859ad676"),
+                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                ProviderOwnership = OwnershipType.State,
+                Status = WorkshopStatus.Open,
+                AvailableSeats = 30,
+            },
+            new Workshop()
+            {
+                Id = new Guid("3e8845a8-1359-4676-b6d6-5a6b29c122ea"),
+                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+            },
+        };
+    }
+
+    private static Dictionary<Guid, Tuple<float, int>> WithAvarageRatings(IEnumerable<Guid> workshopGuids)
+    {
+        var dictionary = new Dictionary<Guid, Tuple<float, int>>();
+        foreach (var guid in workshopGuids)
+        {
+            dictionary.Add(guid, new Tuple<float, int>(4.2f, 5));
+        }
+
+        return dictionary;
+    }
+
+    private static Workshop WithWorkshop(Guid id)
+    {
+        return new Workshop()
+        {
+            Id = id,
+            Title = "ChangedTitle",
+            Phone = "1111111111",
+            Price = 1000,
+            WithDisabilityOptions = true,
+            ProviderTitle = "ProviderTitle",
+            DisabilityOptionsDesc = "Desc1",
+            Website = "website1",
+            Instagram = "insta1",
+            Facebook = "facebook1",
+            Email = "email1@gmail.com",
+            MaxAge = 10,
+            MinAge = 4,
+            ProviderOwnership = OwnershipType.Private,
+            Status = WorkshopStatus.Open,
+            CoverImageId = "image1",
+            ProviderId = new Guid("65eb933f-6502-4e89-a7cb-65901e51d119"),
+            DirectionId = 1,
+            ClassId = 1,
+            DepartmentId = 1,
+            AddressId = 55,
+            Address = new Address
+            {
+                Id = 55,
+                Region = "Region55",
+                District = "District55",
+                City = "City55",
+                Street = "Street55",
+                BuildingNumber = "BuildingNumber55",
+                Latitude = 10,
+                Longitude = 10,
+            },
+            WorkshopDescriptionItems = new[]
+            {
+                new WorkshopDescriptionItem()
+                {
+                    Id = Guid.NewGuid(),
+                    SectionName = "Workshop description heading 1",
+                    Description = "Workshop description text 1",
+                },
+            },
+        };
+    }
+
+    private Workshop WithNullWorkshopEntity()
+    {
+        return null;
     }
 
     #endregion
@@ -471,115 +584,6 @@ public class WorkshopServiceTests
             .Setup(m => m.Map<List<WorkshopCard>>(workshops))
             .Returns(workshops
                 .Select(w => new WorkshopCard() { ProviderId = w.ProviderId }).ToList());
-    }
-
-    #endregion
-
-    #region With
-
-    private Class WithClassEntity(long id)
-    {
-        return new Class()
-        {
-            Id = id,
-            DepartmentId = 1,
-            Department = new Department() { Id = 1, DirectionId = 1 },
-        };
-    }
-
-    private Class WithNullClassEntity()
-    {
-        return null;
-    }
-
-    private IEnumerable<Workshop> WithWorkshopsList()
-    {
-        return new List<Workshop>()
-        {
-            new Workshop()
-            {
-                Id = new Guid("b94f1989-c4e7-4878-ac86-21c4a402fb43"),
-                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-                ProviderOwnership = OwnershipType.Private,
-                Status = WorkshopStatus.Open,
-            },
-            new Workshop()
-            {
-                Id = new Guid("8c14044b-e30d-4b14-a18b-5b3b859ad676"),
-                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-                ProviderOwnership = OwnershipType.State,
-                Status = WorkshopStatus.Open,
-            },
-            new Workshop()
-            {
-                Id = new Guid("3e8845a8-1359-4676-b6d6-5a6b29c122ea"),
-                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-            },
-        };
-    }
-
-    private Dictionary<Guid, Tuple<float, int>> WithAvarageRatings(IEnumerable<Guid> workshopGuids)
-    {
-        var dictionary = new Dictionary<Guid, Tuple<float, int>>();
-        foreach (var guid in workshopGuids)
-        {
-            dictionary.Add(guid, new Tuple<float, int>(4.2f, 5));
-        }
-
-        return dictionary;
-    }
-
-    private Workshop WithWorkshop(Guid id)
-    {
-        return new Workshop()
-        {
-            Id = id,
-            Title = "ChangedTitle",
-            Phone = "1111111111",
-            Price = 1000,
-            WithDisabilityOptions = true,
-            ProviderTitle = "ProviderTitle",
-            DisabilityOptionsDesc = "Desc1",
-            Website = "website1",
-            Instagram = "insta1",
-            Facebook = "facebook1",
-            Email = "email1@gmail.com",
-            MaxAge = 10,
-            MinAge = 4,
-            ProviderOwnership = OwnershipType.Private,
-            Status = WorkshopStatus.Open,
-            CoverImageId = "image1",
-            ProviderId = new Guid("65eb933f-6502-4e89-a7cb-65901e51d119"),
-            DirectionId = 1,
-            ClassId = 1,
-            DepartmentId = 1,
-            AddressId = 55,
-            Address = new Address
-            {
-                Id = 55,
-                Region = "Region55",
-                District = "District55",
-                City = "City55",
-                Street = "Street55",
-                BuildingNumber = "BuildingNumber55",
-                Latitude = 10,
-                Longitude = 10,
-            },
-            WorkshopDescriptionItems = new[]
-            {
-                new WorkshopDescriptionItem()
-                {
-                    Id = Guid.NewGuid(),
-                    SectionName = "Workshop description heading 1",
-                    Description = "Workshop description text 1",
-                },
-            },
-        };
-    }
-
-    private Workshop WithNullWorkshopEntity()
-    {
-        return null;
     }
 
     #endregion

@@ -60,4 +60,8 @@ public class WorkshopCard
     public WorkshopStatus Status { get; set; } = WorkshopStatus.Open;
 
     public bool WithDisabilityOptions { get; set; }
+
+    public uint AvailableSeats { get; set; } = uint.MaxValue;
+
+    public uint TakenSeats { get; set; } = 0;
 }

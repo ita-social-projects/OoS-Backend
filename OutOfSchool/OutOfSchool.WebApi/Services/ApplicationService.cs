@@ -1,21 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -34,6 +23,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
     private readonly IProviderAdminService providerAdminService;
     private readonly IChangesLogService changesLogService;
     private readonly ApplicationsConstraintsConfig applicationsConstraintsConfig;
+    private readonly IWorkshopServicesCombiner combinedWorkshopService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationService"/> class.
@@ -48,6 +38,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
     /// <param name="notificationService">Notification service.</param>
     /// <param name="providerAdminService">Service for getting provider admins and deputies.</param>
     /// <param name="changesLogService">ChangesLogService.</param>
+    /// <param name="combinedWorkshopService">WorkshopServicesCombiner.</param>
     public ApplicationService(
         IApplicationRepository repository,
         ILogger<ApplicationService> logger,
@@ -58,7 +49,8 @@ public class ApplicationService : IApplicationService, INotificationReciever
         IOptions<ApplicationsConstraintsConfig> applicationsConstraintsConfig,
         INotificationService notificationService,
         IProviderAdminService providerAdminService,
-        IChangesLogService changesLogService)
+        IChangesLogService changesLogService,
+        IWorkshopServicesCombiner combinedWorkshopService)
     {
         applicationRepository = repository ?? throw new ArgumentNullException(nameof(repository));
         this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
@@ -70,6 +62,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
         this.providerAdminService = providerAdminService ?? throw new ArgumentNullException(nameof(providerAdminService));
         this.changesLogService = changesLogService ?? throw new ArgumentNullException(nameof(changesLogService));
         this.applicationsConstraintsConfig = (applicationsConstraintsConfig ?? throw new ArgumentNullException(nameof(applicationsConstraintsConfig))).Value;
+        this.combinedWorkshopService = combinedWorkshopService ?? throw new ArgumentNullException(nameof(combinedWorkshopService));
     }
 
     /// <inheritdoc/>
@@ -403,21 +396,20 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         ModelNullValidation(applicationDto);
 
-        CheckApplicationExists(applicationDto.Id);
+        var currentApplication = CheckApplicationExists(applicationDto.Id);
+        var previewAppStatus = currentApplication.Status;
 
         try
         {
-            var updatedApplication = await applicationRepository.Update(
-                    mapper.Map<Application>(applicationDto),
-                    x => changesLogService.AddEntityChangesToDbContext(x, userId))
-                .ConfigureAwait(false);
-
-            logger.LogInformation($"Application with Id = {applicationDto?.Id} updated succesfully.");
-
-            var currentApplication = await applicationRepository.GetById(applicationDto.Id).ConfigureAwait(false);
-
-            if (currentApplication.Status != updatedApplication.Status)
+            if (currentApplication.Status != applicationDto.Status)
             {
+                var updatedApplication = await applicationRepository.Update(
+                        mapper.Map<Application>(applicationDto),
+                        x => changesLogService.AddEntityChangesToDbContext(x, userId))
+                    .ConfigureAwait(false);
+
+                logger.LogInformation($"Application with Id = {applicationDto?.Id} updated succesfully.");
+
                 var additionalData = new Dictionary<string, string>()
             {
                 { "Status", updatedApplication.Status.ToString() },
@@ -432,9 +424,13 @@ public class ApplicationService : IApplicationService, INotificationReciever
                     this,
                     additionalData,
                     groupedData).ConfigureAwait(false);
+
+                await ControlWorkshopStatus(previewAppStatus, updatedApplication.Status, currentApplication.WorkshopId);
+
+                return mapper.Map<ApplicationDto>(updatedApplication);
             }
 
-            return mapper.Map<ApplicationDto>(updatedApplication);
+            return applicationDto;
         }
         catch (DbUpdateConcurrencyException ex)
         {
@@ -561,15 +557,17 @@ public class ApplicationService : IApplicationService, INotificationReciever
         }
     }
 
-    private void CheckApplicationExists(Guid id)
+    private Application CheckApplicationExists(Guid id)
     {
-        var applications = applicationRepository.Get(where: a => a.Id == id);
+        var application = applicationRepository.GetById(id).Result;
 
-        if (!applications.Any())
+        if (application == null)
         {
             logger.LogInformation($"Operation failed. Application with Id = {id} doesn't exist in the system.");
             throw new ArgumentException(localizer[$"Application with Id = {id} doesn't exist in the system."]);
         }
+
+        return application;
     }
 
     private async Task<bool> CheckChildParent(Guid parentId, Guid childId)
@@ -691,5 +689,53 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         providerId = providerAdmin.ProviderId;
         isDeputy = providerAdmin.IsDeputy;
+    }
+
+    private async Task ControlWorkshopStatus(ApplicationStatus previewStatus, ApplicationStatus newStatus, Guid workshopId)
+    {
+        var takenSeatsStatuses = new[]
+        {
+            ApplicationStatus.Approved,
+            ApplicationStatus.StudyingForYears,
+        };
+
+        var notTakenSeatsStatuses = new[]
+        {
+            ApplicationStatus.Pending,
+            ApplicationStatus.AcceptedForSelection,
+            ApplicationStatus.Rejected,
+            ApplicationStatus.Completed,
+            ApplicationStatus.Left,
+        };
+
+        if (takenSeatsStatuses.Contains(newStatus) && notTakenSeatsStatuses.Contains(previewStatus))
+        {
+            await ControlWorkshopStatus(workshopId, true);
+        }
+        else if (takenSeatsStatuses.Contains(previewStatus) && notTakenSeatsStatuses.Contains(newStatus))
+        {
+            await ControlWorkshopStatus(workshopId);
+        }
+    }
+
+    private async Task ControlWorkshopStatus(Guid workshopId, bool isIncreaseTakenSeats = false)
+    {
+        var countTakenSeats = await GetTakenSeats(workshopId);
+
+        var workshop = await workshopRepository.GetById(workshopId).ConfigureAwait(false);
+
+        if (isIncreaseTakenSeats && countTakenSeats == workshop.AvailableSeats && workshop.Status != WorkshopStatus.Closed)
+        {
+            _ = await combinedWorkshopService.UpdateStatus(new Models.Workshop.WorkshopStatusDto { WorkshopId = workshopId, Status = WorkshopStatus.Closed });
+        }
+        else if (!isIncreaseTakenSeats && countTakenSeats == workshop.AvailableSeats - 1 && workshop.Status != WorkshopStatus.Open)
+        {
+            _ = await combinedWorkshopService.UpdateStatus(new Models.Workshop.WorkshopStatusDto { WorkshopId = workshopId, Status = WorkshopStatus.Open });
+        }
+    }
+
+    private async ValueTask<int> GetTakenSeats(Guid workshopId)
+    {
+        return await applicationRepository.Count(x => x.WorkshopId == workshopId && (x.Status == ApplicationStatus.Approved || x.Status == ApplicationStatus.StudyingForYears)).ConfigureAwait(false);
     }
 }
