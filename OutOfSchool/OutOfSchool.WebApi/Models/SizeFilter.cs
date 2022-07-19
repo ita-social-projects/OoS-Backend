@@ -5,9 +5,10 @@
 /// </summary>
 public class SizeFilter
 {
+    private const int DefaultSize = 8;
     private const int MaxSize = 100;
 
-    private int size = 10;
+    private int size = DefaultSize;
 
     /// <summary>
     /// Gets or sets the amount of entities to take from collection.
@@ -16,6 +17,14 @@ public class SizeFilter
     {
         get => size;
 
-        set => size = (value > MaxSize) ? MaxSize : value;
+        set
+        {
+            size = value switch
+            {
+                0 => DefaultSize,
+                > MaxSize => MaxSize,
+                _ => value
+            };
+        }
     }
 }
