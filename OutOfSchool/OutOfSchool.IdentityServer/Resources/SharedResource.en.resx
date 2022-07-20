@@ -351,4 +351,13 @@
   <data name="Login with changing password" xml:space="preserve">
     <value>Login with changing password</value>
   </data>
+  <data name="Gender Male" xml:space="preserve">
+    <value>Male</value>
+  </data>
+  <data name="Gender Female" xml:space="preserve">
+    <value>Female</value>
+  </data>
+  <data name="Gender" xml:space="preserve">
+    <value>Gender</value>
+  </data>
 </root>

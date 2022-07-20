@@ -357,4 +357,13 @@ Login: {0}
   <data name="Login with changing password" xml:space="preserve">
     <value>Увійти зі зміною паролю</value>
   </data>
+  <data name="Gender Male" xml:space="preserve">
+    <value>Чоловіча</value>
+  </data>
+  <data name="Gender Female" xml:space="preserve">
+    <value>Жіноча</value>
+  </data>
+  <data name="Gender" xml:space="preserve">
+    <value>Стать</value>
+  </data>
 </root>
