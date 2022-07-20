@@ -21,7 +21,7 @@ public class SizeFilter
         {
             size = value switch
             {
-                0 => DefaultSize,
+                <= 0 => DefaultSize,
                 > MaxSize => MaxSize,
                 _ => value
             };
