@@ -7,6 +7,7 @@ using Google.Protobuf.WellKnownTypes;
 using GrpcService;
 using OutOfSchool.Common.Models;
 using OutOfSchool.ElasticsearchData.Models;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Models;
@@ -87,7 +88,13 @@ public class MappingProfile : Profile
 
         CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>().ReverseMap();
 
-        CreateMap<Address, AddressDto>().ReverseMap();
+        CreateMap<Address, AddressDto>()
+            .ForPath(
+                dest => dest.CodeficatorAddressDto.AddressParts,
+                opt => opt.MapFrom(src => src.Codeficator));
+
+        CreateMap<AddressDto, Address>()
+            .ForMember(dest => dest.Codeficator, opt => opt.Ignore());
 
         CreateMap<BlockedProviderParentBlockDto, BlockedProviderParent>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
