@@ -1,5 +1,5 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.WebApi.Models.Codeficator;
 
 namespace OutOfSchool.WebApi.Models;
 
@@ -30,6 +30,10 @@ public class AddressDto
 
     public double Longitude { get; set; }
 
+    public long CodeficatorId { get; set; }
+
+    public AllAddressPartsDto CodeficatorAddressDto { get; set; }
+
     // Note: implementation taken from the OutOfSchool.Services.Models.Address
     public override int GetHashCode()
     {
@@ -52,7 +56,7 @@ public class AddressDto
             return false;
         }
 
-        if (!(obj is AddressDto address))
+        if (obj is not AddressDto address)
         {
             return false;
         }
