@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -25,6 +26,7 @@ public class AddressServiceTests
     private IAddressService service;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<AddressService>> logger;
+    private IMapper mapper;
 
     [SetUp]
     public void SetUp()
@@ -38,7 +40,10 @@ public class AddressServiceTests
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         repo = new EntityRepository<long, Address>(context);
         logger = new Mock<ILogger<AddressService>>();
-        service = new AddressService(repo, logger.Object, localizer.Object);
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<Util.MappingProfile>());
+        mapper = config.CreateMapper();
+
+        service = new AddressService(repo, logger.Object, localizer.Object, mapper);
 
         SeedDatabase();
     }
@@ -57,10 +62,11 @@ public class AddressServiceTests
             BuildingNumber = "NewBuildingNumber",
             Latitude = 60.45383,
             Longitude = 70.56765,
+            CodeficatorId = 1,
         };
 
         // Act
-        var result = await service.Create(expected.ToModel()).ConfigureAwait(false);
+        var result = await service.Create(mapper.Map<AddressDto>(expected)).ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(expected.Region, result.Region);
@@ -180,65 +186,93 @@ public class AddressServiceTests
             context.Database.EnsureCreated();
 
             var addresses = new List<Address>()
-        {
-            new Address()
             {
-                Id = 1,
-                Region = "Region1",
-                District = "District1",
-                City = "City1",
-                Street = "Street1",
-                BuildingNumber = "BuildingNumber1",
-                Latitude = 41.45383,
-                Longitude = 51.56765,
-            },
-            new Address()
-            {
-                Id = 2,
-                Region = "Region2",
-                District = "District2",
-                City = "City2",
-                Street = "Street2",
-                BuildingNumber = "BuildingNumber2",
-                Latitude = 42.45383,
-                Longitude = 52.56765,
-            },
-            new Address()
-            {
-                Id = 3,
-                Region = "Region3",
-                District = "District3",
-                City = "City3",
-                Street = "Street3",
-                BuildingNumber = "BuildingNumber3",
-                Latitude = 43.45383,
-                Longitude = 53.56765,
-            },
-            new Address()
-            {
-                Id = 4,
-                Region = "Region4",
-                District = "District4",
-                City = "City4",
-                Street = "Street4",
-                BuildingNumber = "BuildingNumber4",
-                Latitude = 44.45383,
-                Longitude = 54.56765,
-            },
-            new Address()
-            {
-                Id = 5,
-                Region = "Region5",
-                District = "District5",
-                City = "City5",
-                Street = "Street5",
-                BuildingNumber = "BuildingNumber5",
-                Latitude = 45.45383,
-                Longitude = 55.56765,
-            },
-        };
+                new Address()
+                {
+                    Id = 1,
+                    Region = "Region1",
+                    District = "District1",
+                    City = "City1",
+                    Street = "Street1",
+                    BuildingNumber = "BuildingNumber1",
+                    Latitude = 41.45383,
+                    Longitude = 51.56765,
+                    CodeficatorId = 1,
+                },
+                new Address()
+                {
+                    Id = 2,
+                    Region = "Region2",
+                    District = "District2",
+                    City = "City2",
+                    Street = "Street2",
+                    BuildingNumber = "BuildingNumber2",
+                    Latitude = 42.45383,
+                    Longitude = 52.56765,
+                    CodeficatorId = 2,
+                },
+                new Address()
+                {
+                    Id = 3,
+                    Region = "Region3",
+                    District = "District3",
+                    City = "City3",
+                    Street = "Street3",
+                    BuildingNumber = "BuildingNumber3",
+                    Latitude = 43.45383,
+                    Longitude = 53.56765,
+                    CodeficatorId = 2,
+                },
+                new Address()
+                {
+                    Id = 4,
+                    Region = "Region4",
+                    District = "District4",
+                    City = "City4",
+                    Street = "Street4",
+                    BuildingNumber = "BuildingNumber4",
+                    Latitude = 44.45383,
+                    Longitude = 54.56765,
+                    CodeficatorId = 2,
+                },
+                new Address()
+                {
+                    Id = 5,
+                    Region = "Region5",
+                    District = "District5",
+                    City = "City5",
+                    Street = "Street5",
+                    BuildingNumber = "BuildingNumber5",
+                    Latitude = 45.45383,
+                    Longitude = 55.56765,
+                    CodeficatorId = 2,
+                },
+            };
 
             context.Addresses.AddRange(addresses);
+
+            var codeficators = new List<Codeficator>()
+            {
+                new Codeficator()
+                {
+                    Id = 1,
+                    Name = "Test",
+                    Category = "О",
+                    Latitude = 41.45383,
+                    Longitude = 51.56765,
+                },
+                new Codeficator()
+                {
+                    Id = 2,
+                    Name = "Test2",
+                    Category = "О",
+                    Latitude = 41.45383,
+                    Longitude = 51.56765,
+                },
+            };
+
+            context.Codeficators.AddRange(codeficators);
+
             context.SaveChanges();
         }
     }
