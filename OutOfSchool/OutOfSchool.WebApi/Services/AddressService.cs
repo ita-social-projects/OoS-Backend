@@ -1,14 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -21,6 +12,7 @@ public class AddressService : IAddressService
     private readonly IEntityRepository<long, Address> repository;
     private readonly ILogger<AddressService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AddressService"/> class.
@@ -28,14 +20,17 @@ public class AddressService : IAddressService
     /// <param name="repository">Repository.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
+    /// <param name="mapper">Mapper.</param>
     public AddressService(
         IEntityRepository<long, Address> repository,
         ILogger<AddressService> logger,
-        IStringLocalizer<SharedResource> localizer)
+        IStringLocalizer<SharedResource> localizer,
+        IMapper mapper)
     {
-        this.localizer = localizer;
-        this.repository = repository;
-        this.logger = logger;
+        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
@@ -43,7 +38,7 @@ public class AddressService : IAddressService
     {
         logger.LogInformation("Address creating was started.");
 
-        return CreateInternal(dto.ToDomain());
+        return CreateInternal(mapper.Map<Address>(dto));
     }
 
     /// <inheritdoc/>
@@ -53,11 +48,11 @@ public class AddressService : IAddressService
 
         var addresses = await repository.GetAll().ConfigureAwait(false);
 
-        logger.LogInformation(!addresses.Any()
-            ? "Address table is empty."
-            : $"All {addresses.Count()} records were successfully received from the Address table");
+        logger.LogInformation(addresses.Any()
+            ? $"All {addresses.Count()} records were successfully received from the Address table"
+            : "Address table is empty.");
 
-        return addresses.Select(address => address.ToModel()).ToList();
+        return mapper.Map<List<AddressDto>>(addresses);
     }
 
     /// <inheritdoc/>
@@ -76,7 +71,7 @@ public class AddressService : IAddressService
 
         logger.LogInformation($"Successfully got an Address with Id = {id}.");
 
-        return address.ToModel();
+        return mapper.Map<AddressDto>(address);
     }
 
     /// <inheritdoc/>
@@ -86,11 +81,11 @@ public class AddressService : IAddressService
 
         try
         {
-            var address = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+            var address = await repository.Update(mapper.Map<Address>(dto)).ConfigureAwait(false);
 
             logger.LogInformation($"Address with Id = {address?.Id} updated succesfully.");
 
-            return address.ToModel();
+            return mapper.Map<AddressDto>(address);
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -125,6 +120,6 @@ public class AddressService : IAddressService
 
         logger.LogInformation($"Address with Id = {newAddress?.Id} created successfully.");
 
-        return newAddress.ToModel();
+        return mapper.Map<AddressDto>(newAddress);
     }
 }
