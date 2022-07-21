@@ -30,6 +30,7 @@ public class AuthController : Controller
 {
     private readonly SignInManager<User> signInManager;
     private readonly UserManager<User> userManager;
+    private readonly IUserManagerAdditionalService userManagerAdditionalService;
     private readonly IIdentityServerInteractionService interactionService;
     private readonly ILogger<AuthController> logger;
     private readonly IParentRepository parentRepository;
@@ -42,6 +43,7 @@ public class AuthController : Controller
     /// Initializes a new instance of the <see cref="AuthController"/> class.
     /// </summary>
     /// <param name="userManager"> ASP.Net Core Identity User Manager.</param>
+    /// <param name="userManagerAdditionalService">Additional operations with user manager, including transactions.</param>
     /// <param name="signInManager"> ASP.Net Core Identity Sign in Manager.</param>
     /// <param name="interactionService"> Identity Server 4 interaction service.</param>
     /// <param name="parentRepository"> Repository for Parent model.</param>
@@ -50,6 +52,7 @@ public class AuthController : Controller
     /// <param name="identityServerConfig"> IdentityServer config.</param>
     public AuthController(
         UserManager<User> userManager,
+        IUserManagerAdditionalService userManagerAdditionalService,
         SignInManager<User> signInManager,
         IIdentityServerInteractionService interactionService,
         ILogger<AuthController> logger,
@@ -61,6 +64,7 @@ public class AuthController : Controller
         this.parentRepository = parentRepository;
         this.signInManager = signInManager;
         this.userManager = userManager;
+        this.userManagerAdditionalService = userManagerAdditionalService;
         this.interactionService = interactionService;
         this.localizer = localizer;
         this.identityServerConfig = identityServerConfig.Value;
@@ -154,41 +158,58 @@ public class AuthController : Controller
 
         var user = await userManager.FindByEmailAsync(model.Username);
 
-        if (user != null && user.IsBlocked)
+        if (user != null)
         {
-            logger.LogInformation($"{path} User is blocked. Login was failed.");
-
-            // TODO: add localization
-            ModelState.AddModelError(string.Empty,localizer["Your account is blocked"]);
-            return View(new LoginViewModel
+            if (user.IsBlocked)
             {
-                ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
-                ReturnUrl = model.ReturnUrl,
-            });
-        }
+                logger.LogInformation($"{path} User is blocked. Login was failed.");
 
-        var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, false, false);
-
-        if (result.Succeeded)
-        {
-            logger.LogInformation($"{path} Successfully logged. User(id): {userId}.");
-
-            user.LastLogin = DateTimeOffset.UtcNow;
-            var lastLoginResult = await userManager.UpdateAsync(user);
-            if (!lastLoginResult.Succeeded)
-            {
-                throw new InvalidOperationException($"Unexpected error occurred setting the last login date" +
-                                                    $" ({lastLoginResult.ToString()}) for user with ID '{user.Id}'.");
+                ModelState.AddModelError(string.Empty, localizer["Your account is blocked"]);
+                return View(new LoginViewModel
+                {
+                    ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                    ReturnUrl = model.ReturnUrl,
+                });
             }
 
-            return string.IsNullOrEmpty(model.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(model.ReturnUrl);
-        }
+            if (user.MustChangePassword)
+            {
+                var checkResult = await signInManager.CheckPasswordSignInAsync(user, model.Password, false);
 
-        if (result.IsLockedOut)
-        {
-            logger.LogWarning($"{path} Attempting to sign-in is locked out.");
+                if (checkResult.Succeeded)
+                {
+                    logger.LogTrace("User is being redirected to ChangePasswordLogin");
+                    return RedirectToAction(
+                        nameof(ChangePasswordLogin),
+                        new { email = user.Email, returnUrl = model.ReturnUrl });
+                }
+            }
+            else
+            {
+                var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, false, false);
 
-            return BadRequest();
+                if (result.Succeeded)
+                {
+                    logger.LogInformation($"{path} Successfully logged. User(id): {userId}.");
+
+                    user.LastLogin = DateTimeOffset.UtcNow;
+                    var lastLoginResult = await userManager.UpdateAsync(user);
+                    if (!lastLoginResult.Succeeded)
+                    {
+                        throw new InvalidOperationException($"Unexpected error occurred setting the last login date" +
+                                                            $" ({lastLoginResult}) for user with ID '{user.Id}'.");
+                    }
+
+                    return string.IsNullOrEmpty(model.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(model.ReturnUrl);
+                }
+
+                if (result.IsLockedOut)
+                {
+                    logger.LogWarning($"{path} Attempting to sign-in is locked out.");
+
+                    return BadRequest();
+                }
+            }
         }
 
         logger.LogInformation($"{path} Login was failed.");
@@ -199,6 +220,82 @@ public class AuthController : Controller
             ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
             ReturnUrl = model.ReturnUrl,
         });
+    }
+
+    /// <summary>
+    /// Generates a view for user to log in with changing password.
+    /// </summary>
+    /// <param name="email">User's email.</param>
+    /// <param name="returnUrl">URL used to redirect user back to client.</param>
+    /// <returns>An <see cref="IActionResult"/> representing the result.</returns>
+    [HttpGet]
+    public IActionResult ChangePasswordLogin(string email, string returnUrl = "Login")
+    {
+        return View(new ChangePasswordLoginViewModel { Email = email, ReturnUrl = returnUrl });
+    }
+
+    /// <summary>
+    /// Authenticate user with changing password based on model.
+    /// </summary>
+    /// <param name="model"> View model that contains credentials for logging in.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [HttpPost]
+    public async Task<IActionResult> ChangePasswordLogin(ChangePasswordLoginViewModel model)
+    {
+        logger.LogDebug("{Path} started", path);
+
+        if (!ModelState.IsValid)
+        {
+            logger.LogError("{Path} Input data was not valid", path);
+
+            return View(new ChangePasswordLoginViewModel { Email = model.Email, ReturnUrl = model.ReturnUrl });
+        }
+
+        var user = await userManager.FindByEmailAsync(model.Email);
+
+        if (user != null)
+        {
+            if (user.MustChangePassword)
+            {
+                var result = await signInManager.CheckPasswordSignInAsync(user, model.CurrentPassword, false);
+
+                if (result.Succeeded)
+                {
+                    logger.LogDebug("Password with mustChangePassword indicator was started for user with email {Email}", user.Email);
+
+                    var changeResult =
+                        await userManagerAdditionalService.ChangePasswordWithRequiredMustChangePasswordAsync(
+                            user,
+                            model.CurrentPassword,
+                            model.NewPassword);
+
+                    if (changeResult.Succeeded)
+                    {
+                        logger.LogDebug("Password with mustChangePassword indicator was successfully changed for user with email {Email}", user.Email);
+
+                        return await Login(new LoginViewModel
+                        {
+                            Username = user.Email,
+                            Password = model.NewPassword,
+                            ReturnUrl = model.ReturnUrl,
+                            ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                        });
+                    }
+                }
+            }
+            else
+            {
+                logger.LogWarning("{Path} User is not allowed to change password login action", path);
+
+                ModelState.AddModelError(string.Empty, localizer["User is not allowed to change password login action"]);
+                return View(new ChangePasswordLoginViewModel { Email = model.Email, ReturnUrl = model.ReturnUrl });
+            }
+        }
+
+        logger.LogInformation("{Path} Login was failed", path);
+
+        ModelState.AddModelError(string.Empty, localizer["Login or password is wrong"]);
+        return View(new ChangePasswordLoginViewModel { Email = model.Email, ReturnUrl = model.ReturnUrl });
     }
 
     /// <summary>
