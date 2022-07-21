@@ -37,7 +37,8 @@ public static class MappingExtensions
                 .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(p => p.User.PhoneNumber))
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(p => p.User.LastName))
                 .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(p => p.User.MiddleName))
-                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(p => p.User.FirstName));
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(p => p.User.FirstName))
+                .ForMember(dest => dest.Gender, opt => opt.MapFrom(p => p.User.Gender));
         });
     }
 
