@@ -36,6 +36,10 @@ public class Address : IKeyedEntity<long>
     // parameter r means size (resolution) of hexagon
     public ulong GeoHash => Api.GeoToH3(default(GeoCoord).SetDegrees((decimal)Latitude, (decimal)Longitude), GeoMathHelper.Resolution);
 
+    public long CodeficatorId { get; set; }
+
+    public virtual Codeficator Codeficator { get; set; }
+
     public override bool Equals(object obj)
     {
         if (obj == null)

@@ -20,4 +20,6 @@ public class CodeficatorDto
     public double Latitude { get; set; }
 
     public double Longitude { get; set; }
+
+    public CodeficatorDto Parent { get; set; }
 }

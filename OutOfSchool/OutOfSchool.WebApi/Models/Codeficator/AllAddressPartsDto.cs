@@ -1,21 +1,26 @@
-﻿using OutOfSchool.Common;
+﻿using Newtonsoft.Json;
+using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models.Codeficator;
 
-public class AllAddressPartsDto
+public class AllAddressPartsDto : CodeficatorAddressDto
 {
     public string FullAddress
     {
         get
         {
-            return GetFullAddress(AddressParts, string.Empty);
+            return GetFullAddress(AddressParts, string.Empty, true);
         }
     }
 
-    public CodeficatorWithParentDto AddressParts { get; set; }
+    [JsonIgnore]
+    public CodeficatorDto AddressParts { get; set; }
 
-    private string GetFullAddress(CodeficatorWithParentDto codeficator, string address)
+    private string GetFullAddress(CodeficatorDto codeficator, string address, bool isEndPointAddressItem = false)
     {
+        FillAddressPart(codeficator, isEndPointAddressItem);
+
         address += (address.Length == 0 ? string.Empty : Constants.AddressSeparator) + codeficator.Name;
 
         if (codeficator.Parent != null)
@@ -24,5 +29,39 @@ public class AllAddressPartsDto
         }
 
         return address;
+    }
+
+    private void FillAddressPart(CodeficatorDto codeficator, bool isEndPointAddressItem = false)
+    {
+        if (isEndPointAddressItem)
+        {
+            Category = codeficator.Category;
+            Latitude = codeficator.Latitude;
+            Longitude = codeficator.Longitude;
+            Id = codeficator.Id;
+        }
+
+        var r2 = CodeficatorCategory.FromName(codeficator.Category);
+        switch (r2)
+        {
+            case var e when e.Equals(CodeficatorCategory.Region):
+                Region = $"{codeficator.Name} {CodeficatorCategory.Region.Abbrivation}";
+                break;
+            case var e when e.Equals(CodeficatorCategory.District):
+                District = $"{codeficator.Name} {CodeficatorCategory.District.Abbrivation}";
+                break;
+            case var e when e.Equals(CodeficatorCategory.TerritorialCommunity):
+                TerritorialCommunity = $"{codeficator.Name} {CodeficatorCategory.TerritorialCommunity.Abbrivation}";
+                break;
+            case var e when e.Equals(CodeficatorCategory.City)
+                || e.Equals(CodeficatorCategory.UrbanSettlement)
+                || e.Equals(CodeficatorCategory.Village)
+                || e.Equals(CodeficatorCategory.Settlement):
+                Settlement = $"{CodeficatorCategory.FromValue(e).Abbrivation} {codeficator.Name}";
+                break;
+            case var e when e.Equals(CodeficatorCategory.CityDistrict):
+                CityDistrict = $"{codeficator.Name} {CodeficatorCategory.CityDistrict.Abbrivation}";
+                break;
+        }
     }
 }

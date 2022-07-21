@@ -14,6 +14,8 @@ public class CodeficatorAddressDto
 
     public string Settlement { get; set; }
 
+    public string CityDistrict { get; set; }
+
     public double Latitude { get; set; }
 
     public double Longitude { get; set; }
@@ -22,7 +24,12 @@ public class CodeficatorAddressDto
     {
         get
         {
-            string addr = Settlement;
+            string addr = CityDistrict;
+
+            if (!string.IsNullOrEmpty(Settlement))
+            {
+                addr += GetSplitter(addr) + Settlement;
+            }
 
             if (!string.IsNullOrEmpty(TerritorialCommunity))
             {

@@ -55,7 +55,7 @@ public class CodeficatorService : ICodeficatorService
             return null;
         }
 
-        return new AllAddressPartsDto { AddressParts = mapper.Map<CodeficatorWithParentDto>(codeficator) };
+        return new AllAddressPartsDto { AddressParts = mapper.Map<CodeficatorDto>(codeficator) };
     }
 
     /// <inheritdoc/>
