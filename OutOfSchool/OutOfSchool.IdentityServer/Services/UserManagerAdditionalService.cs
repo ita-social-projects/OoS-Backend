@@ -21,9 +21,9 @@ public class UserManagerAdditionalService : IUserManagerAdditionalService
     /// <inheritdoc/>
     public async Task<IdentityResult> ChangePasswordWithRequiredMustChangePasswordAsync(User user, string currentPassword, string newPassword)
     {
-        _ = user ?? throw new ArgumentNullException(nameof(user));
-        _ = currentPassword ?? throw new ArgumentNullException(nameof(currentPassword));
-        _ = newPassword ?? throw new ArgumentNullException(nameof(newPassword));
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(currentPassword);
+        ArgumentNullException.ThrowIfNull(newPassword);
 
         var executionStrategy = storeContext.Database.CreateExecutionStrategy();
         return await executionStrategy.ExecuteAsync(
