@@ -1,3 +1,4 @@
+using Microsoft.Extensions.FileProviders;
 using OutOfSchool.IdentityServer.Config.ExternalUriModels;
 
 namespace OutOfSchool.IdentityServer;
@@ -199,6 +200,11 @@ public static class Startup
         app.UseCookiePolicy(new CookiePolicyOptions { MinimumSameSitePolicy = SameSiteMode.Lax });
 
         app.UseStaticFiles();
+        
+        app.UseStaticFiles(new StaticFileOptions {
+            FileProvider = new PhysicalFileProvider(
+                Path.Combine("", "OutOfSchool/OutOfSchool.RazorTemplatesData/wwwroot/"))
+        });
 
         app.UseSerilogRequestLogging();
 
