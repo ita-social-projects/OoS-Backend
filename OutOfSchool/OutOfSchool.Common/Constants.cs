@@ -29,4 +29,6 @@ public static class Constants
     public const string AddressSeparator = ", ";
 
     public const string EnumErrorMessage = "{0} should be in enum range";
+
+    public const string AdminKeyword = "Admin";
 }

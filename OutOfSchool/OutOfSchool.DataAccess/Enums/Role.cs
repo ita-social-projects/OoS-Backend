@@ -4,6 +4,6 @@ public enum Role
 {
     Provider,
     Parent,
-    Admin,
+    TechAdmin,
     MinistryAdmin,
 }

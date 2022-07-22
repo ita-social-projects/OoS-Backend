@@ -71,7 +71,7 @@ public static class PermissionsSeeder
     {
         switch (role.ToLower())
         {
-            case "admin":
+            case "techadmin":
                 return SeedAdminPermissions.PackPermissionsIntoString();
 
             case "provider":
