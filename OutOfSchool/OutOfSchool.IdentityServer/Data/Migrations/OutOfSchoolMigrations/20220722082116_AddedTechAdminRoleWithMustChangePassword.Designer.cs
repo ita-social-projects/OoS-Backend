@@ -11,8 +11,8 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20220721223917_AddedMustChangePasswordColumnForUsers")]
-    partial class AddedMustChangePasswordColumnForUsers
+    [Migration("20220722082116_AddedTechAdminRoleWithMustChangePassword")]
+    partial class AddedTechAdminRoleWithMustChangePassword
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -1080,9 +1080,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         new
                         {
                             Id = 1L,
-                            Description = "admin permissions",
+                            Description = "techadmin permissions",
                             PackedPermissions = "de\n\r !()+4325>=<?HGIFPQ[]\\rpqo",
-                            RoleName = "Admin"
+                            RoleName = "TechAdmin"
                         },
                         new
                         {

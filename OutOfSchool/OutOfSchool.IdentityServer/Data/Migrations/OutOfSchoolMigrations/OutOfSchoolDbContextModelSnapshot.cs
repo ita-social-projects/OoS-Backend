@@ -1078,9 +1078,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         new
                         {
                             Id = 1L,
-                            Description = "admin permissions",
+                            Description = "techadmin permissions",
                             PackedPermissions = "de\n\r !()+4325>=<?HGIFPQ[]\\rpqo",
-                            RoleName = "Admin"
+                            RoleName = "TechAdmin"
                         },
                         new
                         {
