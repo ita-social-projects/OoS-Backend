@@ -23,6 +23,8 @@ public class Child : IKeyedEntity<Guid>
     // TODO: validate case when child has registered without parent help
     public Guid ParentId { get; set; }
 
+    public bool IsParent { get; set; }
+
     public virtual Parent Parent { get; set; }
 
     public virtual ICollection<SocialGroup> SocialGroups { get; set; }
