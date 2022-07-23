@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using OutOfSchool.Common;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -67,9 +68,9 @@ public static class ModelBuilderExtension
             new PermissionsForRole
             {
                 Id = 1,
-                RoleName = Role.Admin.ToString(),
-                PackedPermissions = PermissionsSeeder.SeedPermissions(Role.Admin.ToString()),
-                Description = "admin permissions",
+                RoleName = Role.TechAdmin.ToString(),
+                PackedPermissions = PermissionsSeeder.SeedPermissions(Role.TechAdmin.ToString()),
+                Description = "techadmin permissions",
             },
             new PermissionsForRole
             {
@@ -88,8 +89,8 @@ public static class ModelBuilderExtension
             new PermissionsForRole
             {
                 Id = 4,
-                RoleName = nameof(Role.Provider) + nameof(Role.Admin),
-                PackedPermissions = PermissionsSeeder.SeedPermissions(nameof(Role.Provider) + nameof(Role.Admin)),
+                RoleName = nameof(Role.Provider) + Constants.AdminKeyword,
+                PackedPermissions = PermissionsSeeder.SeedPermissions(nameof(Role.Provider) + Constants.AdminKeyword),
                 Description = "provider admin permissions",
             },
             new PermissionsForRole

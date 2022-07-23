@@ -344,5 +344,11 @@
   </data>
   <data name="Change password failed" xml:space="preserve">
     <value>Change password failed. Please contact administrator.</value>
-  </data>  
+  </data>
+  <data name="User is not allowed to change password login action" xml:space="preserve">
+    <value>User is not allowed to change password login action</value>
+  </data>
+  <data name="Login with changing password" xml:space="preserve">
+    <value>Login with changing password</value>
+  </data>
 </root>
