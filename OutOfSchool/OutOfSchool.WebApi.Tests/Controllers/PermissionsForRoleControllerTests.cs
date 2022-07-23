@@ -87,7 +87,7 @@ public class PermissionsForRoleControllerTests
     public async Task GetByRoleName_WhenRoleNameIsValid_ReturnOkResultObject()
     {
         // Arrange
-        var roleName = nameof(Role.Admin);
+        var roleName = nameof(Role.TechAdmin);
         var expected = permissionsForAllRoles.Where(s => s.RoleName == roleName).Select(p => p.ToModel()).First();
         service.Setup(x => x.GetByRole(roleName)).ReturnsAsync(permissionsForAllRoles.SingleOrDefault(x => x.RoleName == roleName).ToModel());
 

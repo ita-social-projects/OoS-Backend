@@ -58,7 +58,7 @@ public class ProfileService : IProfileService
         if (userFromLogin.Role == nameof(Role.Provider).ToLower() && userFromLogin.IsDerived)
         {
             // ProviderAdmin set of permissions in DB excludes not allowed actions
-            roleName += nameof(Role.Admin);
+            roleName += Constants.AdminKeyword;
         }
 
         var permissionsForUser = (await permissionsForRolesRepository
