@@ -112,7 +112,7 @@ public class ProviderService : IProviderService, INotificationReciever
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: "",
+                includeProperties: string.Empty,
                 where: filterPredicate,
                 orderBy: sortExpression,
                 asNoTracking: false)
