@@ -552,7 +552,7 @@ public class ProviderService : IProviderService, INotificationReciever
                         || x.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
                         || x.ActualAddress.City.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
                         || x.LegalAddress.City.StartsWith(word, StringComparison.InvariantCulture)
-                        || x.EdrpouIpn.ToString().StartsWith(word, StringComparison.InvariantCultureIgnoreCase));
+                        || x.EdrpouIpn.StartsWith(word, StringComparison.InvariantCultureIgnoreCase));
             }
 
             predicate = predicate.And(tempPredicate);
