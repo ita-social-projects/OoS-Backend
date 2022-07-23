@@ -467,7 +467,7 @@ public class ProviderService : IProviderService, INotificationReciever
         licenseChanged = false;
 
         if (!(checkProvider.FullTitle == providerDto.FullTitle
-              && checkProvider.EdrpouIpn == long.Parse(providerDto.EdrpouIpn)))
+              && checkProvider.EdrpouIpn == providerDto.EdrpouIpn))
         {
             checkProvider.Status = ProviderStatus.Pending;
             statusChanged = true;

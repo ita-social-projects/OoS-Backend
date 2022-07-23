@@ -395,7 +395,7 @@ public class ProviderServiceTests
     {
         // Arrange
         var provider = fakeProviders.RandomItem();
-        provider.EdrpouIpn = 1234512345;
+        provider.EdrpouIpn = "1234512345";
         var updatedEdrpouIpn = "1234567890";
         provider.Status = initialStatus;
 
