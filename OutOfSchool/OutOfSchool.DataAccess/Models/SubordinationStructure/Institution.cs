@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models.SubordinationStructure;
@@ -13,4 +14,6 @@ public class Institution : IKeyedEntity<Guid>
 
     [Range(1, int.MaxValue)]
     public int NumberOfHierarchyLevels { get; set; }
+
+    public virtual List<Provider> RelatedProviders { get; set; }
 }

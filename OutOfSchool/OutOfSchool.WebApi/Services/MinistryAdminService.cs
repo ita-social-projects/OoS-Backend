@@ -24,16 +24,10 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         ILogger<MinistryAdminService> logger)
         : base(httpClientFactory, communicationConfig.Value)
     {
-        ArgumentNullException.ThrowIfNull(httpClientFactory);
-        ArgumentNullException.ThrowIfNull(identityServerConfig);
-        ArgumentNullException.ThrowIfNull(communicationConfig);
-        ArgumentNullException.ThrowIfNull(institutionAdminRepository);
-        ArgumentNullException.ThrowIfNull(logger);
-
-        this.identityServerConfig = identityServerConfig.Value;
-        this.institutionAdminRepository = institutionAdminRepository;
-        this.logger = logger;
-        responseDto = new ResponseDto();
+        this.identityServerConfig = identityServerConfig?.Value ?? throw new ArgumentNullException(nameof(identityServerConfig));
+        this.institutionAdminRepository = institutionAdminRepository ?? throw new ArgumentNullException(nameof(institutionAdminRepository));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        responseDto = new ResponseDto(); // TODO: move this dto into methods where it's appropriate in order to avoid incomprehensible errors with results
     }
 
     public async Task<ResponseDto> CreateMinistryAdminAsync(string userId, CreateMinistryAdminDto ministryAdminDto, string token)
@@ -161,5 +155,15 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         }
 
         return response;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> IsProviderSubordinateAsync(string ministryAdminUserId, Guid providerId)
+    {
+        ArgumentNullException.ThrowIfNull(ministryAdminUserId);
+
+        return await institutionAdminRepository
+            .Any(x => x.UserId == ministryAdminUserId
+                      && x.Institution.RelatedProviders.Any(rp => rp.Id == providerId)).ConfigureAwait(false);
     }
 }

@@ -5,6 +5,7 @@ using System.Security.Authentication;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -25,7 +26,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [Authorize(AuthenticationSchemes = "Bearer")]
-[Authorize(Roles = "provider,parent")]
+[Authorize(Roles = "provider,parent,ministryadmin")]
 public class ChatWorkshopController : ControllerBase
 {
     // TODO: define the algorithm of logging information and warnings  in the solution
@@ -36,6 +37,7 @@ public class ChatWorkshopController : ControllerBase
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly ILogger<ChatWorkshopController> logger;
     private readonly IProviderAdminService providerAdminService;
+    private readonly IMinistryAdminService ministryAdminService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatWorkshopController"/> class.
@@ -46,20 +48,23 @@ public class ChatWorkshopController : ControllerBase
     /// <param name="localizer">Localizer.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="providerAdminService">Service for Provider's admins.</param>
+    /// <param name="ministryAdminService">Service for Ministry admins.</param>
     public ChatWorkshopController(
         IChatMessageWorkshopService messageService,
         IChatRoomWorkshopService roomService,
         IValidationService validationService,
         IStringLocalizer<SharedResource> localizer,
         ILogger<ChatWorkshopController> logger,
-        IProviderAdminService providerAdminService)
+        IProviderAdminService providerAdminService,
+        IMinistryAdminService ministryAdminService)
     {
-        this.messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-        this.roomService = roomService ?? throw new ArgumentNullException(nameof(roomService));
-        this.validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+        this.messageService = messageService;
+        this.roomService = roomService;
+        this.validationService = validationService;
+        this.localizer = localizer;
         this.logger = logger;
         this.providerAdminService = providerAdminService;
+        this.ministryAdminService = ministryAdminService;
     }
 
     /// <summary>
@@ -127,6 +132,22 @@ public class ChatWorkshopController : ControllerBase
         => this.GetMessagesByRoomIdAsync(id, offsetFilter, this.IsProviderAChatRoomParticipantAsync);
 
     /// <summary>
+    /// Gets a portion of chat messages for Ministry Admin if it has related provider participants by specified chat room id.
+    /// </summary>
+    /// <param name="id">ChatRoom's Id.</param>
+    /// <param name="offsetFilter">Filter to get specified portion of messages in the chat room.</param>
+    /// <returns>User's chat room's messages that were found.</returns>
+    [HttpGet("ministryadmin/chatrooms/{id}/messages")]
+    [Authorize(Roles = "ministryadmin")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ChatMessageWorkshopDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public Task<IActionResult> GetMessagesForMinistryAdminByRoomIdAsync(Guid id, [FromQuery] OffsetFilter offsetFilter)
+        => this.GetMessagesByRoomIdAsync(id, offsetFilter, IsMinistryAdminAbleToBeSeeChatRoomMessagesAsync);
+
+    /// <summary>
     /// Get a list of chat rooms for current parent.
     /// </summary>
     /// <returns>List of ChatRooms with last message and number of not read messages.</returns>
@@ -153,6 +174,37 @@ public class ChatWorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public Task<IActionResult> GetProvidersRoomsAsync()
         => this.GetUsersRoomsAsync(providerId => roomService.GetByProviderIdAsync(providerId));
+
+    /// <summary>
+    /// Get a list of chat rooms for the ministry admin by specific provider id.
+    /// </summary>
+    /// <param name="providerId">Provider Id.</param>
+    /// <returns>List of ChatRooms with last message and number of not read messages.</returns>
+    [HttpGet("ministryadmin/chatrooms")]
+    [Authorize(Roles = "ministryadmin")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ChatRoomWorkshopDtoWithLastMessage>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetRoomsForMinistryAdminByProviderIdAsync([FromQuery] Guid providerId)
+    {
+        async Task<IActionResult> Operation()
+        {
+            var userId = GettingUserProperties.GetUserId(HttpContext);
+
+            var isProviderSubordinate = await ministryAdminService.IsProviderSubordinateAsync(userId, providerId);
+            if (!isProviderSubordinate)
+            {
+                return Forbid();
+            }
+
+            var chatRooms = await roomService.GetByProviderIdAsync(providerId);
+            return chatRooms.Any() ? Ok(chatRooms) : NoContent();
+        }
+
+        return await HandleOperationAsync(Operation);
+    }
 
     private async Task<bool> IsParentAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
     {
@@ -183,6 +235,15 @@ public class ChatWorkshopController : ControllerBase
         return result;
     }
 
+    private async Task<bool> IsMinistryAdminAbleToBeSeeChatRoomMessagesAsync(ChatRoomWorkshopDto chatRoom)
+    {
+        var userId = GettingUserProperties.GetUserId(HttpContext);
+
+        return await ministryAdminService.IsProviderSubordinateAsync(
+            userId,
+            chatRoom.Workshop?.ProviderId ?? throw new InvalidOperationException($"Unable to retrieve workshop data from chatRoom with id = {chatRoom.Id}"));
+    }
+
     private void LogWarningAboutUsersTryingToGetNotOwnChatRoom(Guid chatRoomId, string userId)
     {
         var messageToLog = $"User with {nameof(userId)}:{userId} is trying to get not his own chat room: {nameof(chatRoomId)}={chatRoomId}.";
@@ -197,43 +258,28 @@ public class ChatWorkshopController : ControllerBase
 
     private async Task<IActionResult> GetRoomByIdAsync(Guid chatRoomId, Func<ChatRoomWorkshopDto, Task<bool>> userHasRights)
     {
-        try
+        async Task<IActionResult> Operation()
         {
             var chatRoom = await roomService.GetByIdAsync(chatRoomId).ConfigureAwait(false);
 
             if (chatRoom is null)
             {
-                this.LogInfoAboutUsersTryingToGetNotExistingChatRoom(chatRoomId, GettingUserProperties.GetUserId(HttpContext));
+                LogInfoAboutUsersTryingToGetNotExistingChatRoom(chatRoomId, GettingUserProperties.GetUserId(HttpContext));
 
                 return NoContent();
             }
 
             var isChatRoomValid = await userHasRights(chatRoom).ConfigureAwait(false);
 
-            if (isChatRoomValid)
-            {
-                return Ok(chatRoom);
-            }
+            return isChatRoomValid ? Ok(chatRoom) : NoContent();
+        }
 
-            return NoContent();
-        }
-        catch (AuthenticationException exception)
-        {
-            logger.LogWarning(exception.Message);
-            var messageForUser = localizer["Can not get some user's claims. Please check your authentication or contact technical support."];
-            return BadRequest(messageForUser);
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(exception.Message);
-            var messageForUser = localizer["Server error. Please try again later or contact technical support."];
-            return new ObjectResult(messageForUser) { StatusCode = 500 };
-        }
+        return await HandleOperationAsync(Operation);
     }
 
     private async Task<IActionResult> GetMessagesByRoomIdAsync(Guid chatRoomId, OffsetFilter offsetFilter, Func<ChatRoomWorkshopDto, Task<bool>> userHasRights)
     {
-        try
+        async Task<IActionResult> Operation()
         {
             var chatRoom = await roomService.GetByIdAsync(chatRoomId).ConfigureAwait(false);
 
@@ -251,33 +297,18 @@ public class ChatWorkshopController : ControllerBase
             {
                 var messages = await messageService.GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(chatRoomId, offsetFilter, GettingUserProperties.GetUserRole(HttpContext)).ConfigureAwait(false);
 
-                if (messages.Any())
-                {
-                    return Ok(messages);
-                }
-
-                return NoContent();
+                return messages.Any() ? Ok(messages) : NoContent();
             }
 
             return NoContent();
         }
-        catch (AuthenticationException exception)
-        {
-            logger.LogWarning(exception.Message);
-            var messageForUser = localizer["Can not get some user's claims. Please check your authentication or contact technical support."];
-            return BadRequest(messageForUser);
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(exception.Message);
-            var messageForUser = localizer["Server error. Please try again later or contact technical support."];
-            return new ObjectResult(messageForUser) { StatusCode = 500 };
-        }
+
+        return await HandleOperationAsync(Operation);
     }
 
     private async Task<IActionResult> GetUsersRoomsAsync(Func<Guid, Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>>> getChatRoomsByRole)
     {
-        try
+        async Task<IActionResult> Operation()
         {
             var userId = GettingUserProperties.GetUserId(HttpContext);
             var userRole = GettingUserProperties.GetUserRole(HttpContext);
@@ -288,14 +319,7 @@ public class ChatWorkshopController : ControllerBase
                 var workshopIds = await providerAdminService.GetRelatedWorkshopIdsForProviderAdmins(userId).ConfigureAwait(false);
                 var chatRooms = await roomService.GetByWorkshopIdsAsync(workshopIds).ConfigureAwait(false);
 
-                if (chatRooms.Any())
-                {
-                    return Ok(chatRooms);
-                }
-                else
-                {
-                    return NoContent();
-                }
+                return chatRooms.Any() ? Ok(chatRooms) : NoContent();
             }
 
             var providerOrParentId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
@@ -312,15 +336,25 @@ public class ChatWorkshopController : ControllerBase
 
             return NoContent();
         }
+
+        return await HandleOperationAsync(Operation);
+    }
+
+    private async Task<IActionResult> HandleOperationAsync(Func<Task<IActionResult>> operation)
+    {
+        try
+        {
+            return await operation();
+        }
         catch (AuthenticationException exception)
         {
-            logger.LogWarning(exception.Message);
+            logger.LogError(exception, "Unable to authenticate user");
             var messageForUser = localizer["Can not get some user's claims. Please check your authentication or contact technical support."];
             return BadRequest(messageForUser);
         }
         catch (Exception exception)
         {
-            logger.LogError(exception.Message);
+            logger.LogError(exception, "Server error. Unable to access the hub");
             var messageForUser = localizer["Server error. Please try again later or contact technical support."];
             return new ObjectResult(messageForUser) { StatusCode = 500 };
         }
