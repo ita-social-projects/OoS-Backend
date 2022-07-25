@@ -31,6 +31,7 @@ public static class UserGenerator
             .RuleFor(x => x.TwoFactorEnabled, _ => false)
             .RuleFor(x => x.LockoutEnabled, _ => true)
             .RuleFor(x => x.AccessFailedCount, _ => 0)
+            .RuleFor(x => x.MustChangePassword, _ => false)
         ;
 
     /// <summary>

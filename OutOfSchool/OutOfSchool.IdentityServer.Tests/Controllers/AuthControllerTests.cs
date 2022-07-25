@@ -24,6 +24,8 @@ using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.IdentityServer.Config;
+using OutOfSchool.IdentityServer.Services.Interfaces;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.IdentityServer.Tests.Controllers;
 
@@ -31,6 +33,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers;
 public class AuthControllerTests
 {
     private readonly Mock<FakeUserManager> fakeUserManager;
+    private readonly Mock<IUserManagerAdditionalService> fakeUserManagerAdditionalService;
     private readonly Mock<FakeSignInManager> fakeSignInManager;
     private readonly Mock<IIdentityServerInteractionService> fakeInteractionService;
     private readonly Mock<ILogger<AuthController>> fakeLogger;
@@ -42,6 +45,7 @@ public class AuthControllerTests
     public AuthControllerTests()
     {
         fakeUserManager = new Mock<FakeUserManager>();
+        fakeUserManagerAdditionalService = new Mock<IUserManagerAdditionalService>();
         fakeInteractionService = new Mock<IIdentityServerInteractionService>();
         fakeSignInManager = new Mock<FakeSignInManager>();
         fakeLogger = new Mock<ILogger<AuthController>>();
@@ -67,6 +71,7 @@ public class AuthControllerTests
             .Returns(new LocalizedString("mock", "error"));
         authController = new AuthController(
             fakeUserManager.Object,
+            fakeUserManagerAdditionalService.Object,
             fakeSignInManager.Object,
             fakeInteractionService.Object, 
             fakeLogger.Object,
@@ -168,6 +173,183 @@ public class AuthControllerTests
         Assert.IsInstanceOf(type, result);
     }
 
+    [Test]
+    public async Task Login_WhenUserMustChangePasswordAndEmailWithPasswordAreCorrect_ReturnsRedirectActionToChangePasswordLogin()
+    {
+        // Arrange
+        var user = UserGenerator.Generate();
+        var loginViewModel = CreateLoginViewModelFromData();
+        user.MustChangePassword = true;
+        SetupDefaultUserManagerFindByEmailAsync(user);
+        SetupDefaultSignInManagerCheckPasswordSignInAsync(SignInResult.Success);
+
+        // Act
+        var result = await authController.Login(loginViewModel);
+
+        // Assert
+        Assert.IsInstanceOf(typeof(RedirectToActionResult), result);
+        Assert.AreEqual(0, authController.ModelState.Count);
+        Assert.AreEqual(nameof(AuthController.ChangePasswordLogin), (result as RedirectToActionResult)?.ActionName);
+    }
+
+    [Test]
+    public async Task Login_WhenUserMustChangePasswordAndEmailWithPasswordAreNotCorrect_ReturnsViewWithError()
+    {
+        // Arrange
+        var user = UserGenerator.Generate();
+        var loginViewModel = CreateLoginViewModelFromData();
+        user.MustChangePassword = true;
+        SetupDefaultUserManagerFindByEmailAsync(user);
+        SetupDefaultSignInManagerCheckPasswordSignInAsync(SignInResult.Failed);
+
+        // Act
+        var result = await authController.Login(loginViewModel);
+
+        // Assert
+        Assert.IsInstanceOf(typeof(ViewResult), result);
+        Assert.AreEqual(1, authController.ModelState.Count);
+    }
+
+    [Test]
+    public async Task Login_WhenUserMustNotChangePasswordAndEmailWithPasswordAreCorrectAndReturnUrlIsNotEmpty_ReturnsRedirectToReturnUrl()
+    {
+        // Arrange
+        var user = UserGenerator.Generate();
+        var loginViewModel = CreateLoginViewModelFromData(user.UserName);
+        user.MustChangePassword = false;
+        SetupDefaultUserManagerFindByEmailAsync(user);
+        SetupDefaultUserManagerUpdateAsync(IdentityResult.Success);
+        SetupDefaultSignInManagerPasswordSignInAsync(SignInResult.Success);
+
+        // Act
+        var result = await authController.Login(loginViewModel);
+
+        // Assert
+        Assert.IsInstanceOf(typeof(RedirectResult), result);
+        Assert.AreEqual(0, authController.ModelState.Count);
+        Assert.AreEqual(loginViewModel.ReturnUrl, (result as RedirectResult)?.Url);
+    }
+
+    [Test]
+    public async Task Login_WhenUserMustNotChangePasswordAndEmailWithPasswordAreCorrectAndReturnUrlIsEmpty_ReturnsRedirectToLogin()
+    {
+        // Arrange
+        var user = UserGenerator.Generate();
+        var loginViewModel = CreateLoginViewModelFromData(user.UserName, returnUrl: string.Empty);
+        user.MustChangePassword = false;
+        SetupDefaultUserManagerFindByEmailAsync(user);
+        SetupDefaultUserManagerUpdateAsync(IdentityResult.Success);
+        SetupDefaultSignInManagerPasswordSignInAsync(SignInResult.Success);
+
+        // Act
+        var result = await authController.Login(loginViewModel);
+
+        // Assert
+        Assert.IsInstanceOf(typeof(RedirectResult), result);
+        Assert.AreEqual(0, authController.ModelState.Count);
+        Assert.AreEqual(nameof(AuthController.Login), (result as RedirectResult)?.Url);
+    }
+
+    [Test]
+    public async Task ChangePasswordLogin_WhenUserMustChangePasswordAndEmailWithPasswordsAreCorrectAndReturnUrlIsNotEmpty_ReturnsRedirectToReturnUrl()
+    {
+        // Arrange
+        var user = UserGenerator.Generate();
+        user.MustChangePassword = true;
+        var changePasswordLoginViewModel = CreateChangePasswordLoginViewModelFromData();
+        SetupDefaultUserManagerFindByEmailAsync(user);
+        fakeUserManagerAdditionalService.Setup(s =>
+            s.ChangePasswordWithRequiredMustChangePasswordAsync(user, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(() => { user.MustChangePassword = false; return IdentityResult.Success;});
+        SetupDefaultSignInManagerCheckPasswordSignInAsync(SignInResult.Success);
+        fakeSignInManager.Setup(s => s.GetExternalAuthenticationSchemesAsync())
+            .ReturnsAsync(new List<AuthenticationScheme>());
+        SetupDefaultUserManagerUpdateAsync(IdentityResult.Success);
+        SetupDefaultSignInManagerPasswordSignInAsync(SignInResult.Success);
+
+        // Act
+        var result = await authController.ChangePasswordLogin(changePasswordLoginViewModel);
+
+        // Assert
+        Assert.IsInstanceOf(typeof(RedirectResult), result);
+        Assert.AreEqual(0, authController.ModelState.Count);
+        Assert.AreEqual(changePasswordLoginViewModel.ReturnUrl, (result as RedirectResult)?.Url);
+    }
+
+    [Test]
+    public async Task ChangePasswordLogin_WhenUserMustChangePasswordAndEmailWithPasswordsAreCorrectAndReturnUrlIsEmpty_ReturnsRedirectToLogin()
+    {
+        // Arrange
+        var user = UserGenerator.Generate();
+        user.MustChangePassword = true;
+        var changePasswordLoginViewModel = CreateChangePasswordLoginViewModelFromData(returnUrl: string.Empty);
+        SetupDefaultUserManagerFindByEmailAsync(user);
+        fakeUserManagerAdditionalService.Setup(s =>
+                s.ChangePasswordWithRequiredMustChangePasswordAsync(user, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(() => { user.MustChangePassword = false; return IdentityResult.Success;});
+        SetupDefaultSignInManagerCheckPasswordSignInAsync(SignInResult.Success);
+        fakeSignInManager.Setup(s => s.GetExternalAuthenticationSchemesAsync())
+            .ReturnsAsync(new List<AuthenticationScheme>());
+        SetupDefaultUserManagerUpdateAsync(IdentityResult.Success);
+        SetupDefaultSignInManagerPasswordSignInAsync(SignInResult.Success);
+
+        // Act
+        var result = await authController.ChangePasswordLogin(changePasswordLoginViewModel);
+
+        // Assert
+        Assert.IsInstanceOf(typeof(RedirectResult), result);
+        Assert.AreEqual(0, authController.ModelState.Count);
+        Assert.AreEqual(nameof(AuthController.Login), (result as RedirectResult)?.Url);
+    }
+
+    [Test]
+    public async Task ChangePasswordLogin_WhenUserMustNotChangePassword_ReturnsViewWithModelError()
+    {
+        // Arrange
+        var user = UserGenerator.Generate();
+        user.MustChangePassword = false;
+        var changePasswordLoginViewModel = CreateChangePasswordLoginViewModelFromData(returnUrl: string.Empty);
+        SetupDefaultUserManagerFindByEmailAsync(user);
+
+        // Act
+        var result = await authController.ChangePasswordLogin(changePasswordLoginViewModel);
+
+        // Assert
+        Assert.IsInstanceOf(typeof(ViewResult), result);
+        Assert.AreEqual(1, authController.ModelState.Count);
+    }
+
+    [Test] public async Task ChangePasswordLogin_WhenUserMustChangePasswordAndEmailWithPasswordAreNotCorrect_ReturnsViewWithModelError()
+    {
+        // Arrange
+        var user = UserGenerator.Generate();
+        user.MustChangePassword = true;
+        var changePasswordLoginViewModel = CreateChangePasswordLoginViewModelFromData();
+        SetupDefaultUserManagerFindByEmailAsync(user);
+        SetupDefaultSignInManagerCheckPasswordSignInAsync(SignInResult.Failed);
+
+        // Act
+        var result = await authController.ChangePasswordLogin(changePasswordLoginViewModel);
+
+        // Assert
+        Assert.IsInstanceOf(typeof(ViewResult), result);
+        Assert.AreEqual(1, authController.ModelState.Count);
+    }
+
+    [Test] public async Task ChangePasswordLogin_WhenUserNotFound_ReturnsViewWithModelError()
+    {
+        // Arrange
+        var changePasswordLoginViewModel = CreateChangePasswordLoginViewModelFromData();
+        SetupDefaultUserManagerFindByEmailAsync(null);
+
+        // Act
+        var result = await authController.ChangePasswordLogin(changePasswordLoginViewModel);
+
+        // Assert
+        Assert.IsInstanceOf(typeof(ViewResult), result);
+        Assert.AreEqual(1, authController.ModelState.Count);
+    }
+    
     [Test]
     public void Register_WithoutReturnUrl_ReturnsViewResult()
     {
@@ -338,5 +520,52 @@ public class AuthControllerTests
     public static IEnumerable<AuthenticationScheme> EmptySchemes
     {
         get => new List<AuthenticationScheme>();
+    }
+    
+    private void SetupDefaultUserManagerFindByEmailAsync(User user)
+        => fakeUserManager.Setup(s => s.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync(user);
+
+    private void SetupDefaultSignInManagerCheckPasswordSignInAsync(SignInResult signInResult)
+        => fakeSignInManager.Setup(s => s
+                .CheckPasswordSignInAsync(It.IsAny<User>(), It.IsAny<string>(), false))
+                .ReturnsAsync(signInResult);
+
+    private void SetupDefaultUserManagerUpdateAsync(IdentityResult identityResult)
+        => fakeUserManager.Setup(s => s
+            .UpdateAsync(It.IsAny<User>())).ReturnsAsync(identityResult);
+
+    private void SetupDefaultSignInManagerPasswordSignInAsync(SignInResult signInResult)
+        => fakeSignInManager.Setup(s => s.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), false, false))
+            .ReturnsAsync(signInResult);
+    private static LoginViewModel CreateLoginViewModelFromData(
+        string email = "randomuser@test.com",
+        string password = "RandomPassword3%",
+        string returnUrl = "RandomReturnUrl",
+        IEnumerable<AuthenticationScheme> authenticationSchemes = default)
+    {
+        return new LoginViewModel
+        {
+            Username = email,
+            Password = password,
+            ReturnUrl = returnUrl,
+            ExternalProviders = authenticationSchemes
+        };
+    }
+
+    private static ChangePasswordLoginViewModel CreateChangePasswordLoginViewModelFromData(
+        string email = "randomuser@test.com",
+        string password = "RandomPassword5%",
+        string newPassword = "RandomPassword3%",
+        string confirmNewPassword = "RandomPassword3%",
+        string returnUrl = "RandomReturnUrl")
+    {
+        return new ChangePasswordLoginViewModel
+        {
+            Email = email,
+            CurrentPassword = password,
+            NewPassword = newPassword,
+            ConfirmNewPassword = confirmNewPassword,
+            ReturnUrl = returnUrl
+        };
     }
 }

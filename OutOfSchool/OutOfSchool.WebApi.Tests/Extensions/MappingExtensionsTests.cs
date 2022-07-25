@@ -387,7 +387,7 @@ public class MappingExtensionsTests
             Assert.That(providerDto.Email, Is.EqualTo(provider.Email));
             Assert.That(providerDto.Facebook, Is.EqualTo(provider.Facebook));
             Assert.That(providerDto.Instagram, Is.EqualTo(provider.Instagram));
-            Assert.That(providerDto.EdrpouIpn, Is.EqualTo(provider.EdrpouIpn.ToString()));
+            Assert.That(providerDto.EdrpouIpn, Is.EqualTo(provider.EdrpouIpn));
             Assert.That(providerDto.Director, Is.EqualTo(provider.Director));
             Assert.That(providerDto.DirectorDateOfBirth, Is.EqualTo(provider.DirectorDateOfBirth));
             Assert.That(providerDto.PhoneNumber, Is.EqualTo(provider.PhoneNumber));

@@ -59,7 +59,7 @@ public class PermissionsForRoleServiceTests
     public async Task GetByRole_WhenIdIsValid_ReturnsPermissionsForRole()
     {
         // Arrange
-        var roleName = nameof(Role.Admin);
+        var roleName = nameof(Role.TechAdmin);
         var expected = repository
             .GetByFilterNoTracking(r => r.RoleName == roleName)
             .First()
@@ -104,7 +104,7 @@ public class PermissionsForRoleServiceTests
     public void Create_WhenPermissionsForRoleExistsInDb_ThrowsArgumentException()
     {
         // Arrange
-        var newPermissionsForRole = PermissionsForRolesGenerator.Generate(nameof(Role.Admin));
+        var newPermissionsForRole = PermissionsForRolesGenerator.Generate(nameof(Role.TechAdmin));
 
         // Act and Assert
         Assert.ThrowsAsync<ArgumentException>(
@@ -116,7 +116,7 @@ public class PermissionsForRoleServiceTests
     {
         // Arrange
         var entityToChange = repository
-            .GetByFilterNoTracking(x => x.RoleName == nameof(Role.Admin))
+            .GetByFilterNoTracking(x => x.RoleName == nameof(Role.TechAdmin))
             .First();
         entityToChange.PackedPermissions = TestDataHelper.GetFakePackedPermissions();
         var expected = entityToChange.ToModel();

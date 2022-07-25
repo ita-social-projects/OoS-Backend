@@ -112,10 +112,10 @@ public class ProviderService : IProviderService, INotificationReciever
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: "ActualAddress,LegalAddress,Institution,ProviderSectionItems,Images",
+                includeProperties: string.Empty,
                 where: filterPredicate,
                 orderBy: sortExpression,
-                asNoTracking: true)
+                asNoTracking: false)
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -467,7 +467,7 @@ public class ProviderService : IProviderService, INotificationReciever
         licenseChanged = false;
 
         if (!(checkProvider.FullTitle == providerDto.FullTitle
-              && checkProvider.EdrpouIpn == long.Parse(providerDto.EdrpouIpn)))
+              && checkProvider.EdrpouIpn == providerDto.EdrpouIpn))
         {
             checkProvider.Status = ProviderStatus.Pending;
             statusChanged = true;
@@ -548,11 +548,11 @@ public class ProviderService : IProviderService, INotificationReciever
             foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
             {
                 tempPredicate = tempPredicate.Or(
-                    x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.User.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
+                    x => x.FullTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.ActualAddress.City.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.LegalAddress.City.StartsWith(word, StringComparison.InvariantCulture)
+                        || x.EdrpouIpn.StartsWith(word, StringComparison.InvariantCultureIgnoreCase));
             }
 
             predicate = predicate.And(tempPredicate);

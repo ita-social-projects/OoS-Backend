@@ -368,7 +368,7 @@ public class AccountController : Controller
         {
             logger.LogError($"{path} Input data was not valid. User(id): {userId}.");
 
-            return BadRequest(ModelState);
+            return View("Password/ChangePassword");
         }
 
         var user = await userManager.GetUserAsync(User);
@@ -383,6 +383,7 @@ public class AccountController : Controller
         logger.LogError($"{path} Changing password was failed for User(id): {userId}." +
                         $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
-        return Redirect(model.ReturnUrl);
+        ModelState.AddModelError(string.Empty, localizer["Change password failed"]);
+        return View("Password/ChangePassword");
     }
 }

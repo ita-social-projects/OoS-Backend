@@ -299,7 +299,7 @@ public class ValidationServiceTests
     {
         // Arrange
         var validUserId = "someUserId";
-        var userRole = Role.Admin;
+        var userRole = Role.TechAdmin;
 
         // Act
         var result = await validationService.GetParentOrProviderIdByUserRoleAsync(validUserId, userRole).ConfigureAwait(false);
