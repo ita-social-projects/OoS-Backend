@@ -11,7 +11,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20220725145346_AddIsParentPropertyToChild")]
+    [Migration("20220725172330_AddIsParentPropertyToChild")]
     partial class AddIsParentPropertyToChild
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
