@@ -1,11 +1,20 @@
 ﻿using OutOfSchool.Common.Models;
+using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
 
 public interface IMinistryAdminService
 {
+
     /// <summary>
-    /// Create Ministry Admin
+    /// Get entity by User id.
+    /// </summary>
+    /// <param name="id">Key of the User entity in the table.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    Task<MinistryAdminDto> GetByUserId(string id);
+
+    /// <summary>
+    /// Create Ministry Admin.
     /// </summary>
     /// <param name="userId">Id of user.</param>
     /// <param name="ministryAdminDto">Entity to add.</param>
@@ -14,7 +23,14 @@ public interface IMinistryAdminService
     Task<ResponseDto> CreateMinistryAdminAsync(string userId, CreateMinistryAdminDto ministryAdminDto, string token);
 
     /// <summary>
-    /// Delete Ministry Admin
+    /// Update Ministry Admin.
+    /// </summary>
+    /// <param name="ministryAdminDto">Entity to update.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+    Task<MinistryAdminDto> Update(MinistryAdminDto ministryAdminDto);
+
+    /// <summary>
+    /// Delete Ministry Admin.
     /// </summary>
     /// <param name="ministryAdminId">Id of ministry admin.</param>
     /// <param name="userId">Id of user.</param>
@@ -23,7 +39,7 @@ public interface IMinistryAdminService
     Task<ResponseDto> DeleteMinistryAdminAsync(string ministryAdminId, string userId, string token);
 
     /// <summary>
-    /// Block Ministry Admin
+    /// Block Ministry Admin.
     /// </summary>
     /// <param name="ministryAdminId">Id of ministry admin.</param>
     /// <param name="userId">Id of user.</param>
