@@ -201,17 +201,6 @@ public static class Startup
 
         app.UseStaticFiles();
 
-        var dir = Directory.GetParent(Directory.GetCurrentDirectory());
-        if (dir is not null)
-        {
-            string fullNameDir = dir.FullName.Replace(@"\", "/");
-
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider(Path.Combine(fullNameDir, "OutOfSchool.RazorTemplatesData/wwwroot/")),
-            });
-        }
-
         app.UseSerilogRequestLogging();
 
         app.UseIdentityServer();

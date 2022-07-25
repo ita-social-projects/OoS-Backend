@@ -1,15 +1,18 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.Extensions.Configuration
+@inject IConfiguration configuration
+@{
+    var host = configuration.GetSection("Identity")["Authority"];
+}  
+
+<!DOCTYPE html>
 
 <html>
     <head>
         <meta name="viewport" content="width=device-width" />
         <title>@ViewData["Title"]</title>
         <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
-        
-        
-        
         <style type = "text/css">
-           
+        
               html, body {
                   height: 100%;
               }
@@ -120,13 +123,12 @@
                   flex: 1 1 auto;
               }
         </style>
-        
     </head>
 
     <body>
-    <header class="header">
-        <img class="header__logo" src="images/Header.png" alt="header">
-    </header>
+        <header class="header">
+            <img class="header__logo" src= "@host/images/Header.png" alt="header">
+        </header>
         <div>
             @RenderBody()
         </div>
@@ -134,18 +136,18 @@
             <div class="footer">
                 <div>
                     <a target="_blank" rel="noreferrer" href="https://mon.gov.ua/">
-                        <img class="min-logo" src="images/MES.png" alt="Ministry of Education and Science of Ukraine">
+                        <img class="min-logo" src="@host/images/MES.png" alt="Ministry of Education and Science of Ukraine">
                     </a>
                     <a target="_blank" rel="noreferrer" href="https://mkip.gov.ua/">
-                        <img class="min-logo" src="images/MinCultInfoPolicy.png" alt="Ministry of Culture and Information Policy of Ukraine">
+                        <img class="min-logo" src="@host/images/MinCultInfoPolicy.png" alt="Ministry of Culture and Information Policy of Ukraine">
                     </a>
                     <a target="_blank" rel="noreferrer" href="https://sport.gov.ua/">
-                        <img class="min-logo" src="images/MinMolodSport.png" alt="Ministry of Youth and Sports of Ukraine">
+                        <img class="min-logo" src="@host/images/MinMolodSport.png" alt="Ministry of Youth and Sports of Ukraine">
                     </a>
                 </div>
                 <div class="footer-block">
                     <a target="_blank" rel="noreferrer" href="https://www.softserveinc.com/uk-ua/">
-                        <img class="company-logo" src="images/Vector.png" alt="SoftServe">
+                        <img class="company-logo" src="@host/images/Vector.png" alt="SoftServe">
                     </a>
                 </div>
             </div>
