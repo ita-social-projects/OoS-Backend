@@ -124,7 +124,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
             .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.Institution))
-            .ForMember(dest => dest.EdrpouIpn, opt => opt.MapFrom(src => src.EdrpouIpn.ToString()))
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
             .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
@@ -132,7 +131,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)));
 
         CreateMap<ProviderDto, Provider>()
-            .ForMember(dest => dest.EdrpouIpn, opt => opt.MapFrom(src => long.Parse(src.EdrpouIpn)))
             .ForMember(dest => dest.Workshops, opt => opt.Ignore())
             .ForMember(dest => dest.User, opt => opt.Ignore())
             .ForMember(dest => dest.Institution, opt => opt.Ignore())

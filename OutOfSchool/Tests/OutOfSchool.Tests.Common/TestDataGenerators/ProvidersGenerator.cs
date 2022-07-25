@@ -21,7 +21,7 @@ public static class ProvidersGenerator
         .RuleFor(x => x.Facebook, f => f.Internet.Url())
         .RuleFor(x => x.Instagram, f => f.Internet.Url())
         .RuleFor(x => x.DirectorDateOfBirth, f => f.Person.DateOfBirth)
-        .RuleFor(x => x.EdrpouIpn, _ => TestDataHelper.EdrpouIpnNumber)
+        .RuleFor(x => x.EdrpouIpn, _ => TestDataHelper.EdrpouIpnString)
         .RuleFor(x => x.PhoneNumber, f => f.Person.Phone)
         .RuleFor(x => x.Founder, f => f.Person.FullName)
         .RuleFor(x => x.Ownership, f => f.Random.ArrayElement((OwnershipType[])Enum.GetValues(typeof(OwnershipType))))

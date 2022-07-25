@@ -81,7 +81,6 @@ public static class MappingExtensions
             cfg.CreateMap<Provider, ProviderDto>()
                 .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
                 .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
-                .ForMember(dest => dest.EdrpouIpn, opt => opt.MapFrom(src => src.EdrpouIpn.ToString()))
                 .ForMember(dest => dest.Rating, opt => opt.Ignore())
                 .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
         });
@@ -191,7 +190,6 @@ public static class MappingExtensions
                     dest => dest.Name, opt =>
                         opt.MapFrom(src => src.SectionName));
             cfg.CreateMap<ProviderDto, Provider>()
-                .ForMember(dest => dest.EdrpouIpn, opt => opt.MapFrom(src => long.Parse(src.EdrpouIpn)))
                 .ForMember(dest => dest.Workshops, opt => opt.Ignore())
                 .ForMember(dest => dest.User, opt => opt.Ignore())
                 .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore());

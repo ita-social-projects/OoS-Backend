@@ -102,11 +102,6 @@ public static class TestDataHelper
     }
 
     /// <summary>
-    /// Gets random Edrpou/Ipn number.
-    /// </summary>
-    public static long EdrpouIpnNumber => long.Parse(EdrpouIpnString);
-
-    /// <summary>
     /// Gets random Edrpou/Ipn string.
     /// </summary>
     public static string EdrpouIpnString =>
