@@ -1,4 +1,3 @@
-using Microsoft.Extensions.FileProviders;
 using OutOfSchool.IdentityServer.Config.ExternalUriModels;
 
 namespace OutOfSchool.IdentityServer;

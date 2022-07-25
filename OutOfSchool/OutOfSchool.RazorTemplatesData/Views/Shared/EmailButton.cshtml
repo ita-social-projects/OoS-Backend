@@ -1,7 +1,22 @@
 @using  OutOfSchool.RazorTemplatesData.Models.Shared
 @model EmailButtonViewModel
-<a href="@Model.Url" target="_blank" style="font-size: 20px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; color: #ffffff; text-decoration: none; padding: 15px 25px; border-radius: 2px; border: 1px solid #539be2; display: inline-block;">
-    <button class="btn">
-            @Model.Text
+<a href="@Model.Url" target="_blank" 
+   style="display: inline-block;">
+    <button class="btn" style="
+        background: #3849f9;
+        color: #ffffff;
+        border: none;
+        outline: none;
+        height: 34px;
+        padding: 10px 30px;
+        margin: 16px auto;
+        border-radius: 20px;
+        font-family: 'Open Sans', sans-serif;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 13px;
+        line-height: 1;
+        cursor: pointer;">
+        @Model.Text
     </button>
 </a>
