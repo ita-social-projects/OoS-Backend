@@ -238,13 +238,6 @@ public class MappingProfile : Profile
         CreateMap<ShortUserDto, AdminDto>();
 
         CreateMap<User, ProviderAdminDto>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(c => c.Id))
-            .ForMember(dest => dest.FirstName, opt => opt.MapFrom(c => c.FirstName))
-            .ForMember(dest => dest.LastName, opt => opt.MapFrom(c => c.LastName))
-            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(c => c.MiddleName))
-            .ForMember(dest => dest.Gender, opt => opt.MapFrom(c => c.Gender))
-            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(c => c.PhoneNumber))
-            .ForMember(dest => dest.Email, opt => opt.MapFrom(c => c.Email))
             .ForMember(dest => dest.IsDeputy, opt => opt.Ignore())
             .ForMember(dest => dest.AccountStatus, m => m.Ignore());
 
@@ -297,6 +290,37 @@ public class MappingProfile : Profile
             }));
 
         CreateMap<User, ShortUserDto>();
+
+        CreateMap<BaseUserDto, User>()
+            .ForMember(dest => dest.CreatingTime, m => m.Ignore())
+            .ForMember(dest => dest.LastLogin, m => m.Ignore())
+            .ForMember(dest => dest.IsBlocked, m => m.Ignore())
+            .ForMember(dest => dest.Role, m => m.Ignore())
+            .ForMember(dest => dest.IsRegistered, m => m.Ignore())
+            .ForMember(dest => dest.IsDerived, m => m.Ignore())
+            .ForMember(dest => dest.Gender, m => m.Ignore())
+            .ForMember(dest => dest.UserName, m => m.Ignore())
+            .ForMember(dest => dest.NormalizedEmail, m => m.Ignore())
+            .ForMember(dest => dest.NormalizedUserName, m => m.Ignore())
+            .ForMember(dest => dest.EmailConfirmed, m => m.Ignore())
+            .ForMember(dest => dest.PasswordHash, m => m.Ignore())
+            .ForMember(dest => dest.SecurityStamp, m => m.Ignore())
+            .ForMember(dest => dest.ConcurrencyStamp, m => m.Ignore())
+            .ForMember(dest => dest.PhoneNumberConfirmed, m => m.Ignore())
+            .ForMember(dest => dest.TwoFactorEnabled, m => m.Ignore())
+            .ForMember(dest => dest.LockoutEnd, m => m.Ignore())
+            .ForMember(dest => dest.LockoutEnabled, m => m.Ignore())
+            .ForMember(dest => dest.AccessFailedCount, m => m.Ignore());
+
+        CreateMap<InstitutionAdmin, MinistryAdminDto>()
+            .ForMember(dest => dest.InstitutionTitle, opt => opt.MapFrom(src => src.Institution.Title))
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.User.Id))
+            .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
+            .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName))
+            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber))
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+            .ForMember(dest => dest.AccountStatus, m => m.Ignore());
 
         CreateMap<ProviderChangesLogRequest, ChangesLogFilter>()
             .ForMember(dest => dest.EntityType, opt => opt.Ignore())
