@@ -42,7 +42,7 @@ public class ChildService : IChildService
     {
         this.childRepository = childRepository ?? throw new ArgumentNullException(nameof(childRepository));
         this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
-            this.applicationRepository = applicationRepository ?? throw new ArgumentNullException(nameof(applicationRepository));
+        this.applicationRepository = applicationRepository ?? throw new ArgumentNullException(nameof(applicationRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
@@ -64,6 +64,11 @@ public class ChildService : IChildService
             childDto.ParentId = parent.Id;
         }
 
+        if (childDto.IsParent)
+        {
+            throw new ArgumentException($"Forbidden to create child which related to the parent.");
+        }
+
         childDto.Id = default;
 
         var newChild = await childRepository.Create(mapper.Map<Child>(childDto)).ConfigureAwait(false);
@@ -74,9 +79,9 @@ public class ChildService : IChildService
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<ChildDto>> GetByFilter(SearchStringFilter filter)
+    public async Task<SearchResult<ChildDto>> GetByFilter(ChildSearchFilter filter)
     {
-        filter ??= new SearchStringFilter();
+        filter ??= new ChildSearchFilter();
 
         logger.LogDebug($"Getting all Children started. Amount of children to take: {filter.Size}, skip first: {filter.From}.");
 
@@ -246,6 +251,11 @@ public class ChildService : IChildService
             throw new UnauthorizedAccessException($"User: {userId} is trying to update not his own child. Child Id = {childDto.Id}");
         }
 
+        if (child.IsParent || childDto.IsParent)
+        {
+            throw new ArgumentException($"Forbidden to update child which related to the parent.");
+        }
+
         if (childDto.ParentId != child.ParentId)
         {
             logger.LogWarning($"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{child.ParentId} was trying to update his child with not his own {nameof(Child.ParentId)}:{childDto.ParentId}.");
@@ -276,12 +286,17 @@ public class ChildService : IChildService
             throw new UnauthorizedAccessException($"User: {userId} is not authorized to delete not his own child. Child Id = {id}");
         }
 
+        if (child.IsParent)
+        {
+            throw new ArgumentException($"Forbidden to delete child which related to the parent.");
+        }
+
         await childRepository.Delete(child).ConfigureAwait(false);
 
         logger.LogDebug($"Child with Id = {id} succesfully deleted.");
     }
 
-    private static Expression<Func<Child, bool>> PredicateBuild(SearchStringFilter filter)
+    private static Expression<Func<Child, bool>> PredicateBuild(ChildSearchFilter filter)
     {
         var predicate = PredicateBuilder.True<Child>();
 
@@ -300,6 +315,11 @@ public class ChildService : IChildService
             }
 
             predicate = predicate.And(tempPredicate);
+        }
+
+        if (filter.IsParent is not null)
+        {
+            predicate = predicate.And(c => c.IsParent == filter.IsParent);
         }
 
         return predicate;

@@ -35,7 +35,7 @@ public interface IChildService
     /// <exception cref="ArgumentNullException">If one of the parameters was null.</exception>
     /// <exception cref="ArgumentException">If one of the offsetFilter's properties is negative.</exception>
     /// <exception cref="SqlException">If the database cannot execute the query.</exception>
-    Task<SearchResult<ChildDto>> GetByFilter(SearchStringFilter filter);
+    Task<SearchResult<ChildDto>> GetByFilter(ChildSearchFilter filter);
 
     /// <summary>
     /// Get a child by it's key and userId.
