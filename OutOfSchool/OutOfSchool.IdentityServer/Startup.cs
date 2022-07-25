@@ -200,11 +200,17 @@ public static class Startup
         app.UseCookiePolicy(new CookiePolicyOptions { MinimumSameSitePolicy = SameSiteMode.Lax });
 
         app.UseStaticFiles();
-        
-        app.UseStaticFiles(new StaticFileOptions {
-            FileProvider = new PhysicalFileProvider(
-                Path.Combine("", "OutOfSchool/OutOfSchool.RazorTemplatesData/wwwroot/"))
-        });
+
+        var dir = Directory.GetParent(Directory.GetCurrentDirectory());
+        if (dir is not null)
+        {
+            string fullNameDir = dir.FullName.Replace(@"\", "/");
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(fullNameDir, "OutOfSchool.RazorTemplatesData/wwwroot/")),
+            });
+        }
 
         app.UseSerilogRequestLogging();
 
