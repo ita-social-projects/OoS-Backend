@@ -58,13 +58,13 @@ public class ChatWorkshopController : ControllerBase
         IProviderAdminService providerAdminService,
         IMinistryAdminService ministryAdminService)
     {
-        this.messageService = messageService;
-        this.roomService = roomService;
-        this.validationService = validationService;
-        this.localizer = localizer;
-        this.logger = logger;
-        this.providerAdminService = providerAdminService;
-        this.ministryAdminService = ministryAdminService;
+        this.messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+        this.roomService = roomService ?? throw new ArgumentNullException(nameof(roomService));
+        this.validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
+        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.providerAdminService = providerAdminService ?? throw new ArgumentNullException(nameof(providerAdminService));
+        this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
     }
 
     /// <summary>
