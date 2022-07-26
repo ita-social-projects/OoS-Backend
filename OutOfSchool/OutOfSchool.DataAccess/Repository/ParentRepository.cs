@@ -34,7 +34,7 @@ public class ParentRepository : EntityRepositoryBase<Guid, Parent>, IParentRepos
 
         var child = new Child()
         {
-            Id = default,
+            Id = Guid.Empty,
             IsParent = true,
             FirstName = user.FirstName,
             MiddleName = user.MiddleName,
