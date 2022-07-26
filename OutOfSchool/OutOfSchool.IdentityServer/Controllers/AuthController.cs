@@ -350,6 +350,7 @@ public class AuthController : Controller
             FirstName = model.FirstName,
             LastName = model.LastName,
             MiddleName = model.MiddleName,
+            Gender = model.Gender,
             Email = model.Email,
             PhoneNumber = model.PhoneNumber,
             CreatingTime = DateTimeOffset.UtcNow,

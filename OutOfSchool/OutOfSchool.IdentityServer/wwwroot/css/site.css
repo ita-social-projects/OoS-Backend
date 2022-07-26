@@ -371,6 +371,14 @@ a {
   display: block;
 }
 
+.registration_gender {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
 .registration_phone {
   display: flex;
   align-items: center;

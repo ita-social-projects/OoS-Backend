@@ -187,7 +187,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(s => s.User.PhoneNumber))
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(s => s.User.LastName))
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(s => s.User.MiddleName))
-            .ForMember(dest => dest.FirstName, opt => opt.MapFrom(s => s.User.FirstName));
+            .ForMember(dest => dest.FirstName, opt => opt.MapFrom(s => s.User.FirstName))
+            .ForMember(dest => dest.Gender, opt => opt.MapFrom(s => s.User.Gender));
 
         CreateMap<CompanyInformationItem, CompanyInformationItemDto>().ReverseMap();
         CreateMap<CompanyInformation, CompanyInformationDto>().ReverseMap();
@@ -241,6 +242,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.FirstName, opt => opt.MapFrom(c => c.FirstName))
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(c => c.LastName))
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(c => c.MiddleName))
+            .ForMember(dest => dest.Gender, opt => opt.MapFrom(c => c.Gender))
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(c => c.PhoneNumber))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(c => c.Email))
             .ForMember(dest => dest.IsDeputy, opt => opt.Ignore())

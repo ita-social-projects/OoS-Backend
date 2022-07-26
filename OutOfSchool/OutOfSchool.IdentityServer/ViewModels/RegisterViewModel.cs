@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Common;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.IdentityServer.ViewModels;
 
@@ -25,6 +26,10 @@ public class RegisterViewModel
         Constants.NameRegexViewModel,
         ErrorMessage = Constants.NameErrorMessage)]
     public string MiddleName { get; set; }
+
+    [Required(ErrorMessage = "Gender is required")]
+    [EnumDataType(typeof(Gender), ErrorMessage = Constants.EnumErrorMessage)]
+    public Gender Gender { get; set; }
 
     [Required(ErrorMessage = "Password is required")]
     [RegularExpression(

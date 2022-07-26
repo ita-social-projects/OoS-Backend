@@ -4,6 +4,7 @@ using System.Globalization;
 using AutoMapper;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Tests.Common.TestDataGenerators;
@@ -161,6 +162,7 @@ public class MappingExtensionsTests
             Assert.AreEqual(chatRoom.Parent.User.FirstName, result.Parent.FirstName);
             Assert.AreEqual(chatRoom.Parent.User.Email, result.Parent.Email);
             Assert.AreEqual(chatRoom.Parent.User.PhoneNumber, result.Parent.PhoneNumber);
+            Assert.AreEqual(chatRoom.Parent.User.Gender, result.Parent.Gender);
         });
     }
 
@@ -192,6 +194,7 @@ public class MappingExtensionsTests
                 FirstName = "Jack",
                 MiddleName = "Pirate",
                 LastName = "Sparrow",
+                Gender = Gender.Male,
             },
             Workshop = new WorkshopInfoForChatList()
             {
@@ -228,6 +231,7 @@ public class MappingExtensionsTests
             Assert.AreEqual(chatRoom.Parent.FirstName, result.Parent.FirstName);
             Assert.AreEqual(chatRoom.Parent.Email, result.Parent.Email);
             Assert.AreEqual(chatRoom.Parent.PhoneNumber, result.Parent.PhoneNumber);
+            Assert.AreEqual(chatRoom.Parent.Gender, result.Parent.Gender);
             Assert.AreEqual(chatRoom.NotReadByCurrentUserMessagesCount, result.NotReadByCurrentUserMessagesCount);
             Assert.AreEqual(chatRoom.LastMessage.Text, result.LastMessage.Text);
         });
@@ -292,6 +296,7 @@ public class MappingExtensionsTests
                     CoverImageId = "Image",
                     DateOfBirth = DateTime.Parse("1990-01-01"),
                     WorkshopId = new Guid("3a217d24-4945-477b-9381-e9ee8dc1f338"),
+                    Gender = Gender.Male,
                 },
                 new TeacherDTO
                 {
@@ -303,6 +308,7 @@ public class MappingExtensionsTests
                     CoverImageId = "Image",
                     DateOfBirth = DateTime.Parse("1990-01-01"),
                     WorkshopId = new Guid("3a217d24-4945-477b-9381-e9ee8dc1f338"),
+                    Gender = Gender.Female,
                 },
             },
             Keywords = new List<string>()

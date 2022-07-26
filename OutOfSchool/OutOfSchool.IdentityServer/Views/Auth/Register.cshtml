@@ -1,6 +1,8 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.AspNetCore.Mvc.TagHelpers
 @using OutOfSchool.IdentityServer
+@using OutOfSchool.Services.Enums
 
 @inject IHtmlLocalizer<SharedResource> SharedLocalizer
 
@@ -81,6 +83,18 @@
                             id="middle_name">
                         <div>
                             <span asp-validation-for="MiddleName"></span>
+                        </div>
+                    </li>
+                    <li class="registration_item">
+                        <label class="registration_label" asp-for="Gender">
+                            @SharedLocalizer["Gender"]<span class="registration_star">*</span>
+                        </label>
+                        <div class="registration_gender">
+                            <input type="radio" asp-for="Gender" id="gender_female" value="@Gender.Male"/><label>@SharedLocalizer["Gender Male"]</label>
+                            <input type="radio" asp-for="Gender" id="gender_male" value="@Gender.Female"/><label>@SharedLocalizer["Gender Female"]</label>
+                        </div>
+                        <div>
+                            <span asp-validation-for="Gender"></span>
                         </div>
                     </li>
                     <li class="registration_item">
