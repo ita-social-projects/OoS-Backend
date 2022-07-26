@@ -44,4 +44,6 @@ public class WorkshopFilterES
     public decimal Longitude { get; set; } = 0;
 
     public IReadOnlyCollection<WorkshopStatus> Statuses { get; set; } = new List<WorkshopStatus>();
+    public bool IsStrictAge { get; set; } = false;
+    public bool IsStrictWorkdays { get; set; } = false;
 }
