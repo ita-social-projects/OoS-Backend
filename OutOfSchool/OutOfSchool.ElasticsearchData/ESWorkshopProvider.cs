@@ -1,11 +1,11 @@
-﻿using Nest;
-using OutOfSchool.Common;
-using OutOfSchool.ElasticsearchData.Enums;
-using OutOfSchool.ElasticsearchData.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nest;
+using OutOfSchool.Common;
+using OutOfSchool.ElasticsearchData.Enums;
+using OutOfSchool.ElasticsearchData.Models;
 
 namespace OutOfSchool.ElasticsearchData;
 
