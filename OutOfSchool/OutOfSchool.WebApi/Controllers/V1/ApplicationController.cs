@@ -352,6 +352,7 @@ public class ApplicationController : ControllerBase
     /// Check if exists an any application with approve status in workshop for parent.
     /// </summary>
     /// <param name="parentId">Parent's key.</param>
+    /// <param name="workshopId">Workshop's key.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     /// <response code="200">Entity was updated and returned.</response>
     /// <response code="401">If the user is not authorized.</response>
@@ -361,9 +362,9 @@ public class ApplicationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
-    public async Task<IActionResult> AllowedToReview(Guid parentId)
+    public async Task<IActionResult> AllowedToReview(Guid parentId, Guid workshopId)
     {
-        return Ok(await applicationService.AllowedToReview(parentId).ConfigureAwait(false));
+        return Ok(await applicationService.AllowedToReview(parentId, workshopId).ConfigureAwait(false));
     }
 
     private async Task<SearchResult<ApplicationDto>> GetByWorkshopId(Guid id, ApplicationFilter filter)
