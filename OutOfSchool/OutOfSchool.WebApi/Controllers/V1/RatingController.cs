@@ -39,6 +39,20 @@ public class RatingController : ControllerBase
     }
 
     /// <summary>
+    /// Check if exists an any rewiewed application in workshop for parent.
+    /// </summary>
+    /// <returns>List of all ratings.</returns>
+    [HasPermission(Permissions.RatingRead)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet]
+    public async Task<IActionResult> IsReviewed(Guid parentId, Guid workshopId)
+    {
+        return Ok(await ratingService.IsReviewed(parentId, workshopId).ConfigureAwait(false));
+    }
+
+    /// <summary>
     /// Get all ratings from the database.
     /// </summary>
     /// <returns>List of all ratings.</returns>

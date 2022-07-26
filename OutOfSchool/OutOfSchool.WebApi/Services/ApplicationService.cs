@@ -480,6 +480,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
         return recipientIds.Distinct();
     }
 
+    /// <inheritdoc/>
     public async Task<bool> AllowedNewApplicationByChildStatus(Guid workshopId, Guid childId)
     {
         var forbiddenStatuses = new[]
