@@ -41,7 +41,9 @@ public class RatingController : ControllerBase
     /// <summary>
     /// Check if exists an any rewiewed application in workshop for parent.
     /// </summary>
-    /// <returns>List of all ratings.</returns>
+    /// <param name="parentId">Parent's id.</param>
+    /// <param name="workshopId">Workshop's id.</param>
+    /// <returns>Result of checking.</returns>
     [HasPermission(Permissions.RatingRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
