@@ -19,6 +19,11 @@ public class AllAddressPartsDto : CodeficatorAddressDto
 
     private string GetFullAddress(CodeficatorDto codeficator, string address, bool isEndPointAddressItem = false)
     {
+        if (codeficator == null)
+        {
+            return address;
+        }
+
         FillAddressPart(codeficator, isEndPointAddressItem);
 
         address += (address.Length == 0 ? string.Empty : Constants.AddressSeparator) + codeficator.Name;
