@@ -1,6 +1,7 @@
 ﻿using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Services.Strategies;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -9,7 +10,7 @@ public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopSer
     public WorkshopServicesCombinerV2(
         IWorkshopService workshopService,
         IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService,
-        ILogger<WorkshopServicesCombiner> logger,
+        ILogger<WorkshopESStrategy> logger,
         IElasticsearchSynchronizationService elasticsearchSynchronizationService,
         INotificationService notificationService,
         IEntityRepository<long, Favorite> favoriteRepository,
