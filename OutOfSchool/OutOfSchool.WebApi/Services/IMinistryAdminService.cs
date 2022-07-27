@@ -5,7 +5,6 @@ namespace OutOfSchool.WebApi.Services;
 
 public interface IMinistryAdminService
 {
-
     /// <summary>
     /// Get entity by User id.
     /// </summary>

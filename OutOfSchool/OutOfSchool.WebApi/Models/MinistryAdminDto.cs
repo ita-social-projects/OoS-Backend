@@ -13,6 +13,6 @@ public class MinistryAdminDto : BaseUserDto
     [Required(ErrorMessage = "Gender is required")]
     [EnumDataType(typeof(Gender), ErrorMessage = Constants.EnumErrorMessage)]
     public Gender Gender { get; set; }
-    
+
     public string InstitutionTitle { get; set; }
 }
