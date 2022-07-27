@@ -310,7 +310,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.TwoFactorEnabled, m => m.Ignore())
             .ForMember(dest => dest.LockoutEnd, m => m.Ignore())
             .ForMember(dest => dest.LockoutEnabled, m => m.Ignore())
-            .ForMember(dest => dest.AccessFailedCount, m => m.Ignore());
+            .ForMember(dest => dest.AccessFailedCount, m => m.Ignore())
+            .ForMember(dest => dest.MustChangePassword, m => m.Ignore());
 
         CreateMap<InstitutionAdmin, MinistryAdminDto>()
             .ForMember(dest => dest.InstitutionTitle, opt => opt.MapFrom(src => src.Institution.Title))
@@ -320,7 +321,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName))
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
-            .ForMember(dest => dest.AccountStatus, m => m.Ignore());
+            .ForMember(dest => dest.AccountStatus, m => m.Ignore())
+            .ForMember(dest => dest.Gender, m => m.Ignore());
 
         CreateMap<ProviderChangesLogRequest, ChangesLogFilter>()
             .ForMember(dest => dest.EntityType, opt => opt.Ignore())
