@@ -19,6 +19,14 @@ public interface IRatingService
     Task<RatingDto> Create(RatingDto dto);
 
     /// <summary>
+    /// Check if exists an any rewiewed application in workshop for parent.
+    /// </summary>
+    /// <param name="parentId">Parent's key.</param>
+    /// <param name="workshopId">Workshop's key.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    Task<bool> IsReviewed(Guid parentId, Guid workshopId);
+
+    /// <summary>
     /// Get all rating entities.
     /// </summary>
     /// <returns>List of all rating records.</returns>

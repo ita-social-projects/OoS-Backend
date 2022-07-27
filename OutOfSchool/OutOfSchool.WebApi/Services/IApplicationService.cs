@@ -115,8 +115,9 @@ public interface IApplicationService
     /// Check if exists an any application with approve status in workshop for parent.
     /// </summary>
     /// <param name="parentId">Parent's key.</param>
+    /// <param name="workshopId">Workshop's key.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains <see langword="true" /> if exists an any application with approve status in workshop for parent;
     /// otherwise, <see langword="false" />.</returns>
-    Task<bool> AllowedToReview(Guid parentId);
+    Task<bool> AllowedToReview(Guid parentId, Guid workshopId);
 }

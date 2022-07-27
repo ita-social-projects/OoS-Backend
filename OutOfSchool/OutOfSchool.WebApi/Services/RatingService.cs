@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Nest;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -48,6 +49,14 @@ public class RatingService : IRatingService
         this.parentRepository = parentRepository;
         this.logger = logger;
         this.localizer = localizer;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> IsReviewed(Guid parentId, Guid workshopId)
+    {
+        return await ratingRepository.Any(rating => rating.ParentId == parentId
+            && rating.Type == RatingType.Workshop
+            && rating.EntityId == workshopId).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
