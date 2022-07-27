@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
@@ -34,6 +35,7 @@ public class ChatRoomWorkshopServiceTests
     private IEntityRepository<Guid, ChatRoomWorkshop> roomRepository;
     private Mock<IChatRoomWorkshopModelForChatListRepository> roomWithSpecialModelRepositoryMock;
     private Mock<ILogger<ChatRoomWorkshopService>> loggerMock;
+    private Mock<IMapper> mapperMock;
 
     private DbContextOptions<OutOfSchoolDbContext> options;
     private OutOfSchoolDbContext dbContext;
@@ -83,8 +85,13 @@ public class ChatRoomWorkshopServiceTests
         roomRepository = new EntityRepository<Guid, ChatRoomWorkshop>(dbContext);
         roomWithSpecialModelRepositoryMock = new Mock<IChatRoomWorkshopModelForChatListRepository>();
         loggerMock = new Mock<ILogger<ChatRoomWorkshopService>>();
+        mapperMock = new Mock<IMapper>();
 
-        roomService = new ChatRoomWorkshopService(roomRepository, loggerMock.Object, roomWithSpecialModelRepositoryMock.Object);
+        roomService = new ChatRoomWorkshopService(
+            roomRepository,
+            loggerMock.Object,
+            roomWithSpecialModelRepositoryMock.Object,
+            mapperMock.Object);
 
         SeedDatabase();
     }

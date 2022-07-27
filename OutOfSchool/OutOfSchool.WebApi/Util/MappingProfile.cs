@@ -14,6 +14,7 @@ using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Achievement;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Models.Changes;
+using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Models.Codeficator;
 using OutOfSchool.WebApi.Models.Notifications;
 using OutOfSchool.WebApi.Models.Providers;
@@ -352,5 +353,13 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Teachers, opt => opt.Ignore());
 
         CreateMap<ProviderAdmin, ProviderAdminProviderRelationDto>();
+
+        CreateMap<ChatMessageWorkshop, ChatMessageWorkshopDto>().ReverseMap();
+        CreateMap<ChatRoomWorkshop, ChatRoomWorkshopDto>();
+        CreateMap<Workshop, WorkshopInfoForChatListDto>();
+        CreateMap<ChatRoomWorkshopForChatList, ChatRoomWorkshopDtoWithLastMessage>();
+        CreateMap<WorkshopInfoForChatList, WorkshopInfoForChatListDto>();
+        CreateMap<ParentInfoForChatList, ParentDtoWithContactInfo>();
+        CreateMap<ChatMessageInfoForChatList, ChatMessageWorkshopDto>();
     }
 }

@@ -14,40 +14,6 @@ public static class MappingExtensions
 {
     #region ToModel
 
-    public static ChatMessageWorkshopDto ToModel(this ChatMessageWorkshop chatMessage)
-    {
-        return Mapper<ChatMessageWorkshop, ChatMessageWorkshopDto>(chatMessage, cfg => { cfg.CreateMap<ChatMessageWorkshop, ChatMessageWorkshopDto>(); });
-    }
-
-    public static ChatRoomWorkshopDto ToModel(this ChatRoomWorkshop chatRoom)
-    {
-        return Mapper<ChatRoomWorkshop, ChatRoomWorkshopDto>(chatRoom, cfg =>
-        {
-            cfg.CreateMap<ChatRoomWorkshop, ChatRoomWorkshopDto>();
-            cfg.CreateMap<Workshop, WorkshopInfoForChatListDto>();
-            cfg.CreateMap<Parent, ParentDtoWithContactInfo>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(p => p.Id))
-                .ForMember(dest => dest.UserId, opt => opt.MapFrom(p => p.UserId))
-                .ForMember(dest => dest.Email, opt => opt.MapFrom(p => p.User.Email))
-                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(p => p.User.PhoneNumber))
-                .ForMember(dest => dest.LastName, opt => opt.MapFrom(p => p.User.LastName))
-                .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(p => p.User.MiddleName))
-                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(p => p.User.FirstName))
-                .ForMember(dest => dest.Gender, opt => opt.MapFrom(p => p.User.Gender));
-        });
-    }
-
-    public static ChatRoomWorkshopDtoWithLastMessage ToModel(this ChatRoomWorkshopForChatList chatRoom)
-    {
-        return Mapper<ChatRoomWorkshopForChatList, ChatRoomWorkshopDtoWithLastMessage>(chatRoom, cfg =>
-        {
-            cfg.CreateMap<ChatRoomWorkshopForChatList, ChatRoomWorkshopDtoWithLastMessage>();
-            cfg.CreateMap<WorkshopInfoForChatList, WorkshopInfoForChatListDto>();
-            cfg.CreateMap<ParentInfoForChatList, ParentDtoWithContactInfo>();
-            cfg.CreateMap<ChatMessageInfoForChatList, ChatMessageWorkshopDto>();
-        });
-    }
-
     public static CityDto ToModel(this City city)
     {
         return Mapper<City, CityDto>(city, cfg => { cfg.CreateMap<City, CityDto>(); });
@@ -148,11 +114,6 @@ public static class MappingExtensions
     #endregion
 
     #region ToDomain
-
-    public static ChatMessageWorkshop ToDomain(this ChatMessageWorkshopDto chatMessageDTO)
-    {
-        return Mapper<ChatMessageWorkshopDto, ChatMessageWorkshop>(chatMessageDTO, cfg => { cfg.CreateMap<ChatMessageWorkshopDto, ChatMessageWorkshop>(); });
-    }
 
     public static City ToDomain(this CityDto cityDto)
     {
