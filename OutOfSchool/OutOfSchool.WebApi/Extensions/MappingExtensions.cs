@@ -14,11 +14,6 @@ public static class MappingExtensions
 {
     #region ToModel
 
-    public static AddressDto ToModel(this Address address)
-    {
-        return Mapper<Address, AddressDto>(address, cfg => { cfg.CreateMap<Address, AddressDto>(); });
-    }
-
     public static ChatMessageWorkshopDto ToModel(this ChatMessageWorkshop chatMessage)
     {
         return Mapper<ChatMessageWorkshop, ChatMessageWorkshopDto>(chatMessage, cfg => { cfg.CreateMap<ChatMessageWorkshop, ChatMessageWorkshopDto>(); });
@@ -153,11 +148,6 @@ public static class MappingExtensions
     #endregion
 
     #region ToDomain
-
-    public static Address ToDomain(this AddressDto addressDto)
-    {
-        return Mapper<AddressDto, Address>(addressDto, cfg => { cfg.CreateMap<AddressDto, Address>(); });
-    }
 
     public static ChatMessageWorkshop ToDomain(this ChatMessageWorkshopDto chatMessageDTO)
     {
