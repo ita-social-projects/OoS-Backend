@@ -364,5 +364,27 @@ public class MappingProfile : Profile
 
         CreateMap<City, CityDto>().ReverseMap();
         CreateMap<Favorite, FavoriteDto>().ReverseMap();
+
+        CreateMap<ApplicationDto, ParentCard>()
+            .ForMember(dest => dest.ApplicationId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.ProviderId, opt => opt.MapFrom(src => src.Workshop.ProviderId))
+            .ForMember(dest => dest.ProviderTitle, opt => opt.MapFrom(src => src.Workshop.ProviderTitle))
+            .ForMember(dest => dest.ProviderOwnership, opt => opt.MapFrom(src => src.Workshop.ProviderOwnership))
+            .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => src.Workshop.Rating))
+            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Workshop.Title))
+            .ForMember(dest => dest.PayRate, opt => opt.MapFrom(src => src.Workshop.PayRate))
+            .ForMember(dest => dest.MaxAge, opt => opt.MapFrom(src => src.Workshop.MaxAge))
+            .ForMember(dest => dest.MinAge, opt => opt.MapFrom(src => src.Workshop.MinAge))
+            .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Workshop.Price))
+            .ForMember(dest => dest.DirectionId, opt => opt.MapFrom(src => src.Workshop.DirectionId))
+            .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Workshop.Address))
+            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionHierarchyId, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore())
+            .ForMember(dest => dest.Institution, opt => opt.Ignore())
+            .ForMember(dest => dest.DirectionsId, opt => opt.Ignore())
+            .ForMember(dest => dest.WithDisabilityOptions, opt => opt.Ignore())
+            .ForMember(dest => dest.AvailableSeats, opt => opt.Ignore())
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore());
     }
 }

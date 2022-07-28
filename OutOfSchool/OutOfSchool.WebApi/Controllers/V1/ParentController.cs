@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -24,6 +25,7 @@ public class ParentController : ControllerBase
     private readonly IApplicationService serviceApplication;
     private readonly IChildService serviceChild;
     private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ParentController"/> class.
@@ -33,12 +35,19 @@ public class ParentController : ControllerBase
     /// <param name="serviceApplication">Application service for ParentController.</param>
     /// <param name="serviceChild">Child service for ParentController.</param>
     /// <param name="localizer">Localizer.</param>
-    public ParentController(IParentService serviceParent, IApplicationService serviceApplication, IChildService serviceChild, IStringLocalizer<SharedResource> localizer)
+    /// <param name="mapper">Mapper.</param>
+    public ParentController(
+        IParentService serviceParent,
+        IApplicationService serviceApplication,
+        IChildService serviceChild,
+        IStringLocalizer<SharedResource> localizer,
+        IMapper mapper)
     {
-        this.localizer = localizer;
-        this.serviceParent = serviceParent;
-        this.serviceApplication = serviceApplication;
-        this.serviceChild = serviceChild;
+        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        this.serviceParent = serviceParent ?? throw new ArgumentNullException(nameof(serviceParent));
+        this.serviceApplication = serviceApplication ?? throw new ArgumentNullException(nameof(serviceApplication));
+        this.serviceChild = serviceChild ?? throw new ArgumentNullException(nameof(serviceChild));
     }
 
     /// <summary>
@@ -106,10 +115,7 @@ public class ParentController : ControllerBase
             {
                 var applications = await serviceApplication.GetAllByChild(child.Id).ConfigureAwait(false);
 
-                foreach (var application in applications)
-                {
-                    cards.Add(application.ToCard());
-                }
+                cards.AddRange(applications.Select(application => mapper.Map<ParentCard>(application)));
             }
 
             return Ok(cards);

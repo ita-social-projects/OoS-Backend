@@ -14,13 +14,6 @@ public static class MappingExtensions
 {
     #region ToModel
 
-    public static ParentDTO ToModel(this Parent parent)
-    {
-        var parentDto =
-            Mapper<Parent, ParentDTO>(parent, cfg => { cfg.CreateMap<Parent, ParentDTO>(); });
-        return parentDto;
-    }
-
     public static ProviderDto ToModel(this Provider provider)
     {
         return Mapper<Provider, ProviderDto>(provider, cfg =>
@@ -105,13 +98,6 @@ public static class MappingExtensions
 
     #region ToDomain
 
-    public static Parent ToDomain(this ParentDTO parentDto)
-    {
-        var parent =
-            Mapper<ParentDTO, Parent>(parentDto, cfg => { cfg.CreateMap<ParentDTO, Parent>(); });
-        return parent;
-    }
-
     public static Provider ToDomain(this ProviderDto providerDto)
     {
         return Mapper<ProviderDto, Provider>(providerDto, cfg =>
@@ -184,29 +170,6 @@ public static class MappingExtensions
     #endregion
 
     #region ToCard
-
-    public static ParentCard ToCard(this ApplicationDto applicationDTO)
-    {
-        return Mapper<ApplicationDto, ParentCard>(applicationDTO, cfg =>
-        {
-            cfg.CreateMap<ApplicationDto, ParentCard>()
-                .ForMember(dest => dest.ApplicationId, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.ChildId, opt => opt.MapFrom(src => src.ChildId))
-                .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(src => src.WorkshopId))
-                .ForMember(dest => dest.ProviderId, opt => opt.MapFrom(src => src.Workshop.ProviderId))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-                .ForMember(dest => dest.ProviderTitle, opt => opt.MapFrom(src => src.Workshop.ProviderTitle))
-                .ForMember(dest => dest.ProviderOwnership, opt => opt.MapFrom(src => src.Workshop.ProviderOwnership))
-                .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => src.Workshop.Rating))
-                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Workshop.Title))
-                .ForMember(dest => dest.PayRate, opt => opt.MapFrom(src => src.Workshop.PayRate))
-                .ForMember(dest => dest.MaxAge, opt => opt.MapFrom(src => src.Workshop.MaxAge))
-                .ForMember(dest => dest.MinAge, opt => opt.MapFrom(src => src.Workshop.MinAge))
-                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Workshop.Price))
-                .ForMember(dest => dest.DirectionId, opt => opt.MapFrom(src => src.Workshop.DirectionId))
-                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Workshop.Address));
-        });
-    }
 
     public static WorkshopCard ToCardDto(this WorkshopDTO workshopDTO)
     {
