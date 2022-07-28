@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using H3Lib;
 using H3Lib.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ public class CityService : ICityService
     private readonly IEntityRepository<long, City> repository;
     private readonly ILogger<CityService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CityService"/> class.
@@ -30,11 +32,13 @@ public class CityService : ICityService
     /// <param name="repository">Repository.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
-    public CityService(IEntityRepository<long, City> repository, ILogger<CityService> logger, IStringLocalizer<SharedResource> localizer)
+    /// <param name="mapper">Mapper.</param>
+    public CityService(IEntityRepository<long, City> repository, ILogger<CityService> logger, IStringLocalizer<SharedResource> localizer, IMapper mapper)
     {
-        this.localizer = localizer;
-        this.repository = repository;
-        this.logger = logger;
+        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
@@ -48,7 +52,7 @@ public class CityService : ICityService
             ? "City table is empty."
             : $"All {cities.Count()} records were successfully received from the City table");
 
-        return cities.Select(city => city.ToModel()).ToList();
+        return cities.Select(city => mapper.Map<CityDto>(city)).ToList();
     }
 
     /// <inheritdoc/>
@@ -67,7 +71,7 @@ public class CityService : ICityService
 
         logger.LogInformation($"Successfully got a City with Id = {id}.");
 
-        return city.ToModel();
+        return mapper.Map<CityDto>(city);
     }
 
     /// <inheritdoc/>
@@ -81,7 +85,7 @@ public class CityService : ICityService
             ? "City table is empty."
             : $"All {cities.Count()} records were successfully received from the City table");
 
-        return cities.Select(city => city.ToModel()).ToList();
+        return cities.Select(city => mapper.Map<CityDto>(city)).ToList();
     }
 
     /// <inheritdoc/>
@@ -116,8 +120,7 @@ public class CityService : ICityService
             })
             .OrderBy(p => p.Distance)
             .Select(c => c.city)
-            .FirstOrDefault()
-            .ToModel();
+            .FirstOrDefault();
 
         string currentFilterText = $"(Latitude = {filter.Latitude}, Longitude = {filter.Longitude})";
 
@@ -125,7 +128,7 @@ public class CityService : ICityService
             ? $"There is no the nearest city for the filter {currentFilterText}."
             : $"The nearest city for the filter {currentFilterText} was successfully received.");
 
-        return nearestCity;
+        return mapper.Map<CityDto>(nearestCity);
     }
 
     /// <inheritdoc/>
@@ -133,13 +136,13 @@ public class CityService : ICityService
     {
         logger.LogInformation("City creating was started.");
 
-        var city = dto.ToDomain().AddGeoHash();
+        var city = mapper.Map<City>(dto).AddGeoHash();
 
         var newCity = await repository.Create(city).ConfigureAwait(false);
 
         logger.LogInformation($"City with Id = {newCity?.Id} created successfully.");
 
-        return newCity.ToModel();
+        return mapper.Map<CityDto>(newCity);
     }
 
     /// <inheritdoc/>
@@ -149,13 +152,13 @@ public class CityService : ICityService
 
         try
         {
-            var city = dto.ToDomain().AddGeoHash();
+            var city = mapper.Map<City>(dto).AddGeoHash();
 
             var updatedCity = await repository.Update(city).ConfigureAwait(false);
 
             logger.LogInformation($"City with Id = {updatedCity?.Id} updated succesfully.");
 
-            return updatedCity.ToModel();
+            return mapper.Map<CityDto>(updatedCity);
         }
         catch (DbUpdateConcurrencyException)
         {

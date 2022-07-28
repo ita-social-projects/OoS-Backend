@@ -361,5 +361,7 @@ public class MappingProfile : Profile
         CreateMap<WorkshopInfoForChatList, WorkshopInfoForChatListDto>();
         CreateMap<ParentInfoForChatList, ParentDtoWithContactInfo>();
         CreateMap<ChatMessageInfoForChatList, ChatMessageWorkshopDto>();
+
+        CreateMap<City, CityDto>().ReverseMap();
     }
 }
