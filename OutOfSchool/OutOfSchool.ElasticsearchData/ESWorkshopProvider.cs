@@ -133,13 +133,13 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
 
             ageQuery = new NumericRangeQuery()
             {
-                Field = filter.IsConcreteRangeAge ? Infer.Field<WorkshopES>(w => w.MinAge) : Infer.Field<WorkshopES>(w => w.MaxAge),
+                Field = filter.IsAppropriateAge  ? Infer.Field<WorkshopES>(w => w.MinAge) : Infer.Field<WorkshopES>(w => w.MaxAge),
                 GreaterThanOrEqualTo = filter.MinAge,
             };
 
             ageQuery &= new NumericRangeQuery()
             {
-                Field = filter.IsConcreteRangeAge ? Infer.Field<WorkshopES>(w => w.MaxAge) : Infer.Field<WorkshopES>(w => w.MinAge),
+                Field = filter.IsAppropriateAge  ? Infer.Field<WorkshopES>(w => w.MaxAge) : Infer.Field<WorkshopES>(w => w.MinAge),
                 LessThanOrEqualTo = filter.MaxAge,
             };
 
