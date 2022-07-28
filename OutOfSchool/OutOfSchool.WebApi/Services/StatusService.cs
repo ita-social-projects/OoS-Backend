@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -21,6 +22,7 @@ public class StatusService : IStatusService
     private readonly IEntityRepository<long, InstitutionStatus> repository;
     private readonly ILogger<StatusService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StatusService"/> class.
@@ -28,11 +30,17 @@ public class StatusService : IStatusService
     /// <param name="repository">Repository.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
-    public StatusService(IEntityRepository<long, InstitutionStatus> repository, ILogger<StatusService> logger, IStringLocalizer<SharedResource> localizer)
+    /// <param name="mapper">Mapper.</param>
+    public StatusService(
+        IEntityRepository<long, InstitutionStatus> repository,
+        ILogger<StatusService> logger,
+        IStringLocalizer<SharedResource> localizer,
+        IMapper mapper)
     {
-        this.localizer = localizer;
-        this.repository = repository;
-        this.logger = logger;
+        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
 
@@ -47,7 +55,7 @@ public class StatusService : IStatusService
             ? "InstitutionStatus table is empty."
             : $"All {institutionStatuses.Count()} records were successfully received from the InstitutionStatus table");
 
-        return institutionStatuses.Select(institutionStatus => institutionStatus.ToModel()).ToList();
+        return institutionStatuses.Select(institutionStatus => mapper.Map<InstitutionStatusDTO>(institutionStatus)).ToList();
     }
 
     /// <inheritdoc/>
@@ -66,7 +74,7 @@ public class StatusService : IStatusService
 
         logger.LogInformation($"Successfully got a institutionStatus with Id = {id}.");
 
-        return institutionStatus.ToModel();
+        return mapper.Map<InstitutionStatusDTO>(institutionStatus);
     }
 
     /// <inheritdoc/>
@@ -74,13 +82,13 @@ public class StatusService : IStatusService
     {
         logger.LogInformation("InstitutionStatus creating was started.");
 
-        var institutionStatus = dto.ToDomain();
+        var institutionStatus = mapper.Map<InstitutionStatus>(dto);
 
         var newInstitutionStatus = await repository.Create(institutionStatus).ConfigureAwait(false);
 
         logger.LogInformation($"InstitutionStatus with Id = {newInstitutionStatus?.Id} created successfully.");
 
-        return newInstitutionStatus.ToModel();
+        return mapper.Map<InstitutionStatusDTO>(newInstitutionStatus);
     }
 
     /// <inheritdoc/>
@@ -90,11 +98,11 @@ public class StatusService : IStatusService
 
         try
         {
-            var institutionStatus = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+            var institutionStatus = await repository.Update(mapper.Map<InstitutionStatus>(dto)).ConfigureAwait(false);
 
             logger.LogInformation($"InstitutionStatus with Id = {institutionStatus?.Id} updated succesfully.");
 
-            return institutionStatus.ToModel();
+            return mapper.Map<InstitutionStatusDTO>(institutionStatus);
         }
         catch (DbUpdateConcurrencyException)
         {

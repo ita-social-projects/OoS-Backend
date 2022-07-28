@@ -14,11 +14,6 @@ public static class MappingExtensions
 {
     #region ToModel
 
-    public static InstitutionStatusDTO ToModel(this InstitutionStatus status)
-    {
-        return Mapper<InstitutionStatus, InstitutionStatusDTO>(status, cfg => { cfg.CreateMap<InstitutionStatus, InstitutionStatusDTO>(); });
-    }
-
     public static PermissionsForRoleDTO ToModel(this PermissionsForRole permissionsForRole)
     {
         return Mapper<PermissionsForRole, PermissionsForRoleDTO>(permissionsForRole, cfg =>
@@ -53,11 +48,6 @@ public static class MappingExtensions
     #endregion
 
     #region ToDomain
-
-    public static InstitutionStatus ToDomain(this InstitutionStatusDTO statusDTO)
-    {
-        return Mapper<InstitutionStatusDTO, InstitutionStatus>(statusDTO, cfg => { cfg.CreateMap<InstitutionStatusDTO, InstitutionStatus>(); });
-    }
 
     public static PermissionsForRole ToDomain(this PermissionsForRoleDTO permissionsDTO)
     {

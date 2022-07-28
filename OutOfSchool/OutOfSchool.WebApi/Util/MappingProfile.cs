@@ -392,5 +392,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.LastName, opt => opt.Ignore());
         CreateMap<RatingDto, Rating>()
             .ForMember(dest => dest.Parent, opt => opt.Ignore());
+
+        CreateMap<InstitutionStatus, InstitutionStatusDTO>().ReverseMap();
     }
 }
