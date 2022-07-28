@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,7 @@ public class UserServiceTest
     private IUserService service;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<UserService>> logger;
+    private IMapper mapper;
 
     [SetUp]
     public void SetUp()
@@ -39,7 +41,9 @@ public class UserServiceTest
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         repo = new EntityRepository<string, User>(context);
         logger = new Mock<ILogger<UserService>>();
-        service = new UserService(repo, logger.Object, localizer.Object);
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<Util.MappingProfile>());
+        mapper = config.CreateMapper();
+        service = new UserService(repo, logger.Object, localizer.Object, mapper);
 
         SeedDatabase();
     }

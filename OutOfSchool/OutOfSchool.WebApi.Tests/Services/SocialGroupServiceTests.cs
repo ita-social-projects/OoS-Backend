@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -24,6 +25,7 @@ public class SocialGroupServiceTests
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<SocialGroupService>> logger;
     private DbContextOptions<OutOfSchoolDbContext> options;
+    private IMapper mapper;
 
     [SetUp]
     public void SetUp()
@@ -37,7 +39,9 @@ public class SocialGroupServiceTests
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         repository = new EntityRepository<long, SocialGroup>(context);
         logger = new Mock<ILogger<SocialGroupService>>();
-        service = new SocialGroupService(repository, logger.Object, localizer.Object);
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<Util.MappingProfile>());
+        mapper = config.CreateMapper();
+        service = new SocialGroupService(repository, logger.Object, localizer.Object, mapper);
 
         SeedDatabase();
     }

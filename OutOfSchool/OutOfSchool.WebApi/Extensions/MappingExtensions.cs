@@ -14,11 +14,6 @@ public static class MappingExtensions
 {
     #region ToModel
 
-    public static SocialGroupDto ToModel(this SocialGroup group)
-    {
-        return Mapper<SocialGroup, SocialGroupDto>(group, cfg => { cfg.CreateMap<SocialGroup, SocialGroupDto>(); });
-    }
-
     public static InstitutionStatusDTO ToModel(this InstitutionStatus status)
     {
         return Mapper<InstitutionStatus, InstitutionStatusDTO>(status, cfg => { cfg.CreateMap<InstitutionStatus, InstitutionStatusDTO>(); });
@@ -58,11 +53,6 @@ public static class MappingExtensions
     #endregion
 
     #region ToDomain
-
-    public static SocialGroup ToDomain(this SocialGroupDto groupDto)
-    {
-        return Mapper<SocialGroupDto, SocialGroup>(groupDto, cfg => { cfg.CreateMap<SocialGroupDto, SocialGroup>(); });
-    }
 
     public static InstitutionStatus ToDomain(this InstitutionStatusDTO statusDTO)
     {
