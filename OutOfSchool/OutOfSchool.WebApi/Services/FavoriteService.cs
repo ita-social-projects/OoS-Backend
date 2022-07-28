@@ -165,15 +165,4 @@ public class FavoriteService : IFavoriteService
 
         logger.LogInformation($"Favorite with Id = {id} succesfully deleted.");
     }
-
-    private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)
-    {
-        List<WorkshopCard> workshopCards = new List<WorkshopCard>();
-        foreach (var item in source)
-        {
-            workshopCards.Add(item.ToCardDto());
-        }
-
-        return workshopCards;
-    }
 }

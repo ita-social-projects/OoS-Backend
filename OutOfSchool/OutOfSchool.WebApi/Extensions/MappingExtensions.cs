@@ -1,21 +1,10 @@
-﻿using System;
-using AutoMapper;
-using OutOfSchool.Common.PermissionsModule;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.ChatWorkshop;
+﻿using AutoMapper;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.ChatWorkshop;
-using OutOfSchool.WebApi.Models.Workshop;
-using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.WebApi.Extensions;
 
 public static class MappingExtensions
 {
-    #region ToModel
-
-    #endregion
-
     #region ToDomain
 
     public static User ToDomain(this ShortUserDto shortUserDto, User user)
@@ -44,20 +33,6 @@ public static class MappingExtensions
                 .ForMember(dest => dest.LockoutEnabled, opt => opt.MapFrom(src => user.LockoutEnabled))
                 .ForMember(dest => dest.LockoutEnd, opt => opt.MapFrom(src => user.LockoutEnd))
                 .ForMember(dest => dest.AccessFailedCount, opt => opt.MapFrom(src => user.AccessFailedCount));
-        });
-    }
-
-    #endregion
-
-    #region ToCard
-
-    public static WorkshopCard ToCardDto(this WorkshopDTO workshopDTO)
-    {
-        return Mapper<WorkshopDTO, WorkshopCard>(workshopDTO, cfg =>
-        {
-            cfg.CreateMap<WorkshopDTO, WorkshopCard>()
-                .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
-                .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId));
         });
     }
 
