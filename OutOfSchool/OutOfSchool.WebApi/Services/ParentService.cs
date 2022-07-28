@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using IdentityModel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -26,20 +27,28 @@ public class ParentService : IParentService
     private readonly IEntityRepository<string, User> repositoryUser;
     private readonly ILogger<ParentService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly IEntityRepository<Guid, Child> repositoryChild;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ParentService"/> class.
     /// </summary>
     /// <param name="repositoryParent">Repository for parent entity.</param>
     /// <param name="repositoryUser">Repository for user entity.</param>
+    /// <param name="repositoryChild">Repository for child entity.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
-    public ParentService(IParentRepository repositoryParent, IEntityRepository<string, User> repositoryUser, ILogger<ParentService> logger, IStringLocalizer<SharedResource> localizer)
+    public ParentService(
+        IParentRepository repositoryParent,
+        IEntityRepository<string, User> repositoryUser,
+        ILogger<ParentService> logger,
+        IStringLocalizer<SharedResource> localizer,
+        IEntityRepository<Guid, Child> repositoryChild)
     {
         this.localizer = localizer;
         this.repositoryParent = repositoryParent;
         this.repositoryUser = repositoryUser;
         this.logger = logger;
+        this.repositoryChild = repositoryChild;
     }
 
     /// <inheritdoc/>
@@ -176,6 +185,18 @@ public class ParentService : IParentService
             var updatedUser = await repositoryUser.Update(dto.ToDomain(users.FirstOrDefault())).ConfigureAwait(false);
 
             logger.LogInformation($"User with Id = {updatedUser?.Id} updated succesfully.");
+
+            var child = (await repositoryChild.GetByFilter(c => c.Parent.UserId == dto.Id && c.IsParent).ConfigureAwait(false)).SingleOrDefault();
+
+            if (child is not null)
+            {
+                child.FirstName = dto.FirstName;
+                child.MiddleName = dto.MiddleName;
+                child.LastName = dto.LastName;
+                child.Gender = dto.Gender;
+
+                await repositoryChild.Update(child).ConfigureAwait(false);
+            }
 
             return updatedUser.ToModel();
         }

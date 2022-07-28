@@ -32,6 +32,19 @@ public class ParentRepository : EntityRepositoryBase<Guid, Parent>, IParentRepos
         db.Entry(user).State = EntityState.Modified;
         await db.SaveChangesAsync();
 
+        var child = new Child()
+        {
+            Id = Guid.Empty,
+            IsParent = true,
+            FirstName = user.FirstName,
+            MiddleName = user.MiddleName,
+            LastName = user.LastName,
+            Gender = user.Gender,
+            ParentId = entity.Id,
+        };
+        await db.Children.AddAsync(child);
+        await db.SaveChangesAsync();
+
         return await Task.FromResult(entity);
     }
 

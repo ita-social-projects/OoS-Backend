@@ -79,7 +79,7 @@ public class ChildControllerTests
     public async Task GetChildren_WhenThereAreChildren_ShouldReturnOkResultObject()
     {
         // Arrange
-        var filter = new SearchStringFilter();
+        var filter = new ChildSearchFilter();
         service.Setup(x => x.GetByFilter(filter)).ReturnsAsync(new SearchResult<ChildDto>() { TotalAmount = children.Count(), Entities = children });
 
         // Act
@@ -93,7 +93,7 @@ public class ChildControllerTests
     public async Task GetChildren_WhenThereIsNoChild_ShouldReturnOkObjectResult()
     {
         // Arrange
-        var filter = new SearchStringFilter();
+        var filter = new ChildSearchFilter();
         service.Setup(x => x.GetByFilter(filter)).ReturnsAsync(new SearchResult<ChildDto>() { Entities = new List<ChildDto>() });
 
         // Act

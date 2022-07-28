@@ -47,7 +47,7 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
-    public async Task<IActionResult> GetAllForAdmin([FromQuery] SearchStringFilter filter)
+    public async Task<IActionResult> GetAllForAdmin([FromQuery] ChildSearchFilter filter)
     {
         return Ok(await service.GetByFilter(filter).ConfigureAwait(false));
     }
