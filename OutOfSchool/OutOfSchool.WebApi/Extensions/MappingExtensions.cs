@@ -14,49 +14,9 @@ public static class MappingExtensions
 {
     #region ToModel
 
-    public static PermissionsForRoleDTO ToModel(this PermissionsForRole permissionsForRole)
-    {
-        return Mapper<PermissionsForRole, PermissionsForRoleDTO>(permissionsForRole, cfg =>
-        {
-            cfg.CreateMap<PermissionsForRole, PermissionsForRoleDTO>()
-                .ForMember(dest => dest.Permissions, opt => opt.MapFrom(c => c.PackedPermissions.UnpackPermissionsFromString()));
-        });
-    }
-
-    public static TeacherDTO ToModel(this Teacher teacher)
-    {
-        return Mapper<Teacher, TeacherDTO>(teacher, cfg =>
-        {
-            cfg.CreateMap<Teacher, TeacherDTO>();
-            cfg.CreateMap<Workshop, WorkshopDTO>();
-        });
-    }
-
-    public static WorkshopDTO ToModel(this Workshop workshop)
-    {
-        return Mapper<Workshop, WorkshopDTO>(workshop, cfg =>
-        {
-            cfg.CreateMap<Workshop, WorkshopDTO>()
-                .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title));
-            cfg.CreateMap<Address, AddressDto>();
-            cfg.CreateMap<Provider, ProviderDto>();
-            cfg.CreateMap<Teacher, TeacherDTO>();
-            cfg.CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>();
-        });
-    }
-
     #endregion
 
     #region ToDomain
-
-    public static PermissionsForRole ToDomain(this PermissionsForRoleDTO permissionsDTO)
-    {
-        return Mapper<PermissionsForRoleDTO, PermissionsForRole>(permissionsDTO, cfg =>
-        {
-            cfg.CreateMap<PermissionsForRoleDTO, PermissionsForRole>()
-                .ForMember(dest => dest.PackedPermissions, opt => opt.MapFrom(c => c.Permissions.PackPermissionsIntoString()));
-        });
-    }
 
     public static User ToDomain(this ShortUserDto shortUserDto, User user)
     {
