@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -27,13 +28,14 @@ public class PermissionsForRoleControllerTests
 
     private IEnumerable<PermissionsForRole> permissionsForAllRoles;
     private PermissionsForRole permissionsForRoleEntity;
-
-
+    private IMapper mapper;
 
     [SetUp]
     public void Setup()
     {
         service = new Mock<IPermissionsForRoleService>();
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<Util.MappingProfile>());
+        mapper = config.CreateMapper();
         controller = new PermissionsForRoleController(service.Object);
 
         permissionsForAllRoles = PermissionsForRolesGenerator.GenerateForExistingRoles();
@@ -44,8 +46,8 @@ public class PermissionsForRoleControllerTests
     public async Task GetsAllPermissionsForRoles_ReturnsOkAllEnititiesInValue()
     {
         // Arrange
-        var expected = permissionsForAllRoles.Select(s => s.ToModel());
-        service.Setup(x => x.GetAll()).ReturnsAsync(permissionsForAllRoles.Select(s => s.ToModel()));
+        var expected = permissionsForAllRoles.Select(s => mapper.Map<PermissionsForRoleDTO>(s));
+        service.Setup(x => x.GetAll()).ReturnsAsync(permissionsForAllRoles.Select(s => mapper.Map<PermissionsForRoleDTO>(s)));
 
         // Act
         var response = await controller.Get().ConfigureAwait(false);
@@ -88,8 +90,9 @@ public class PermissionsForRoleControllerTests
     {
         // Arrange
         var roleName = nameof(Role.TechAdmin);
-        var expected = permissionsForAllRoles.Where(s => s.RoleName == roleName).Select(p => p.ToModel()).First();
-        service.Setup(x => x.GetByRole(roleName)).ReturnsAsync(permissionsForAllRoles.SingleOrDefault(x => x.RoleName == roleName).ToModel());
+        var expected = permissionsForAllRoles.Where(s => s.RoleName == roleName).Select(p => mapper.Map<PermissionsForRoleDTO>(p)).First();
+        service.Setup(x => x.GetByRole(roleName))
+            .ReturnsAsync(mapper.Map<PermissionsForRoleDTO>(permissionsForAllRoles.SingleOrDefault(x => x.RoleName == roleName)));
 
         // Act
         var response = await controller.GetByRoleName(roleName).ConfigureAwait(false);
@@ -117,13 +120,13 @@ public class PermissionsForRoleControllerTests
     public async Task CreatePermissionsForRole_WhenModelIsValid_ReturnsCreatedAtActionResult()
     {
         // Arrange
-        var expected = permissionsForRoleEntity.ToModel();
+        var expected = mapper.Map<PermissionsForRoleDTO>(permissionsForRoleEntity);
         var expectedResponse = new CreatedAtActionResult(
             nameof(controller.GetByRoleName),
             nameof(ProviderController),
             new { id = expected.Id, roleName = expected.RoleName },
             expected);
-        service.Setup(x => x.Create(expected)).ReturnsAsync(permissionsForRoleEntity.ToModel());
+        service.Setup(x => x.Create(expected)).ReturnsAsync(mapper.Map<PermissionsForRoleDTO>(permissionsForRoleEntity));
 
         // Act
         var response = await controller.Create(expected).ConfigureAwait(false);
@@ -137,8 +140,8 @@ public class PermissionsForRoleControllerTests
     {
         // Arrange
         permissionsForRoleEntity.Description = TestDataHelper.GetRandomWords();
-        var expected = permissionsForRoleEntity.ToModel();
-        service.Setup(x => x.Update(expected)).ReturnsAsync(permissionsForRoleEntity.ToModel());
+        var expected = mapper.Map<PermissionsForRoleDTO>(permissionsForRoleEntity);
+        service.Setup(x => x.Update(expected)).ReturnsAsync(mapper.Map<PermissionsForRoleDTO>(permissionsForRoleEntity));
 
         // Act
         var response = await controller.Update(expected).ConfigureAwait(false);
@@ -151,7 +154,7 @@ public class PermissionsForRoleControllerTests
     public async Task UpdatePermissionsForRole_WhenProblemsWithDb_ReturnsBadRequestWithError()
     {
         // Arrange
-        var expected = permissionsForRoleEntity.ToModel();
+        var expected = mapper.Map<PermissionsForRoleDTO>(permissionsForRoleEntity);
         var errorMessage = TestDataHelper.GetRandomWords();
         var expectedResponse = new BadRequestObjectResult(errorMessage);
         service.Setup(x => x.Update(expected)).ThrowsAsync(new DbUpdateConcurrencyException(errorMessage));
