@@ -448,6 +448,7 @@ public class WorkshopControllerTests
             Email = "email6@gmail.com",
             MaxAge = 10,
             MinAge = 4,
+            CompetitiveSelection = true,
             CoverImageId = "image6",
             ProviderId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
             InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
@@ -528,6 +529,7 @@ public class WorkshopControllerTests
                 Email = "email1@gmail.com",
                 MaxAge = 10,
                 MinAge = 4,
+                CompetitiveSelection = true,
                 CoverImageId = "image1",
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
                 Address = new AddressDto
@@ -557,6 +559,7 @@ public class WorkshopControllerTests
                 Email = "email2@gmail.com",
                 MaxAge = 10,
                 MinAge = 4,
+                CompetitiveSelection = true,
                 CoverImageId = "image2",
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
                 Address = new AddressDto
@@ -586,6 +589,7 @@ public class WorkshopControllerTests
                 Email = "email3@gmail.com",
                 MaxAge = 10,
                 MinAge = 4,
+                CompetitiveSelection = true,
                 CoverImageId = "image3",
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
             },
@@ -610,6 +614,7 @@ public class WorkshopControllerTests
                 Email = "email4@gmail.com",
                 MaxAge = 10,
                 MinAge = 4,
+                CompetitiveSelection = true,
                 CoverImageId = "image4",
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
             },
@@ -633,6 +638,7 @@ public class WorkshopControllerTests
                 Email = "email5@gmail.com",
                 MaxAge = 10,
                 MinAge = 4,
+                CompetitiveSelection = true,
                 CoverImageId = "image5",
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
                 Address = new AddressDto
