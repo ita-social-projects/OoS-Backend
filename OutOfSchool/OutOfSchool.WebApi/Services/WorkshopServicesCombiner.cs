@@ -3,7 +3,6 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
-using OutOfSchool.WebApi.Services.Strategies;
 using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 
 namespace OutOfSchool.WebApi.Services;
@@ -11,29 +10,26 @@ namespace OutOfSchool.WebApi.Services;
 public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotificationReciever
 {
     private protected readonly IWorkshopService workshopService; // make it private after removing v2 version
-    private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService;
-    private readonly ILogger<WorkshopESStrategy> logger;
     private protected readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService; // make it private after removing v2 version
     private readonly INotificationService notificationService;
     private readonly IEntityRepository<long, Favorite> favoriteRepository;
     private readonly IApplicationRepository applicationRepository;
+    private readonly IWorkshopStrategy workshopStrategy;
 
     public WorkshopServicesCombiner(
         IWorkshopService workshopService,
-        IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService,
-        ILogger<WorkshopESStrategy> logger,
         IElasticsearchSynchronizationService elasticsearchSynchronizationService,
         INotificationService notificationService,
         IEntityRepository<long, Favorite> favoriteRepository,
-        IApplicationRepository applicationRepository)
+        IApplicationRepository applicationRepository,
+        IWorkshopStrategy workshopStrategy)
     {
         this.workshopService = workshopService;
-        this.elasticsearchService = elasticsearchService;
-        this.logger = logger;
         this.elasticsearchSynchronizationService = elasticsearchSynchronizationService;
         this.notificationService = notificationService;
         this.favoriteRepository = favoriteRepository;
         this.applicationRepository = applicationRepository;
+        this.workshopStrategy = workshopStrategy;
     }
 
     /// <inheritdoc/>
@@ -138,10 +134,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
             OrderByField = OrderBy.Id.ToString(),
         };
 
-        IWorkshopStrategy strategy = elasticsearchService.IsElasticAlive
-            ? new WorkshopESStrategy(elasticsearchService, logger)
-            : new WorkshopServiceStrategy(workshopService);
-        return await strategy.SearchAsync(filter);
+        return await workshopStrategy.SearchAsync(filter);
     }
 
     /// <inheritdoc/>
@@ -152,10 +145,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
             return new SearchResult<WorkshopCard> { TotalAmount = 0, Entities = new List<WorkshopCard>() };
         }
 
-        IWorkshopStrategy strategy = elasticsearchService.IsElasticAlive
-            ? new WorkshopESStrategy(elasticsearchService, logger)
-            : new WorkshopServiceStrategy(workshopService);
-        return await strategy.SearchAsync(filter);
+        return await workshopStrategy.SearchAsync(filter);
     }
 
     /// <inheritdoc/>

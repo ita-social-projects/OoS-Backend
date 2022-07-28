@@ -45,7 +45,7 @@ public class WorkshopFilterES
 
     public IReadOnlyCollection<WorkshopStatus> Statuses { get; set; } = new List<WorkshopStatus>();
 
-    public bool IsStrictAge { get; set; } = false;
+    public bool IsConcreteRangeAge { get; set; } = false;
 
     public bool IsStrictWorkdays { get; set; } = false;
 }

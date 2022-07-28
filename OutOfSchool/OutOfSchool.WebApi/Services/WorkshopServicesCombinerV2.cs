@@ -1,7 +1,7 @@
 ﻿using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
-using OutOfSchool.WebApi.Services.Strategies;
+using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -9,13 +9,12 @@ public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopSer
 {
     public WorkshopServicesCombinerV2(
         IWorkshopService workshopService,
-        IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService,
-        ILogger<WorkshopESStrategy> logger,
         IElasticsearchSynchronizationService elasticsearchSynchronizationService,
         INotificationService notificationService,
         IEntityRepository<long, Favorite> favoriteRepository,
-        IApplicationRepository applicationRepository)
-        : base(workshopService, elasticsearchService, logger, elasticsearchSynchronizationService, notificationService, favoriteRepository, applicationRepository)
+        IApplicationRepository applicationRepository,
+        IWorkshopStrategy workshopStrategy)
+        : base(workshopService, elasticsearchSynchronizationService, notificationService, favoriteRepository, applicationRepository, workshopStrategy)
     {
     }
 

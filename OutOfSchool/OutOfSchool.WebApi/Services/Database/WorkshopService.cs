@@ -563,7 +563,7 @@ public class WorkshopService : IWorkshopService
 
         if (filter.MinAge != 0 || filter.MaxAge != 100)
         {
-            predicate = filter.IsStrictAge
+            predicate = filter.IsAppropriateAge
                 ? predicate.And(x => x.MinAge >= filter.MinAge && x.MaxAge <= filter.MaxAge)
                 : predicate.And(x => x.MinAge <= filter.MaxAge && x.MaxAge >= filter.MinAge);
         }
