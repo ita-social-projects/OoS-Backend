@@ -120,7 +120,7 @@ public abstract class CodeficatorCategory : SmartEnum<CodeficatorCategory>
     private sealed class CityDistrictCategory : CodeficatorCategory
     {
         public CityDistrictCategory()
-            : base("B", 258)
+            : base("B", 256)
         {
         }
 

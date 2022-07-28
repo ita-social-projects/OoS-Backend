@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Controllers;
 
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
-[HasPermission(Permissions.MinistryAdmins)]
 public class MinistryAdminController : Controller
 {
     private readonly IMinistryAdminService ministryAdminService;
@@ -33,6 +33,31 @@ public class MinistryAdminController : Controller
     {
         path = $"{context.HttpContext.Request.Path.Value}[{context.HttpContext.Request.Method}]";
         userId = GettingUserProperties.GetUserId(User);
+    }
+
+    /// <summary>
+    /// To Get the Profile of authorized MinistryAdmin.
+    /// </summary>
+    /// <returns>Authorized MinistryAdmin's profile.</returns>
+    [HasPermission(Permissions.UserRead)]
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MinistryAdminDto))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Profile()
+    {
+        if (userId == null)
+        {
+            BadRequest("Invalid user information.");
+        }
+
+        var ministryAdmin = await ministryAdminService.GetByUserId(userId).ConfigureAwait(false);
+
+        if (ministryAdmin == null)
+        {
+            return NoContent();
+        }
+
+        return Ok(ministryAdmin);
     }
 
     /// <summary>
@@ -75,6 +100,37 @@ public class MinistryAdminController : Controller
         }
 
         return StatusCode((int)response.HttpStatusCode);
+    }
+
+    /// <summary>
+    /// To update MinistryAdmin entity that already exists.
+    /// </summary>
+    /// <param name="ministryAdminDto">MinistryAdminDto object with new properties.</param>
+    /// <returns>MinistryAdmin's key.</returns>
+    [HasPermission(Permissions.UserEdit)]
+    [HttpPut]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MinistryAdminDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> Update(MinistryAdminDto ministryAdminDto)
+    {
+        if (ministryAdminDto == null)
+        {
+            return BadRequest("MinistryAdmin is null.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        if (userId != ministryAdminDto.Id)
+        {
+            return StatusCode(403, "Forbidden to update another user.");
+        }
+
+        return Ok(await ministryAdminService.Update(ministryAdminDto).ConfigureAwait(false));
     }
 
     /// <summary>

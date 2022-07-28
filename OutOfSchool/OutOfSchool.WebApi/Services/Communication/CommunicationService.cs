@@ -22,7 +22,10 @@ public class CommunicationService : ICommunicationService
         IHttpClientFactory httpClientFactory,
         CommunicationConfig communicationConfig)
     {
-        this.httpClientFactory = httpClientFactory;
+        ArgumentNullException.ThrowIfNull(communicationConfig);
+
+        this.httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+
         httpClient = this.httpClientFactory.CreateClient(communicationConfig.ClientName);
         httpClient.DefaultRequestHeaders.Clear();
         httpClient.DefaultRequestHeaders
