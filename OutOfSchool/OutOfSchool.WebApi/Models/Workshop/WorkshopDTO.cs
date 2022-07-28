@@ -54,6 +54,9 @@ public class WorkshopDTO : IValidatableObject
     [Range(0, 18, ErrorMessage = "Max age should be a number from 0 to 18")]
     public int MaxAge { get; set; }
 
+    [Required(ErrorMessage = "CompetitiveSelection is required")]
+    public bool CompetitiveSelection { get; set; } = default;
+
     [Column(TypeName = "decimal(18,2)")]
     [Range(0, 10000, ErrorMessage = "Field value should be in a range from 1 to 10 000")]
     public decimal Price { get; set; } = default;
