@@ -1,4 +1,5 @@
 ﻿using System;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models.ChatWorkshop;
 
@@ -17,4 +18,6 @@ public class ParentInfoForChatList
     public string MiddleName { get; set; }
 
     public string FirstName { get; set; }
+
+    public Gender Gender { get; set; }
 }

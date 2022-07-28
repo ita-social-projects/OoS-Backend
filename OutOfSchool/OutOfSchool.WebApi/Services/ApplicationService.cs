@@ -480,6 +480,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
         return recipientIds.Distinct();
     }
 
+    /// <inheritdoc/>
     public async Task<bool> AllowedNewApplicationByChildStatus(Guid workshopId, Guid childId)
     {
         var forbiddenStatuses = new[]
@@ -497,7 +498,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
         return !await applicationRepository.Any(filter).ConfigureAwait(false);
     }
 
-    public async Task<bool> AllowedToReview(Guid parentId)
+    public async Task<bool> AllowedToReview(Guid parentId, Guid workshopId)
     {
         var statuses = new[]
         {
@@ -507,6 +508,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
         };
 
         Expression<Func<Application, bool>> filter = a => a.ParentId == parentId
+                                                          && a.WorkshopId == workshopId
                                                           && statuses.Contains(a.Status);
 
         return await applicationRepository.Any(filter).ConfigureAwait(false);
