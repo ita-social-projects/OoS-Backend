@@ -14,23 +14,6 @@ public static class MappingExtensions
 {
     #region ToModel
 
-    public static ProviderDto ToModel(this Provider provider)
-    {
-        return Mapper<Provider, ProviderDto>(provider, cfg =>
-        {
-            cfg.CreateMap<Address, AddressDto>();
-            cfg.CreateMap<ProviderSectionItem, ProviderSectionItemDto>()
-                .ForMember(
-                    dest => dest.SectionName, opt =>
-                        opt.MapFrom(src => src.Name));
-            cfg.CreateMap<Provider, ProviderDto>()
-                .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
-                .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
-                .ForMember(dest => dest.Rating, opt => opt.Ignore())
-                .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
-        });
-    }
-
     public static RatingDto ToModel(this Rating rating)
     {
         return Mapper<Rating, RatingDto>(rating, cfg => { cfg.CreateMap<Rating, RatingDto>(); });
@@ -97,22 +80,6 @@ public static class MappingExtensions
     #endregion
 
     #region ToDomain
-
-    public static Provider ToDomain(this ProviderDto providerDto)
-    {
-        return Mapper<ProviderDto, Provider>(providerDto, cfg =>
-        {
-            cfg.CreateMap<AddressDto, Address>();
-            cfg.CreateMap<ProviderSectionItemDto, ProviderSectionItem>()
-                .ForMember(
-                    dest => dest.Name, opt =>
-                        opt.MapFrom(src => src.SectionName));
-            cfg.CreateMap<ProviderDto, Provider>()
-                .ForMember(dest => dest.Workshops, opt => opt.Ignore())
-                .ForMember(dest => dest.User, opt => opt.Ignore())
-                .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore());
-        });
-    }
 
     public static Rating ToDomain(this RatingDto ratingDto)
     {

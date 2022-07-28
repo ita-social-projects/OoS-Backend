@@ -141,24 +141,6 @@ public class MappingExtensionsTests
         configuration.AssertConfigurationIsValid();
     }
 
-    [Test]
-    public void Mapping_ProviderDto_ToProvider_IsCorrect()
-    {
-        var providerDto = ProviderDtoGenerator.Generate();
-        var provider = providerDto.ToDomain();
-
-        EnsureProviderAndProviderDtoAreEqual(providerDto, provider);
-    }
-
-    [Test]
-    public void Mapping_Provider_ToProviderDto_IsCorrect()
-    {
-        var provider = ProvidersGenerator.Generate();
-        var providerDto = provider.ToModel();
-
-        EnsureProviderAndProviderDtoAreEqual(providerDto, provider);
-    }
-
     private static void EnsureProviderAndProviderDtoAreEqual(ProviderDto providerDto, Provider provider)
     {
         Assert.Multiple(() =>
