@@ -363,5 +363,6 @@ public class MappingProfile : Profile
         CreateMap<ChatMessageInfoForChatList, ChatMessageWorkshopDto>();
 
         CreateMap<City, CityDto>().ReverseMap();
+        CreateMap<Favorite, FavoriteDto>().ReverseMap();
     }
 }

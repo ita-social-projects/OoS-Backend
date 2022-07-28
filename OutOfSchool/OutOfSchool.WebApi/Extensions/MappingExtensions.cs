@@ -14,11 +14,6 @@ public static class MappingExtensions
 {
     #region ToModel
 
-    public static FavoriteDto ToModel(this Favorite favorite)
-    {
-        return Mapper<Favorite, FavoriteDto>(favorite, cfg => { cfg.CreateMap<Favorite, FavoriteDto>(); });
-    }
-
     public static ParentDTO ToModel(this Parent parent)
     {
         var parentDto =
@@ -109,11 +104,6 @@ public static class MappingExtensions
     #endregion
 
     #region ToDomain
-
-    public static Favorite ToDomain(this FavoriteDto favoriteDto)
-    {
-        return Mapper<FavoriteDto, Favorite>(favoriteDto, cfg => { cfg.CreateMap<FavoriteDto, Favorite>(); });
-    }
 
     public static Parent ToDomain(this ParentDTO parentDto)
     {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -21,17 +22,20 @@ public class FavoriteService : IFavoriteService
     private readonly IWorkshopService workshopService;
     private readonly ILogger<FavoriteService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly IMapper mapper;
 
     public FavoriteService(
         IEntityRepository<long, Favorite> favoriteRepository,
         ILogger<FavoriteService> logger,
         IStringLocalizer<SharedResource> localizer,
-        IWorkshopService worshopService)
+        IWorkshopService workshopService,
+        IMapper mapper)
     {
-        this.favoriteRepository = favoriteRepository;
-        this.logger = logger;
-        this.localizer = localizer;
-        this.workshopService = worshopService;
+        this.favoriteRepository = favoriteRepository ?? throw new ArgumentNullException(nameof(favoriteRepository));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+        this.workshopService = workshopService ?? throw new ArgumentNullException(nameof(workshopService));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
@@ -45,7 +49,7 @@ public class FavoriteService : IFavoriteService
             ? "Favorites table is empty."
             : $"All {favorites.Count()} records were successfully received from the Favorites table");
 
-        return favorites.Select(favorite => favorite.ToModel()).ToList();
+        return favorites.Select(favorite => mapper.Map<FavoriteDto>(favorite)).ToList();
     }
 
     /// <inheritdoc/>
@@ -64,7 +68,7 @@ public class FavoriteService : IFavoriteService
 
         logger.LogInformation($"Successfully got a Favorite with Id = {id}.");
 
-        return favorite.ToModel();
+        return mapper.Map<FavoriteDto>(favorite);
     }
 
     /// <inheritdoc/>
@@ -78,7 +82,7 @@ public class FavoriteService : IFavoriteService
             ? $"There aren't Favorites for User with Id = {userId}."
             : $"All {favorites.Count()} records were successfully received from the Favorites table");
 
-        return favorites.Select(x => x.ToModel()).ToList();
+        return favorites.Select(x => mapper.Map<FavoriteDto>(x)).ToList();
     }
 
     /// <inheritdoc/>
@@ -114,13 +118,13 @@ public class FavoriteService : IFavoriteService
     {
         logger.LogInformation("Favorite creating was started.");
 
-        var favorite = dto.ToDomain();
+        var favorite = mapper.Map<Favorite>(dto);
 
         var newFavorite = await favoriteRepository.Create(favorite).ConfigureAwait(false);
 
         logger.LogInformation($"Favorite with Id = {newFavorite?.Id} created successfully.");
 
-        return newFavorite.ToModel();
+        return mapper.Map<FavoriteDto>(newFavorite);
     }
 
     /// <inheritdoc/>
@@ -130,11 +134,11 @@ public class FavoriteService : IFavoriteService
 
         try
         {
-            var favorite = await favoriteRepository.Update(dto.ToDomain()).ConfigureAwait(false);
+            var favorite = await favoriteRepository.Update(mapper.Map<Favorite>(dto)).ConfigureAwait(false);
 
             logger.LogInformation($"Favorite with Id = {favorite?.Id} updated succesfully.");
 
-            return favorite.ToModel();
+            return mapper.Map<FavoriteDto>(favorite);
         }
         catch (DbUpdateConcurrencyException)
         {
