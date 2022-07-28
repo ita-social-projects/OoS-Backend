@@ -11,7 +11,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations;
 
 [DbContext(typeof(OutOfSchoolDbContext))]
-[Migration("20220728110924_CompetitiveSelection")]
+[Migration("20220728190552_CompetitiveSelection")]
 partial class CompetitiveSelection
 {
     protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -579,6 +579,9 @@ partial class CompetitiveSelection
                 .ValueGeneratedOnAdd()
                 .HasColumnType("tinyint(1)");
 
+            b.Property<bool>("IsParent")
+                .HasColumnType("tinyint(1)");
+
             b.Property<string>("LastName")
                 .IsRequired()
                 .HasMaxLength(30)
@@ -946,11 +949,13 @@ partial class CompetitiveSelection
                 .HasColumnType("binary(16)");
 
             b.Property<string>("UserId")
-                .HasColumnType("longtext");
+                .HasColumnType("varchar(255)");
 
             b.HasKey("Id");
 
             b.HasIndex("InstitutionId");
+
+            b.HasIndex("UserId");
 
             b.ToTable("InstitutionAdmins");
         });
@@ -2143,7 +2148,13 @@ partial class CompetitiveSelection
                 .OnDelete(DeleteBehavior.Cascade)
                 .IsRequired();
 
+            b.HasOne("OutOfSchool.Services.Models.User", "User")
+                .WithMany()
+                .HasForeignKey("UserId");
+
             b.Navigation("Institution");
+
+            b.Navigation("User");
         });
 
         modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
