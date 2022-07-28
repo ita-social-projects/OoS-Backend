@@ -14,23 +14,6 @@ public static class MappingExtensions
 {
     #region ToModel
 
-    public static ShortUserDto ToModel(this User user)
-    {
-        return Mapper<User, ShortUserDto>(user, cfg =>
-        {
-            cfg.CreateMap<User, ShortUserDto>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(c => c.Id))
-                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
-                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
-                .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName))
-                .ForMember(dest => dest.IsRegistered, opt => opt.MapFrom(src => src.IsRegistered))
-                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role))
-                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
-                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber));
-        });
-    }
-
     public static SocialGroupDto ToModel(this SocialGroup group)
     {
         return Mapper<SocialGroup, SocialGroupDto>(group, cfg => { cfg.CreateMap<SocialGroup, SocialGroupDto>(); });

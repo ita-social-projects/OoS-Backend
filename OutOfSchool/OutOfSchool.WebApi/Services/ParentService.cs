@@ -203,7 +203,7 @@ public class ParentService : IParentService
                 await repositoryChild.Update(child).ConfigureAwait(false);
             }
 
-            return updatedUser.ToModel();
+            return mapper.Map<ShortUserDto>(updatedUser);
         }
         catch (DbUpdateConcurrencyException)
         {

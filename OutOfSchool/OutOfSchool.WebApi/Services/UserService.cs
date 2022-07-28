@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,7 @@ public class UserService : IUserService
     private readonly IEntityRepository<string, User> repository;
     private readonly ILogger<UserService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserService"/> class.
@@ -29,11 +31,18 @@ public class UserService : IUserService
     /// <param name="repository">Repository.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
-    public UserService(IEntityRepository<string, User> repository, ILogger<UserService> logger, IStringLocalizer<SharedResource> localizer)
+    /// <param name="mapper">Mapper.</param>
+    public UserService(
+        IEntityRepository<string,
+        User> repository,
+        ILogger<UserService> logger,
+        IStringLocalizer<SharedResource> localizer,
+        IMapper mapper)
     {
-        this.localizer = localizer;
-        this.repository = repository;
-        this.logger = logger;
+        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     public async Task<IEnumerable<ShortUserDto>> GetAll()
@@ -46,7 +55,7 @@ public class UserService : IUserService
             ? "User table is empty."
             : $"All {users.Count()} records were successfully received from the User table");
 
-        return users.Select(user => user.ToModel()).ToList();
+        return users.Select(user => mapper.Map<ShortUserDto>(user)).ToList();
     }
 
     public async Task<ShortUserDto> GetById(string id)
@@ -64,7 +73,7 @@ public class UserService : IUserService
 
         logger.LogInformation($"Successfully got an User with Id = {id}.");
 
-        return users.FirstOrDefault().ToModel();
+        return mapper.Map<ShortUserDto>(users.FirstOrDefault());
     }
 
     public async Task<ShortUserDto> Update(ShortUserDto dto)
@@ -81,7 +90,7 @@ public class UserService : IUserService
 
             logger.LogInformation($"User with Id = {updatedUser?.Id} updated succesfully.");
 
-            return updatedUser.ToModel();
+            return mapper.Map<ShortUserDto>(updatedUser);
         }
         catch (DbUpdateConcurrencyException)
         {
