@@ -14,11 +14,6 @@ public static class MappingExtensions
 {
     #region ToModel
 
-    public static RatingDto ToModel(this Rating rating)
-    {
-        return Mapper<Rating, RatingDto>(rating, cfg => { cfg.CreateMap<Rating, RatingDto>(); });
-    }
-
     public static ShortUserDto ToModel(this User user)
     {
         return Mapper<User, ShortUserDto>(user, cfg =>
@@ -80,11 +75,6 @@ public static class MappingExtensions
     #endregion
 
     #region ToDomain
-
-    public static Rating ToDomain(this RatingDto ratingDto)
-    {
-        return Mapper<RatingDto, Rating>(ratingDto, cfg => { cfg.CreateMap<RatingDto, Rating>(); });
-    }
 
     public static SocialGroup ToDomain(this SocialGroupDto groupDto)
     {

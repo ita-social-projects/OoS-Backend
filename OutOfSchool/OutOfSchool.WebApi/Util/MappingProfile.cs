@@ -386,7 +386,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.WithDisabilityOptions, opt => opt.Ignore())
             .ForMember(dest => dest.AvailableSeats, opt => opt.Ignore())
             .ForMember(dest => dest.TakenSeats, opt => opt.Ignore());
-        
-        
+
+        CreateMap<Rating, RatingDto>().ReverseMap();
     }
 }
