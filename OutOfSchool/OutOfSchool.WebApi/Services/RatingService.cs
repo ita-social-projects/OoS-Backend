@@ -146,15 +146,15 @@ public class RatingService : IRatingService
     {
         logger.LogInformation($"Getting Rating for Parent started. Looking parentId = {parentId}, entityId = {entityId} and type = {type}.");
 
-        var rating = await ratingRepository
+        var rating = (await ratingRepository
             .GetByFilter(r => r.ParentId == parentId
                               && r.EntityId == entityId
                               && r.Type == type)
-            .ConfigureAwait(false);
+            .ConfigureAwait(false)).FirstOrDefault();
 
         logger.LogInformation($"Successfully got a Rating for Parent with Id = {parentId}");
 
-        return mapper.Map<RatingDto>(rating.FirstOrDefault());
+        return rating is null ? null : mapper.Map<RatingDto>(rating);
     }
 
     /// <inheritdoc/>

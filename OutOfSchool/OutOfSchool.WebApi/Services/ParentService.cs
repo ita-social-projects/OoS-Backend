@@ -154,7 +154,7 @@ public class ParentService : IParentService
 
         logger.LogInformation($"Successfully got a Parent with UserId = {id}.");
 
-        return mapper.Map<ParentDTO>(parents.FirstOrDefault());
+        return mapper.Map<ParentDTO>(parents.First());
     }
 
     /// <inheritdoc/>

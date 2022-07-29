@@ -58,6 +58,7 @@ public class UserService : IUserService
         return users.Select(user => mapper.Map<ShortUserDto>(user)).ToList();
     }
 
+    // TODO: use repository.GetById() method
     public async Task<ShortUserDto> GetById(string id)
     {
         logger.LogInformation($"Getting User by Id started. Looking Id = {id}.");
@@ -73,7 +74,7 @@ public class UserService : IUserService
 
         logger.LogInformation($"Successfully got an User with Id = {id}.");
 
-        return mapper.Map<ShortUserDto>(users.FirstOrDefault());
+        return mapper.Map<ShortUserDto>(users.First());
     }
 
     public async Task<ShortUserDto> Update(ShortUserDto dto)

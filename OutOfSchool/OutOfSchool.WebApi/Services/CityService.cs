@@ -128,7 +128,7 @@ public class CityService : ICityService
             ? $"There is no the nearest city for the filter {currentFilterText}."
             : $"The nearest city for the filter {currentFilterText} was successfully received.");
 
-        return mapper.Map<CityDto>(nearestCity);
+        return nearestCity is null ? null : mapper.Map<CityDto>(nearestCity);
     }
 
     /// <inheritdoc/>
