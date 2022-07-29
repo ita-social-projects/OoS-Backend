@@ -34,8 +34,7 @@ public class PermissionsForRoleControllerTests
     public void Setup()
     {
         service = new Mock<IPermissionsForRoleService>();
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<Util.MappingProfile>());
-        mapper = config.CreateMapper();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
         controller = new PermissionsForRoleController(service.Object);
 
         permissionsForAllRoles = PermissionsForRolesGenerator.GenerateForExistingRoles();

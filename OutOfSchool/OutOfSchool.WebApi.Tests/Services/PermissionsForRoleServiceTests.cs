@@ -38,8 +38,7 @@ public class PermissionsForRoleServiceTests
         var context = new OutOfSchoolDbContext(options);
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         repository = new EntityRepository<long, PermissionsForRole>(context);
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<Util.MappingProfile>());
-        mapper = config.CreateMapper();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
         var logger = new Mock<ILogger<PermissionsForRoleService>>();
         service = new PermissionsForRoleService(repository, logger.Object, localizer.Object, mapper);
 

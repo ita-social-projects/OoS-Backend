@@ -13,6 +13,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
@@ -46,8 +47,7 @@ public class WorkshopServiceTests
         logger = new Mock<ILogger<WorkshopService>>();
         mapperMock = new Mock<IMapper>();
         workshopImagesMediator = new Mock<IImageDependentEntityImagesInteractionService<Workshop>>();
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
-        mapper = config.CreateMapper();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
         workshopService =
             new WorkshopService(
                 workshopRepository.Object,

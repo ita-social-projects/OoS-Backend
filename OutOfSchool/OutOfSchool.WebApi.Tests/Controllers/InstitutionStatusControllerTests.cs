@@ -32,8 +32,7 @@ public class InstitutionStatusControllerTests
     {
         // setup controller
         service = new Mock<IStatusService>();
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<Util.MappingProfile>());
-        mapper = config.CreateMapper();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         controller = new InstitutionStatusController(service.Object, localizer.Object);
 

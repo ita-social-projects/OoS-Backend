@@ -37,8 +37,7 @@ public class StatusServiceTests
         options = builder.Options;
         context = new OutOfSchoolDbContext(options);
         repository = new EntityRepository<long, InstitutionStatus>(context);
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<Util.MappingProfile>());
-        mapper = config.CreateMapper();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
         var logger = new Mock<ILogger<StatusService>>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         service = new StatusService(repository, logger.Object, localizer.Object, mapper);

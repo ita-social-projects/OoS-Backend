@@ -43,8 +43,7 @@ public class ParentControllerTests
         serviceChild = new Mock<IChildService>();
 
         localizer = new Mock<IStringLocalizer<SharedResource>>();
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<Util.MappingProfile>());
-        mapper = config.CreateMapper();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
 
         httpContextMoq = new Mock<HttpContext>();
         httpContextMoq.Setup(x => x.User.FindFirst("sub"))

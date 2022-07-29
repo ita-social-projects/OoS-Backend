@@ -11,6 +11,7 @@ using NUnit.Framework;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -38,8 +39,7 @@ public class CityServiceTests
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         repository = new EntityRepository<long, City>(context);
         logger = new Mock<ILogger<CityService>>();
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<Util.MappingProfile>());
-        mapper = config.CreateMapper();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
         service = new CityService(repository, logger.Object, localizer.Object, mapper);
 
         SeedDatabase();
