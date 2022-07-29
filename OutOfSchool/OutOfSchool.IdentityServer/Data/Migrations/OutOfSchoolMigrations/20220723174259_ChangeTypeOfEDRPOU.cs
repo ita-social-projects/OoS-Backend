@@ -2,13 +2,13 @@
 
 #nullable disable
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations;
+
+public partial class ChangeTypeOfEDRPOU : Migration
 {
-    public partial class ChangeTypeOfEDRPOU : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AlterColumn<string>(
+        migrationBuilder.AlterColumn<string>(
                 name: "EdrpouIpn",
                 table: "Providers",
                 type: "varchar(12)",
@@ -17,12 +17,12 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 oldClrType: typeof(long),
                 oldType: "bigint",
                 oldMaxLength: 12)
-                .Annotation("MySql:CharSet", "utf8mb4");
-        }
+            .Annotation("MySql:CharSet", "utf8mb4");
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AlterColumn<long>(
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.AlterColumn<long>(
                 name: "EdrpouIpn",
                 table: "Providers",
                 type: "bigint",
@@ -31,7 +31,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 oldClrType: typeof(string),
                 oldType: "varchar(12)",
                 oldMaxLength: 12)
-                .OldAnnotation("MySql:CharSet", "utf8mb4");
-        }
+            .OldAnnotation("MySql:CharSet", "utf8mb4");
     }
 }
