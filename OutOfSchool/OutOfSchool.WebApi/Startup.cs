@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using OutOfSchool.WebApi.Services.Strategies.Interfaces;
+using OutOfSchool.WebApi.Services.Strategies.WorkshopStrategies;
 
 namespace OutOfSchool.WebApi;
 
@@ -196,6 +198,13 @@ public static class Startup
         services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();
         services.AddTransient<ICodeficatorService, CodeficatorService>();
         services.AddTransient<IGRPCCommonService, GRPCCommonService>();
+        services.AddTransient<IWorkshopStrategy>(sp =>
+        {
+            var elasticSearchService = sp.GetRequiredService<IElasticsearchService<WorkshopES, WorkshopFilterES>>();
+            return elasticSearchService.IsElasticAlive
+                ? new WorkshopESStrategy(elasticSearchService, sp.GetRequiredService<ILogger<WorkshopESStrategy>>())
+                : new WorkshopServiceStrategy(sp.GetRequiredService<IWorkshopService>(), sp.GetRequiredService<ILogger<WorkshopServiceStrategy>>());
+        });
 
         // entities repositories
         services.AddTransient<IEntityRepository<long, Address>, EntityRepository<long, Address>>();

@@ -554,7 +554,9 @@ public class WorkshopService : IWorkshopService
 
         if (filter.MinAge != 0 || filter.MaxAge != 100)
         {
-            predicate = predicate.And(x => x.MinAge <= filter.MaxAge && x.MaxAge >= filter.MinAge);
+            predicate = filter.IsAppropriateAge
+                ? predicate.And(x => x.MinAge >= filter.MinAge && x.MaxAge <= filter.MaxAge)
+                : predicate.And(x => x.MinAge <= filter.MaxAge && x.MaxAge >= filter.MinAge);
         }
 
         if (filter.WithDisabilityOptions)
@@ -568,7 +570,9 @@ public class WorkshopService : IWorkshopService
 
             if (workdaysBitMask > 0)
             {
-                predicate = predicate.And(x => x.DateTimeRanges.Any(tr => (tr.Workdays & workdaysBitMask) > 0));
+                predicate = filter.IsStrictWorkdays
+                    ? predicate.And(x => x.DateTimeRanges.Any(tr => (tr.Workdays == workdaysBitMask)))
+                    : predicate.And(x => x.DateTimeRanges.Any(tr => (tr.Workdays & workdaysBitMask) > 0));
             }
         }
 

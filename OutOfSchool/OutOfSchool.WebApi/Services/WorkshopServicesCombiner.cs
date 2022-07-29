@@ -3,35 +3,33 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 
 namespace OutOfSchool.WebApi.Services;
 
 public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotificationReciever
 {
     private protected readonly IWorkshopService workshopService; // make it private after removing v2 version
-    private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService;
-    private readonly ILogger<WorkshopServicesCombiner> logger;
     private protected readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService; // make it private after removing v2 version
     private readonly INotificationService notificationService;
     private readonly IEntityRepository<long, Favorite> favoriteRepository;
     private readonly IApplicationRepository applicationRepository;
+    private readonly IWorkshopStrategy workshopStrategy;
 
     public WorkshopServicesCombiner(
         IWorkshopService workshopService,
-        IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService,
-        ILogger<WorkshopServicesCombiner> logger,
         IElasticsearchSynchronizationService elasticsearchSynchronizationService,
         INotificationService notificationService,
         IEntityRepository<long, Favorite> favoriteRepository,
-        IApplicationRepository applicationRepository)
+        IApplicationRepository applicationRepository,
+        IWorkshopStrategy workshopStrategy)
     {
         this.workshopService = workshopService;
-        this.elasticsearchService = elasticsearchService;
-        this.logger = logger;
         this.elasticsearchSynchronizationService = elasticsearchSynchronizationService;
         this.notificationService = notificationService;
         this.favoriteRepository = favoriteRepository;
         this.applicationRepository = applicationRepository;
+        this.workshopStrategy = workshopStrategy;
     }
 
     /// <inheritdoc/>
@@ -136,22 +134,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
             OrderByField = OrderBy.Id.ToString(),
         };
 
-        if (elasticsearchService.IsElasticAlive)
-        {
-            var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
-            if (result.TotalAmount <= 0)
-            {
-                logger.LogInformation($"Result was {result.TotalAmount}");
-            }
-
-            return result.ToSearchResult();
-        }
-        else
-        {
-            var databaseResult = await workshopService.GetByFilter(filter).ConfigureAwait(false);
-
-            return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = databaseResult.Entities };
-        }
+        return await workshopStrategy.SearchAsync(filter);
     }
 
     /// <inheritdoc/>
@@ -162,22 +145,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
             return new SearchResult<WorkshopCard> { TotalAmount = 0, Entities = new List<WorkshopCard>() };
         }
 
-        if (elasticsearchService.IsElasticAlive)
-        {
-            var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
-            if (result.TotalAmount <= 0)
-            {
-                logger.LogInformation($"Result was {result.TotalAmount}");
-            }
-
-            return result.ToSearchResult();
-        }
-        else
-        {
-            var databaseResult = await workshopService.GetByFilter(filter).ConfigureAwait(false);
-
-            return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = databaseResult.Entities };
-        }
+        return await workshopStrategy.SearchAsync(filter);
     }
 
     /// <inheritdoc/>

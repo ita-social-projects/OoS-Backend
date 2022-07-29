@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Nest;
 using OutOfSchool.Common;
-using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData.Enums;
 using OutOfSchool.ElasticsearchData.Models;
 
@@ -134,14 +133,14 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
 
             ageQuery = new NumericRangeQuery()
             {
-                Field = Infer.Field<WorkshopES>(w => w.MinAge),
-                LessThanOrEqualTo = filter.MaxAge,
+                Field = filter.IsAppropriateAge  ? Infer.Field<WorkshopES>(w => w.MinAge) : Infer.Field<WorkshopES>(w => w.MaxAge),
+                GreaterThanOrEqualTo = filter.MinAge,
             };
 
             ageQuery &= new NumericRangeQuery()
             {
-                Field = Infer.Field<WorkshopES>(w => w.MaxAge),
-                GreaterThanOrEqualTo = filter.MinAge,
+                Field = filter.IsAppropriateAge  ? Infer.Field<WorkshopES>(w => w.MaxAge) : Infer.Field<WorkshopES>(w => w.MinAge),
+                LessThanOrEqualTo = filter.MaxAge,
             };
 
             queryContainer &= ageQuery;
@@ -173,7 +172,9 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
                 Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
                 Query = new MatchQuery()
                 {
-                    Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().Workdays),
+                    Field = filter.IsStrictWorkdays
+                                ? Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().Workdays.Suffix("keyword"))
+                                : Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().Workdays),
                     Query = filter.Workdays,
                 },
             };
