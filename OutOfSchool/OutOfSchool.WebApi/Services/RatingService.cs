@@ -60,11 +60,11 @@ public class RatingService : IRatingService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<RatingDto>> GetAll()
+    public async Task<IEnumerable<RatingDto>> GetAsync(OffsetFilter filter)
     {
-        logger.LogInformation("Getting all Ratings started.");
+        logger.LogInformation("Getting part of Ratings started.");
 
-        var ratings = await ratingRepository.GetAll().ConfigureAwait(false);
+        var ratings = await ratingRepository.GetPartAsync(filter.From, filter.Size);
 
         logger.LogInformation(!ratings.Any()
             ? "Rating table is empty."
