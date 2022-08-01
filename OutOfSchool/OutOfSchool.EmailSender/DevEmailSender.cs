@@ -12,9 +12,9 @@ public class DevEmailSender : IEmailSender
         this.logger = logger;
     }
         
-    public Task SendAsync(string email, string subject, string htmlMessage)
+    public Task SendAsync(string email, string subject, (string html, string plain) content)
     {
-        logger.LogDebug($"Sending mail to {email} with subject \"{subject}\" and content: {htmlMessage}");
+        logger.LogDebug($"Sending mail to {email} with subject \"{subject}\" and content: {content.html}");
         return Task.CompletedTask;
     }
 }
