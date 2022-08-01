@@ -453,6 +453,12 @@ public class ApplicationController : ControllerBase
             }
         }
 
+        if (application.Workshop.CompetitiveSelection && application.Status == ApplicationStatus.Pending &&
+            applicationDto.Status != ApplicationStatus.AcceptedForSelection)
+        {
+            throw new ArgumentException("Forbidden to update status from Pending to " + applicationDto.Status + " for competitive selection workshop");
+        }
+
         application.Status = applicationDto.Status;
         application.RejectionMessage = applicationDto.RejectionMessage;
 
