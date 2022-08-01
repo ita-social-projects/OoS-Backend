@@ -64,7 +64,7 @@ public class RatingService : IRatingService
     {
         logger.LogInformation("Getting part of Ratings started.");
 
-        var ratings = await ratingRepository.GetPartAsync(filter.From, filter.Size);
+        var ratings = ratingRepository.Get(filter.From, filter.Size, "Parent");
 
         logger.LogInformation(!ratings.Any()
             ? "Rating table is empty."

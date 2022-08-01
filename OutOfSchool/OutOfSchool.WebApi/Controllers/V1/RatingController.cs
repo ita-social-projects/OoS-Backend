@@ -65,10 +65,9 @@ public class RatingController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{skip}/{take}")]
-    public async Task<IActionResult> Get(int skip, int take)
+    [HttpGet]
+    public async Task<IActionResult> Get([FromQuery] OffsetFilter filter)
     {
-        var filter = new OffsetFilter { From = skip, Size = take };
         var ratings = await ratingService.GetAsync(filter).ConfigureAwait(false);
 
         if (!ratings.Any())
