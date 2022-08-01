@@ -165,7 +165,7 @@ public class ProviderAdminService : IProviderAdminService
                     Email = user.Email,
                     Password = password,
                 };
-                var content  = await renderer.GetHtmlPlainStringAsync(RazorTemplates.NewAdminInvitation, adminInvitationViewModel);
+                var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.NewAdminInvitation, adminInvitationViewModel);
 
                 await emailSender.SendAsync(user.Email, subject, content);
 

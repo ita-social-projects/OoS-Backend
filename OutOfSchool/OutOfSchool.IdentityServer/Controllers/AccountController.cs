@@ -123,8 +123,7 @@ public class AccountController : Controller
             LastName = user.LastName,
             ActionUrl = HtmlEncoder.Default.Encode(callBackUrl),
         };
-        var content  = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ResetPassword, userActionViewModel);
-
+        var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ResetPassword, userActionViewModel);
         await emailSender.SendAsync(email, subject, content);
 
         logger.LogInformation($"{path} Confirmation message was sent for User(id) + {userId}.");
@@ -195,8 +194,7 @@ public class AccountController : Controller
             LastName = user.LastName,
             ActionUrl = HtmlEncoder.Default.Encode(callBackUrl),
         };
-        var content  = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ResetPassword, userActionViewModel);
-    
+        var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ResetPassword, userActionViewModel);
         await emailSender.SendAsync(email, subject, content);
 
         logger.LogInformation($"Confirmation message was sent. User(id): {userId}.");
@@ -275,9 +273,8 @@ public class AccountController : Controller
             LastName = user.LastName,
             ActionUrl = callBackUrl,
         };
-    
-        var content  = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ResetPassword, userActionViewModel);
-    
+
+        var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ResetPassword, userActionViewModel);
         await emailSender.SendAsync(email, subject, content);
 
         logger.LogInformation($"{path} Message to change password was sent. User(id): {user.Id}.");
