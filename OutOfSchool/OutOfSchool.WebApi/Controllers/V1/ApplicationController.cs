@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Common.StatusPermissions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -445,18 +448,21 @@ public class ApplicationController : ControllerBase
 
     private void UpdateStatus(ShortApplicationDto applicationDto, ApplicationDto application)
     {
-        if (application.Status == ApplicationStatus.Completed || application.Status == ApplicationStatus.Rejected || application.Status == ApplicationStatus.Left)
+        var applicationStatusPermissions = new ApplicationStatusPermissions();
+        if (application.Workshop.CompetitiveSelection)
         {
-            if (!User.IsInRole("provider"))
-            {
-                throw new ArgumentException("Forbidden to update application.");
-            }
+            applicationStatusPermissions.InitCompetitiveSelectionPermissions();
+        }
+        else
+        {
+            applicationStatusPermissions.InitDefaultPermissions();
         }
 
-        if (application.Workshop.CompetitiveSelection && application.Status == ApplicationStatus.Pending &&
-            applicationDto.Status != ApplicationStatus.AcceptedForSelection)
+        var userRoles = Enum.GetNames(typeof(Role)).Where(n => User.IsInRole(n));
+        if (!userRoles.Any(r =>
+                applicationStatusPermissions.CanChangeStatus(r, application.Status, applicationDto.Status)))
         {
-            throw new ArgumentException("Forbidden to update status from Pending to " + applicationDto.Status + " for competitive selection workshop");
+            throw new ArgumentException("Forbidden to update status from " + application.Status + " to " + applicationDto.Status);
         }
 
         application.Status = applicationDto.Status;
