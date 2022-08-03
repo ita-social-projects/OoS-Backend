@@ -39,25 +39,21 @@ public class CodeficatorAddressDto
             if (!string.IsNullOrEmpty(Settlement))
             {
                 addr.Append($"{GetSplitter(addr)}{Settlement}");
-                //addr += GetSplitter(addr) + Settlement;
             }
 
             if (!string.IsNullOrEmpty(TerritorialCommunity))
             {
                 addr.Append($"{GetSplitter(addr)}{TerritorialCommunity} {CodeficatorCategory.TerritorialCommunity.Abbrivation}");
-                //addr += GetSplitter(addr) + TerritorialCommunity;
             }
 
             if (!string.IsNullOrEmpty(District))
             {
                 addr.Append($"{GetSplitter(addr)}{District} {CodeficatorCategory.District.Abbrivation}");
-                //addr += GetSplitter(addr) + District;
             }
 
             if (!string.IsNullOrEmpty(Region))
             {
                 addr.Append($"{GetSplitter(addr)}{Region} {CodeficatorCategory.Region.Abbrivation}");
-                //addr += GetSplitter(addr) + Region;
             }
 
             return addr.ToString();

@@ -128,7 +128,6 @@ public abstract class CodeficatorCategory : SmartEnum<CodeficatorCategory>
     }
 
     // Group (flag) values
-
     private sealed class Level1Category : CodeficatorCategory
     {
         public Level1Category()
