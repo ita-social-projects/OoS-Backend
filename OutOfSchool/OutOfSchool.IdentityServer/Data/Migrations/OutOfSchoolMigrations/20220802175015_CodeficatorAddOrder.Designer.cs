@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
@@ -10,9 +11,10 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220802175015_CodeficatorAddOrder")]
+    partial class CodeficatorAddOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -320,13 +322,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(15)
                         .HasColumnType("varchar(15)");
 
-                    b.Property<long?>("CATOTTGId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("City")
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
+
+                    b.Property<long>("CodeficatorId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("District")
                         .HasMaxLength(30)
@@ -353,7 +355,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CATOTTGId");
+                    b.HasIndex("CodeficatorId");
 
                     b.ToTable("Addresses");
                 });
@@ -447,50 +449,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("ProviderId");
 
                     b.ToTable("BlockedProviderParents");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.CATOTTG", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Category")
-                        .HasMaxLength(3)
-                        .HasColumnType("varchar(3)");
-
-                    b.Property<string>("Code")
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
-
-                    b.Property<ulong>("GeoHash")
-                        .HasColumnType("bigint unsigned");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<double>("Latitude")
-                        .HasColumnType("double");
-
-                    b.Property<double>("Longitude")
-                        .HasColumnType("double");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
-
-                    b.Property<bool>("NeedCheck")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<long?>("ParentId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ParentId");
-
-                    b.ToTable("CATOTTGs");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChangesLog", b =>
@@ -1270,15 +1228,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ActualAddressId")
-                        .IsUnique();
+                    b.HasIndex("ActualAddressId");
 
                     b.HasIndex("InstitutionId");
 
                     b.HasIndex("InstitutionStatusId");
 
-                    b.HasIndex("LegalAddressId")
-                        .IsUnique();
+                    b.HasIndex("LegalAddressId");
 
                     b.HasIndex("UserId");
 
@@ -1968,12 +1924,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Address", b =>
                 {
-                    b.HasOne("OutOfSchool.Services.Models.CATOTTG", "CATOTTG")
+                    b.HasOne("OutOfSchool.Services.Models.Codeficator", "Codeficator")
                         .WithMany()
-                        .HasForeignKey("CATOTTGId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .HasForeignKey("CodeficatorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("CATOTTG");
+                    b.Navigation("Codeficator");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Application", b =>
@@ -2020,15 +1977,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Parent");
 
                     b.Navigation("Provider");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.CATOTTG", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.CATOTTG", "Parent")
-                        .WithMany()
-                        .HasForeignKey("ParentId");
-
-                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChangesLog", b =>
@@ -2109,6 +2057,15 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
 
                     b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Codeficator", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Codeficator", "Parent")
+                        .WithMany("Childs")
+                        .HasForeignKey("ParentId");
+
+                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformationItem", b =>
@@ -2214,9 +2171,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Address", "ActualAddress")
-                        .WithOne()
-                        .HasForeignKey("OutOfSchool.Services.Models.Provider", "ActualAddressId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .WithMany()
+                        .HasForeignKey("ActualAddressId");
 
                     b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.Institution", "Institution")
                         .WithMany("RelatedProviders")
@@ -2227,9 +2183,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasForeignKey("InstitutionStatusId");
 
                     b.HasOne("OutOfSchool.Services.Models.Address", "LegalAddress")
-                        .WithOne()
-                        .HasForeignKey("OutOfSchool.Services.Models.Provider", "LegalAddressId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .WithMany()
+                        .HasForeignKey("LegalAddressId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("OutOfSchool.Services.Models.User", "User")
@@ -2434,6 +2390,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             modelBuilder.Entity("OutOfSchool.Services.Models.Child", b =>
                 {
                     b.Navigation("ChildSocialGroups");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Codeficator", b =>
+                {
+                    b.Navigation("Childs");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformation", b =>
