@@ -1,4 +1,7 @@
-﻿namespace OutOfSchool.Common.Models;
+﻿using System.Text;
+using OutOfSchool.Common.Enums;
+
+namespace OutOfSchool.Common.Models;
 
 public class CodeficatorAddressDto
 {
@@ -20,35 +23,46 @@ public class CodeficatorAddressDto
 
     public double Longitude { get; set; }
 
+    public int Order { get; set; }
+
     public string FullName
     {
         get
         {
-            string addr = CityDistrict;
+            StringBuilder addr = new StringBuilder();
+
+            if (!string.IsNullOrEmpty(CityDistrict))
+            {
+                addr.Append($"{CityDistrict} {CodeficatorCategory.CityDistrict.Abbrivation}");
+            }
 
             if (!string.IsNullOrEmpty(Settlement))
             {
-                addr += GetSplitter(addr) + Settlement;
+                addr.Append($"{GetSplitter(addr)}{Settlement}");
+                //addr += GetSplitter(addr) + Settlement;
             }
 
             if (!string.IsNullOrEmpty(TerritorialCommunity))
             {
-                addr += GetSplitter(addr) + TerritorialCommunity;
+                addr.Append($"{GetSplitter(addr)}{TerritorialCommunity} {CodeficatorCategory.TerritorialCommunity.Abbrivation}");
+                //addr += GetSplitter(addr) + TerritorialCommunity;
             }
 
             if (!string.IsNullOrEmpty(District))
             {
-                addr += GetSplitter(addr) + District;
+                addr.Append($"{GetSplitter(addr)}{District} {CodeficatorCategory.District.Abbrivation}");
+                //addr += GetSplitter(addr) + District;
             }
 
             if (!string.IsNullOrEmpty(Region))
             {
-                addr += GetSplitter(addr) + Region;
+                addr.Append($"{GetSplitter(addr)}{Region} {CodeficatorCategory.Region.Abbrivation}");
+                //addr += GetSplitter(addr) + Region;
             }
 
-            return addr;
+            return addr.ToString();
         }
     }
 
-    private string GetSplitter(string addr) => string.IsNullOrEmpty(addr) ? string.Empty : Constants.AddressSeparator;
+    private string GetSplitter(StringBuilder addr) => addr.Length == 0 ? string.Empty : Constants.AddressSeparator;
 }
