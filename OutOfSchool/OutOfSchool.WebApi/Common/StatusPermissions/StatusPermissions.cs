@@ -5,11 +5,11 @@ namespace OutOfSchool.WebApi.Common.StatusPermissions;
 public class StatusPermissions<T>
     where T : struct
 {
-    public List<StatusChangePermission<T>> AllowedStatuses = new List<StatusChangePermission<T>>();
+    private readonly List<StatusChangePermission<T>> statusPermissionsList = new ();
 
     public void AllowStatusChange(string role, T fromStatus = default, T toStatus = default)
     {
-        AllowedStatuses.Add(new StatusChangePermission<T>
+        statusPermissionsList.Add(new StatusChangePermission<T>
         {
             Role = role,
             FromStatus = fromStatus,
@@ -20,7 +20,7 @@ public class StatusPermissions<T>
 
     public void DenyStatusChange(string role, T fromStatus = default, T toStatus = default)
     {
-        AllowedStatuses.Add(new StatusChangePermission<T>
+        statusPermissionsList.Add(new StatusChangePermission<T>
         {
             Role = role,
             FromStatus = fromStatus,
@@ -31,7 +31,7 @@ public class StatusPermissions<T>
 
     public bool CanChangeStatus(string role, T from, T to)
     {
-        var denyResult = AllowedStatuses.Any(p =>
+        var denyResult = statusPermissionsList.Any(p =>
             (p.Role == role || p.Role == "all")
             && (Convert.ToInt32(p.FromStatus) == Convert.ToInt32(from) || Convert.ToInt32(p.FromStatus) == 0)
             && (Convert.ToInt32(p.ToStatus) == Convert.ToInt32(to) || Convert.ToInt32(p.ToStatus) == 0)
@@ -41,7 +41,7 @@ public class StatusPermissions<T>
         if (denyResult)
             return false;
 
-        var allowResult = AllowedStatuses.Any(p =>
+        var allowResult = statusPermissionsList.Any(p =>
             (p.Role == role || p.Role == "all")
             && (Convert.ToInt32(p.FromStatus) == Convert.ToInt32(from) || Convert.ToInt32(p.FromStatus) == 0)
             && (Convert.ToInt32(p.ToStatus) == Convert.ToInt32(to) || Convert.ToInt32(p.ToStatus) == 0)

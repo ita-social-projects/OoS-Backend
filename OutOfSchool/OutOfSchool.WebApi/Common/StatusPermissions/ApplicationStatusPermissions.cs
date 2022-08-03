@@ -13,7 +13,7 @@ public class ApplicationStatusPermissions : StatusPermissions<ApplicationStatus>
 
         // allow change from any to any status
         AllowStatusChange("techadmin");
-        AllowStatusChange("provideradmin");
+        AllowStatusChange("provider");
 
         // allow change from any to left status
         AllowStatusChange("parent", toStatus: ApplicationStatus.Left);
@@ -21,10 +21,7 @@ public class ApplicationStatusPermissions : StatusPermissions<ApplicationStatus>
 
     public void InitDefaultPermissions()
     {
-        DenyStatusChange("techadmin", toStatus: ApplicationStatus.AcceptedForSelection);
-        DenyStatusChange("provider", toStatus: ApplicationStatus.AcceptedForSelection);
-        DenyStatusChange("parent", toStatus: ApplicationStatus.AcceptedForSelection);
-
+        DenyStatusChange("all", toStatus: ApplicationStatus.AcceptedForSelection);
         AllowStatusChange("provider", fromStatus: ApplicationStatus.Pending);
     }
 

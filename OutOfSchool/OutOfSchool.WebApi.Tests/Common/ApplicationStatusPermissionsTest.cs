@@ -10,22 +10,40 @@ public class ApplicationStatusPermissionsTest
 {
     private ApplicationStatusPermissions _applicationStatusPermissions;
 
-    [Test]
-    public async Task AdminPermission_FromCompletedRejectedLeftToApproved_ReturnsFalse()
+    [TestCase("parent")]
+    [TestCase("provider")]
+    [TestCase("techadmin")]
+    [TestCase("ministryadmin")]
+    public async Task DenyPermission_FromCompletedRejectedLeftToApproved_ReturnsFalse(string role)
     {
         // Arrange default permissions
         _applicationStatusPermissions = new ApplicationStatusPermissions();
         _applicationStatusPermissions.InitDefaultPermissions();
 
         // Act
-        var resultCompleted = _applicationStatusPermissions.CanChangeStatus("techadmin", ApplicationStatus.Completed, ApplicationStatus.Approved);
-        var resultRejected = _applicationStatusPermissions.CanChangeStatus("techadmin", ApplicationStatus.Rejected, ApplicationStatus.Approved);
-        var resultLeft = _applicationStatusPermissions.CanChangeStatus("techadmin", ApplicationStatus.Left, ApplicationStatus.Approved);
+        var resultCompleted = _applicationStatusPermissions.CanChangeStatus(role, ApplicationStatus.Completed, ApplicationStatus.Approved);
+        var resultRejected = _applicationStatusPermissions.CanChangeStatus(role, ApplicationStatus.Rejected, ApplicationStatus.Approved);
+        var resultLeft = _applicationStatusPermissions.CanChangeStatus(role, ApplicationStatus.Left, ApplicationStatus.Approved);
 
         // Assert
         Assert.AreEqual(false, resultCompleted);
         Assert.AreEqual(false, resultRejected);
         Assert.AreEqual(false, resultLeft);
+    }
+
+    [TestCase("parent")]
+    [TestCase("provider")]
+    public async Task DenyPermission_FromAllToAcceptedToSelectionWithoutCompetitiveSelection_ReturnsValidResults(string role)
+    {
+        // Arrange permissions
+        _applicationStatusPermissions = new ApplicationStatusPermissions();
+        _applicationStatusPermissions.InitDefaultPermissions();
+
+        // Act
+        var result = _applicationStatusPermissions.CanChangeStatus(role, ApplicationStatus.Pending, ApplicationStatus.AcceptedForSelection);
+
+        // Assert
+        Assert.AreEqual(false, result);
     }
 
     [Test]
