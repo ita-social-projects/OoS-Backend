@@ -31,19 +31,15 @@ public class RazorViewToStringRenderer : IRazorViewToStringRenderer
     }
 
     /// <inheritdoc/>
-    public async Task<string> GetHtmlStringAsync<TModel>(string emailName, TModel model)
+    public async Task<(string, string)> GetHtmlPlainStringAsync<TModel>(string emailName, TModel model)
     {
-        var viewName = RazorTemplates.GetViewName(emailName);
-
-        return await RenderViewToStringAsync(viewName, model);
-    }
-
-    /// <inheritdoc/>
-    public async Task<string> GetPlainTextStringAsync<TModel>(string emailName, TModel model)
-    {
-        var viewName = RazorTemplates.GetViewName(emailName, false);
-
-        return await RenderViewToStringAsync(viewName, model);
+        var viewNameHtml = RazorTemplates.GetViewName(emailName);
+        var viewNamePlain = RazorTemplates.GetViewName(emailName, false); 
+        var tuple = (
+            html: await RenderViewToStringAsync(viewNameHtml, model), 
+            plain: await RenderViewToStringAsync(viewNamePlain, model)
+            );
+        return tuple;
     }
 
     private async Task<string> RenderViewToStringAsync<TModel>(string viewName, TModel model)

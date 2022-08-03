@@ -145,9 +145,9 @@ public class MinistryAdminService : IMinistryAdminService
                     Email = user.Email,
                     Password = password,
                 };
-                var htmlMessage = await renderer.GetHtmlStringAsync(RazorTemplates.NewAdminInvitation, adminInvitationViewModel);
+                var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.NewAdminInvitation, adminInvitationViewModel);
 
-                await emailSender.SendAsync(user.Email, subject, htmlMessage);
+                await emailSender.SendAsync(user.Email, subject, content);
 
                 // No sense to commit if the email was not sent, as user will not be able to login
                 // and needs to be re-created
