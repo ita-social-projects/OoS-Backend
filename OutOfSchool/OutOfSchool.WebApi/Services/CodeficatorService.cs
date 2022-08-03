@@ -1,7 +1,7 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models.Codeficator;
 
 namespace OutOfSchool.WebApi.Services;
