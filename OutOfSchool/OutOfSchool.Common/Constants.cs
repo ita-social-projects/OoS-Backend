@@ -4,6 +4,8 @@ public static class Constants
 {
     public const int UnifiedUrlLength = 256;
 
+    public const long DefaultCityCodeficatorId = 31737;
+
     public const string BearerScheme = "Bearer";
 
     public const string PhoneNumberFormat = "{0:+380 XX-XXX-XX-XX}";

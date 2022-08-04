@@ -46,8 +46,7 @@ public class AllAddressPartsDto : CodeficatorAddressDto
             Id = codeficator.Id;
         }
 
-        var r2 = CodeficatorCategory.FromName(codeficator.Category);
-        switch (r2)
+        switch (CodeficatorCategory.FromName(codeficator.Category))
         {
             case var e when e.Equals(CodeficatorCategory.Region):
                 Region = codeficator.Name;

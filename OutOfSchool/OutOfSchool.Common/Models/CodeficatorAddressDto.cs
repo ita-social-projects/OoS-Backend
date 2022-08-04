@@ -29,36 +29,36 @@ public class CodeficatorAddressDto
     {
         get
         {
-            StringBuilder addr = new StringBuilder();
+            StringBuilder fullName = new StringBuilder();
 
             if (!string.IsNullOrEmpty(CityDistrict))
             {
-                addr.Append($"{CityDistrict} {CodeficatorCategory.CityDistrict.Abbrivation}");
+                fullName.Append($"{CityDistrict} {CodeficatorCategory.CityDistrict.Abbrivation}");
             }
 
             if (!string.IsNullOrEmpty(Settlement))
             {
-                addr.Append($"{GetSplitter(addr)}{Settlement}");
+                fullName.Append($"{GetSplitter(fullName)}{Settlement}");
             }
 
             if (!string.IsNullOrEmpty(TerritorialCommunity))
             {
-                addr.Append($"{GetSplitter(addr)}{TerritorialCommunity} {CodeficatorCategory.TerritorialCommunity.Abbrivation}");
+                fullName.Append($"{GetSplitter(fullName)}{TerritorialCommunity} {CodeficatorCategory.TerritorialCommunity.Abbrivation}");
             }
 
             if (!string.IsNullOrEmpty(District))
             {
-                addr.Append($"{GetSplitter(addr)}{District} {CodeficatorCategory.District.Abbrivation}");
+                fullName.Append($"{GetSplitter(fullName)}{District} {CodeficatorCategory.District.Abbrivation}");
             }
 
             if (!string.IsNullOrEmpty(Region))
             {
-                addr.Append($"{GetSplitter(addr)}{Region} {CodeficatorCategory.Region.Abbrivation}");
+                fullName.Append($"{GetSplitter(fullName)}{Region} {CodeficatorCategory.Region.Abbrivation}");
             }
 
-            return addr.ToString();
+            return fullName.ToString();
         }
     }
 
-    private string GetSplitter(StringBuilder addr) => addr.Length == 0 ? string.Empty : Constants.AddressSeparator;
+    private static string GetSplitter(StringBuilder address) => address.Length == 0 ? string.Empty : Constants.AddressSeparator;
 }
