@@ -46,7 +46,7 @@ public class CodeficatorServiceTests
     public async Task GetChildrenByParentId_WhenIdIsNull_ReturnsEntity()
     {
         // Arrange
-        Expression<Func<Codeficator, bool>> filter = p => !p.ParentId.HasValue;
+        Expression<Func<CATOTTG, bool>> filter = p => !p.ParentId.HasValue;
         var expected = await repository.GetByFilter(filter).ConfigureAwait(false);
 
         // Act
@@ -62,7 +62,7 @@ public class CodeficatorServiceTests
     public async Task GetChildrenByParentId_WhenIdIsExists_ReturnsEntity(long id)
     {
         // Arrange
-        Expression<Func<Codeficator, bool>> filter = p => p.ParentId == id;
+        Expression<Func<CATOTTG, bool>> filter = p => p.ParentId == id;
         var expected = await repository.GetByFilter(filter).ConfigureAwait(false);
 
         // Act
@@ -78,7 +78,7 @@ public class CodeficatorServiceTests
     public async Task GetChildrenNamesByParentId_WhenIdIsNull_ReturnsEntity()
     {
         // Arrange
-        Expression<Func<Codeficator, bool>> filter = p => !p.ParentId.HasValue;
+        Expression<Func<CATOTTG, bool>> filter = p => !p.ParentId.HasValue;
         var expected = await repository.GetByFilter(filter).ConfigureAwait(false);
 
         // Act
@@ -93,7 +93,7 @@ public class CodeficatorServiceTests
     public async Task GetChildrenNamesByParentId_WhenIdIsExists_ReturnsEntity(long id)
     {
         // Arrange
-        Expression<Func<Codeficator, bool>> filter = p => p.ParentId == id;
+        Expression<Func<CATOTTG, bool>> filter = p => p.ParentId == id;
         var expected = await repository.GetByFilter(filter).ConfigureAwait(false);
 
         // Act
@@ -135,7 +135,7 @@ public class CodeficatorServiceTests
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
 
-        var region = new Codeficator()
+        var region = new CATOTTG()
         {
             Id = 1,
             Name = "Автономна Республіка Крим",
@@ -148,7 +148,7 @@ public class CodeficatorServiceTests
             NeedCheck = false,
         };
 
-        var district = new Codeficator()
+        var district = new CATOTTG()
         {
             Id = 2,
             Name = "Бахчисарайський",
@@ -162,7 +162,7 @@ public class CodeficatorServiceTests
             Parent = region,
         };
 
-        var territorialUnit = new Codeficator()
+        var territorialUnit = new CATOTTG()
         {
             Id = 3,
             Name = "Андріївська",
@@ -176,12 +176,12 @@ public class CodeficatorServiceTests
             Parent = district,
         };
 
-        var codeficators = new List<Codeficator>()
+        var codeficators = new List<CATOTTG>()
         {
             region,
             district,
             territorialUnit,
-            new Codeficator()
+            new CATOTTG()
             {
                 Id = 4,
                 Name = "Андріївка",
@@ -194,7 +194,7 @@ public class CodeficatorServiceTests
                 NeedCheck = false,
                 Parent = territorialUnit,
             },
-            new Codeficator()
+            new CATOTTG()
             {
                 Id = 4087,
                 Name = "Дніпропетровська",
@@ -207,7 +207,7 @@ public class CodeficatorServiceTests
                 NeedCheck = false,
             },
         };
-        context.Codeficators.AddRange(codeficators);
+        context.CATOTTGs.AddRange(codeficators);
         context.SaveChanges();
     }
 }
