@@ -70,7 +70,7 @@ public class ApplicationControllerTests
             ControllerContext = new ControllerContext() { HttpContext = httpContext.Object },
         };
         providerId = Guid.NewGuid();
-        workshops = FakeWorkshopCards();
+        workshops = FakeWorkshopCards(providerId);
         workshopDto = FakeWorkshop();
         workshopDto.ProviderId = providerId;
         children = ChildDtoGenerator.Generate(2).WithSocial(new SocialGroupDto { Id = 1 });
@@ -441,11 +441,11 @@ public class ApplicationControllerTests
         var shortApplication = new ShortApplicationDto
         {
             Id = applications.First().Id,
-            Status = ApplicationStatus.Pending,
+            Status = role == "provider" ? ApplicationStatus.Approved : ApplicationStatus.Left,
             RejectionMessage = applications.First().RejectionMessage,
         };
 
-        httpContext.Setup(c => c.User.IsInRole(It.IsAny<string>())).Returns(true);
+        httpContext.Setup(c => c.User.IsInRole(role)).Returns(true);
 
         parentService.Setup(s => s.GetByUserId(It.IsAny<string>())).ReturnsAsync(parent);
         providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
@@ -742,12 +742,13 @@ public class ApplicationControllerTests
         };
     }
 
-    private List<WorkshopCard> FakeWorkshopCards()
+    private List<WorkshopCard> FakeWorkshopCards(Guid providerId)
     {
         var list = FakeWorkshops();
         var eSlist = new List<WorkshopCard>();
         foreach (var item in list)
         {
+            item.ProviderId = providerId;
             eSlist.Add(item.ToESModel().ToCardDto());
         }
 

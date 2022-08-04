@@ -13,7 +13,6 @@ public class ApplicationStatusPermissions : StatusPermissions<ApplicationStatus>
 
         // allow change from any to any status
         AllowStatusChange("techadmin");
-        AllowStatusChange("provider");
 
         // allow change from any to left status
         AllowStatusChange("parent", toStatus: ApplicationStatus.Left);

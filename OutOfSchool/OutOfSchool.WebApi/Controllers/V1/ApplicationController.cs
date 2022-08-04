@@ -459,10 +459,10 @@ public class ApplicationController : ControllerBase
         }
 
         var userRoles = Enum.GetNames(typeof(Role)).Where(n => User.IsInRole(n));
-        if (!userRoles.Any(r =>
-                applicationStatusPermissions.CanChangeStatus(r, application.Status, applicationDto.Status)))
+        foreach (var userRole in userRoles)
         {
-            throw new ArgumentException("Forbidden to update status from " + application.Status + " to " + applicationDto.Status);
+            if (!applicationStatusPermissions.CanChangeStatus(userRole, application.Status, applicationDto.Status))
+                throw new ArgumentException("Forbidden to update status from " + application.Status + " to " + applicationDto.Status);    
         }
 
         application.Status = applicationDto.Status;
