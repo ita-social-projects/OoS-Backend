@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using OutOfSchool.Services.Enums;
+﻿using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -29,8 +26,9 @@ public interface IRatingService
     /// <summary>
     /// Get all rating entities.
     /// </summary>
+    /// <param name="filter">Filter's key.</param>
     /// <returns>List of all rating records.</returns>
-    Task<IEnumerable<RatingDto>> GetAll();
+    Task<IEnumerable<RatingDto>> GetAsync(OffsetFilter filter);
 
     /// <summary>
     /// Get rating entity by it's key.

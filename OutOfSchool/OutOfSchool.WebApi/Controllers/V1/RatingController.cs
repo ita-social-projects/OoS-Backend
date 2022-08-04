@@ -57,6 +57,8 @@ public class RatingController : ControllerBase
     /// <summary>
     /// Get all ratings from the database.
     /// </summary>
+    /// <param name="skip">Skip number.</param>
+    /// <param name="take">Take number.</param>
     /// <returns>List of all ratings.</returns>
     [HasPermission(Permissions.SystemManagement)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<RatingDto>))]
@@ -64,9 +66,9 @@ public class RatingController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
-    public async Task<IActionResult> Get()
+    public async Task<IActionResult> Get([FromQuery] OffsetFilter filter)
     {
-        var ratings = await ratingService.GetAll().ConfigureAwait(false);
+        var ratings = await ratingService.GetAsync(filter).ConfigureAwait(false);
 
         if (!ratings.Any())
         {
