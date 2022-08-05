@@ -257,7 +257,7 @@ public static class Startup
         services.AddTransient<ISensitiveEntityRepository<InstitutionHierarchy>, SensitiveEntityRepository<InstitutionHierarchy>>();
 
         services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
-
+        
         services.Configure<ChangesLogConfig>(configuration.GetSection(ChangesLogConfig.Name));
 
         // Register the Permission policy handlers

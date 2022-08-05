@@ -66,7 +66,7 @@ public class CodeficatorService : ICodeficatorService
 
     #region privateMethods
 
-    private static Expression<Func<Codeficator, bool>> GetFilter(long? parentId, CodeficatorCategory level)
+    private static Expression<Func<CATOTTG, bool>> GetFilter(long? parentId, CodeficatorCategory level)
     {
         if (parentId.HasValue)
         {

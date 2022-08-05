@@ -62,7 +62,7 @@ public class AddressServiceTests
             BuildingNumber = "NewBuildingNumber",
             Latitude = 60.45383,
             Longitude = 70.56765,
-            CodeficatorId = 1,
+            CATOTTGId = 1,
         };
 
         // Act
@@ -197,7 +197,7 @@ public class AddressServiceTests
                     BuildingNumber = "BuildingNumber1",
                     Latitude = 41.45383,
                     Longitude = 51.56765,
-                    CodeficatorId = 1,
+                    CATOTTGId = 1,
                 },
                 new Address()
                 {
@@ -209,7 +209,7 @@ public class AddressServiceTests
                     BuildingNumber = "BuildingNumber2",
                     Latitude = 42.45383,
                     Longitude = 52.56765,
-                    CodeficatorId = 2,
+                    CATOTTGId = 2,
                 },
                 new Address()
                 {
@@ -221,7 +221,7 @@ public class AddressServiceTests
                     BuildingNumber = "BuildingNumber3",
                     Latitude = 43.45383,
                     Longitude = 53.56765,
-                    CodeficatorId = 2,
+                    CATOTTGId = 2,
                 },
                 new Address()
                 {
@@ -233,7 +233,7 @@ public class AddressServiceTests
                     BuildingNumber = "BuildingNumber4",
                     Latitude = 44.45383,
                     Longitude = 54.56765,
-                    CodeficatorId = 2,
+                    CATOTTGId = 2,
                 },
                 new Address()
                 {
@@ -245,15 +245,15 @@ public class AddressServiceTests
                     BuildingNumber = "BuildingNumber5",
                     Latitude = 45.45383,
                     Longitude = 55.56765,
-                    CodeficatorId = 2,
+                    CATOTTGId = 2,
                 },
             };
 
             context.Addresses.AddRange(addresses);
 
-            var codeficators = new List<Codeficator>()
+            var codeficators = new List<CATOTTG>()
             {
-                new Codeficator()
+                new CATOTTG()
                 {
                     Id = 1,
                     Name = "Test",
@@ -261,7 +261,7 @@ public class AddressServiceTests
                     Latitude = 41.45383,
                     Longitude = 51.56765,
                 },
-                new Codeficator()
+                new CATOTTG()
                 {
                     Id = 2,
                     Name = "Test2",
@@ -271,7 +271,7 @@ public class AddressServiceTests
                 },
             };
 
-            context.Codeficators.AddRange(codeficators);
+            context.CATOTTGs.AddRange(codeficators);
 
             context.SaveChanges();
         }

@@ -30,7 +30,7 @@ public class AddressDto
 
     public double Longitude { get; set; }
 
-    public long CodeficatorId { get; set; }
+    public long? CATOTTGId { get; set; }
 
     public AllAddressPartsDto CodeficatorAddressDto { get; set; }
 

@@ -91,10 +91,10 @@ public class MappingProfile : Profile
         CreateMap<Address, AddressDto>()
             .ForPath(
                 dest => dest.CodeficatorAddressDto.AddressParts,
-                opt => opt.MapFrom(src => src.Codeficator));
+                opt => opt.MapFrom(src => src.CATOTTG));
 
         CreateMap<AddressDto, Address>()
-            .ForMember(dest => dest.Codeficator, opt => opt.Ignore());
+            .ForMember(dest => dest.CATOTTG, opt => opt.Ignore());
 
         CreateMap<BlockedProviderParentBlockDto, BlockedProviderParent>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
@@ -197,7 +197,7 @@ public class MappingProfile : Profile
         CreateMap<Institution, InstitutionDto>().ReverseMap();
         CreateMap<InstitutionFieldDescription, InstitutionFieldDescriptionDto>().ReverseMap();
 
-        CreateMap<Codeficator, CodeficatorDto>();
+        CreateMap<CATOTTG, CodeficatorDto>();
 
         CreateMap<Notification, NotificationDto>().ReverseMap()
             .ForMember(n => n.Id, n => n.Ignore());

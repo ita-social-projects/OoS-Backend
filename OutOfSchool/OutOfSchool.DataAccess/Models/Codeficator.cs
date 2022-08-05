@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models;
 
-public class Codeficator : IKeyedEntity<long>
+public class CATOTTG : IKeyedEntity<long>
 {
     public long Id { get; set; }
 
@@ -26,7 +26,5 @@ public class Codeficator : IKeyedEntity<long>
 
     public bool NeedCheck { get; set; } = default;
 
-    public virtual Codeficator Parent { get; set; }
-
-    public virtual ICollection<Codeficator> Childs { get; set; }
+    public virtual CATOTTG Parent { get; set; }
 }
