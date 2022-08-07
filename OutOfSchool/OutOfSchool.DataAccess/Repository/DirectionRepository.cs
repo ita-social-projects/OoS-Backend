@@ -19,8 +19,6 @@ public class DirectionRepository : EntityRepository<long, Direction>, IDirection
     {
         return await dbSet
             .OrderBy(direction => direction.Id)
-            .Include(direction => direction.Departments)
-            .ThenInclude(department => department.Classes)
             .Where(predicate)
             .Skip(skip)
             .Take(take)

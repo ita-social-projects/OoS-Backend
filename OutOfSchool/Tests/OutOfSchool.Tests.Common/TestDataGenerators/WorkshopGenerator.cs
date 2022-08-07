@@ -61,12 +61,6 @@ public static class WorkshopGenerator
     public static List<Workshop> WithDirection(this List<Workshop> workshops, Direction direction)
         => TestDataHelper.ApplyOnCollection(workshops, (workshop, direction) => WithDirection(workshop, direction), direction);
 
-    public static Workshop WithDepartment(this Workshop workshop, Department department)
-        => TestDataHelper.ApplyOnItem(workshop, (item, value) => { item.DepartmentId = value.Id; }, department);
-
-    public static List<Workshop> WithDepartment(this List<Workshop> workshops, Department department)
-        => TestDataHelper.ApplyOnCollection(workshops, (item, value) => WithDepartment(item, value), department);
-
     public static Workshop WithApplications(this Workshop workshop)
     {
         workshop.Applications = ApplicationGenerator.Generate(new Random().Next(1, 4))

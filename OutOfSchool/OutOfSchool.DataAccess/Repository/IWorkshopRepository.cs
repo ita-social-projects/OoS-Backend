@@ -7,13 +7,6 @@ namespace OutOfSchool.Services.Repository;
 
 public interface IWorkshopRepository : IEntityRepositoryBase<Guid, Workshop>
 {
-    /// <summary>
-    /// Checks entity classId existence.
-    /// </summary>
-    /// <param name="id">Class id.</param>
-    /// <returns>True if Class exists, otherwise false.</returns>
-    bool ClassExists(long id);
-
     Task<Workshop> GetWithNavigations(Guid id);
 
     Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids);

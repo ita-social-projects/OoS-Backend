@@ -48,8 +48,10 @@ public class WorkshopCard
 
     public string Institution { get; set; }
 
+    // TODO: remove?
     public long DirectionId { get; set; }
 
+    // TODO: remove?
     public List<long> DirectionsId { get; set; }
 
     [Required]

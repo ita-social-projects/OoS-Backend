@@ -50,14 +50,6 @@ public class WorkshopES
 
     public string Institution { get; set; }
 
-    public long DirectionId { get; set; }
-
-    public string Direction { get; set; }
-
-    public long DepartmentId { get; set; }
-
-    public long ClassId { get; set; }
-
     public bool WithDisabilityOptions { get; set; }
 
     public string Keywords { get; set; }

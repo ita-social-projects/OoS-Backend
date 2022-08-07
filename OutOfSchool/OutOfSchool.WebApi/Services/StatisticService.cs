@@ -72,76 +72,77 @@ public class StatisticService : IStatisticService
     /// <inheritdoc/>
     public async Task<IEnumerable<DirectionStatistic>> GetPopularDirectionsFromDatabase(int limit, string city)
     {
-        var workshops = workshopRepository.Get();
-        var applications = applicationRepository.Get();
-
-        if (!string.IsNullOrWhiteSpace(city))
-        {
-            workshops = workshops
-                .Where(w => string.Equals(w.Address.City, city.Trim()));
-        }
-
-        var directionsWithWorkshops = workshops
-            .GroupBy(w => w.DirectionId)
-            .Select(g => new
-            {
-                DirectionId = g.Key,
-                WorkshopsCount = g.Count() as int?,
-            });
-
-        var directionsWithApplications = applications
-            .GroupBy(a => a.Workshop.DirectionId)
-            .Select(g => new
-            {
-                DirectionId = g.Key,
-                ApplicationsCount = g.Count() as int?,
-            });
-
-        var directionsWithCounts = directionsWithWorkshops
-            .GroupJoin(
-                directionsWithApplications,
-                directionWithWorkshop => directionWithWorkshop.DirectionId,
-                directionWithApplication => directionWithApplication.DirectionId,
-                (directionWithWorkshop, localDirectionsWithApplications) => new
-                {
-                    directionWithWorkshop,
-                    localDirectionsWithApplications,
-                })
-            .SelectMany(
-                x => x.localDirectionsWithApplications.DefaultIfEmpty(),
-                (x, y) => new
-                {
-                    DirectionId = x.directionWithWorkshop.DirectionId,
-                    ApplicationsCount = y.ApplicationsCount,
-                    WorkshopsCount = x.directionWithWorkshop.WorkshopsCount,
-                });
-
-        var allDirections = directionRepository.Get();
-
-        var statistics = allDirections
-            .GroupJoin(
-                directionsWithCounts,
-                direction => direction.Id,
-                directionWithCounts => directionWithCounts.DirectionId,
-                (direction, localDirectionsWithCounts) => new { direction, localDirectionsWithCounts })
-            .SelectMany(
-                x => x.localDirectionsWithCounts,
-                (x, y) => new DirectionStatistic
-                {
-                    Direction = mapper.Map<DirectionDto>(x.direction),
-                    ApplicationsCount = y.ApplicationsCount ?? 0,
-                    WorkshopsCount = y.WorkshopsCount ?? 0,
-                });
-
-        var sortedStatistics = await statistics
-            .OrderByDescending(s => s.ApplicationsCount)
-            .Take(limit)
-            .ToListAsync()
-            .ConfigureAwait(false);
-
-        logger.LogInformation($"All {sortedStatistics.Count} records were successfully received");
-
-        return sortedStatistics;
+        // var workshops = workshopRepository.Get();
+        // var applications = applicationRepository.Get();
+        //
+        // if (!string.IsNullOrWhiteSpace(city))
+        // {
+        //     workshops = workshops
+        //         .Where(w => string.Equals(w.Address.City, city.Trim()));
+        // }
+        //
+        // var directionsWithWorkshops = workshops
+        //     .GroupBy(w => w.DirectionId)
+        //     .Select(g => new
+        //     {
+        //         DirectionId = g.Key,
+        //         WorkshopsCount = g.Count() as int?,
+        //     });
+        //
+        // var directionsWithApplications = applications
+        //     .GroupBy(a => a.Workshop.DirectionId)
+        //     .Select(g => new
+        //     {
+        //         DirectionId = g.Key,
+        //         ApplicationsCount = g.Count() as int?,
+        //     });
+        //
+        // var directionsWithCounts = directionsWithWorkshops
+        //     .GroupJoin(
+        //         directionsWithApplications,
+        //         directionWithWorkshop => directionWithWorkshop.DirectionId,
+        //         directionWithApplication => directionWithApplication.DirectionId,
+        //         (directionWithWorkshop, localDirectionsWithApplications) => new
+        //         {
+        //             directionWithWorkshop,
+        //             localDirectionsWithApplications,
+        //         })
+        //     .SelectMany(
+        //         x => x.localDirectionsWithApplications.DefaultIfEmpty(),
+        //         (x, y) => new
+        //         {
+        //             DirectionId = x.directionWithWorkshop.DirectionId,
+        //             ApplicationsCount = y.ApplicationsCount,
+        //             WorkshopsCount = x.directionWithWorkshop.WorkshopsCount,
+        //         });
+        //
+        // var allDirections = directionRepository.Get();
+        //
+        // var statistics = allDirections
+        //     .GroupJoin(
+        //         directionsWithCounts,
+        //         direction => direction.Id,
+        //         directionWithCounts => directionWithCounts.DirectionId,
+        //         (direction, localDirectionsWithCounts) => new { direction, localDirectionsWithCounts })
+        //     .SelectMany(
+        //         x => x.localDirectionsWithCounts,
+        //         (x, y) => new DirectionStatistic
+        //         {
+        //             Direction = mapper.Map<DirectionDto>(x.direction),
+        //             ApplicationsCount = y.ApplicationsCount ?? 0,
+        //             WorkshopsCount = y.WorkshopsCount ?? 0,
+        //         });
+        //
+        // var sortedStatistics = await statistics
+        //     .OrderByDescending(s => s.ApplicationsCount)
+        //     .Take(limit)
+        //     .ToListAsync()
+        //     .ConfigureAwait(false);
+        //
+        // logger.LogInformation($"All {sortedStatistics.Count} records were successfully received");
+        //
+        // return sortedStatistics;
+        return Enumerable.Empty<DirectionStatistic>();
     }
 
     /// <inheritdoc/>

@@ -83,11 +83,12 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
                 box.Add(item);
             }
 
-            queryContainer &= new TermsQuery()
-            {
-                Field = Infer.Field<WorkshopES>(w => w.DirectionId),
-                Terms = box,
-            };
+            // TODO: fix ES directions
+            // queryContainer &= new TermsQuery()
+            // {
+            //     Field = Infer.Field<WorkshopES>(w => w.DirectionId),
+            //     Terms = box,
+            // };
         }
 
         if (filter.IsFree && (filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))

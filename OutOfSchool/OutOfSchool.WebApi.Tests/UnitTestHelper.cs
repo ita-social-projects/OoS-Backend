@@ -58,13 +58,6 @@ public static class UnitTestHelper
         context.Directions.Add(new Direction { Id = 2, Title = "c2" });
         context.Directions.Add(new Direction { Id = 3, Title = "c3" });
 
-        context.Departments.Add(new Department { Id = 1, Title = "sc1", DirectionId = 1 });
-        context.Departments.Add(new Department { Id = 2, Title = "sc2", DirectionId = 3 });
-
-        context.Classes.Add(new Class { Id = 1, Title = "ssc1", DepartmentId = 1 });
-        context.Classes.Add(new Class { Id = 2, Title = "ssc2", DepartmentId = 1 });
-        context.Classes.Add(new Class { Id = 3, Title = "ssc3", DepartmentId = 2 });
-
         var workshops = new List<Workshop>
         {
             new Workshop { Id = Guid.NewGuid(), Title = "w1", DirectionId = 1 },

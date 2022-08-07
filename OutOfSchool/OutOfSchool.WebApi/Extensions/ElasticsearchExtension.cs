@@ -47,29 +47,29 @@ public static class ElasticsearchExtension
                 {
                     if (details.RequestBodyInBytes != null)
                     {
-                        Console.WriteLine(
+                        Log.Debug(
                             $"{details.HttpMethod} {details.Uri} " +
                             $"{Encoding.UTF8.GetString(details.RequestBodyInBytes)}");
                     }
                     else
                     {
-                        Console.WriteLine($"{details.HttpMethod} {details.Uri}");
+                        Log.Debug($"{details.HttpMethod} {details.Uri}");
                     }
 
                     // log out the response and the response body, if one exists for the type of response
                     if (details.ResponseBodyInBytes != null)
                     {
-                        Console.WriteLine($"Status: {details.HttpStatusCode}" +
-                                          $"{Encoding.UTF8.GetString(details.ResponseBodyInBytes)}");
+                        Log.Debug($"Status: {details.HttpStatusCode}" +
+                                  $"{Encoding.UTF8.GetString(details.ResponseBodyInBytes)}");
                     }
                     else
                     {
-                        Console.WriteLine($"Status: {details.HttpStatusCode}");
+                        Log.Debug($"Status: {details.HttpStatusCode}");
                     }
 
                     if (!details.Success)
                     {
-                        Console.Error.WriteLine($"Reason: {details.OriginalException}");
+                        Log.Error($"Reason: {details.OriginalException}");
                     }
                 });
         }
@@ -104,13 +104,11 @@ public static class ElasticsearchExtension
     /// <param name="configurator">Elasticsearch models configurator.</param>
     private static void EnsureIndexCreated(IElasticClient client, string indexName, IElasticsearchEntityTypeConfiguration configurator)
     {
-        // TODO: Remove this later, as Opensearch allows to ensure index exists
         var startTime = DateTime.UtcNow.ToEpochTime();
 
         while (!client.Ping().IsValid && (DateTime.UtcNow.ToEpochTime() - startTime < Minute))
         {
-            // TODO: Use normal logger
-            Console.WriteLine("Waiting for Elastic connection");
+            Log.Information("Waiting for Elastic connection");
             Task.Delay(CheckConnectivityDelayMs).Wait();
         }
 
