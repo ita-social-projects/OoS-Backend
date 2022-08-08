@@ -32,7 +32,6 @@ public class WorkshopFilter : OffsetFilter
     [Range(0, int.MaxValue, ErrorMessage = "Field value should be in a range from 0 to 2 147 483 647")]
     public int MaxPrice { get; set; } = int.MaxValue;
 
-    // TODO: remove?
     public List<long> DirectionIds { get; set; } = new List<long>();
 
     public string City { get; set; } = string.Empty;
