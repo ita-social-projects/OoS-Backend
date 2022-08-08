@@ -349,7 +349,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.MaxAge, opt => opt.MapFrom(src => src.Workshop.MaxAge))
             .ForMember(dest => dest.MinAge, opt => opt.MapFrom(src => src.Workshop.MinAge))
             .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Workshop.Price))
-            .ForMember(dest => dest.DirectionId, opt => opt.MapFrom(src => src.Workshop.DirectionId))
             .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Workshop.Address))
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionHierarchyId, opt => opt.Ignore())
