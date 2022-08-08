@@ -77,18 +77,11 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
 
         if (filter.DirectionIds.Any())
         {
-            var box = new List<object>();
-            foreach (var item in filter.DirectionIds)
+            queryContainer &= new TermsQuery()
             {
-                box.Add(item);
-            }
-
-            // TODO: fix ES directions
-            // queryContainer &= new TermsQuery()
-            // {
-            //     Field = Infer.Field<WorkshopES>(w => w.DirectionId),
-            //     Terms = box,
-            // };
+                Field = Infer.Field<WorkshopES>(w => w.Directions.FirstOrDefault().Id),
+                Terms = filter.DirectionIds.Cast<object>(),
+            };
         }
 
         if (filter.IsFree && (filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
