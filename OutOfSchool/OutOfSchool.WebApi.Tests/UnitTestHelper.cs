@@ -60,9 +60,9 @@ public static class UnitTestHelper
 
         var workshops = new List<Workshop>
         {
-            new Workshop { Id = Guid.NewGuid(), Title = "w1", DirectionId = 1 },
-            new Workshop { Id = Guid.NewGuid(), Title = "w2", DirectionId = 1 },
-            new Workshop { Id = Guid.NewGuid(), Title = "w3", DirectionId = 3 },
+            new Workshop { Id = Guid.NewGuid(), Title = "w1" },
+            new Workshop { Id = Guid.NewGuid(), Title = "w2" },
+            new Workshop { Id = Guid.NewGuid(), Title = "w3" },
         };
 
         context.Workshops.AddRange(workshops);

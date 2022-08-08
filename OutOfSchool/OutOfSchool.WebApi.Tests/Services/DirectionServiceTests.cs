@@ -244,7 +244,7 @@ public class DirectionServiceTests
                 new Workshop()
                 {
                     Title = "Test1",
-                    DirectionId = 2,
+                    InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
                 },
             };
 

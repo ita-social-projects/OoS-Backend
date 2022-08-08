@@ -79,8 +79,7 @@ public class WorkshopServiceTests
         var newWorkshop = new Workshop()
         {
             Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
-            DepartmentId = 1,
-            DirectionId = 1,
+            InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
         };
 
         // Act
@@ -98,8 +97,7 @@ public class WorkshopServiceTests
         var newWorkshop = new Workshop
         {
             Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
-            DepartmentId = 10,
-            DirectionId = 10,
+            InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
         };
 
         // Act
@@ -116,8 +114,7 @@ public class WorkshopServiceTests
         SetupCreate();
         var newWorkshop = new Workshop()
         {
-            DepartmentId = 1,
-            DirectionId = 1,
+            InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
         };
 
         // Act and Assert
@@ -417,9 +414,7 @@ public class WorkshopServiceTests
             Status = WorkshopStatus.Open,
             CoverImageId = "image1",
             ProviderId = new Guid("65eb933f-6502-4e89-a7cb-65901e51d119"),
-            DirectionId = 1,
-            ClassId = 1,
-            DepartmentId = 1,
+            InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
             AddressId = 55,
             Address = new Address
             {
