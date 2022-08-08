@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using AutoMapper;
 using IdentityModel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
@@ -28,6 +29,7 @@ public class ParentService : IParentService
     private readonly ILogger<ParentService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IEntityRepository<Guid, Child> repositoryChild;
+    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ParentService"/> class.
@@ -37,18 +39,21 @@ public class ParentService : IParentService
     /// <param name="repositoryChild">Repository for child entity.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
+    /// <param name="mapper">Mapper.</param>
     public ParentService(
         IParentRepository repositoryParent,
         IEntityRepository<string, User> repositoryUser,
         ILogger<ParentService> logger,
         IStringLocalizer<SharedResource> localizer,
-        IEntityRepository<Guid, Child> repositoryChild)
+        IEntityRepository<Guid, Child> repositoryChild,
+        IMapper mapper)
     {
-        this.localizer = localizer;
-        this.repositoryParent = repositoryParent;
-        this.repositoryUser = repositoryUser;
-        this.logger = logger;
-        this.repositoryChild = repositoryChild;
+        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+        this.repositoryParent = repositoryParent ?? throw new ArgumentNullException(nameof(repositoryParent));
+        this.repositoryUser = repositoryUser ?? throw new ArgumentNullException(nameof(repositoryUser));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.repositoryChild = repositoryChild ?? throw new ArgumentNullException(nameof(repositoryChild));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
@@ -56,13 +61,13 @@ public class ParentService : IParentService
     {
         logger.LogInformation("Parent creating was started");
 
-        Func<Task<Parent>> operation = async () => await repositoryParent.Create(dto.ToDomain()).ConfigureAwait(false);
+        Func<Task<Parent>> operation = async () => await repositoryParent.Create(mapper.Map<Parent>(dto)).ConfigureAwait(false);
 
         var newParent = await repositoryParent.RunInTransaction(operation).ConfigureAwait(false);
 
         logger.LogInformation($"Parent with Id = {newParent?.Id} created successfully.");
 
-        return newParent.ToModel();
+        return mapper.Map<ParentDTO>(newParent);
     }
 
     /// <inheritdoc/>
@@ -96,7 +101,7 @@ public class ParentService : IParentService
             ? "Parent table is empty."
             : $"All {parents.Count()} records were successfully received from the Parent table");
 
-        return parents.Select(parent => parent.ToModel()).ToList();
+        return parents.Select(parent => mapper.Map<ParentDTO>(parent)).ToList();
     }
 
     /// <inheritdoc/>
@@ -127,7 +132,7 @@ public class ParentService : IParentService
         var result = new SearchResult<ParentDTO>()
         {
             TotalAmount = count,
-            Entities = parents.Select(entity => entity.ToModel()).ToList(),
+            Entities = parents.Select(entity => mapper.Map<ParentDTO>(entity)).ToList(),
         };
 
         return result;
@@ -149,7 +154,7 @@ public class ParentService : IParentService
 
         logger.LogInformation($"Successfully got a Parent with UserId = {id}.");
 
-        return parents.FirstOrDefault().ToModel();
+        return mapper.Map<ParentDTO>(parents.First());
     }
 
     /// <inheritdoc/>
@@ -168,7 +173,7 @@ public class ParentService : IParentService
 
         logger.LogInformation($"Successfully got a Parent with Id = {id}.");
 
-        return parent.ToModel();
+        return mapper.Map<ParentDTO>(parent);
     }
 
     /// <inheritdoc/>
@@ -198,7 +203,7 @@ public class ParentService : IParentService
                 await repositoryChild.Update(child).ConfigureAwait(false);
             }
 
-            return updatedUser.ToModel();
+            return mapper.Map<ShortUserDto>(updatedUser);
         }
         catch (DbUpdateConcurrencyException)
         {
