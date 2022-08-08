@@ -204,9 +204,6 @@ public class MappingProfile : Profile
                 dest => dest.Workdays,
                 opt => opt.MapFrom(dtr => string.Join(" ", dtr.Workdays.ToDaysBitMaskEnumerable())));
 
-        CreateMap<Teacher, TeacherES>()
-            .ForMember(dest => dest.Image, opt => opt.Ignore());
-
         CreateMap<Direction, DirectionES>();
 
         CreateMap<Workshop, WorkshopES>()

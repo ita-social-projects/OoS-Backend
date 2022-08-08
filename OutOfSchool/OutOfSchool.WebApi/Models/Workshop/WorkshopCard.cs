@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models;
 
@@ -48,10 +45,6 @@ public class WorkshopCard
 
     public string Institution { get; set; }
 
-    // TODO: remove?
-    public long DirectionId { get; set; }
-
-    // TODO: remove?
     public List<long> DirectionsId { get; set; }
 
     [Required]
