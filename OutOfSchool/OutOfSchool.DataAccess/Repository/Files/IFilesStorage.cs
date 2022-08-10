@@ -28,7 +28,7 @@ public interface IFilesStorage<TFile, TIdentifier>
     /// <param name="fileId">File id.</param>
     /// <param name="cancellationToken">CancellationToken.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-    /// The task result contains a file of type <see cref="TFile"/>.
+    /// The task result contains a file of type <see cref="TFile"/> or null if it was not found.
     /// </returns>
     Task<TFile> GetByIdAsync(TIdentifier fileId, CancellationToken cancellationToken = default);
 
