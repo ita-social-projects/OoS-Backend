@@ -39,7 +39,6 @@ public static class ElasticsearchMappingExtensions
                     dest => dest.Point,
                     opt =>
                         opt.MapFrom(a => new GeoLocation(a.Latitude, a.Longitude)));
-            cfg.CreateMap<TeacherDTO, TeacherES>();
             cfg.CreateMap<DateTimeRangeDto, DateTimeRangeES>()
                 .ForMember(dest => dest.Workdays, opt => opt.MapFrom(src => string.Join(' ', src.Workdays)));
             cfg.CreateMap<DirectionDto, DirectionES>();

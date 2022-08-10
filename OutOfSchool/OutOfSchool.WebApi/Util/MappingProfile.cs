@@ -1,15 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using AutoMapper;
-using Google.Protobuf.WellKnownTypes;
 using GrpcService;
+using Nest;
 using OutOfSchool.Common.Models;
-using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Achievement;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
@@ -19,9 +11,10 @@ using OutOfSchool.WebApi.Models.Codeficator;
 using OutOfSchool.WebApi.Models.Notifications;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
-using OutOfSchool.WebApi.Models.Teachers;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Util.CustomComparers;
+using Profile = AutoMapper.Profile;
+using Timestamp = Google.Protobuf.WellKnownTypes.Timestamp;
 
 namespace OutOfSchool.WebApi.Util;
 
@@ -34,7 +27,6 @@ public class MappingProfile : Profile
             .ForMember(
                 dest => dest.Keywords,
                 opt => opt.MapFrom(src => string.Join(SEPARATOR, src.Keywords.Distinct())))
-            .ForMember(dest => dest.Direction, opt => opt.Ignore())
             .ForMember(dest => dest.DateTimeRanges, opt => opt.MapFrom((dto, entity, dest, ctx) =>
             {
                 var dateTimeRanges = ctx.Mapper.Map<List<DateTimeRange>>(dto.DateTimeRanges);
@@ -57,7 +49,6 @@ public class MappingProfile : Profile
             }))
             .ForMember(dest => dest.Teachers, opt => opt.Ignore())
             .ForMember(dest => dest.Provider, opt => opt.Ignore())
-            .ForMember(dest => dest.Class, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
             .ForMember(dest => dest.Applications, opt => opt.Ignore())
             .ForMember(dest => dest.ChatRooms, opt => opt.Ignore())
@@ -71,7 +62,6 @@ public class MappingProfile : Profile
             .ForMember(
                 dest => dest.Keywords,
                 opt => opt.MapFrom(src => src.Keywords.Split(SEPARATOR, StringSplitOptions.None)))
-            .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title))
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
             .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions))
@@ -84,8 +74,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.TakenSeats, opt =>
                             opt.MapFrom(src =>
                                 src.Applications.Count(x =>
-                                    x.Status == OutOfSchool.Services.Enums.ApplicationStatus.Approved
-                                    || x.Status == OutOfSchool.Services.Enums.ApplicationStatus.StudyingForYears)));
+                                    x.Status == ApplicationStatus.Approved
+                                    || x.Status == ApplicationStatus.StudyingForYears)));
 
         CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>().ReverseMap();
 
@@ -165,7 +155,6 @@ public class MappingProfile : Profile
         CreateMap<Workshop, WorkshopCard>()
             .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
-            .ForMember(dest => dest.DirectionId, opt => opt.MapFrom(src => src.Direction.Id))
             .ForMember(dest => dest.DirectionsId, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)))
             .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
@@ -173,8 +162,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.TakenSeats, opt =>
                             opt.MapFrom(src =>
                                 src.Applications.Count(x =>
-                                    x.Status == OutOfSchool.Services.Enums.ApplicationStatus.Approved
-                                    || x.Status == OutOfSchool.Services.Enums.ApplicationStatus.StudyingForYears)));
+                                    x.Status == ApplicationStatus.Approved
+                                    || x.Status == ApplicationStatus.StudyingForYears)));
 
         CreateMap<SocialGroup, SocialGroupDto>().ReverseMap();
 
@@ -208,21 +197,17 @@ public class MappingProfile : Profile
         CreateMap<Address, AddressES>()
             .ForMember(
                 dest => dest.Point,
-                opt => opt.MapFrom(gl => new Nest.GeoLocation(gl.Latitude, gl.Longitude)));
+                opt => opt.MapFrom(gl => new GeoLocation(gl.Latitude, gl.Longitude)));
 
         CreateMap<DateTimeRange, DateTimeRangeES>()
             .ForMember(
                 dest => dest.Workdays,
                 opt => opt.MapFrom(dtr => string.Join(" ", dtr.Workdays.ToDaysBitMaskEnumerable())));
 
-        CreateMap<Teacher, TeacherES>()
-            .ForMember(dest => dest.Image, opt => opt.Ignore());
-
         CreateMap<Direction, DirectionES>();
 
         CreateMap<Workshop, WorkshopES>()
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
-            .ForMember(dest => dest.Direction, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
             .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions))
             .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
@@ -242,19 +227,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.IsDeputy, opt => opt.Ignore())
             .ForMember(dest => dest.AccountStatus, m => m.Ignore());
 
-        CreateMap<ClassDto, Class>()
-            .ForMember(dest => dest.Department, opt => opt.Ignore());
-
-        CreateMap<Class, ClassDto>();
-
-        CreateMap<DepartmentDto, Department>()
-            .ForMember(dest => dest.Direction, opt => opt.Ignore())
-            .ForMember(dest => dest.Classes, opt => opt.Ignore());
-
-        CreateMap<Department, DepartmentDto>();
-
         CreateMap<DirectionDto, Direction>()
-            .ForMember(dest => dest.Departments, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionHierarchies, opt => opt.Ignore());
 
         CreateMap<Direction, DirectionDto>();
@@ -376,7 +349,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.MaxAge, opt => opt.MapFrom(src => src.Workshop.MaxAge))
             .ForMember(dest => dest.MinAge, opt => opt.MapFrom(src => src.Workshop.MinAge))
             .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Workshop.Price))
-            .ForMember(dest => dest.DirectionId, opt => opt.MapFrom(src => src.Workshop.DirectionId))
             .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Workshop.Address))
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionHierarchyId, opt => opt.Ignore())

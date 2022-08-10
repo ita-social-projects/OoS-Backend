@@ -40,9 +40,6 @@ public class WorkshopRepository : SensitiveEntityRepository<Workshop>, IWorkshop
             .SingleOrDefaultAsync(ws => ws.Id == id);
     }
 
-    /// <inheritdoc/>
-    public bool ClassExists(long id) => db.Classes.Any(x => x.Id == id);
-
     public async Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids)
     {
         return await dbSet.Where(w => ids.Contains(w.Id)).ToListAsync();

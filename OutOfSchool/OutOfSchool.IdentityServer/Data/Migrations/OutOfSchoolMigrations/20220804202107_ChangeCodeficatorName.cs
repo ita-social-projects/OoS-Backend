@@ -3,50 +3,50 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations;
+
+public partial class ChangeCodeficatorName : Migration
 {
-    public partial class ChangeCodeficatorName : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Addresses_Codeficators_CodeficatorId",
-                table: "Addresses");
+        migrationBuilder.DropForeignKey(
+            name: "FK_Addresses_Codeficators_CodeficatorId",
+            table: "Addresses");
 
-            migrationBuilder.DropForeignKey(
-                name: "FK_Providers_Addresses_ActualAddressId",
-                table: "Providers");
+        migrationBuilder.DropForeignKey(
+            name: "FK_Providers_Addresses_ActualAddressId",
+            table: "Providers");
 
-            migrationBuilder.DropForeignKey(
-                name: "FK_Providers_Addresses_LegalAddressId",
-                table: "Providers");
+        migrationBuilder.DropForeignKey(
+            name: "FK_Providers_Addresses_LegalAddressId",
+            table: "Providers");
 
-            migrationBuilder.DropTable(
-                name: "Codeficators");
+        migrationBuilder.DropTable(
+            name: "Codeficators");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Providers_ActualAddressId",
-                table: "Providers");
+        migrationBuilder.DropIndex(
+            name: "IX_Providers_ActualAddressId",
+            table: "Providers");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Providers_LegalAddressId",
-                table: "Providers");
+        migrationBuilder.DropIndex(
+            name: "IX_Providers_LegalAddressId",
+            table: "Providers");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Addresses_CodeficatorId",
-                table: "Addresses");
+        migrationBuilder.DropIndex(
+            name: "IX_Addresses_CodeficatorId",
+            table: "Addresses");
 
-            migrationBuilder.DropColumn(
-                name: "CodeficatorId",
-                table: "Addresses");
+        migrationBuilder.DropColumn(
+            name: "CodeficatorId",
+            table: "Addresses");
 
-            migrationBuilder.AddColumn<long>(
-                name: "CATOTTGId",
-                table: "Addresses",
-                type: "bigint",
-                nullable: true);
+        migrationBuilder.AddColumn<long>(
+            name: "CATOTTGId",
+            table: "Addresses",
+            type: "bigint",
+            nullable: true);
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CATOTTGs",
                 columns: table => new
                 {
@@ -74,95 +74,95 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalTable: "CATOTTGs",
                         principalColumn: "Id");
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_ActualAddressId",
-                table: "Providers",
-                column: "ActualAddressId",
-                unique: true);
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_ActualAddressId",
+            table: "Providers",
+            column: "ActualAddressId",
+            unique: true);
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_LegalAddressId",
-                table: "Providers",
-                column: "LegalAddressId",
-                unique: true);
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_LegalAddressId",
+            table: "Providers",
+            column: "LegalAddressId",
+            unique: true);
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Addresses_CATOTTGId",
-                table: "Addresses",
-                column: "CATOTTGId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Addresses_CATOTTGId",
+            table: "Addresses",
+            column: "CATOTTGId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_CATOTTGs_ParentId",
-                table: "CATOTTGs",
-                column: "ParentId");
+        migrationBuilder.CreateIndex(
+            name: "IX_CATOTTGs_ParentId",
+            table: "CATOTTGs",
+            column: "ParentId");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Addresses_CATOTTGs_CATOTTGId",
-                table: "Addresses",
-                column: "CATOTTGId",
-                principalTable: "CATOTTGs",
-                principalColumn: "Id");
+        migrationBuilder.AddForeignKey(
+            name: "FK_Addresses_CATOTTGs_CATOTTGId",
+            table: "Addresses",
+            column: "CATOTTGId",
+            principalTable: "CATOTTGs",
+            principalColumn: "Id");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Providers_Addresses_ActualAddressId",
-                table: "Providers",
-                column: "ActualAddressId",
-                principalTable: "Addresses",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
+        migrationBuilder.AddForeignKey(
+            name: "FK_Providers_Addresses_ActualAddressId",
+            table: "Providers",
+            column: "ActualAddressId",
+            principalTable: "Addresses",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Restrict);
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Providers_Addresses_LegalAddressId",
-                table: "Providers",
-                column: "LegalAddressId",
-                principalTable: "Addresses",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
-        }
+        migrationBuilder.AddForeignKey(
+            name: "FK_Providers_Addresses_LegalAddressId",
+            table: "Providers",
+            column: "LegalAddressId",
+            principalTable: "Addresses",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Restrict);
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Addresses_CATOTTGs_CATOTTGId",
-                table: "Addresses");
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropForeignKey(
+            name: "FK_Addresses_CATOTTGs_CATOTTGId",
+            table: "Addresses");
 
-            migrationBuilder.DropForeignKey(
-                name: "FK_Providers_Addresses_ActualAddressId",
-                table: "Providers");
+        migrationBuilder.DropForeignKey(
+            name: "FK_Providers_Addresses_ActualAddressId",
+            table: "Providers");
 
-            migrationBuilder.DropForeignKey(
-                name: "FK_Providers_Addresses_LegalAddressId",
-                table: "Providers");
+        migrationBuilder.DropForeignKey(
+            name: "FK_Providers_Addresses_LegalAddressId",
+            table: "Providers");
 
-            migrationBuilder.DropTable(
-                name: "CATOTTGs");
+        migrationBuilder.DropTable(
+            name: "CATOTTGs");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Providers_ActualAddressId",
-                table: "Providers");
+        migrationBuilder.DropIndex(
+            name: "IX_Providers_ActualAddressId",
+            table: "Providers");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Providers_LegalAddressId",
-                table: "Providers");
+        migrationBuilder.DropIndex(
+            name: "IX_Providers_LegalAddressId",
+            table: "Providers");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Addresses_CATOTTGId",
-                table: "Addresses");
+        migrationBuilder.DropIndex(
+            name: "IX_Addresses_CATOTTGId",
+            table: "Addresses");
 
-            migrationBuilder.DropColumn(
-                name: "CATOTTGId",
-                table: "Addresses");
+        migrationBuilder.DropColumn(
+            name: "CATOTTGId",
+            table: "Addresses");
 
-            migrationBuilder.AddColumn<long>(
-                name: "CodeficatorId",
-                table: "Addresses",
-                type: "bigint",
-                nullable: false,
-                defaultValue: 0L);
+        migrationBuilder.AddColumn<long>(
+            name: "CodeficatorId",
+            table: "Addresses",
+            type: "bigint",
+            nullable: false,
+            defaultValue: 0L);
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Codeficators",
                 columns: table => new
                 {
@@ -190,50 +190,49 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalTable: "Codeficators",
                         principalColumn: "Id");
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_ActualAddressId",
-                table: "Providers",
-                column: "ActualAddressId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_ActualAddressId",
+            table: "Providers",
+            column: "ActualAddressId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_LegalAddressId",
-                table: "Providers",
-                column: "LegalAddressId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_LegalAddressId",
+            table: "Providers",
+            column: "LegalAddressId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Addresses_CodeficatorId",
-                table: "Addresses",
-                column: "CodeficatorId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Addresses_CodeficatorId",
+            table: "Addresses",
+            column: "CodeficatorId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Codeficators_ParentId",
-                table: "Codeficators",
-                column: "ParentId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Codeficators_ParentId",
+            table: "Codeficators",
+            column: "ParentId");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Addresses_Codeficators_CodeficatorId",
-                table: "Addresses",
-                column: "CodeficatorId",
-                principalTable: "Codeficators",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+        migrationBuilder.AddForeignKey(
+            name: "FK_Addresses_Codeficators_CodeficatorId",
+            table: "Addresses",
+            column: "CodeficatorId",
+            principalTable: "Codeficators",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Cascade);
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Providers_Addresses_ActualAddressId",
-                table: "Providers",
-                column: "ActualAddressId",
-                principalTable: "Addresses",
-                principalColumn: "Id");
+        migrationBuilder.AddForeignKey(
+            name: "FK_Providers_Addresses_ActualAddressId",
+            table: "Providers",
+            column: "ActualAddressId",
+            principalTable: "Addresses",
+            principalColumn: "Id");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Providers_Addresses_LegalAddressId",
-                table: "Providers",
-                column: "LegalAddressId",
-                principalTable: "Addresses",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-        }
+        migrationBuilder.AddForeignKey(
+            name: "FK_Providers_Addresses_LegalAddressId",
+            table: "Providers",
+            column: "LegalAddressId",
+            principalTable: "Addresses",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Cascade);
     }
 }

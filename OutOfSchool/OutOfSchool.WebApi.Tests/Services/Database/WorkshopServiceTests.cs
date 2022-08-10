@@ -29,7 +29,6 @@ public class WorkshopServiceTests
 {
     private IWorkshopService workshopService;
     private Mock<IWorkshopRepository> workshopRepository;
-    private Mock<IClassRepository> classRepository;
     private Mock<IRatingService> ratingService;
     private Mock<ITeacherService> teacherService;
     private Mock<ILogger<WorkshopService>> logger;
@@ -41,7 +40,6 @@ public class WorkshopServiceTests
     public void SetUp()
     {
         workshopRepository = new Mock<IWorkshopRepository>();
-        classRepository = new Mock<IClassRepository>();
         ratingService = new Mock<IRatingService>();
         teacherService = new Mock<ITeacherService>();
         logger = new Mock<ILogger<WorkshopService>>();
@@ -51,7 +49,6 @@ public class WorkshopServiceTests
         workshopService =
             new WorkshopService(
                 workshopRepository.Object,
-                classRepository.Object,
                 ratingService.Object,
                 teacherService.Object,
                 logger.Object,
@@ -64,7 +61,7 @@ public class WorkshopServiceTests
     public async Task Create_Whenever_ShouldRunInTransaction([Random(1, 100, 1)] long id)
     {
         // Arrange
-        SetupCreate(WithClassEntity(id));
+        SetupCreate();
         var newWorkshop = new Workshop();
 
         // Act
@@ -78,12 +75,11 @@ public class WorkshopServiceTests
     public async Task Create_WhenEntityIsValid_ShouldReturnThisEntity([Random(1, 100, 1)] long id)
     {
         // Arrange
-        SetupCreate(WithClassEntity(id));
+        SetupCreate();
         var newWorkshop = new Workshop()
         {
             Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
-            DepartmentId = 1,
-            DirectionId = 1,
+            InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
         };
 
         // Act
@@ -97,12 +93,11 @@ public class WorkshopServiceTests
     public async Task Create_WhenDirectionsIdsAreWrong_ShouldReturnEntitiesWithRightDirectionsIds([Random(1, 100, 1)] long id)
     {
         // Arrange
-        SetupCreate(WithClassEntity(id));
+        SetupCreate();
         var newWorkshop = new Workshop
         {
             Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
-            DepartmentId = 10,
-            DirectionId = 10,
+            InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
         };
 
         // Act
@@ -116,11 +111,10 @@ public class WorkshopServiceTests
     public void Create_WhenThereIsNoClassId_ShouldThrowArgumentException()
     {
         // Arrange
-        SetupCreate(WithNullClassEntity());
+        SetupCreate();
         var newWorkshop = new Workshop()
         {
-            DepartmentId = 1,
-            DirectionId = 1,
+            InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
         };
 
         // Act and Assert
@@ -210,14 +204,14 @@ public class WorkshopServiceTests
 
     #region Update
     [Test]
-    public async Task Update_WhenEntityIsValid_ShouldReturnUpdatedEntity([Random(2, 5, 1)] int teachersInWorkshop, [Random(1, 100, 1)] long classId)
+    public async Task Update_WhenEntityIsValid_ShouldReturnUpdatedEntity([Random(2, 5, 1)] int teachersInWorkshop)
     {
         // Arrange
         var id = new Guid("ca2cc30c-419c-4b00-a344-b23f0cbf18d8");
         var changedFirstEntity = WithWorkshop(id);
         var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(changedFirstEntity);
         changedFirstEntity.Teachers = teachers;
-        SetupUpdate(changedFirstEntity, WithClassEntity(classId));
+        SetupUpdate(changedFirstEntity);
         var expectedTeachers = teachers.Select(s => mapper.Map<TeacherDTO>(s));
 
         // Act
@@ -233,7 +227,7 @@ public class WorkshopServiceTests
         // Arrange
         var id = new Guid("f1b73d56-ce9f-47fc-85fe-94bf72ebd3e4");
         var changedEntity = WithWorkshop(id);
-        SetupUpdate(changedEntity, WithNullClassEntity());
+        SetupUpdate(changedEntity);
 
         // Act and Assert
         workshopService.Invoking(w => w.Update(mapper.Map<WorkshopDTO>(changedEntity))).Should().ThrowAsync<ArgumentException>();
@@ -296,7 +290,6 @@ public class WorkshopServiceTests
         var expectedStatus = WorkshopStatus.Open;
         var workshopDtoMock = WithWorkshop(Guid.NewGuid());
 
-        classRepository.Setup(c => c.GetById(It.IsAny<long>())).ReturnsAsync(WithClassEntity(classId));
         workshopRepository.Setup(w => w.GetWithNavigations(It.IsAny<Guid>())).ReturnsAsync(workshopDtoMock);
         workshopRepository.Setup(w => w.UnitOfWork.CompleteAsync()).ReturnsAsync(It.IsAny<int>());
         mapperMock.Setup(m => m.Map<WorkshopDTO>(workshopDtoMock))
@@ -361,22 +354,6 @@ public class WorkshopServiceTests
     #endregion
 
     #region With
-
-    private static Class WithClassEntity(long id)
-    {
-        return new Class()
-        {
-            Id = id,
-            DepartmentId = 1,
-            Department = new Department() { Id = 1, DirectionId = 1 },
-        };
-    }
-
-    private static Class WithNullClassEntity()
-    {
-        return null;
-    }
-
     private static IEnumerable<Workshop> WithWorkshopsList()
     {
         return new List<Workshop>()
@@ -437,9 +414,7 @@ public class WorkshopServiceTests
             Status = WorkshopStatus.Open,
             CoverImageId = "image1",
             ProviderId = new Guid("65eb933f-6502-4e89-a7cb-65901e51d119"),
-            DirectionId = 1,
-            ClassId = 1,
-            DepartmentId = 1,
+            InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
             AddressId = 55,
             Address = new Address
             {
@@ -473,14 +448,11 @@ public class WorkshopServiceTests
 
     #region Setup
 
-    private void SetupCreate(Class classEntity)
+    private void SetupCreate()
     {
         workshopRepository.Setup(
                 w => w.Create(It.IsAny<Workshop>()))
             .Returns(Task.FromResult(It.IsAny<Workshop>()));
-        classRepository.Setup(
-                c => c.GetById(It.IsAny<long>()))
-            .ReturnsAsync(classEntity);
         workshopRepository.Setup(
                 w => w.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
             .ReturnsAsync(new Workshop() { Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e") });
@@ -550,9 +522,8 @@ public class WorkshopServiceTests
         mapperMock.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>())).Returns(emptylistWorkshopCards);
     }
 
-    private void SetupUpdate(Workshop workshop, Class classentity)
+    private void SetupUpdate(Workshop workshop)
     {
-        classRepository.Setup(c => c.GetById(It.IsAny<long>())).ReturnsAsync(classentity);
         workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
         workshopRepository.Setup(w => w.GetWithNavigations(It.IsAny<Guid>())).ReturnsAsync(workshop);
         workshopRepository.Setup(w => w.UnitOfWork.CompleteAsync()).ReturnsAsync(It.IsAny<int>());

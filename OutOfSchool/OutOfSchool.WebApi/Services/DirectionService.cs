@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Castle.Core.Internal;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -72,7 +63,7 @@ public class DirectionService : IDirectionService
         var entity = new Direction() { Id = id };
 
         var workShops = await repositoryWorkshop
-            .GetByFilter(w => w.DirectionId == id)
+            .GetByFilter(w => w.InstitutionHierarchy.Directions.Any(d => d.Id == id))
             .ConfigureAwait(false);
 
         if (workShops.Any())
@@ -122,12 +113,7 @@ public class DirectionService : IDirectionService
             var name when string.IsNullOrWhiteSpace(name) => PredicateBuilder.True<Direction>(),
             _ => PredicateBuilder
                 .False<Direction>()
-                .Or(direction => direction.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase))
-                .Or(direction => direction.Departments.Any(department =>
-                    department.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase)))
-                .Or(direction => direction.Departments.Any(department =>
-                    department.Classes.Any(c =>
-                        c.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase)))),
+                .Or(direction => direction.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase)),
         };
         var count = await repository.Count(predicate).ConfigureAwait(false);
 
