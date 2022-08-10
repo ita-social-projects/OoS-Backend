@@ -11,6 +11,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
@@ -19,8 +20,6 @@ using OutOfSchool.WebApi.Services;
 namespace OutOfSchool.WebApi.Tests.Services;
 
 [TestFixture]
-[Obsolete("Full refactor of directions, won't be needed in current implementation")]
-[Ignore("Full refactor of directions, won't be needed in current implementation")]
 public class DirectionServiceTests
 {
     private DbContextOptions<OutOfSchoolDbContext> options;
@@ -69,8 +68,8 @@ public class DirectionServiceTests
             Description = "NewDescription",
         };
 
-        mapper.Setup(m => m.Map<Direction>(It.IsAny<DirectionDto>())).Returns(expected);
-        // mapper.Setup(m => m.Map<DirectionDto>(It.IsAny<Direction>())).Returns(input);
+        mapper.Setup(m => m.Map<Direction>(input)).Returns(expected);
+        mapper.Setup(m => m.Map<DirectionDto>(expected)).Returns(input);
 
         // Act
         var result = await service.Create(input).ConfigureAwait(false);
@@ -120,6 +119,14 @@ public class DirectionServiceTests
         // Arrange
         var expected = await repo.GetById(id);
 
+        var expectedDto = new DirectionDto()
+        {
+            Id = expected.Id,
+            Title = expected.Title,
+        };
+
+        mapper.Setup(m => m.Map<DirectionDto>(expected)).Returns(expectedDto);
+
         // Act
         var result = await service.GetById(id).ConfigureAwait(false);
 
@@ -147,6 +154,13 @@ public class DirectionServiceTests
             Id = 1,
             Title = "ChangedTitle1",
         };
+        var expected = new Direction()
+        {
+            Id = 1,
+            Title = "NewTitle",
+        };
+        mapper.Setup(m => m.Map<Direction>(changedEntity)).Returns(expected);
+        mapper.Setup(m => m.Map<DirectionDto>(expected)).Returns(changedEntity);
 
         // Act
         var result = await service.Update(changedEntity).ConfigureAwait(false);
@@ -164,6 +178,11 @@ public class DirectionServiceTests
         {
             Title = "NewTitle1",
         };
+        var expected = new Direction()
+        {
+            Title = "NewTitle1",
+        };
+        mapper.Setup(m => m.Map<Direction>(changedEntity)).Returns(expected);
 
         // Act and Assert
         Assert.ThrowsAsync<DbUpdateConcurrencyException>(
@@ -175,6 +194,13 @@ public class DirectionServiceTests
     [TestCase(1)]
     public async Task Delete_WhenIdIsValid_DeletesEntity(long id)
     {
+        // Arrange
+        var expected = new DirectionDto()
+        {
+            Title = "NewTitle",
+        };
+        mapper.Setup(m => m.Map<DirectionDto>(It.IsAny<Direction>())).Returns(expected);
+
         // Act
         var countBeforeDeleting = (await service.GetAll().ConfigureAwait(false)).Count();
 
@@ -218,6 +244,13 @@ public class DirectionServiceTests
             ctx.Database.EnsureDeleted();
             ctx.Database.EnsureCreated();
 
+            ctx.Institutions.Add(new Institution()
+            {
+                Id = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
+                NumberOfHierarchyLevels = 1,
+                Title = "Title"
+            });
+
             var directions = new List<Direction>()
             {
                 new Direction()
@@ -229,6 +262,16 @@ public class DirectionServiceTests
                 {
                     Title = "Test2",
                     Description = "Test2",
+                    InstitutionHierarchies = new List<InstitutionHierarchy>()
+                    {
+                        new InstitutionHierarchy()
+                        {
+                            Id = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
+                            Title = "Title",
+                            HierarchyLevel = 1,
+                            InstitutionId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
+                        },
+                    },
                 },
                 new Direction
                 {

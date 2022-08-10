@@ -63,7 +63,7 @@ public class DirectionService : IDirectionService
         var entity = new Direction() { Id = id };
 
         var workShops = await repositoryWorkshop
-            .GetByFilter(w => !w.InstitutionHierarchy.Directions.Select(d => d.Id == id).IsNullOrEmpty())
+            .GetByFilter(w => w.InstitutionHierarchy.Directions.Any(d => d.Id == id))
             .ConfigureAwait(false);
 
         if (workShops.Any())
