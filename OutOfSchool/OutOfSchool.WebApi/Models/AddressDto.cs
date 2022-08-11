@@ -19,6 +19,7 @@ public class AddressDto
 
     public double Longitude { get; set; }
 
+    [Required(ErrorMessage = "CATOTTGId is required")]
     public long CATOTTGId { get; set; }
 
     public CATOTTG CATOTTG { get; set; }
