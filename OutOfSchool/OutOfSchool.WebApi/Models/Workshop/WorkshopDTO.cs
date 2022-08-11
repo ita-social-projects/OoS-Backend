@@ -85,7 +85,7 @@ public class WorkshopDTO : IValidatableObject
 
     [Required]
     [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
-    public PayRateType PayRate { get; set; }
+    public PayRateType PayRate { get; set; } = PayRateType.Classes;
 
     public float Rating { get; set; }
 
