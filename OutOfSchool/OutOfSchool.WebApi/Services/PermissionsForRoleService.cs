@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,7 @@ public class PermissionsForRoleService : IPermissionsForRoleService
     private readonly IEntityRepository<long, PermissionsForRole> repository;
     private readonly ILogger<PermissionsForRoleService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PermissionsForRoleService"/> class.
@@ -24,11 +26,17 @@ public class PermissionsForRoleService : IPermissionsForRoleService
     /// <param name="repository">Repository.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
-    public PermissionsForRoleService(IEntityRepository<long, PermissionsForRole> repository, ILogger<PermissionsForRoleService> logger, IStringLocalizer<SharedResource> localizer)
+    /// <param name="mapper">Mapper.</param>
+    public PermissionsForRoleService(
+        IEntityRepository<long, PermissionsForRole> repository,
+        ILogger<PermissionsForRoleService> logger,
+        IStringLocalizer<SharedResource> localizer,
+        IMapper mapper)
     {
-        this.localizer = localizer;
-        this.repository = repository;
-        this.logger = logger;
+        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
@@ -42,7 +50,7 @@ public class PermissionsForRoleService : IPermissionsForRoleService
             ? "PermissionsForRole table is empty."
             : $"All {permissionsForRoles.Count()} records were successfully received from the PermissionsForRole table");
 
-        return permissionsForRoles.Select(permissionsForRoles => permissionsForRoles.ToModel()).ToList();
+        return permissionsForRoles.Select(permissionsForRole => mapper.Map<PermissionsForRoleDTO>(permissionsForRole)).ToList();
     }
 
     /// <inheritdoc/>
@@ -58,7 +66,7 @@ public class PermissionsForRoleService : IPermissionsForRoleService
         }
 
         logger.LogInformation($"Successfully got a permissionsForRole with name  {permissionsForRole.RoleName}.");
-        return permissionsForRole.ToModel();
+        return mapper.Map<PermissionsForRoleDTO>(permissionsForRole);
     }
 
     /// <inheritdoc/>
@@ -70,11 +78,11 @@ public class PermissionsForRoleService : IPermissionsForRoleService
             throw new ArgumentException("Permissions for this role exist in DB, you can't create one more", dto.RoleName);
         }
 
-        var permissionsForRole = dto.ToDomain();
+        var permissionsForRole = mapper.Map<PermissionsForRole>(dto);
         var newPermissionsForRole = await repository.Create(permissionsForRole).ConfigureAwait(false);
         logger.LogInformation($"Permissions for role with name {newPermissionsForRole.RoleName} created successfully.");
 
-        return newPermissionsForRole.ToModel();
+        return mapper.Map<PermissionsForRoleDTO>(newPermissionsForRole);
     }
 
     /// <inheritdoc/>
@@ -84,11 +92,11 @@ public class PermissionsForRoleService : IPermissionsForRoleService
 
         try
         {
-            var permissionsForRole = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+            var permissionsForRole = await repository.Update(mapper.Map<PermissionsForRole>(dto)).ConfigureAwait(false);
 
             logger.LogInformation($"Permissions for Role with name = {permissionsForRole?.RoleName} updated succesfully.");
 
-            return permissionsForRole.ToModel();
+            return mapper.Map<PermissionsForRoleDTO>(permissionsForRole);
         }
         catch (DbUpdateConcurrencyException)
         {

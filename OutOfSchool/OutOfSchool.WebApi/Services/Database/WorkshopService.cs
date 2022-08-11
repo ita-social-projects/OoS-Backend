@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
+using Castle.Core.Internal;
 using H3Lib;
 using H3Lib.Extensions;
 using OutOfSchool.Common.Enums;
@@ -18,11 +19,10 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class WorkshopService : IWorkshopService
 {
-    private readonly string includingPropertiesForMappingDtoModel = $"{nameof(Workshop.Address)},{nameof(Workshop.Teachers)},{nameof(Workshop.DateTimeRanges)},{nameof(Workshop.Direction)}";
+    private readonly string includingPropertiesForMappingDtoModel = $"{nameof(Workshop.Address)},{nameof(Workshop.Teachers)},{nameof(Workshop.DateTimeRanges)},{nameof(Workshop.InstitutionHierarchy)}";
     private readonly string includingPropertiesForMappingWorkShopCard = $"{nameof(Workshop.Address)}";
 
     private readonly IWorkshopRepository workshopRepository;
-    private readonly IClassRepository classRepository;
     private readonly IRatingService ratingService;
     private readonly ITeacherService teacherService;
     private readonly ILogger<WorkshopService> logger;
@@ -33,7 +33,6 @@ public class WorkshopService : IWorkshopService
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
     /// </summary>
     /// <param name="workshopRepository">Repository for Workshop entity.</param>
-    /// <param name="classRepository">Repository for Class entity.</param>
     /// <param name="ratingService">Rating service.</param>
     /// <param name="teacherService">Teacher service.</param>
     /// <param name="logger">Logger.</param>
@@ -41,7 +40,6 @@ public class WorkshopService : IWorkshopService
     /// <param name="workshopImagesService">Workshop images mediator.</param>
     public WorkshopService(
         IWorkshopRepository workshopRepository,
-        IClassRepository classRepository,
         IRatingService ratingService,
         ITeacherService teacherService,
         ILogger<WorkshopService> logger,
@@ -49,7 +47,6 @@ public class WorkshopService : IWorkshopService
         IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService)
     {
         this.workshopRepository = workshopRepository;
-        this.classRepository = classRepository;
         this.ratingService = ratingService;
         this.teacherService = teacherService;
         this.logger = logger;
@@ -63,9 +60,6 @@ public class WorkshopService : IWorkshopService
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
-
-        // In case if DirectionId and DepartmentId does not match ClassId
-        await this.FillDirectionsFields(dto).ConfigureAwait(false);
 
         var workshop = mapper.Map<Workshop>(dto);
         workshop.Teachers = dto.Teachers.Select(dtoTeacher => mapper.Map<Teacher>(dtoTeacher)).ToList();
@@ -89,9 +83,6 @@ public class WorkshopService : IWorkshopService
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
-
-        // In case if DirectionId and DepartmentId does not match ClassId
-        await FillDirectionsFields(dto).ConfigureAwait(false);
 
         async Task<(Workshop createdWorkshop, MultipleImageUploadingResult imagesUploadResult, Result<string> coverImageUploadResult)> CreateWorkshopAndDependencies()
         {
@@ -214,9 +205,6 @@ public class WorkshopService : IWorkshopService
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation($"Updating Workshop with Id = {dto?.Id} started.");
 
-        // In case if DirectionId and DepartmentId does not match ClassId
-        await this.FillDirectionsFields(dto).ConfigureAwait(false);
-
         var currentWorkshop = await workshopRepository.GetWithNavigations(dto!.Id).ConfigureAwait(false);
 
         // In case if AddressId was changed. AddresId is one and unique for workshop.
@@ -286,9 +274,6 @@ public class WorkshopService : IWorkshopService
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation($"Updating {nameof(Workshop)} with Id = {dto.Id} started.");
-
-        // In case if DirectionId and DepartmentId does not match ClassId
-        await FillDirectionsFields(dto).ConfigureAwait(false);
 
         async Task<(Workshop updatedWorkshop, MultipleImageChangingResult multipleImageChangingResult, ImageChangingResult changingCoverImageResult)> UpdateWorkshopWithDependencies()
         {
@@ -532,7 +517,7 @@ public class WorkshopService : IWorkshopService
             var tempPredicate = PredicateBuilder.False<Workshop>();
             foreach (var direction in filter.DirectionIds)
             {
-                tempPredicate = tempPredicate.Or(x => x.DirectionId == direction);
+                tempPredicate = tempPredicate.Or(x => x.InstitutionHierarchy.Directions.Any(d => d.Id == direction));
             }
 
             predicate = predicate.And(tempPredicate);
@@ -620,24 +605,6 @@ public class WorkshopService : IWorkshopService
         }
 
         return sortExpression;
-    }
-
-    /// <summary>
-    /// Set properties of the given WorkshopDTO with certain data: DirectionId and DepartmentId are set with data according to the found Class entity.
-    /// </summary>
-    /// <param name="dto">WorkshopDTO to fill.</param>
-    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    /// <exception cref="ArgumentException">If Class was not found.</exception>
-    private async Task FillDirectionsFields(WorkshopDTO dto)
-    {
-        var classEntity = await classRepository.GetById(dto.ClassId).ConfigureAwait(false);
-        if (classEntity is null)
-        {
-            throw new ArgumentException($"There is no Class with id:{dto.ClassId}");
-        }
-
-        dto.DepartmentId = classEntity.DepartmentId;
-        dto.DirectionId = classEntity.Department.DirectionId;
     }
 
     private List<WorkshopCard> GetWorkshopsWithAverageRating(List<WorkshopCard> workshops)

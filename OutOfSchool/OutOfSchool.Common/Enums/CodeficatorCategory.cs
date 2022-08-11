@@ -1,6 +1,6 @@
 ﻿using Ardalis.SmartEnum;
 
-namespace OutOfSchool.Services.Enums;
+namespace OutOfSchool.Common.Enums;
 
 public abstract class CodeficatorCategory : SmartEnum<CodeficatorCategory>
 {
@@ -128,7 +128,6 @@ public abstract class CodeficatorCategory : SmartEnum<CodeficatorCategory>
     }
 
     // Group (flag) values
-
     private sealed class Level1Category : CodeficatorCategory
     {
         public Level1Category()
@@ -152,7 +151,7 @@ public abstract class CodeficatorCategory : SmartEnum<CodeficatorCategory>
     private sealed class Level4Category : CodeficatorCategory
     {
         public Level4Category()
-            : base("MTCX", 208)
+            : base("MTCXK", 210)
         {
         }
 
@@ -162,7 +161,7 @@ public abstract class CodeficatorCategory : SmartEnum<CodeficatorCategory>
     private sealed class SearchableCategoriesCategory : CodeficatorCategory
     {
         public SearchableCategoriesCategory()
-            : base("MTCXK", 210)
+            : base("MTCXKB", 210)
         {
         }
 

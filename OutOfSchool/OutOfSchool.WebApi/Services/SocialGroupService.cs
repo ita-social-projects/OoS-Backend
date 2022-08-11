@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -20,6 +21,7 @@ public class SocialGroupService : ISocialGroupService
     private readonly IEntityRepository<long, SocialGroup> repository;
     private readonly ILogger<SocialGroupService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SocialGroupService"/> class.
@@ -27,11 +29,18 @@ public class SocialGroupService : ISocialGroupService
     /// <param name="repository">Repository.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
-    public SocialGroupService(IEntityRepository<long, SocialGroup> repository, ILogger<SocialGroupService> logger, IStringLocalizer<SharedResource> localizer)
+    /// <param name="mapper">Mapper.</param>
+    public SocialGroupService(
+        IEntityRepository<long,
+            SocialGroup> repository,
+        ILogger<SocialGroupService> logger,
+        IStringLocalizer<SharedResource> localizer,
+        IMapper mapper)
     {
-        this.localizer = localizer;
-        this.repository = repository;
-        this.logger = logger;
+        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
@@ -45,7 +54,7 @@ public class SocialGroupService : ISocialGroupService
             ? "SocialGroup table is empty."
             : $"All {socialGroups.Count()} records were successfully received from the SocialGroup table");
 
-        return socialGroups.Select(socialGroup => socialGroup.ToModel()).ToList();
+        return socialGroups.Select(socialGroup => mapper.Map<SocialGroupDto>(socialGroup)).ToList();
     }
 
     /// <inheritdoc/>
@@ -64,7 +73,7 @@ public class SocialGroupService : ISocialGroupService
 
         logger.LogInformation($"Successfully got a SocialGroup with Id = {id}.");
 
-        return socialGroup.ToModel();
+        return mapper.Map<SocialGroupDto>(socialGroup);
     }
 
     /// <inheritdoc/>
@@ -72,13 +81,13 @@ public class SocialGroupService : ISocialGroupService
     {
         logger.LogInformation("SocialGroup creating was started.");
 
-        var socialGroup = dto.ToDomain();
+        var socialGroup = mapper.Map<SocialGroup>(dto);
 
         var newSocialGroup = await repository.Create(socialGroup).ConfigureAwait(false);
 
         logger.LogInformation($"SocialGroup with Id = {newSocialGroup?.Id} created successfully.");
 
-        return newSocialGroup.ToModel();
+        return mapper.Map<SocialGroupDto>(newSocialGroup);
     }
 
     /// <inheritdoc/>
@@ -88,11 +97,11 @@ public class SocialGroupService : ISocialGroupService
 
         try
         {
-            var socialGroup = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+            var socialGroup = await repository.Update(mapper.Map<SocialGroup>(dto)).ConfigureAwait(false);
 
             logger.LogInformation($"SocialGroup with Id = {socialGroup?.Id} updated succesfully.");
 
-            return socialGroup.ToModel();
+            return mapper.Map<SocialGroupDto>(socialGroup);
         }
         catch (DbUpdateConcurrencyException)
         {

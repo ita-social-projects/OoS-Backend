@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -24,6 +24,7 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
     private readonly IEntityRepository<Guid, ChatMessageWorkshop> messageRepository;
     private readonly IChatRoomWorkshopService roomService;
     private readonly ILogger<ChatMessageWorkshopService> logger;
+    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatMessageWorkshopService"/> class.
@@ -31,14 +32,17 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
     /// <param name="chatMessageRepository">Repository for the ChatMessage entity.</param>
     /// <param name="roomRepository">Repository for the ChatRoom entity.</param>
     /// <param name="logger">Logger.</param>
+    /// <param name="mapper">Mapper.</param>
     public ChatMessageWorkshopService(
         IEntityRepository<Guid, ChatMessageWorkshop> chatMessageRepository,
         IChatRoomWorkshopService roomRepository,
-        ILogger<ChatMessageWorkshopService> logger)
+        ILogger<ChatMessageWorkshopService> logger,
+        IMapper mapper)
     {
         this.messageRepository = chatMessageRepository ?? throw new ArgumentNullException(nameof(chatMessageRepository));
         this.roomService = roomRepository ?? throw new ArgumentNullException(nameof(roomRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
@@ -56,7 +60,7 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
             var userRoleIsProvider = userRole != Role.Parent;
 
             // find or create new chat room and then set it's Id to the Message model
-            var сhatRoomDto = await roomService.CreateOrReturnExistingAsync(chatMessageCreateDto.WorkshopId, chatMessageCreateDto.ParentId).ConfigureAwait(false);
+            var chatRoomDto = await roomService.CreateOrReturnExistingAsync(chatMessageCreateDto.WorkshopId, chatMessageCreateDto.ParentId).ConfigureAwait(false);
 
             // create new dto object that will be saved to the database
             var chatMessageDtoThatWillBeSaved = new ChatMessageWorkshop()
@@ -65,12 +69,12 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
                 Text = chatMessageCreateDto.Text,
                 CreatedDateTime = DateTimeOffset.UtcNow,
                 ReadDateTime = null,
-                ChatRoomId = сhatRoomDto.Id,
+                ChatRoomId = chatRoomDto.Id,
             };
 
             var chatMessage = await messageRepository.Create(chatMessageDtoThatWillBeSaved).ConfigureAwait(false);
             logger.LogDebug($"{nameof(ChatMessageWorkshop)} id:{chatMessage.Id} was saved to DB.");
-            return chatMessage.ToModel();
+            return mapper.Map<ChatMessageWorkshopDto>(chatMessage);
         }
         catch (DbUpdateException exception)
         {
@@ -86,7 +90,7 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
         {
             var chatMessages = await this.GetMessagesForChatRoomDomainModelAsync(chatRoomId, offsetFilter).ConfigureAwait(false);
 
-            return chatMessages.Select(item => item.ToModel()).ToList();
+            return chatMessages.Select(item => mapper.Map<ChatMessageWorkshopDto>(item)).ToList();
         }
         catch (Exception exception)
         {
@@ -107,7 +111,7 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
 
             await this.SetReadDateTimeUtcNow(notReadChatMessages).ConfigureAwait(false);
 
-            return chatMessages.Select(item => item.ToModel()).ToList();
+            return chatMessages.Select(item => mapper.Map<ChatMessageWorkshopDto>(item)).ToList();
         }
         catch (Exception exception)
         {

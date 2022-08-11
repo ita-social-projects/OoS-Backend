@@ -4,6 +4,7 @@ using System.Linq;
 using Bogus;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -55,17 +56,11 @@ public static class WorkshopGenerator
     public static List<Workshop> WithAddress(this List<Workshop> workshops, Address address = null)
         => workshops.Select(x => WithAddress(x, address)).ToList();
 
-    public static Workshop WithDirection(this Workshop workshop, Direction direction)
-        => TestDataHelper.ApplyOnItem(workshop, (workshop, direction) => { workshop.Direction = direction; workshop.DirectionId = direction.Id; }, direction);
+    public static Workshop WithInstitutionHierarchy(this Workshop workshop, InstitutionHierarchy direction)
+        => TestDataHelper.ApplyOnItem(workshop, (workshop, direction) => { workshop.InstitutionHierarchy = direction; workshop.InstitutionHierarchyId = direction.Id; }, direction);
 
-    public static List<Workshop> WithDirection(this List<Workshop> workshops, Direction direction)
-        => TestDataHelper.ApplyOnCollection(workshops, (workshop, direction) => WithDirection(workshop, direction), direction);
-
-    public static Workshop WithDepartment(this Workshop workshop, Department department)
-        => TestDataHelper.ApplyOnItem(workshop, (item, value) => { item.DepartmentId = value.Id; }, department);
-
-    public static List<Workshop> WithDepartment(this List<Workshop> workshops, Department department)
-        => TestDataHelper.ApplyOnCollection(workshops, (item, value) => WithDepartment(item, value), department);
+    public static List<Workshop> WithInstitutionHierarchy(this List<Workshop> workshops, InstitutionHierarchy direction)
+        => TestDataHelper.ApplyOnCollection(workshops, (workshop, direction) => WithInstitutionHierarchy(workshop, direction), direction);
 
     public static Workshop WithApplications(this Workshop workshop)
     {

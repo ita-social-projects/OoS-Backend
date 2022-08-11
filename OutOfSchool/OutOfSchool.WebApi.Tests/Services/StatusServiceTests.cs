@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -25,6 +26,7 @@ public class StatusServiceTests
     private OutOfSchoolDbContext context;
     private IEntityRepository<long, InstitutionStatus> repository;
     private DbContextOptions<OutOfSchoolDbContext> options;
+    private IMapper mapper;
 
     [SetUp]
     public void Setup()
@@ -35,9 +37,10 @@ public class StatusServiceTests
         options = builder.Options;
         context = new OutOfSchoolDbContext(options);
         repository = new EntityRepository<long, InstitutionStatus>(context);
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
         var logger = new Mock<ILogger<StatusService>>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
-        service = new StatusService(repository, logger.Object, localizer.Object);
+        service = new StatusService(repository, logger.Object, localizer.Object, mapper);
         SeedDatabase();
     }
 
@@ -45,7 +48,7 @@ public class StatusServiceTests
     public async Task GetAll_WhenCalled_ReturnsAllInstitutionStatuses()
     {
         // Arrange
-        var expected = (await repository.GetAll()).Select(s => s.ToModel());
+        var expected = (await repository.GetAll()).Select(s => mapper.Map<InstitutionStatusDTO>(s));
 
         // Act
         var result = await service.GetAll().ConfigureAwait(false);
@@ -61,7 +64,7 @@ public class StatusServiceTests
         // Arrange
         var collection = await repository.GetAll() as ICollection<InstitutionStatus>;
         var existingId = TestDataHelper.RandomItem(collection).Id;
-        var expected = (await repository.GetById(existingId)).ToModel();
+        var expected = mapper.Map<InstitutionStatusDTO>(await repository.GetById(existingId));
 
         // Act
         var result = await service.GetById(existingId).ConfigureAwait(false);
@@ -90,11 +93,11 @@ public class StatusServiceTests
         // Arrange
         var lastIndex = (await repository.GetAll()).Last().Id;
         var entityToCreate = new InstitutionStatus() { Name = TestDataHelper.GetRandomWords() };
-        var expected = entityToCreate.ToModel();
+        var expected = mapper.Map<InstitutionStatusDTO>(entityToCreate);
         expected.Id = lastIndex + 1;
 
         // Act
-        var result = await service.Create(entityToCreate.ToModel()).ConfigureAwait(false);
+        var result = await service.Create(mapper.Map<InstitutionStatusDTO>(entityToCreate)).ConfigureAwait(false);
 
         // Assert
         TestHelper.AssertDtosAreEqual(expected, result);
@@ -110,10 +113,10 @@ public class StatusServiceTests
             Name = TestDataHelper.GetRandomWords(),
         };
 
-        var expected = entityToUpdate.ToModel();
+        var expected = mapper.Map<InstitutionStatusDTO>(entityToUpdate);
 
         // Act
-        var result = await service.Update(entityToUpdate.ToModel()).ConfigureAwait(false);
+        var result = await service.Update(mapper.Map<InstitutionStatusDTO>(entityToUpdate)).ConfigureAwait(false);
 
         // Assert
         TestHelper.AssertDtosAreEqual(expected, result);
@@ -123,7 +126,7 @@ public class StatusServiceTests
     public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
     {
         // Arrange
-        var changedEntity = InstitutionStatusGenerator.Generate().ToModel();
+        var changedEntity = mapper.Map<InstitutionStatusDTO>(InstitutionStatusGenerator.Generate());
 
         // Act and Assert
         Assert.ThrowsAsync<DbUpdateConcurrencyException>(

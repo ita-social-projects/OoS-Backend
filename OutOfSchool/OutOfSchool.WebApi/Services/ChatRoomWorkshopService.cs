@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -21,6 +21,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     private readonly IEntityRepository<Guid, ChatRoomWorkshop> roomRepository;
     private readonly IChatRoomWorkshopModelForChatListRepository roomWorkshopWithLastMessageRepository;
     private readonly ILogger<ChatRoomWorkshopService> logger;
+    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatRoomWorkshopService"/> class.
@@ -28,14 +29,16 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     /// <param name="chatRoomRepository">Repository for the ChatRoom entity.</param>
     /// <param name="roomWorkshopWithLastMessageRepository">Repository for the ChatRoom entity with special model.</param>
     /// <param name="logger">Logger.</param>
+    /// <param name="mapper">Mapper.</param>
     public ChatRoomWorkshopService(
         IEntityRepository<Guid, ChatRoomWorkshop> chatRoomRepository,
         ILogger<ChatRoomWorkshopService> logger,
-        IChatRoomWorkshopModelForChatListRepository roomWorkshopWithLastMessageRepository)
+        IChatRoomWorkshopModelForChatListRepository roomWorkshopWithLastMessageRepository, IMapper mapper)
     {
         this.roomRepository = chatRoomRepository ?? throw new ArgumentNullException(nameof(chatRoomRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.roomWorkshopWithLastMessageRepository = roomWorkshopWithLastMessageRepository ?? throw new ArgumentNullException(nameof(roomWorkshopWithLastMessageRepository));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
@@ -51,7 +54,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
             {
                 var newChatRoom = await this.CreateAsync(workshopId, parentId).ConfigureAwait(false);
                 logger.LogDebug($"{nameof(ChatRoomWorkshop)} id:{newChatRoom.Id} was saved to DB.");
-                return newChatRoom.ToModel();
+                return mapper.Map<ChatRoomWorkshopDto>(newChatRoom);
             }
             else
             {
@@ -112,7 +115,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
 
             var chatRoom = chatRooms.SingleOrDefault();
 
-            return chatRoom?.ToModel();
+            return chatRoom is null ? null : mapper.Map<ChatRoomWorkshopDto>(chatRoom);
         }
         catch (Exception exception)
         {
@@ -132,7 +135,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
             logger.LogDebug(rooms.Count > 0
                 ? $"There is no Chat rooms in the system with userId:{parentId}."
                 : $"Successfully got all {rooms.Count} records with userId:{parentId}.");
-            return rooms.Select(x => x.ToModel());
+            return rooms.Select(x => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(x));
         }
         catch (Exception exception)
         {
@@ -152,7 +155,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
             logger.LogDebug(rooms.Count > 0
                 ? $"There is no Chat rooms in the system with userId:{providerId}."
                 : $"Successfully got all {rooms.Count} records with userId:{providerId}.");
-            return rooms.Select(x => x.ToModel());
+            return rooms.Select(x => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(x));
         }
         catch (Exception exception)
         {
@@ -172,7 +175,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
             logger.LogDebug(rooms.Count > 0
                 ? $"There is no Chat rooms in the system with userId:{workshopId}."
                 : $"Successfully got all {rooms.Count} records with userId:{workshopId}.");
-            return rooms.Select(x => x.ToModel());
+            return rooms.Select(x => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(x));
         }
         catch (Exception exception)
         {
@@ -195,7 +198,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
                 ? $"There is no Chat rooms in the system with userId:{workshopIdsStr}."
                 : $"Successfully got all {rooms.Count} records with userId:{workshopIdsStr}.");
 
-            return rooms.Select(x => x.ToModel());
+            return rooms.Select(x => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(x));
         }
         catch (Exception exception)
         {
@@ -279,7 +282,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
                 ? $"There is no {nameof(ChatRoomWorkshop)} in the system with {nameof(workshopId)}:{workshopId} and {nameof(parentId)}:{parentId}."
                 : $"Successfully got a {nameof(ChatRoomWorkshop)} with {nameof(chatRoom.Id)}:{chatRoom.Id}.");
 
-            return chatRoom?.ToModel();
+            return chatRoom is null ? null : mapper.Map<ChatRoomWorkshopDto>(chatRoom);
         }
         catch (InvalidOperationException)
         {

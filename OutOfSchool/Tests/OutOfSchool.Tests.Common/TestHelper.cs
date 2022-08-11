@@ -6,11 +6,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using AutoMapper;
 
 namespace OutOfSchool.Tests.Common;
 
 public static class TestHelper
 {
+    /// <summary>
+    /// Creates a new mapper instance of given mapping profile.
+    /// </summary>
+    /// <typeparam name="TProfile"></typeparam>
+    /// <returns></returns>
+    public static IMapper CreateMapperInstanceOfProfileType<TProfile>()
+        where TProfile : Profile, new()
+    {
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<TProfile>());
+        return config.CreateMapper();
+    }
+
     public static void AssertResponseOkResultAndValidateValue<TExpectedValue>(this IActionResult response, TExpectedValue expected)
     {
         var actual = (response as ObjectResult).Value;

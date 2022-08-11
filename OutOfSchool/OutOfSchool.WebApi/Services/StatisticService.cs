@@ -82,7 +82,8 @@ public class StatisticService : IStatisticService
         }
 
         var directionsWithWorkshops = workshops
-            .GroupBy(w => w.DirectionId)
+            .SelectMany(w => w.InstitutionHierarchy.Directions)
+            .GroupBy(d => d.Id)
             .Select(g => new
             {
                 DirectionId = g.Key,
@@ -90,7 +91,8 @@ public class StatisticService : IStatisticService
             });
 
         var directionsWithApplications = applications
-            .GroupBy(a => a.Workshop.DirectionId)
+            .SelectMany(a => a.Workshop.InstitutionHierarchy.Directions)
+            .GroupBy(d => d.Id)
             .Select(g => new
             {
                 DirectionId = g.Key,
@@ -161,7 +163,7 @@ public class StatisticService : IStatisticService
     public async Task<IEnumerable<WorkshopCard>> GetPopularWorkshopsFromDatabase(int limit, long cATOTTGId)
     {
         var workshops = workshopRepository
-            .Get(includeProperties: $"{nameof(Address)},{nameof(Direction)}");
+            .Get(includeProperties: $"{nameof(Address)},{nameof(InstitutionHierarchy)}");
 
         if (cATOTTGId > 0)
         {

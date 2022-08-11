@@ -249,9 +249,6 @@ public class ChildControllerTests
             MaxAge = 10,
             MinAge = 4,
             CoverImageId = "image1",
-            DirectionId = 1,
-            DepartmentId = 1,
-            ClassId = 1,
             Address = new AddressDto
             {
                 CATOTTGId = 4970,

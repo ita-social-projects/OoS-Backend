@@ -62,6 +62,7 @@ public class ImageService : IImageService
 
             if (externalImageModel == null)
             {
+                logger.LogDebug("Image with id='{ImageId}' wasn't found", imageId);
                 return Result<ImageDto>.Failed(ImagesOperationErrorCode.ImageNotFoundError.GetOperationError());
             }
 

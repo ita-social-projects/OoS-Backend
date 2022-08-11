@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models;
 
@@ -25,6 +24,8 @@ public class CATOTTG : IKeyedEntity<long>
     public ulong GeoHash { get; set; } = default;
 
     public bool NeedCheck { get; set; } = default;
+
+    public int Order { get; set; } = default;
 
     public virtual CATOTTG Parent { get; set; }
 }
