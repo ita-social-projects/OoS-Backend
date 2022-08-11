@@ -91,7 +91,8 @@ public class MappingProfile : Profile
         CreateMap<Address, AddressDto>()
             .ForPath(
                 dest => dest.CodeficatorAddressDto.AddressParts,
-                opt => opt.MapFrom(src => src.CATOTTG));
+                opt => opt.MapFrom(src => src.CATOTTG))
+            .ForMember(dest => dest.CATOTTG, opt => opt.MapFrom(src => src.CATOTTG));
 
         CreateMap<AddressDto, Address>()
             .ForMember(dest => dest.CATOTTG, opt => opt.Ignore());
@@ -207,7 +208,10 @@ public class MappingProfile : Profile
         CreateMap<Address, AddressES>()
             .ForMember(
                 dest => dest.Point,
-                opt => opt.MapFrom(gl => new Nest.GeoLocation(gl.Latitude, gl.Longitude)));
+                opt => opt.MapFrom(gl => new Nest.GeoLocation(gl.Latitude, gl.Longitude)))
+            .ForMember(
+                dest => dest.City,
+                opt => opt.MapFrom(c => c.CATOTTG.Name));
 
         CreateMap<DateTimeRange, DateTimeRangeES>()
             .ForMember(

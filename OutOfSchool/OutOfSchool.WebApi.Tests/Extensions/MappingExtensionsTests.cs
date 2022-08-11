@@ -276,9 +276,7 @@ public class MappingExtensionsTests
             Address = new AddressDto
             {
                 Id = 17,
-                Region = "Region17",
-                District = "District17",
-                City = "City17",
+                CATOTTGId = 4970,
                 Street = "Street17",
                 BuildingNumber = "BuildingNumber17",
                 Latitude = 123.2355,

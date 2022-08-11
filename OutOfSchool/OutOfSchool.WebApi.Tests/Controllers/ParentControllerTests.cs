@@ -124,9 +124,7 @@ public class ParentControllerTests
             Address = new AddressDto
             {
                 Id = 55,
-                Region = "Region55",
-                District = "District55",
-                City = "City55",
+                CATOTTGId = 4970,
                 Street = "Street55",
                 BuildingNumber = "BuildingNumber55",
                 Latitude = 0,

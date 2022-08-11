@@ -254,7 +254,7 @@ public class ChildControllerTests
             ClassId = 1,
             Address = new AddressDto
             {
-                City = "Київ",
+                CATOTTGId = 4970,
             },
         };
 

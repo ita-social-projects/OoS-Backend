@@ -550,8 +550,8 @@ public class ProviderService : IProviderService, INotificationReciever
                 tempPredicate = tempPredicate.Or(
                     x => x.FullTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
                         || x.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.ActualAddress.City.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.LegalAddress.City.StartsWith(word, StringComparison.InvariantCulture)
+                        || x.ActualAddress.CATOTTG.Name.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.LegalAddress.CATOTTG.Name.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
                         || x.EdrpouIpn.StartsWith(word, StringComparison.InvariantCultureIgnoreCase));
             }
 

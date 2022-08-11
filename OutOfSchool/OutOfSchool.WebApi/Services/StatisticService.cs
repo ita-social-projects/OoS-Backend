@@ -57,28 +57,28 @@ public class StatisticService : IStatisticService
     // Return categories with 1 SQL query
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<DirectionStatistic>> GetPopularDirections(int limit, string city)
+    public async Task<IEnumerable<DirectionStatistic>> GetPopularDirections(int limit, long cATOTTGId)
     {
         logger.LogInformation("Getting popular categories started.");
 
-        string cacheKey = $"GetPopularDirections_{limit}_{city}";
+        string cacheKey = $"GetPopularDirections_{limit}_{cATOTTGId}";
 
         var popularDirections = await cache.GetOrAddAsync(cacheKey, () =>
-            GetPopularDirectionsFromDatabase(limit, city)).ConfigureAwait(false);
+            GetPopularDirectionsFromDatabase(limit, cATOTTGId)).ConfigureAwait(false);
 
         return popularDirections;
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<DirectionStatistic>> GetPopularDirectionsFromDatabase(int limit, string city)
+    public async Task<IEnumerable<DirectionStatistic>> GetPopularDirectionsFromDatabase(int limit, long cATOTTGId)
     {
         var workshops = workshopRepository.Get();
         var applications = applicationRepository.Get();
 
-        if (!string.IsNullOrWhiteSpace(city))
+        if (cATOTTGId > 0)
         {
             workshops = workshops
-                .Where(w => string.Equals(w.Address.City, city.Trim()));
+                .Where(w => w.Address.CATOTTGId == cATOTTGId);
         }
 
         var directionsWithWorkshops = workshops
@@ -145,28 +145,28 @@ public class StatisticService : IStatisticService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<WorkshopCard>> GetPopularWorkshops(int limit, string city)
+    public async Task<IEnumerable<WorkshopCard>> GetPopularWorkshops(int limit, long cATOTTGId)
     {
         logger.LogInformation("Getting popular workshops started.");
 
-        string cacheKey = $"GetPopularWorkshops_{limit}_{city}";
+        string cacheKey = $"GetPopularWorkshops_{limit}_{cATOTTGId}";
 
         var workshopsResult = await cache.GetOrAddAsync(cacheKey, () =>
-            GetPopularWorkshopsFromDatabase(limit, city)).ConfigureAwait(false);
+            GetPopularWorkshopsFromDatabase(limit, cATOTTGId)).ConfigureAwait(false);
 
         return workshopsResult;
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<WorkshopCard>> GetPopularWorkshopsFromDatabase(int limit, string city)
+    public async Task<IEnumerable<WorkshopCard>> GetPopularWorkshopsFromDatabase(int limit, long cATOTTGId)
     {
         var workshops = workshopRepository
             .Get(includeProperties: $"{nameof(Address)},{nameof(Direction)}");
 
-        if (!string.IsNullOrWhiteSpace(city))
+        if (cATOTTGId > 0)
         {
             workshops = workshops
-                .Where(w => string.Equals(w.Address.City, city.Trim()));
+                .Where(w => w.Address.CATOTTGId == cATOTTGId);
         }
 
         var workshopsWithApplications = workshops.Select(w => new

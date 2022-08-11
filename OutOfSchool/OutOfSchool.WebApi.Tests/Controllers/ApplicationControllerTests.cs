@@ -572,9 +572,7 @@ public class ApplicationControllerTests
             Address = new AddressDto
             {
                 Id = 55,
-                Region = "Region55",
-                District = "District55",
-                City = "Київ",
+                CATOTTGId = 4970,
                 Street = "Street55",
                 BuildingNumber = "BuildingNumber55",
                 Latitude = 0,
@@ -639,7 +637,7 @@ public class ApplicationControllerTests
                 ClassId = 1,
                 Address = new AddressDto
                 {
-                    City = "Київ",
+                    CATOTTGId = 4970,
                 },
             },
             new WorkshopDTO()
@@ -668,7 +666,7 @@ public class ApplicationControllerTests
                 ClassId = 1,
                 Address = new AddressDto
                 {
-                    City = "Київ",
+                    CATOTTGId = 4970,
                 },
             },
             new WorkshopDTO()
@@ -750,7 +748,7 @@ public class ApplicationControllerTests
                 ClassId = 1,
                 Address = new AddressDto
                 {
-                    City = "Київ",
+                    CATOTTGId = 4970,
                 },
             },
         };
