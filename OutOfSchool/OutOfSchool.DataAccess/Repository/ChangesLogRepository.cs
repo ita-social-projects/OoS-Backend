@@ -72,10 +72,6 @@ public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChanges
                 valueProjector(x.TargetEntry.Metadata.ClrType, x.TargetEntry.OriginalValues.ToObject()),
                 valueProjector(x.TargetEntry.Metadata.ClrType, x.TargetEntry.CurrentValues.ToObject())));
 
-        var references2 = entityEntry.References
-            .Where(x => trackedProperties.Contains(x.Metadata.Name)
-                        && x.TargetEntry?.State == EntityState.Modified);
-
         return properties.Concat(references);
     }
 

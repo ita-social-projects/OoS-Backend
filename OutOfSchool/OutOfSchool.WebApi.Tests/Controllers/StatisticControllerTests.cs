@@ -77,23 +77,6 @@ public class StatisticControllerTests
         result?.Value.Should().BeEquivalentTo(ExpectedWorkshopCards());
     }
 
-    //[Test]
-    //public async Task GetWorkshops_WhenCityIsEmptyOrWhiteSpace_ShouldReturnCorrectAmountOfData(
-    //    [Random(3, 10, 2)] int limit, [Values("", "  ")]string city)
-    //{
-    //    // Arrange
-    //    SetupGetWorkshops();
-
-    //    // Act
-    //    var result = await controller
-    //        .GetWorkshops(limit, city)
-    //        .ConfigureAwait(false) as ObjectResult;
-
-    //    // Assert
-    //    result.Should().BeAssignableTo<OkObjectResult>();
-    //    result?.Value.Should().BeEquivalentTo(ExpectedWorkshopCards());
-    //}
-
     [Test]
     public async Task GetWorkshops_WhenCollectionIsEmpty_ShouldReturnNoContent(
         [Random(3, 10, 3)] int limit, [Values(0)]long cATOTTGId)
@@ -160,23 +143,6 @@ public class StatisticControllerTests
         result.Should().BeAssignableTo<OkObjectResult>();
         result?.Value.Should().BeEquivalentTo(ExpectedDirectionStatistics());
     }
-
-    //[Test]
-    //public async Task GetDirections_WhenCityIsEmptyOrWhitespace_ShouldReturnCorrectAmountOfData(
-    //    [Random(3, 10, 3)] int limit, [Values("", "  ")]string city)
-    //{
-    //    // Arrange
-    //    SetupGetDirections();
-
-    //    // Act
-    //    var result = await controller
-    //        .GetDirections(limit, city)
-    //        .ConfigureAwait(false) as ObjectResult;
-
-    //    // Assert
-    //    result.Should().BeAssignableTo<OkObjectResult>();
-    //    result?.Value.Should().BeEquivalentTo(ExpectedDirectionStatistics());
-    //}
 
     [Test]
     public async Task GetDirections_WhenCollectionIsEmpty_ShouldReturnNoContent(
