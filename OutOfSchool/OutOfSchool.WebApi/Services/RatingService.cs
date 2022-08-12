@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Castle.Core.Internal;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Nest;
@@ -100,13 +101,16 @@ public class RatingService : IRatingService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<RatingDto>> GetAllByEntityId(Guid entityId, RatingType type)
+    public async Task<IEnumerable<RatingDto>> GetAllByEntityId(Guid entityId, RatingType type, OffsetFilter filter)
     {
         logger.LogInformation($"Getting all Ratings with EntityId = {entityId} and RatingType = {type} started.");
 
-        var ratings = await ratingRepository.GetByFilter(r => r.EntityId == entityId && r.Type == type).ConfigureAwait(false);
+        var ratings = await ratingRepository
+            .Get(filter.From, filter.Size, where: r => r.EntityId == entityId && r.Type == type)
+            .ToListAsync()
+            .ConfigureAwait(false);
 
-        logger.LogInformation(!ratings.Any()
+        logger.LogInformation(ratings.IsNullOrEmpty()
             ? "Rating table is empty."
             : $"All {ratings.Count()} records with EntityId = {entityId} and RatingType = {type} " +
               $"were successfully received from the Rating table");

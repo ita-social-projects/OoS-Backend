@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Castle.Core.Internal;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -57,8 +58,7 @@ public class RatingController : ControllerBase
     /// <summary>
     /// Get all ratings from the database.
     /// </summary>
-    /// <param name="skip">Skip number.</param>
-    /// <param name="take">Take number.</param>
+    /// <param name="filter">Skip & Take number.</param>
     /// <returns>List of all ratings.</returns>
     [HasPermission(Permissions.SystemManagement)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<RatingDto>))]
@@ -98,6 +98,7 @@ public class RatingController : ControllerBase
     /// </summary>
     /// <param name="entityType">Entity type (provider or workshop).</param>
     /// <param name="entityId">Id of Entity.</param>
+    /// <param name="filter">Skip & Take number.</param>
     /// <returns>List of all ratings.</returns>
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<RatingDto>))]
@@ -105,13 +106,13 @@ public class RatingController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet("{entityType:regex(^provider$|^workshop$)}/{entityId}")]
-    public async Task<IActionResult> GetByEntityId(string entityType, Guid entityId)
+    public async Task<IActionResult> GetByEntityId(string entityType, Guid entityId, [FromQuery] OffsetFilter filter)
     {
         RatingType type = ToRatingType(entityType);
 
-        var ratings = await ratingService.GetAllByEntityId(entityId, type).ConfigureAwait(false);
+        var ratings = await ratingService.GetAllByEntityId(entityId, type, filter).ConfigureAwait(false);
 
-        if (!ratings.Any())
+        if (ratings.IsNullOrEmpty())
         {
             return NoContent();
         }
