@@ -23,6 +23,7 @@ public class ChildService : IChildService
     private readonly IEntityRepository<Guid, Child> childRepository;
     private readonly IParentRepository parentRepository;
     private readonly IApplicationRepository applicationRepository;
+    private readonly IEntityRepository<long, SocialGroup> socialGroupRepository;
     private readonly ILogger<ChildService> logger;
     private readonly IMapper mapper;
 
@@ -31,18 +32,19 @@ public class ChildService : IChildService
     /// </summary>
     /// <param name="childRepository">Repository for the Child entity.</param>
     /// <param name="parentRepository">Repository for the Parent entity.</param>
+    /// <param name="socialGroupRepository">Repository for the social groups.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Automapper DI service.</param>
     public ChildService(
         IEntityRepository<Guid, Child> childRepository,
         IParentRepository parentRepository,
-        IApplicationRepository applicationRepository,
+        IEntityRepository<long, SocialGroup> socialGroupRepository,
         ILogger<ChildService> logger,
         IMapper mapper)
     {
         this.childRepository = childRepository ?? throw new ArgumentNullException(nameof(childRepository));
         this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
-        this.applicationRepository = applicationRepository ?? throw new ArgumentNullException(nameof(applicationRepository));
+        this.socialGroupRepository = socialGroupRepository ?? throw new ArgumentNullException(nameof(socialGroupRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
@@ -241,10 +243,9 @@ public class ChildService : IChildService
 
         logger.LogDebug($"Updating the child with Id: {childDto.Id} and {nameof(userId)}: {userId} started.");
 
-        var child = await childRepository.GetByFilterNoTracking(c => c.Id == childDto.Id, $"{nameof(Child.Parent)}")
-                        .SingleOrDefaultAsync()
-                        .ConfigureAwait(false)
-                    ?? throw new UnauthorizedAccessException($"User: {userId} is trying to update not existing Child (Id = {childDto.Id}).");
+        var child = (await childRepository.GetByFilter(c => c.Id == childDto.Id, $"{nameof(Child.Parent)},{nameof(Child.SocialGroups)}")
+                        .ConfigureAwait(false)).SingleOrDefault()
+                    ?? throw new InvalidOperationException($"User: {userId} is trying to update not existing Child (Id = {childDto.Id}).");
 
         if (child.Parent.UserId != userId)
         {
@@ -262,11 +263,15 @@ public class ChildService : IChildService
             childDto.ParentId = child.ParentId;
         }
 
-        var updatedChild = await childRepository.Update(mapper.Map<Child>(childDto)).ConfigureAwait(false);
+        mapper.Map(childDto, child);
 
-        logger.LogDebug($"Child with Id = {updatedChild.Id} was updated succesfully.");
+        await UpdateSocialGroups(child, childDto.SocialGroups.Select(x => x.Id).Distinct().ToArray()).ConfigureAwait(false);
 
-        return mapper.Map<ChildDto>(updatedChild);
+        await CompleteChildChangesAsync().ConfigureAwait(false);
+
+        logger.LogDebug("Child with Id = {ChildId} was updated successfully", child.Id);
+
+        return mapper.Map<ChildDto>(child);
     }
 
     /// <inheritdoc/>
@@ -353,6 +358,31 @@ public class ChildService : IChildService
         if (id < 1)
         {
             throw new ArgumentException($"The {nameof(id)} parameter has to be greater than zero.");
+        }
+    }
+
+    private async Task UpdateSocialGroups(Child child, ICollection<long> socialGroupIds)
+    {
+        var socialGroups = (await socialGroupRepository
+            .GetByFilter(x => socialGroupIds.Contains(x.Id))).ToList();
+        if (socialGroupIds.Count != socialGroups.Count)
+        {
+            throw new ArgumentException(@"Social groups contains some incorrect values", nameof(socialGroups));
+        }
+
+        child.SocialGroups = socialGroups;
+    }
+
+    private async Task CompleteChildChangesAsync()
+    {
+        try
+        {
+            await childRepository.UnitOfWork.CompleteAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            logger.LogError(ex, "Updating a child failed");
+            throw;
         }
     }
 }
