@@ -102,7 +102,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
 
         var sortExpression = new Dictionary<Expression<Func<InstitutionAdmin, object>>, SortDirection>
         {
-            { x => x.User.LastName , SortDirection.Ascending },
+            { x => x.User.LastName, SortDirection.Ascending },
         };
         var institutionAdmins = await institutionAdminRepository
             .Get(
@@ -260,7 +260,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
                       && x.Institution.RelatedProviders.Any(rp => rp.Id == providerId)).ConfigureAwait(false);
     }
 
-    private Expression<Func<InstitutionAdmin, bool>> PredicateBuild(MinistryAdminFilter filter)
+    private static Expression<Func<InstitutionAdmin, bool>> PredicateBuild(MinistryAdminFilter filter)
     {
         var predicate = PredicateBuilder.True<InstitutionAdmin>();
 
@@ -275,8 +275,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
                          || x.User.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
                          || x.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
                          || x.Institution.Title.StartsWith(word, StringComparison.InvariantCulture)
-                         || x.User.PhoneNumber.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                );
+                         || x.User.PhoneNumber.StartsWith(word, StringComparison.InvariantCultureIgnoreCase));
             }
 
             predicate = predicate.And(tempPredicate);

@@ -65,7 +65,7 @@ public class MinistryAdminController : Controller
     /// </summary>
     /// <param name="filter">Entity that represents searching parameters.</param>
     /// <returns><see cref="SearchResult{MinistryAdminDto}"/>, or no content.</returns>
-    [HasPermission(Permissions.MinistryAdmins)]
+    [HasPermission(Permissions.SystemManagement)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<MinistryAdminDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

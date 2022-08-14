@@ -296,7 +296,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
             .ForMember(dest => dest.AccountStatus, m => m.Ignore())
-            .ForMember(dest => dest.Gender, m => m.MapFrom((src => src.User.Gender)));
+            .ForMember(dest => dest.Gender, m => m.MapFrom(src => src.User.Gender));
 
         CreateMap<ProviderChangesLogRequest, ChangesLogFilter>()
             .ForMember(dest => dest.EntityType, opt => opt.Ignore())
