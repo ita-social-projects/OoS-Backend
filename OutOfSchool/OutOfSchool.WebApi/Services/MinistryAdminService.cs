@@ -1,9 +1,11 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -84,6 +86,48 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         }
 
         return response;
+    }
+
+    /// <inheritdoc/>
+    public async Task<SearchResult<MinistryAdminDto>> GetByFilter(MinistryAdminFilter filter)
+    {
+        logger.LogInformation("Getting all Ministry admins started (by filter).");
+
+        filter ??= new MinistryAdminFilter();
+        ModelValidationHelper.ValidateOffsetFilter(filter);
+
+        var filterPredicate = PredicateBuild(filter);
+
+        int count = await institutionAdminRepository.Count(filterPredicate).ConfigureAwait(false);
+
+        var sortExpression = new Dictionary<Expression<Func<InstitutionAdmin, object>>, SortDirection>
+        {
+            { x => x.User.LastName , SortDirection.Ascending },
+        };
+        var institutionAdmins = await institutionAdminRepository
+            .Get(
+                skip: filter.From,
+                take: filter.Size,
+                includeProperties: string.Empty,
+                where: filterPredicate,
+                orderBy: sortExpression,
+                asNoTracking: false)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        logger.LogInformation(!institutionAdmins.Any()
+            ? "Parents table is empty."
+            : $"All {institutionAdmins.Count} records were successfully received from the Parent table");
+
+        var ministryAdminsDto = institutionAdmins.Select(admin => mapper.Map<MinistryAdminDto>(admin)).ToList();
+
+        var result = new SearchResult<MinistryAdminDto>()
+        {
+            TotalAmount = count,
+            Entities = ministryAdminsDto,
+        };
+
+        return result;
     }
 
     /// <inheritdoc/>
@@ -214,5 +258,35 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         return await institutionAdminRepository
             .Any(x => x.UserId == ministryAdminUserId
                       && x.Institution.RelatedProviders.Any(rp => rp.Id == providerId)).ConfigureAwait(false);
+    }
+
+    private Expression<Func<InstitutionAdmin, bool>> PredicateBuild(MinistryAdminFilter filter)
+    {
+        var predicate = PredicateBuilder.True<InstitutionAdmin>();
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchString))
+        {
+            var tempPredicate = PredicateBuilder.False<InstitutionAdmin>();
+
+            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                tempPredicate = tempPredicate.Or(
+                    x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.User.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.Institution.Title.StartsWith(word, StringComparison.InvariantCulture)
+                         || x.User.PhoneNumber.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                );
+            }
+
+            predicate = predicate.And(tempPredicate);
+        }
+
+        if (filter.InstitutionId != Guid.Empty)
+        {
+            predicate = predicate.And(a => a.Institution.Id == filter.InstitutionId);
+        }
+
+        return predicate;
     }
 }

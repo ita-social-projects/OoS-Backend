@@ -61,6 +61,31 @@ public class MinistryAdminController : Controller
     }
 
     /// <summary>
+    /// Get MinistryAdmins that match filter's parameters.
+    /// </summary>
+    /// <param name="filter">Entity that represents searching parameters.</param>
+    /// <returns><see cref="SearchResult{MinistryAdminDto}"/>, or no content.</returns>
+    [HasPermission(Permissions.MinistryAdmins)]
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<MinistryAdminDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetByFilter([FromQuery] MinistryAdminFilter filter)
+    {
+        var ministryAdmins = await ministryAdminService.GetByFilter(filter).ConfigureAwait(false);
+
+        if (ministryAdmins.TotalAmount < 1)
+        {
+            return NoContent();
+        }
+
+        return Ok(ministryAdmins);
+    }
+
+    /// <summary>
     /// Method for creating new MinistryAdmin.
     /// </summary>
     /// <param name="ministryAdmin">Entity to add.</param>
