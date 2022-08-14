@@ -71,9 +71,11 @@ public class ChildService : IChildService
             throw new ArgumentException($"Forbidden to create child which related to the parent.");
         }
 
-        childDto.Id = default;
+        var child = mapper.Map<Child>(childDto);
+        child.Id = default;
+        child.SocialGroups = childDto.SocialGroups.Select(x => new SocialGroup { Id = x.Id }).ToList();
 
-        var newChild = await childRepository.Create(mapper.Map<Child>(childDto)).ConfigureAwait(false);
+        var newChild = await childRepository.Create(child).ConfigureAwait(false);
 
         logger.LogDebug($"Child with Id:{newChild.Id} ({nameof(Child.ParentId)}:{newChild.ParentId}, {nameof(userId)}:{userId}) was created successfully.");
 
@@ -363,14 +365,24 @@ public class ChildService : IChildService
 
     private async Task UpdateSocialGroups(Child child, ICollection<long> socialGroupIds)
     {
-        var socialGroups = (await socialGroupRepository
-            .GetByFilter(x => socialGroupIds.Contains(x.Id))).ToList();
-        if (socialGroupIds.Count != socialGroups.Count)
+        if (socialGroupIds.Any())
         {
-            throw new ArgumentException(@"Social groups contains some incorrect values", nameof(socialGroups));
-        }
+            if (!new HashSet<long>(child.SocialGroups.Select(x => x.Id)).SetEquals(socialGroupIds))
+            {
+                var socialGroups = (await socialGroupRepository
+                    .GetByFilter(x => socialGroupIds.Contains(x.Id))).ToList();
+                if (socialGroupIds.Count != socialGroups.Count)
+                {
+                    throw new ArgumentException(@"Social groups contains some incorrect values", nameof(socialGroups));
+                }
 
-        child.SocialGroups = socialGroups;
+                child.SocialGroups = socialGroups;
+            }
+        }
+        else
+        {
+            child.SocialGroups = new List<SocialGroup>();
+        }
     }
 
     private async Task CompleteChildChangesAsync()
