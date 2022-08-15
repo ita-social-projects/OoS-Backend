@@ -28,14 +28,14 @@ public class StatisticControllerTests
 
     [Test]
     public async Task GetWorkshops_WhenLimitInRange_CityIsNull_ShouldReturnCorrectAmountOfData(
-        [Random(3, 10, 3)] int limit, [Values(0)]long cATOTTGId)
+        [Random(3, 10, 3)] int limit, [Values(0)]long catottgId)
     {
         // Arrange
         SetupGetWorkshops();
 
         // Act
         var result = await controller
-            .GetWorkshops(limit, cATOTTGId)
+            .GetWorkshops(limit, catottgId)
             .ConfigureAwait(false) as ObjectResult;
 
         // Assert
@@ -45,14 +45,14 @@ public class StatisticControllerTests
 
     [Test]
     public async Task GetWorkshops_WhenLimitNotInRangeBelow_ShouldReturnCorrectAmountOfData(
-        [Random(1, 2, 2)] int limit, [Values(0)] long cATOTTGId)
+        [Random(1, 2, 2)] int limit, [Values(0)] long catottgId)
     {
         // Arrange
         SetupGetWorkshops();
 
         // Act
         var result = await controller
-            .GetWorkshops(limit, cATOTTGId)
+            .GetWorkshops(limit, catottgId)
             .ConfigureAwait(false) as ObjectResult;
 
         // Assert
@@ -62,14 +62,14 @@ public class StatisticControllerTests
 
     [Test]
     public async Task GetWorkshops_WhenLimitNotInRangeAbove_ShouldReturnCorrectAmountOfData(
-        [Random(11, 15, 3)] int limit, [Values(0)] long cATOTTGId)
+        [Random(11, 15, 3)] int limit, [Values(0)] long catottgId)
     {
         // Arrange
         SetupGetWorkshops();
 
         // Act
         var result = await controller
-            .GetWorkshops(limit, cATOTTGId)
+            .GetWorkshops(limit, catottgId)
             .ConfigureAwait(false) as ObjectResult;
 
         // Assert
@@ -79,14 +79,14 @@ public class StatisticControllerTests
 
     [Test]
     public async Task GetWorkshops_WhenCollectionIsEmpty_ShouldReturnNoContent(
-        [Random(3, 10, 3)] int limit, [Values(0)]long cATOTTGId)
+        [Random(3, 10, 3)] int limit, [Values(0)]long catottgId)
     {
         // Arrange
         SetupGetWorkshopsEmpty();
 
         // Act
         var result = await controller
-            .GetWorkshops(limit, cATOTTGId)
+            .GetWorkshops(limit, catottgId)
             .ConfigureAwait(false) as NoContentResult;
 
         // Assert
@@ -95,14 +95,14 @@ public class StatisticControllerTests
 
     [Test]
     public async Task GetDirections_WhenLimitInRange_CityIsNull_ShouldReturnCorrectAmountOfData(
-        [Random(3, 10, 3)] int limit, [Values(0)]long cATOTTGId)
+        [Random(3, 10, 3)] int limit, [Values(0)]long catottgId)
     {
         // Arrange
         SetupGetDirections();
 
         // Act
         var result = await controller
-            .GetDirections(limit, cATOTTGId)
+            .GetDirections(limit, catottgId)
             .ConfigureAwait(false) as ObjectResult;
 
         // Assert
@@ -112,14 +112,14 @@ public class StatisticControllerTests
 
     [Test]
     public async Task GetDirections_WhenLimitNotInRangeBelow_ShouldReturnCorrectAmountOfData(
-        [Random(1, 2, 2)] int limit, [Values(0)]long cATOTTGId)
+        [Random(1, 2, 2)] int limit, [Values(0)]long catottgId)
     {
         // Arrange
         SetupGetDirections();
 
         // Act
         var result = await controller
-            .GetDirections(limit, cATOTTGId)
+            .GetDirections(limit, catottgId)
             .ConfigureAwait(false) as ObjectResult;
 
         // Assert
@@ -129,14 +129,14 @@ public class StatisticControllerTests
 
     [Test]
     public async Task GetDirections_WhenLimitNotInRangeAbove_ShouldReturnCorrectAmountOfData(
-        [Random(11, 15, 3)] int limit, [Values(0)]long cATOTTGId)
+        [Random(11, 15, 3)] int limit, [Values(0)]long catottgId)
     {
         // Arrange
         SetupGetDirections();
 
         // Act
         var result = await controller
-            .GetDirections(limit, cATOTTGId)
+            .GetDirections(limit, catottgId)
             .ConfigureAwait(false) as ObjectResult;
 
         // Assert
@@ -146,14 +146,14 @@ public class StatisticControllerTests
 
     [Test]
     public async Task GetDirections_WhenCollectionIsEmpty_ShouldReturnNoContent(
-        [Random(3, 10, 3)] int limit, [Values(0)]long cATOTTGId)
+        [Random(3, 10, 3)] int limit, [Values(0)]long catottgId)
     {
         // Arrange
         SetupGetDirectionsEmpty();
 
         // Act
         var result = await controller
-            .GetDirections(limit, cATOTTGId)
+            .GetDirections(limit, catottgId)
             .ConfigureAwait(false) as NoContentResult;
 
         // Assert
