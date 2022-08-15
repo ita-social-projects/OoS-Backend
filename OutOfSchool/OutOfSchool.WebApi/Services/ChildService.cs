@@ -267,7 +267,7 @@ public class ChildService : IChildService
 
         mapper.Map(childDto, child);
 
-        await UpdateSocialGroups(child, childDto.SocialGroups.Select(x => x.Id).Distinct().ToArray()).ConfigureAwait(false);
+        await UpdateSocialGroups(child, childDto.SocialGroups).ConfigureAwait(false);
 
         await CompleteChildChangesAsync().ConfigureAwait(false);
 
@@ -363,15 +363,16 @@ public class ChildService : IChildService
         }
     }
 
-    private async Task UpdateSocialGroups(Child child, ICollection<long> socialGroupIds)
+    private async Task UpdateSocialGroups(Child child, ICollection<SocialGroupDto> socialGroupDtos)
     {
-        if (socialGroupIds.Any())
+        if (socialGroupDtos.Any())
         {
+            var socialGroupIds = socialGroupDtos.Select(x => x.Id).Distinct().ToArray();
             if (!new HashSet<long>(child.SocialGroups.Select(x => x.Id)).SetEquals(socialGroupIds))
             {
                 var socialGroups = (await socialGroupRepository
                     .GetByFilter(x => socialGroupIds.Contains(x.Id))).ToList();
-                if (socialGroupIds.Count != socialGroups.Count)
+                if (socialGroupIds.Length != socialGroups.Count)
                 {
                     throw new ArgumentException(@"Social groups contains some incorrect values", nameof(socialGroups));
                 }
@@ -381,7 +382,10 @@ public class ChildService : IChildService
         }
         else
         {
-            child.SocialGroups = new List<SocialGroup>();
+            if (child.SocialGroups.Any())
+            {
+                child.SocialGroups = new List<SocialGroup>();
+            }
         }
     }
 
