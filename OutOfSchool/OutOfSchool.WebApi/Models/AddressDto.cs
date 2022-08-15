@@ -22,8 +22,6 @@ public class AddressDto
     [Required(ErrorMessage = "CATOTTGId is required")]
     public long CATOTTGId { get; set; }
 
-    public CATOTTG CATOTTG { get; set; }
-
     public AllAddressPartsDto CodeficatorAddressDto { get; set; }
 
     // Note: implementation taken from the OutOfSchool.Services.Models.Address

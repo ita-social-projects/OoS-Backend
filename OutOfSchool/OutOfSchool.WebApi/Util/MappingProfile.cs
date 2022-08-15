@@ -82,8 +82,7 @@ public class MappingProfile : Profile
         CreateMap<Address, AddressDto>()
             .ForPath(
                 dest => dest.CodeficatorAddressDto.AddressParts,
-                opt => opt.MapFrom(src => src.CATOTTG))
-            .ForMember(dest => dest.CATOTTG, opt => opt.MapFrom(src => src.CATOTTG));
+                opt => opt.MapFrom(src => src.CATOTTG));
 
         CreateMap<AddressDto, Address>()
             .ForMember(dest => dest.CATOTTG, opt => opt.Ignore());
