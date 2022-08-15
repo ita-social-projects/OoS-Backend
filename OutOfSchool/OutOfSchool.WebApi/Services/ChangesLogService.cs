@@ -87,7 +87,7 @@ public class ChangesLogService : IChangesLogService
                         ProviderId = l.EntityIdGuid.Value,
                         ProviderTitle = provider == null ? null : provider.FullTitle,
                         ProviderCity = provider == null || provider.LegalAddress == null
-                            ? null : provider.LegalAddress.City,
+                            ? null : provider.LegalAddress.CATOTTG.Name,
                         InstitutionTitle = provider == null || provider.Institution == null
                             ? null : provider.Institution.Title,
                     };
@@ -120,7 +120,7 @@ public class ChangesLogService : IChangesLogService
                         User = mapper.Map<ShortUserDto>(l.User),
                         ApplicationId = l.EntityIdGuid.Value,
                         WorkshopTitle = app == null ? null : app.Workshop.Title,
-                        WorkshopCity = app == null ? null : app.Workshop.Address.City,
+                        WorkshopCity = app == null ? null : app.Workshop.Address.CATOTTG.Name,
                         ProviderTitle = app == null ? null : app.Workshop.ProviderTitle,
                         InstitutionTitle = app == null || app.Workshop.Provider.Institution == null
                             ? null : app.Workshop.Provider.Institution.Title,
@@ -151,7 +151,7 @@ public class ChangesLogService : IChangesLogService
                 ProviderAdminFullName = $"{x.ProviderAdminUser.LastName} {x.ProviderAdminUser.FirstName} {x.ProviderAdminUser.MiddleName}".TrimEnd(),
                 ProviderTitle = x.Provider.FullTitle,
                 WorkshopTitle = x.ManagedWorkshop.Title,
-                WorkshopCity = x.ManagedWorkshop.Address.City,
+                WorkshopCity = x.ManagedWorkshop.Address.CATOTTG.Name,
                 OperationType = x.OperationType,
                 OperationDate = x.OperationDate,
                 User = mapper.Map<ShortUserDto>(x.User),

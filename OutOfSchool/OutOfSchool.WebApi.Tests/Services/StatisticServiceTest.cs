@@ -65,7 +65,7 @@ public class StatisticServiceTest
 
         // Act
         var result = await service
-            .GetPopularWorkshopsFromDatabase(2, string.Empty)
+            .GetPopularWorkshopsFromDatabase(2, 0)
             .ConfigureAwait(false);
 
         // Assert
@@ -88,7 +88,7 @@ public class StatisticServiceTest
 
         // Act
         var result = await service
-            .GetPopularWorkshopsFromDatabase(2, "Київ")
+            .GetPopularWorkshopsFromDatabase(2, 4970)
             .ConfigureAwait(false);
 
         // Assert
@@ -112,7 +112,7 @@ public class StatisticServiceTest
 
         // Act
         var result = await service
-            .GetPopularDirectionsFromDatabase(1, string.Empty)
+            .GetPopularDirectionsFromDatabase(1, 0)
             .ConfigureAwait(false);
 
         // Assert
@@ -136,7 +136,7 @@ public class StatisticServiceTest
 
         // Act
         var result = await service
-            .GetPopularDirectionsFromDatabase(1, "Київ")
+            .GetPopularDirectionsFromDatabase(1, 4970)
             .ConfigureAwait(false);
 
         // Assert
@@ -235,7 +235,7 @@ public class StatisticServiceTest
                 },
                 Address = new Address
                 {
-                    City = "Київ",
+                    CATOTTGId = 4970,
                 },
                 Applications = new List<Application>
                 {
@@ -260,7 +260,7 @@ public class StatisticServiceTest
                 },
                 Address = new Address
                 {
-                    City = "Київ",
+                    CATOTTGId = 4970,
                 },
                 Applications = new List<Application>
                 {
@@ -286,7 +286,7 @@ public class StatisticServiceTest
                 },
                 Address = new Address
                 {
-                    City = "Одеса",
+                    CATOTTGId = 5000,
                 },
                 Applications = new List<Application>
                 {
@@ -424,7 +424,7 @@ public class StatisticServiceTest
         if (!string.IsNullOrWhiteSpace(city))
         {
             workshops = workshops
-                .Where(w => string.Equals(w.Address.City, city.Trim()));
+                .Where(w => string.Equals(w.Address.CATOTTG.Name, city.Trim()));
         }
 
         var workshopsWithApplications = workshops.Select(w => new
@@ -449,8 +449,8 @@ public class StatisticServiceTest
     {
         return new List<WorkshopCard>
         {
-            new WorkshopCard {WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Title = "w3", Address = new AddressDto {City = "Одеса"}},
-            new WorkshopCard {WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Title = "w2", Address = new AddressDto {City = "Київ"}},
+            new WorkshopCard {WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Title = "w3", Address = new AddressDto {CATOTTGId = 5000}},
+            new WorkshopCard {WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Title = "w2", Address = new AddressDto {CATOTTGId = 4970}},
         };
     }
 
@@ -458,8 +458,8 @@ public class StatisticServiceTest
     {
         return new List<WorkshopCard>
         {
-            new WorkshopCard {WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Title = "w2", Address = new AddressDto {City = "Київ"}},
-            new WorkshopCard {WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"), Title = "w1", Address = new AddressDto {City = "Київ"}},
+            new WorkshopCard {WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Title = "w2", Address = new AddressDto {CATOTTGId = 4970}},
+            new WorkshopCard {WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"), Title = "w1", Address = new AddressDto {CATOTTGId = 4970}},
         };
     }
 

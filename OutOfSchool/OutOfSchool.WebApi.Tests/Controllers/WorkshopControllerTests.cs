@@ -455,9 +455,7 @@ public class WorkshopControllerTests
             Address = new AddressDto
             {
                 Id = 55,
-                Region = "Region55",
-                District = "District55",
-                City = "Київ",
+                CATOTTGId = 4970,
                 Street = "Street55",
                 BuildingNumber = "BuildingNumber55",
                 Latitude = 0,
@@ -534,7 +532,7 @@ public class WorkshopControllerTests
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
                 Address = new AddressDto
                 {
-                    City = "Київ",
+                    CATOTTGId = 4970,
                 },
             },
             new WorkshopDTO()
@@ -563,7 +561,7 @@ public class WorkshopControllerTests
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
                 Address = new AddressDto
                 {
-                    City = "Київ",
+                    CATOTTGId = 4970,
                 },
             },
             new WorkshopDTO()
@@ -639,7 +637,7 @@ public class WorkshopControllerTests
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
                 Address = new AddressDto
                 {
-                    City = "Київ",
+                    CATOTTGId = 4970,
                 },
             },
         };

@@ -570,7 +570,7 @@ public class WorkshopService : IWorkshopService
 
         if (!string.IsNullOrWhiteSpace(filter.City))
         {
-            predicate = predicate.And(x => x.Address.City == filter.City);
+            predicate = predicate.And(x => x.Address.CATOTTG.Name == filter.City);
         }
 
         if (filter.Statuses.Any())

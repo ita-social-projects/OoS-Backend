@@ -17,6 +17,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Images;
+using Quartz.Impl.AdoJobStore.Common;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -178,6 +179,8 @@ public class ProviderServiceTests
     {
         // Arrange
         var expectedEntity = ProvidersGenerator.Generate();
+        expectedEntity.ActualAddress.CATOTTGId = 4970;
+        expectedEntity.ActualAddress.CATOTTG.Id = 4970;
 
         Provider receivedProvider = default;
         providersRepositoryMock.Setup(x => x.Create(It.IsAny<Provider>())).Callback<Provider>(p => receivedProvider = p);
@@ -187,7 +190,7 @@ public class ProviderServiceTests
 
         // Assert
         Assert.That(receivedProvider.ActualAddress, Is.Not.Null);
-        TestHelper.AssertDtosAreEqual(expectedEntity.ActualAddress, receivedProvider.ActualAddress);
+        Assert.AreEqual(expectedEntity.ActualAddress, receivedProvider.ActualAddress);
     }
 
     [Test]

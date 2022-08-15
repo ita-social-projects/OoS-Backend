@@ -197,7 +197,12 @@ public class MappingProfile : Profile
         CreateMap<Address, AddressES>()
             .ForMember(
                 dest => dest.Point,
-                opt => opt.MapFrom(gl => new GeoLocation(gl.Latitude, gl.Longitude)));
+                opt => opt.MapFrom(gl => new Nest.GeoLocation(
+                    gl.Latitude == 0d ? gl.CATOTTG.Latitude : gl.Latitude,
+                    gl.Longitude == 0d ? gl.CATOTTG.Longitude : gl.Longitude)))
+            .ForMember(
+                dest => dest.City,
+                opt => opt.MapFrom(c => c.CATOTTG.Name));
 
         CreateMap<DateTimeRange, DateTimeRangeES>()
             .ForMember(

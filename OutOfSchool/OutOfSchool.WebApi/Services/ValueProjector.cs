@@ -45,7 +45,7 @@ public class ValueProjector : IValueProjector
     }
 
     private string ProjectAddress(object obj) => obj is Address address
-        ? $"{address.District}, {address.City}, {address.Region}, {address.Street}, {address.BuildingNumber}"
+        ? $"{address.CATOTTGId}, {address.Street}, {address.BuildingNumber}"
         : null;
 
     private string ProjectInstitution(object obj) => obj is Institution institution

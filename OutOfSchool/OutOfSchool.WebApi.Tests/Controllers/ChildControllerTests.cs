@@ -251,7 +251,7 @@ public class ChildControllerTests
             CoverImageId = "image1",
             Address = new AddressDto
             {
-                City = "Київ",
+                CATOTTGId = 4970,
             },
         };
 

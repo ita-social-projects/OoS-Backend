@@ -55,9 +55,6 @@ public class AddressServiceTests
         // Arrange
         var expected = new Address()
         {
-            Region = "NewRegion",
-            District = "NewDistrict",
-            City = "NewCity",
             Street = "NewStreet",
             BuildingNumber = "NewBuildingNumber",
             Latitude = 60.45383,
@@ -69,9 +66,7 @@ public class AddressServiceTests
         var result = await service.Create(mapper.Map<AddressDto>(expected)).ConfigureAwait(false);
 
         // Assert
-        Assert.AreEqual(expected.Region, result.Region);
-        Assert.AreEqual(expected.District, result.District);
-        Assert.AreEqual(expected.City, result.City);
+        Assert.AreEqual(expected.CATOTTGId, result.CATOTTGId);
         Assert.AreEqual(expected.Street, result.Street);
         Assert.AreEqual(expected.BuildingNumber, result.BuildingNumber);
         Assert.AreEqual(expected.Latitude, result.Latitude);
@@ -125,14 +120,14 @@ public class AddressServiceTests
         var changedEntity = new AddressDto()
         {
             Id = 1,
-            City = "ChangedCity",
+            CATOTTGId = 4970,
         };
 
         // Act
         var result = await service.Update(changedEntity).ConfigureAwait(false);
 
         // Assert
-        Assert.That(changedEntity.City, Is.EqualTo(result.City));
+        Assert.That(changedEntity.CATOTTGId, Is.EqualTo(result.CATOTTGId));
     }
 
     [Test]
@@ -142,7 +137,7 @@ public class AddressServiceTests
         // Arrange
         var changedEntity = new AddressDto()
         {
-            City = "ChangedCity",
+            CATOTTGId = 4970,
         };
 
         // Act and Assert
@@ -190,9 +185,6 @@ public class AddressServiceTests
                 new Address()
                 {
                     Id = 1,
-                    Region = "Region1",
-                    District = "District1",
-                    City = "City1",
                     Street = "Street1",
                     BuildingNumber = "BuildingNumber1",
                     Latitude = 41.45383,
@@ -202,9 +194,6 @@ public class AddressServiceTests
                 new Address()
                 {
                     Id = 2,
-                    Region = "Region2",
-                    District = "District2",
-                    City = "City2",
                     Street = "Street2",
                     BuildingNumber = "BuildingNumber2",
                     Latitude = 42.45383,
@@ -214,9 +203,6 @@ public class AddressServiceTests
                 new Address()
                 {
                     Id = 3,
-                    Region = "Region3",
-                    District = "District3",
-                    City = "City3",
                     Street = "Street3",
                     BuildingNumber = "BuildingNumber3",
                     Latitude = 43.45383,
@@ -226,9 +212,6 @@ public class AddressServiceTests
                 new Address()
                 {
                     Id = 4,
-                    Region = "Region4",
-                    District = "District4",
-                    City = "City4",
                     Street = "Street4",
                     BuildingNumber = "BuildingNumber4",
                     Latitude = 44.45383,
@@ -238,9 +221,6 @@ public class AddressServiceTests
                 new Address()
                 {
                     Id = 5,
-                    Region = "Region5",
-                    District = "District5",
-                    City = "City5",
                     Street = "Street5",
                     BuildingNumber = "BuildingNumber5",
                     Latitude = 45.45383,
