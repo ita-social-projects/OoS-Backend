@@ -3,16 +3,16 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
-{
-    public partial class ChildSocialGroupTable : Migration
-    {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "ChildrenSocialGroups");
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations;
 
-            migrationBuilder.CreateTable(
+public partial class ChildSocialGroupTable : Migration
+{
+    protected override void Up(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropTable(
+            name: "ChildrenSocialGroups");
+
+        migrationBuilder.CreateTable(
                 name: "ChildSocialGroup",
                 columns: table => new
                 {
@@ -35,20 +35,20 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ChildSocialGroup_SocialGroupsId",
-                table: "ChildSocialGroup",
-                column: "SocialGroupsId");
-        }
+        migrationBuilder.CreateIndex(
+            name: "IX_ChildSocialGroup_SocialGroupsId",
+            table: "ChildSocialGroup",
+            column: "SocialGroupsId");
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "ChildSocialGroup");
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropTable(
+            name: "ChildSocialGroup");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ChildrenSocialGroups",
                 columns: table => new
                 {
@@ -71,12 +71,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ChildrenSocialGroups_SocialGroupId",
-                table: "ChildrenSocialGroups",
-                column: "SocialGroupId");
-        }
+        migrationBuilder.CreateIndex(
+            name: "IX_ChildrenSocialGroups_SocialGroupId",
+            table: "ChildrenSocialGroups",
+            column: "SocialGroupId");
     }
 }
