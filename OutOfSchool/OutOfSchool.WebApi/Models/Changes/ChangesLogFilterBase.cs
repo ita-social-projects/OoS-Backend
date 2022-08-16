@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.WebApi.Models.Changes;
 
-public abstract class ChangesLogFilterBase : OffsetFilter
+public abstract class ChangesLogFilterBase : SearchStringFilter
 {
     public string PropertyName { get; set; }
 

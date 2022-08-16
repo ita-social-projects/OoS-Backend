@@ -3,7 +3,7 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models.Changes;
 
-public class ProviderAdminChangesLogRequest : OffsetFilter
+public class ProviderAdminChangesLogRequest : SearchStringFilter
 {
     public ProviderAdminType AdminType { get; set; }
 
