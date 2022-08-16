@@ -13,6 +13,14 @@ public interface IMinistryAdminService
     Task<MinistryAdminDto> GetByUserId(string id);
 
     /// <summary>
+    /// Get entity by it's key.
+    /// </summary>
+    /// <param name="id">Key in the table.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The task result contains the entity that was found, or null.</returns>
+    Task<MinistryAdminDto> GetById(long id);
+
+    /// <summary>
     /// Create Ministry Admin.
     /// </summary>
     /// <param name="userId">Id of user.</param>

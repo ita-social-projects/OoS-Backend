@@ -38,6 +38,22 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         responseDto = new ResponseDto();
     }
 
+    public async Task<MinistryAdminDto> GetById(long id)
+    {
+        logger.LogInformation($"Getting InstitutionAdmin by Id started. Looking Id = {id}.");
+
+        var institutionAdmin = await institutionAdminRepository.GetById(id).ConfigureAwait(false);
+
+        if (institutionAdmin is null)
+        {
+            return null;
+        }
+
+        logger.LogInformation($"Successfully got a InstitutionAdmin with Id = {id}.");
+
+        return mapper.Map<MinistryAdminDto>(institutionAdmin);
+    }
+
     public async Task<MinistryAdminDto> GetByUserId(string id)
     {
         logger.LogInformation($"Getting MinistryAdmin by UserId started. Looking UserId is {id}.");
@@ -271,11 +287,11 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
             {
                 tempPredicate = tempPredicate.Or(
-                    x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                         || x.User.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                         || x.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                         || x.Institution.Title.StartsWith(word, StringComparison.InvariantCulture)
-                         || x.User.PhoneNumber.StartsWith(word, StringComparison.InvariantCultureIgnoreCase));
+                    x => x.User.FirstName.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.User.LastName.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.User.Email.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.Institution.Title.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.User.PhoneNumber.Contains(word, StringComparison.InvariantCultureIgnoreCase));
             }
 
             predicate = predicate.And(tempPredicate);
