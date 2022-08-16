@@ -34,18 +34,5 @@ internal class ChildConfiguration : IEntityTypeConfiguration<Child>
 
         builder.Property(x => x.PlaceOfStudy)
             .HasMaxLength(500);
-
-        builder
-            .HasMany(x => x.SocialGroups)
-            .WithMany(x => x.Children)
-            .UsingEntity<ChildSocialGroup>(
-                j => j
-                    .HasOne(pt => pt.SocialGroup)
-                    .WithMany(t => t.ChildSocialGroups)
-                    .HasForeignKey(pt => pt.SocialGroupId),
-                j => j
-                    .HasOne(pt => pt.Child)
-                    .WithMany(t => t.ChildSocialGroups)
-                    .HasForeignKey(pt => pt.ChildId));
     }
 }
