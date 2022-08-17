@@ -100,4 +100,3 @@ public class MinistryAdminControllerTests
         Assert.IsInstanceOf<NoContentResult>(result);
     }
 }
-
