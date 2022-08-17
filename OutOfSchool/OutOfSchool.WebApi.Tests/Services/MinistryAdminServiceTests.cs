@@ -20,7 +20,6 @@ using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
-
 namespace OutOfSchool.WebApi.Tests.Services;
 
 [TestFixture]
