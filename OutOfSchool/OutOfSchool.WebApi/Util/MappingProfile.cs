@@ -167,9 +167,7 @@ public class MappingProfile : Profile
 
         CreateMap<SocialGroup, SocialGroupDto>().ReverseMap();
 
-        CreateMap<Child, ChildDto>()
-            .ForMember(c => c.Parent, m => m.Ignore());
-
+        CreateMap<Child, ChildDto>();
         CreateMap<ChildDto, Child>()
             .ForMember(c => c.Parent, m => m.Ignore())
             .ForMember(c => c.Achievements, m => m.Ignore())
