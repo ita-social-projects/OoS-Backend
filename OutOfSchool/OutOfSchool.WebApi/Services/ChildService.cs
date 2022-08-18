@@ -152,7 +152,7 @@ public class ChildService : IChildService
         };
 
         var children = await childRepository
-            .Get(offsetFilter.From, offsetFilter.Size, "SocialGroup", x => x.ParentId == parentId, sortExpression)
+            .Get(offsetFilter.From, offsetFilter.Size, "SocialGroups", x => x.ParentId == parentId, sortExpression)
             .ToListAsync()
             .ConfigureAwait(false);
 
