@@ -38,6 +38,15 @@ public interface IChildService
     Task<SearchResult<ChildDto>> GetByFilter(ChildSearchFilter filter);
 
     /// <summary>
+    /// Get all children (Id, FullName) from the database.
+    /// </summary>
+    /// <param name="parentId">ParentId.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The result is a <see cref="List{ShortEntityDto}"/> that contains the count of all found children and a list of children that were received.</returns>
+    /// <exception cref="SqlException">If the database cannot execute the query.</exception>
+    Task<List<ShortEntityDto>> GetChildrenListByParentId(Guid parentId);
+
+    /// <summary>
     /// Get a child by it's key and userId.
     /// </summary>
     /// <param name="id">Key in the Children table.</param>

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Google.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -78,6 +79,31 @@ public class WorkshopController : ControllerBase
         }
 
         return Ok(workshop);
+    }
+
+    /// <summary>
+    /// Get all workshops (Id, Title) from the database by provider's id.
+    /// </summary>
+    /// <param name="providerId">Id of the provider.</param>
+    /// <returns>The result is a <see cref="List{ShortEntityDto}"/> that contains a list of workshops that were received.</returns>
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ShortEntityDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("{providerId}")]
+    public async Task<IActionResult> GetWorkshopListByProviderId(Guid providerId)
+    {
+        var workshops = await combinedWorkshopService.GetWorkshopListByProviderId(providerId).ConfigureAwait(false);
+
+        if (!workshops.Any())
+        {
+            return NoContent();
+        }
+
+        return Ok(workshops);
     }
 
     /// <summary>

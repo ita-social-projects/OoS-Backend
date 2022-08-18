@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Nest;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -115,6 +116,17 @@ public class ChildService : IChildService
         };
 
         return searchResult;
+    }
+
+    /// <inheritdoc/>
+    public async Task<List<ShortEntityDto>> GetChildrenListByParentId(Guid parentId)
+    {
+        logger.LogDebug($"Getting ChildrenList with ParentId: {parentId} started.");
+
+        var children = await childRepository.GetByFilter(child => child.ParentId == parentId).ConfigureAwait(false);
+        var result = mapper.Map<List<ShortEntityDto>>(children).OrderBy(entity => entity.Title).ToList();
+
+        return result;
     }
 
     /// <inheritdoc/>
