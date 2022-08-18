@@ -365,7 +365,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.DirectionsId, opt => opt.Ignore())
             .ForMember(dest => dest.WithDisabilityOptions, opt => opt.Ignore())
             .ForMember(dest => dest.AvailableSeats, opt => opt.Ignore())
-            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore());
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
+            .ForMember(dest => dest.CompetitiveSelection, opt => opt.Ignore());
 
         CreateMap<Rating, RatingDto>()
             .ForMember(dest => dest.FirstName, opt => opt.Ignore())

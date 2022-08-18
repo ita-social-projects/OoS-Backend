@@ -1596,8 +1596,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<uint>("AvailableSeats")
                         .HasColumnType("int unsigned");
 
-                    b.Property<long>("ClassId")
-                        .HasColumnType("bigint");
+                    b.Property<bool>("CompetitiveSelection")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("CoverImageId")
                         .HasMaxLength(256)
