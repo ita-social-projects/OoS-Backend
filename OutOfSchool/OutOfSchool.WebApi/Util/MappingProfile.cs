@@ -379,5 +379,11 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Permissions, opt => opt.MapFrom(c => c.PackedPermissions.UnpackPermissionsFromString()));
         CreateMap<PermissionsForRoleDTO, PermissionsForRole>()
             .ForMember(dest => dest.PackedPermissions, opt => opt.MapFrom(c => c.Permissions.PackPermissionsIntoString()));
+
+        CreateMap<Child, ShortEntityDto>()
+            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.LastName + " " + src.FirstName + " " + src.MiddleName));
+
+        CreateMap<Workshop, ShortEntityDto>()
+            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title));
     }
 }

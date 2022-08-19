@@ -80,6 +80,14 @@ public interface IWorkshopService
     Task<SearchResult<WorkshopDTO>> GetAll(OffsetFilter offsetFilter);
 
     /// <summary>
+    /// Get all workshops (Id, Title) by provider Id.
+    /// </summary>
+    /// <param name="providerId">Provider's key.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+    /// The task result contains a <see cref="List{ShortEntityDto}"/> that contains elements from the input sequence.</returns>
+    Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId);
+
+    /// <summary>
     /// Get all workshops by provider Id.
     /// </summary>
     /// <param name="id">Provider's key.</param>

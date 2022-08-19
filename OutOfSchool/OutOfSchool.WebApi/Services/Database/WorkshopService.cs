@@ -3,9 +3,11 @@ using AutoMapper;
 using Castle.Core.Internal;
 using H3Lib;
 using H3Lib.Extensions;
+using Nest;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
+using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
@@ -179,6 +181,17 @@ public class WorkshopService : IWorkshopService
         workshopDTO.NumberOfRatings = rating?.Item2 ?? default;
 
         return workshopDTO;
+    }
+
+    /// <inheritdoc/>
+    public async Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId)
+    {
+        logger.LogDebug($"Getting Workshop (Id, Title) by organization started. Looking ProviderId = {providerId}.");
+
+        var workshops = await workshopRepository.GetByFilter(workshop => workshop.ProviderId == providerId).ConfigureAwait(false);
+        var result = mapper.Map<List<ShortEntityDto>>(workshops).OrderBy(entity => entity.Title).ToList();
+
+        return result;
     }
 
     /// <inheritdoc/>
