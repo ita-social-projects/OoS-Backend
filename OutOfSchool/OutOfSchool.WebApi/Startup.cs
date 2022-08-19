@@ -241,6 +241,7 @@ public static class Startup
         services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
         services.AddTransient<IChangesLogRepository, ChangesLogRepository>();
         services.AddTransient<IEntityRepository<long, ProviderAdminChangesLog>, EntityRepository<long, ProviderAdminChangesLog>>();
+        services.AddTransient<IGeocodingService, GeocodingService>();
 
         services.AddTransient<IEntityRepository<long, AchievementType>, EntityRepository<long, AchievementType>>();
         services.AddTransient<IAchievementTypeService, AchievementTypeService>();
