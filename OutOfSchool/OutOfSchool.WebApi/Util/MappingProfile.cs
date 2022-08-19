@@ -8,6 +8,7 @@ using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Models.Changes;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Models.Codeficator;
+using OutOfSchool.WebApi.Models.Geocoding;
 using OutOfSchool.WebApi.Models.Notifications;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
@@ -415,5 +416,12 @@ public class MappingProfile : Profile
 
         CreateMap<Workshop, ShortEntityDto>()
             .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title));
+
+        CreateMap<GeocodingSingleFeatureResponse, GeocodingResponse>()
+            .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.Properties.Settlement))
+            .ForMember(dest => dest.Street, opt => opt.MapFrom(src => $"{src.Properties.SettlementType} {src.Properties.Street}"))
+            .ForMember(dest => dest.BuildingNumber, opt => opt.MapFrom(src => src.Properties.Name))
+            .ForMember(dest => dest.RefinedLon, opt => opt.MapFrom(src => src.GeoCentroid.Coordinates.FirstOrDefault()))
+            .ForMember(dest => dest.RefinedLat, opt => opt.MapFrom(src => src.GeoCentroid.Coordinates.LastOrDefault()));
     }
 }
