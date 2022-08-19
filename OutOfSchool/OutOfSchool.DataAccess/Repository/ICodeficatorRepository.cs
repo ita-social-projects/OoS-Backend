@@ -24,4 +24,6 @@ public interface ICodeficatorRepository : IEntityRepository<long, CATOTTG>
     /// <param name="categories">Categories for search.</param>
     /// <returns>The task result contains a <see cref="List{CodeficatorAddressDto}"/> that contains elements' full addresses.</returns>
     public Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(string namePart, string categories = default);
+
+    public Task<CATOTTG> GetNearestByCoordinates(double lat, double lon);
 }
