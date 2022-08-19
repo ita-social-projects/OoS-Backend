@@ -66,6 +66,7 @@ public static class Startup
         services.Configure<IdentityServerConfig>(configuration.GetSection(IdentityServerConfig.Name));
         services.Configure<ProviderAdminConfig>(configuration.GetSection(ProviderAdminConfig.Name));
         services.Configure<CommunicationConfig>(configuration.GetSection(CommunicationConfig.Name));
+        services.Configure<GeocodingConfig>(configuration.GetSection(GeocodingConfig.Name));
 
         services.AddLocalization(options => options.ResourcesPath = "Resources");
         services.AddAuthentication("Bearer")
