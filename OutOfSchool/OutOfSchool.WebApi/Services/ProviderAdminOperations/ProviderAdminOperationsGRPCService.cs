@@ -37,18 +37,12 @@ public class ProviderAdminOperationsGRPCService : IProviderAdminOperationsServic
     }
 
     /// <inheritdoc/>
-    public async Task<ResponseDto> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto, string token)
+    public async Task<Either<ErrorResponse, CreateProviderAdminDto>> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto, string token)
     {
         using var channel = gRPCCommonService.CreateAuthenticatedChannel(token);
         var client = new GRPCProviderAdmin.GRPCProviderAdminClient(channel);
 
         var createProviderAdminRequest = mapper.Map<CreateProviderAdminRequest>(providerAdminDto);
-
-        var response = new ResponseDto()
-        {
-            IsSuccess = true,
-            HttpStatusCode = HttpStatusCode.OK,
-        };
 
         string requestId = Guid.NewGuid().ToString();
         createProviderAdminRequest.RequestId = requestId;
@@ -62,17 +56,14 @@ public class ProviderAdminOperationsGRPCService : IProviderAdminOperationsServic
 
             if (reply.IsSuccess)
             {
-                var providerAdminDtoGRPC = mapper.Map<CreateProviderAdminDto>(reply);
-
-                response.IsSuccess = true;
-                response.Result = providerAdminDtoGRPC;
-
-                return response;
+                return mapper.Map<CreateProviderAdminDto>(reply);
             }
             else
             {
-                response.IsSuccess = false;
-                response.HttpStatusCode = HttpStatusCode.InternalServerError;
+                return new ErrorResponse
+                {
+                    HttpStatusCode = HttpStatusCode.InternalServerError,
+                };
             }
         }
         catch (RpcException ex)
@@ -80,11 +71,11 @@ public class ProviderAdminOperationsGRPCService : IProviderAdminOperationsServic
             logger.LogError($"GRPC: Request(id): {requestId}. " +
                             $"Admin was not created by User(id): {userId}. {ex.Message}");
 
-            response.IsSuccess = false;
-            response.HttpStatusCode = HttpStatusCode.InternalServerError;
-            response.Message = ex.Message;
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.InternalServerError,
+                Message = ex.Message,
+            };
         }
-
-        return response;
     }
 }

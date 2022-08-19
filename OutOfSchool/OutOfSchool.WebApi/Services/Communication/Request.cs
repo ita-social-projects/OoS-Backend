@@ -6,9 +6,11 @@ public class Request
 {
     public Guid RequestId { get; set; }
 
-    public object Data { get; set; }
+    public object? Data { get; set; }
 
-    public System.Uri Url { get; set; }
+    public Uri Url { get; set; }
+
+    public Dictionary<string, string>? Query { get; set; }
 
     public string Token { get; set; }
 

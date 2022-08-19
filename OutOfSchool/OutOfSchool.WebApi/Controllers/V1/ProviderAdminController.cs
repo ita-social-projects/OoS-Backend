@@ -1,19 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Logging;
-
 using OutOfSchool.Common.Models;
-using OutOfSchool.Common.PermissionsModule;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers;
 
@@ -71,16 +62,13 @@ public class ProviderAdminController : Controller
                 await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
             .ConfigureAwait(false);
 
-        if (response.IsSuccess)
-        {
-            CreateProviderAdminDto providerAdminDto = (CreateProviderAdminDto)response.Result;
-
-            logger.LogInformation($"Succesfully created ProviderAdmin(id): {providerAdminDto.UserId} by User(id): {userId}.");
-
-            return Ok(providerAdminDto);
-        }
-
-        return StatusCode((int)response.HttpStatusCode, response.Message);
+        return response.Match<ActionResult>(
+            error => StatusCode((int)error.HttpStatusCode, error.Message),
+            result =>
+            {
+                logger.LogInformation($"Succesfully created ProviderAdmin(id): {result.UserId} by User(id): {userId}.");
+                return Ok(result);
+            });
     }
 
     /// <summary>
@@ -107,14 +95,14 @@ public class ProviderAdminController : Controller
                 await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
             .ConfigureAwait(false);
 
-        if (response.IsSuccess)
-        {
-            logger.LogInformation($"Succesfully deleted ProviderAdmin(id): {providerAdminId} by User(id): {userId}.");
+        return response.Match(
+            error => StatusCode((int)error.HttpStatusCode),
+            _ =>
+            {
+                logger.LogInformation($"Succesfully deleted ProviderAdmin(id): {providerAdminId} by User(id): {userId}.");
 
-            return Ok();
-        }
-
-        return StatusCode((int)response.HttpStatusCode);
+                return Ok();
+            });
     }
 
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -133,14 +121,14 @@ public class ProviderAdminController : Controller
                 await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
             .ConfigureAwait(false);
 
-        if (response.IsSuccess)
-        {
-            logger.LogInformation($"Succesfully blocked ProviderAdmin(id): {providerAdminId} by User(id): {userId}.");
+        return response.Match(
+            error => StatusCode((int)error.HttpStatusCode),
+            _ =>
+            {
+                logger.LogInformation($"Succesfully blocked ProviderAdmin(id): {providerAdminId} by User(id): {userId}.");
 
-            return Ok();
-        }
-
-        return StatusCode((int)response.HttpStatusCode);
+                return Ok();
+            });
     }
 
     /// <summary>
@@ -211,12 +199,12 @@ public class ProviderAdminController : Controller
     {
         var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
 
-        if (userSubrole != OutOfSchool.Services.Enums.Subrole.ProviderDeputy && userSubrole != OutOfSchool.Services.Enums.Subrole.ProviderAdmin)
+        if (userSubrole != Subrole.ProviderDeputy && userSubrole != Subrole.ProviderAdmin)
         {
             return BadRequest();
         }
 
-        var relatedWorkshops = await providerAdminService.GetWorkshopsThatProviderAdminCanManage(userId, userSubrole == OutOfSchool.Services.Enums.Subrole.ProviderDeputy).ConfigureAwait(false);
+        var relatedWorkshops = await providerAdminService.GetWorkshopsThatProviderAdminCanManage(userId, userSubrole == Subrole.ProviderDeputy).ConfigureAwait(false);
 
         if (!relatedWorkshops.Any())
         {

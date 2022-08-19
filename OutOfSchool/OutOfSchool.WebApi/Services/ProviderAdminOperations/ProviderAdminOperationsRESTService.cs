@@ -1,13 +1,6 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Services.Communication;
 
 namespace OutOfSchool.WebApi.Services.ProviderAdminOperations;
 
@@ -16,7 +9,6 @@ namespace OutOfSchool.WebApi.Services.ProviderAdminOperations;
 /// </summary>
 public class ProviderAdminOperationsRESTService : CommunicationService, IProviderAdminOperationsService
 {
-    private readonly ILogger<ProviderAdminService> logger;
     private readonly IdentityServerConfig identityServerConfig;
 
     /// <summary>
@@ -31,14 +23,14 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
         IOptions<IdentityServerConfig> identityServerConfig,
         IHttpClientFactory httpClientFactory,
         IOptions<CommunicationConfig> communicationConfig)
-        : base(httpClientFactory, communicationConfig.Value)
+        : base(httpClientFactory, communicationConfig.Value, logger)
     {
-        this.logger = logger;
         this.identityServerConfig = identityServerConfig.Value;
     }
 
     /// <inheritdoc/>
-    public async Task<ResponseDto> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto, string token)
+    public async Task<Either<ErrorResponse, CreateProviderAdminDto>> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto,
+        string token)
     {
         var request = new Request()
         {
@@ -52,18 +44,20 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
         logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
                         $"was sent. User(id): {userId}. Url: {request.Url}");
 
-        var response = await SendRequest(request)
+        var response = await SendRequest<ResponseDto>(request)
             .ConfigureAwait(false);
 
-        if (response.IsSuccess)
-        {
-            response.IsSuccess = true;
-            response.Result = JsonConvert
-                .DeserializeObject<CreateProviderAdminDto>(response.Result.ToString());
-
-            return response;
-        }
-
-        return response;
+        return response
+            .FlatMap<ResponseDto>(r => r.IsSuccess
+                ? r
+                : new ErrorResponse
+                {
+                    HttpStatusCode = r.HttpStatusCode,
+                    Message = r.Message,
+                })
+            .Map(result => result.Result is not null
+                ? JsonConvert
+                    .DeserializeObject<CreateProviderAdminDto>(result.Result.ToString())
+                : null);
     }
 }

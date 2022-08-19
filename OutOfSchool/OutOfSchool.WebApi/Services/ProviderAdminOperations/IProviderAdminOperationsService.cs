@@ -16,5 +16,5 @@ public interface IProviderAdminOperationsService
     /// <param name="providerAdminDto">Entity for creation.</param>
     /// <param name="token">User's security token.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    public Task<ResponseDto> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto, string token);
+    public Task<Either<ErrorResponse, CreateProviderAdminDto>> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto, string token);
 }

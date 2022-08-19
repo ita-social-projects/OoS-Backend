@@ -1,26 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Grpc.Core;
 using GrpcService;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services.Communication;
-using OutOfSchool.WebApi.Services.GRPC;
-using OutOfSchool.WebApi.Services.ProviderAdminOperations;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -32,9 +18,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     private readonly ProviderAdminConfig providerAdminConfig;
     private readonly IEntityRepository<string, User> userRepository;
     private readonly IProviderAdminRepository providerAdminRepository;
-    private readonly ILogger<ProviderAdminService> logger;
     private readonly IMapper mapper;
-    private readonly ResponseDto responseDto;
     private readonly IGRPCCommonService gRPCCommonService;
     private readonly IProviderAdminOperationsService providerAdminOperationsService;
     private readonly IWorkshopService workshopService;
@@ -51,21 +35,20 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         IGRPCCommonService gRPCCommonService,
         IProviderAdminOperationsService providerAdminOperationsService,
         IWorkshopService workshopService)
-        : base(httpClientFactory, communicationConfig.Value)
+        : base(httpClientFactory, communicationConfig.Value, logger)
     {
         this.identityServerConfig = identityServerConfig.Value;
         this.providerAdminConfig = providerAdminConfig.Value;
         this.providerAdminRepository = providerAdminRepository;
         this.userRepository = userRepository;
         this.mapper = mapper;
-        this.logger = logger;
         this.gRPCCommonService = gRPCCommonService;
         this.providerAdminOperationsService = providerAdminOperationsService;
         this.workshopService = workshopService;
-        responseDto = new ResponseDto();
     }
 
-    public async Task<ResponseDto> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto, string token)
+    public async Task<Either<ErrorResponse, CreateProviderAdminDto>> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto,
+        string token)
     {
         logger.LogDebug($"ProviderAdmin creating was started. User(id): {userId}");
 
@@ -76,10 +59,10 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         {
             logger.LogError($"User(id): {userId} doesn't have permission to create provider admin.");
 
-            responseDto.IsSuccess = false;
-            responseDto.HttpStatusCode = HttpStatusCode.Forbidden;
-
-            return responseDto;
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.Forbidden,
+            };
         }
 
         var numberProviderAdminsLessThanMax = await providerAdminRepository
@@ -91,20 +74,19 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             logger.LogError($"Admin was not created by User(id): {userId}. " +
                             $"Limit on the number of admins has been exceeded for the Provider(id): {providerAdminDto.ProviderId}.");
 
-            responseDto.IsSuccess = false;
-            responseDto.HttpStatusCode = HttpStatusCode.MethodNotAllowed;
-
-            return responseDto;
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.MethodNotAllowed,
+            };
         }
 
-        ResponseDto response = await providerAdminOperationsService
+        return await providerAdminOperationsService
             .CreateProviderAdminAsync(userId, providerAdminDto, token)
             .ConfigureAwait(false);
-
-        return response;
     }
 
-    public async Task<ResponseDto> DeleteProviderAdminAsync(string providerAdminId, string userId, Guid providerId, string token)
+    public async Task<Either<ErrorResponse, ActionResult>> DeleteProviderAdminAsync(string providerAdminId, string userId, Guid providerId,
+        string token)
     {
         logger.LogDebug($"ProviderAdmin(id): {providerAdminId} deleting was started. User(id): {userId}");
 
@@ -115,10 +97,10 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         {
             logger.LogError($"User(id): {userId} doesn't have permission to delete provider admin.");
 
-            responseDto.IsSuccess = false;
-            responseDto.HttpStatusCode = HttpStatusCode.Forbidden;
-
-            return responseDto;
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.Forbidden,
+            };
         }
 
         var provideradmin = await providerAdminRepository.GetByIdAsync(providerAdminId, providerId)
@@ -128,10 +110,10 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         {
             logger.LogError($"ProviderAdmin(id) {providerAdminId} not found. User(id): {userId}.");
 
-            responseDto.IsSuccess = false;
-            responseDto.HttpStatusCode = HttpStatusCode.NotFound;
-
-            return responseDto;
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.NotFound,
+            };
         }
 
         var request = new Request()
@@ -145,27 +127,25 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
                         $"was sent. User(id): {userId}. Url: {request.Url}");
 
-        var response = await SendRequest(request)
+        var response = await SendRequest<ResponseDto>(request)
             .ConfigureAwait(false);
 
-        if (response.IsSuccess)
-        {
-            responseDto.IsSuccess = true;
-            if (!(responseDto.Result is null))
-            {
-                responseDto.Result = JsonConvert
-                    .DeserializeObject<ActionResult>(response.Result.ToString());
-
-                return responseDto;
-            }
-
-            return responseDto;
-        }
-
-        return response;
+        return response
+            .FlatMap<ResponseDto>(r => r.IsSuccess
+                ? r
+                : new ErrorResponse
+                {
+                    HttpStatusCode = r.HttpStatusCode,
+                    Message = r.Message,
+                })
+            .Map(result => result.Result is not null
+                ? JsonConvert
+                    .DeserializeObject<ActionResult>(result.Result.ToString())
+                : null);
     }
 
-    public async Task<ResponseDto> BlockProviderAdminAsync(string providerAdminId, string userId, Guid providerId, string token)
+    public async Task<Either<ErrorResponse, ActionResult>> BlockProviderAdminAsync(string providerAdminId, string userId, Guid providerId,
+        string token)
     {
         logger.LogDebug($"ProviderAdmin(id): {providerAdminId} blocking was started. User(id): {userId}");
 
@@ -176,10 +156,10 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         {
             logger.LogError($"User(id): {userId} doesn't have permission to block provider admin.");
 
-            responseDto.IsSuccess = false;
-            responseDto.HttpStatusCode = HttpStatusCode.Forbidden;
-
-            return responseDto;
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.Forbidden,
+            };
         }
 
         var provideradmin = await providerAdminRepository.GetByIdAsync(providerAdminId, providerId)
@@ -189,10 +169,10 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         {
             logger.LogError($"ProviderAdmin(id) {providerAdminId} not found. User(id): {userId}.");
 
-            responseDto.IsSuccess = false;
-            responseDto.HttpStatusCode = HttpStatusCode.NotFound;
-
-            return responseDto;
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.NotFound,
+            };
         }
 
         var request = new Request()
@@ -206,29 +186,27 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
                         $"was sent. User(id): {userId}. Url: {request.Url}");
 
-        var response = await SendRequest(request)
+        var response = await SendRequest<ResponseDto>(request)
             .ConfigureAwait(false);
 
-        if (response.IsSuccess)
-        {
-            responseDto.IsSuccess = true;
-            if (!(responseDto.Result is null))
-            {
-                responseDto.Result = JsonConvert
-                    .DeserializeObject<ActionResult>(response.Result.ToString());
-
-                return responseDto;
-            }
-
-            return responseDto;
-        }
-
-        return response;
+        return response
+            .FlatMap<ResponseDto>(r => r.IsSuccess
+                ? r
+                : new ErrorResponse
+                {
+                    HttpStatusCode = r.HttpStatusCode,
+                    Message = r.Message,
+                })
+            .Map(result => result.Result is not null
+                ? JsonConvert
+                    .DeserializeObject<ActionResult>(result.Result.ToString())
+                : null);
     }
 
     public async Task<bool> IsAllowedCreateAsync(Guid providerId, string userId, bool isDeputy)
     {
-        bool providerAdminDeputy = await providerAdminRepository.IsExistProviderAdminDeputyWithUserIdAsync(providerId, userId)
+        bool providerAdminDeputy = await providerAdminRepository
+            .IsExistProviderAdminDeputyWithUserIdAsync(providerId, userId)
             .ConfigureAwait(false);
 
         bool provider = await providerAdminRepository.IsExistProviderWithUserIdAsync(userId)
@@ -254,14 +232,19 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
 
     public async Task<IEnumerable<Guid>> GetRelatedWorkshopIdsForProviderAdmins(string userId)
     {
-        var providersAdmins = await providerAdminRepository.GetByFilter(p => p.UserId == userId && !p.IsDeputy).ConfigureAwait(false);
-        return providersAdmins.SelectMany(admin => admin.ManagedWorkshops, (admin, workshops) => new { workshops }).Select(x => x.workshops.Id);
+        var providersAdmins = await providerAdminRepository.GetByFilter(p => p.UserId == userId && !p.IsDeputy)
+            .ConfigureAwait(false);
+        return providersAdmins.SelectMany(admin => admin.ManagedWorkshops, (admin, workshops) => new {workshops})
+            .Select(x => x.workshops.Id);
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<WorkshopCard>> GetWorkshopsThatProviderAdminCanManage(string userId, bool isProviderDeputy)
+    public async Task<IEnumerable<WorkshopCard>> GetWorkshopsThatProviderAdminCanManage(string userId,
+        bool isProviderDeputy)
     {
-        var providersAdmins = await providerAdminRepository.GetByFilter(p => p.UserId == userId && p.IsDeputy == isProviderDeputy, includingPropertiesForMaping).ConfigureAwait(false);
+        var providersAdmins = await providerAdminRepository
+            .GetByFilter(p => p.UserId == userId && p.IsDeputy == isProviderDeputy, includingPropertiesForMaping)
+            .ConfigureAwait(false);
 
         if (!providersAdmins.Any())
         {
@@ -275,13 +258,15 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             return await workshopService.GetByProviderId(providerAdmin.ProviderId).ConfigureAwait(false);
         }
 
-        return providersAdmins.SingleOrDefault().ManagedWorkshops.Select(workshop => mapper.Map<WorkshopCard>(workshop));
+        return providersAdmins.SingleOrDefault().ManagedWorkshops
+            .Select(workshop => mapper.Map<WorkshopCard>(workshop));
     }
 
     /// <inheritdoc/>
     public async Task<ProviderAdminProviderRelationDto> GetById(string userId)
     {
-        var providerAdmin = (await providerAdminRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false)).SingleOrDefault();
+        var providerAdmin = (await providerAdminRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false))
+            .SingleOrDefault();
 
         if (providerAdmin == null)
         {
@@ -311,12 +296,15 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
 
         if (provider != null)
         {
-            providerAdmins = (await providerAdminRepository.GetByFilter(pa => pa.ProviderId == provider.Id).ConfigureAwait(false))
+            providerAdmins = (await providerAdminRepository.GetByFilter(pa => pa.ProviderId == provider.Id)
+                    .ConfigureAwait(false))
                 .ToList();
         }
         else
         {
-            var providerAdmin = (await providerAdminRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false)).SingleOrDefault();
+            var providerAdmin =
+                (await providerAdminRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false))
+                .SingleOrDefault();
             if (providerAdmin.IsDeputy)
             {
                 providerAdmins = (await providerAdminRepository
@@ -339,7 +327,9 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
                 }
                 else
                 {
-                    dto.AccountStatus = user.LastLogin == DateTimeOffset.MinValue ? AccountStatus.NeverLogged : AccountStatus.Accepted;
+                    dto.AccountStatus = user.LastLogin == DateTimeOffset.MinValue
+                        ? AccountStatus.NeverLogged
+                        : AccountStatus.Accepted;
                 }
 
                 dtos.Add(dto);
@@ -351,8 +341,9 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
 
     public async Task<IEnumerable<string>> GetProviderAdminsIds(Guid workshopId)
     {
-        var providerAdmins = await providerAdminRepository.GetByFilter(p => p.ManagedWorkshops.Any(w => w.Id == workshopId)
-                                                                            && !p.IsDeputy).ConfigureAwait(false);
+        var providerAdmins = await providerAdminRepository.GetByFilter(p =>
+            p.ManagedWorkshops.Any(w => w.Id == workshopId)
+            && !p.IsDeputy).ConfigureAwait(false);
 
         return providerAdmins.Select(a => a.UserId);
     }
@@ -365,7 +356,8 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         return providersDeputies.Select(d => d.UserId);
     }
 
-    private async Task<ResponseDto> CreateProviderAdminRESTAsync(string userId, CreateProviderAdminDto providerAdminDto, string token)
+    private async Task<ResponseDto> CreateProviderAdminRESTAsync(string userId, CreateProviderAdminDto providerAdminDto,
+        string token)
     {
         var request = new Request()
         {
@@ -379,33 +371,34 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
                         $"was sent. User(id): {userId}. Url: {request.Url}");
 
-        var response = await SendRequest(request)
+        var response = await SendRequest<ResponseDto>(request)
             .ConfigureAwait(false);
 
-        if (response.IsSuccess)
-        {
-            responseDto.IsSuccess = true;
-            responseDto.Result = JsonConvert
-                .DeserializeObject<CreateProviderAdminDto>(response.Result.ToString());
+        return response.Match(
+            error => new ResponseDto()
+            {
+                IsSuccess = error.IsSuccess,
+                HttpStatusCode = error.HttpStatusCode,
+            },
+            result =>
+            {
+                if (result.IsSuccess && result.Result is not null)
+                {
+                    result.Result = JsonConvert
+                        .DeserializeObject<CreateProviderAdminDto>(result.Result.ToString());
+                }
 
-            return responseDto;
-        }
-
-        return response;
+                return result;
+            });
     }
 
-    private async Task<ResponseDto> CreateProviderAdminGRPCAsync(string userId, CreateProviderAdminDto providerAdminDto, string token)
+    private async Task<Either<ErrorResponse, CreateProviderAdminDto>> CreateProviderAdminGRPCAsync(string userId, CreateProviderAdminDto providerAdminDto,
+        string token)
     {
         using var channel = gRPCCommonService.CreateAuthenticatedChannel(token);
         var client = new GRPCProviderAdmin.GRPCProviderAdminClient(channel);
 
         var createProviderAdminRequest = mapper.Map<CreateProviderAdminRequest>(providerAdminDto);
-
-        var response = new ResponseDto()
-        {
-            IsSuccess = true,
-            HttpStatusCode = HttpStatusCode.OK,
-        };
 
         string requestId = Guid.NewGuid().ToString();
         createProviderAdminRequest.RequestId = requestId;
@@ -419,17 +412,14 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
 
             if (reply.IsSuccess)
             {
-                var providerAdminDtoGRPC = mapper.Map<CreateProviderAdminDto>(reply);
-
-                responseDto.IsSuccess = true;
-                responseDto.Result = providerAdminDtoGRPC;
-
-                return responseDto;
+                return mapper.Map<CreateProviderAdminDto>(reply);
             }
             else
             {
-                response.IsSuccess = false;
-                response.HttpStatusCode = HttpStatusCode.InternalServerError;
+                return new ErrorResponse
+                {
+                    HttpStatusCode = HttpStatusCode.InternalServerError,
+                };
             }
         }
         catch (RpcException ex)
@@ -437,11 +427,11 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             logger.LogError($"GRPC: Request(id): {requestId}. " +
                             $"Admin was not created by User(id): {userId}. {ex.Message}");
 
-            response.IsSuccess = false;
-            response.HttpStatusCode = HttpStatusCode.InternalServerError;
-            response.Message = ex.Message;
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.InternalServerError,
+                Message = ex.Message,
+            };
         }
-
-        return response;
     }
 }

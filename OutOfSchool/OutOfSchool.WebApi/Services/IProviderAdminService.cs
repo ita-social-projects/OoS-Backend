@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-using OutOfSchool.Common;
+﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
 
 public interface IProviderAdminService
 {
-    Task<ResponseDto> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto, string token);
+    Task<Either<ErrorResponse, CreateProviderAdminDto>> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto, string token);
 
-    Task<ResponseDto> DeleteProviderAdminAsync(string providerAdminId, string userId, Guid providerId, string token);
+    Task<Either<ErrorResponse, ActionResult>> DeleteProviderAdminAsync(string providerAdminId, string userId,
+        Guid providerId, string token);
 
-    Task<ResponseDto> BlockProviderAdminAsync(string providerAdminId, string userId, Guid providerId, string token);
+    Task<Either<ErrorResponse, ActionResult>> BlockProviderAdminAsync(string providerAdminId, string userId,
+        Guid providerId, string token);
 
     Task GiveAssistantAccessToWorkshop(string userId, Guid workshopId);
 

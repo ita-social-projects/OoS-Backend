@@ -133,29 +133,19 @@ public class MinistryAdminController : Controller
             return StatusCode(StatusCodes.Status422UnprocessableEntity);
         }
 
-        try
-        {
-            var response = await ministryAdminService.CreateMinistryAdminAsync(
+        var response = await ministryAdminService.CreateMinistryAdminAsync(
                 userId,
                 ministryAdmin,
-                await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false));
+                await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
+            .ConfigureAwait(false);
 
-            if (response.IsSuccess)
+        return response.Match<ActionResult>(
+            error => StatusCode((int)error.HttpStatusCode, error.Message),
+            result =>
             {
-                CreateMinistryAdminDto ministryAdminDto = (CreateMinistryAdminDto)response.Result;
-
-                logger.LogInformation($"Succesfully created MinistryAdmin(id): {ministryAdminDto.UserId} by User(id): {userId}.");
-
-                return Ok(ministryAdminDto);
-            }
-
-            return BadRequest(response.Message);
-        }
-        catch (Exception e)
-        {
-            logger.LogError("Error: {Message}", e.Message);
-            return BadRequest(e.Message);
-        }
+                logger.LogInformation($"Succesfully created MinistryAdmin(id): {result.UserId} by User(id): {userId}.");
+                return Ok(result);
+            });
     }
 
     /// <summary>
@@ -212,14 +202,13 @@ public class MinistryAdminController : Controller
                 await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
             .ConfigureAwait(false);
 
-        if (response.IsSuccess)
-        {
-            logger.LogInformation($"Succesfully deleted ministryAdmin(id): {ministryAdminId} by User(id): {userId}.");
-
-            return Ok();
-        }
-
-        return StatusCode((int)response.HttpStatusCode);
+        return response.Match<ActionResult>(
+            error => StatusCode((int)error.HttpStatusCode, error.Message),
+            _ =>
+            {
+                logger.LogInformation($"Succesfully deleted ministryAdmin(id): {ministryAdminId} by User(id): {userId}.");
+                return Ok();
+            });
     }
 
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -238,13 +227,12 @@ public class MinistryAdminController : Controller
                 await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
             .ConfigureAwait(false);
 
-        if (response.IsSuccess)
-        {
-            logger.LogInformation($"Succesfully blocked ministryAdmin(id): {ministryAdminId} by User(id): {userId}.");
-
-            return Ok();
-        }
-
-        return StatusCode((int)response.HttpStatusCode);
+        return response.Match<ActionResult>(
+            error => StatusCode((int)error.HttpStatusCode, error.Message),
+            _ =>
+            {
+                logger.LogInformation($"Succesfully blocked ministryAdmin(id): {ministryAdminId} by User(id): {userId}.");
+                return Ok();
+            });
     }
 }
