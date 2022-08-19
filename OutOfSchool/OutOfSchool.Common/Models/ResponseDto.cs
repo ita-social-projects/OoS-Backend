@@ -1,8 +1,9 @@
 using System.Net;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.Common;
 
-public class ResponseDto
+public class ResponseDto : IResponse
 {
     public object Result { get; set; }
 
