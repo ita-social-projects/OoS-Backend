@@ -51,6 +51,7 @@ public class ChildController : ControllerBase
     /// Get all children (Id, FullName) from the database by parent's id.
     /// </summary>
     /// <param name="parentId">Id of the parent.</param>
+    /// <param name="isParent">Do we need a parent.</param>
     /// <returns>The result is a <see cref="List{ShortEntityDto}"/> that contains a list of children that were received.</returns>
     [HasPermission(Permissions.ChildRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ShortEntityDto>))]
@@ -59,10 +60,10 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{parentId}")]
-    public async Task<IActionResult> GetChildrenListByParentId(Guid parentId)
+    [HttpGet("{parentId}/{isParent?}")]
+    public async Task<IActionResult> GetChildrenListByParentId([FromRoute] Guid parentId, [FromRoute]bool? isParent = null)
     {
-        var children = await service.GetChildrenListByParentId(parentId).ConfigureAwait(false);
+        var children = await service.GetChildrenListByParentId(parentId, isParent).ConfigureAwait(false);
 
         if (!children.Any())
         {

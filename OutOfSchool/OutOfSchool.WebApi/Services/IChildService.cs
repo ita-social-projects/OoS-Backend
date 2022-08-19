@@ -41,10 +41,11 @@ public interface IChildService
     /// Get all children (Id, FullName) from the database.
     /// </summary>
     /// <param name="parentId">ParentId.</param>
+    /// <param name="isParent">Parent's accessory to child.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-    /// The result is a <see cref="List{ShortEntityDto}"/> that contains the count of all found children and a list of children that were received.</returns>
+    /// The result is a <see cref="List{ShortEntityDto}"/> that contains a list of children that were received.</returns>
     /// <exception cref="SqlException">If the database cannot execute the query.</exception>
-    Task<List<ShortEntityDto>> GetChildrenListByParentId(Guid parentId);
+    Task<List<ShortEntityDto>> GetChildrenListByParentId(Guid parentId, bool? isParent);
 
     /// <summary>
     /// Get a child by it's key and userId.

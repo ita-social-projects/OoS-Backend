@@ -119,11 +119,18 @@ public class ChildService : IChildService
     }
 
     /// <inheritdoc/>
-    public async Task<List<ShortEntityDto>> GetChildrenListByParentId(Guid parentId)
+    public async Task<List<ShortEntityDto>> GetChildrenListByParentId(Guid parentId, bool? isParent)
     {
         logger.LogDebug($"Getting ChildrenList with ParentId: {parentId} started.");
 
-        var children = await childRepository.GetByFilter(child => child.ParentId == parentId).ConfigureAwait(false);
+        Expression<Func<Child, bool>> func = child => child.ParentId == parentId;
+
+        if (isParent is not null)
+        {
+            func = func.And(child => child.IsParent == isParent);
+        }
+
+        var children = await childRepository.GetByFilter(func).ConfigureAwait(false);
         var result = mapper.Map<List<ShortEntityDto>>(children).OrderBy(entity => entity.Title).ToList();
 
         return result;
