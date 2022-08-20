@@ -1,5 +1,7 @@
-﻿using System.Linq.Expressions;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using AutoMapper;
+using Castle.Core.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -76,6 +78,14 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
     public async Task<ResponseDto> CreateMinistryAdminAsync(string userId, CreateMinistryAdminDto ministryAdminDto, string token)
     {
         logger.LogDebug($"ministryAdmin creating was started. User(id): {userId}");
+
+        ArgumentNullException.ThrowIfNull(ministryAdminDto);
+
+        if (await IsSuchEmailExisted(ministryAdminDto.Email))
+        {
+            logger.LogDebug($"ministryAdmin creating is not possible. Username {ministryAdminDto.Email} is already taken.");
+            throw new InvalidOperationException($"Username {ministryAdminDto.Email} is already taken.");
+        }
 
         var request = new Request()
         {
@@ -303,5 +313,11 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         }
 
         return predicate;
+    }
+
+    private async Task<bool> IsSuchEmailExisted(string email)
+    {
+        var result = await userRepository.GetByFilter(x => x.Email == email);
+        return !result.IsNullOrEmpty();
     }
 }

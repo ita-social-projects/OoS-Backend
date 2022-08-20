@@ -133,22 +133,29 @@ public class MinistryAdminController : Controller
             return StatusCode(StatusCodes.Status422UnprocessableEntity);
         }
 
-        var response = await ministryAdminService.CreateMinistryAdminAsync(
+        try
+        {
+            var response = await ministryAdminService.CreateMinistryAdminAsync(
                 userId,
                 ministryAdmin,
-                await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
-            .ConfigureAwait(false);
+                await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false));
 
-        if (response.IsSuccess)
-        {
-            CreateMinistryAdminDto ministryAdminDto = (CreateMinistryAdminDto)response.Result;
+            if (response.IsSuccess)
+            {
+                CreateMinistryAdminDto ministryAdminDto = (CreateMinistryAdminDto)response.Result;
 
-            logger.LogInformation($"Succesfully created MinistryAdmin(id): {ministryAdminDto.UserId} by User(id): {userId}.");
+                logger.LogInformation($"Succesfully created MinistryAdmin(id): {ministryAdminDto.UserId} by User(id): {userId}.");
 
-            return Ok(ministryAdminDto);
+                return Ok(ministryAdminDto);
+            }
+
+            return BadRequest(response.Message);
         }
-
-        return StatusCode((int)response.HttpStatusCode);
+        catch (Exception e)
+        {
+            logger.LogError(e.Message);
+            return BadRequest(e.Message);
+        }
     }
 
     /// <summary>
