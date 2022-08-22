@@ -38,6 +38,4 @@ public class User : IdentityUser, IKeyedEntity<string>
 
     // If it's true then user must change his password before the logging into the system
     public bool MustChangePassword { get; set; }
-
-    public Gender Gender { get; set; }
 }
