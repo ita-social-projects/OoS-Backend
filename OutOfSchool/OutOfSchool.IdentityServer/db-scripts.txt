@@ -14,3 +14,6 @@ dotnet ef migrations remove -c OutOfSchoolDbContext
 
 // Install EF Core tools
 dotnet tool install --global dotnet-ef
+
+// Return list of migrations with theirs status
+dotnet ef migrations list -c OutOfSchoolDbContext

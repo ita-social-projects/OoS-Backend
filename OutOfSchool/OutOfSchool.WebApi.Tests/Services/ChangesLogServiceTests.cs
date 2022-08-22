@@ -152,7 +152,7 @@ public class ChangesLogServiceTests
         Assert.AreEqual(entitiesCount, result.Entities.Count);
         Assert.True(result.Entities.Any(x => x.ProviderId == provider.Id));
         Assert.True(result.Entities.Any(x => x.ProviderTitle == provider.FullTitle));
-        Assert.True(result.Entities.Any(x => x.ProviderCity == provider.LegalAddress.City));
+        Assert.True(result.Entities.Any(x => x.ProviderCity == provider.LegalAddress.CATOTTG.Name));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
     }
 
@@ -207,7 +207,7 @@ public class ChangesLogServiceTests
         Assert.AreEqual(entitiesCount, result.Entities.Count);
         Assert.True(result.Entities.All(x => x.ApplicationId == application.Id));
         Assert.True(result.Entities.All(x => x.WorkshopTitle == application.Workshop.Title));
-        Assert.True(result.Entities.All(x => x.WorkshopCity == application.Workshop.Address.City));
+        Assert.True(result.Entities.All(x => x.WorkshopCity == application.Workshop.Address.CATOTTG.Name));
         Assert.True(result.Entities.All(x => x.ProviderTitle == application.Workshop.ProviderTitle));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
     }

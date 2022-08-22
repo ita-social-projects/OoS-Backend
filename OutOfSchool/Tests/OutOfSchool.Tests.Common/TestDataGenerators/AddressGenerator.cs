@@ -12,9 +12,8 @@ public static class AddressGenerator
     {
         faker = new Faker<Address>()
             .RuleFor(x => x.Id, f => f.IndexFaker)
-            .RuleFor(x => x.Region, f => f.Address.State())
-            .RuleFor(x => x.District, f => f.Address.County())
-            .RuleFor(x => x.City, f => f.Address.City())
+            .RuleFor(x => x.CATOTTGId, 4970)
+            .RuleFor(x => x.CATOTTG, _ => CATOTTGGenerator.Generate())
             .RuleFor(x => x.Street, f => f.Address.StreetName())
             .RuleFor(x => x.BuildingNumber, f => f.Address.BuildingNumber())
             .RuleFor(x => x.Latitude, f => f.Address.Latitude())

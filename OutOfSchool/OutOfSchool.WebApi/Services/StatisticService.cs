@@ -57,32 +57,33 @@ public class StatisticService : IStatisticService
     // Return categories with 1 SQL query
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<DirectionStatistic>> GetPopularDirections(int limit, string city)
+    public async Task<IEnumerable<DirectionStatistic>> GetPopularDirections(int limit, long catottgId)
     {
         logger.LogInformation("Getting popular categories started.");
 
-        string cacheKey = $"GetPopularDirections_{limit}_{city}";
+        string cacheKey = $"GetPopularDirections_{limit}_{catottgId}";
 
         var popularDirections = await cache.GetOrAddAsync(cacheKey, () =>
-            GetPopularDirectionsFromDatabase(limit, city)).ConfigureAwait(false);
+            GetPopularDirectionsFromDatabase(limit, catottgId)).ConfigureAwait(false);
 
         return popularDirections;
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<DirectionStatistic>> GetPopularDirectionsFromDatabase(int limit, string city)
+    public async Task<IEnumerable<DirectionStatistic>> GetPopularDirectionsFromDatabase(int limit, long catottgId)
     {
         var workshops = workshopRepository.Get();
         var applications = applicationRepository.Get();
 
-        if (!string.IsNullOrWhiteSpace(city))
+        if (catottgId > 0)
         {
             workshops = workshops
-                .Where(w => string.Equals(w.Address.City, city.Trim()));
+                .Where(w => w.Address.CATOTTGId == catottgId);
         }
 
         var directionsWithWorkshops = workshops
-            .GroupBy(w => w.DirectionId)
+            .SelectMany(w => w.InstitutionHierarchy.Directions)
+            .GroupBy(d => d.Id)
             .Select(g => new
             {
                 DirectionId = g.Key,
@@ -90,7 +91,8 @@ public class StatisticService : IStatisticService
             });
 
         var directionsWithApplications = applications
-            .GroupBy(a => a.Workshop.DirectionId)
+            .SelectMany(a => a.Workshop.InstitutionHierarchy.Directions)
+            .GroupBy(d => d.Id)
             .Select(g => new
             {
                 DirectionId = g.Key,
@@ -145,28 +147,28 @@ public class StatisticService : IStatisticService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<WorkshopCard>> GetPopularWorkshops(int limit, string city)
+    public async Task<IEnumerable<WorkshopCard>> GetPopularWorkshops(int limit, long catottgId)
     {
         logger.LogInformation("Getting popular workshops started.");
 
-        string cacheKey = $"GetPopularWorkshops_{limit}_{city}";
+        string cacheKey = $"GetPopularWorkshops_{limit}_{catottgId}";
 
         var workshopsResult = await cache.GetOrAddAsync(cacheKey, () =>
-            GetPopularWorkshopsFromDatabase(limit, city)).ConfigureAwait(false);
+            GetPopularWorkshopsFromDatabase(limit, catottgId)).ConfigureAwait(false);
 
         return workshopsResult;
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<WorkshopCard>> GetPopularWorkshopsFromDatabase(int limit, string city)
+    public async Task<IEnumerable<WorkshopCard>> GetPopularWorkshopsFromDatabase(int limit, long catottgId)
     {
         var workshops = workshopRepository
-            .Get(includeProperties: $"{nameof(Address)},{nameof(Direction)}");
+            .Get(includeProperties: $"{nameof(Address)},{nameof(InstitutionHierarchy)}");
 
-        if (!string.IsNullOrWhiteSpace(city))
+        if (catottgId > 0)
         {
             workshops = workshops
-                .Where(w => string.Equals(w.Address.City, city.Trim()));
+                .Where(w => w.Address.CATOTTGId == catottgId);
         }
 
         var workshopsWithApplications = workshops.Select(w => new

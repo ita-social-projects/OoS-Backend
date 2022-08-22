@@ -26,6 +26,8 @@ public class ChangesLogRepositoryTests
         provider = ProvidersGenerator.Generate();
         provider.LegalAddress.Id = 6;
         provider.LegalAddressId = 6;
+        provider.LegalAddress.CATOTTGId = 4970;
+        provider.LegalAddress.CATOTTG.Id = 4970;
         user = UserGenerator.Generate();
 
         dbContextOptions = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
@@ -210,12 +212,12 @@ public class ChangesLogRepositoryTests
         using var context = GetContext();
         var changesLogRepository = GetChangesLogRepository(context);
         var trackedProperties = new[] { "LegalAddress" };
-        var provider = await context.Providers.Include(p => p.LegalAddress).FirstAsync();
+        var provider = await context.Providers.Include(p => p.LegalAddress).ThenInclude(p => p.CATOTTG).FirstAsync();
 
         var oldLegalAddress = ProjectAddress(provider.LegalAddress);
 
         // Act
-        provider.LegalAddress.City += "new";
+        //provider.LegalAddress.CATOTTGId += 1;
         provider.LegalAddress.BuildingNumber += "X";
 
         var newLegalAddress = ProjectAddress(provider.LegalAddress);
@@ -277,7 +279,7 @@ public class ChangesLogRepositoryTests
     private string ProjectAddress(Address address) =>
         address == null
             ? null
-            : $"{address.District}, {address.City}, {address.Region}, {address.Street}, {address.BuildingNumber}";
+            : $"{address.CATOTTGId}, {address.Street}, {address.BuildingNumber}";
 
     public class ProviderTest : IKeyedEntity
     {

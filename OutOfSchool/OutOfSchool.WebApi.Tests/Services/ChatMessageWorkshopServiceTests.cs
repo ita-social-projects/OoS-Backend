@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
@@ -11,6 +12,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services;
@@ -33,6 +35,7 @@ public class ChatMessageWorkshopServiceTests
     private IEntityRepository<Guid, ChatMessageWorkshop> messageRepository;
     private Mock<IChatRoomWorkshopService> roomServiceMock;
     private Mock<ILogger<ChatMessageWorkshopService>> loggerMock;
+    private IMapper mapper;
 
     private DbContextOptions<OutOfSchoolDbContext> options;
     private OutOfSchoolDbContext dbContext;
@@ -53,8 +56,13 @@ public class ChatMessageWorkshopServiceTests
         messageRepository = new EntityRepository<Guid, ChatMessageWorkshop>(dbContext);
         roomServiceMock = new Mock<IChatRoomWorkshopService>();
         loggerMock = new Mock<ILogger<ChatMessageWorkshopService>>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
 
-        messageService = new ChatMessageWorkshopService(messageRepository, roomServiceMock.Object, loggerMock.Object);
+        messageService = new ChatMessageWorkshopService(
+            messageRepository,
+            roomServiceMock.Object,
+            loggerMock.Object,
+            mapper);
 
         SeedDatabase();
     }

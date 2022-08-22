@@ -48,11 +48,6 @@ public partial class InstitutionAdmin : Migration
             name: "IX_InstitutionAdmins_InstitutionId",
             table: "InstitutionAdmins",
             column: "InstitutionId");
-
-        migrationBuilder.InsertData(
-            table: "AspNetRoles",
-            columns: new[] { "Id", "Name", "NormalizedName", "ConcurrencyStamp" },
-            values: new object[] { "9995f142-9a03-4cc5-b806-c52fd6932760", "ministryadmin", "MINISTRYADMIN", "44fb0a97-3cfd-49e2-bd04-e60e3a3758ab" });
     }
 
     protected override void Down(MigrationBuilder migrationBuilder)

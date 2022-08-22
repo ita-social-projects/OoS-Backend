@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Google;
 using Google.Api.Gax;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Storage.v1.Data;
@@ -59,6 +60,10 @@ public abstract class GcpFilesStorageBase<TFile> : IFilesStorage<TFile, string>
 
             fileStream.Position = 0;
             return new TFile { ContentStream = fileStream, ContentType = fileObject.ContentType };
+        }
+        catch (GoogleApiException)
+        {
+            return null;
         }
         catch (Exception ex)
         {

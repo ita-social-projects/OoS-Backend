@@ -37,7 +37,7 @@ public class ParentRepository : EntityRepositoryBase<Guid, Parent>, IParentRepos
             Id = Guid.Empty,
             IsParent = true,
             FirstName = user.FirstName,
-            MiddleName = user.MiddleName,
+            MiddleName = user.MiddleName ?? string.Empty,
             LastName = user.LastName,
             Gender = user.Gender,
             ParentId = entity.Id,

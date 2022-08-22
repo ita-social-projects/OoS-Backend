@@ -33,19 +33,19 @@ public class StatisticController : ControllerBase
     /// Get popular directions.
     /// </summary>
     /// <param name="limit">The number of entries.</param>
-    /// <param name="city">City to look for.</param>
+    /// <param name="catottgId">Codeficator's id.</param>
     /// <returns>List of popular directions.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DirectionStatistic>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [AllowAnonymous]
-    public async Task<IActionResult> GetDirections(int limit, [FromQuery] string city)
+    public async Task<IActionResult> GetDirections(int limit, [FromQuery] long catottgId)
     {
         var newLimit = ValidateNumberOfEntries(limit);
 
         var popularDirections = await service
-            .GetPopularDirections(newLimit, city)
+            .GetPopularDirections(newLimit, catottgId)
             .ConfigureAwait(false);
 
         if (!popularDirections.Any())
@@ -60,19 +60,19 @@ public class StatisticController : ControllerBase
     /// Get popular workshops.
     /// </summary>
     /// <param name="limit">The number of entries.</param>
-    /// <param name="city">City to look for.</param>
+    /// <param name="catottgId">Codeficator's id.</param>
     /// <returns>List of popular workshops.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopCard>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [AllowAnonymous]
-    public async Task<IActionResult> GetWorkshops(int limit, [FromQuery] string city)
+    public async Task<IActionResult> GetWorkshops(int limit, [FromQuery] long catottgId)
     {
         int newLimit = ValidateNumberOfEntries(limit);
 
         var popularWorkshops = await service
-            .GetPopularWorkshops(newLimit, city)
+            .GetPopularWorkshops(newLimit, catottgId)
             .ConfigureAwait(false);
 
         if (!popularWorkshops.Any())

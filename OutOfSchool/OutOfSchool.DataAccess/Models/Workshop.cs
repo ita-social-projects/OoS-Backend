@@ -90,15 +90,6 @@ public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>
 
     public Guid? InstitutionHierarchyId { get; set; }
 
-    [Required]
-    public long DirectionId { get; set; }
-
-    [Required]
-    public long DepartmentId { get; set; }
-
-    [Required]
-    public long ClassId { get; set; }
-
     public WorkshopStatus Status { get; set; }
 
     public uint AvailableSeats { get; set; } = uint.MaxValue;
@@ -107,11 +98,7 @@ public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>
 
     public virtual InstitutionHierarchy InstitutionHierarchy { get; set; }
 
-    public virtual Direction Direction { get; set; }
-
     public virtual Address Address { get; set; }
-
-    public virtual Class Class { get; set; }
 
     public virtual List<ProviderAdmin> ProviderAdmins { get; set; }
 

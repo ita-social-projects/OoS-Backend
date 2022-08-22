@@ -1,4 +1,7 @@
-﻿namespace OutOfSchool.Common.Models;
+﻿using System.Text;
+using OutOfSchool.Common.Enums;
+
+namespace OutOfSchool.Common.Models;
 
 public class CodeficatorAddressDto
 {
@@ -20,35 +23,42 @@ public class CodeficatorAddressDto
 
     public double Longitude { get; set; }
 
+    public int Order { get; set; }
+
     public string FullName
     {
         get
         {
-            string addr = CityDistrict;
+            StringBuilder fullName = new StringBuilder();
+
+            if (!string.IsNullOrEmpty(CityDistrict))
+            {
+                fullName.Append($"{CityDistrict} {CodeficatorCategory.CityDistrict.Abbrivation}");
+            }
 
             if (!string.IsNullOrEmpty(Settlement))
             {
-                addr += GetSplitter(addr) + Settlement;
+                fullName.Append($"{GetSplitter(fullName)}{Settlement}");
             }
 
             if (!string.IsNullOrEmpty(TerritorialCommunity))
             {
-                addr += GetSplitter(addr) + TerritorialCommunity;
+                fullName.Append($"{GetSplitter(fullName)}{TerritorialCommunity} {CodeficatorCategory.TerritorialCommunity.Abbrivation}");
             }
 
             if (!string.IsNullOrEmpty(District))
             {
-                addr += GetSplitter(addr) + District;
+                fullName.Append($"{GetSplitter(fullName)}{District} {CodeficatorCategory.District.Abbrivation}");
             }
 
             if (!string.IsNullOrEmpty(Region))
             {
-                addr += GetSplitter(addr) + Region;
+                fullName.Append($"{GetSplitter(fullName)}{Region} {CodeficatorCategory.Region.Abbrivation}");
             }
 
-            return addr;
+            return fullName.ToString();
         }
     }
 
-    private string GetSplitter(string addr) => string.IsNullOrEmpty(addr) ? string.Empty : Constants.AddressSeparator;
+    private static string GetSplitter(StringBuilder address) => address.Length == 0 ? string.Empty : Constants.AddressSeparator;
 }

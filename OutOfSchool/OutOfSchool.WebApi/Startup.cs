@@ -160,8 +160,6 @@ public static class Startup
         services.AddTransient<IChatRoomWorkshopService, ChatRoomWorkshopService>();
         services.AddTransient<IChildService, ChildService>();
         services.AddTransient<ICityService, CityService>();
-        services.AddTransient<IClassService, ClassService>();
-        services.AddTransient<IDepartmentService, DepartmentService>();
         services.AddTransient<IDirectionService, DirectionService>();
         services.AddTransient<IFavoriteService, FavoriteService>();
         services.AddTransient<IParentService, ParentService>();
@@ -229,8 +227,6 @@ public static class Startup
         services
             .AddTransient<IChatRoomWorkshopModelForChatListRepository, ChatRoomWorkshopModelForChatListRepository
             >();
-        services.AddTransient<IClassRepository, ClassRepository>();
-        services.AddTransient<IDepartmentRepository, DepartmentRepository>();
         services.AddTransient<IDirectionRepository, DirectionRepository>();
         services.AddTransient<IParentRepository, ParentRepository>();
         services.AddTransient<IProviderRepository, ProviderRepository>();
@@ -257,7 +253,7 @@ public static class Startup
         services.AddTransient<ISensitiveEntityRepository<InstitutionHierarchy>, SensitiveEntityRepository<InstitutionHierarchy>>();
 
         services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
-
+        
         services.Configure<ChangesLogConfig>(configuration.GetSection(ChangesLogConfig.Name));
 
         // Register the Permission policy handlers

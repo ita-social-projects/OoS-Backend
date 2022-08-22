@@ -21,5 +21,7 @@ public class CodeficatorDto
 
     public double Longitude { get; set; }
 
+    public int Order { get; set; } = default;
+
     public CodeficatorDto Parent { get; set; }
 }

@@ -27,7 +27,7 @@ public partial class AddIsParentPropertyToChild : Migration
     protected override void Down(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.Sql(@"
-            DELETE FROM children
+            DELETE FROM Children
             WHERE IsParent = 1;");
 
         migrationBuilder.DropColumn(

@@ -11,7 +11,5 @@ public class SocialGroup : IKeyedEntity<long>
     [MaxLength(100)]
     public string Name { get; set; } = string.Empty;
 
-    public virtual IReadOnlyCollection<Child> Children { get; set; }
-
-    public virtual List<ChildSocialGroup> ChildSocialGroups { get; set; }
+    public virtual List<Child> Children { get; set; }
 }

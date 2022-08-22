@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 using Castle.Core.Internal;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models.Workshop;
@@ -91,7 +85,7 @@ public class WorkshopDTO : IValidatableObject
 
     [Required]
     [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
-    public PayRateType PayRate { get; set; }
+    public PayRateType PayRate { get; set; } = PayRateType.Classes;
 
     public float Rating { get; set; }
 
@@ -117,17 +111,6 @@ public class WorkshopDTO : IValidatableObject
     public Guid? InstitutionId { get; set; }
 
     public string Institution { get; set; }
-
-    [Required]
-    public long DirectionId { get; set; }
-
-    public string Direction { get; set; }
-
-    [Required]
-    public long DepartmentId { get; set; }
-
-    [Required]
-    public long ClassId { get; set; }
 
     [Required]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]

@@ -15,6 +15,4 @@ public class ChatMessageWorkshopDto
     public DateTimeOffset CreatedDateTime { get; set; }
 
     public DateTimeOffset? ReadDateTime { get; set; }
-
-    public bool IsBlocked { get; set; }
 }

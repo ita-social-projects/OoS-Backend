@@ -40,11 +40,11 @@ public class TeacherService : ITeacherService
     /// <param name="mapper">Mapper.</param>
     public TeacherService(ISensitiveEntityRepository<Teacher> teacherRepository, IEntityCoverImageInteractionService<Teacher> teacherImagesService, ILogger<TeacherService> logger, IStringLocalizer<SharedResource> localizer, IMapper mapper)
     {
-        this.localizer = localizer;
-        this.teacherRepository = teacherRepository;
-        this.teacherImagesService = teacherImagesService;
-        this.logger = logger;
-        this.mapper = mapper;
+        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+        this.teacherRepository = teacherRepository ?? throw new ArgumentNullException(nameof(teacherRepository));
+        this.teacherImagesService = teacherImagesService ?? throw new ArgumentNullException(nameof(teacherImagesService));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
@@ -90,7 +90,7 @@ public class TeacherService : ITeacherService
             ? "Teacher table is empty."
             : $"All {teachers.Count()} records were successfully received from the Teacher table");
 
-        return teachers.Select(teacher => teacher.ToModel()).ToList();
+        return teachers.Select(teacher => mapper.Map<TeacherDTO>(teacher)).ToList();
     }
 
     /// <inheritdoc/>
@@ -109,7 +109,7 @@ public class TeacherService : ITeacherService
 
         logger.LogInformation($"Got a Teacher with Id = {id}.");
 
-        return teacher?.ToModel();
+        return mapper.Map<TeacherDTO>(teacher);
     }
 
     /// <inheritdoc/>

@@ -31,15 +31,9 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<Child> Children { get; set; }
 
-    public DbSet<ChildSocialGroup> ChildrenSocialGroups { get; set; }
-
     public DbSet<Workshop> Workshops { get; set; }
 
     public DbSet<Teacher> Teachers { get; set; }
-
-    public DbSet<Department> Departments { get; set; }
-
-    public DbSet<Class> Classes { get; set; }
 
     public DbSet<Direction> Directions { get; set; }
 
@@ -93,7 +87,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<ProviderAdminChangesLog> ProviderAdminChangesLog { get; set; }
 
-    public DbSet<Codeficator> Codeficators { get; set; }
+    public DbSet<CATOTTG> CATOTTGs { get; set; }
 
     public DbSet<AchievementType> AchievementTypes { get; set; }
 
@@ -124,6 +118,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
         builder.ApplyConfiguration(new NotificationConfiguration());
         builder.ApplyConfiguration(new AchievementConfiguration());
+        builder.ApplyConfiguration(new AddressConfiguration());
 
         ApplySoftDelete(builder);
 

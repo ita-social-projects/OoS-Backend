@@ -42,8 +42,9 @@ public interface IRatingService
     /// </summary>
     /// <param name="entityId">Entity key.</param>
     /// <param name="type">Entity type.</param>
+    /// <param name="filter">Skip & Take number.</param>
     /// <returns>List of all rating records.</returns>
-    Task<IEnumerable<RatingDto>> GetAllByEntityId(Guid entityId, RatingType type);
+    Task<IEnumerable<RatingDto>> GetAllByEntityId(Guid entityId, RatingType type, OffsetFilter filter);
 
     /// <summary>
     /// Get all workshop rating by provider.

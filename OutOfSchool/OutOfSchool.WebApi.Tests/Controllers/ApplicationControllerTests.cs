@@ -565,16 +565,12 @@ public class ApplicationControllerTests
             MinAge = 4,
             CoverImageId = "image6",
             ProviderId = Guid.NewGuid(),
-            DirectionId = 1,
-            DepartmentId = 1,
-            ClassId = 1,
+            InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
             AddressId = 55,
             Address = new AddressDto
             {
                 Id = 55,
-                Region = "Region55",
-                District = "District55",
-                City = "Київ",
+                CATOTTGId = 4970,
                 Street = "Street55",
                 BuildingNumber = "BuildingNumber55",
                 Latitude = 0,
@@ -634,12 +630,10 @@ public class ApplicationControllerTests
                 MaxAge = 10,
                 MinAge = 4,
                 CoverImageId = "image1",
-                DirectionId = 1,
-                DepartmentId = 1,
-                ClassId = 1,
+                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
                 Address = new AddressDto
                 {
-                    City = "Київ",
+                    CATOTTGId = 4970,
                 },
             },
             new WorkshopDTO()
@@ -663,12 +657,10 @@ public class ApplicationControllerTests
                 MaxAge = 10,
                 MinAge = 4,
                 CoverImageId = "image2",
-                DirectionId = 1,
-                DepartmentId = 1,
-                ClassId = 1,
+                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
                 Address = new AddressDto
                 {
-                    City = "Київ",
+                    CATOTTGId = 4970,
                 },
             },
             new WorkshopDTO()
@@ -694,9 +686,7 @@ public class ApplicationControllerTests
                 MaxAge = 10,
                 MinAge = 4,
                 CoverImageId = "image3",
-                DirectionId = 1,
-                DepartmentId = 1,
-                ClassId = 1,
+                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
             },
             new WorkshopDTO()
             {
@@ -720,9 +710,7 @@ public class ApplicationControllerTests
                 MaxAge = 10,
                 MinAge = 4,
                 CoverImageId = "image4",
-                DirectionId = 1,
-                DepartmentId = 1,
-                ClassId = 1,
+                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
             },
             new WorkshopDTO()
             {
@@ -745,12 +733,10 @@ public class ApplicationControllerTests
                 MaxAge = 10,
                 MinAge = 4,
                 CoverImageId = "image5",
-                DirectionId = 1,
-                DepartmentId = 1,
-                ClassId = 1,
+                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
                 Address = new AddressDto
                 {
-                    City = "Київ",
+                    CATOTTGId = 4970,
                 },
             },
         };

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -26,6 +27,7 @@ public class ParentControllerTests
     private Mock<IChildService> serviceChild;
     private Mock<HttpContext> httpContextMoq;
     private Mock<IStringLocalizer<SharedResource>> localizer;
+    private IMapper mapper;
 
     private List<ParentDTO> parents;
     private List<ParentDtoWithContactInfo> parentsWithContactInfo;
@@ -41,6 +43,7 @@ public class ParentControllerTests
         serviceChild = new Mock<IChildService>();
 
         localizer = new Mock<IStringLocalizer<SharedResource>>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
 
         httpContextMoq = new Mock<HttpContext>();
         httpContextMoq.Setup(x => x.User.FindFirst("sub"))
@@ -48,7 +51,12 @@ public class ParentControllerTests
         httpContextMoq.Setup(x => x.User.IsInRole("parent"))
             .Returns(true);
 
-        controller = new ParentController(serviceParent.Object, serviceApplication.Object, serviceChild.Object, localizer.Object)
+        controller = new ParentController(
+            serviceParent.Object,
+            serviceApplication.Object,
+            serviceChild.Object,
+            localizer.Object,
+            mapper)
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
         };
@@ -124,9 +132,7 @@ public class ParentControllerTests
             Address = new AddressDto
             {
                 Id = 55,
-                Region = "Region55",
-                District = "District55",
-                City = "City55",
+                CATOTTGId = 4970,
                 Street = "Street55",
                 BuildingNumber = "BuildingNumber55",
                 Latitude = 0,
@@ -154,7 +160,7 @@ public class ParentControllerTests
         httpContextMoq.Setup(x => x.User.IsInRole("parent"))
             .Returns(true);
 
-        controller = new ParentController(serviceParent.Object, serviceApplication.Object, serviceChild.Object, localizer.Object)
+        controller = new ParentController(serviceParent.Object, serviceApplication.Object, serviceChild.Object, localizer.Object, mapper)
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
         };
