@@ -227,6 +227,7 @@ public static class Startup
                 new IdentityRole {Name = "parent"},
                 new IdentityRole {Name = "provider"},
                 new IdentityRole {Name = "techadmin"},
+                new IdentityRole {Name = "ministryadmin"},
         };
         foreach (var role in roles)
         {
