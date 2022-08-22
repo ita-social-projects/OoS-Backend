@@ -288,6 +288,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.TwoFactorEnabled, opt => opt.Ignore())
             .ForMember(dest => dest.LockoutEnabled, opt => opt.Ignore())
             .ForMember(dest => dest.LockoutEnd, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore())
+            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
+            .ForMember(dest => dest.IsDerived, opt => opt.Ignore())
+            .ForMember(dest => dest.MustChangePassword, opt => opt.Ignore())
             .ForMember(dest => dest.AccessFailedCount, opt => opt.Ignore());
 
         CreateMap<Parent, ParentPersonalInfo>()
