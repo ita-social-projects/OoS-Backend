@@ -23,7 +23,7 @@ public class EmailSender : IEmailSender
         this.logger = logger;
     }
 
-    public Task SendAsync(string email, string subject, string htmlMessage)
+    public Task SendAsync(string email, string subject, (string html, string plain) content)
     {
         var message = new SendGridMessage()
         {
@@ -33,8 +33,8 @@ public class EmailSender : IEmailSender
                 Name = emailOptions.Value.NameFrom,
             },
             Subject = subject,
-            //TODO: Add plaintext message fallback
-            HtmlContent = htmlMessage
+            HtmlContent = content.html,
+            PlainTextContent = content.plain,
         };
         message.AddTo(new EmailAddress(email));
 

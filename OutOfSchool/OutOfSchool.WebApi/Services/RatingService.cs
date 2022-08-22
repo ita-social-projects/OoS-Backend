@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using Castle.Core.Internal;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Nest;
@@ -24,6 +26,7 @@ public class RatingService : IRatingService
     private readonly IParentRepository parentRepository;
     private readonly ILogger<RatingService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly IMapper mapper;
     private readonly int roundToDigits = 2;
 
     /// <summary>
@@ -35,20 +38,23 @@ public class RatingService : IRatingService
     /// <param name="parentRepository">Repository for Parent entity.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
+    /// <param name="mapper">Mapper.</param>
     public RatingService(
         IRatingRepository ratingRepository,
         IWorkshopRepository workshopRepository,
         IProviderRepository providerRepository,
         IParentRepository parentRepository,
         ILogger<RatingService> logger,
-        IStringLocalizer<SharedResource> localizer)
+        IStringLocalizer<SharedResource> localizer,
+        IMapper mapper)
     {
-        this.ratingRepository = ratingRepository;
-        this.workshopRepository = workshopRepository;
-        this.providerRepository = providerRepository;
-        this.parentRepository = parentRepository;
-        this.logger = logger;
-        this.localizer = localizer;
+        this.ratingRepository = ratingRepository ?? throw new ArgumentNullException(nameof(ratingRepository));
+        this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
+        this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
+        this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
@@ -70,7 +76,7 @@ public class RatingService : IRatingService
             ? "Rating table is empty."
             : $"All {ratings.Count()} records were successfully received from the Rating table");
 
-        var ratingsDto = ratings.Select(r => r.ToModel());
+        var ratingsDto = ratings.Select(r => mapper.Map<RatingDto>(r));
 
         return await AddParentInfoAsync(ratingsDto).ConfigureAwait(false);
     }
@@ -91,22 +97,25 @@ public class RatingService : IRatingService
 
         logger.LogInformation($"Successfully got a Rating with Id = {id}.");
 
-        return rating.ToModel();
+        return mapper.Map<RatingDto>(rating);
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<RatingDto>> GetAllByEntityId(Guid entityId, RatingType type)
+    public async Task<IEnumerable<RatingDto>> GetAllByEntityId(Guid entityId, RatingType type, OffsetFilter filter)
     {
         logger.LogInformation($"Getting all Ratings with EntityId = {entityId} and RatingType = {type} started.");
 
-        var ratings = await ratingRepository.GetByFilter(r => r.EntityId == entityId && r.Type == type).ConfigureAwait(false);
+        var ratings = await ratingRepository
+            .Get(filter.From, filter.Size, where: r => r.EntityId == entityId && r.Type == type)
+            .ToListAsync()
+            .ConfigureAwait(false);
 
-        logger.LogInformation(!ratings.Any()
+        logger.LogInformation(ratings.IsNullOrEmpty()
             ? "Rating table is empty."
             : $"All {ratings.Count()} records with EntityId = {entityId} and RatingType = {type} " +
               $"were successfully received from the Rating table");
 
-        var ratingsDto = ratings.Select(r => r.ToModel());
+        var ratingsDto = ratings.Select(r => mapper.Map<RatingDto>(r));
 
         return await AddParentInfoAsync(ratingsDto).ConfigureAwait(false);
     }
@@ -131,7 +140,7 @@ public class RatingService : IRatingService
             : $"All {worshopsRating.Count} records with ProviderId = {id} " +
               $"were successfully received from the Rating table");
 
-        var ratingsDto = worshopsRating.Select(r => r.ToModel());
+        var ratingsDto = worshopsRating.Select(r => mapper.Map<RatingDto>(r));
 
         return await AddParentInfoAsync(ratingsDto).ConfigureAwait(false);
     }
@@ -141,15 +150,15 @@ public class RatingService : IRatingService
     {
         logger.LogInformation($"Getting Rating for Parent started. Looking parentId = {parentId}, entityId = {entityId} and type = {type}.");
 
-        var rating = await ratingRepository
+        var rating = (await ratingRepository
             .GetByFilter(r => r.ParentId == parentId
                               && r.EntityId == entityId
                               && r.Type == type)
-            .ConfigureAwait(false);
+            .ConfigureAwait(false)).FirstOrDefault();
 
         logger.LogInformation($"Successfully got a Rating for Parent with Id = {parentId}");
 
-        return rating.FirstOrDefault().ToModel();
+        return rating is null ? null : mapper.Map<RatingDto>(rating);
     }
 
     /// <inheritdoc/>
@@ -181,18 +190,16 @@ public class RatingService : IRatingService
 
         if (await CheckRatingCreation(dto).ConfigureAwait(false))
         {
-            var rating = await ratingRepository.Create(dto.ToDomain()).ConfigureAwait(false);
+            var rating = await ratingRepository.Create(mapper.Map<Rating>(dto)).ConfigureAwait(false);
 
             logger.LogInformation($"Rating with Id = {rating?.Id} created successfully.");
 
-            return rating.ToModel();
+            return mapper.Map<RatingDto>(rating);
         }
-        else
-        {
-            logger.LogInformation($"Rating already exists or entityId = {dto?.EntityId} isn't correct.");
 
-            return null;
-        }
+        logger.LogInformation($"Rating already exists or entityId = {dto?.EntityId} isn't correct.");
+
+        return null;
     }
 
     /// <inheritdoc/>
@@ -202,18 +209,16 @@ public class RatingService : IRatingService
 
         if (await CheckRatingUpdate(dto).ConfigureAwait(false))
         {
-            var rating = await ratingRepository.Update(dto.ToDomain()).ConfigureAwait(false);
+            var rating = await ratingRepository.Update(mapper.Map<Rating>(dto)).ConfigureAwait(false);
 
             logger.LogInformation($"Rating with Id = {rating?.Id} updated succesfully.");
 
-            return rating.ToModel();
+            return mapper.Map<RatingDto>(rating);
         }
-        else
-        {
-            logger.LogInformation("Rating doesn't exist or couldn't change EntityId, Parent and Type.");
 
-            return null;
-        }
+        logger.LogInformation("Rating doesn't exist or couldn't change EntityId, Parent and Type.");
+
+        return null;
     }
 
     /// <inheritdoc/>

@@ -125,7 +125,7 @@ public class AddressControllerTests
         var changedAddress = new AddressDto()
         {
             Id = 1,
-            City = "ChangedCity",
+            CATOTTGId = 4970,
         };
         service.Setup(x => x.Update(changedAddress)).ReturnsAsync(changedAddress);
 
@@ -197,9 +197,7 @@ public class AddressControllerTests
         return new AddressDto()
         {
             Id = 6,
-            Region = "Region6",
-            District = "District6",
-            City = "City6",
+            CATOTTGId = 4970,
             Street = "Street6",
             BuildingNumber = "BuildingNumber6",
             Latitude = 60.45383,
@@ -214,9 +212,7 @@ public class AddressControllerTests
             new AddressDto()
             {
                 Id = 1,
-                Region = "Region1",
-                District = "District1",
-                City = "City1",
+                CATOTTGId = 4970,
                 Street = "Street1",
                 BuildingNumber = "BuildingNumber1",
                 Latitude = 41.45383,
@@ -225,9 +221,7 @@ public class AddressControllerTests
             new AddressDto()
             {
                 Id = 2,
-                Region = "Region2",
-                District = "District2",
-                City = "City2",
+                CATOTTGId = 4970,
                 Street = "Street2",
                 BuildingNumber = "BuildingNumber2",
                 Latitude = 42.45383,
@@ -236,9 +230,7 @@ public class AddressControllerTests
             new AddressDto()
             {
                 Id = 3,
-                Region = "Region3",
-                District = "District3",
-                City = "City3",
+                CATOTTGId = 4970,
                 Street = "Street3",
                 BuildingNumber = "BuildingNumber3",
                 Latitude = 43.45383,
@@ -247,9 +239,7 @@ public class AddressControllerTests
             new AddressDto()
             {
                 Id = 4,
-                Region = "Region4",
-                District = "District4",
-                City = "City4",
+                CATOTTGId = 4970,
                 Street = "Street4",
                 BuildingNumber = "BuildingNumber4",
                 Latitude = 44.45383,
@@ -258,9 +248,7 @@ public class AddressControllerTests
             new AddressDto()
             {
                 Id = 5,
-                Region = "Region5",
-                District = "District5",
-                City = "City5",
+                CATOTTGId = 4970,
                 Street = "Street5",
                 BuildingNumber = "BuildingNumber5",
                 Latitude = 45.45383,

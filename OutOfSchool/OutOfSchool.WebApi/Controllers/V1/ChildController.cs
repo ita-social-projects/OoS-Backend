@@ -1,12 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.Common.PermissionsModule;
+﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -50,6 +45,32 @@ public class ChildController : ControllerBase
     public async Task<IActionResult> GetAllForAdmin([FromQuery] ChildSearchFilter filter)
     {
         return Ok(await service.GetByFilter(filter).ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Get all children (Id, FullName) from the database by parent's id.
+    /// </summary>
+    /// <param name="parentId">Id of the parent.</param>
+    /// <param name="isParent">Do we need a parent.</param>
+    /// <returns>The result is a <see cref="List{ShortEntityDto}"/> that contains a list of children that were received.</returns>
+    [HasPermission(Permissions.ChildRead)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ShortEntityDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("{parentId}/{isParent?}")]
+    public async Task<IActionResult> GetChildrenListByParentId([FromRoute] Guid parentId, [FromRoute]bool? isParent = null)
+    {
+        var children = await service.GetChildrenListByParentId(parentId, isParent).ConfigureAwait(false);
+
+        if (!children.Any())
+        {
+            return NoContent();
+        }
+
+        return Ok(children);
     }
 
     /// <summary>

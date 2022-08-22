@@ -1,5 +1,8 @@
 ﻿using System.Linq.Expressions;
+using AutoMapper;
+using Nest;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
@@ -146,6 +149,12 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         }
 
         return await workshopStrategy.SearchAsync(filter);
+    }
+
+    /// <inheritdoc/>
+    public async Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId)
+    {
+        return await workshopService.GetWorkshopListByProviderId(providerId).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

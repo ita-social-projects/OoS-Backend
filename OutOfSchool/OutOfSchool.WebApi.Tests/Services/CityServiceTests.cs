@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,7 @@ using NUnit.Framework;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -24,6 +26,7 @@ public class CityServiceTests
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<CityService>> logger;
     private DbContextOptions<OutOfSchoolDbContext> options;
+    private IMapper mapper;
 
     [SetUp]
     public void SetUp()
@@ -36,7 +39,8 @@ public class CityServiceTests
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         repository = new EntityRepository<long, City>(context);
         logger = new Mock<ILogger<CityService>>();
-        service = new CityService(repository, logger.Object, localizer.Object);
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
+        service = new CityService(repository, logger.Object, localizer.Object, mapper);
 
         SeedDatabase();
     }

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models.Codeficator;
 
@@ -46,26 +46,25 @@ public class AllAddressPartsDto : CodeficatorAddressDto
             Id = codeficator.Id;
         }
 
-        var r2 = CodeficatorCategory.FromName(codeficator.Category);
-        switch (r2)
+        switch (CodeficatorCategory.FromName(codeficator.Category))
         {
             case var e when e.Equals(CodeficatorCategory.Region):
-                Region = $"{codeficator.Name} {CodeficatorCategory.Region.Abbrivation}";
+                Region = codeficator.Name;
                 break;
             case var e when e.Equals(CodeficatorCategory.District):
-                District = $"{codeficator.Name} {CodeficatorCategory.District.Abbrivation}";
+                District = codeficator.Name;
                 break;
             case var e when e.Equals(CodeficatorCategory.TerritorialCommunity):
-                TerritorialCommunity = $"{codeficator.Name} {CodeficatorCategory.TerritorialCommunity.Abbrivation}";
+                TerritorialCommunity = codeficator.Name;
                 break;
             case var e when e.Equals(CodeficatorCategory.City)
                 || e.Equals(CodeficatorCategory.UrbanSettlement)
                 || e.Equals(CodeficatorCategory.Village)
                 || e.Equals(CodeficatorCategory.Settlement):
-                Settlement = $"{CodeficatorCategory.FromValue(e).Abbrivation} {codeficator.Name}";
+                Settlement = codeficator.Name;
                 break;
             case var e when e.Equals(CodeficatorCategory.CityDistrict):
-                CityDistrict = $"{codeficator.Name} {CodeficatorCategory.CityDistrict.Abbrivation}";
+                CityDistrict = codeficator.Name;
                 break;
         }
     }

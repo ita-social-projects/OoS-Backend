@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Nest;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Changes;
 using OutOfSchool.WebApi.Util;
@@ -87,7 +79,7 @@ public class ChangesLogService : IChangesLogService
                         ProviderId = l.EntityIdGuid.Value,
                         ProviderTitle = provider == null ? null : provider.FullTitle,
                         ProviderCity = provider == null || provider.LegalAddress == null
-                            ? null : provider.LegalAddress.City,
+                            ? null : provider.LegalAddress.CATOTTG.Name,
                         InstitutionTitle = provider == null || provider.Institution == null
                             ? null : provider.Institution.Title,
                     };
@@ -120,7 +112,7 @@ public class ChangesLogService : IChangesLogService
                         User = mapper.Map<ShortUserDto>(l.User),
                         ApplicationId = l.EntityIdGuid.Value,
                         WorkshopTitle = app == null ? null : app.Workshop.Title,
-                        WorkshopCity = app == null ? null : app.Workshop.Address.City,
+                        WorkshopCity = app == null ? null : app.Workshop.Address.CATOTTG.Name,
                         ProviderTitle = app == null ? null : app.Workshop.ProviderTitle,
                         InstitutionTitle = app == null || app.Workshop.Provider.Institution == null
                             ? null : app.Workshop.Provider.Institution.Title,
@@ -151,7 +143,7 @@ public class ChangesLogService : IChangesLogService
                 ProviderAdminFullName = $"{x.ProviderAdminUser.LastName} {x.ProviderAdminUser.FirstName} {x.ProviderAdminUser.MiddleName}".TrimEnd(),
                 ProviderTitle = x.Provider.FullTitle,
                 WorkshopTitle = x.ManagedWorkshop.Title,
-                WorkshopCity = x.ManagedWorkshop.Address.City,
+                WorkshopCity = x.ManagedWorkshop.Address.CATOTTG.Name,
                 OperationType = x.OperationType,
                 OperationDate = x.OperationDate,
                 User = mapper.Map<ShortUserDto>(x.User),
@@ -215,6 +207,24 @@ public class ChangesLogService : IChangesLogService
             expr = expr.And(x => x.UpdatedDate < filter.DateTo.Value.Date.AddDays(1));
         }
 
+        if (!string.IsNullOrWhiteSpace(filter.SearchString))
+        {
+            var tempExpr = PredicateBuilder.False<ChangesLog>();
+
+            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                tempExpr = tempExpr.Or(
+                    x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.User.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.OldValue.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.NewValue.Contains(word, StringComparison.InvariantCultureIgnoreCase));
+            }
+
+            expr = expr.And(tempExpr);
+        }
+
         return expr;
     }
 
@@ -243,6 +253,23 @@ public class ChangesLogService : IChangesLogService
         if (request.DateTo.HasValue)
         {
             expr = expr.And(x => x.OperationDate < request.DateTo.Value.Date.AddDays(1));
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.SearchString))
+        {
+            var tempExpr = PredicateBuilder.False<ProviderAdminChangesLog>();
+
+            foreach (var word in request.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                tempExpr = tempExpr.Or(
+                    x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.User.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.ManagedWorkshop.Address.CATOTTG.Name.Contains(word, StringComparison.InvariantCulture));
+            }
+
+            expr = expr.And(tempExpr);
         }
 
         return expr;

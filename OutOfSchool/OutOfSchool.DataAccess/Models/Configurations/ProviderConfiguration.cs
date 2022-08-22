@@ -72,5 +72,13 @@ internal class ProviderConfiguration : IEntityTypeConfiguration<Provider>
         builder.Property(x => x.LicenseStatus)
             .IsRequired()
             .HasDefaultValue(ProviderLicenseStatus.NotProvided);
+
+        builder.HasOne(x => x.LegalAddress)
+            .WithOne()
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.ActualAddress)
+            .WithOne()
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

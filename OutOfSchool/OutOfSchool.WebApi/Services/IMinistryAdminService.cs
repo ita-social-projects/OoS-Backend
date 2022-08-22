@@ -13,6 +13,14 @@ public interface IMinistryAdminService
     Task<MinistryAdminDto> GetByUserId(string id);
 
     /// <summary>
+    /// Get entity by it's key.
+    /// </summary>
+    /// <param name="id">Key in the table.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The task result contains the entity that was found, or null.</returns>
+    Task<MinistryAdminDto> GetById(long id);
+
+    /// <summary>
     /// Create Ministry Admin.
     /// </summary>
     /// <param name="userId">Id of user.</param>
@@ -54,4 +62,12 @@ public interface IMinistryAdminService
     /// <returns>The task result contains <see langword="true" /> if provider is subordinate of the ministry admin
     /// filter; otherwise, <see langword="false" />.</returns>
     Task<bool> IsProviderSubordinateAsync(string ministryAdminUserId, Guid providerId);
+
+    /// <summary>
+    /// Get Ministry Admins from the database that match filter's parameters.
+    /// </summary>
+    /// <param name="filter">Filter with specified searching parameters.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The task result contains the <see cref="SearchResult{MinistryAdminDto}"/> that contains found elements.</returns>
+    Task<SearchResult<MinistryAdminDto>> GetByFilter(MinistryAdminFilter filter);
 }

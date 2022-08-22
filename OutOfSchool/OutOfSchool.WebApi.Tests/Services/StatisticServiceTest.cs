@@ -12,6 +12,7 @@ using NUnit.Framework;
 using OutOfSchool.Redis;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -64,7 +65,7 @@ public class StatisticServiceTest
 
         // Act
         var result = await service
-            .GetPopularWorkshopsFromDatabase(2, string.Empty)
+            .GetPopularWorkshopsFromDatabase(2, 0)
             .ConfigureAwait(false);
 
         // Assert
@@ -87,7 +88,7 @@ public class StatisticServiceTest
 
         // Act
         var result = await service
-            .GetPopularWorkshopsFromDatabase(2, "Київ")
+            .GetPopularWorkshopsFromDatabase(2, 4970)
             .ConfigureAwait(false);
 
         // Assert
@@ -111,7 +112,7 @@ public class StatisticServiceTest
 
         // Act
         var result = await service
-            .GetPopularDirectionsFromDatabase(1, string.Empty)
+            .GetPopularDirectionsFromDatabase(1, 0)
             .ConfigureAwait(false);
 
         // Assert
@@ -135,7 +136,7 @@ public class StatisticServiceTest
 
         // Act
         var result = await service
-            .GetPopularDirectionsFromDatabase(1, "Київ")
+            .GetPopularDirectionsFromDatabase(1, 4970)
             .ConfigureAwait(false);
 
         // Assert
@@ -220,10 +221,21 @@ public class StatisticServiceTest
             {
                 Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
                 Title = "w1",
-                DirectionId = 1,
+                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
+                InstitutionHierarchy = new InstitutionHierarchy
+                {
+                    Id = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
+                    Directions = new List<Direction>
+                    {
+                        new Direction
+                        {
+                            Id = 1,
+                        },
+                    },
+                },
                 Address = new Address
                 {
-                    City = "Київ",
+                    CATOTTGId = 4970,
                 },
                 Applications = new List<Application>
                 {
@@ -234,10 +246,21 @@ public class StatisticServiceTest
             {
                 Id = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"),
                 Title = "w2",
-                DirectionId = 2,
+                InstitutionHierarchyId = new Guid("01d08412-69d3-4620-8c54-7b997430e08d"),
+                InstitutionHierarchy = new InstitutionHierarchy
+                {
+                    Id = new Guid("01d08412-69d3-4620-8c54-7b997430e08d"),
+                    Directions = new List<Direction>
+                    {
+                        new Direction
+                        {
+                            Id = 2,
+                        },
+                    },
+                },
                 Address = new Address
                 {
-                    City = "Київ",
+                    CATOTTGId = 4970,
                 },
                 Applications = new List<Application>
                 {
@@ -249,10 +272,21 @@ public class StatisticServiceTest
             {
                 Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"),
                 Title = "w3",
-                DirectionId = 3,
+                InstitutionHierarchyId = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d"),
+                InstitutionHierarchy = new InstitutionHierarchy
+                {
+                    Id = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d"),
+                    Directions = new List<Direction>
+                    {
+                        new Direction
+                        {
+                            Id = 3,
+                        },
+                    },
+                },
                 Address = new Address
                 {
-                    City = "Одеса",
+                    CATOTTGId = 5000,
                 },
                 Applications = new List<Application>
                 {
@@ -278,12 +312,108 @@ public class StatisticServiceTest
     {
         return new List<Application>
         {
-            new Application { Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"), WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"), Workshop = new Workshop { Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"), DirectionId = 1 } },
-            new Application { Id = new Guid("7c5f8f7c-d850-44d0-8d4e-fd2de99453be"), WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Workshop = new Workshop { Id = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), DirectionId = 2 } },
-            new Application { Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd"), WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Workshop = new Workshop { Id = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), DirectionId = 2 } },
-            new Application { Id = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d"), WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Workshop = new Workshop { Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), DirectionId = 3 } },
-            new Application { Id = new Guid("01d08412-69d3-4620-8c54-7b997430e08d"), WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Workshop = new Workshop { Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), DirectionId = 3 } },
-            new Application { Id = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"), WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Workshop = new Workshop { Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), DirectionId = 3 } },
+            new Application
+            {
+                Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"), WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"), Workshop = new Workshop
+                {
+                    Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"), InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"), InstitutionHierarchy = new InstitutionHierarchy
+                    {
+                        Id = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
+                        Directions = new List<Direction>
+                        {
+                            new Direction
+                            {
+                                Id = 1,
+                            },
+                        },
+                    },
+                },
+            },
+            new Application
+            {
+                Id = new Guid("7c5f8f7c-d850-44d0-8d4e-fd2de99453be"), WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Workshop = new Workshop
+                {
+                    Id = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), InstitutionHierarchyId = new Guid("01d08412-69d3-4620-8c54-7b997430e08d"), InstitutionHierarchy = new InstitutionHierarchy
+                    {
+                        Id = new Guid("01d08412-69d3-4620-8c54-7b997430e08d"),
+                        Directions = new List<Direction>
+                        {
+                            new Direction
+                            {
+                                Id = 2,
+                            },
+                        },
+                    },
+                },
+            },
+            new Application
+            {
+                Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd"), WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Workshop = new Workshop
+                {
+                    Id = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), InstitutionHierarchyId = new Guid("01d08412-69d3-4620-8c54-7b997430e08d"), InstitutionHierarchy = new InstitutionHierarchy
+                    {
+                        Id = new Guid("01d08412-69d3-4620-8c54-7b997430e08d"),
+                        Directions = new List<Direction>
+                        {
+                            new Direction
+                            {
+                            Id = 2,
+                            },
+                        },
+                    },
+                },
+            },
+            new Application
+            {
+                Id = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d"), WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Workshop = new Workshop
+                {
+                    Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"), InstitutionHierarchy = new InstitutionHierarchy
+                    {
+                        Id = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d"),
+                        Directions = new List<Direction>
+                        {
+                            new Direction
+                            {
+                                Id = 3,
+                            },
+                        },
+                    },
+                },
+            },
+            new Application
+            {
+                Id = new Guid("01d08412-69d3-4620-8c54-7b997430e08d"), WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Workshop = new Workshop
+                {
+                    Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"), InstitutionHierarchy = new InstitutionHierarchy
+                    {
+                        Id = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d"),
+                        Directions = new List<Direction>
+                        {
+                            new Direction
+                            {
+                                Id = 3,
+                            },
+                        },
+                    },
+                },
+            },
+            new Application
+            {
+                Id = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"), WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Workshop = new Workshop
+                {
+                    Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"), InstitutionHierarchy = new InstitutionHierarchy
+                    {
+                        Id = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d"),
+                        Directions = new List<Direction>
+                        {
+                            new Direction
+                            {
+                                Id = 3,
+                            },
+                        },
+                    },
+                },
+            },
         };
     }
 
@@ -294,7 +424,7 @@ public class StatisticServiceTest
         if (!string.IsNullOrWhiteSpace(city))
         {
             workshops = workshops
-                .Where(w => string.Equals(w.Address.City, city.Trim()));
+                .Where(w => string.Equals(w.Address.CATOTTG.Name, city.Trim()));
         }
 
         var workshopsWithApplications = workshops.Select(w => new
@@ -319,8 +449,8 @@ public class StatisticServiceTest
     {
         return new List<WorkshopCard>
         {
-            new WorkshopCard {WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Title = "w3", Address = new AddressDto {City = "Одеса"}},
-            new WorkshopCard {WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Title = "w2", Address = new AddressDto {City = "Київ"}},
+            new WorkshopCard {WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Title = "w3", Address = new AddressDto {CATOTTGId = 5000}},
+            new WorkshopCard {WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Title = "w2", Address = new AddressDto {CATOTTGId = 4970}},
         };
     }
 
@@ -328,8 +458,8 @@ public class StatisticServiceTest
     {
         return new List<WorkshopCard>
         {
-            new WorkshopCard {WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Title = "w2", Address = new AddressDto {City = "Київ"}},
-            new WorkshopCard {WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"), Title = "w1", Address = new AddressDto {City = "Київ"}},
+            new WorkshopCard {WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Title = "w2", Address = new AddressDto {CATOTTGId = 4970}},
+            new WorkshopCard {WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"), Title = "w1", Address = new AddressDto {CATOTTGId = 4970}},
         };
     }
 

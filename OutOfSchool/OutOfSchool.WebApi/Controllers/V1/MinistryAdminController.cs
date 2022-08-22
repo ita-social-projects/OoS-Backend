@@ -61,6 +61,55 @@ public class MinistryAdminController : Controller
     }
 
     /// <summary>
+    /// Get MinistryAdmin by it's id.
+    /// </summary>
+    /// <param name="id">MinistryAdmin id.</param>
+    /// <returns>Authorized MinistryAdmin's profile.</returns>
+    [HasPermission(Permissions.SystemManagement)]
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MinistryAdminDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetById([FromQuery] long id)
+    {
+        var ministryAdmin = await ministryAdminService.GetById(id).ConfigureAwait(false);
+        if (ministryAdmin == null)
+        {
+            return NotFound($"There is no Ministry admin in DB with {nameof(ministryAdmin.Id)} - {id}");
+        }
+
+        return Ok(ministryAdmin);
+    }
+
+    /// <summary>
+    /// Get MinistryAdmins that match filter's parameters.
+    /// </summary>
+    /// <param name="filter">Entity that represents searching parameters.</param>
+    /// <returns><see cref="SearchResult{MinistryAdminDto}"/>, or no content.</returns>
+    [HasPermission(Permissions.SystemManagement)]
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<MinistryAdminDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetByFilter([FromQuery] MinistryAdminFilter filter)
+    {
+        var ministryAdmins = await ministryAdminService.GetByFilter(filter).ConfigureAwait(false);
+
+        if (ministryAdmins.TotalAmount < 1)
+        {
+            return NoContent();
+        }
+
+        return Ok(ministryAdmins);
+    }
+
+    /// <summary>
     /// Method for creating new MinistryAdmin.
     /// </summary>
     /// <param name="ministryAdmin">Entity to add.</param>

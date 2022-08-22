@@ -27,9 +27,7 @@ public class Child : IKeyedEntity<Guid>
 
     public virtual Parent Parent { get; set; }
 
-    public virtual ICollection<SocialGroup> SocialGroups { get; set; }
-
-    public virtual List<ChildSocialGroup> ChildSocialGroups { get; set; }
+    public virtual List<SocialGroup> SocialGroups { get; set; }
 
     public virtual List<Achievement> Achievements { get; set; }
 }

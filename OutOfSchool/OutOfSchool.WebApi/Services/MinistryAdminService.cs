@@ -1,9 +1,11 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -34,6 +36,22 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
         responseDto = new ResponseDto();
+    }
+
+    public async Task<MinistryAdminDto> GetById(long id)
+    {
+        logger.LogInformation($"Getting InstitutionAdmin by Id started. Looking Id = {id}.");
+
+        var institutionAdmin = await institutionAdminRepository.GetById(id).ConfigureAwait(false);
+
+        if (institutionAdmin is null)
+        {
+            return null;
+        }
+
+        logger.LogInformation($"Successfully got a InstitutionAdmin with Id = {id}.");
+
+        return mapper.Map<MinistryAdminDto>(institutionAdmin);
     }
 
     public async Task<MinistryAdminDto> GetByUserId(string id)
@@ -84,6 +102,48 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         }
 
         return response;
+    }
+
+    /// <inheritdoc/>
+    public async Task<SearchResult<MinistryAdminDto>> GetByFilter(MinistryAdminFilter filter)
+    {
+        logger.LogInformation("Getting all Ministry admins started (by filter).");
+
+        filter ??= new MinistryAdminFilter();
+        ModelValidationHelper.ValidateOffsetFilter(filter);
+
+        var filterPredicate = PredicateBuild(filter);
+
+        int count = await institutionAdminRepository.Count(filterPredicate).ConfigureAwait(false);
+
+        var sortExpression = new Dictionary<Expression<Func<InstitutionAdmin, object>>, SortDirection>
+        {
+            { x => x.User.LastName, SortDirection.Ascending },
+        };
+        var institutionAdmins = await institutionAdminRepository
+            .Get(
+                skip: filter.From,
+                take: filter.Size,
+                includeProperties: string.Empty,
+                where: filterPredicate,
+                orderBy: sortExpression,
+                asNoTracking: false)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        logger.LogInformation(!institutionAdmins.Any()
+            ? "Parents table is empty."
+            : $"All {institutionAdmins.Count} records were successfully received from the Parent table");
+
+        var ministryAdminsDto = institutionAdmins.Select(admin => mapper.Map<MinistryAdminDto>(admin)).ToList();
+
+        var result = new SearchResult<MinistryAdminDto>()
+        {
+            TotalAmount = count,
+            Entities = ministryAdminsDto,
+        };
+
+        return result;
     }
 
     /// <inheritdoc/>
@@ -214,5 +274,34 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         return await institutionAdminRepository
             .Any(x => x.UserId == ministryAdminUserId
                       && x.Institution.RelatedProviders.Any(rp => rp.Id == providerId)).ConfigureAwait(false);
+    }
+
+    private static Expression<Func<InstitutionAdmin, bool>> PredicateBuild(MinistryAdminFilter filter)
+    {
+        var predicate = PredicateBuilder.True<InstitutionAdmin>();
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchString))
+        {
+            var tempPredicate = PredicateBuilder.False<InstitutionAdmin>();
+
+            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                tempPredicate = tempPredicate.Or(
+                    x => x.User.FirstName.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.User.LastName.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.User.Email.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.Institution.Title.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.User.PhoneNumber.Contains(word, StringComparison.InvariantCultureIgnoreCase));
+            }
+
+            predicate = predicate.And(tempPredicate);
+        }
+
+        if (filter.InstitutionId != Guid.Empty)
+        {
+            predicate = predicate.And(a => a.Institution.Id == filter.InstitutionId);
+        }
+
+        return predicate;
     }
 }
