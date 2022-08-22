@@ -35,9 +35,9 @@ public class PersonalInfoController : ControllerBase
     }
 
     /// <summary>
-    /// Get user by it's key.
+    /// Gets Parent personal information.
     /// </summary>
-    /// <returns>User element with some id.</returns>
+    /// <returns>Parent personal information.</returns>
     [Route($"Parent/{GetPersonalInfoActionName}")]
     [HasPermission(Permissions.ParentRead)]
     [HttpGet]
@@ -55,9 +55,9 @@ public class PersonalInfoController : ControllerBase
     }
 
     /// <summary>
-    /// Get user by it's key.
+    /// Gets Provider personal information.
     /// </summary>
-    /// <returns>User element with some id.</returns>
+    /// <returns>Provider personal information.</returns>
     [Route($"Provider/{GetPersonalInfoActionName}")]
     [HasPermission(Permissions.ProviderRead)]
     [HttpGet]
@@ -68,9 +68,9 @@ public class PersonalInfoController : ControllerBase
     public async Task<IActionResult> GetProviderPersonalInfo() => await GetUserPersonalInfo();
 
     /// <summary>
-    /// Get user by it's key.
+    /// Gets ProviderAdmin personal information.
     /// </summary>
-    /// <returns>User element with some id.</returns>
+    /// <returns>ProviderAdmin personal information.</returns>
     [Route($"ProviderAdmin/{GetPersonalInfoActionName}")]
     [HasPermission(Permissions.ProviderAdmins)]
     [HttpGet]
@@ -81,9 +81,9 @@ public class PersonalInfoController : ControllerBase
     public async Task<IActionResult> GetProviderAdminPersonalInfo() => await GetUserPersonalInfo();
 
     /// <summary>
-    /// Get user by it's key.
+    /// Gets MinistryAdmin personal information.
     /// </summary>
-    /// <returns>User element with some id.</returns>
+    /// <returns>MinistryAdmin personal information.</returns>
     [Route($"MinistryAdmin/{UpdatePersonalInfoActionName}")]
     [HasPermission(Permissions.MinistryAdminRead)]
     [HttpGet]
@@ -94,10 +94,10 @@ public class PersonalInfoController : ControllerBase
     public async Task<IActionResult> GetMinistryAdminPersonalInfo() => await GetUserPersonalInfo();
 
     /// <summary>
-    /// Update info about the User.
+    /// Updates Parent personal information.
     /// </summary>
-    /// <param name="dto">Entity to update.</param>
-    /// <returns>Updated Provider.</returns>
+    /// <param name="dto">New Parent personal information.</param>
+    /// <returns>Updated Parent personal information.</returns>
     [Route($"Parent/{UpdatePersonalInfoActionName}")]
     [HasPermission(Permissions.ParentEdit)]
     [HttpPut]
@@ -109,10 +109,10 @@ public class PersonalInfoController : ControllerBase
     public async Task<IActionResult> UpdateParentPersonalInfo(ParentPersonalInfo dto) => Ok(await parentService.Update(dto));
 
     /// <summary>
-    /// Update info about the User.
+    /// Updates Provider personal information.
     /// </summary>
-    /// <param name="dto">Entity to update.</param>
-    /// <returns>Updated Provider.</returns>
+    /// <param name="dto">New Provider personal information.</param>
+    /// <returns>Updated Provider personal information.</returns>
     [Route($"Provider/{UpdatePersonalInfoActionName}")]
     [HasPermission(Permissions.ProviderEdit)]
     [HttpPut]
@@ -124,10 +124,10 @@ public class PersonalInfoController : ControllerBase
     public async Task<IActionResult> UpdateProviderPersonalInfo(ShortUserDto dto) => Ok(await userService.Update(dto));
 
     /// <summary>
-    /// Update info about the User.
+    /// Updates ProviderAdmin personal information.
     /// </summary>
-    /// <param name="dto">Entity to update.</param>
-    /// <returns>Updated Provider.</returns>
+    /// <param name="dto">New ProviderAdmin personal information.</param>
+    /// <returns>Updated ProviderAdmin personal information.</returns>
     [Route($"ProviderAdmin/{UpdatePersonalInfoActionName}")]
     [HasPermission(Permissions.ProviderAdmins)]
     [HttpPut]
@@ -139,10 +139,10 @@ public class PersonalInfoController : ControllerBase
     public async Task<IActionResult> UpdateProviderAdminPersonalInfo(ShortUserDto dto) => Ok(await userService.Update(dto));
 
     /// <summary>
-    /// Update info about the User.
+    /// Updates MinistryAdmin personal information.
     /// </summary>
-    /// <param name="dto">Entity to update.</param>
-    /// <returns>Updated Provider.</returns>
+    /// <param name="dto">New MinistryAdmin personal information.</param>
+    /// <returns>Updated MinistryAdmin personal information.</returns>
     [Route($"MinistryAdmin/{GetPersonalInfoActionName}")]
     [HasPermission(Permissions.MinistryAdminEdit)]
     [HttpPut]
