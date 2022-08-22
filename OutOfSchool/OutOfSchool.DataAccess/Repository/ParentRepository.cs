@@ -39,7 +39,8 @@ public class ParentRepository : EntityRepositoryBase<Guid, Parent>, IParentRepos
             FirstName = user.FirstName,
             MiddleName = user.MiddleName ?? string.Empty,
             LastName = user.LastName,
-            Gender = user.Gender,
+            Gender = entity.Gender,
+            DateOfBirth = entity.DateOfBirth,
             ParentId = entity.Id,
         };
         await db.Children.AddAsync(child);

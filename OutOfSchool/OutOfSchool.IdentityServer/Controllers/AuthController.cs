@@ -350,7 +350,6 @@ public class AuthController : Controller
             FirstName = model.FirstName,
             LastName = model.LastName,
             MiddleName = model.MiddleName,
-            Gender = model.Gender,
             Email = model.Email,
             PhoneNumber = model.PhoneNumber,
             CreatingTime = DateTimeOffset.UtcNow,
@@ -379,6 +378,8 @@ public class AuthController : Controller
                         var parent = new Parent()
                         {
                             UserId = user.Id,
+                            Gender = model.Gender,
+                            DateOfBirth = model.DateOfBirth,
                         };
 
                         Func<Task<Parent>> operation = async () => await parentRepository.Create(parent).ConfigureAwait(false);

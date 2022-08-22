@@ -31,6 +31,10 @@ public class RegisterViewModel
     [EnumDataType(typeof(Gender), ErrorMessage = Constants.EnumErrorMessage)]
     public Gender Gender { get; set; }
 
+    [Required]
+    [DataType(DataType.Date)]
+    public DateTime DateOfBirth { get; set; }
+
     [Required(ErrorMessage = "Password is required")]
     [RegularExpression(
         Constants.PasswordRegexViewModel,
