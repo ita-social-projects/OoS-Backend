@@ -9,6 +9,7 @@ using Microsoft.Extensions.Localization;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
@@ -143,15 +144,15 @@ public class ParentController : ControllerBase
     /// <summary>
     /// To update Parent entity that already exists.
     /// </summary>
-    /// <param name="shortUserDto">ShortUserDto object with new properties.</param>
+    /// <param name="dto">ShortUserDto object with new properties.</param>
     /// <returns>Parent's key.</returns>
     [HasPermission(Permissions.ParentEdit)]
     [HttpPut]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentPersonalInfo))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Update(ShortUserDto shortUserDto)
+    public async Task<ActionResult> Update(ParentPersonalInfo dto)
     {
         if (!ModelState.IsValid)
         {
@@ -160,12 +161,12 @@ public class ParentController : ControllerBase
 
         string userId = User.FindFirst("sub")?.Value;
 
-        if (userId != shortUserDto.Id)
+        if (userId != dto.Id)
         {
             return StatusCode(403, "Forbidden to update another user.");
         }
 
-        return Ok(await serviceParent.Update(shortUserDto).ConfigureAwait(false));
+        return Ok(await serviceParent.Update(dto).ConfigureAwait(false));
     }
 
     /// <summary>
