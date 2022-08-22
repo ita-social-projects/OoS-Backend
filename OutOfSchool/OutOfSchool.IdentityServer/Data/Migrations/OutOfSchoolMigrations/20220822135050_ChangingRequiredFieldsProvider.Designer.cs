@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
@@ -10,9 +11,10 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220822135050_ChangingRequiredFieldsProvider")]
+    partial class ChangingRequiredFieldsProvider
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -609,8 +611,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("binary(16)");
 
-                    b.Property<DateTime?>("DateOfBirth")
-                        .IsRequired()
+                    b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("date");
 
                     b.Property<string>("FirstName")
@@ -974,13 +975,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("binary(16)");
 
-                    b.Property<DateTime?>("DateOfBirth")
-                        .IsRequired()
-                        .HasColumnType("date");
-
-                    b.Property<int>("Gender")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)");
@@ -1024,35 +1018,35 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 1L,
                             Description = "techadmin permissions",
-                            PackedPermissions = "de\n\r !()+43258>=<?HGIFPQ[]\\rpqof",
+                            PackedPermissions = "de\n\r !()+4325>=<?HGIFPQ[]\\rpqo",
                             RoleName = "TechAdmin"
                         },
                         new
                         {
                             Id = 2L,
                             Description = "provider permissions",
-                            PackedPermissions = "e\n43256HGIFPQ[]\\7",
+                            PackedPermissions = "e\n43256HGIFPQ[]\\",
                             RoleName = "Provider"
                         },
                         new
                         {
                             Id = 3L,
                             Description = "parent permissions",
-                            PackedPermissions = "e\n !()+>=<PQ,",
+                            PackedPermissions = "e\n !()+>=<PQ",
                             RoleName = "Parent"
                         },
                         new
                         {
                             Id = 4L,
                             Description = "provider admin permissions",
-                            PackedPermissions = "e\n26HGIFPQ[\\7",
+                            PackedPermissions = "e\n26HGIFPQ[\\",
                             RoleName = "ProviderAdmin"
                         },
                         new
                         {
                             Id = 5L,
                             Description = "ministry admin permissions",
-                            PackedPermissions = "e\n258(PQFs",
+                            PackedPermissions = "e\n26HGIFPQ[\\",
                             RoleName = "MinistryAdmin"
                         });
                 });
@@ -1503,6 +1497,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsBlocked")
                         .HasColumnType("tinyint(1)");

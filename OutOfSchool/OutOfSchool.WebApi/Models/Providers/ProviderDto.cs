@@ -19,7 +19,7 @@ public class ProviderDto
     [Required(ErrorMessage = "Full Title is required")]
     [DataType(DataType.Text)]
     [MaxLength(60)]
-    [MinLength(1)] 
+    [MinLength(1)]
     public string FullTitle { get; set; }
 
     [Required(ErrorMessage = "Short Title is required")]
@@ -55,11 +55,11 @@ public class ProviderDto
 
     [MaxLength(50)]
     [Required(ErrorMessage = "The name of the director is required")]
-    public string Director { get; set; } = string.Empty; // Was changed
+    public string Director { get; set; } = string.Empty;
 
     [DataType(DataType.Date)]
     [Required(ErrorMessage = "The date of birth is required")]
-    public DateTime DirectorDateOfBirth { get; set; } = default; //Should be required
+    public DateTime DirectorDateOfBirth { get; set; } = default;
 
     [DataType(DataType.PhoneNumber)]
     [RegularExpression(
@@ -68,7 +68,7 @@ public class ProviderDto
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
     [MaxLength(Constants.UnifiedPhoneLength)]
     [Required(ErrorMessage = "The phone number is required")]
-    public string PhoneNumber { get; set; } = string.Empty; //Should be required
+    public string PhoneNumber { get; set; } = string.Empty;
 
     [Required]
     [MaxLength(30)]

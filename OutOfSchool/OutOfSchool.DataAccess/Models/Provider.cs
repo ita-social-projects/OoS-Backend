@@ -52,10 +52,12 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
     public string EdrpouIpn { get; set; }
 
     [MaxLength(50)]
+    [Required(ErrorMessage = "Director is required")]
     public string Director { get; set; } = string.Empty;
 
     [DataType(DataType.Date)]
     [Column(TypeName = "date")]
+    [Required(ErrorMessage = "DirectorDateOfBirth is required")]
     public DateTime DirectorDateOfBirth { get; set; } = default;
 
     [DataType(DataType.PhoneNumber)]
@@ -64,6 +66,7 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
         ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
     [MaxLength(Constants.UnifiedPhoneLength)]
+    [Required(ErrorMessage = "PhoneNumber is required")]
     public string PhoneNumber { get; set; } = string.Empty;
 
     [Required]
