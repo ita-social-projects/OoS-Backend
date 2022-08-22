@@ -196,16 +196,41 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
 
         if (filter.MinStartTime.TotalMinutes > 0 || filter.MaxStartTime.Hours < 23)
         {
-            queryContainer &= new NestedQuery()
+            if (filter.IsAppropriateHours)
             {
-                Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
-                Query = new NumericRangeQuery()
+                queryContainer &= new NestedQuery()
                 {
-                    Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().StartTime),
-                    GreaterThanOrEqualTo = filter.MinStartTime.Ticks,
-                    LessThan = TimeSpan.FromHours(filter.MaxStartTime.Hours + 1).Ticks,
-                },
-            };
+                    Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
+                    Query = new NumericRangeQuery()
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().StartTime),
+                        GreaterThanOrEqualTo = filter.MinStartTime.Ticks,
+                    },
+                };
+
+                queryContainer &= new NestedQuery()
+                {
+                    Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
+                    Query = new NumericRangeQuery()
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().EndTime),
+                        LessThan = TimeSpan.FromHours(filter.MaxStartTime.Hours + 1).Ticks,
+                    },
+                };
+            }
+            else
+            {
+                queryContainer &= new NestedQuery()
+                {
+                    Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
+                    Query = new NumericRangeQuery()
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().StartTime),
+                        GreaterThanOrEqualTo = filter.MinStartTime.Ticks,
+                        LessThan = TimeSpan.FromHours(filter.MaxStartTime.Hours + 1).Ticks,
+                    },
+                };
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(filter.City))
