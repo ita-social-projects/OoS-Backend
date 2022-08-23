@@ -94,6 +94,19 @@ public class PersonalInfoController : ControllerBase
     public async Task<IActionResult> GetMinistryAdminPersonalInfo() => await GetUserPersonalInfo();
 
     /// <summary>
+    /// Gets TechAdmin personal information.
+    /// </summary>
+    /// <returns>TechAdmin personal information.</returns>
+    [Route($"TechAdmin/{UpdatePersonalInfoActionName}")]
+    [HasPermission(Permissions.MinistryAdminRead)]
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetTechAdminPersonalInfo() => await GetUserPersonalInfo();
+
+    /// <summary>
     /// Updates Parent personal information.
     /// </summary>
     /// <param name="dto">New Parent personal information.</param>
@@ -152,6 +165,21 @@ public class PersonalInfoController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdateMinistryAdminPersonalInfo(ShortUserDto dto) => Ok(await userService.Update(dto));
+
+    /// <summary>
+    /// Updates TechAdmin personal information.
+    /// </summary>
+    /// <param name="dto">New TechAdmin personal information.</param>
+    /// <returns>Updated TechAdmin personal information.</returns>
+    [Route($"TechAdmin/{GetPersonalInfoActionName}")]
+    [HasPermission(Permissions.MinistryAdminEdit)]
+    [HttpPut]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> UpdateTechAdminPersonalInfo(ShortUserDto dto) => Ok(await userService.Update(dto));
 
     private async Task<IActionResult> GetUserPersonalInfo()
     {
