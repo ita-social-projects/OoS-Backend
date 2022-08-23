@@ -84,7 +84,7 @@ public class PersonalInfoController : ControllerBase
     /// Gets MinistryAdmin personal information.
     /// </summary>
     /// <returns>MinistryAdmin personal information.</returns>
-    [Route($"MinistryAdmin/{UpdatePersonalInfoActionName}")]
+    [Route($"MinistryAdmin/{GetPersonalInfoActionName}")]
     [HasPermission(Permissions.MinistryAdminRead)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
@@ -97,8 +97,8 @@ public class PersonalInfoController : ControllerBase
     /// Gets TechAdmin personal information.
     /// </summary>
     /// <returns>TechAdmin personal information.</returns>
-    [Route($"TechAdmin/{UpdatePersonalInfoActionName}")]
-    [HasPermission(Permissions.MinistryAdminRead)]
+    [Route($"TechAdmin/{GetPersonalInfoActionName}")]
+    [HasPermission(Permissions.SystemManagement)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -156,7 +156,7 @@ public class PersonalInfoController : ControllerBase
     /// </summary>
     /// <param name="dto">New MinistryAdmin personal information.</param>
     /// <returns>Updated MinistryAdmin personal information.</returns>
-    [Route($"MinistryAdmin/{GetPersonalInfoActionName}")]
+    [Route($"MinistryAdmin/{UpdatePersonalInfoActionName}")]
     [HasPermission(Permissions.MinistryAdminEdit)]
     [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
@@ -171,8 +171,8 @@ public class PersonalInfoController : ControllerBase
     /// </summary>
     /// <param name="dto">New TechAdmin personal information.</param>
     /// <returns>Updated TechAdmin personal information.</returns>
-    [Route($"TechAdmin/{GetPersonalInfoActionName}")]
-    [HasPermission(Permissions.MinistryAdminEdit)]
+    [Route($"TechAdmin/{UpdatePersonalInfoActionName}")]
+    [HasPermission(Permissions.SystemManagement)]
     [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
