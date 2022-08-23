@@ -26,11 +26,11 @@ public class ChildDto
 
     [Required(ErrorMessage = "Date of birth is required")]
     [DataType(DataType.Date)]
-    public DateTime DateOfBirth { get; set; } = default;
+    public DateTime? DateOfBirth { get; set; }
 
     [Required(ErrorMessage = "Gender is required")]
     [EnumDataType(typeof(Gender), ErrorMessage = Constants.EnumErrorMessage)]
-    public Gender Gender { get; set; } = default;
+    public Gender? Gender { get; set; }
 
     [MaxLength(500)]
     public string PlaceOfStudy { get; set; } = string.Empty;

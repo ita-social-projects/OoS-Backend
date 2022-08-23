@@ -15,6 +15,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
+using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services;
@@ -158,6 +159,26 @@ public class ParentService : IParentService
     }
 
     /// <inheritdoc/>
+    public async Task<ParentPersonalInfo> GetPersonalInfoByUserId(string userId)
+    {
+        if (string.IsNullOrEmpty(userId))
+        {
+            throw new ArgumentException(@"User Id must be non empty value", nameof(userId));
+        }
+
+        var info = (await repositoryParent.GetByFilter(
+            x => x.UserId == userId,
+            $"{nameof(Parent.User)}")).FirstOrDefault();
+
+        if (info is null)
+        {
+            throw new ArgumentException(@"No user with such id was found", nameof(userId));
+        }
+
+        return mapper.Map<ParentPersonalInfo>(info);
+    }
+
+    /// <inheritdoc/>
     public async Task<ParentDTO> GetById(Guid id)
     {
         logger.LogInformation($"Getting Parent by Id started. Looking Id = {id}.");
@@ -177,21 +198,28 @@ public class ParentService : IParentService
     }
 
     /// <inheritdoc/>
-    public async Task<ShortUserDto> Update(ShortUserDto dto)
+    public async Task<ParentPersonalInfo> Update(ParentPersonalInfo dto)
     {
-        logger.LogInformation($"Updating Parent with User Id = {dto?.Id} started.");
+        ArgumentNullException.ThrowIfNull(dto);
+        logger.LogDebug("Updating Parent with User Id = {UserId} started", dto.Id);
 
         try
         {
-            Expression<Func<User, bool>> filter = p => p.Id == dto.Id;
+            var parent = (await repositoryParent.GetByFilter(x => x.UserId == dto.Id))
+                .FirstOrDefault();
 
-            var users = repositoryUser.GetByFilterNoTracking(filter);
+            if (parent is null)
+            {
+                throw new ArgumentException("No parent with id, given in model was not found");
+            }
 
-            var updatedUser = await repositoryUser.Update(dto.ToDomain(users.FirstOrDefault())).ConfigureAwait(false);
+            mapper.Map((ShortUserDto)dto, parent.User);
+            parent.Gender = dto.Gender;
+            parent.DateOfBirth = dto.DateOfBirth;
 
-            logger.LogInformation($"User with Id = {updatedUser?.Id} updated succesfully.");
+            logger.LogInformation("Parent with UserId = {ParentId} updated successfully", parent.Id);
 
-            var child = (await repositoryChild.GetByFilter(c => c.Parent.UserId == dto.Id && c.IsParent).ConfigureAwait(false)).SingleOrDefault();
+            var child = (await repositoryChild.GetByFilter(c => c.Parent.UserId == dto.Id && c.IsParent)).SingleOrDefault();
 
             if (child is not null)
             {
@@ -199,15 +227,16 @@ public class ParentService : IParentService
                 child.MiddleName = dto.MiddleName;
                 child.LastName = dto.LastName;
                 child.Gender = dto.Gender;
-
-                await repositoryChild.Update(child).ConfigureAwait(false);
+                child.DateOfBirth = dto.DateOfBirth;
             }
 
-            return mapper.Map<ShortUserDto>(updatedUser);
+            await repositoryParent.UnitOfWork.CompleteAsync();
+
+            return mapper.Map<ParentPersonalInfo>(parent);
         }
-        catch (DbUpdateConcurrencyException)
+        catch (DbUpdateException ex)
         {
-            logger.LogError($"Updating failed. User with Id = {dto?.Id} doesn't exist in the system.");
+            logger.LogError(ex, "Updating Parent with UserId = {ParentId} failed", dto?.Id);
             throw;
         }
     }

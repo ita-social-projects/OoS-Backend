@@ -27,9 +27,11 @@ public class RegisterViewModel
         ErrorMessage = Constants.NameErrorMessage)]
     public string MiddleName { get; set; }
 
-    [Required(ErrorMessage = "Gender is required")]
     [EnumDataType(typeof(Gender), ErrorMessage = Constants.EnumErrorMessage)]
     public Gender Gender { get; set; }
+
+    [DataType(DataType.Date)]
+    public DateTime DateOfBirth { get; set; }
 
     [Required(ErrorMessage = "Password is required")]
     [RegularExpression(

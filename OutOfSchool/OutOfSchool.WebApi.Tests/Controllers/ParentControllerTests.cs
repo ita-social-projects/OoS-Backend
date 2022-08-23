@@ -14,6 +14,7 @@ using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
@@ -260,13 +261,15 @@ public class ParentControllerTests
     public async Task UpdateParent_WhenModelIsValid_ReturnsOkObjectResult()
     {
         // Arrange
-        var changedParent = new ShortUserDto()
+        var changedParent = new ParentPersonalInfo()
         {
             Id = "38776161-734b-4aec-96eb-4a1f87a2e5f3",
             PhoneNumber = "1160327456",
             LastName = "LastName",
             MiddleName = "MiddleName",
             FirstName = "FirstName",
+            Gender = Gender.Male,
+            DateOfBirth = DateTime.Today,
         };
         serviceParent.Setup(x => x.Update(changedParent)).ReturnsAsync(changedParent);
 
@@ -285,7 +288,7 @@ public class ParentControllerTests
         controller.ModelState.AddModelError("UpdateParent", "Invalid model state.");
 
         // Act
-        var result = await controller.Update(new ShortUserDto()).ConfigureAwait(false);
+        var result = await controller.Update(new ParentPersonalInfo()).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.TypeOf<BadRequestObjectResult>());

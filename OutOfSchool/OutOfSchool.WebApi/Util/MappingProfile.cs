@@ -180,8 +180,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(s => s.User.PhoneNumber))
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(s => s.User.LastName))
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(s => s.User.MiddleName))
-            .ForMember(dest => dest.FirstName, opt => opt.MapFrom(s => s.User.FirstName))
-            .ForMember(dest => dest.Gender, opt => opt.MapFrom(s => s.User.Gender));
+            .ForMember(dest => dest.FirstName, opt => opt.MapFrom(s => s.User.FirstName));
 
         CreateMap<CompanyInformationItem, CompanyInformationItemDto>().ReverseMap();
         CreateMap<CompanyInformation, CompanyInformationDto>().ReverseMap();
@@ -273,6 +272,39 @@ public class MappingProfile : Profile
 
         CreateMap<User, ShortUserDto>();
 
+        CreateMap<ShortUserDto, User>()
+            .ForMember(dest => dest.IsRegistered, opt => opt.Ignore())
+            .ForMember(dest => dest.Role, opt => opt.Ignore())
+            .ForMember(dest => dest.Email, opt => opt.Ignore())
+            .ForMember(dest => dest.UserName, opt => opt.Ignore())
+            .ForMember(dest => dest.LastLogin, opt => opt.Ignore())
+            .ForMember(dest => dest.NormalizedEmail, opt => opt.Ignore())
+            .ForMember(dest => dest.NormalizedUserName, opt => opt.Ignore())
+            .ForMember(dest => dest.EmailConfirmed, opt => opt.Ignore())
+            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
+            .ForMember(dest => dest.SecurityStamp, opt => opt.Ignore())
+            .ForMember(dest => dest.ConcurrencyStamp, opt => opt.Ignore())
+            .ForMember(dest => dest.PhoneNumberConfirmed, opt => opt.Ignore())
+            .ForMember(dest => dest.TwoFactorEnabled, opt => opt.Ignore())
+            .ForMember(dest => dest.LockoutEnabled, opt => opt.Ignore())
+            .ForMember(dest => dest.LockoutEnd, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore())
+            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
+            .ForMember(dest => dest.IsDerived, opt => opt.Ignore())
+            .ForMember(dest => dest.MustChangePassword, opt => opt.Ignore())
+            .ForMember(dest => dest.AccessFailedCount, opt => opt.Ignore());
+
+        CreateMap<Parent, ParentPersonalInfo>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.User.Id))
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.User.Role))
+            .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
+            .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName))
+            .ForMember(dest => dest.IsRegistered, opt => opt.MapFrom(src => src.User.IsRegistered))
+            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber))
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName));
+
         CreateMap<BaseUserDto, User>()
             .ForMember(dest => dest.CreatingTime, m => m.Ignore())
             .ForMember(dest => dest.LastLogin, m => m.Ignore())
@@ -280,7 +312,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Role, m => m.Ignore())
             .ForMember(dest => dest.IsRegistered, m => m.Ignore())
             .ForMember(dest => dest.IsDerived, m => m.Ignore())
-            .ForMember(dest => dest.Gender, m => m.Ignore())
             .ForMember(dest => dest.UserName, m => m.Ignore())
             .ForMember(dest => dest.NormalizedEmail, m => m.Ignore())
             .ForMember(dest => dest.NormalizedUserName, m => m.Ignore())
@@ -303,8 +334,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName))
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
-            .ForMember(dest => dest.AccountStatus, m => m.Ignore())
-            .ForMember(dest => dest.Gender, m => m.MapFrom(src => src.User.Gender));
+            .ForMember(dest => dest.AccountStatus, m => m.Ignore());
 
         CreateMap<ProviderChangesLogRequest, ChangesLogFilter>()
             .ForMember(dest => dest.EntityType, opt => opt.Ignore())

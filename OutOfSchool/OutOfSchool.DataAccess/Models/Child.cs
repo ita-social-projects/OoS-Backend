@@ -14,9 +14,9 @@ public class Child : IKeyedEntity<Guid>
 
     public string MiddleName { get; set; } = string.Empty;
 
-    public DateTime DateOfBirth { get; set; }
+    public DateTime? DateOfBirth { get; set; }
 
-    public Gender Gender { get; set; }
+    public Gender? Gender { get; set; }
 
     public string PlaceOfStudy { get; set; }
 

@@ -10,9 +10,5 @@ public class MinistryAdminDto : BaseUserDto
 
     public Guid InstitutionId { get; set; }
 
-    [Required(ErrorMessage = "Gender is required")]
-    [EnumDataType(typeof(Gender), ErrorMessage = Constants.EnumErrorMessage)]
-    public Gender Gender { get; set; }
-
     public string InstitutionTitle { get; set; }
 }

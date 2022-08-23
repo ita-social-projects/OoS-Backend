@@ -84,7 +84,7 @@ public class ChatRoomWorkshopModelForChatListRepository : IChatRoomWorkshopModel
                     FirstName = item.Parent.User.FirstName,
                     MiddleName = item.Parent.User.MiddleName,
                     LastName = item.Parent.User.LastName,
-                    Gender = item.Parent.User.Gender,
+                    Gender = item.Parent.Gender,
                     Email = item.Parent.User.Email,
                     PhoneNumber = item.Parent.User.PhoneNumber,
                 },

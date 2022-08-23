@@ -8,10 +8,6 @@ public class ShortUserDto : BaseUserDto
     [DataType(DataType.EmailAddress)]
     public string UserName { get; set; }
 
-    [Required(ErrorMessage = "Gender is required")]
-    [EnumDataType(typeof(Gender), ErrorMessage = Constants.EnumErrorMessage)]
-    public Gender Gender { get; set; } = default;
-
     public string Role { get; set; }
 
     public bool IsRegistered { get; set; }

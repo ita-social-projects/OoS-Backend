@@ -105,7 +105,7 @@ public class UserServiceTest
         var users = repo.GetByFilterNoTracking(filter);
 
         // Act
-        var result = await repo.Update(changedEntity.ToDomain(users.FirstOrDefault())).ConfigureAwait(false);
+        var result = await repo.Update(mapper.Map(changedEntity, users.FirstOrDefault())).ConfigureAwait(false);
 
         // Assert
         Assert.That(changedEntity.FirstName, Is.EqualTo(result.FirstName));
