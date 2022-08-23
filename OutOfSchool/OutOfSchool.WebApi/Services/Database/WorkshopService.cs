@@ -576,9 +576,9 @@ public class WorkshopService : IWorkshopService
 
         if (filter.MinStartTime.TotalMinutes > 0 || filter.MaxStartTime.Hours < 23)
         {
-            predicate = predicate.And(x => x.DateTimeRanges.Any(tr =>
-                tr.StartTime >= filter.MinStartTime
-                && tr.StartTime.Hours <= filter.MaxStartTime.Hours));
+            predicate = filter.IsAppropriateHours
+                ? predicate.And(x => x.DateTimeRanges.Any(tr => tr.StartTime >= filter.MinStartTime && tr.EndTime.Hours <= filter.MaxStartTime.Hours))
+                : predicate = predicate.And(x => x.DateTimeRanges.Any(tr => tr.StartTime >= filter.MinStartTime && tr.StartTime.Hours <= filter.MaxStartTime.Hours));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.City))
