@@ -11,7 +11,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20220822144900_BirthDay_Gender_Changes")]
+    [Migration("20220823155241_BirthDay_Gender_Changes")]
     partial class BirthDay_Gender_Changes
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -611,7 +611,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("binary(16)");
 
-                    b.Property<DateTime>("DateOfBirth")
+                    b.Property<DateTime?>("DateOfBirth")
+                        .IsRequired()
                         .HasColumnType("date");
 
                     b.Property<string>("FirstName")
@@ -975,8 +976,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("binary(16)");
 
-                    b.Property<DateTime>("DateOfBirth")
-                        .HasColumnType("datetime(6)");
+                    b.Property<DateTime?>("DateOfBirth")
+                        .IsRequired()
+                        .HasColumnType("date");
 
                     b.Property<int>("Gender")
                         .HasColumnType("int");

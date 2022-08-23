@@ -7,9 +7,9 @@ public class ParentPersonalInfo : ShortUserDto
 {
     [Required]
     [EnumDataType(typeof(Gender), ErrorMessage = Constants.EnumErrorMessage)]
-    public Gender Gender { get; set; } = default;
+    public Gender? Gender { get; set; }
 
     [Required]
     [DataType(DataType.Date)]
-    public DateTime DateOfBirth { get; set; }
+    public DateTime? DateOfBirth { get; set; }
 }
