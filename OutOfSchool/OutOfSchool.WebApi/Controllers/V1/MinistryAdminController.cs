@@ -153,7 +153,7 @@ public class MinistryAdminController : Controller
         }
         catch (Exception e)
         {
-            logger.LogError(e.Message);
+            logger.LogError("Error: {Message}", e.Message);
             return BadRequest(e.Message);
         }
     }
