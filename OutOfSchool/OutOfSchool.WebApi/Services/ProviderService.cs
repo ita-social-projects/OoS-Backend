@@ -124,7 +124,7 @@ public class ProviderService : IProviderService, INotificationReciever
             : $"All {providers.Count} records were successfully received from the Parent table");
 
         var providersDTO = providers.Select(provider => mapper.Map<ProviderDto>(provider)).ToList();
-        FillRatingsForProviders(providersDTO);
+        await FillRatingsForProviders(providersDTO).ConfigureAwait(false);
 
         var result = new SearchResult<ProviderDto>()
         {
@@ -150,7 +150,7 @@ public class ProviderService : IProviderService, INotificationReciever
 
         var providerDTO = mapper.Map<ProviderDto>(provider);
 
-        var rating = ratingService.GetAverageRating(providerDTO.Id, RatingType.Provider);
+        var rating = await ratingService.GetAverageRatingForProvider(providerDTO.Id).ConfigureAwait(false);
 
         providerDTO.Rating = rating?.Item1 ?? default;
         providerDTO.NumberOfRatings = rating?.Item2 ?? default;
@@ -571,10 +571,9 @@ public class ProviderService : IProviderService, INotificationReciever
         return predicate;
     }
 
-    private void FillRatingsForProviders(List<ProviderDto> providersDTO)
+    private async Task FillRatingsForProviders(List<ProviderDto> providersDTO)
     {
-        var averageRatings =
-            ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
+        var averageRatings = await ratingService.GetAverageRatingForProviders(providersDTO.Select(p => p.Id)).ConfigureAwait(false);
 
         foreach (var provider in providersDTO)
         {

@@ -184,6 +184,33 @@ public class RatingService : IRatingService
     }
 
     /// <inheritdoc/>
+    public async Task<Tuple<float, int>> GetAverageRatingForProvider(Guid providerId)
+    {
+        var workshops = await workshopRepository.GetByFilter(workshop => workshop.ProviderId == providerId).ConfigureAwait(false);
+        var workshopIds = workshops.Select(w => w.Id);
+        var workshopAverageRatings = GetAverageRatingForRange(workshopIds, RatingType.Workshop);
+
+        if (workshopAverageRatings.Count() < 1)
+        {
+            return Tuple.Create<float, int>(0, 0);
+        }
+
+        return Tuple.Create<float, int>((float)Math.Round(workshopAverageRatings.Values.Average(r => r.Item1), roundToDigits), workshopAverageRatings.Values.Sum(r => r.Item2));
+    }
+
+    /// <inheritdoc/>
+    public async Task<Dictionary<Guid, Tuple<float, int>>> GetAverageRatingForProviders(IEnumerable<Guid> providerIds)
+    {
+        var providers = new Dictionary<Guid, Tuple<float, int>>();
+        foreach (var providerId in providerIds)
+        {
+            providers.Add(providerId, await GetAverageRatingForProvider(providerId).ConfigureAwait(false));
+        }
+
+        return providers;
+    }
+
+    /// <inheritdoc/>
     public async Task<RatingDto> Create(RatingDto dto)
     {
         logger.LogInformation("Rating creating was started.");

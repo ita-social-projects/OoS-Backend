@@ -79,6 +79,20 @@ public interface IRatingService
     Dictionary<Guid, Tuple<float, int>> GetAverageRatingForRange(IEnumerable<Guid> entities, RatingType type);
 
     /// <summary>
+    /// Get average rating for provider.
+    /// </summary>
+    /// <param name="providerId">Provider's key.</param>
+    /// <returns>Average rating for provider.</returns>
+    Task<Tuple<float, int>> GetAverageRatingForProvider(Guid providerId);
+
+    /// <summary>
+    /// Get average rating for each provider in the range.
+    /// </summary>
+    /// <param name="providerIds">Providers' keys.</param>
+    /// <returns>Average rating for each provider in the range.</returns>
+    Task<Dictionary<Guid, Tuple<float, int>>> GetAverageRatingForProviders(IEnumerable<Guid> providerIds);
+
+    /// <summary>
     /// Update rating entity.
     /// </summary>
     /// <param name="dto">Rating entity to update.</param>
