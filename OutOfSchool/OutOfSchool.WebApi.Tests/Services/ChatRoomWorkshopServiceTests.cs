@@ -54,8 +54,8 @@ public class ChatRoomWorkshopServiceTests
 
         parents = new Parent[2]
         {
-            new Parent() { Id = Guid.NewGuid(), UserId = users[0].Id },
-            new Parent() { Id = Guid.NewGuid(), UserId = users[1].Id },
+            new Parent() { Id = Guid.NewGuid(), UserId = users[0].Id, Gender = Gender.Male, DateOfBirth = DateTime.Today},
+            new Parent() { Id = Guid.NewGuid(), UserId = users[1].Id, Gender = Gender.Female, DateOfBirth = DateTime.Today},
         };
 
         providers = ProvidersGenerator.Generate(2).ToArray();

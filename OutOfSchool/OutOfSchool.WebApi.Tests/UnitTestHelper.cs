@@ -41,9 +41,9 @@ public static class UnitTestHelper
 
         var parents = new List<Parent>
         {
-            new Parent { Id = Guid.NewGuid(), UserId = Guid.NewGuid().ToString() },
-            new Parent { Id = Guid.NewGuid(), UserId = Guid.NewGuid().ToString() },
-            new Parent { Id = Guid.NewGuid(), UserId = Guid.NewGuid().ToString() },
+            new Parent { Id = Guid.NewGuid(), UserId = Guid.NewGuid().ToString(), Gender = Gender.Male, DateOfBirth = DateTime.Today},
+            new Parent { Id = Guid.NewGuid(), UserId = Guid.NewGuid().ToString(), Gender = Gender.Female, DateOfBirth = DateTime.Today },
+            new Parent { Id = Guid.NewGuid(), UserId = Guid.NewGuid().ToString(), Gender = Gender.Male, DateOfBirth = DateTime.Today },
         };
 
         context.Parents.AddRange(parents);
