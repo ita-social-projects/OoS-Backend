@@ -122,4 +122,27 @@ public class CodeficatorController : ControllerBase
 
         return Ok(fullAddressNames);
     }
+
+    /// <summary>
+    /// Get nearest settlement to coordinates.
+    /// </summary>
+    /// <param name="query">Coordinates query.</param>
+    /// <returns> The codeficator. </returns>
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CodeficatorDto))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("[action]")]
+    public async Task<IActionResult> NearestByCoordinates([FromQuery] NearestCodeficatorRequest query)
+    {
+        if (query == null)
+        {
+            return BadRequest("NearestCodeficatorRequest is null.");
+        }
+
+        var codeficator = await codeficatorService.GetNearestByCoordinates(query.Lat, query.Lon);
+
+        return codeficator is not null ? Ok(codeficator) : NoContent();
+    }
 }

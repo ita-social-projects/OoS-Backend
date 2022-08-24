@@ -1,5 +1,6 @@
 using GrpcService;
 using Nest;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
@@ -418,10 +419,35 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title));
 
         CreateMap<GeocodingSingleFeatureResponse, GeocodingResponse>()
-            .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.Properties.Settlement))
-            .ForMember(dest => dest.Street, opt => opt.MapFrom(src => $"{src.Properties.SettlementType} {src.Properties.Street}"))
+            .ForMember(dest => dest.Street, opt => opt.MapFrom(src => $"{src.Properties.StreetType} {src.Properties.Street}"))
             .ForMember(dest => dest.BuildingNumber, opt => opt.MapFrom(src => src.Properties.Name))
-            .ForMember(dest => dest.RefinedLon, opt => opt.MapFrom(src => src.GeoCentroid.Coordinates.FirstOrDefault()))
-            .ForMember(dest => dest.RefinedLat, opt => opt.MapFrom(src => src.GeoCentroid.Coordinates.LastOrDefault()));
+            .ForMember(dest => dest.Lon, opt => opt.MapFrom(src => src.GeoCentroid.Coordinates.FirstOrDefault()))
+            .ForMember(dest => dest.Lat, opt => opt.MapFrom(src => src.GeoCentroid.Coordinates.LastOrDefault()))
+            .ForAllOtherMembers(opts => opts.Ignore());
+
+        CreateMap<CATOTTG, CodeficatorAddressDto>()
+            .ForMember(
+                dest => dest.Settlement,
+                opt => opt.MapFrom(src =>
+                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Name : src.Name))
+            .ForMember(
+                dest => dest.TerritorialCommunity,
+                opt => opt.MapFrom(src =>
+                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Parent.Name : src.Parent.Name))
+            .ForMember(
+                dest => dest.District,
+                opt => opt.MapFrom(src =>
+                    src.Category == CodeficatorCategory.CityDistrict.Name
+                        ? src.Parent.Parent.Parent.Name
+                        : src.Parent.Parent.Name))
+            .ForMember(
+                dest => dest.Region,
+                opt => opt.MapFrom(src =>
+                    src.Category == CodeficatorCategory.CityDistrict.Name
+                        ? src.Parent.Parent.Parent.Parent.Name
+                        : src.Parent.Parent.Parent.Name))
+            .ForMember(
+                dest => dest.CityDistrict,
+                opt => opt.MapFrom(src => src.Category == CodeficatorCategory.CityDistrict.Name ? src.Name : null));
     }
 }

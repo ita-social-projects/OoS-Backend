@@ -37,4 +37,13 @@ public interface ICodeficatorService
     /// <param name="filter">Filter for the search.</param>
     /// <returns>The task result contains the list of <see cref="Task{CodeficatorAddressDto}"/>.</returns>
     public Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(CodeficatorFilter filter);
+
+    /// <summary>
+    /// Get the nearest codeficator entry by latitude & longitude.
+    /// </summary>
+    /// <param name="lat">Latitude (id degrees).</param>
+    /// <param name="lon">Longitude (in degrees).</param>
+    /// <param name="categories">Categories for search.</param>
+    /// <returns>The task result contains a <see cref="CodeficatorAddressDto"/>.</returns>
+    public Task<CodeficatorAddressDto> GetNearestByCoordinates(double lat, double lon, string categories = default);
 }

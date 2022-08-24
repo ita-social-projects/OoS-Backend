@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using H3Lib;
-using H3Lib.Extensions;
 using Microsoft.EntityFrameworkCore;
-using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
@@ -58,32 +55,5 @@ public class CodeficatorRepository : EntityRepository<long, CATOTTG>, ICodeficat
                      };
 
         return await query.OrderBy(x => x.Order).ToListAsync();
-    }
-
-    public async Task<CATOTTG> GetNearestByCoordinates(double lat, double lon)
-    {
-        var hash = default(GeoCoord).SetDegrees(Convert.ToDecimal(lat), Convert.ToDecimal(lon));
-
-        var h3Location = Api.GeoToH3(hash, GeoMathHelper.ResolutionForCity);
-        Api.KRing(h3Location, GeoMathHelper.KRingForResolution, out var neighbours);
-
-        var closestCities = await GetByFilter(c => neighbours
-                .Select(n => n.Value)
-                .Any(geo => geo == c.GeoHash));
-
-        return closestCities
-            .Select(city => new
-            {
-                city,
-                Distance = GeoMathHelper
-                    .GetDistanceFromLatLonInKm(
-                        city.Latitude,
-                        city.Longitude,
-                        lat,
-                        lon),
-            })
-            .OrderBy(p => p.Distance)
-            .Select(c => c.city)
-            .FirstOrDefault();
     }
 }
