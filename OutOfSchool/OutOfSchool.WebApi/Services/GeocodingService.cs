@@ -34,8 +34,16 @@ public class GeocodingService : CommunicationService, IGeocodingService
     }
 
     /// <inheritdoc/>
-    public async Task<Either<ErrorResponse, GeocodingResponse?>> GetGeocodingInfo(GeocodingRequest request)
+    public async Task<Either<ErrorResponse, GeocodingResponse?>> GetGeocodingInfo(GeocodingRequest? request)
     {
+        if (request is null)
+        {
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+            };
+        }
+
         AllAddressPartsDto? address;
         try
         {
@@ -113,8 +121,16 @@ public class GeocodingService : CommunicationService, IGeocodingService
 
     /// <inheritdoc/>
     public async Task<Either<ErrorResponse, GeocodingResponse?>> GetReverseGeocodingInfo(
-        GeocodingRequest request)
+        GeocodingRequest? request)
     {
+        if (request is null)
+        {
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+            };
+        }
+
         var req = new Request
         {
             HttpMethodType = HttpMethodType.Get,
@@ -205,22 +221,22 @@ public class RectangularBounds
     public string WKT =>
         $"POLYGON (( {northWest.lon} {northWest.lat}, {northEast.lon} {northEast.lat}, {southEast.lon} {southEast.lat}, {southWest.lon} {southWest.lat}, {northWest.lon} {northWest.lat} ))";
 
-    private Point CalculateSouthWest(double lat, double lon, double deltaMeters)
+    private static Point CalculateSouthWest(double lat, double lon, double deltaMeters)
     {
         return new Point(lat - (deltaMeters * Coef), lon - (deltaMeters * Coef / Math.Cos(GeoMathHelper.Deg2Rad(lat))));
     }
 
-    private Point CalculateNorthWest(double lat, double lon, double deltaMeters)
+    private static Point CalculateNorthWest(double lat, double lon, double deltaMeters)
     {
         return new Point(lat + (deltaMeters * Coef), lon - (deltaMeters * Coef / Math.Cos(GeoMathHelper.Deg2Rad(lat))));
     }
 
-    private Point CalculateNorthEast(double lat, double lon, double deltaMeters)
+    private static Point CalculateNorthEast(double lat, double lon, double deltaMeters)
     {
         return new Point(lat + (deltaMeters * Coef), lon + (deltaMeters * Coef / Math.Cos(GeoMathHelper.Deg2Rad(lat))));
     }
 
-    private Point CalculateSouthEast(double lat, double lon, double deltaMeters)
+    private static Point CalculateSouthEast(double lat, double lon, double deltaMeters)
     {
         return new Point(lat - (deltaMeters * Coef), lon + (deltaMeters * Coef / Math.Cos(GeoMathHelper.Deg2Rad(lat))));
     }

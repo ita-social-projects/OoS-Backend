@@ -19,7 +19,7 @@ public interface ICodeficatorService
     /// <summary>
     /// Get list of chaild entities from the database.
     /// </summary>
-    /// <param name="id">Parent's id of entity which children we want to receive. </param>
+    /// <param name="id">Parent's id of entity which children we want to receive.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains the <see cref="IEnumerable{CodeficatorDto}"/> found elements.</returns>
     public Task<IEnumerable<CodeficatorDto>> GetChildrenByParentId(long? id = null);
@@ -27,7 +27,7 @@ public interface ICodeficatorService
     /// <summary>
     /// Get all address's parts from the database.
     /// </summary>
-    /// <param name="id"> Codeficator's id. </param>
+    /// <param name="id"> Codeficator's id.</param>
     /// <returns>The task result contains the <see cref="Task{AllAddressPartsDto}"/>.</returns>
     public Task<AllAddressPartsDto> GetAllAddressPartsById(long id);
 

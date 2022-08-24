@@ -15,7 +15,7 @@ public interface IGeocodingService
     /// </summary>
     /// <param name="request">Geocoding request. </param>
     /// <returns>The task result contains the <see cref="Either{ErrorResponse, GeocodingResponse}"/>.</returns>
-    public Task<Either<ErrorResponse, GeocodingResponse?>> GetGeocodingInfo(GeocodingRequest request);
+    public Task<Either<ErrorResponse, GeocodingResponse?>> GetGeocodingInfo(GeocodingRequest? request);
 
     /// <summary>
     /// Get address by coordinates.
@@ -23,5 +23,5 @@ public interface IGeocodingService
     /// <param name="request">Geocoding request. </param>
     /// <returns>The task result contains the <see cref="Either{ErrorResponse, GeocodingResponse}"/>.</returns>
     public Task<Either<ErrorResponse, GeocodingResponse?>> GetReverseGeocodingInfo(
-        GeocodingRequest request);
+        GeocodingRequest? request);
 }

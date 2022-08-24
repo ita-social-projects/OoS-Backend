@@ -66,7 +66,7 @@ public class ProviderAdminController : Controller
             error => StatusCode((int)error.HttpStatusCode, error.Message),
             result =>
             {
-                logger.LogInformation($"Succesfully created ProviderAdmin(id): {result.UserId} by User(id): {userId}.");
+                logger.LogInformation("Successfully created ProviderAdmin(id): {result.UserId} by User(id): {UserId}", result.UserId, userId);
                 return Ok(result);
             });
     }

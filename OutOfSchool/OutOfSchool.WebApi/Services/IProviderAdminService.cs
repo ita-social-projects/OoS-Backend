@@ -6,13 +6,22 @@ namespace OutOfSchool.WebApi.Services;
 
 public interface IProviderAdminService
 {
-    Task<Either<ErrorResponse, CreateProviderAdminDto>> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto, string token);
+    Task<Either<ErrorResponse, CreateProviderAdminDto>> CreateProviderAdminAsync(
+        string userId,
+        CreateProviderAdminDto providerAdminDto,
+        string token);
 
-    Task<Either<ErrorResponse, ActionResult>> DeleteProviderAdminAsync(string providerAdminId, string userId,
-        Guid providerId, string token);
+    Task<Either<ErrorResponse, ActionResult>> DeleteProviderAdminAsync(
+        string providerAdminId,
+        string userId,
+        Guid providerId,
+        string token);
 
-    Task<Either<ErrorResponse, ActionResult>> BlockProviderAdminAsync(string providerAdminId, string userId,
-        Guid providerId, string token);
+    Task<Either<ErrorResponse, ActionResult>> BlockProviderAdminAsync(
+        string providerAdminId,
+        string userId,
+        Guid providerId,
+        string token);
 
     Task GiveAssistantAccessToWorkshop(string userId, Guid workshopId);
 

@@ -6,7 +6,5 @@ public class ErrorResponse
 {
     public HttpStatusCode HttpStatusCode { get; set; }
 
-    public bool IsSuccess => false;
-
     public string Message { get; set; }
 }

@@ -29,7 +29,9 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
     }
 
     /// <inheritdoc/>
-    public async Task<Either<ErrorResponse, CreateProviderAdminDto>> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto,
+    public async Task<Either<ErrorResponse, CreateProviderAdminDto>> CreateProviderAdminAsync(
+        string userId,
+        CreateProviderAdminDto providerAdminDto,
         string token)
     {
         var request = new Request()
@@ -41,8 +43,12 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
             RequestId = Guid.NewGuid(),
         };
 
-        Logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
-                        $"was sent. User(id): {userId}. Url: {request.Url}");
+        Logger.LogDebug(
+            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            request.HttpMethodType,
+            request.RequestId,
+            userId,
+            request.Url);
 
         var response = await SendRequest<ResponseDto>(request)
             .ConfigureAwait(false);

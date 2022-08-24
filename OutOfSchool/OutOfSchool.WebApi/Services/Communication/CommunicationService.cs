@@ -35,6 +35,14 @@ public class CommunicationService : ICommunicationService
     public async Task<Either<ErrorResponse, T>> SendRequest<T>(Request request)
     where T : IResponse
     {
+        if (request is null)
+        {
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+            };
+        }
+
         try
         {
             // TODO:
@@ -80,7 +88,7 @@ public class CommunicationService : ICommunicationService
         }
         catch (HttpRequestException ex)
         {
-            logger.LogError(ex, ex.Message);
+            logger.LogError(ex, "Networking error");
             return new ErrorResponse
             {
                 HttpStatusCode = ex.StatusCode ?? HttpStatusCode.BadRequest,
@@ -89,7 +97,7 @@ public class CommunicationService : ICommunicationService
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, ex.Message);
+            logger.LogError(ex, "Unknown error");
             return new ErrorResponse
             {
                 HttpStatusCode = HttpStatusCode.InternalServerError,

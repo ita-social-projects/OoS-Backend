@@ -28,8 +28,13 @@ public class GeocodingController : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Geocoding(GeocodingRequest request)
+    public async Task<IActionResult> Geocoding(GeocodingRequest? request)
     {
+        if (request is null)
+        {
+            return BadRequest();
+        }
+
         var result = await Validate(request)
             .FlatMapAsync(r =>
                 r.IsReverse
@@ -45,7 +50,7 @@ public class GeocodingController : Controller
             r => r is not null ? Ok(r) : NoContent());
     }
 
-    private Either<ErrorResponse, GeocodingRequest> Validate(GeocodingRequest request)
+    private static Either<ErrorResponse, GeocodingRequest> Validate(GeocodingRequest request)
     {
         if (request.IsReverse)
         {

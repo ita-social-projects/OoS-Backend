@@ -124,11 +124,11 @@ public class MinistryAdminController : Controller
     [HttpPost]
     public async Task<ActionResult> Create(CreateMinistryAdminDto ministryAdmin)
     {
-        logger.LogDebug($"{path} started. User(id): {userId}.");
+        logger.LogDebug("{Path} started. User(id): {UserId}", path, userId);
 
         if (!ModelState.IsValid)
         {
-            logger.LogError($"Input data was not valid for User(id): {userId}");
+            logger.LogError("Input data was not valid for User(id): {UserId}", userId);
 
             return StatusCode(StatusCodes.Status422UnprocessableEntity);
         }
@@ -143,7 +143,7 @@ public class MinistryAdminController : Controller
             error => StatusCode((int)error.HttpStatusCode, error.Message),
             result =>
             {
-                logger.LogInformation($"Succesfully created MinistryAdmin(id): {result.UserId} by User(id): {userId}.");
+                logger.LogInformation("Successfully created MinistryAdmin(id): {result.UserId} by User(id): {UserId}", result.UserId, userId);
                 return Ok(result);
             });
     }
