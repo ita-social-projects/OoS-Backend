@@ -1,3 +1,5 @@
+#nullable enable
+
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Models.Geocoding;
@@ -11,22 +13,28 @@ public class GeocodingController : Controller
 {
     private readonly IGeocodingService geocodingService;
 
-    public GeocodingController(IGeocodingService geocodingService)
+    public GeocodingController(IGeocodingService? geocodingService)
     {
         this.geocodingService = geocodingService ?? throw new ArgumentNullException(nameof(geocodingService));
     }
 
+    /// <summary>
+    /// Get geocoding or reverse geocoding information.
+    /// </summary>
+    /// <param name="request">Coordinates query.</param>
+    /// <returns> The geocoding information about address or coordinates. </returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<GeocodingResponse>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
     public async Task<IActionResult> Geocoding(GeocodingRequest request)
     {
         var result = await Validate(request)
-            .FlatMapAsync(async r =>
+            .FlatMapAsync(r =>
                 r.IsReverse
-                    ? await geocodingService.GetReverseGeocodingInfo(r)
-                    : await geocodingService.GetGeocodingInfo(r));
+                    ? geocodingService.GetReverseGeocodingInfo(r)
+                    : geocodingService.GetGeocodingInfo(r));
 
         return result.Match<IActionResult>(
             error => error.HttpStatusCode switch
@@ -34,7 +42,7 @@ public class GeocodingController : Controller
                 HttpStatusCode.BadRequest => BadRequest(error.Message),
                 _ => StatusCode((int)error.HttpStatusCode),
             },
-            r => r is null ? NoContent() : Ok(r));
+            r => r is not null ? Ok(r) : NoContent());
     }
 
     private Either<ErrorResponse, GeocodingRequest> Validate(GeocodingRequest request)

@@ -1,5 +1,3 @@
-using Newtonsoft.Json;
-
 namespace OutOfSchool.WebApi.Models.Geocoding;
 
 public class GeocodingRequest

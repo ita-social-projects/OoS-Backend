@@ -78,7 +78,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
 
         if (await IsSuchEmailExisted(ministryAdminDto.Email))
         {
-            logger.LogDebug("ministryAdmin creating is not possible. Username {Email} is already taken.", ministryAdminDto.Email);
+            Logger.LogDebug("ministryAdmin creating is not possible. Username {Email} is already taken.", ministryAdminDto.Email);
             throw new InvalidOperationException($"Username {ministryAdminDto.Email} is already taken.");
         }
 
