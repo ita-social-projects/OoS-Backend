@@ -16,7 +16,7 @@ namespace OutOfSchool.WebApi.Services.ProviderAdminOperations;
 /// </summary>
 public class ProviderAdminOperationsGRPCService : IProviderAdminOperationsService
 {
-    private readonly ILogger<ProviderAdminService> logger;
+    private readonly ILogger<ProviderAdminOperationsGRPCService> logger;
     private readonly IMapper mapper;
     private readonly IGRPCCommonService gRPCCommonService;
 
@@ -28,7 +28,7 @@ public class ProviderAdminOperationsGRPCService : IProviderAdminOperationsServic
     /// <param name="gRPCCommonService">GRPCCommonService.</param>
     public ProviderAdminOperationsGRPCService(
         IMapper mapper,
-        ILogger<ProviderAdminService> logger,
+        ILogger<ProviderAdminOperationsGRPCService> logger,
         IGRPCCommonService gRPCCommonService)
     {
         this.mapper = mapper;

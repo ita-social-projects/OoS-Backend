@@ -37,7 +37,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
 
     public async Task<MinistryAdminDto> GetById(long id)
     {
-        logger.LogInformation($"Getting InstitutionAdmin by Id started. Looking Id = {id}.");
+        Logger.LogInformation($"Getting InstitutionAdmin by Id started. Looking Id = {id}.");
 
         var institutionAdmin = await institutionAdminRepository.GetById(id).ConfigureAwait(false);
 
@@ -46,14 +46,14 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             return null;
         }
 
-        logger.LogInformation($"Successfully got a InstitutionAdmin with Id = {id}.");
+        Logger.LogInformation($"Successfully got a InstitutionAdmin with Id = {id}.");
 
         return mapper.Map<MinistryAdminDto>(institutionAdmin);
     }
 
     public async Task<MinistryAdminDto> GetByUserId(string id)
     {
-        logger.LogInformation($"Getting MinistryAdmin by UserId started. Looking UserId is {id}.");
+        Logger.LogInformation($"Getting MinistryAdmin by UserId started. Looking UserId is {id}.");
 
         InstitutionAdmin ministryAdmin = (await institutionAdminRepository.GetByFilter(p => p.UserId == id).ConfigureAwait(false)).FirstOrDefault();
 
@@ -61,18 +61,18 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         {
             var errMsg = $"There is no MinistryAdmin in the Db with such User id {id}.";
 
-            logger.LogError(errMsg);
+            Logger.LogError(errMsg);
             throw new ArgumentException(errMsg);
         }
 
-        logger.LogInformation($"Successfully got a MinistryAdmin with UserId = {id}.");
+        Logger.LogInformation($"Successfully got a MinistryAdmin with UserId = {id}.");
 
         return mapper.Map<MinistryAdminDto>(ministryAdmin);
     }
 
     public async Task<Either<ErrorResponse, CreateMinistryAdminDto>> CreateMinistryAdminAsync(string userId, CreateMinistryAdminDto ministryAdminDto, string token)
     {
-        logger.LogDebug($"ministryAdmin creating was started. User(id): {userId}");
+        Logger.LogDebug($"ministryAdmin creating was started. User(id): {userId}");
 
         ArgumentNullException.ThrowIfNull(ministryAdminDto);
 
@@ -91,7 +91,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             RequestId = Guid.NewGuid(),
         };
 
-        logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
+        Logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
                         $"was sent. User(id): {userId}. Url: {request.Url}");
 
         var response = await SendRequest<ResponseDto>(request)
@@ -114,7 +114,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
     /// <inheritdoc/>
     public async Task<SearchResult<MinistryAdminDto>> GetByFilter(MinistryAdminFilter filter)
     {
-        logger.LogInformation("Getting all Ministry admins started (by filter).");
+        Logger.LogInformation("Getting all Ministry admins started (by filter).");
 
         filter ??= new MinistryAdminFilter();
         ModelValidationHelper.ValidateOffsetFilter(filter);
@@ -138,7 +138,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             .ToListAsync()
             .ConfigureAwait(false);
 
-        logger.LogInformation(!institutionAdmins.Any()
+        Logger.LogInformation(!institutionAdmins.Any()
             ? "Parents table is empty."
             : $"All {institutionAdmins.Count} records were successfully received from the Parent table");
 
@@ -158,7 +158,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
     {
         ArgumentNullException.ThrowIfNull(ministryAdminDto);
 
-        logger.LogInformation($"Updating MinistryAdmin with User Id = {ministryAdminDto.Id} started.");
+        Logger.LogInformation($"Updating MinistryAdmin with User Id = {ministryAdminDto.Id} started.");
 
         try
         {
@@ -166,27 +166,27 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
 
             var updatedUser = await userRepository.Update(mapper.Map((BaseUserDto)ministryAdminDto, user)).ConfigureAwait(false);
 
-            logger.LogInformation($"User with Id = {updatedUser.Id} updated succesfully.");
+            Logger.LogInformation($"User with Id = {updatedUser.Id} updated succesfully.");
 
             return ministryAdminDto;
         }
         catch (DbUpdateConcurrencyException)
         {
-            logger.LogError($"Updating failed. User with Id = {ministryAdminDto.Id} doesn't exist in the system.");
+            Logger.LogError($"Updating failed. User with Id = {ministryAdminDto.Id} doesn't exist in the system.");
             throw;
         }
     }
 
     public async Task<Either<ErrorResponse, ActionResult>> DeleteMinistryAdminAsync(string ministryAdminId, string userId, string token)
     {
-        logger.LogDebug($"MinistryAdmin(id): {ministryAdminId} deleting was started. User(id): {userId}");
+        Logger.LogDebug($"MinistryAdmin(id): {ministryAdminId} deleting was started. User(id): {userId}");
 
         var ministryAdmin = await institutionAdminRepository.GetByIdAsync(ministryAdminId)
             .ConfigureAwait(false);
 
         if (ministryAdmin is null)
         {
-            logger.LogError($"MinistryAdmin(id) {ministryAdminId} not found. User(id): {userId}.");
+            Logger.LogError($"MinistryAdmin(id) {ministryAdminId} not found. User(id): {userId}.");
 
             return new ErrorResponse
             {
@@ -202,7 +202,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             RequestId = Guid.NewGuid(),
         };
 
-        logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
+        Logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
                         $"was sent. User(id): {userId}. Url: {request.Url}");
 
         var response = await SendRequest<ResponseDto>(request)
@@ -224,14 +224,14 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
 
     public async Task<Either<ErrorResponse, ActionResult>> BlockMinistryAdminAsync(string ministryAdminId, string userId, string token)
     {
-        logger.LogDebug($"MinistryAdmin(id): {ministryAdminId} blocking was started. User(id): {userId}");
+        Logger.LogDebug($"MinistryAdmin(id): {ministryAdminId} blocking was started. User(id): {userId}");
 
         var ministryAdmin = await institutionAdminRepository.GetByIdAsync(ministryAdminId)
             .ConfigureAwait(false);
 
         if (ministryAdmin is null)
         {
-            logger.LogError($"MinistryAdmin(id) {ministryAdminId} not found. User(id): {userId}.");
+            Logger.LogError($"MinistryAdmin(id) {ministryAdminId} not found. User(id): {userId}.");
 
             return new ErrorResponse
             {
@@ -247,7 +247,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             RequestId = Guid.NewGuid(),
         };
 
-        logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
+        Logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
                         $"was sent. User(id): {userId}. Url: {request.Url}");
 
         var response = await SendRequest<ResponseDto>(request)

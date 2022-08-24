@@ -19,7 +19,7 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
     /// <param name="httpClientFactory">HttpClientFactory. For base class.</param>
     /// <param name="communicationConfig">CommunicationConfig. For base class.</param>
     public ProviderAdminOperationsRESTService(
-        ILogger<ProviderAdminService> logger,
+        ILogger<ProviderAdminOperationsRESTService> logger,
         IOptions<IdentityServerConfig> identityServerConfig,
         IHttpClientFactory httpClientFactory,
         IOptions<CommunicationConfig> communicationConfig)
@@ -41,7 +41,7 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
             RequestId = Guid.NewGuid(),
         };
 
-        logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
+        Logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
                         $"was sent. User(id): {userId}. Url: {request.Url}");
 
         var response = await SendRequest<ResponseDto>(request)

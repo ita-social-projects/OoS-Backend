@@ -10,9 +10,8 @@ namespace OutOfSchool.WebApi.Services.Communication;
 
 public class CommunicationService : ICommunicationService
 {
-    private readonly IHttpClientFactory httpClientFactory;
+    private readonly ILogger<CommunicationService> logger;
     private readonly HttpClient httpClient;
-    protected readonly ILogger<CommunicationService> logger;
 
     public CommunicationService(
         IHttpClientFactory httpClientFactory,
@@ -20,16 +19,18 @@ public class CommunicationService : ICommunicationService
         ILogger<CommunicationService> logger)
     {
         ArgumentNullException.ThrowIfNull(communicationConfig);
+        ArgumentNullException.ThrowIfNull(httpClientFactory);
 
-        this.httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        httpClient = this.httpClientFactory.CreateClient(communicationConfig.ClientName);
+        httpClient = httpClientFactory.CreateClient(communicationConfig.ClientName);
         httpClient.DefaultRequestHeaders.Clear();
         httpClient.DefaultRequestHeaders
             .Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
         httpClient.Timeout = TimeSpan.FromSeconds(communicationConfig.TimeoutInSeconds);
     }
+
+    protected ILogger<CommunicationService> Logger => logger;
 
     public async Task<Either<ErrorResponse, T>> SendRequest<T>(Request request)
     where T : IResponse

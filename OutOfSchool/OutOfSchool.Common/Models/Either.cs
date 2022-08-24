@@ -7,7 +7,7 @@ namespace OutOfSchool.Common.Models;
 /// Functional data type to represent a disjoint
 /// union of two possible types.
 /// Instances of Either are either an instance of Left or Right.
-/// FP Convention dictates that Left is used for "failure"
+/// FP Convention dictates that Left is used for "failure".
 /// </summary>
 /// <typeparam name="TL">Type of "Left" item.</typeparam>
 /// <typeparam name="TR">Type of "Right" item.</typeparam>
@@ -42,7 +42,7 @@ public sealed class Either<TL, TR>
 
         if (imp is Right right)
         {
-            rightAction(right.right);
+            rightAction(right.Value);
         }
     }
 
@@ -60,23 +60,20 @@ public sealed class Either<TL, TR>
 
         return this switch
         {
-            _ when imp is Left left => Either<TL, T>.CreateLeft(left.left),
-            _ when imp is Right right => fn(right.right)
+            _ when imp is Left left => Either<TL, T>.CreateLeft(left.Value),
+            _ when imp is Right right => fn(right.Value),
+            _ => throw new NotImplementedException("This should not happen.")
         };
     }
 
-    public async Task<Either<TL, T>> FlatMapAsync<T>(Func<TR, Task<Either<TL, T>>> fn)
+    public Task<Either<TL, T>> FlatMapAsync<T>(Func<TR, Task<Either<TL, T>>> fn)
     {
         if (fn is null)
         {
             throw new ArgumentNullException(nameof(fn));
         }
 
-        return this switch
-        {
-            _ when imp is Left left => Either<TL, T>.CreateLeft(left.left),
-            _ when imp is Right right => await fn(right.right)
-        };
+        return InternalFlatMapAsync(fn);
     }
 
     public Either<TL, T> Map<T>(Func<TR, T> fn)
@@ -84,13 +81,14 @@ public sealed class Either<TL, TR>
         return FlatMap(fn.C(Either<TL, T>.CreateRight));
     }
 
-    public async Task<Either<TL, T>> MapAsync<T>(Func<TR, Task<T>> fn)
+    public Task<Either<TL, T>> MapAsync<T>(Func<TR, Task<T>> fn)
     {
-        return await FlatMapAsync(async c =>
+        if (fn is null)
         {
-            var f = fn.C(async a => Either<TL, T>.CreateRight(await a));
-            return await f(c);
-        });
+            throw new ArgumentNullException(nameof(fn));
+        }
+
+        return InternalMapAsync(fn);
     }
 
     public override bool Equals(object obj)
@@ -113,14 +111,35 @@ public sealed class Either<TL, TR>
         return new Either<TL, TR>(new Right(value));
     }
 
+    private async Task<Either<TL, T>> InternalFlatMapAsync<T>(Func<TR, Task<Either<TL, T>>> fn)
+    {
+        return this switch
+        {
+            _ when imp is Left left => Either<TL, T>.CreateLeft(left.Value),
+            _ when imp is Right right => await fn(right.Value),
+            _ => throw new NotImplementedException("This should not happen.")
+        };
+    }
+
+    private Task<Either<TL, T>> InternalMapAsync<T>(Func<TR, Task<T>> fn)
+    {
+        return FlatMapAsync(async c =>
+        {
+            var f = fn.C(async a => Either<TL, T>.CreateRight(await a));
+            return await f(c);
+        });
+    }
+
     private sealed class Left : IEither
     {
-        public readonly TL left;
+        private readonly TL left;
 
         public Left(TL left)
         {
             this.left = left;
         }
+
+        public TL Value => left;
 
         public T Match<T>(Func<TL, T> onLeft, Func<TR, T> onRight)
         {
@@ -140,12 +159,14 @@ public sealed class Either<TL, TR>
 
     private sealed class Right : IEither
     {
-        public readonly TR right;
+        private readonly TR right;
 
         public Right(TR right)
         {
             this.right = right;
         }
+
+        public TR Value => right;
 
         public T Match<T>(Func<TL, T> onLeft, Func<TR, T> onRight)
         {
