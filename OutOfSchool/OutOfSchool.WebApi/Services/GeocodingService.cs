@@ -7,23 +7,23 @@ namespace OutOfSchool.WebApi.Services;
 
 public class GeocodingService : CommunicationService, IGeocodingService
 {
-    private const double searchBoundsRadiusMeters = 50000.0;
+    private const double SearchBoundsRadiusMeters = 50000.0;
     private readonly GeocodingConfig config;
-    private readonly ICodeficatorRepository codeficatorRepository;
+    private readonly ICodeficatorService codeficatorService;
     private readonly IMapper mapper;
 
     public GeocodingService(
         IOptions<GeocodingConfig> options,
         IHttpClientFactory httpClientFactory,
         IOptions<CommunicationConfig> communicationConfig,
-        ICodeficatorRepository codeficatorRepository,
+        ICodeficatorService codeficatorService,
         IMapper mapper,
         ILogger<GeocodingService> logger)
         : base(httpClientFactory, communicationConfig.Value, logger)
     {
         config = options.Value;
         this.mapper = mapper;
-        this.codeficatorRepository = codeficatorRepository;
+        this.codeficatorService = codeficatorService;
     }
 
     public async Task<Either<ErrorResponse, GeocodingResponse?>> GetGeocodingInfo(GeocodingRequest request)
@@ -31,7 +31,7 @@ public class GeocodingService : CommunicationService, IGeocodingService
         try
         {
             // Get codeficator from DB
-            var address = await codeficatorRepository.GetById(request.CATOTTGId);
+            var address = await codeficatorService.GetAllAddressPartsById(request.CATOTTGId);
 
             if (address is null)
             {
@@ -44,13 +44,13 @@ public class GeocodingService : CommunicationService, IGeocodingService
 
             // If codeficator entry is a city's district - get it's parent (city) coordinates
             // TODO: check if districts have their own coordinates
-            var lat = address.Category != "B" ? address.Latitude : address.Parent.Latitude;
-            var lon = address.Category != "B" ? address.Longitude : address.Parent.Longitude;
+            var lat = address.AddressParts.Category != "B" ? address.AddressParts.Latitude : address.AddressParts.Parent.Latitude;
+            var lon = address.AddressParts.Category != "B" ? address.AddressParts.Longitude : address.AddressParts.Parent.Longitude;
 
             // Create bounds to limit the search are to certain coordinates square
             // should help minimize response data for cities & streets with equal name
             // TODO: 50km is 2x time more then enough for Kyiv
-            var bounds = new RectangularBounds(lat, lon, searchBoundsRadiusMeters);
+            var bounds = new RectangularBounds(lat, lon, SearchBoundsRadiusMeters);
 
             var req = new Request
             {
@@ -60,31 +60,35 @@ public class GeocodingService : CommunicationService, IGeocodingService
                 {
                     {"key", config.ApiKey},
                     {"categories", "adr_address"},
-                    {"text", $"{address.Name}, {request.Street}, {request.BuildingNumber}"},
+                    {"text", $"{address.AddressParts.Name}, {request.Street}, {request.BuildingNumber}"},
                     { "contains", bounds.WKT },
                 },
             };
 
             var response = await SendRequest<GeocodingApiResponse>(req);
 
-            return await response.MapAsync(async r =>
+            return response.Map(r =>
             {
-                var result = new GeocodingResponse();
-                result.CATOTTGId = request.CATOTTGId;
+                var result = new GeocodingResponse
+                {
+                    CATOTTGId = request.CATOTTGId,
+                    Settlement = address.AddressParts.Name,
+                };
 
                 return r switch
                 {
-                    _ when r is GeocodingSingleFeatureResponse single => mapper.Map(single, result),
+                    GeocodingSingleFeatureResponse single => mapper.Map(single, result),
 
                     // TODO: for now take the most relevant (sorted by API) address, might need to change if frontend has issues
-                    _ when r is GeocodingListFeatureResponse multi => multi.Features.Any() ? mapper.Map(multi.Features.First(), result) : null,
-                    _ when r is GeocodingEmptyResponse => null
+                    GeocodingListFeatureResponse multi => multi.Features.Any() ? mapper.Map(multi.Features.First(), result) : null,
+                    GeocodingEmptyResponse => null,
+                    _ => null
                 };
             });
         }
         catch (Exception e)
         {
-            logger.LogError(e, e.Message);
+            Logger.LogError(e, e.Message);
             // TODO: normal error
             return new ErrorResponse();
         }
@@ -110,9 +114,10 @@ public class GeocodingService : CommunicationService, IGeocodingService
         return await response
             .Map(r => r switch
             {
-                _ when r is GeocodingSingleFeatureResponse single => mapper.Map<GeocodingResponse>(single),
-                _ when r is GeocodingListFeatureResponse multi => multi.Features.Select(mapper.Map<GeocodingResponse>).FirstOrDefault(),
-                _ when r is GeocodingEmptyResponse => null
+                GeocodingSingleFeatureResponse single => mapper.Map<GeocodingResponse>(single),
+                GeocodingListFeatureResponse multi => multi.Features.Select(mapper.Map<GeocodingResponse>).FirstOrDefault(),
+                GeocodingEmptyResponse => null,
+                _ => null
             })
             .FlatMapAsync<GeocodingResponse>(async r =>
             {
@@ -124,8 +129,8 @@ public class GeocodingService : CommunicationService, IGeocodingService
 
                 try
                 {
-                    var catottg = await codeficatorRepository
-                        .GetNearestByCoordinates(r.RefinedLat, r.RefinedLon);
+                    var catottg = await codeficatorService
+                        .GetNearestByCoordinates(r.Lat, r.Lon);
 
                     if (catottg is null)
                     {
@@ -137,11 +142,12 @@ public class GeocodingService : CommunicationService, IGeocodingService
                     }
 
                     r.CATOTTGId = catottg.Id;
+                    r.Settlement = catottg.Settlement;
                     return r;
                 }
                 catch (Exception e)
                 {
-                    logger.LogError(e, e.Message);
+                    Logger.LogError(e, e.Message);
                     // TODO: normal error
                     return new ErrorResponse();
                 }
@@ -153,15 +159,15 @@ public class RectangularBounds
 {
     private const double EarthRadius = 6378.137;
 
-    private double Coef => (1 / ((2 * Math.PI / 360) * EarthRadius)) / 1000;
+    private const double Coef = (1 / ((2 * Math.PI / 360) * EarthRadius)) / 1000;
 
-    private Point northWest;
+    private readonly Point northWest;
 
-    private Point northEast;
+    private readonly Point northEast;
 
-    private Point southEast;
+    private readonly Point southEast;
 
-    private Point southWest;
+    private readonly Point southWest;
 
     public RectangularBounds(double lat, double lon, double deltaMeters)
     {
@@ -195,5 +201,5 @@ public class RectangularBounds
         return new Point(lat - (deltaMeters * Coef), lon + (deltaMeters * Coef / Math.Cos(GeoMathHelper.Deg2Rad(lat))));
     }
 
-    private record Point(double lat, double lon);
+    private sealed record Point(double lat, double lon);
 }
