@@ -68,19 +68,6 @@ public class PersonalInfoController : ControllerBase
     public async Task<IActionResult> GetProviderPersonalInfo() => await GetUserPersonalInfo();
 
     /// <summary>
-    /// Gets ProviderAdmin personal information.
-    /// </summary>
-    /// <returns>ProviderAdmin personal information.</returns>
-    [Route($"ProviderAdmin/{GetPersonalInfoActionName}")]
-    [HasPermission(Permissions.ProviderAdmins)]
-    [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetProviderAdminPersonalInfo() => await GetUserPersonalInfo();
-
-    /// <summary>
     /// Gets MinistryAdmin personal information.
     /// </summary>
     /// <returns>MinistryAdmin personal information.</returns>
@@ -135,21 +122,6 @@ public class PersonalInfoController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdateProviderPersonalInfo(ShortUserDto dto) => Ok(await userService.Update(dto));
-
-    /// <summary>
-    /// Updates ProviderAdmin personal information.
-    /// </summary>
-    /// <param name="dto">New ProviderAdmin personal information.</param>
-    /// <returns>Updated ProviderAdmin personal information.</returns>
-    [Route($"ProviderAdmin/{UpdatePersonalInfoActionName}")]
-    [HasPermission(Permissions.ProviderAdmins)]
-    [HttpPut]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdateProviderAdminPersonalInfo(ShortUserDto dto) => Ok(await userService.Update(dto));
 
     /// <summary>
     /// Updates MinistryAdmin personal information.
