@@ -58,7 +58,7 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
     [DataType(DataType.Date)]
     [Column(TypeName = "date")]
     [Required(ErrorMessage = "DirectorDateOfBirth is required")]
-    public DateTime DirectorDateOfBirth { get; set; } = default;
+    public DateTime? DirectorDateOfBirth { get; set; } = default;
 
     [DataType(DataType.PhoneNumber)]
     [RegularExpression(

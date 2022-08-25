@@ -59,7 +59,7 @@ public class ProviderDto
 
     [DataType(DataType.Date)]
     [Required(ErrorMessage = "The date of birth is required")]
-    public DateTime DirectorDateOfBirth { get; set; } = default;
+    public DateTime? DirectorDateOfBirth { get; set; } = default;
 
     [DataType(DataType.PhoneNumber)]
     [RegularExpression(
