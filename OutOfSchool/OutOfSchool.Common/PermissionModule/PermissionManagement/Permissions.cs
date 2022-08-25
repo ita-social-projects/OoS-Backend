@@ -60,6 +60,8 @@ public enum Permissions : short
     ParentAddNew = 42,
     [Display(GroupName = "Parent", Name = "Remove", Description = "Can remove Parent data")]
     ParentRemove = 43,
+    [Display(GroupName = "Parent", Name = "Parent Personal Info", Description = "Can read or modify personal information for Parent")]
+    ParentPersonalInfo = 44,
     #endregion
 
     #region Provider Control permissions #6
@@ -73,6 +75,10 @@ public enum Permissions : short
     ProviderRemove = 53,
     [Display(GroupName = "Provider", Name = "Provider Admins", Description = "Can create and manage provider admins")]
     ProviderAdmins = 54,
+    [Display(GroupName = "Provider", Name = "Provider Personal Info", Description = "Can read or modify personal information for Provider")]
+    ProviderPersonalInfo = 55,
+    [Display(GroupName = "Provider", Name = "Provider Approve", Description = "Can approve Provider and License")]
+    ProviderApprove = 56,
     #endregion
 
     #region Rating control permissions #7
@@ -124,6 +130,8 @@ public enum Permissions : short
     SystemManagement = 100,
     [Display(GroupName = "SystemManaging", Name = "ReadImpersonalData", Description = "For non-admin users to get specific data as city, class, status etc")]
     ImpersonalDataRead = 101,
+    [Display(GroupName = "TechAdmin", Name = "Tech Admin Personal Info", Description = "Can read or modify personal information for Tech Admin")]
+    TechAdminPersonalInfo = 102,
 
     [Display(GroupName = "SystemManaging", Name = "SuperAdmin", Description = "access to all actions covered with [HasPermission] attribute")]
     AccessAll = short.MaxValue,
@@ -140,5 +148,7 @@ public enum Permissions : short
     MinistryAdminRemove = 113,
     [Display(GroupName = "MinistryAdmin", Name = "Ministry Admins", Description = "Can manage ministry admins")]
     MinistryAdmins = 114,
+    [Display(GroupName = "MinistryAdmin", Name = "Ministry Admin Personal Info", Description = "Can read or modify personal information for Ministry Admin")]
+    MinistryAdminPersonalInfo = 115,
     #endregion
 }
