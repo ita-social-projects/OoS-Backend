@@ -1,46 +1,57 @@
-﻿using System;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
+using System.Net.Mime;
 using System.Text;
-using System.Threading.Tasks;
-
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
-
-using OutOfSchool.Common;
-using OutOfSchool.WebApi.Config;
+using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Services.Communication.ICommunication;
 
 namespace OutOfSchool.WebApi.Services.Communication;
 
 public class CommunicationService : ICommunicationService
 {
-    private readonly IHttpClientFactory httpClientFactory;
+    private readonly ILogger<CommunicationService> logger;
     private readonly HttpClient httpClient;
 
     public CommunicationService(
         IHttpClientFactory httpClientFactory,
-        CommunicationConfig communicationConfig)
+        CommunicationConfig communicationConfig,
+        ILogger<CommunicationService> logger)
     {
         ArgumentNullException.ThrowIfNull(communicationConfig);
+        ArgumentNullException.ThrowIfNull(httpClientFactory);
 
-        this.httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        httpClient = this.httpClientFactory.CreateClient(communicationConfig.ClientName);
+        httpClient = httpClientFactory.CreateClient(communicationConfig.ClientName);
         httpClient.DefaultRequestHeaders.Clear();
         httpClient.DefaultRequestHeaders
-            .Accept.Add(new MediaTypeWithQualityHeaderValue(System.Net.Mime.MediaTypeNames.Application.Json));
+            .Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
         httpClient.Timeout = TimeSpan.FromSeconds(communicationConfig.TimeoutInSeconds);
     }
 
-    public async Task<ResponseDto> SendRequest(Request request)
+    protected ILogger<CommunicationService> Logger => logger;
+
+    public async Task<Either<ErrorResponse, T>> SendRequest<T>(Request request)
+    where T : IResponse
     {
+        if (request is null)
+        {
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+            };
+        }
+
         try
         {
             // TODO:
             // Setup number of parallel requests
-            httpClient.DefaultRequestHeaders.Authorization
-                = new AuthenticationHeaderValue("Bearer", request.Token);
+            if (!string.IsNullOrEmpty(request.Token))
+            {
+                httpClient.DefaultRequestHeaders.Authorization
+                    = new AuthenticationHeaderValue("Bearer", request.Token);
+            }
 
             httpClient.DefaultRequestHeaders
                 .Add("X-Request-ID", request.RequestId.ToString());
@@ -51,7 +62,9 @@ public class CommunicationService : ICommunicationService
                 .AcceptEncoding
                 .Add(new StringWithQualityHeaderValue("gzip"));
 
-            requestMessage.RequestUri = new Uri(request.Url.ToString());
+            requestMessage.RequestUri = request.Query != null
+                ? new Uri(QueryHelpers.AddQueryString(request.Url.ToString(), request.Query))
+                : request.Url;
 
             if (request.Data != null)
             {
@@ -59,7 +72,7 @@ public class CommunicationService : ICommunicationService
                     new StringContent(
                         JsonConvert.SerializeObject(request.Data),
                         Encoding.UTF8,
-                        System.Net.Mime.MediaTypeNames.Application.Json);
+                        MediaTypeNames.Application.Json);
             }
 
             requestMessage.Method = HttpMethodService.GetHttpMethodType(request);
@@ -67,23 +80,28 @@ public class CommunicationService : ICommunicationService
             var response = await httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead)
                 .ConfigureAwait(false);
 
-            using (var stream = await response.Content.ReadAsStreamAsync()
-                       .ConfigureAwait(false))
-            {
-                response.EnsureSuccessStatusCode();
+            await using var stream = await response.Content.ReadAsStreamAsync()
+                .ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
 
-                return stream.ReadAndDeserializeFromJson<ResponseDto>();
-            }
+            return stream.ReadAndDeserializeFromJson<T>();
         }
-        catch
+        catch (HttpRequestException ex)
         {
-            var responseDto = new ResponseDto
+            logger.LogError(ex, "Networking error");
+            return new ErrorResponse
             {
-                IsSuccess = false,
+                HttpStatusCode = ex.StatusCode ?? HttpStatusCode.BadRequest,
+                Message = ex.Message,
+            };
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unknown error");
+            return new ErrorResponse
+            {
                 HttpStatusCode = HttpStatusCode.InternalServerError,
             };
-
-            return responseDto;
         }
     }
 }

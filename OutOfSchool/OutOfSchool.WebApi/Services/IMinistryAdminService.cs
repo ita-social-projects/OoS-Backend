@@ -1,4 +1,5 @@
-﻿using OutOfSchool.Common.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -27,7 +28,7 @@ public interface IMinistryAdminService
     /// <param name="ministryAdminDto">Entity to add.</param>
     /// <param name="token">Valid token with MinistryAdminAddNew permissions.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<ResponseDto> CreateMinistryAdminAsync(string userId, CreateMinistryAdminDto ministryAdminDto, string token);
+    Task<Either<ErrorResponse, CreateMinistryAdminDto>> CreateMinistryAdminAsync(string userId, CreateMinistryAdminDto ministryAdminDto, string token);
 
     /// <summary>
     /// Update Ministry Admin.
@@ -43,7 +44,7 @@ public interface IMinistryAdminService
     /// <param name="userId">Id of user.</param>
     /// <param name="token">Valid token with MinistryAdminEdit permissions.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<ResponseDto> DeleteMinistryAdminAsync(string ministryAdminId, string userId, string token);
+    Task<Either<ErrorResponse, ActionResult>> DeleteMinistryAdminAsync(string ministryAdminId, string userId, string token);
 
     /// <summary>
     /// Block Ministry Admin.
@@ -52,7 +53,7 @@ public interface IMinistryAdminService
     /// <param name="userId">Id of user.</param>
     /// <param name="token">Valid token with MinistryAdminEdit permissions.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<ResponseDto> BlockMinistryAdminAsync(string ministryAdminId, string userId, string token);
+    Task<Either<ErrorResponse, ActionResult>> BlockMinistryAdminAsync(string ministryAdminId, string userId, string token);
 
     /// <summary>
     /// Determines whether provider is subordinate of the ministry admin.

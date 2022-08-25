@@ -1,5 +1,7 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
+using H3Lib;
+using H3Lib.Extensions;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Models.Codeficator;
@@ -62,6 +64,36 @@ public class CodeficatorService : ICodeficatorService
     public async Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(CodeficatorFilter filter)
     {
         return await codeficatorRepository.GetFullAddressesByPartOfName(filter?.Name, filter?.Categories).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public async Task<CodeficatorAddressDto> GetNearestByCoordinates(double lat, double lon, string categories = default)
+    {
+        var searchableEntries = string.IsNullOrEmpty(categories) ? CodeficatorCategory.Level4.Name : categories;
+        var hash = default(GeoCoord).SetDegrees(Convert.ToDecimal(lat), Convert.ToDecimal(lon));
+
+        var h3Location = Api.GeoToH3(hash, GeoMathHelper.ResolutionForCity);
+        Api.KRing(h3Location, GeoMathHelper.KRingForResolution, out var neighbours);
+
+        var closestCities = await codeficatorRepository.GetByFilter(c => neighbours
+            .Select(n => n.Value)
+            .Any(geo => geo == c.GeoHash) && searchableEntries.Contains(c.Category, StringComparison.Ordinal));
+
+        return closestCities
+            .Select(city => new
+            {
+                city,
+                Distance = GeoMathHelper
+                    .GetDistanceFromLatLonInKm(
+                        city.Latitude,
+                        city.Longitude,
+                        lat,
+                        lon),
+            })
+            .OrderBy(p => p.Distance)
+            .Select(c => c.city)
+            .Select(mapper.Map<CodeficatorAddressDto>)
+            .FirstOrDefault();
     }
 
     #region privateMethods

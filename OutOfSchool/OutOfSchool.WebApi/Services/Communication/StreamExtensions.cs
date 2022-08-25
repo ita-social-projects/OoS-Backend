@@ -20,15 +20,8 @@ public static class StreamExtensions
             throw new NotSupportedException("Can't read this stream");
         }
 
-        using (var streamReader = new StreamReader(stream))
-        {
-            using (var jsonTextReader = new JsonTextReader(streamReader))
-            {
-                var jsonSerializer = new JsonSerializer();
-
-                return jsonSerializer.Deserialize<T>(jsonTextReader);
-            }
-        }
+        using var streamReader = new StreamReader(stream);
+        return JsonConvert.DeserializeObject<T>(streamReader.ReadToEnd());
     }
 
     public static void SerializeToJsonAndWrite<T>(this Stream stream, T objectToWrite)
