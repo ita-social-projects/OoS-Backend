@@ -129,7 +129,7 @@ public class CodeficatorController : ControllerBase
     /// <param name="query">Coordinates query.</param>
     /// <returns> The codeficator. </returns>
     [AllowAnonymous]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CodeficatorDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CodeficatorAddressDto))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
