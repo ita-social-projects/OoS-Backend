@@ -12,12 +12,13 @@ public static class PermissionsSeeder
         Permissions.ApplicationRead, Permissions.ApplicationEdit, Permissions.ApplicationRemove, Permissions.ApplicationAddNew,
         Permissions.FavoriteRead, Permissions.FavoriteAddNew, Permissions.FavoriteEdit, Permissions.FavoriteRemove,
         Permissions.ParentRead, Permissions.ParentEdit, Permissions.ParentRemove,
-        Permissions.ProviderAddNew, Permissions.ProviderEdit, Permissions.ProviderRead, Permissions.ProviderRemove,
+        Permissions.ProviderAddNew, Permissions.ProviderEdit, Permissions.ProviderRead, Permissions.ProviderRemove, Permissions.ProviderApprove,
         Permissions.RatingAddNew, Permissions.RatingEdit, Permissions.RatingRead, Permissions.RatingRemove,
         Permissions.TeacherAddNew, Permissions.TeacherEdit, Permissions.TeacherRemove, Permissions.TeacherRead,
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.WorkshopEdit, Permissions.WorkshopRemove, Permissions.WorkshopAddNew,
         Permissions.MinistryAdmins, Permissions.MinistryAdminAddNew, Permissions.MinistryAdminRemove, Permissions.MinistryAdminEdit,
+        Permissions.TechAdminPersonalInfo,
     };
 
     private static readonly IEnumerable<Permissions> SeedProviderPermissions = new List<Permissions>
@@ -29,6 +30,7 @@ public static class PermissionsSeeder
         Permissions.TeacherAddNew, Permissions.TeacherEdit, Permissions.TeacherRemove, Permissions.TeacherRead,
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.WorkshopEdit, Permissions.WorkshopRemove, Permissions.WorkshopAddNew,
+        Permissions.ProviderPersonalInfo,
     };
 
     private static readonly IEnumerable<Permissions> SeedProviderAdminPermissions = new List<Permissions>
@@ -41,18 +43,20 @@ public static class PermissionsSeeder
         Permissions.TeacherAddNew, Permissions.TeacherEdit, Permissions.TeacherRemove, Permissions.TeacherRead,
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.WorkshopEdit, Permissions.WorkshopAddNew,
+        Permissions.ProviderPersonalInfo,
     };
 
     private static readonly IEnumerable<Permissions> SeedMinistryAdminPermissions = new List<Permissions>
     {
         Permissions.ImpersonalDataRead,
         Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
-        Permissions.ApplicationRead, Permissions.ApplicationEdit,
-        Permissions.ProviderRead,
-        Permissions.ProviderAdmins,
-        Permissions.TeacherAddNew, Permissions.TeacherEdit, Permissions.TeacherRemove, Permissions.TeacherRead,
+        Permissions.ApplicationRead,
+        Permissions.ProviderRead, Permissions.ProviderRemove, Permissions.ProviderApprove,
+        Permissions.ParentRead,
+        Permissions.ChildRead,
         Permissions.UserRead, Permissions.UserEdit,
-        Permissions.WorkshopEdit, Permissions.WorkshopAddNew,
+        Permissions.TeacherRead,
+        Permissions.MinistryAdminPersonalInfo,
     };
 
     private static readonly IEnumerable<Permissions> SeedParentPermissions = new List<Permissions>
@@ -65,6 +69,7 @@ public static class PermissionsSeeder
         Permissions.ParentRead, Permissions.ParentEdit, Permissions.ParentRemove,
         Permissions.RatingAddNew, Permissions.RatingEdit, Permissions.RatingRead,
         Permissions.UserRead, Permissions.UserEdit,
+        Permissions.ParentPersonalInfo,
     };
 
     public static string SeedPermissions(string role)

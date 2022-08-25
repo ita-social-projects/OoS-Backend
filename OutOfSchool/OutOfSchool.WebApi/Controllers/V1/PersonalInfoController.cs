@@ -39,7 +39,7 @@ public class PersonalInfoController : ControllerBase
     /// </summary>
     /// <returns>Parent personal information.</returns>
     [Route($"Parent/{GetPersonalInfoActionName}")]
-    [HasPermission(Permissions.ParentRead)]
+    [HasPermission(Permissions.ParentPersonalInfo)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentPersonalInfo))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -59,7 +59,7 @@ public class PersonalInfoController : ControllerBase
     /// </summary>
     /// <returns>Provider personal information.</returns>
     [Route($"Provider/{GetPersonalInfoActionName}")]
-    [HasPermission(Permissions.ProviderRead)]
+    [HasPermission(Permissions.ProviderPersonalInfo)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -72,7 +72,7 @@ public class PersonalInfoController : ControllerBase
     /// </summary>
     /// <returns>MinistryAdmin personal information.</returns>
     [Route($"MinistryAdmin/{GetPersonalInfoActionName}")]
-    [HasPermission(Permissions.MinistryAdminRead)]
+    [HasPermission(Permissions.MinistryAdminPersonalInfo)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -85,7 +85,7 @@ public class PersonalInfoController : ControllerBase
     /// </summary>
     /// <returns>TechAdmin personal information.</returns>
     [Route($"TechAdmin/{GetPersonalInfoActionName}")]
-    [HasPermission(Permissions.SystemManagement)]
+    [HasPermission(Permissions.TechAdminPersonalInfo)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -99,14 +99,21 @@ public class PersonalInfoController : ControllerBase
     /// <param name="dto">New Parent personal information.</param>
     /// <returns>Updated Parent personal information.</returns>
     [Route($"Parent/{UpdatePersonalInfoActionName}")]
-    [HasPermission(Permissions.ParentEdit)]
+    [HasPermission(Permissions.ParentPersonalInfo)]
     [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentPersonalInfo))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdateParentPersonalInfo(ParentPersonalInfo dto) => Ok(await parentService.Update(dto));
+    public async Task<IActionResult> UpdateParentPersonalInfo(ParentPersonalInfo dto)
+    {
+        var userId = GettingUserProperties.GetUserId(HttpContext);
+
+        return userId != dto.Id ?
+            StatusCode(403, "Forbidden to update another user")
+            : Ok(await parentService.Update(dto));
+    }
 
     /// <summary>
     /// Updates Provider personal information.
@@ -114,14 +121,14 @@ public class PersonalInfoController : ControllerBase
     /// <param name="dto">New Provider personal information.</param>
     /// <returns>Updated Provider personal information.</returns>
     [Route($"Provider/{UpdatePersonalInfoActionName}")]
-    [HasPermission(Permissions.ProviderEdit)]
+    [HasPermission(Permissions.ProviderPersonalInfo)]
     [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdateProviderPersonalInfo(ShortUserDto dto) => Ok(await userService.Update(dto));
+    public async Task<IActionResult> UpdateProviderPersonalInfo(ShortUserDto dto) => await UpdateUserInfo(dto);
 
     /// <summary>
     /// Updates MinistryAdmin personal information.
@@ -129,14 +136,14 @@ public class PersonalInfoController : ControllerBase
     /// <param name="dto">New MinistryAdmin personal information.</param>
     /// <returns>Updated MinistryAdmin personal information.</returns>
     [Route($"MinistryAdmin/{UpdatePersonalInfoActionName}")]
-    [HasPermission(Permissions.MinistryAdminEdit)]
+    [HasPermission(Permissions.MinistryAdminPersonalInfo)]
     [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdateMinistryAdminPersonalInfo(ShortUserDto dto) => Ok(await userService.Update(dto));
+    public async Task<IActionResult> UpdateMinistryAdminPersonalInfo(ShortUserDto dto) => await UpdateUserInfo(dto);
 
     /// <summary>
     /// Updates TechAdmin personal information.
@@ -144,14 +151,14 @@ public class PersonalInfoController : ControllerBase
     /// <param name="dto">New TechAdmin personal information.</param>
     /// <returns>Updated TechAdmin personal information.</returns>
     [Route($"TechAdmin/{UpdatePersonalInfoActionName}")]
-    [HasPermission(Permissions.SystemManagement)]
+    [HasPermission(Permissions.TechAdminPersonalInfo)]
     [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdateTechAdminPersonalInfo(ShortUserDto dto) => Ok(await userService.Update(dto));
+    public async Task<IActionResult> UpdateTechAdminPersonalInfo(ShortUserDto dto) => await UpdateUserInfo(dto);
 
     private async Task<IActionResult> GetUserPersonalInfo()
     {
@@ -160,5 +167,14 @@ public class PersonalInfoController : ControllerBase
         var info = await userService.GetById(userId);
 
         return info is null ? NoContent() : Ok(info);
+    }
+
+    private async Task<IActionResult> UpdateUserInfo(ShortUserDto dto)
+    {
+        var userId = GettingUserProperties.GetUserId(HttpContext);
+
+        return userId != dto.Id ?
+            StatusCode(403, "Forbidden to update another user")
+            : Ok(await userService.Update(dto));
     }
 }

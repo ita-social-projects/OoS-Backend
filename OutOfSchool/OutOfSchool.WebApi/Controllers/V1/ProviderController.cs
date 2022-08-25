@@ -258,7 +258,7 @@ public class ProviderController : ControllerBase
     /// <param name="request">Provider ID and status to update.</param>
     /// <returns><see cref="ProviderStatusDto"/>.</returns>
     [HttpPut]
-    [HasPermission(Permissions.SystemManagement)]
+    [HasPermission(Permissions.ProviderApprove)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderStatusDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -284,7 +284,7 @@ public class ProviderController : ControllerBase
     /// <param name="request">Provider ID and license status to update.</param>
     /// <returns><see cref="ProviderLicenseStatusDto"/>.</returns>
     [HttpPut]
-    [HasPermission(Permissions.SystemManagement)]
+    [HasPermission(Permissions.ProviderApprove)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderLicenseStatusDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
