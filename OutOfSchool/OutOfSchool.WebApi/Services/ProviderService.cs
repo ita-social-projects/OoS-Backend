@@ -150,7 +150,7 @@ public class ProviderService : IProviderService, INotificationReciever
 
         var providerDTO = mapper.Map<ProviderDto>(provider);
 
-        var rating = await ratingService.GetAverageRatingForProvider(providerDTO.Id).ConfigureAwait(false);
+        var rating = await ratingService.GetAverageRatingForProviderAsync(providerDTO.Id).ConfigureAwait(false);
 
         providerDTO.Rating = rating?.Item1 ?? default;
         providerDTO.NumberOfRatings = rating?.Item2 ?? default;
@@ -573,7 +573,7 @@ public class ProviderService : IProviderService, INotificationReciever
 
     private async Task FillRatingsForProviders(List<ProviderDto> providersDTO)
     {
-        var averageRatings = await ratingService.GetAverageRatingForProviders(providersDTO.Select(p => p.Id)).ConfigureAwait(false);
+        var averageRatings = await ratingService.GetAverageRatingForProvidersAsync(providersDTO.Select(p => p.Id)).ConfigureAwait(false);
 
         foreach (var provider in providersDTO)
         {

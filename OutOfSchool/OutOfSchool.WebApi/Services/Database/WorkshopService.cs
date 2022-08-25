@@ -155,7 +155,7 @@ public class WorkshopService : IWorkshopService
             : $"All {workshops.Count} records were successfully received from the Workshop table");
 
         var dtos = mapper.Map<List<WorkshopDTO>>(workshops);
-        var workshopsWithRating = GetWorkshopsWithAverageRating(dtos);
+        var workshopsWithRating = await GetWorkshopsWithAverageRating(dtos).ConfigureAwait(false);
         return new SearchResult<WorkshopDTO>() { TotalAmount = count, Entities = workshopsWithRating };
     }
 
@@ -175,7 +175,7 @@ public class WorkshopService : IWorkshopService
 
         var workshopDTO = mapper.Map<WorkshopDTO>(workshop);
 
-        var rating = ratingService.GetAverageRating(workshopDTO.Id, RatingType.Workshop);
+        var rating = await ratingService.GetAverageRatingAsync(workshopDTO.Id, RatingType.Workshop).ConfigureAwait(false);
 
         workshopDTO.Rating = rating?.Item1 ?? default;
         workshopDTO.NumberOfRatings = rating?.Item2 ?? default;
@@ -431,7 +431,7 @@ public class WorkshopService : IWorkshopService
         var result = new SearchResult<WorkshopCard>()
         {
             TotalAmount = workshopsCount,
-            Entities = GetWorkshopsWithAverageRating(workshopCards),
+            Entities = await GetWorkshopsWithAverageRating(workshopCards).ConfigureAwait(false),
         };
 
         return result;
@@ -620,10 +620,10 @@ public class WorkshopService : IWorkshopService
         return sortExpression;
     }
 
-    private List<WorkshopCard> GetWorkshopsWithAverageRating(List<WorkshopCard> workshops)
+    private async Task<List<WorkshopCard>> GetWorkshopsWithAverageRating(List<WorkshopCard> workshops)
     {
         var averageRatings =
-            ratingService.GetAverageRatingForRange(workshops.Select(p => p.WorkshopId), RatingType.Workshop);
+            await ratingService.GetAverageRatingForRangeAsync(workshops.Select(p => p.WorkshopId), RatingType.Workshop).ConfigureAwait(false);
 
         if (averageRatings != null)
         {
@@ -637,10 +637,10 @@ public class WorkshopService : IWorkshopService
         return workshops;
     }
 
-    private List<WorkshopDTO> GetWorkshopsWithAverageRating(List<WorkshopDTO> workshops)
+    private async Task <List<WorkshopDTO>> GetWorkshopsWithAverageRating(List<WorkshopDTO> workshops)
     {
         var averageRatings =
-            ratingService.GetAverageRatingForRange(workshops.Select(p => p.Id), RatingType.Workshop);
+            await ratingService.GetAverageRatingForRangeAsync(workshops.Select(p => p.Id), RatingType.Workshop).ConfigureAwait(false);
 
         if (averageRatings != null)
         {

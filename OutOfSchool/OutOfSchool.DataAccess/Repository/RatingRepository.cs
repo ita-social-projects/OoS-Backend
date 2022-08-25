@@ -18,26 +18,20 @@ public class RatingRepository : EntityRepository<long, Rating>, IRatingRepositor
         db = dbContext;
     }
 
-    public Tuple<double, int> GetAverageRating(Guid entityId, RatingType type)
+    public Task<Tuple<double, int>> GetAverageRatingAsync(Guid entityId, RatingType type)
     {
-        var ratings = db.Ratings.Where(rating => rating.EntityId == entityId && rating.Type == type);
-
-        if (ratings.Count() != 0)
-        {
-            return new Tuple<double, int>(ratings.Average(rating => rating.Rate), ratings.Count());
-        }
-        else
-        {
-            return default;
-        }
+        return db.Ratings.Where(rating => rating.EntityId == entityId && rating.Type == type)
+            .GroupBy(rating => rating.EntityId)
+            .Select(g => Tuple.Create(g.Average(e => e.Rate), g.Count()))
+            .FirstOrDefaultAsync();
     }
 
-    public Dictionary<Guid, Tuple<double, int>> GetAverageRatingForEntities(IEnumerable<Guid> entityIds, RatingType type)
+    public Task<Dictionary<Guid, Tuple<double, int>>> GetAverageRatingForEntitiesAsync(IEnumerable<Guid> entityIds, RatingType type)
     {
         return db.Ratings
             .Where(rating => rating.Type == type && entityIds.Contains(rating.EntityId))
-            .AsEnumerable()
             .GroupBy(rating => rating.EntityId)
-            .ToDictionary(g => g.Key, g => Tuple.Create(g.Average(p => p.Rate), g.Count()));
+            .Select(entity => new { EntityId = entity.Key, Average = entity.Average(e => e.Rate), EntityCount = entity.Count() })
+            .ToDictionaryAsync(g => g.EntityId, g => Tuple.Create(g.Average, g.EntityCount));
     }
 }

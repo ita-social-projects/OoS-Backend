@@ -162,16 +162,16 @@ public class RatingService : IRatingService
     }
 
     /// <inheritdoc/>
-    public Tuple<float, int> GetAverageRating(Guid entityId, RatingType type)
+    public async Task<Tuple<float, int>> GetAverageRatingAsync(Guid entityId, RatingType type)
     {
-        var ratingTuple = ratingRepository.GetAverageRating(entityId, type);
+        var ratingTuple = await ratingRepository.GetAverageRatingAsync(entityId, type).ConfigureAwait(false);
         return new Tuple<float, int>((float)Math.Round(ratingTuple?.Item1 ?? default, roundToDigits), ratingTuple?.Item2 ?? default);
     }
 
     /// <inheritdoc/>
-    public Dictionary<Guid, Tuple<float, int>> GetAverageRatingForRange(IEnumerable<Guid> entities, RatingType type)
+    public async Task<Dictionary<Guid, Tuple<float, int>>> GetAverageRatingForRangeAsync(IEnumerable<Guid> entities, RatingType type)
     {
-        var entitiesRating = ratingRepository.GetAverageRatingForEntities(entities, type);
+        var entitiesRating = await ratingRepository.GetAverageRatingForEntitiesAsync(entities, type).ConfigureAwait(false);
 
         var formattedEntities = new Dictionary<Guid, Tuple<float, int>>(entitiesRating.Count);
 
@@ -184,11 +184,11 @@ public class RatingService : IRatingService
     }
 
     /// <inheritdoc/>
-    public async Task<Tuple<float, int>> GetAverageRatingForProvider(Guid providerId)
+    public async Task<Tuple<float, int>> GetAverageRatingForProviderAsync(Guid providerId)
     {
         var workshops = await workshopRepository.GetByFilter(workshop => workshop.ProviderId == providerId).ConfigureAwait(false);
         var workshopIds = workshops.Select(w => w.Id);
-        var workshopAverageRatings = GetAverageRatingForRange(workshopIds, RatingType.Workshop);
+        var workshopAverageRatings = await GetAverageRatingForRangeAsync(workshopIds, RatingType.Workshop);
 
         if (workshopAverageRatings.Count() < 1)
         {
@@ -199,12 +199,12 @@ public class RatingService : IRatingService
     }
 
     /// <inheritdoc/>
-    public async Task<Dictionary<Guid, Tuple<float, int>>> GetAverageRatingForProviders(IEnumerable<Guid> providerIds)
+    public async Task<Dictionary<Guid, Tuple<float, int>>> GetAverageRatingForProvidersAsync(IEnumerable<Guid> providerIds)
     {
         var providers = new Dictionary<Guid, Tuple<float, int>>();
         foreach (var providerId in providerIds)
         {
-            providers.Add(providerId, await GetAverageRatingForProvider(providerId).ConfigureAwait(false));
+            providers.Add(providerId, await GetAverageRatingForProviderAsync(providerId).ConfigureAwait(false));
         }
 
         return providers;
