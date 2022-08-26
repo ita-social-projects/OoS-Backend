@@ -119,9 +119,9 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopCard>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByProviderId(Guid id)
+    public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] Guid? excludedWorkshopId = null)
     {
-        var workshopCards = await combinedWorkshopService.GetByProviderId(id).ConfigureAwait(false);
+        var workshopCards = await combinedWorkshopService.GetByProviderId(id, excludedWorkshopId).ConfigureAwait(false);
 
         if (!workshopCards.Any())
         {

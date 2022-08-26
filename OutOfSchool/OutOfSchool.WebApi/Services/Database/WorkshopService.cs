@@ -88,7 +88,9 @@ public class WorkshopService : IWorkshopService
 
         async Task<(Workshop createdWorkshop, MultipleImageUploadingResult imagesUploadResult, Result<string> coverImageUploadResult)> CreateWorkshopAndDependencies()
         {
-            var workshop = await workshopRepository.Create(mapper.Map<Workshop>(dto)).ConfigureAwait(false);
+            var createdWorkshop = mapper.Map<Workshop>(dto);
+            createdWorkshop.Status = WorkshopStatus.Open;
+            var workshop = await workshopRepository.Create(createdWorkshop).ConfigureAwait(false);
 
             if (dto.Teachers != null)
             {
@@ -195,7 +197,7 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<WorkshopCard>> GetByProviderId(Guid id)
+    public async Task<IEnumerable<WorkshopViewProviderCard>> GetByProviderId(Guid id)
     {
         logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
@@ -205,7 +207,7 @@ public class WorkshopService : IWorkshopService
             ? $"There aren't Workshops for Provider with Id = {id}."
             : $"From Workshop table were successfully received {workshops.Count()} records.");
 
-        var cards = mapper.Map<List<WorkshopCard>>(workshops);
+        var cards = mapper.Map<List<WorkshopViewProviderCard>>(workshops);
 
         return cards;
     }
