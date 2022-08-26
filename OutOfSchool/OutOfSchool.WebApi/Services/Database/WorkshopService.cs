@@ -197,7 +197,7 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<WorkshopViewProviderCard>> GetByProviderId(Guid id)
+    public async Task<IEnumerable<WorkshopBaseCard>> GetByProviderId(Guid id)
     {
         logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
@@ -207,7 +207,7 @@ public class WorkshopService : IWorkshopService
             ? $"There aren't Workshops for Provider with Id = {id}."
             : $"From Workshop table were successfully received {workshops.Count()} records.");
 
-        var cards = mapper.Map<List<WorkshopViewProviderCard>>(workshops);
+        var cards = mapper.Map<List<WorkshopBaseCard>>(workshops);
 
         return cards;
     }

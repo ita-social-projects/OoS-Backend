@@ -73,7 +73,7 @@ public interface IWorkshopServicesCombiner
     /// <param name="exceptId">Excepted Id.</param>
     /// <returns>A <see cref="Task{WorkshopCard}"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="List{WorkshopCard}"/> that contains elements from the input sequence.</returns>
-    Task<List<WorkshopViewProviderCard>> GetByProviderId(Guid id, Guid? exceptId = null);
+    Task<List<WorkshopBaseCard>> GetByProviderId(Guid id, Guid? exceptId = null);
 
     /// <summary>
     /// Get all entities that matches filter's parameters.

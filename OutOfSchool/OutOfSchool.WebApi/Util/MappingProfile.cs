@@ -167,7 +167,7 @@ public class MappingProfile : Profile
                                     x.Status == ApplicationStatus.Approved
                                     || x.Status == ApplicationStatus.StudyingForYears)));
 
-        CreateMap<Workshop, WorkshopViewProviderCard>()
+        CreateMap<Workshop, WorkshopBaseCard>()
             .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
             .ForMember(dest => dest.DirectionsId, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)));

@@ -158,7 +158,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
-    public async Task<List<WorkshopViewProviderCard>> GetByProviderId(Guid id, Guid? exceptId = null)
+    public async Task<List<WorkshopBaseCard>> GetByProviderId(Guid id, Guid? exceptId = null)
     {
         var workshopCards = await workshopService.GetByProviderId(id).ConfigureAwait(false);
 
