@@ -54,10 +54,12 @@ public class ProviderDto
     public string EdrpouIpn { get; set; }
 
     [MaxLength(50)]
+    [Required(ErrorMessage = "The name of the director is required")]
     public string Director { get; set; } = string.Empty;
 
     [DataType(DataType.Date)]
-    public DateTime DirectorDateOfBirth { get; set; } = default;
+    [Required(ErrorMessage = "The date of birth is required")]
+    public DateTime? DirectorDateOfBirth { get; set; } = default;
 
     [DataType(DataType.PhoneNumber)]
     [RegularExpression(
@@ -65,6 +67,7 @@ public class ProviderDto
         ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
     [MaxLength(Constants.UnifiedPhoneLength)]
+    [Required(ErrorMessage = "The phone number is required")]
     public string PhoneNumber { get; set; } = string.Empty;
 
     [Required]
