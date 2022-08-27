@@ -110,7 +110,8 @@ public class WorkshopController : ControllerBase
     /// Get workshop cards by Provider's Id.
     /// </summary>
     /// <param name="id">Provider's id.</param>
-    /// <returns><see cref="IEnumerable{WorkshopCard}"/>, or no content.</returns>
+    /// <param name="excludedWorkshopId">Id of the excluded workshop.</param>
+    /// <returns><see cref="IEnumerable{WorkshopBaseCard}"/>, or no content.</returns>
     /// <response code="200">The list of found entities by given Id.</response>
     /// <response code="204">No entity with given Id was found.</response>
     /// <response code="500">If any server error occures. For example: Id was less than one.</response>
