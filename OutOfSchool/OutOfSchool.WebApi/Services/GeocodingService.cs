@@ -101,7 +101,7 @@ public class GeocodingService : CommunicationService, IGeocodingService
             var result = new GeocodingResponse
             {
                 CATOTTGId = request.CATOTTGId,
-                Settlement = address.AddressParts.Name,
+                Codeficator = address,
             };
 
             return r switch
@@ -177,7 +177,7 @@ public class GeocodingService : CommunicationService, IGeocodingService
                     }
 
                     r.CATOTTGId = catottg.Id;
-                    r.Settlement = catottg.Settlement;
+                    r.Codeficator = mapper.Map<CodeficatorAddressDto>(catottg);
                     return r;
                 }
                 catch (Exception e)

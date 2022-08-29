@@ -6,7 +6,7 @@ public class GeocodingResponse : IResponse
 {
     public long CATOTTGId { get; set; }
 
-    public string Settlement { get; set; }
+    public CodeficatorAddressDto Codeficator { get; set; }
 
     public string Street { get; set; }
 
