@@ -9,6 +9,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
+[HasPermission(Permissions.WorkshopEdit)]
 public class GeocodingController : Controller
 {
     private readonly IGeocodingService geocodingService;
