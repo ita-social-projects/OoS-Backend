@@ -4,7 +4,20 @@ using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.WebApi.Models;
 
-public class WorkshopCard
+public class WorkshopCard : WorkshopBaseCard
+{
+    public Guid? InstitutionHierarchyId { get; set; }
+
+    public Guid? InstitutionId { get; set; }
+
+    public string Institution { get; set; }
+
+    public uint AvailableSeats { get; set; } = uint.MaxValue;
+
+    public uint TakenSeats { get; set; } = 0;
+}
+
+public class WorkshopBaseCard
 {
     [Required]
     public Guid WorkshopId { get; set; }
@@ -39,12 +52,6 @@ public class WorkshopCard
     [Range(0, 10000, ErrorMessage = "Field value should be in a range from 1 to 10 000")]
     public decimal Price { get; set; } = default;
 
-    public Guid? InstitutionHierarchyId { get; set; }
-
-    public Guid? InstitutionId { get; set; }
-
-    public string Institution { get; set; }
-
     public List<long> DirectionsId { get; set; }
 
     [Required]
@@ -52,11 +59,5 @@ public class WorkshopCard
 
     public AddressDto Address { get; set; }
 
-    public WorkshopStatus Status { get; set; } = WorkshopStatus.Open;
-
     public bool WithDisabilityOptions { get; set; }
-
-    public uint AvailableSeats { get; set; } = uint.MaxValue;
-
-    public uint TakenSeats { get; set; } = 0;
 }

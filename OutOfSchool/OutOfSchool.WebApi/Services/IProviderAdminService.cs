@@ -40,8 +40,8 @@ public interface IProviderAdminService
     /// </summary>
     /// <param name="userId">Key in the table.</param>
     /// <param name="isProviderDeputy">Is providerAdmin deputy or no.</param>
-    /// <returns>List of the workshops that providerAdmin can mansge.</returns>
-    Task<IEnumerable<WorkshopCard>> GetWorkshopsThatProviderAdminCanManage(string userId, bool isProviderDeputy);
+    /// <returns>List of the workshops that providerAdmin can manage.</returns>
+    Task<IEnumerable<WorkshopBaseCard>> GetWorkshopsThatProviderAdminCanManage(string userId, bool isProviderDeputy);
 
     /// <summary>
     /// Get entity by it's key.

@@ -158,11 +158,16 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
-    public async Task<List<WorkshopCard>> GetByProviderId(Guid id)
+    public async Task<List<WorkshopBaseCard>> GetByProviderId(Guid id, Guid? excludedWorkshopId = null)
     {
-        var workshopCards = await workshopService.GetByProviderId(id).ConfigureAwait(false);
+        var workshopBaseCards = await workshopService.GetByProviderId(id).ConfigureAwait(false);
 
-        return workshopCards.ToList();
+        if (excludedWorkshopId is not null && excludedWorkshopId != Guid.Empty)
+        {
+            workshopBaseCards = workshopBaseCards.Where(x => x.WorkshopId != excludedWorkshopId);
+        }
+
+        return workshopBaseCards.ToList();
     }
 
     /// <inheritdoc/>

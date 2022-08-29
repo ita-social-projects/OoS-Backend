@@ -11,6 +11,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Extensions;
@@ -35,7 +36,6 @@ public class WorkshopControllerTests
     private static List<WorkshopCard> workshopCards;
     private static WorkshopDTO workshop;
     private static ProviderDto provider;
-    private static ProviderAdminDto providerAdmin;
     private static Mock<IOptions<AppDefaultsConfig>> options;
 
     private WorkshopController controller;
@@ -46,6 +46,7 @@ public class WorkshopControllerTests
 
     private string userId;
     private Mock<HttpContext> httpContextMoq;
+    private List<WorkshopBaseCard> workshopBaseCards;
 
     [OneTimeSetUp]
     public void OneTimeSetup()
@@ -61,6 +62,7 @@ public class WorkshopControllerTests
         workshop = WithWorkshop();
         provider = WithProvider();
         workshopCards = WithWorkshopCards();
+        workshopBaseCards = WorkshopBaseCardGenerator.Generate(5);
 
         var config = new AppDefaultsConfig();
         config.City = "Київ";
@@ -120,7 +122,7 @@ public class WorkshopControllerTests
     public async Task GetByProviderId_WhenThereAreWorkshops_ShouldReturnOkResultObject()
     {
         // Arrange
-        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>())).ReturnsAsync(workshopCards);
+        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<Guid?>())).ReturnsAsync(workshopBaseCards);
 
         // Act
         var result = await controller.GetByProviderId(It.IsAny<Guid>()).ConfigureAwait(false) as OkObjectResult;
@@ -129,15 +131,15 @@ public class WorkshopControllerTests
         workshopServiceMoq.VerifyAll();
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(Ok, result.StatusCode);
-        Assert.AreEqual(workshops.Count, (result.Value as List<WorkshopCard>).Count);
+        Assert.AreEqual(workshops.Count, (result.Value as List<WorkshopBaseCard>).Count);
     }
 
     [Test]
     public async Task GetByProviderId_WhenThereIsNoWorkshops_ShouldReturnNoContentResult([Random(uint.MinValue, uint.MaxValue, 1)] long randomNumber)
     {
         // Arrange
-        var emptyList = new List<WorkshopCard>();
-        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>())).ReturnsAsync(emptyList);
+        var emptyList = new List<WorkshopBaseCard>();
+        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<Guid?>())).ReturnsAsync(emptyList);
 
         // Act
         var result = await controller.GetByProviderId(It.IsAny<Guid>()).ConfigureAwait(false) as NoContentResult;

@@ -177,27 +177,36 @@ public class WorkshopServiceTests
     public async Task GetByProviderId_WhenProviderWithIdExists_ShouldReturnEntities()
     {
         // Arrange
-        var id = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174");
-        SetupGetByProviderId(WithWorkshopsList());
+        var workshops = WithWorkshopsList().ToList();
+        var expectedWorkshopBaseCards = workshops.Select(w => new WorkshopBaseCard() { ProviderId = w.ProviderId }).ToList();
+
+        SetupGetByProviderById(workshops);
+
+        mapperMock.Setup(m => m.Map<List<WorkshopBaseCard>>(It.IsAny<List<Workshop>>())).Returns(expectedWorkshopBaseCards);
 
         // Act
-        var result = await workshopService.GetByProviderId(id).ConfigureAwait(false);
+        var result = await workshopService.GetByProviderId(It.IsAny<Guid>()).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeEquivalentTo(ExpectedWorkshopsGetByProviderId());
+        workshopRepository.VerifyAll();
+        mapperMock.VerifyAll();
+        result.Should().BeEquivalentTo(expectedWorkshopBaseCards);
     }
 
     [Test]
     public async Task GetByProviderId_WhenThereIsNoEntityWithId_ShouldReturnEmptyList()
     {
         // Arrange
-        var id = new Guid("db32b84c-18dd-4cbc-b7f9-fe29647a6aba");
-        SetupGetByProviderIdWithEmptyList();
+        var emptyListWorkshopCards = new List<WorkshopBaseCard>();
+        SetupGetByProviderById(new List<Workshop>());
+        mapperMock.Setup(m => m.Map<List<WorkshopBaseCard>>(It.IsAny<List<Workshop>>())).Returns(emptyListWorkshopCards);
 
         // Act
-        var result = await workshopService.GetByProviderId(id).ConfigureAwait(false);
+        var result = await workshopService.GetByProviderId(It.IsAny<Guid>()).ConfigureAwait(false);
 
         // Assert
+        workshopRepository.VerifyAll();
+        mapperMock.VerifyAll();
         result.Should().BeEmpty();
     }
     #endregion
@@ -495,29 +504,14 @@ public class WorkshopServiceTests
         mapperMock.Setup(m => m.Map<WorkshopDTO>(workshop)).Returns(new WorkshopDTO() { Id = workshop.Id });
     }
 
-    private void SetupGetByProviderId(IEnumerable<Workshop> workshops)
+    private void SetupGetByProviderById(IEnumerable<Workshop> workshopBaseCardsList)
     {
-        var mappedDtos = workshops.Select(w => new WorkshopCard() { ProviderId = w.ProviderId }).ToList();
         workshopRepository
             .Setup(
                 w => w.GetByFilter(
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
                     It.IsAny<string>()))
-            .ReturnsAsync(workshops);
-        mapperMock.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>())).Returns(mappedDtos);
-    }
-
-    private void SetupGetByProviderIdWithEmptyList()
-    {
-        var emptylistWorkshops = new List<Workshop>();
-        var emptylistWorkshopCards = new List<WorkshopCard>();
-        workshopRepository
-            .Setup(
-                w => w.GetByFilter(
-                    It.IsAny<Expression<Func<Workshop, bool>>>(),
-                    It.IsAny<string>()))
-            .ReturnsAsync(emptylistWorkshops);
-        mapperMock.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>())).Returns(emptylistWorkshopCards);
+            .ReturnsAsync(workshopBaseCardsList);
     }
 
     private void SetupUpdate(Workshop workshop)
