@@ -8,7 +8,7 @@ namespace OutOfSchool.Services.Repository;
 
 public interface IRatingRepository : IEntityRepository<long, Rating>
 {
-    Tuple<double, int> GetAverageRating(Guid entityId, RatingType type);
+    Task<Tuple<double, int>> GetAverageRatingAsync(Guid entityId, RatingType type);
 
-    Dictionary<Guid, Tuple<double, int>> GetAverageRatingForEntities(IEnumerable<Guid> entityIds, RatingType type);
+    Task<Dictionary<Guid, Tuple<double, int>>> GetAverageRatingForEntitiesAsync(IEnumerable<Guid> entityIds, RatingType type);
 }

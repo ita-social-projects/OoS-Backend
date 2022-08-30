@@ -486,8 +486,8 @@ public class WorkshopServiceTests
             w => w
                 .Count(It.IsAny<Expression<Func<Workshop, bool>>>())).ReturnsAsync(workshops.Count());
         mapperMock.Setup(m => m.Map<List<WorkshopDTO>>(It.IsAny<List<Workshop>>())).Returns(mappedDtos);
-        ratingService.Setup(r => r.GetAverageRatingForRange(workshopGuids, RatingType.Workshop))
-            .Returns(ratings);
+        ratingService.Setup(r => r.GetAverageRatingForRangeAsync(workshopGuids, RatingType.Workshop))
+            .ReturnsAsync(ratings);
     }
 
     private void SetupGetById(Workshop workshop)
@@ -544,8 +544,8 @@ public class WorkshopServiceTests
                 It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                 It.IsAny<bool>())).Returns(queryableWorkshops).Verifiable();
         ratingService.Setup(r => r
-                .GetAverageRatingForRange(It.IsAny<IEnumerable<Guid>>(), RatingType.Workshop))
-            .Returns(ratings).Verifiable();
+                .GetAverageRatingForRangeAsync(It.IsAny<IEnumerable<Guid>>(), RatingType.Workshop))
+            .ReturnsAsync(ratings).Verifiable();
         mapperMock
             .Setup(m => m.Map<List<WorkshopCard>>(workshops))
             .Returns(workshops

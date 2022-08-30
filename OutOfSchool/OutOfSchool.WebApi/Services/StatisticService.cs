@@ -188,15 +188,15 @@ public class StatisticService : IStatisticService
 
         var workshopsCard = mapper.Map<List<WorkshopCard>>(popularWorkshopsList);
 
-        var result = GetWorkshopsWithAverageRating(workshopsCard);
+        var result = await GetWorkshopsWithAverageRating(workshopsCard).ConfigureAwait(false);
 
         return result;
     }
 
-    private List<WorkshopCard> GetWorkshopsWithAverageRating(List<WorkshopCard> workshopsCards)
+    private async Task<List<WorkshopCard>> GetWorkshopsWithAverageRating(List<WorkshopCard> workshopsCards)
     {
         var averageRatings =
-            ratingService.GetAverageRatingForRange(workshopsCards.Select(p => p.WorkshopId), RatingType.Workshop);
+            await ratingService.GetAverageRatingForRangeAsync(workshopsCards.Select(p => p.WorkshopId), RatingType.Workshop).ConfigureAwait(false);
 
         if (averageRatings != null)
         {
