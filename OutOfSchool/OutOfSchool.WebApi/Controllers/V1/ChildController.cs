@@ -132,10 +132,11 @@ public class ChildController : ControllerBase
     /// <summary>
     /// Get approved children from the database by workshop id.
     /// </summary>
-    /// <param name="workshopId">Id of the parent.</param>
+    /// <param name="workshopId">Id of the workshop.</param>
     /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>
     /// <returns>The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
-    [HasPermission(Permissions.WorkshopEdit)]
+    //[HasPermission(Permissions.WorkshopEdit)]
+    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ChildDto>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -145,10 +146,10 @@ public class ChildController : ControllerBase
     public async Task<IActionResult> GetApprovedByWorkshopId(Guid workshopId, [FromQuery] OffsetFilter offsetFilter)
     {
         var userHasRights = await this.IsUserProvidersOwnerOrAdmin(workshopId).ConfigureAwait(false);
-        if (!userHasRights)
-        {
-            return StatusCode(403, "Forbidden for another providers.");
-        }
+        //if (!userHasRights)
+        //{
+        //    return StatusCode(403, "Forbidden for another providers.");
+        //}
 
         return Ok(await service.GetApprovedByWorkshopId(workshopId, offsetFilter).ConfigureAwait(false));
     }

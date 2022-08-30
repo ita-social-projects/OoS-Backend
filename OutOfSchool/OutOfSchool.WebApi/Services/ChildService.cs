@@ -41,13 +41,15 @@ public class ChildService : IChildService
         IParentRepository parentRepository,
         IEntityRepository<long, SocialGroup> socialGroupRepository,
         ILogger<ChildService> logger,
-        IMapper mapper)
+        IMapper mapper,
+        IApplicationRepository applicationRepository)
     {
         this.childRepository = childRepository ?? throw new ArgumentNullException(nameof(childRepository));
         this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
         this.socialGroupRepository = socialGroupRepository ?? throw new ArgumentNullException(nameof(socialGroupRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        this.applicationRepository = applicationRepository ?? throw new ArgumentNullException(nameof(applicationRepository));
     }
 
     /// <inheritdoc/>

@@ -87,7 +87,7 @@ public interface IChildService
     /// <summary>
     /// Get children by WorkshopId.
     /// </summary>
-    /// <param name="workshopId">ParentId.</param>
+    /// <param name="workshopId">WorkshopId.</param>
     /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
