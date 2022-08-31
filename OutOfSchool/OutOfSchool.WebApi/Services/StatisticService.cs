@@ -168,7 +168,7 @@ public class StatisticService : IStatisticService
         if (catottgId > 0)
         {
             workshops = workshops
-                .Where(w => w.Address.CATOTTGId == catottgId);
+                .Where(w => w.Address.CATOTTGId == catottgId || (w.Address.CATOTTG.Category == "B" && w.Address.CATOTTG.ParentId == catottgId));
         }
 
         var workshopsWithApplications = workshops.Select(w => new
