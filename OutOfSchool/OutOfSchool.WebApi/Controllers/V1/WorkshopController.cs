@@ -132,6 +132,23 @@ public class WorkshopController : ControllerBase
         return Ok(workshopCards);
     }
 
+    [AllowAnonymous]
+    [HttpGet("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopProviderViewCard>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetWorkshopProviderViewCardByProviderId(Guid id)
+    {
+        var workshopProviderViewCards = await combinedWorkshopService.GetShortWorkshopByProviderId(id).ConfigureAwait(false);
+
+        if (!workshopProviderViewCards.Any())
+        {
+            return NoContent();
+        }
+
+        return Ok(workshopProviderViewCards);
+    }
+
     /// <summary>
     /// Get workshops that matches filter's parameters.
     /// </summary>
