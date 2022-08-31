@@ -171,6 +171,14 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
+    public async Task<List<WorkshopProviderViewCard>> GetShortWorkshopByProviderId(Guid id)
+    {
+        var workshopBaseCards = await workshopService.GetShortWorkshopByProviderId(id).ConfigureAwait(false);
+
+        return workshopBaseCards.ToList();
+    }
+
+    /// <inheritdoc/>
     public async Task<Guid> GetWorkshopProviderId(Guid workshopId) =>
         await workshopService.GetWorkshopProviderOwnerIdAsync(workshopId).ConfigureAwait(false);
 

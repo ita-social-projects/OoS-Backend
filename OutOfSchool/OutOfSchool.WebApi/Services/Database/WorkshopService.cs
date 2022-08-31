@@ -213,6 +213,22 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
+    public async Task<IEnumerable<WorkshopProviderViewCard>> GetShortWorkshopByProviderId(Guid id)
+    {
+        logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
+
+        var workshops = await workshopRepository.GetByFilter(x => x.ProviderId == id, includingPropertiesForMappingDtoModel).ConfigureAwait(false);
+
+        logger.LogInformation(!workshops.Any()
+            ? $"There aren't Workshops for Provider with Id = {id}."
+            : $"From Workshop table were successfully received {workshops.Count()} records.");
+
+        var cards = mapper.Map<List<WorkshopProviderViewCard>>(workshops);
+
+        return cards;
+    }
+
+    /// <inheritdoc/>
     /// <exception cref="ArgumentNullException">If <see cref="WorkshopDTO"/> is null.</exception>
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
     public async Task<WorkshopDTO> Update(WorkshopDTO dto)

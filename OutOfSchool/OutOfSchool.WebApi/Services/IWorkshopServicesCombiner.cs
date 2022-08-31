@@ -71,9 +71,17 @@ public interface IWorkshopServicesCombiner
     /// </summary>
     /// <param name="id">Provider's key.</param>
     /// <param name="excludedWorkshopId">Id of the excluded workshop.</param>
-    /// <returns>A <see cref="Task{WorkshopBaseCard}"/> representing the result of the asynchronous operation.
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="List{WorkshopBaseCard}"/> that contains elements from the input sequence.</returns>
     Task<List<WorkshopBaseCard>> GetByProviderId(Guid id, Guid? excludedWorkshopId = null);
+
+    /// <summary>
+    /// Get all workshop provider's view card with the specified provider's Id.
+    /// </summary>
+    /// <param name="id">Provider's key.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The task result contains a <see cref="List{WorkshopProviderViewCard}"/> that contains elements from the input sequence.</returns>
+    Task<List<WorkshopProviderViewCard>> GetShortWorkshopByProviderId(Guid id);
 
     /// <summary>
     /// Get all entities that matches filter's parameters.
