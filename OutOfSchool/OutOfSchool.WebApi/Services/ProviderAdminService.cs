@@ -268,7 +268,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         {
             var providerAdmin = providersAdmins.SingleOrDefault(x => x.IsDeputy);
 
-            return await workshopService.GetByProviderId(providerAdmin.ProviderId).ConfigureAwait(false);
+            return await workshopService.GetByProviderId<WorkshopBaseCard>(providerAdmin.ProviderId).ConfigureAwait(false);
         }
 
         return providersAdmins.SingleOrDefault().ManagedWorkshops

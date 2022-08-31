@@ -117,12 +117,12 @@ public class WorkshopController : ControllerBase
     /// <response code="500">If any server error occures. For example: Id was less than one.</response>
     [AllowAnonymous]
     [HttpGet("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopCard>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopBaseCard>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] Guid? excludedWorkshopId = null)
     {
-        var workshopCards = await combinedWorkshopService.GetByProviderId(id, excludedWorkshopId).ConfigureAwait(false);
+        var workshopCards = await combinedWorkshopService.GetByProviderId<WorkshopBaseCard>(id, excludedWorkshopId).ConfigureAwait(false);
 
         if (!workshopCards.Any())
         {
@@ -139,7 +139,7 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetWorkshopProviderViewCardByProviderId(Guid id)
     {
-        var workshopProviderViewCards = await combinedWorkshopService.GetShortWorkshopByProviderId(id).ConfigureAwait(false);
+        var workshopProviderViewCards = await combinedWorkshopService.GetByProviderId<WorkshopProviderViewCard>(id).ConfigureAwait(false);
 
         if (!workshopProviderViewCards.Any())
         {
