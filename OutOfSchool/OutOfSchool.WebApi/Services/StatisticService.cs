@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Redis;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -168,7 +169,7 @@ public class StatisticService : IStatisticService
         if (catottgId > 0)
         {
             workshops = workshops
-                .Where(w => w.Address.CATOTTGId == catottgId);
+                .Where(w => w.Address.CATOTTGId == catottgId || (w.Address.CATOTTG.Category == CodeficatorCategory.CityDistrict.Name && w.Address.CATOTTG.ParentId == catottgId));
         }
 
         var workshopsWithApplications = workshops.Select(w => new

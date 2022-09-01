@@ -79,16 +79,17 @@ public class StatisticServiceTest
     public async Task GetPopularWorkshops_WithCityQueried_ShouldReturnCertainWorkshops()
     {
         // Arrange
-        List<WorkshopCard> expectedWorkshopCards = ExpectedWorkshopCardsCityFilter();
+        List<Workshop> expectedWorkshops = ExpectedWorkshopCardsCityFilter();
 
-        SetupGetPopularWorkshops();
+        SetupGetPopularWorkshopsIncludingCATOTTG();
 
+        var expectedWorkshopCards = new List<WorkshopCard>();
         mapper.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>()))
             .Returns(expectedWorkshopCards);
 
         // Act
         var result = await service
-            .GetPopularWorkshopsFromDatabase(2, 4970)
+            .GetPopularWorkshopsFromDatabase(2, 31737)
             .ConfigureAwait(false);
 
         // Assert
@@ -159,6 +160,22 @@ public class StatisticServiceTest
     private void SetupGetPopularWorkshops()
     {
         var workshopsMock = WithWorkshops().AsQueryable().BuildMock();
+
+        workshopRepository
+            .Setup(w => w.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Workshop, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(workshopsMock)
+            .Verifiable();
+    }
+
+    private void SetupGetPopularWorkshopsIncludingCATOTTG()
+    {
+        var workshopsMock = WithWorkshopsIncludingCATOTTG().AsQueryable().BuildMock();
 
         workshopRepository
             .Setup(w => w.Get(
@@ -287,6 +304,106 @@ public class StatisticServiceTest
                 Address = new Address
                 {
                     CATOTTGId = 5000,
+                },
+                Applications = new List<Application>
+                {
+                    new Application { Id = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d") },
+                    new Application { Id = new Guid("01d08412-69d3-4620-8c54-7b997430e08d") },
+                    new Application { Id = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771") },
+                },
+            },
+        };
+    }
+
+    private IEnumerable<Workshop> WithWorkshopsIncludingCATOTTG()
+    {
+        return new List<Workshop>
+        {
+            new Workshop
+            {
+                Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
+                Title = "w1",
+                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
+                InstitutionHierarchy = new InstitutionHierarchy
+                {
+                    Id = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
+                    Directions = new List<Direction>
+                    {
+                        new Direction
+                        {
+                            Id = 1,
+                        },
+                    },
+                },
+                Address = new Address
+                {
+                    CATOTTGId = 31739,
+                    CATOTTG = new CATOTTG
+                    {
+                        Category = "B",
+                        ParentId = 31737,
+                    },
+                },
+                Applications = new List<Application>
+                {
+                    new Application { Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb") },
+                },
+            },
+            new Workshop
+            {
+                Id = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"),
+                Title = "w2",
+                InstitutionHierarchyId = new Guid("01d08412-69d3-4620-8c54-7b997430e08d"),
+                InstitutionHierarchy = new InstitutionHierarchy
+                {
+                    Id = new Guid("01d08412-69d3-4620-8c54-7b997430e08d"),
+                    Directions = new List<Direction>
+                    {
+                        new Direction
+                        {
+                            Id = 2,
+                        },
+                    },
+                },
+                Address = new Address
+                {
+                    CATOTTGId = 31737,
+                    CATOTTG = new CATOTTG
+                    {
+                        Category = "K",
+                        ParentId = null,
+                    },
+                },
+                Applications = new List<Application>
+                {
+                    new Application { Id = new Guid("7c5f8f7c-d850-44d0-8d4e-fd2de99453be") },
+                    new Application { Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd") },
+                },
+            },
+            new Workshop
+            {
+                Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"),
+                Title = "w3",
+                InstitutionHierarchyId = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d"),
+                InstitutionHierarchy = new InstitutionHierarchy
+                {
+                    Id = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d"),
+                    Directions = new List<Direction>
+                    {
+                        new Direction
+                        {
+                            Id = 3,
+                        },
+                    },
+                },
+                Address = new Address
+                {
+                    CATOTTGId = 5000,
+                    CATOTTG = new CATOTTG
+                    {
+                        Category = "C",
+                        ParentId = 4971,
+                    },
                 },
                 Applications = new List<Application>
                 {
@@ -454,12 +571,38 @@ public class StatisticServiceTest
         };
     }
 
-    private List<WorkshopCard> ExpectedWorkshopCardsCityFilter()
+    private List<Workshop> ExpectedWorkshopCardsCityFilter()
     {
-        return new List<WorkshopCard>
+        return new List<Workshop>
         {
-            new WorkshopCard {WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Title = "w2", Address = new AddressDto {CATOTTGId = 4970}},
-            new WorkshopCard {WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"), Title = "w1", Address = new AddressDto {CATOTTGId = 4970}},
+            new Workshop
+            {
+                Id = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"),
+                Title = "w2",
+                Address = new Address
+                {
+                    CATOTTGId = 31737,
+                    CATOTTG = new CATOTTG
+                    {
+                        Category = "K",
+                        ParentId = null,
+                    },
+                },
+            },
+            new Workshop
+            {
+                Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
+                Title = "w1",
+                Address = new Address
+                {
+                    CATOTTGId = 31739,
+                    CATOTTG = new CATOTTG
+                    {
+                        Category = "B",
+                        ParentId = 31737,
+                    },
+                },
+            },
         };
     }
 
