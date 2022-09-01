@@ -251,7 +251,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<WorkshopBaseCard>> GetWorkshopsThatProviderAdminCanManage(
+    public async Task<IEnumerable<WorkshopProviderViewCard>> GetWorkshopsThatProviderAdminCanManage(
         string userId,
         bool isProviderDeputy)
     {
@@ -261,18 +261,18 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
 
         if (!providersAdmins.Any())
         {
-            return new List<WorkshopBaseCard>();
+            return new List<WorkshopProviderViewCard>();
         }
 
         if (isProviderDeputy)
         {
             var providerAdmin = providersAdmins.SingleOrDefault(x => x.IsDeputy);
 
-            return await workshopService.GetByProviderId<WorkshopBaseCard>(providerAdmin.ProviderId).ConfigureAwait(false);
+            return await workshopService.GetByProviderId<WorkshopProviderViewCard>(providerAdmin.ProviderId).ConfigureAwait(false);
         }
 
         return providersAdmins.SingleOrDefault().ManagedWorkshops
-            .Select(workshop => mapper.Map<WorkshopBaseCard>(workshop));
+            .Select(workshop => mapper.Map<WorkshopProviderViewCard>(workshop));
     }
 
     /// <inheritdoc/>
