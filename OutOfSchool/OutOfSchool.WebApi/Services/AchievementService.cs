@@ -35,8 +35,7 @@ public class AchievementService: IAchievementService
         IAchievementRepository repository,
         ILogger<AchievementService> logger,
         IStringLocalizer<SharedResource> localizer,
-        IMapper mapper,
-        OutOfSchoolDbContext context)
+        IMapper mapper)
     {
         this.localizer = localizer;
         this.achievementRepository = repository;
@@ -129,19 +128,17 @@ public class AchievementService: IAchievementService
     {
         logger.LogInformation($"Deleting Achievement with Id = {id} started.");
 
-        var achievement = achievementRepository.Get(where: a => a.Id == id);
+        var achievement = await achievementRepository.GetById(id).ConfigureAwait(false);
 
-        if (!achievement.Any())
+        if (achievement is null)
         {
             logger.LogInformation($"Operation failed. Achievement with Id = {id} doesn't exist in the system.");
             throw new ArgumentException(localizer[$"Achievement with Id = {id} doesn't exist in the system."]);
         }
 
-        var entity = new Achievement { Id = id };
-
         try
         {
-            await achievementRepository.Delete(entity).ConfigureAwait(false);
+            await achievementRepository.Delete(achievement).ConfigureAwait(false);
 
             logger.LogInformation($"Achievement with Id = {id} succesfully deleted.");
         }
@@ -150,5 +147,5 @@ public class AchievementService: IAchievementService
             logger.LogError($"Deleting failed. Achievement with Id = {id} doesn't exist in the system.");
             throw;
         }
-    }        
+    }
 }
