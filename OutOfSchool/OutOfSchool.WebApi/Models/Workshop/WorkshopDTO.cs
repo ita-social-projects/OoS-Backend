@@ -128,7 +128,7 @@ public class WorkshopDTO : IValidatableObject
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public List<IFormFile> ImageFiles { get; set; }
 
-    public List<DirectionDto> Directions { get; set; }
+    public List<long> DirectionIds { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

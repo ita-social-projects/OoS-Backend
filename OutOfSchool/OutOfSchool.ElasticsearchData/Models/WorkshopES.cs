@@ -54,7 +54,7 @@ public class WorkshopES
 
     public string Keywords { get; set; }
 
-    public List<DirectionES> Directions { get; set; }
+    public List<long> DirectionIds { get; set; }
 
     [Nested]
     public List<DateTimeRangeES> DateTimeRanges { get; set; }

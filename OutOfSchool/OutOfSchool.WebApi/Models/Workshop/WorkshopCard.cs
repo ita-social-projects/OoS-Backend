@@ -52,7 +52,7 @@ public class WorkshopBaseCard
     [Range(0, 10000, ErrorMessage = "Field value should be in a range from 1 to 10 000")]
     public decimal Price { get; set; } = default;
 
-    public List<long> DirectionsId { get; set; }
+    public List<long> DirectionIds { get; set; }
 
     [Required]
     public Guid ProviderId { get; set; }

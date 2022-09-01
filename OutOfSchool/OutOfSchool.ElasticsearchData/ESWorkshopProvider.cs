@@ -47,16 +47,10 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
 
         if (filter.Ids.Any())
         {
-            var box = new List<object>();
-            foreach (var item in filter.Ids)
-            {
-                box.Add(item);
-            }
-
             queryContainer &= new TermsQuery()
             {
                 Field = Infer.Field<WorkshopES>(w => w.Id),
-                Terms = box,
+                Terms = filter.Ids.Cast<object>(),
             };
 
             return queryContainer;
@@ -79,7 +73,7 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
         {
             queryContainer &= new TermsQuery()
             {
-                Field = Infer.Field<WorkshopES>(w => w.Directions.FirstOrDefault().Id),
+                Field = Infer.Field<WorkshopES>(w => w.DirectionIds),
                 Terms = filter.DirectionIds.Cast<object>(),
             };
         }
@@ -151,11 +145,10 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
 
         if (filter.Statuses.Any())
         {
-            var box = filter.Statuses.Select(x => (object)x);
             queryContainer &= new TermsQuery()
             {
                 Field = Infer.Field<WorkshopES>(w => w.Status),
-                Terms = box,
+                Terms = filter.Statuses.Cast<object>(),
             };
         }
 
