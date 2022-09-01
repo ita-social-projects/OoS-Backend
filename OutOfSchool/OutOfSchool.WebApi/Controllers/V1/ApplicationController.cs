@@ -458,12 +458,11 @@ public class ApplicationController : ControllerBase
             applicationStatusPermissions.InitDefaultPermissions();
         }
 
-        var userRoles = Enum.GetNames(typeof(Role)).Where(n => User.IsInRole(n));
-        foreach (var userRole in userRoles)
-        {
-            if (!applicationStatusPermissions.CanChangeStatus(userRole, application.Status, applicationDto.Status))
-                throw new ArgumentException("Forbidden to update status from " + application.Status + " to " + applicationDto.Status);    
-        }
+        var userRole = GettingUserProperties.GetUserRole(User);
+        var userSubroleName = GettingUserProperties.GetUserSubrole(User);
+
+        if (!applicationStatusPermissions.CanChangeStatus(userRole, application.Status, applicationDto.Status))
+            throw new ArgumentException("Forbidden to update status from " + application.Status + " to " + applicationDto.Status);
 
         application.Status = applicationDto.Status;
         application.RejectionMessage = applicationDto.RejectionMessage;

@@ -10,6 +10,11 @@ public class StatusChangePermission<T>
     public string Role { get; set; }
 
     /// <summary>
+    /// Contains the 'subrole' name.
+    /// </summary>
+    public string SubRole { get; set; }
+    
+    /// <summary>
     /// From status change
     /// </summary>
     public T FromStatus { get; set; }
