@@ -53,7 +53,6 @@ public partial class OutOfSchoolDbContext
             .ApplySoftDelete<ChatMessageWorkshop>()
             .ApplySoftDelete<ChatRoomWorkshop>()
             .ApplySoftDelete<Child>()
-            .ApplySoftDelete<City>()
             .ApplySoftDelete<CATOTTG>()
             .ApplySoftDelete<CompanyInformation>()
             .ApplySoftDelete<CompanyInformationItem>()

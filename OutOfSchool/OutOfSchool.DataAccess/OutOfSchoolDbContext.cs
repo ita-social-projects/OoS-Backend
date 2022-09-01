@@ -49,8 +49,6 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<Rating> Ratings { get; set; }
 
-    public DbSet<City> Cities { get; set; }
-
     public DbSet<Favorite> Favorites { get; set; }
 
     public DbSet<DateTimeRange> DateTimeRanges { get; set; }

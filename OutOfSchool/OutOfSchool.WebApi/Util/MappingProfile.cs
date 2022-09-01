@@ -1,5 +1,4 @@
 using GrpcService;
-using Nest;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
@@ -392,7 +391,6 @@ public class MappingProfile : Profile
         CreateMap<ParentInfoForChatList, ParentDtoWithContactInfo>();
         CreateMap<ChatMessageInfoForChatList, ChatMessageWorkshopDto>();
 
-        CreateMap<City, CityDto>().ReverseMap();
         CreateMap<Favorite, FavoriteDto>().ReverseMap();
 
         CreateMap<ApplicationDto, ParentCard>()

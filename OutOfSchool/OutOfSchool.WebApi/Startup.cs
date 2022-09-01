@@ -160,7 +160,6 @@ public static class Startup
         services.AddTransient<IChatMessageWorkshopService, ChatMessageWorkshopService>();
         services.AddTransient<IChatRoomWorkshopService, ChatRoomWorkshopService>();
         services.AddTransient<IChildService, ChildService>();
-        services.AddTransient<ICityService, CityService>();
         services.AddTransient<IDirectionService, DirectionService>();
         services.AddTransient<IFavoriteService, FavoriteService>();
         services.AddTransient<IParentService, ParentService>();
@@ -211,7 +210,6 @@ public static class Startup
         services.AddTransient<IEntityRepository<Guid, ChatMessageWorkshop>, EntityRepository<Guid, ChatMessageWorkshop>>();
         services.AddTransient<IEntityRepository<Guid, ChatRoomWorkshop>, EntityRepository<Guid, ChatRoomWorkshop>>();
         services.AddTransient<IEntityRepository<Guid, Child>, ChildRepository>();
-        services.AddTransient<IEntityRepository<long, City>, EntityRepository<long, City>>();
         services.AddTransient<IEntityRepository<long, Favorite>, EntityRepository<long, Favorite>>();
         services.AddTransient<IEntityRepository<long, SocialGroup>, EntityRepository<long, SocialGroup>>();
         services.AddTransient<IEntityRepository<long, InstitutionStatus>, EntityRepository<long, InstitutionStatus>>();
