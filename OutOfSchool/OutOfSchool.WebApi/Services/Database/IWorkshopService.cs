@@ -94,7 +94,7 @@ public interface IWorkshopService
     /// <typeparam name="T">Type of entity that must be return.</typeparam>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="IEnumerable{WorkshopCard}"/> that contains elements from the input sequence.</returns>
-    Task<IEnumerable<WorkshopBaseCard>> GetByProviderId<T>(Guid id)
+    Task<IEnumerable<T>> GetByProviderId<T>(Guid id)
         where T : WorkshopBaseCard;
 
     /// <summary>

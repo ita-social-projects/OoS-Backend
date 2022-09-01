@@ -197,7 +197,7 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<WorkshopBaseCard>> GetByProviderId<T>(Guid id)
+    public async Task<IEnumerable<T>> GetByProviderId<T>(Guid id)
         where T : WorkshopBaseCard
     {
         logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");

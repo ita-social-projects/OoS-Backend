@@ -74,7 +74,7 @@ public interface IWorkshopServicesCombiner
     /// <typeparam name="T">Type of entity that must be return.</typeparam>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="List{WorkshopBaseCard}"/> that contains elements from the input sequence.</returns>
-    Task<List<WorkshopBaseCard>> GetByProviderId<T>(Guid id, Guid? excludedWorkshopId = null)
+    Task<List<T>> GetByProviderId<T>(Guid id, Guid? excludedWorkshopId = null)
         where T : WorkshopBaseCard;
 
     /// <summary>
