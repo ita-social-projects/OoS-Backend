@@ -91,9 +91,11 @@ public interface IWorkshopService
     /// Get all workshops by provider Id.
     /// </summary>
     /// <param name="id">Provider's key.</param>
+    /// <typeparam name="T">Type of entity that must be return.</typeparam>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="IEnumerable{WorkshopCard}"/> that contains elements from the input sequence.</returns>
-    Task<IEnumerable<WorkshopBaseCard>> GetByProviderId(Guid id);
+    Task<IEnumerable<T>> GetByProviderId<T>(Guid id)
+        where T : WorkshopBaseCard;
 
     /// <summary>
     /// Get entities from the database that match filter's parameters.

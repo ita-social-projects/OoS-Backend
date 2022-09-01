@@ -122,7 +122,7 @@ public class WorkshopControllerTests
     public async Task GetByProviderId_WhenThereAreWorkshops_ShouldReturnOkResultObject()
     {
         // Arrange
-        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<Guid?>())).ReturnsAsync(workshopBaseCards);
+        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<Guid?>())).ReturnsAsync(workshopBaseCards);
 
         // Act
         var result = await controller.GetByProviderId(It.IsAny<Guid>()).ConfigureAwait(false) as OkObjectResult;
@@ -139,7 +139,7 @@ public class WorkshopControllerTests
     {
         // Arrange
         var emptyList = new List<WorkshopBaseCard>();
-        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<Guid?>())).ReturnsAsync(emptyList);
+        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<Guid?>())).ReturnsAsync(emptyList);
 
         // Act
         var result = await controller.GetByProviderId(It.IsAny<Guid>()).ConfigureAwait(false) as NoContentResult;

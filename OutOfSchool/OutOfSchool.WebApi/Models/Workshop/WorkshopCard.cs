@@ -15,6 +15,8 @@ public class WorkshopCard : WorkshopBaseCard
     public uint AvailableSeats { get; set; } = uint.MaxValue;
 
     public uint TakenSeats { get; set; } = 0;
+
+    public float Rating { get; set; }
 }
 
 public class WorkshopBaseCard
@@ -27,8 +29,6 @@ public class WorkshopBaseCard
     public string ProviderTitle { get; set; } = string.Empty;
 
     public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;
-
-    public float Rating { get; set; }
 
     [Required(ErrorMessage = "Workshop title is required")]
     [MinLength(1)]
@@ -60,4 +60,15 @@ public class WorkshopBaseCard
     public AddressDto Address { get; set; }
 
     public bool WithDisabilityOptions { get; set; }
+}
+
+public class WorkshopProviderViewCard : WorkshopBaseCard
+{
+    public uint AvailableSeats { get; set; } = uint.MaxValue;
+
+    public uint TakenSeats { get; set; } = 0;
+
+    public int AmountOfPendingApplications { get; set; }
+
+    public WorkshopStatus Status { get; set; }
 }

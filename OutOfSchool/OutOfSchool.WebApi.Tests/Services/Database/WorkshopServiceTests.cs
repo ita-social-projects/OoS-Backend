@@ -185,7 +185,7 @@ public class WorkshopServiceTests
         mapperMock.Setup(m => m.Map<List<WorkshopBaseCard>>(It.IsAny<List<Workshop>>())).Returns(expectedWorkshopBaseCards);
 
         // Act
-        var result = await workshopService.GetByProviderId(It.IsAny<Guid>()).ConfigureAwait(false);
+        var result = await workshopService.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>()).ConfigureAwait(false);
 
         // Assert
         workshopRepository.VerifyAll();
@@ -202,7 +202,7 @@ public class WorkshopServiceTests
         mapperMock.Setup(m => m.Map<List<WorkshopBaseCard>>(It.IsAny<List<Workshop>>())).Returns(emptyListWorkshopCards);
 
         // Act
-        var result = await workshopService.GetByProviderId(It.IsAny<Guid>()).ConfigureAwait(false);
+        var result = await workshopService.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>()).ConfigureAwait(false);
 
         // Assert
         workshopRepository.VerifyAll();

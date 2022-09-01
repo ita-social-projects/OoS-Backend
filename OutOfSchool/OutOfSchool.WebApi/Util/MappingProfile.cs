@@ -169,9 +169,20 @@ public class MappingProfile : Profile
 
         CreateMap<Workshop, WorkshopBaseCard>()
             .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
-            .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
             .ForMember(dest => dest.DirectionsId, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)));
+
+        CreateMap<Workshop, WorkshopProviderViewCard>()
+            .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.DirectionsId, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)))
+            .ForMember(dest => dest.AmountOfPendingApplications, opt => opt.MapFrom(src =>
+                src.Applications.Count(x =>
+                    x.Status == ApplicationStatus.Pending)))
+            .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src =>
+                src.Applications.Count(x =>
+                    x.Status == ApplicationStatus.Approved
+                    || x.Status == ApplicationStatus.StudyingForYears)))
+            .ForMember(dest => dest.Address, opt => opt.Ignore());
 
         CreateMap<SocialGroup, SocialGroupDto>().ReverseMap();
 
