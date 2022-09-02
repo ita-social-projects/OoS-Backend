@@ -25,7 +25,7 @@ public static class ElasticsearchMappingExtensions
                     opt =>
                         opt.MapFrom(src =>
                             string.Join(SEPARATOR, src.Keywords.Distinct())))
-                .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.Directions))
+                .ForMember(dest => dest.DirectionIds, opt => opt.MapFrom(src => src.DirectionIds))
                 .ForMember(
                     dest => dest.Description,
                     opt =>
@@ -41,7 +41,6 @@ public static class ElasticsearchMappingExtensions
                         opt.MapFrom(a => new GeoLocation(a.Latitude, a.Longitude)));
             cfg.CreateMap<DateTimeRangeDto, DateTimeRangeES>()
                 .ForMember(dest => dest.Workdays, opt => opt.MapFrom(src => string.Join(' ', src.Workdays)));
-            cfg.CreateMap<DirectionDto, DirectionES>();
         });
     }
 
@@ -62,7 +61,7 @@ public static class ElasticsearchMappingExtensions
             cfg.CreateMap<WorkshopES, WorkshopCard>()
                 .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
                 .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
-                .ForMember(dest => dest.DirectionsId, opt => opt.MapFrom(src => src.Directions.Select(x => x.Id)));
+                .ForMember(dest => dest.DirectionIds, opt => opt.MapFrom(src => src.DirectionIds));
             cfg.CreateMap<AddressES, AddressDto>()
                 .ForMember(
                     dest => dest.Latitude,
@@ -81,7 +80,7 @@ public static class ElasticsearchMappingExtensions
             cfg.CreateMap<WorkshopES, WorkshopCard>()
                 .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
                 .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
-                .ForMember(dest => dest.DirectionsId, opt => opt.MapFrom(src => src.Directions.Select(x => x.Id)));
+                .ForMember(dest => dest.DirectionIds, opt => opt.MapFrom(src => src.DirectionIds));
 
             cfg.CreateMap<AddressES, AddressDto>()
                 .ForMember(

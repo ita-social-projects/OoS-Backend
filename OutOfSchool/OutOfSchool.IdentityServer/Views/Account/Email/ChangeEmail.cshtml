@@ -16,17 +16,17 @@
 
         <h3 class="instruction">@SharedLocalizer["Enter new email message"].Value.ToUpper()</h3>
         <div class="warning">
-            @if (Model.Submit == "emailMismatch")
+            @switch (Model.Submit)
             {
-                <img src="~/icons/warning.svg" class="warning_icon" alt="warning"><p>@SharedLocalizer["Change email mismatch current email {0}", Model.CurrentEmail]</p>
-            }
-            else if (Model.Submit =="emailUsed")
-            {
-                <img src="~/icons/warning.svg" class="warning_icon" alt="warning"><p>@SharedLocalizer["Change email new email already used {0}", Model.Email]</p>
-            }
-            else
-            {
-                <img src="~/icons/warning.svg" class="warning_icon" alt="warning"><p>@SharedLocalizer["Change email alert"]</p>
+                case "emailMismatch":
+                    <img src="~/icons/warning.svg" class="warning_icon" alt="warning"/><p>@SharedLocalizer["Change email mismatch current email {0}", Model.CurrentEmail]</p>
+                    break;
+                case "emailUsed":
+                    <img src="~/icons/warning.svg" class="warning_icon" alt="warning"/><p>@SharedLocalizer["Change email new email already used {0}", Model.Email]</p>
+                    break;
+                default:
+                    <img src="~/icons/warning.svg" class="warning_icon" alt="warning"/><p>@SharedLocalizer["Change email alert"]</p>
+                    break;
             }
         </div>
         <form asp-action="ChangeEmail">

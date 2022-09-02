@@ -1,5 +1,4 @@
 using GrpcService;
-using Nest;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
@@ -66,7 +65,7 @@ public class MappingProfile : Profile
                 opt => opt.MapFrom(src => src.Keywords.Split(SEPARATOR, StringSplitOptions.None)))
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
-            .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions))
+            .ForMember(dest => dest.DirectionIds, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(d => d.Id)))
             .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
             .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
@@ -82,9 +81,7 @@ public class MappingProfile : Profile
         CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>().ReverseMap();
 
         CreateMap<Address, AddressDto>()
-            .ForPath(
-                dest => dest.CodeficatorAddressDto.AddressParts,
-                opt => opt.MapFrom(src => src.CATOTTG));
+            .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
 
         CreateMap<AddressDto, Address>()
             .ForMember(dest => dest.CATOTTG, opt => opt.Ignore());
@@ -155,9 +152,7 @@ public class MappingProfile : Profile
         CreateMap<ApplicationDto, Application>().ForMember(dest => dest.Workshop, opt => opt.Ignore());
 
         CreateMap<Workshop, WorkshopCard>()
-            .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
-            .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
-            .ForMember(dest => dest.DirectionsId, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)))
+            .IncludeBase<Workshop, WorkshopBaseCard>()
             .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
@@ -170,11 +165,10 @@ public class MappingProfile : Profile
         CreateMap<Workshop, WorkshopBaseCard>()
             .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
-            .ForMember(dest => dest.DirectionsId, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)));
+            .ForMember(dest => dest.DirectionIds, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)));
 
         CreateMap<Workshop, WorkshopProviderViewCard>()
-            .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.DirectionsId, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)))
+            .IncludeBase<Workshop, WorkshopBaseCard>()
             .ForMember(dest => dest.AmountOfPendingApplications, opt => opt.MapFrom(src =>
                 src.Applications.Count(x =>
                     x.Status == ApplicationStatus.Pending)))
@@ -230,12 +224,10 @@ public class MappingProfile : Profile
                 dest => dest.Workdays,
                 opt => opt.MapFrom(dtr => string.Join(" ", dtr.Workdays.ToDaysBitMaskEnumerable())));
 
-        CreateMap<Direction, DirectionES>();
-
         CreateMap<Workshop, WorkshopES>()
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
-            .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions))
+            .ForMember(dest => dest.DirectionIds, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(d => d.Id)))
             .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
             .ForMember(
@@ -392,7 +384,6 @@ public class MappingProfile : Profile
         CreateMap<ParentInfoForChatList, ParentDtoWithContactInfo>();
         CreateMap<ChatMessageInfoForChatList, ChatMessageWorkshopDto>();
 
-        CreateMap<City, CityDto>().ReverseMap();
         CreateMap<Favorite, FavoriteDto>().ReverseMap();
 
         CreateMap<ApplicationDto, ParentCard>()
@@ -411,7 +402,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.InstitutionHierarchyId, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionId, opt => opt.Ignore())
             .ForMember(dest => dest.Institution, opt => opt.Ignore())
-            .ForMember(dest => dest.DirectionsId, opt => opt.Ignore())
+            .ForMember(dest => dest.DirectionIds, opt => opt.Ignore())
             .ForMember(dest => dest.WithDisabilityOptions, opt => opt.Ignore())
             .ForMember(dest => dest.AvailableSeats, opt => opt.Ignore())
             .ForMember(dest => dest.TakenSeats, opt => opt.Ignore());
@@ -466,5 +457,11 @@ public class MappingProfile : Profile
             .ForMember(
                 dest => dest.CityDistrict,
                 opt => opt.MapFrom(src => src.Category == CodeficatorCategory.CityDistrict.Name ? src.Name : null));
+
+        CreateMap<CATOTTG, AllAddressPartsDto>()
+            .IncludeBase<CATOTTG, CodeficatorAddressDto>()
+            .ForMember(
+                dest => dest.AddressParts,
+                opt => opt.MapFrom(src => src));
     }
 }
