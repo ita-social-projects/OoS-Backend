@@ -5,4 +5,5 @@ public enum CompanyInformationType
     AboutPortal,
     SupportInformation,
     LawsAndRegulations,
+    Main
 }

@@ -56,13 +56,13 @@ public class CompanyInformationService : ICompanyInformationService
     public Task<CompanyInformationDto> Update(CompanyInformationDto companyInformationDto, CompanyInformationType type)
     {
         logger.LogDebug("Updating CompanyInformation is started.");
-
         if (companyInformationDto == null)
         {
             throw new ArgumentNullException(nameof(companyInformationDto));
         }
 
-        if (companyInformationDto.CompanyInformationItems.Count() > LimitOfItems)
+        if (companyInformationDto.CompanyInformationItems.Count() > LimitOfItems
+            || (type == CompanyInformationType.Main && companyInformationDto.CompanyInformationItems.Count() > 1))
         {
             throw new InvalidOperationException($"Cannot create more than {LimitOfItems} items.");
         }
