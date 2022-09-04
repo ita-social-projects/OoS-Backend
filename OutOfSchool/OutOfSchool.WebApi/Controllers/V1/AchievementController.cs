@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mime;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
-using OutOfSchool.Common.PermissionsModule;
-using OutOfSchool.WebApi.Extensions;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Achievement;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -24,17 +17,28 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 public class AchievementController : ControllerBase
 {
     private readonly IAchievementService achievementService;
-    private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly IProviderService providerService;
+    private readonly IProviderAdminService providerAdminService;
+    private readonly IWorkshopService workshopService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AchievementController"/> class.
     /// </summary>
     /// <param name="service">Service for Achievement entity.</param>
-    /// <param name="localizer">Localizer.</param>
-    public AchievementController(IAchievementService service, IStringLocalizer<SharedResource> localizer)
+    /// <param name="providerService">Service for Provider model.</param>
+    /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
+    /// <param name="workshopService">Service for Workshop model.</param>
+
+    public AchievementController(
+        IAchievementService service,
+        IProviderService providerService,
+        IProviderAdminService providerAdminService,
+        IWorkshopService workshopService)
     {
-        this.localizer = localizer;
         this.achievementService = service;
+        this.providerAdminService = providerAdminService;
+        this.providerService = providerService;
+        this.workshopService = workshopService;
     }
 
     /// <summary>
@@ -79,13 +83,14 @@ public class AchievementController : ControllerBase
     /// <summary>
     /// To create a new Achievement and add it to the DB.
     /// </summary>
-    /// <param name="AchievementCreateDto">AchievementCreateDto object that will be added.</param>
+    /// <param name="achievementDto">AchievementCreateDto object that will be added.</param>
     /// <returns>Achievement that was created.</returns>
     /// <response code="201">Achievement was successfully created.</response>
     /// <response code="400">Model is invalid.</response>
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="403">If the user has no rights to use this method.</response>
     /// <response code="500">If any server error occures.</response>
+    [HasPermission(Permissions.WorkshopEdit)]
     [HttpPost]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -100,9 +105,16 @@ public class AchievementController : ControllerBase
             return BadRequest(ModelState);
         }
 
+        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(achievementDto.WorkshopId).ConfigureAwait(false);
+        
+        if (!userHasRights)
+        {
+            return StatusCode(403, "Forbidden to create achievement for another providers.");
+        }
+
         try
         {
-            achievementDto.Id = default;
+            achievementDto.Id = Guid.Empty;
 
             var achievement = await achievementService.Create(achievementDto).ConfigureAwait(false);
 
@@ -120,13 +132,14 @@ public class AchievementController : ControllerBase
     /// <summary>
     /// To update Achievement entity that already exists.
     /// </summary>
-    /// <param name="AchievementCreateDTO">AchievementCreateDTO object with new properties.</param>
+    /// <param name="achievementDto">AchievementCreateDTO object with new properties.</param>
     /// <returns>Achievement that was updated.</returns>
     /// <response code="200">Achievement was successfully updated.</response>
     /// <response code="400">Model is invalid.</response>
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="403">If the user has no rights to use this method.</response>
     /// <response code="500">If any server error occures.</response>
+    [HasPermission(Permissions.WorkshopEdit)]
     [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AchievementDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -138,6 +151,13 @@ public class AchievementController : ControllerBase
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
+        }
+
+        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(achievementDto.WorkshopId).ConfigureAwait(false);
+
+        if (!userHasRights)
+        {
+            return StatusCode(403, "Forbidden to update achievement, which are not related to you");
         }
 
         return Ok(await achievementService.Update(achievementDto).ConfigureAwait(false));
@@ -153,6 +173,7 @@ public class AchievementController : ControllerBase
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="403">If the user has no rights to use this method.</response>
     /// <response code="500">If any server error occures.</response>
+    [HasPermission(Permissions.WorkshopEdit)]
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -161,15 +182,61 @@ public class AchievementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Delete(Guid id)
     {
+        AchievementDto achievement;
+
+        try
+        {
+            achievement = await achievementService.GetById(id).ConfigureAwait(false);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
+        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(achievement.WorkshopId).ConfigureAwait(false);
+
+        if (!userHasRights)
+        {
+            return StatusCode(403, "Forbidden to delete achievement, which are not related to you");
+        }
+
         try
         {
             await achievementService.Delete(id).ConfigureAwait(false);
             return NoContent();
         }
-
         catch (ArgumentException ex)
         {
             return BadRequest(ex.Message);
         }
+    }
+
+    private async Task<bool> IsUserProvidersOwnerOrAdmin(Guid workshopId)
+    {
+        if (!User.IsInRole(nameof(Role.Provider).ToLower()))
+        {
+            return false;
+        }
+
+        var userId = GettingUserProperties.GetUserId(User);
+        var providerId = await workshopService.GetWorkshopProviderOwnerIdAsync(workshopId).ConfigureAwait(false);
+        try
+        {
+            var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
+            if (providerId != provider.Id)
+            {
+                return false;
+            }
+        }
+        catch (ArgumentException)
+        {
+            var isUserRelatedAdmin = await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId).ConfigureAwait(false);
+            if (!isUserRelatedAdmin)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

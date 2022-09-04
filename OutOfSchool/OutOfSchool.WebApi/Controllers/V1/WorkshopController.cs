@@ -358,9 +358,9 @@ public class WorkshopController : ControllerBase
     {
         if (User.IsInRole(nameof(Role.Provider).ToLower()))
         {
-            var userId = User.FindFirst("sub")?.Value;
-            try {
-
+            var userId = GettingUserProperties.GetUserId(User);
+            try
+            {
                 var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
                 if (providerId != provider.Id)
                 {
