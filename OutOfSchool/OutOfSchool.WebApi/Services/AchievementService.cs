@@ -54,7 +54,7 @@ public class AchievementService: IAchievementService
         {
             throw new ArgumentOutOfRangeException(
                 nameof(id),
-                localizer["The id cannot be greater than number of table entities."]);
+                localizer[$"Achievement with Id = {id} doesn't exist in the system."]);
         }
 
         logger.LogInformation($"Successfully got a Achievement with Id = {id}.");
