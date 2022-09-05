@@ -19,7 +19,7 @@ namespace OutOfSchool.WebApi.Services;
 public class CompanyInformationService : ICompanyInformationService
 {
     private const int LimitOfItems = 10;
-
+    private const int MainLimit = 1;
     private readonly ISensitiveEntityRepository<CompanyInformation> companyInformationRepository;
     private readonly ILogger<CompanyInformationService> logger;
     private readonly IMapper mapper;
@@ -61,8 +61,9 @@ public class CompanyInformationService : ICompanyInformationService
             throw new ArgumentNullException(nameof(companyInformationDto));
         }
 
-        if (companyInformationDto.CompanyInformationItems.Count() > LimitOfItems
-            || (type == CompanyInformationType.Main && companyInformationDto.CompanyInformationItems.Count() > 1))
+        var itemsCount = companyInformationDto.CompanyInformationItems.Count();
+        bool isMain = type == CompanyInformationType.Main;
+        if (itemsCount > LimitOfItems || (isMain && itemsCount > MainLimit))
         {
             throw new InvalidOperationException($"Cannot create more than {LimitOfItems} items.");
         }
