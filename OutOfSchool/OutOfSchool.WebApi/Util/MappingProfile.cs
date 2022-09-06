@@ -248,7 +248,8 @@ public class MappingProfile : Profile
         CreateMap<DirectionDto, Direction>()
             .ForMember(dest => dest.InstitutionHierarchies, opt => opt.Ignore());
 
-        CreateMap<Direction, DirectionDto>();
+        CreateMap<Direction, DirectionDto>()
+            .ForMember(dest => dest.WorkshopsCount, opt => opt.Ignore());
 
         CreateMap<CreateProviderAdminDto, CreateProviderAdminRequest>()
             .ForMember(dest => dest.RequestId, opt => opt.Ignore())

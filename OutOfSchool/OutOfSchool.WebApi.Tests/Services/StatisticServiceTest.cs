@@ -257,6 +257,10 @@ public class StatisticServiceTest
                 Address = new Address
                 {
                     CATOTTGId = 4970,
+                    CATOTTG = new CATOTTG
+                    {
+                        Category = "M",
+                    },
                 },
                 Applications = new List<Application>
                 {
@@ -282,6 +286,10 @@ public class StatisticServiceTest
                 Address = new Address
                 {
                     CATOTTGId = 4970,
+                    CATOTTG = new CATOTTG
+                    {
+                        Category = "M",
+                    },
                 },
                 Applications = new List<Application>
                 {
@@ -308,6 +316,10 @@ public class StatisticServiceTest
                 Address = new Address
                 {
                     CATOTTGId = 5000,
+                    CATOTTG = new CATOTTG
+                    {
+                        Category = "C",
+                    },
                 },
                 Applications = new List<Application>
                 {
