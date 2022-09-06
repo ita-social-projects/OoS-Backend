@@ -10,6 +10,8 @@ public class AddressES
 
     public long CATOTTGId { get; set; }
 
+    public CodeficatorAddressES CodeficatorAddressES { get; set; }
+
     public string Street { get; set; }
 
     public string BuildingNumber { get; set; }

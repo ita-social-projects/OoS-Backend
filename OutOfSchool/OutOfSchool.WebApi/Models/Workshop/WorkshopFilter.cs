@@ -55,7 +55,10 @@ public class WorkshopFilter : OffsetFilter
     public IReadOnlyCollection<WorkshopStatus> Statuses { get; set; } = new List<WorkshopStatus>();
 
     public bool IsAppropriateAge { get; set; } = false;
+
     public bool IsAppropriateHours { get; set; } = false;
 
     public bool IsStrictWorkdays { get; set; } = false;
+
+    public long CATOTTGId { get; set; } = default(long);
 }

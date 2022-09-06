@@ -217,7 +217,12 @@ public class MappingProfile : Profile
                     gl.Longitude == 0d ? gl.CATOTTG.Longitude : gl.Longitude)))
             .ForMember(
                 dest => dest.City,
-                opt => opt.MapFrom(c => c.CATOTTG.Name));
+                opt => opt.MapFrom(c => c.CATOTTG.Name))
+            .ForMember(
+                dest => dest.CodeficatorAddressES,
+                opt => opt.MapFrom(c => c.CATOTTG));
+
+        CreateMap<CATOTTG, CodeficatorAddressES>();
 
         CreateMap<DateTimeRange, DateTimeRangeES>()
             .ForMember(
