@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Castle.Core.Internal;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
@@ -11,7 +10,7 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class DirectionService : IDirectionService
 {
-    private readonly IDirectionRepository repository;
+    private readonly IEntityRepository<long, Direction> repository;
     private readonly IWorkshopRepository repositoryWorkshop;
     private readonly ILogger<DirectionService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
@@ -26,7 +25,7 @@ public class DirectionService : IDirectionService
     /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
     public DirectionService(
-        IDirectionRepository repository,
+        IEntityRepository<long, Direction> repository,
         IWorkshopRepository repositoryWorkshop,
         ILogger<DirectionService> logger,
         IStringLocalizer<SharedResource> localizer,
@@ -117,16 +116,32 @@ public class DirectionService : IDirectionService
         };
         var count = await repository.Count(predicate).ConfigureAwait(false);
 
+        var directions = await repository.Get(skip: filter.From, take: filter.Size, where: predicate).ToListAsync();
 
-        var directions = await repository.GetPagedByFilter(filter.From, filter.Size, predicate)
-            .ConfigureAwait(false);
+        var workshopCount = await repositoryWorkshop
+            .Get(where: w => w.InstitutionHierarchy.Directions.Any(d => directions.Contains(d)))
+            .SelectMany(w => w.InstitutionHierarchy.Directions)
+            .GroupBy(d => d.Id)
+            .Select(g => new
+            {
+                DirectionId = g.Key,
+                WorkshopsCount = g.Count() as int?,
+            })
+            .ToListAsync();
 
-        logger.LogInformation($"All {directions.Count()} records were successfully received from the Direction table.");
+        var directionsWorkshops = (from d in directions
+            join wc in workshopCount
+                on d.Id equals wc.DirectionId into dwc
+            from res in dwc.DefaultIfEmpty()
+            select mapper.Map<DirectionDto>(d).WithCount(res?.WorkshopsCount ?? 0))
+            .ToList();
+
+        logger.LogInformation($"All {directionsWorkshops.Count()} records were successfully received from the Direction table.");
 
         var result = new SearchResult<DirectionDto>()
         {
             TotalAmount = count,
-            Entities = directions.Select(direction => mapper.Map<DirectionDto>(direction)).ToList(),
+            Entities = directionsWorkshops,
         };
 
         return result;

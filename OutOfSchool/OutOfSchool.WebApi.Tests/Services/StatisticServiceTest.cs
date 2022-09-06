@@ -26,7 +26,7 @@ public class StatisticServiceTest
 
     private Mock<IApplicationRepository> applicationRepository;
     private Mock<IWorkshopRepository> workshopRepository;
-    private Mock<IDirectionRepository> directionRepository;
+    private Mock<IEntityRepository<long, Direction>> directionRepository;
 
     private Mock<IMapper> mapper;
     private Mock<ICacheService> cache;
@@ -36,7 +36,7 @@ public class StatisticServiceTest
     {
         applicationRepository = new Mock<IApplicationRepository>();
         workshopRepository = new Mock<IWorkshopRepository>();
-        directionRepository = new Mock<IDirectionRepository>();
+        directionRepository = new Mock<IEntityRepository<long, Direction>>();
         var ratingService = new Mock<IRatingService>();
         var logger = new Mock<ILogger<StatisticService>>();
         mapper = new Mock<IMapper>();
@@ -103,13 +103,15 @@ public class StatisticServiceTest
     public async Task GetPopularDirections_WhenCityNotQueried_ShouldReturnCertainDirections()
     {
         // Arrange
-        List<DirectionStatistic> expectedDirectionStatistic = ExpectedDirectionStatisticsNoCityFilter();
+        List<DirectionDto> expectedDirectionStatistic = ExpectedDirectionStatisticsNoCityFilter();
 
         SetupGetPopularDirections();
 
-        foreach (DirectionStatistic stat in expectedDirectionStatistic)
+        foreach (var stat in expectedDirectionStatistic)
+        {
             mapper.Setup(m => m.Map<DirectionDto>(It.IsAny<Direction>()))
-                .Returns(stat.Direction);
+                .Returns(stat);
+        }
 
         // Act
         var result = await service
@@ -127,13 +129,15 @@ public class StatisticServiceTest
     public async Task GetPopularDirections_WithCityQueried_ShouldReturnCertainDirections()
     {
         // Arrange
-        List<DirectionStatistic> expectedDirectionStatistic = ExpectedDirectionStatisticsCityFilter();
+        List<DirectionDto> expectedDirectionStatistic = ExpectedDirectionStatisticsCityFilter();
 
         SetupGetPopularDirections();
 
-        foreach (DirectionStatistic stat in expectedDirectionStatistic)
+        foreach (var stat in expectedDirectionStatistic)
+        {
             mapper.Setup(m => m.Map<DirectionDto>(It.IsAny<Direction>()))
-                .Returns(stat.Direction);
+                .Returns(stat);
+        }
 
         // Act
         var result = await service
@@ -606,19 +610,19 @@ public class StatisticServiceTest
         };
     }
 
-    private List<DirectionStatistic> ExpectedDirectionStatisticsNoCityFilter()
+    private List<DirectionDto> ExpectedDirectionStatisticsNoCityFilter()
     {
-        return new List<DirectionStatistic>
+        return new List<DirectionDto>
         {
-            new DirectionStatistic {ApplicationsCount = 3, Direction = new DirectionDto { Id = 3 }, WorkshopsCount = 1 },
+            new DirectionDto { Id = 3, WorkshopsCount = 1 },
         };
     }
 
-    private List<DirectionStatistic> ExpectedDirectionStatisticsCityFilter()
+    private List<DirectionDto> ExpectedDirectionStatisticsCityFilter()
     {
-        return new List<DirectionStatistic>
+        return new List<DirectionDto>
         {
-            new DirectionStatistic {ApplicationsCount = 2, Direction = new DirectionDto { Id = 2 }, WorkshopsCount = 1 },
+            new DirectionDto { Id = 2, WorkshopsCount = 1 },
         };
     }
 

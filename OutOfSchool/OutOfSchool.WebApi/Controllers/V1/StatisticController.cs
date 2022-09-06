@@ -36,7 +36,7 @@ public class StatisticController : ControllerBase
     /// <param name="catottgId">Codeficator's id.</param>
     /// <returns>List of popular directions.</returns>
     [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DirectionStatistic>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DirectionDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [AllowAnonymous]

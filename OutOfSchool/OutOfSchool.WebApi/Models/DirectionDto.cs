@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
 
 namespace OutOfSchool.WebApi.Models;
 
@@ -15,4 +15,13 @@ public class DirectionDto
 
     [MaxLength(500)]
     public string Description { get; set; } = string.Empty;
+
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public int? WorkshopsCount { get; set; }
+
+    public DirectionDto WithCount(int? count)
+    {
+        WorkshopsCount = count;
+        return this;
+    }
 }

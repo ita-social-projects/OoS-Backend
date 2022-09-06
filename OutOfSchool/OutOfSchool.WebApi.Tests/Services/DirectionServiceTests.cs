@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +12,6 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -24,7 +22,7 @@ public class DirectionServiceTests
 {
     private DbContextOptions<OutOfSchoolDbContext> options;
     private OutOfSchoolDbContext context;
-    private IDirectionRepository repo;
+    private IEntityRepository<long, Direction> repo;
     private IWorkshopRepository repositoryWorkshop;
     private IDirectionService service;
     private Mock<IStringLocalizer<SharedResource>> localizer;
@@ -41,7 +39,7 @@ public class DirectionServiceTests
         options = builder.Options;
         context = new OutOfSchoolDbContext(options);
 
-        repo = new DirectionRepository(context);
+        repo = new EntityRepository<long, Direction>(context);
         repositoryWorkshop = new WorkshopRepository(context);
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         logger = new Mock<ILogger<DirectionService>>();

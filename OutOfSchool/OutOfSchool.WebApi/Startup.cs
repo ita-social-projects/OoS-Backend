@@ -205,28 +205,16 @@ public static class Startup
         });
 
         // entities repositories
-        services.AddTransient<IEntityRepository<long, Address>, EntityRepository<long, Address>>();
-        services.AddTransient<IEntityRepository<Guid, Application>, EntityRepository<Guid, Application>>();
-        services.AddTransient<IEntityRepository<Guid, ChatMessageWorkshop>, EntityRepository<Guid, ChatMessageWorkshop>>();
-        services.AddTransient<IEntityRepository<Guid, ChatRoomWorkshop>, EntityRepository<Guid, ChatRoomWorkshop>>();
-        services.AddTransient<IEntityRepository<Guid, Child>, ChildRepository>();
-        services.AddTransient<IEntityRepository<long, Favorite>, EntityRepository<long, Favorite>>();
-        services.AddTransient<IEntityRepository<long, SocialGroup>, EntityRepository<long, SocialGroup>>();
-        services.AddTransient<IEntityRepository<long, InstitutionStatus>, EntityRepository<long, InstitutionStatus>>();
-        services.AddTransient<ISensitiveEntityRepository<Teacher>, SensitiveEntityRepository<Teacher>>();
-        services.AddTransient<IEntityRepository<string, User>, EntityRepository<string, User>>();
-        services.AddTransient<IEntityRepository<long, PermissionsForRole>, EntityRepository<long, PermissionsForRole>>();
+        services.AddTransient(typeof(IEntityRepository<,>), typeof(EntityRepository<,>));
+        services.AddTransient(typeof(ISensitiveEntityRepository<>), typeof(SensitiveEntityRepository<>));
 
         services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
         services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
-        services.AddTransient<ISensitiveEntityRepository<CompanyInformation>, SensitiveEntityRepository<CompanyInformation>>();
-        services.AddTransient<ISensitiveEntityRepository<CompanyInformationItem>, SensitiveEntityRepository<CompanyInformationItem>>();
 
         services.AddTransient<IApplicationRepository, ApplicationRepository>();
         services
             .AddTransient<IChatRoomWorkshopModelForChatListRepository, ChatRoomWorkshopModelForChatListRepository
             >();
-        services.AddTransient<IDirectionRepository, DirectionRepository>();
         services.AddTransient<IParentRepository, ParentRepository>();
         services.AddTransient<IProviderRepository, ProviderRepository>();
         services.AddTransient<IRatingRepository, RatingRepository>();
@@ -247,13 +235,8 @@ public static class Startup
         services.AddTransient<IAchievementRepository, AchievementRepository>();
         services.AddTransient<IAchievementService, AchievementService>();
 
-        // Institution hierarchy
-        services.AddTransient<ISensitiveEntityRepository<Institution>, SensitiveEntityRepository<Institution>>();
-        services.AddTransient<ISensitiveEntityRepository<InstitutionFieldDescription>, SensitiveEntityRepository<InstitutionFieldDescription>>();
-        services.AddTransient<ISensitiveEntityRepository<InstitutionHierarchy>, SensitiveEntityRepository<InstitutionHierarchy>>();
-
         services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
-        
+
         services.Configure<ChangesLogConfig>(configuration.GetSection(ChangesLogConfig.Name));
 
         // Register the Permission policy handlers

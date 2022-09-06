@@ -200,7 +200,7 @@ public class StatisticControllerTests
         service.Setup(s =>
                 s.GetPopularDirections(
                     It.IsInRange(3, 10, Range.Inclusive), It.IsAny<long>()))
-            .ReturnsAsync(new List<DirectionStatistic>())
+            .ReturnsAsync(new List<DirectionDto>())
             .Verifiable();
     }
 
@@ -208,23 +208,13 @@ public class StatisticControllerTests
 
     #region With
 
-    private List<DirectionStatistic> WithDirectionStatistics()
+    private List<DirectionDto> WithDirectionStatistics()
     {
-        return new List<DirectionStatistic>()
+        return new List<DirectionDto>()
         {
-            new DirectionStatistic()
-            {
-                WorkshopsCount = 2,
-                ApplicationsCount = 2,
-                Direction = new DirectionDto { Id = 1, Title = "c1" },
-            },
+            new DirectionDto { Id = 1, Title = "c1", WorkshopsCount = 2 },
 
-            new DirectionStatistic()
-            {
-                WorkshopsCount = 1,
-                ApplicationsCount = 1,
-                Direction = new DirectionDto { Id = 3, Title = "c3" },
-            },
+            new DirectionDto { Id = 3, Title = "c3",  WorkshopsCount = 1, },
         };
     }
 
@@ -268,23 +258,13 @@ public class StatisticControllerTests
         };
     }
 
-    private List<DirectionStatistic> ExpectedDirectionStatistics()
+    private List<DirectionDto> ExpectedDirectionStatistics()
     {
-        return new List<DirectionStatistic>()
+        return new List<DirectionDto>()
         {
-            new DirectionStatistic()
-            {
-                WorkshopsCount = 2,
-                ApplicationsCount = 2,
-                Direction = new DirectionDto { Id = 1, Title = "c1" },
-            },
+            new DirectionDto { Id = 1, Title = "c1", WorkshopsCount = 2, },
 
-            new DirectionStatistic()
-            {
-                WorkshopsCount = 1,
-                ApplicationsCount = 1,
-                Direction = new DirectionDto { Id = 3, Title = "c3" },
-            },
+            new DirectionDto { Id = 3, Title = "c3", WorkshopsCount = 1, },
         };
     }
 
