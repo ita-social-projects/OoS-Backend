@@ -14,6 +14,7 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Common.Responses;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
@@ -100,7 +101,7 @@ public class ProviderController : ControllerBase
         var provider = await providerService.GetById(providerId).ConfigureAwait(false);
         if (provider == null)
         {
-            return NotFound($"There is no Provider in DB with {nameof(provider.Id)} - {providerId}");
+            return NotFound(ProviderApiError.ProviderNotFound.CreateApiErrorResponse());
         }
 
         return Ok(provider);
@@ -116,13 +117,12 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetProfile()
     {
-        // TODO: localize messages from the conrollers.
         var userId = GettingUserProperties.GetUserId(User);
         var isDeputyOrAdmin = !string.IsNullOrEmpty(GettingUserProperties.GetUserSubrole(User)) &&
                               GettingUserProperties.GetUserSubrole(User) != "None";
         if (userId == null)
         {
-            BadRequest("Invalid user information.");
+            return BadRequest(UserApiError.InvalidUserInformation.CreateApiErrorResponse());
         }
 
         var provider = await providerService.GetByUserId(userId, isDeputyOrAdmin).ConfigureAwait(false);
@@ -178,11 +178,9 @@ public class ProviderController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            var errorMessage = $"Unable to create a new provider: {ex.Message}";
-            logger.LogError(ex, errorMessage);
+            logger.LogError(ex, "Unable to create a new provider");
 
-            // TODO: think about filtering of exception message.
-            return BadRequest(errorMessage);
+            return BadRequest(ProviderApiError.ProviderNotCreated.CreateApiErrorResponse());
         }
     }
 
@@ -211,15 +209,16 @@ public class ProviderController : ControllerBase
 
             if (provider == null)
             {
-                return BadRequest("Can't change Provider with such parameters.\n" +
-                                  "Please check that information are valid.");
+                return BadRequest(ProviderApiError.ProviderNotUpdated.CreateApiErrorResponse());
             }
 
             return Ok(provider);
         }
-        catch (DbUpdateConcurrencyException e)
+        catch (DbUpdateConcurrencyException ex)
         {
-            return BadRequest(e);
+            logger.LogError(ex, "Unable to update a provider");
+
+            return BadRequest(ProviderApiError.ProviderNotUpdated.CreateApiErrorResponse());
         }
     }
 
@@ -239,14 +238,10 @@ public class ProviderController : ControllerBase
         {
             await providerService.Delete(uid).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (ArgumentException ex)
         {
-            if (ex is ArgumentException || ex is ArgumentNullException)
-            {
-                return BadRequest(ex.Message);
-            }
-
-            throw;
+            logger.LogError(ex, "Unable to delete a provider");
+            return BadRequest(ProviderApiError.ProviderNotDeleted.CreateApiErrorResponse());
         }
 
         return NoContent();
@@ -272,7 +267,7 @@ public class ProviderController : ControllerBase
 
         if (result is null)
         {
-            return NotFound($"There is no Provider in DB with Id - {request.ProviderId}");
+            return NotFound(ProviderApiError.ProviderNotFound.CreateApiErrorResponse());
         }
 
         return Ok(result);
@@ -300,14 +295,15 @@ public class ProviderController : ControllerBase
 
             if (result is null)
             {
-                return NotFound($"There is no Provider in DB with Id - {request.ProviderId}");
+                return NotFound(ProviderApiError.ProviderNotFound.CreateApiErrorResponse());
             }
 
             return Ok(result);
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(ex.Message);
+            logger.LogError(ex, "Update license failed");
+            return BadRequest(ProviderApiError.ProviderNotFound.CreateApiErrorResponse());
         }
     }
 }
