@@ -77,7 +77,15 @@ public abstract class CompanyInformationController : ControllerBase
             return this.BadRequest(this.ModelState);
         }
 
-        var companyInformation = await this.companyInformationService.Update(companyInformationModel, this.Type).ConfigureAwait(false);
+        CompanyInformationDto companyInformation;
+        try
+        {
+            companyInformation = await this.companyInformationService.Update(companyInformationModel, this.Type).ConfigureAwait(false);
+        }
+        catch (InvalidOperationException e)
+        {
+            return BadRequest(e.Message);
+        }
 
         if (companyInformation == null)
         {
