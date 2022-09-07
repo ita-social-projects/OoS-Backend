@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+﻿using AutoMapper;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Redis;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -22,7 +13,7 @@ public class StatisticService : IStatisticService
     private readonly IApplicationRepository applicationRepository;
     private readonly IWorkshopRepository workshopRepository;
     private readonly IRatingService ratingService;
-    private readonly IDirectionRepository directionRepository;
+    private readonly IEntityRepository<long, Direction> directionRepository;
     private readonly ILogger<StatisticService> logger;
     private readonly IMapper mapper;
     private readonly ICacheService cache;
@@ -41,7 +32,7 @@ public class StatisticService : IStatisticService
         IApplicationRepository applicationRepository,
         IWorkshopRepository workshopRepository,
         IRatingService ratingService,
-        IDirectionRepository directionRepository,
+        IEntityRepository<long, Direction> directionRepository,
         ILogger<StatisticService> logger,
         IMapper mapper,
         ICacheService cache)
@@ -58,7 +49,7 @@ public class StatisticService : IStatisticService
     // Return categories with 1 SQL query
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<DirectionStatistic>> GetPopularDirections(int limit, long catottgId)
+    public async Task<IEnumerable<DirectionDto>> GetPopularDirections(int limit, long catottgId)
     {
         logger.LogInformation("Getting popular categories started.");
 
@@ -71,7 +62,7 @@ public class StatisticService : IStatisticService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<DirectionStatistic>> GetPopularDirectionsFromDatabase(int limit, long catottgId)
+    public async Task<IEnumerable<DirectionDto>> GetPopularDirectionsFromDatabase(int limit, long catottgId)
     {
         var workshops = workshopRepository.Get();
         var applications = applicationRepository.Get();
@@ -79,7 +70,7 @@ public class StatisticService : IStatisticService
         if (catottgId > 0)
         {
             workshops = workshops
-                .Where(w => w.Address.CATOTTGId == catottgId);
+                .Where(w => w.Address.CATOTTGId == catottgId || (w.Address.CATOTTG.Category == CodeficatorCategory.CityDistrict.Name && w.Address.CATOTTG.ParentId == catottgId));
         }
 
         var directionsWithWorkshops = workshops
@@ -129,11 +120,10 @@ public class StatisticService : IStatisticService
                 (direction, localDirectionsWithCounts) => new { direction, localDirectionsWithCounts })
             .SelectMany(
                 x => x.localDirectionsWithCounts,
-                (x, y) => new DirectionStatistic
+                (x, y) => new
                 {
-                    Direction = mapper.Map<DirectionDto>(x.direction),
+                    Direction = mapper.Map<DirectionDto>(x.direction).WithCount(y.WorkshopsCount ?? 0),
                     ApplicationsCount = y.ApplicationsCount ?? 0,
-                    WorkshopsCount = y.WorkshopsCount ?? 0,
                 });
 
         var sortedStatistics = await statistics
@@ -144,7 +134,7 @@ public class StatisticService : IStatisticService
 
         logger.LogInformation($"All {sortedStatistics.Count} records were successfully received");
 
-        return sortedStatistics;
+        return sortedStatistics.Select(s => s.Direction);
     }
 
     /// <inheritdoc/>

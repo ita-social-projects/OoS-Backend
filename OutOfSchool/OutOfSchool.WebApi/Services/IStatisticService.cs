@@ -15,7 +15,7 @@ public interface IStatisticService
     /// <param name="limit">Number of entries to return.</param>
     /// <param name="catottgId">Codeficator's id.</param>
     /// <returns>List of popular categories.</returns>
-    Task<IEnumerable<DirectionStatistic>> GetPopularDirections(int limit, long catottgId);
+    Task<IEnumerable<DirectionDto>> GetPopularDirections(int limit, long catottgId);
 
     /// <summary>
     /// Get popular directions from DB.
@@ -23,7 +23,7 @@ public interface IStatisticService
     /// <param name="limit">Number of entries to return.</param>
     /// <param name="catottgId">Codeficator's id.</param>
     /// <returns>List of popular categories.</returns>
-    Task<IEnumerable<DirectionStatistic>> GetPopularDirectionsFromDatabase(int limit, long catottgId);
+    Task<IEnumerable<DirectionDto>> GetPopularDirectionsFromDatabase(int limit, long catottgId);
 
     /// <summary>
     /// Get popular workshops using Redis.
