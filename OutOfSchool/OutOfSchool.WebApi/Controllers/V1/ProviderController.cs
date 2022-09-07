@@ -1,23 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-
-using OutOfSchool.Common;
-using OutOfSchool.Common.Extensions;
-using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Responses;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -27,21 +12,17 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 public class ProviderController : ControllerBase
 {
     private readonly IProviderService providerService;
-    private readonly IStringLocalizer<SharedResource> localizer;
     private readonly ILogger<ProviderController> logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProviderController"/> class.
     /// </summary>
     /// <param name="providerService">Service for Provider model.</param>
-    /// <param name="localizer">Localizer.</param>
     /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
     public ProviderController(
         IProviderService providerService,
-        IStringLocalizer<SharedResource> localizer,
         ILogger<ProviderController> logger)
     {
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -52,20 +33,17 @@ public class ProviderController : ControllerBase
     /// <param name="filter">Entity that represents searching parameters.</param>
     /// <returns><see cref="SearchResult{ProviderDto}"/>, or no content.</returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status204NoContent, Type = typeof(ApiErrorResponse))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ApiErrorResponse))]
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> Get([FromQuery] ProviderFilter filter)
     {
-        var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
+        var providers = await providerService.GetByFilter(filter);
 
-        if (providers.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(providers);
+        return providers.TotalAmount < 1 ?
+            NoContent() :
+            Ok(providers);
     }
 
     /// <summary>
@@ -98,13 +76,11 @@ public class ProviderController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetById(Guid providerId)
     {
-        var provider = await providerService.GetById(providerId).ConfigureAwait(false);
-        if (provider == null)
-        {
-            return NotFound(ProviderApiError.ProviderNotFound.CreateApiErrorResponse());
-        }
+        var provider = await providerService.GetById(providerId);
 
-        return Ok(provider);
+        return provider is null ?
+            NotFound(ProviderApiError.ProviderNotFound.CreateApiErrorResponse()) :
+            Ok(provider);
     }
 
     /// <summary>
@@ -120,18 +96,16 @@ public class ProviderController : ControllerBase
         var userId = GettingUserProperties.GetUserId(User);
         var isDeputyOrAdmin = !string.IsNullOrEmpty(GettingUserProperties.GetUserSubrole(User)) &&
                               GettingUserProperties.GetUserSubrole(User) != "None";
-        if (userId == null)
+        if (userId is null)
         {
             return BadRequest(UserApiError.InvalidUserInformation.CreateApiErrorResponse());
         }
 
-        var provider = await providerService.GetByUserId(userId, isDeputyOrAdmin).ConfigureAwait(false);
-        if (provider == null)
-        {
-            return NoContent();
-        }
+        var provider = await providerService.GetByUserId(userId, isDeputyOrAdmin);
 
-        return Ok(provider);
+        return provider is null ?
+            NoContent() :
+            Ok(provider);
     }
 
     /// <summary>
@@ -146,16 +120,6 @@ public class ProviderController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(ProviderDto providerModel)
     {
-        if (providerModel == null)
-        {
-            throw new ArgumentNullException(nameof(providerModel));
-        }
-
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
         providerModel.Id = default;
         providerModel.LegalAddress.Id = default;
 
@@ -169,7 +133,7 @@ public class ProviderController : ControllerBase
 
         try
         {
-            var createdProvider = await providerService.Create(providerModel).ConfigureAwait(false);
+            var createdProvider = await providerService.Create(providerModel);
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -197,22 +161,14 @@ public class ProviderController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update(ProviderDto providerModel)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
         try
         {
             var userId = GettingUserProperties.GetUserId(User);
-            var provider = await providerService.Update(providerModel, userId).ConfigureAwait(false);
+            var provider = await providerService.Update(providerModel, userId);
 
-            if (provider == null)
-            {
-                return BadRequest(ProviderApiError.ProviderNotUpdated.CreateApiErrorResponse());
-            }
-
-            return Ok(provider);
+            return provider is null ?
+                BadRequest(ProviderApiError.ProviderNotUpdated.CreateApiErrorResponse()) :
+                Ok(provider);
         }
         catch (DbUpdateConcurrencyException ex)
         {
@@ -236,7 +192,7 @@ public class ProviderController : ControllerBase
     {
         try
         {
-            await providerService.Delete(uid).ConfigureAwait(false);
+            await providerService.Delete(uid);
         }
         catch (ArgumentException ex)
         {
@@ -262,15 +218,11 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> StatusUpdate([FromBody] ProviderStatusDto request)
     {
-        var result = await providerService.UpdateStatus(request, GettingUserProperties.GetUserId(User))
-            .ConfigureAwait(false);
+        var result = await providerService.UpdateStatus(request, GettingUserProperties.GetUserId(User));
 
-        if (result is null)
-        {
-            return NotFound(ProviderApiError.ProviderNotFound.CreateApiErrorResponse());
-        }
-
-        return Ok(result);
+        return result is null ?
+            NotFound(ProviderApiError.ProviderNotFound.CreateApiErrorResponse()) :
+            Ok(result);
     }
 
     /// <summary>
@@ -290,15 +242,11 @@ public class ProviderController : ControllerBase
     {
         try
         {
-            var result = await providerService.UpdateLicenseStatus(request, GettingUserProperties.GetUserId(User))
-                .ConfigureAwait(false);
+            var result = await providerService.UpdateLicenseStatus(request, GettingUserProperties.GetUserId(User));
 
-            if (result is null)
-            {
-                return NotFound(ProviderApiError.ProviderNotFound.CreateApiErrorResponse());
-            }
-
-            return Ok(result);
+            return result is null ?
+                NotFound(ProviderApiError.ProviderNotFound.CreateApiErrorResponse()) :
+                Ok(result);
         }
         catch (ArgumentException ex)
         {

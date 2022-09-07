@@ -41,7 +41,6 @@ public class ProviderControllerTests
     {
         mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
         userId = Guid.NewGuid().ToString();
-        var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var user = new ClaimsPrincipal
         (new ClaimsIdentity(
             new Claim[]
@@ -52,7 +51,7 @@ public class ProviderControllerTests
             IdentityResourceClaimsTypes.Sub));
 
         providerService = new Mock<IProviderService>();
-        providerController = new ProviderController(providerService.Object, localizer.Object, new Mock<ILogger<ProviderController>>().Object);
+        providerController = new ProviderController(providerService.Object, new Mock<ILogger<ProviderController>>().Object);
 
         providerController.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
         providers = ProvidersGenerator.Generate(10);
