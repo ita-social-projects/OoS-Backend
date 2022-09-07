@@ -116,7 +116,7 @@ public class WorkshopDTO : IValidatableObject
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public AddressDto Address { get; set; }
 
-    public List<TeacherDTO> Teachers { get; set; } = new ();
+    public List<TeacherDTO> Teachers { get; set; }
 
     [Required]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
