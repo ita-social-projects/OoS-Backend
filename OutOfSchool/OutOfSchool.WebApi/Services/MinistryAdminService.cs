@@ -35,11 +35,11 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
-    public async Task<MinistryAdminDto> GetById(long id)
+    public async Task<MinistryAdminDto> GetByIdAsync(string id)
     {
         Logger.LogInformation("Getting InstitutionAdmin by Id started. Looking Id = {Id}", id);
 
-        var institutionAdmin = await institutionAdminRepository.GetById(id).ConfigureAwait(false);
+        var institutionAdmin = await institutionAdminRepository.GetByIdAsync(id).ConfigureAwait(false);
 
         if (institutionAdmin is null)
         {
@@ -133,10 +133,10 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: string.Empty,
+                includeProperties: "Institution,User",
                 where: filterPredicate,
                 orderBy: sortExpression,
-                asNoTracking: false)
+                asNoTracking: true)
             .ToListAsync()
             .ConfigureAwait(false);
 
