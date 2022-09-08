@@ -38,10 +38,10 @@ public class MinistryAdminControllerTests
     public async Task GetById_WhenIdIsValid_ShouldReturnOkResultObject()
     {
         // Arrange
-        ministryAdminServiceMock.Setup(x => x.GetById(It.IsAny<long>())).ReturnsAsync(ministryAdminDto);
+        ministryAdminServiceMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(ministryAdminDto);
 
         // Act
-        var result = await ministryAdminController.GetById(It.IsAny<long>()).ConfigureAwait(false) as OkObjectResult;
+        var result = await ministryAdminController.GetById(It.IsAny<string>()).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         ministryAdminServiceMock.VerifyAll();
@@ -54,10 +54,10 @@ public class MinistryAdminControllerTests
     public async Task GetById_WhenNoMinistryAdminWithSuchId_ReturnsNotFoundResult()
     {
         // Arrange
-        ministryAdminServiceMock.Setup(x => x.GetById(It.IsAny<long>())).ReturnsAsync(null as MinistryAdminDto);
+        ministryAdminServiceMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(null as MinistryAdminDto);
 
         // Act
-        var result = await ministryAdminController.GetById(It.IsAny<long>()).ConfigureAwait(false);
+        var result = await ministryAdminController.GetById(It.IsAny<string>()).ConfigureAwait(false);
 
         // Assert
         ministryAdminServiceMock.VerifyAll();
