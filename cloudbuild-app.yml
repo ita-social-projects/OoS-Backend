@@ -5,16 +5,9 @@ steps:
   args:
     - build
     - gcr.io/$PROJECT_ID/oos-api:$SHORT_SHA
-    # TODO: some weird behaviour with old .Net buildpack & layer caches. Comment for now
-    # - --cache-image=gcr.io/$PROJECT_ID/oos-api:cache
-# There is a bug in later versions of .Net 6 SDK 6.0.200 or higher (or rather Nuget toolset) [https://github.com/dotnet/sdk/issues/23461].
-# It works fine if you are using MSBuild, but sometimes it fails to restore packages if you are using dotnet CLI.
-# There are 2 workarounds - either use older build tools version does not have this bug yet or compile the code
-# outside of container build tools (which still means the bug could manifest on Linux).
-    # - --builder=paketobuildpacks/builder:base
-    - --builder=paketobuildpacks/builder:0.2.0-base
-    # - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
-    - --buildpack=docker:///gcr.io/paketo-buildpacks/dotnet-core:0.11.3
+    - --cache-image=gcr.io/$PROJECT_ID/oos-api:cache
+    - --builder=paketobuildpacks/builder:base
+    - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.WebApi/
     - --publish
 # Deploy container image to Cloud Run
@@ -37,7 +30,7 @@ steps:
     - $_SERVICE_ACCOUNT
     - --cpu=2
     - --memory=1Gi
-    - --max-instances=3
+    - --max-instances=5
     - --concurrency=200
     - --timeout=120
     - --set-env-vars=ASPNETCORE_ENVIRONMENT=$_ASPNETCORE_ENVIRONMENT
