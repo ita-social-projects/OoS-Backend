@@ -1,21 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace OutOfSchool.ElasticsearchData.Models;
 
-namespace OutOfSchool.ElasticsearchData.Models;
 public class CodeficatorAddressES
 {
+    public string FullAddress { get; set; }
+
     public long Id { get; set; }
-
-    public string Code { get; set; }
-
-    public long? ParentId { get; set; }
 
     public string Category { get; set; }
 
-    public string Name { get; set; }
+    public long? ParentId { get; set; }
+
+    public CodeficatorAddressES Parent { get; set; }
+
+    public string Region { get; set; }
+
+    public string District { get; set; }
+
+    public string TerritorialCommunity { get; set; }
+
+    public string Settlement { get; set; }
+
+    public string CityDistrict { get; set; }
 
     public double Latitude { get; set; }
 
@@ -23,5 +28,5 @@ public class CodeficatorAddressES
 
     public int Order { get; set; } = default;
 
-    public CodeficatorAddressES Parent { get; set; }
+    public string FullName { get; set; }
 }

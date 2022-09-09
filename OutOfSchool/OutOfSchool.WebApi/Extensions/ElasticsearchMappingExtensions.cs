@@ -45,10 +45,7 @@ public static class ElasticsearchMappingExtensions
                     dest => dest.CodeficatorAddressES,
                     opt => opt.MapFrom(c => c.CodeficatorAddressDto));
             cfg.CreateMap<AllAddressPartsDto, CodeficatorAddressES>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category))
-                .ForMember(dest => dest.ParentId, opt => opt.MapFrom(src => src.AddressParts.ParentId))
-                .ForAllOtherMembers(opt => opt.Ignore());
+                .ForMember(dest => dest.ParentId, opt => opt.MapFrom(src => src.AddressParts.ParentId));
             cfg.CreateMap<DateTimeRangeDto, DateTimeRangeES>()
                 .ForMember(dest => dest.Workdays, opt => opt.MapFrom(src => string.Join(' ', src.Workdays)));
         });

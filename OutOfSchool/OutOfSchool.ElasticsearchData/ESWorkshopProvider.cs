@@ -232,11 +232,26 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
 
         if (filter.CATOTTGId > 0)
         {
-            queryContainer &= new TermQuery()
-            {
-                Field = Infer.Field<WorkshopES>(c => c.Address.CATOTTGId),
-                Value = filter.CATOTTGId,
-            };
+            queryContainer &=
+                new TermQuery()
+                {
+                    Field = Infer.Field<WorkshopES>(c => c.Address.CATOTTGId),
+                    Value = filter.CATOTTGId,
+                }
+
+                || (
+                new MatchQuery()
+                {
+                    Field = Infer.Field<WorkshopES>(c => c.Address.CodeficatorAddressES.Category),
+                    Query = CodeficatorCategory.CityDistrict.Name,
+                }
+
+                &&
+                new TermQuery()
+                {
+                    Field = Infer.Field<WorkshopES>(c => c.Address.CodeficatorAddressES.ParentId),
+                    Value = filter.CATOTTGId,
+                });
         }
 
         return queryContainer;
