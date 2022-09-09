@@ -21,7 +21,9 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class WorkshopService : IWorkshopService
 {
-    private readonly string includingPropertiesForMappingDtoModel = $"{nameof(Workshop.Address)},{nameof(Workshop.Teachers)},{nameof(Workshop.DateTimeRanges)},{nameof(Workshop.InstitutionHierarchy)}";
+    private readonly string includingPropertiesForMappingDtoModel =
+        $"{nameof(Workshop.Address)},{nameof(Workshop.Teachers)},{nameof(Workshop.DateTimeRanges)},{nameof(Workshop.InstitutionHierarchy)}";
+
     private readonly string includingPropertiesForMappingWorkShopCard = $"{nameof(Workshop.Address)}";
 
     private readonly IWorkshopRepository workshopRepository;
@@ -64,7 +66,11 @@ public class WorkshopService : IWorkshopService
         logger.LogInformation("Workshop creating was started.");
 
         var workshop = mapper.Map<Workshop>(dto);
-        workshop.Teachers = dto.Teachers.Select(dtoTeacher => mapper.Map<Teacher>(dtoTeacher)).ToList();
+        if (dto.Teachers is not null)
+        {
+            workshop.Teachers = dto.Teachers.Select(dtoTeacher => mapper.Map<Teacher>(dtoTeacher)).ToList();
+        }
+
         workshop.Status = WorkshopStatus.Open;
 
         Func<Task<Workshop>> operation = async () =>
@@ -86,7 +92,8 @@ public class WorkshopService : IWorkshopService
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
 
-        async Task<(Workshop createdWorkshop, MultipleImageUploadingResult imagesUploadResult, Result<string> coverImageUploadResult)> CreateWorkshopAndDependencies()
+        async Task<(Workshop createdWorkshop, MultipleImageUploadingResult imagesUploadResult, Result<string>
+            coverImageUploadResult)> CreateWorkshopAndDependencies()
         {
             var createdWorkshop = mapper.Map<Workshop>(dto);
             createdWorkshop.Status = WorkshopStatus.Open;
@@ -105,13 +112,15 @@ public class WorkshopService : IWorkshopService
             if (dto.ImageFiles?.Count > 0)
             {
                 workshop.Images = new List<Image<Workshop>>();
-                imagesUploadingResult = await workshopImagesService.AddManyImagesAsync(workshop, dto.ImageFiles).ConfigureAwait(false);
+                imagesUploadingResult = await workshopImagesService.AddManyImagesAsync(workshop, dto.ImageFiles)
+                    .ConfigureAwait(false);
             }
 
             Result<string> uploadingCoverImageResult = null;
             if (dto.CoverImage != null)
             {
-                uploadingCoverImageResult = await workshopImagesService.AddCoverImageAsync(workshop, dto.CoverImage).ConfigureAwait(false);
+                uploadingCoverImageResult = await workshopImagesService.AddCoverImageAsync(workshop, dto.CoverImage)
+                    .ConfigureAwait(false);
             }
 
             await UpdateWorkshop().ConfigureAwait(false);
@@ -119,7 +128,8 @@ public class WorkshopService : IWorkshopService
             return (workshop, imagesUploadingResult, uploadingCoverImageResult);
         }
 
-        var (newWorkshop, imagesUploadResult, coverImageUploadResult) = await workshopRepository.RunInTransaction(CreateWorkshopAndDependencies).ConfigureAwait(false);
+        var (newWorkshop, imagesUploadResult, coverImageUploadResult) = await workshopRepository
+            .RunInTransaction(CreateWorkshopAndDependencies).ConfigureAwait(false);
 
         logger.LogInformation($"Workshop with Id = {newWorkshop.Id} created successfully.");
 
@@ -177,7 +187,8 @@ public class WorkshopService : IWorkshopService
 
         var workshopDTO = mapper.Map<WorkshopDTO>(workshop);
 
-        var rating = await ratingService.GetAverageRatingAsync(workshopDTO.Id, RatingType.Workshop).ConfigureAwait(false);
+        var rating = await ratingService.GetAverageRatingAsync(workshopDTO.Id, RatingType.Workshop)
+            .ConfigureAwait(false);
 
         workshopDTO.Rating = rating?.Item1 ?? default;
         workshopDTO.NumberOfRatings = rating?.Item2 ?? default;
@@ -190,7 +201,8 @@ public class WorkshopService : IWorkshopService
     {
         logger.LogDebug($"Getting Workshop (Id, Title) by organization started. Looking ProviderId = {providerId}.");
 
-        var workshops = await workshopRepository.GetByFilter(workshop => workshop.ProviderId == providerId).ConfigureAwait(false);
+        var workshops = await workshopRepository.GetByFilter(workshop => workshop.ProviderId == providerId)
+            .ConfigureAwait(false);
         var result = mapper.Map<List<ShortEntityDto>>(workshops).OrderBy(entity => entity.Title).ToList();
 
         return result;
@@ -202,7 +214,8 @@ public class WorkshopService : IWorkshopService
     {
         logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
-        var workshops = await workshopRepository.GetByFilter(x => x.ProviderId == id, includingPropertiesForMappingDtoModel).ConfigureAwait(false);
+        var workshops = await workshopRepository
+            .GetByFilter(x => x.ProviderId == id, includingPropertiesForMappingDtoModel).ConfigureAwait(false);
 
         logger.LogInformation(!workshops.Any()
             ? $"There aren't Workshops for Provider with Id = {id}."
@@ -265,8 +278,10 @@ public class WorkshopService : IWorkshopService
             }
             else
             {
-                logger.LogInformation($"Unable to update status for workshop(id) {dto.WorkshopId}. Number of seats has not restriction.");
-                throw new ArgumentException("Unable to update status for workshop because of number of seats has not restriction.");
+                logger.LogInformation(
+                    $"Unable to update status for workshop(id) {dto.WorkshopId}. Number of seats has not restriction.");
+                throw new ArgumentException(
+                    "Unable to update status for workshop because of number of seats has not restriction.");
             }
 
             try
@@ -291,12 +306,14 @@ public class WorkshopService : IWorkshopService
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation($"Updating {nameof(Workshop)} with Id = {dto.Id} started.");
 
-        async Task<(Workshop updatedWorkshop, MultipleImageChangingResult multipleImageChangingResult, ImageChangingResult changingCoverImageResult)> UpdateWorkshopWithDependencies()
+        async Task<(Workshop updatedWorkshop, MultipleImageChangingResult multipleImageChangingResult,
+            ImageChangingResult changingCoverImageResult)> UpdateWorkshopWithDependencies()
         {
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto.Id).ConfigureAwait(false);
 
             dto.ImageIds ??= new List<string>();
-            var multipleImageChangingResult = await workshopImagesService.ChangeImagesAsync(currentWorkshop, dto.ImageIds, dto.ImageFiles)
+            var multipleImageChangingResult = await workshopImagesService
+                .ChangeImagesAsync(currentWorkshop, dto.ImageIds, dto.ImageFiles)
                 .ConfigureAwait(false);
 
             // In case if AddressId was changed. AddressId is one and unique for workshop.
@@ -307,14 +324,16 @@ public class WorkshopService : IWorkshopService
 
             mapper.Map(dto, currentWorkshop);
 
-            var changingCoverImageResult = await workshopImagesService.ChangeCoverImageAsync(currentWorkshop, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
+            var changingCoverImageResult = await workshopImagesService
+                .ChangeCoverImageAsync(currentWorkshop, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
 
             await UpdateWorkshop().ConfigureAwait(false);
 
             return (currentWorkshop, multipleImageChangingResult, changingCoverImageResult);
         }
 
-        var (updatedWorkshop, multipleImageChangeResult, changeCoverImageResult) = await workshopRepository.RunInTransaction(UpdateWorkshopWithDependencies).ConfigureAwait(false);
+        var (updatedWorkshop, multipleImageChangeResult, changeCoverImageResult) = await workshopRepository
+            .RunInTransaction(UpdateWorkshopWithDependencies).ConfigureAwait(false);
 
         return new WorkshopUpdateResultDto
         {
@@ -336,7 +355,8 @@ public class WorkshopService : IWorkshopService
         }
         catch (DbUpdateConcurrencyException exception)
         {
-            logger.LogError(exception, $"Partial updating {nameof(Workshop)} with ProviderId = {provider?.Id} was failed. Exception: {exception.Message}");
+            logger.LogError(exception,
+                $"Partial updating {nameof(Workshop)} with ProviderId = {provider?.Id} was failed. Exception: {exception.Message}");
             throw;
         }
     }
@@ -373,7 +393,9 @@ public class WorkshopService : IWorkshopService
 
             if (entity.Images.Count > 0)
             {
-                await workshopImagesService.RemoveManyImagesAsync(entity, entity.Images.Select(x => x.ExternalStorageId).ToList()).ConfigureAwait(false);
+                await workshopImagesService
+                    .RemoveManyImagesAsync(entity, entity.Images.Select(x => x.ExternalStorageId).ToList())
+                    .ConfigureAwait(false);
             }
 
             if (!string.IsNullOrEmpty(entity.CoverImageId))
@@ -580,8 +602,10 @@ public class WorkshopService : IWorkshopService
         if (filter.MinStartTime.TotalMinutes > 0 || filter.MaxStartTime.Hours < 23)
         {
             predicate = filter.IsAppropriateHours
-                ? predicate.And(x => x.DateTimeRanges.Any(tr => tr.StartTime >= filter.MinStartTime && tr.EndTime.Hours <= filter.MaxStartTime.Hours))
-                : predicate = predicate.And(x => x.DateTimeRanges.Any(tr => tr.StartTime >= filter.MinStartTime && tr.StartTime.Hours <= filter.MaxStartTime.Hours));
+                ? predicate.And(x => x.DateTimeRanges.Any(tr =>
+                    tr.StartTime >= filter.MinStartTime && tr.EndTime.Hours <= filter.MaxStartTime.Hours))
+                : predicate = predicate.And(x => x.DateTimeRanges.Any(tr =>
+                    tr.StartTime >= filter.MinStartTime && tr.StartTime.Hours <= filter.MaxStartTime.Hours));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.City))
@@ -626,7 +650,8 @@ public class WorkshopService : IWorkshopService
     private async Task<List<WorkshopCard>> GetWorkshopsWithAverageRating(List<WorkshopCard> workshops)
     {
         var averageRatings =
-            await ratingService.GetAverageRatingForRangeAsync(workshops.Select(p => p.WorkshopId), RatingType.Workshop).ConfigureAwait(false);
+            await ratingService.GetAverageRatingForRangeAsync(workshops.Select(p => p.WorkshopId), RatingType.Workshop)
+                .ConfigureAwait(false);
 
         if (averageRatings != null)
         {
@@ -640,10 +665,11 @@ public class WorkshopService : IWorkshopService
         return workshops;
     }
 
-    private async Task <List<WorkshopDTO>> GetWorkshopsWithAverageRating(List<WorkshopDTO> workshops)
+    private async Task<List<WorkshopDTO>> GetWorkshopsWithAverageRating(List<WorkshopDTO> workshops)
     {
         var averageRatings =
-            await ratingService.GetAverageRatingForRangeAsync(workshops.Select(p => p.Id), RatingType.Workshop).ConfigureAwait(false);
+            await ratingService.GetAverageRatingForRangeAsync(workshops.Select(p => p.Id), RatingType.Workshop)
+                .ConfigureAwait(false);
 
         if (averageRatings != null)
         {
