@@ -15,9 +15,8 @@ public static class AdminGenerator
         .RuleFor(x=>x.InstitutionId, _ => Guid.NewGuid());
 
     private static readonly Faker<InstitutionAdmin> FakerInstitutionAdmin = new Faker<InstitutionAdmin>()
-        .RuleFor(x => x.Id,f => f.Random.Long() )
         .RuleFor(x => x.InstitutionId, Guid.NewGuid())
-        .RuleFor(x => x.Id, f =>f.Random.Int());
+        .RuleFor(x => x.UserId, Guid.NewGuid().ToString());
     public static MinistryAdminDto GenerateMinistryAdminDto() => Faker.Generate();
     public static InstitutionAdmin GenerateInstitutionAdmin() => FakerInstitutionAdmin.Generate();
     public static List<MinistryAdminDto> GenerateMinistryAdminsDtos(int count) => Faker.Generate(count);

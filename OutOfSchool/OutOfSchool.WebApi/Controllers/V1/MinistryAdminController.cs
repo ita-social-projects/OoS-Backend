@@ -50,14 +50,15 @@ public class MinistryAdminController : Controller
             BadRequest("Invalid user information.");
         }
 
-        var ministryAdmin = await ministryAdminService.GetByUserId(userId).ConfigureAwait(false);
-
-        if (ministryAdmin == null)
+        try
         {
-            return NoContent();
+            var ministryAdmin = await ministryAdminService.GetByUserId(userId).ConfigureAwait(false);
+            return Ok(ministryAdmin);
         }
-
-        return Ok(ministryAdmin);
+        catch (ArgumentException e)
+        {
+            return NotFound(e.Message);
+        }
     }
 
     /// <summary>
@@ -73,9 +74,9 @@ public class MinistryAdminController : Controller
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetById([FromQuery] long id)
+    public async Task<IActionResult> GetById([FromQuery] string id)
     {
-        var ministryAdmin = await ministryAdminService.GetById(id).ConfigureAwait(false);
+        var ministryAdmin = await ministryAdminService.GetByIdAsync(id).ConfigureAwait(false);
         if (ministryAdmin == null)
         {
             return NotFound($"There is no Ministry admin in DB with {nameof(ministryAdmin.Id)} - {id}");

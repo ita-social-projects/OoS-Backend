@@ -79,10 +79,10 @@ public class MinistryAdminServiceTests
     {
         // Arrange
         var expected = institutionAdmin;
-        institutionAdminRepositoryMock.Setup(x => x.GetById(It.IsAny<long>())).ReturnsAsync(institutionAdmin);
+        institutionAdminRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(institutionAdmin);
 
         // Act
-        var result = await ministryAdminService.GetById(It.IsAny<long>()).ConfigureAwait(false);
+        var result = await ministryAdminService.GetByIdAsync(It.IsAny<string>()).ConfigureAwait(false);
 
         // Assert
         institutionAdminRepositoryMock.VerifyAll();
@@ -94,7 +94,7 @@ public class MinistryAdminServiceTests
     public async Task GetById_WhenNoRecordsInDbWithSuchId_ReturnsNullAsync()
     {
         // Act
-        var result = await ministryAdminService.GetById(It.IsAny<long>()).ConfigureAwait(false);
+        var result = await ministryAdminService.GetByIdAsync(It.IsAny<string>()).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Null);
