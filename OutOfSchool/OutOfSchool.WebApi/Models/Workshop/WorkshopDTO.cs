@@ -55,7 +55,7 @@ public class WorkshopDTO : IValidatableObject
     public int MaxAge { get; set; }
 
     [Column(TypeName = "decimal(18,2)")]
-    [Range(0, 10000, ErrorMessage = "Field value should be in a range from 1 to 10 000")]
+    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
     public decimal Price { get; set; } = default;
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
