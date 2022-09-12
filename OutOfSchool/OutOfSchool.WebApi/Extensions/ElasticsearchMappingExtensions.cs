@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
 using Nest;
+using OutOfSchool.Common.Models;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Codeficator;
 
 namespace OutOfSchool.WebApi.Extensions;
 
@@ -38,7 +40,12 @@ public static class ElasticsearchMappingExtensions
                 .ForMember(
                     dest => dest.Point,
                     opt =>
-                        opt.MapFrom(a => new GeoLocation(a.Latitude, a.Longitude)));
+                        opt.MapFrom(a => new GeoLocation(a.Latitude, a.Longitude)))
+                .ForMember(
+                    dest => dest.CodeficatorAddressES,
+                    opt => opt.MapFrom(c => c.CodeficatorAddressDto));
+            cfg.CreateMap<AllAddressPartsDto, CodeficatorAddressES>()
+                .ForMember(dest => dest.ParentId, opt => opt.MapFrom(src => src.AddressParts.ParentId));
             cfg.CreateMap<DateTimeRangeDto, DateTimeRangeES>()
                 .ForMember(dest => dest.Workdays, opt => opt.MapFrom(src => string.Join(' ', src.Workdays)));
         });
@@ -90,7 +97,16 @@ public static class ElasticsearchMappingExtensions
                 .ForMember(
                     dest => dest.Longitude,
                     opt =>
-                        opt.MapFrom(src => src.Point.Longitude));
+                        opt.MapFrom(src => src.Point.Longitude))
+                .ForMember(
+                    dest => dest.CodeficatorAddressDto,
+                    opt => opt.MapFrom(src => src.CodeficatorAddressES));
+
+            cfg.CreateMap<CodeficatorAddressES, AllAddressPartsDto>()
+                .ForMember(
+                    dest => dest.AddressParts,
+                    opt => opt.MapFrom(src => src));
+            cfg.CreateMap<CodeficatorAddressES, CodeficatorDto>();
         });
     }
 

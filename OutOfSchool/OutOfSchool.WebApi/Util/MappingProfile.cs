@@ -217,7 +217,37 @@ public class MappingProfile : Profile
                     gl.Longitude == 0d ? gl.CATOTTG.Longitude : gl.Longitude)))
             .ForMember(
                 dest => dest.City,
-                opt => opt.MapFrom(c => c.CATOTTG.Name));
+                opt => opt.MapFrom(c => c.CATOTTG.Name))
+            .ForMember(
+                dest => dest.CodeficatorAddressES,
+                opt => opt.MapFrom(c => c.CATOTTG));
+
+        CreateMap<CATOTTG, CodeficatorAddressES>()
+            .ForMember(
+                dest => dest.Settlement,
+                opt => opt.MapFrom(src =>
+                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Name : src.Name))
+            .ForMember(
+                dest => dest.TerritorialCommunity,
+                opt => opt.MapFrom(src =>
+                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Parent.Name : src.Parent.Name))
+            .ForMember(
+                dest => dest.District,
+                opt => opt.MapFrom(src =>
+                    src.Category == CodeficatorCategory.CityDistrict.Name
+                        ? src.Parent.Parent.Parent.Name
+                        : src.Parent.Parent.Name))
+            .ForMember(
+                dest => dest.Region,
+                opt => opt.MapFrom(src =>
+                    src.Category == CodeficatorCategory.CityDistrict.Name
+                        ? src.Parent.Parent.Parent.Parent.Name
+                        : src.Parent.Parent.Parent.Name))
+            .ForMember(
+                dest => dest.CityDistrict,
+                opt => opt.MapFrom(src => src.Category == CodeficatorCategory.CityDistrict.Name ? src.Name : null))
+            .ForMember(dest => dest.FullAddress, opt => opt.Ignore())
+            .ForMember(dest => dest.FullName, opt => opt.Ignore());
 
         CreateMap<DateTimeRange, DateTimeRangeES>()
             .ForMember(

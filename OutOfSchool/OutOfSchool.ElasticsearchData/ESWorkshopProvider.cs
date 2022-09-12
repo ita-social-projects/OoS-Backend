@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Nest;
 using OutOfSchool.Common;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData.Enums;
 using OutOfSchool.ElasticsearchData.Models;
 
@@ -227,6 +228,29 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
                 Field = Infer.Field<WorkshopES>(w => w.Address.City),
                 Query = filter.City,
             };
+        }
+
+        if (filter.CATOTTGId > 0)
+        {
+            var catottgIdFilter = new TermQuery()
+            {
+                Field = Infer.Field<WorkshopES>(c => c.Address.CATOTTGId),
+                Value = filter.CATOTTGId,
+            };
+
+            var categoryFilter = new MatchQuery()
+            {
+                Field = Infer.Field<WorkshopES>(c => c.Address.CodeficatorAddressES.Category),
+                Query = CodeficatorCategory.CityDistrict.Name,
+            };
+
+            var parentCatottgIdFilter = new TermQuery()
+            {
+                Field = Infer.Field<WorkshopES>(c => c.Address.CodeficatorAddressES.ParentId),
+                Value = filter.CATOTTGId,
+            };
+
+            queryContainer &= catottgIdFilter || (categoryFilter && parentCatottgIdFilter);
         }
 
         return queryContainer;

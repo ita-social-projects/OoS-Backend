@@ -164,11 +164,6 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetByFilter([FromQuery] WorkshopFilter filter)
     {
-        if (string.IsNullOrWhiteSpace(filter.City))
-        {
-            filter.City = options.City;
-        }
-
         var result = await combinedWorkshopService.GetByFilter(filter).ConfigureAwait(false);
 
         if (result.TotalAmount < 1)
