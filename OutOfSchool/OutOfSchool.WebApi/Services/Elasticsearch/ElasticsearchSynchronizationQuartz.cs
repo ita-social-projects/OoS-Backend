@@ -18,10 +18,14 @@ public class ElasticsearchSynchronizationQuartz : IJob
     public async Task Execute(IJobExecutionContext context)
     {
         using var scope = services.CreateScope();
-        var elasticsearchSynchronizationService =
-            scope.ServiceProvider
-                .GetRequiredService<IElasticsearchSynchronizationService>();
+        var elasticPinger = scope.ServiceProvider.GetRequiredService<ElasticPinger>();
+        if (elasticPinger.IsHealthy)
+        {
+            var elasticsearchSynchronizationService =
+                scope.ServiceProvider
+                    .GetRequiredService<IElasticsearchSynchronizationService>();
 
-        await elasticsearchSynchronizationService.Synchronize().ConfigureAwait(false);
+            await elasticsearchSynchronizationService.Synchronize(context.CancellationToken).ConfigureAwait(false);
+        }
     }
 }

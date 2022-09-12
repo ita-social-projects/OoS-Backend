@@ -1,19 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+﻿using AutoMapper;
 using Microsoft.Extensions.Options;
 using Nest;
-using OutOfSchool.ElasticsearchData;
-using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Config;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -45,43 +33,12 @@ public class ElasticsearchSynchronizationService : IElasticsearchSynchronization
         this.options = options;
     }
 
-    public async Task<bool> Synchronize()
+    public async Task AddNewRecordToElasticsearchSynchronizationTable(
+        ElasticsearchSyncEntity entity,
+        Guid id,
+        ElasticsearchSyncOperation operation)
     {
-        logger.LogInformation($"Synchronization of elasticsearch has started.");
-
-        var elasticsearchSyncRecords = await elasticsearchSyncRecordRepository.GetByEntity(
-            ElasticsearchSyncEntity.Workshop,
-            options.Value.OperationsPerTask).ConfigureAwait(false);
-
-        var resultCreate = await SynchronizeAndDeleteRecords(elasticsearchSyncRecords, ElasticsearchSyncOperation.Create).ConfigureAwait(false);
-        if (!resultCreate)
-        {
-            logger.LogError($"Syncronization of Elasticsearch has failed during {ElasticsearchSyncOperation.Create} operation");
-            return false;
-        }
-
-        var resultUpdate = await SynchronizeAndDeleteRecords(elasticsearchSyncRecords, ElasticsearchSyncOperation.Update).ConfigureAwait(false);
-        if (!resultUpdate)
-        {
-            logger.LogError($"Syncronization of Elasticsearch has failed during {ElasticsearchSyncOperation.Update} operation");
-            return false;
-        }
-
-        var resultDelete = await SynchronizeAndDeleteRecords(elasticsearchSyncRecords, ElasticsearchSyncOperation.Delete).ConfigureAwait(false);
-        if (!resultDelete)
-        {
-            logger.LogError($"Syncronization of Elasticsearch has failed during {ElasticsearchSyncOperation.Delete} operation");
-            return false;
-        }
-
-        logger.LogInformation($"Synchronization of Elasticsearch has finished successfully.");
-
-        return true;
-    }
-
-    public async Task AddNewRecordToElasticsearchSynchronizationTable(ElasticsearchSyncEntity entity, Guid id, ElasticsearchSyncOperation operation)
-    {
-        ElasticsearchSyncRecord elasticsearchSyncRecord = new ElasticsearchSyncRecord()
+        var elasticsearchSyncRecord = new ElasticsearchSyncRecord()
         {
             Entity = entity,
             RecordId = id,
@@ -93,39 +50,85 @@ public class ElasticsearchSynchronizationService : IElasticsearchSynchronization
         {
             await elasticsearchSyncRecordRepository.Create(elasticsearchSyncRecord).ConfigureAwait(false);
 
-            logger.LogInformation("ElasticsearchSyncRecord created successfully.");
+            logger.LogInformation("ElasticsearchSyncRecord created successfully");
         }
         catch (DbUpdateConcurrencyException)
         {
-            logger.LogError($"Creating new record to ElasticserchSyncRecord failed.");
+            logger.LogError("Creating new record to ElasticserchSyncRecord failed");
             throw;
         }
     }
 
     public async Task Synchronize(CancellationToken cancellationToken)
     {
-        while (!cancellationToken.IsCancellationRequested)
+        logger.LogInformation("Elasticsearch synchronization started");
+
+        try
         {
-            logger.LogInformation("Elasticsearch synchronization started");
-
-            try
+            var result = await DoSynchronization().WaitAsync(cancellationToken);
+            if (!result)
             {
-                await Synchronize().ConfigureAwait(false);
+                Log.Information("Elasticsearch synchronization failed");
             }
-            catch
-            {
-                logger.LogError("Elasticsearch synchronization failed");
-            }
-
-            logger.LogInformation("Elasticsearch synchronization finished");
-
-            await Task.Delay(options.Value.DelayBetweenTasksInMilliseconds, cancellationToken).ConfigureAwait(false);
         }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Elasticsearch synchronization failed");
+        }
+
+        logger.LogInformation("Elasticsearch synchronization finished");
     }
 
-    private async Task<bool> Synchronize(IEnumerable<ElasticsearchSyncRecord> elasticsearchSyncRecords, ElasticsearchSyncOperation elasticsearchSyncOperation)
+    private async Task<bool> DoSynchronization()
     {
-        var ids = elasticsearchSyncRecords.Where(es => es.Operation == elasticsearchSyncOperation).Select(es => es.RecordId).ToList();
+        var elasticsearchSyncRecords = (await elasticsearchSyncRecordRepository.GetByEntity(
+            ElasticsearchSyncEntity.Workshop,
+            options.Value.OperationsPerTask)).ToList();
+
+        var resultCreate =
+            await SynchronizeAndDeleteRecords(elasticsearchSyncRecords, ElasticsearchSyncOperation.Create)
+                .ConfigureAwait(false);
+        if (!resultCreate)
+        {
+            logger.LogError(
+                "Synchronization of Elasticsearch has failed during {Create} operation",
+                ElasticsearchSyncOperation.Create);
+            return false;
+        }
+
+        var resultUpdate =
+            await SynchronizeAndDeleteRecords(elasticsearchSyncRecords, ElasticsearchSyncOperation.Update)
+                .ConfigureAwait(false);
+        if (!resultUpdate)
+        {
+            logger.LogError(
+                "Synchronization of Elasticsearch has failed during {Update} operation",
+                ElasticsearchSyncOperation.Update);
+            return false;
+        }
+
+        var resultDelete =
+            await SynchronizeAndDeleteRecords(elasticsearchSyncRecords, ElasticsearchSyncOperation.Delete)
+                .ConfigureAwait(false);
+        if (!resultDelete)
+        {
+            logger.LogError(
+                "Synchronization of Elasticsearch has failed during {Delete} operation",
+                ElasticsearchSyncOperation.Delete);
+            return false;
+        }
+
+        logger.LogInformation("Synchronization of Elasticsearch has finished successfully");
+
+        return true;
+    }
+
+    private async Task<bool> Synchronize(
+        IEnumerable<ElasticsearchSyncRecord> elasticsearchSyncRecords,
+        ElasticsearchSyncOperation elasticsearchSyncOperation)
+    {
+        var ids = elasticsearchSyncRecords.Where(es => es.Operation == elasticsearchSyncOperation)
+            .Select(es => es.RecordId).ToList();
 
         if (!ids.Any())
         {
@@ -140,13 +143,13 @@ public class ElasticsearchSynchronizationService : IElasticsearchSynchronization
 
                 if (result == Result.Error)
                 {
-                    logger.LogError($"Error happend while trying to delete indexes in Elasticsearch.");
+                    logger.LogError("Error happened while trying to delete indexes in Elasticsearch");
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError($"Exception information: {ex}");
+                logger.LogError(ex, "Delete failed");
                 throw;
             }
         }
@@ -162,13 +165,13 @@ public class ElasticsearchSynchronizationService : IElasticsearchSynchronization
 
                 if (result == Result.Error)
                 {
-                    logger.LogError($"Error happend while trying to update indexes in Elasticsearch.");
+                    logger.LogError($"Error happened while trying to update indexes in Elasticsearch.");
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError($"Exception information: {ex}");
+                logger.LogError(ex, "Operation failed");
                 throw;
             }
         }
@@ -176,7 +179,9 @@ public class ElasticsearchSynchronizationService : IElasticsearchSynchronization
         return true;
     }
 
-    private async Task<bool> SynchronizeAndDeleteRecords(IEnumerable<ElasticsearchSyncRecord> elasticsearchSyncRecords, ElasticsearchSyncOperation elasticsearchSyncOperation)
+    private async Task<bool> SynchronizeAndDeleteRecords(
+        IReadOnlyCollection<ElasticsearchSyncRecord> elasticsearchSyncRecords,
+        ElasticsearchSyncOperation elasticsearchSyncOperation)
     {
         try
         {
@@ -190,7 +195,7 @@ public class ElasticsearchSynchronizationService : IElasticsearchSynchronization
         }
         catch (DbUpdateConcurrencyException)
         {
-            logger.LogError($"Delete records in ElasticsearchSyncRecords is failed.");
+            logger.LogError("Delete records in ElasticsearchSyncRecords is failed");
             return false;
         }
 
