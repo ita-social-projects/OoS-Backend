@@ -374,7 +374,7 @@ public class AuthController : Controller
             {
                 logger.LogDebug($"{path} User was created. User(id): {user.Id}");
 
-                #region MyRegion
+                #region send mail step
                 var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
                 var callBackUrl = Url.Action("EmailConfirmation", "Account", new { token, user.Email, model.ReturnUrl  }, Request.Scheme);
                 

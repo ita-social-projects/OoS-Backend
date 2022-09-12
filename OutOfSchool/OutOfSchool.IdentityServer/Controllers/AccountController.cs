@@ -270,11 +270,19 @@ public class AccountController : Controller
         }
 
         var user = await userManager.FindByEmailAsync(model.Email);
-        if (user == null || !(await userManager.IsEmailConfirmedAsync(user)))
+
+        if (user == null)
         {
             logger.LogError($"{path} User with Email: {model.Email} was not found or Email was not confirmed.");
+            ModelState.AddModelError(string.Empty, "Користувача з такою адресою не знайдено.");
+            return View("Password/ForgotPassword", model);
+        }
 
-            return View("Password/ForgotPasswordConfirmation");
+        if (!await userManager.IsEmailConfirmedAsync(user))
+        {
+            logger.LogError($"{path} User with Email: {model.Email} was not found or Email was not confirmed.");
+            ModelState.AddModelError(string.Empty, "Ця електронная адреса не підтверджена");
+            return View("Password/ForgotPassword", model);
         }
 
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
