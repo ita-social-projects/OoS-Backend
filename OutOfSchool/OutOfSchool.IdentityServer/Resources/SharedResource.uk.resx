@@ -366,4 +366,10 @@ Login: {0}
   <data name="Gender" xml:space="preserve">
     <value>Стать</value>
   </data>
+  <data name="Confirm email invalid token" xml:space="preserve">
+    <value>Token не пройшов перевірку</value>
+  </data>
+  <data name="Confirm email {0} sent" xml:space="preserve">
+    <value>Інструкція підтвердження емейлу була надіслана на {0}. Зайдіть на емейл і виконайте дії вказані в листі.</value>
+  </data>
 </root>

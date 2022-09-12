@@ -360,4 +360,10 @@
   <data name="Gender" xml:space="preserve">
     <value>Gender</value>
   </data>
+  <data name="Confirm email invalid token" xml:space="preserve">
+    <value>Confirm email invalid token</value>
+  </data>
+  <data name="Confirm email {0} sent" xml:space="preserve">
+    <value>Confirm email {} sent</value>
+  </data>
 </root>
