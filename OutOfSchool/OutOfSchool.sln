@@ -36,9 +36,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.WebApi.Integrat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.Redis", "OutOfSchool.Redis\OutOfSchool.Redis.csproj", "{ED7E72ED-6A6C-4C49-BC59-4B3FEF9E503C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.RazorTemplatesData", "OutOfSchool.RazorTemplatesData\OutOfSchool.RazorTemplatesData.csproj", "{8B05B816-EAB3-40FA-B549-3072F933F759}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.RazorTemplatesData", "OutOfSchool.RazorTemplatesData\OutOfSchool.RazorTemplatesData.csproj", "{8B05B816-EAB3-40FA-B549-3072F933F759}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.GRPC", "OutOfSchool.GRPC\OutOfSchool.GRPC.csproj", "{FDDEE291-850B-4CB7-A5D6-4A3854C24EF8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.WebApi.UnitTests", "OutOfSchool.WebApi.UnitTests\OutOfSchool.WebApi.UnitTests.csproj", "{DD33F9BB-8B2B-4CE1-B6D0-0CC5F6819360}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -98,6 +100,10 @@ Global
 		{FDDEE291-850B-4CB7-A5D6-4A3854C24EF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FDDEE291-850B-4CB7-A5D6-4A3854C24EF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FDDEE291-850B-4CB7-A5D6-4A3854C24EF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD33F9BB-8B2B-4CE1-B6D0-0CC5F6819360}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD33F9BB-8B2B-4CE1-B6D0-0CC5F6819360}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD33F9BB-8B2B-4CE1-B6D0-0CC5F6819360}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD33F9BB-8B2B-4CE1-B6D0-0CC5F6819360}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -107,6 +113,7 @@ Global
 		{858FFC94-4A9B-4A91-917E-F672455F1B32} = {BF649E8B-4D72-4762-9A59-C8D3B4AF3A30}
 		{EC5A5CE0-1AE6-48DA-810B-A7DC6DBCDCE4} = {BF649E8B-4D72-4762-9A59-C8D3B4AF3A30}
 		{13875C12-6837-4742-88F9-C3401C5A2D85} = {BF649E8B-4D72-4762-9A59-C8D3B4AF3A30}
+		{DD33F9BB-8B2B-4CE1-B6D0-0CC5F6819360} = {BF649E8B-4D72-4762-9A59-C8D3B4AF3A30}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {759AF463-9F34-412E-9FC1-7B3894D79E59}
