@@ -10,6 +10,8 @@ using OutOfSchool.IdentityServer.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using OutOfSchool.Services.Models;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
+using OutOfSchool.IdentityServer.Config;
 using OutOfSchool.RazorTemplatesData.Services;
 
 namespace OutOfSchool.IdentityServer.Tests.Controllers;
@@ -23,6 +25,7 @@ public class AccountControllerTests
     private readonly Mock<ILogger<AccountController>> fakeLogger;
     private readonly Mock<IStringLocalizer<SharedResource>> fakeLocalizer;
     private readonly Mock<IRazorViewToStringRenderer> fakeRazorViewToStringRenderer;
+    private readonly Mock<IOptions<IdentityServerConfig>> fakeIdentityServerConfig;
 
     public AccountControllerTests()
     {
@@ -32,6 +35,7 @@ public class AccountControllerTests
         fakeLogger = new Mock<ILogger<AccountController>>();
         fakeLocalizer = new Mock<IStringLocalizer<SharedResource>>();
         fakeRazorViewToStringRenderer = new Mock<IRazorViewToStringRenderer>();
+        fakeIdentityServerConfig = new Mock<IOptions<IdentityServerConfig>>();
     }
 
     [SetUp]
@@ -47,7 +51,8 @@ public class AccountControllerTests
             fakeEmailSender.Object,
             fakeLogger.Object,
             fakeRazorViewToStringRenderer.Object,
-            fakeLocalizer.Object
+            fakeLocalizer.Object,
+            fakeIdentityServerConfig.Object
         );
     }
 
