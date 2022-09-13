@@ -15,7 +15,6 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services;
@@ -261,13 +260,16 @@ public class WorkshopServiceTests
 
         workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshopStatusDtoMock);
         workshopRepository.Setup(w => w.Update(It.IsAny<Workshop>())).ReturnsAsync(workshopStatusDtoMock);
+        mapperMock.Setup(m => m.Map<WorkshopStatusWithTitleDto>(workshopStatusDto))
+            .Returns(mapper.Map<WorkshopStatusWithTitleDto>(workshopStatusDto));
 
         // Act
         var result = await workshopService.UpdateStatus(workshopStatusDto).ConfigureAwait(false);
+        var workshopStatusDto2 = mapper.Map<WorkshopStatusDto>(result);
 
         // Assert
         workshopRepository.VerifyAll();
-        result.Should().BeEquivalentTo(workshopStatusDto);
+        workshopStatusDto2.Should().BeEquivalentTo(workshopStatusDto);
     }
 
     [Test]

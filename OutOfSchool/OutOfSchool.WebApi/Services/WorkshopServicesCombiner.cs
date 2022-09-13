@@ -79,9 +79,10 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         var workshopDto = await workshopService.UpdateStatus(dto).ConfigureAwait(false);
 
         var additionalData = new Dictionary<string, string>()
-    {
-        { "Status", workshopDto.Status.ToString() },
-    };
+        {
+            { "Status", workshopDto.Status.ToString() },
+            { "Title", workshopDto.Title },
+        };
 
         await notificationService.Create(
             NotificationType.Workshop,
@@ -175,7 +176,10 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     public async Task<Guid> GetWorkshopProviderId(Guid workshopId) =>
         await workshopService.GetWorkshopProviderOwnerIdAsync(workshopId).ConfigureAwait(false);
 
-    public async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
+    public async Task<IEnumerable<string>> GetNotificationsRecipientIds(
+        NotificationAction action,
+        Dictionary<string, string> additionalData,
+        Guid objectId)
     {
         var recipientIds = new List<string>();
 

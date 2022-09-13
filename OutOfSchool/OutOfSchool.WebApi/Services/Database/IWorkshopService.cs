@@ -54,8 +54,8 @@ public interface IWorkshopService
     /// Update status field for existing entity in the database.
     /// </summary>
     /// <param name="dto">Workshop id and status to update.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopStatusDto"/>.</returns>
-    Task<WorkshopStatusDto> UpdateStatus(WorkshopStatusDto dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopStatusWithTitleDto"/>.</returns>
+    Task<WorkshopStatusWithTitleDto> UpdateStatus(WorkshopStatusDto dto);
 
     /// <summary>
     ///  Delete entity.
