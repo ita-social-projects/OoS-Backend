@@ -257,7 +257,7 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopStatusDto> UpdateStatus(WorkshopStatusDto dto)
+    public async Task<WorkshopStatusWithTitleDto> UpdateStatus(WorkshopStatusDto dto)
     {
         logger.LogInformation($"Updating Workshop status with Id = {dto.WorkshopId} started.");
 
@@ -296,7 +296,10 @@ public class WorkshopService : IWorkshopService
             }
         }
 
-        return dto;
+        var dtoWithTitle = mapper.Map<WorkshopStatusWithTitleDto>(dto);
+        dtoWithTitle.Title = currentWorkshop.Title;
+
+        return dtoWithTitle;
     }
 
     /// <inheritdoc/>
