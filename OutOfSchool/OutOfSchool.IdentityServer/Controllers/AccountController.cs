@@ -37,7 +37,7 @@ public class AccountController : Controller
         IEmailSender emailSender,
         ILogger<AccountController> logger,
         IRazorViewToStringRenderer renderer,
-        IStringLocalizer<SharedResource> localizer, 
+        IStringLocalizer<SharedResource> localizer,
         IOptions<IdentityServerConfig> identityServerConfig)
     {
         this.signInManager = signInManager;
@@ -207,7 +207,7 @@ public class AccountController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> EmailConfirmation(string token, string email = null, string returnUrl = null)
+    public async Task<IActionResult> EmailConfirmation(string token)
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
 
@@ -232,9 +232,9 @@ public class AccountController : Controller
         {
             logger.LogError($"{path} Token is not valid for user: {user.Id}");
 
-            return View("Password/ResetPasswordFailed", localizer["Confirm email invalid token"]);
+            return View("Password/ResetPasswordFailed", localizer["Invalid email confirmation token"]);
         }
-        
+
         var result = await userManager.ConfirmEmailAsync(user, token);
         if (!result.Succeeded)
         {

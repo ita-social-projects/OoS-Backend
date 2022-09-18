@@ -39,7 +39,6 @@ public class AuthController : Controller
     private readonly IdentityServerConfig identityServerConfig;
     private readonly IRazorViewToStringRenderer renderer;
     private readonly IEmailSender emailSender;
-    private readonly AccountController accountController;
     private string userId;
     private string path;
 
@@ -63,8 +62,8 @@ public class AuthController : Controller
         ILogger<AuthController> logger,
         IParentRepository parentRepository,
         IStringLocalizer<SharedResource> localizer,
-        IOptions<IdentityServerConfig> identityServerConfig, 
-        IRazorViewToStringRenderer renderer, 
+        IOptions<IdentityServerConfig> identityServerConfig,
+        IRazorViewToStringRenderer renderer,
         IEmailSender emailSender)
     {
         this.logger = logger;
@@ -74,7 +73,7 @@ public class AuthController : Controller
         this.userManagerAdditionalService = userManagerAdditionalService;
         this.interactionService = interactionService;
         this.localizer = localizer;
-        this.identityServerConfig = identityServerConfig.Value; 
+        this.identityServerConfig = identityServerConfig.Value;
         this.renderer = renderer;
         this.emailSender = emailSender;
     }
@@ -374,25 +373,23 @@ public class AuthController : Controller
             {
                 logger.LogDebug($"{path} User was created. User(id): {user.Id}");
 
-                #region send mail step
+                // TODO: Move sending email process to separated method
                 var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-                var callBackUrl = Url.Action("EmailConfirmation", "Account", new { token, user.Email, model.ReturnUrl  }, Request.Scheme);
-                
+                var callBackUrl = Url.Action("EmailConfirmation", "Account", new { token, user.Email, model.ReturnUrl }, Request.Scheme);
+
                 var email = model.Email;
-                var subject = "Підтвердіть e-mail";
+                var subject = localizer["Confirm email"];
                 var userActionViewModel = new UserActionViewModel
                 {
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     ActionUrl = callBackUrl,
                 };
-
                 var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ConfirmEmail, userActionViewModel);
                 await emailSender.SendAsync(email, subject, content);
 
                 logger.LogInformation($"{path} Message to confirm email was sent. User(id): {user.Id}.");
-                #endregion send mail step
-                
+
                 IdentityResult roleAssignResult = IdentityResult.Failed();
 
                 roleAssignResult = await userManager.AddToRoleAsync(user, user.Role);
