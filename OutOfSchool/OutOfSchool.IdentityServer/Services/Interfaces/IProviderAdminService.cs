@@ -11,6 +11,11 @@ public interface IProviderAdminService
         string userId,
         string requestId);
 
+    Task<ResponseDto> UpdateProviderAdminAsync(
+        UpdateProviderAdminDto providerAdminUpdateDto,
+        string userId,
+        string requestId);
+
     Task<ResponseDto> DeleteProviderAdminAsync(
         string providerAdminId,
         string userId,

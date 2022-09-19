@@ -72,6 +72,50 @@ public class ProviderAdminController : Controller
     }
 
     /// <summary>
+    /// Update info about the ProviderAdmin.
+    /// </summary>
+    /// <param name="providerId">Provider's id for which operation perform.</param>
+    /// <param name="providerAdminModel">Entity to update.</param>
+    /// <returns>Updated ProviderAdmin.</returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderAdminDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPut]
+    public async Task<IActionResult> Update(Guid providerId, UpdateProviderAdminDto providerAdminModel)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var response = await providerAdminService.UpdateProviderAdminAsync(
+                providerAdminModel,
+                userId,
+                providerId,
+                await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
+            .ConfigureAwait(false);
+
+            return response.Match(
+                error => StatusCode((int)error.HttpStatusCode),
+                _ =>
+                {
+                    logger.LogInformation($"Can't change ProviderAdmin with such parameters.\n" +
+                        "Please check that information are valid.");
+
+                    return Ok();
+                });
+        }
+        catch (DbUpdateConcurrencyException e)
+        {
+            return BadRequest(e);
+        }
+    }
+
+    /// <summary>
     /// Method for deleting ProviderAdmin.
     /// </summary>
     /// <param name="providerAdminId">Entity's id to delete.</param>

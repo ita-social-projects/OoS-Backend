@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using IdentityServer4.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Common.Models;
@@ -6,6 +7,7 @@ using OutOfSchool.IdentityServer.Config.ExternalUriModels;
 using OutOfSchool.IdentityServer.Services.Password;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.Services.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.IdentityServer.Services;
 
@@ -194,6 +196,119 @@ public class ProviderAdminService : IProviderAdminService
         return result;
     }
 
+    public async Task<ResponseDto> UpdateProviderAdminAsync(
+        UpdateProviderAdminDto providerAdminModel,
+        string userId,
+        string requestId)
+    {
+        var response = new ResponseDto();
+
+        var providerAdmin = GetProviderAdmin(providerAdminModel.Id);
+
+        if (providerAdmin is null)
+        {
+            response.IsSuccess = false;
+            response.HttpStatusCode = HttpStatusCode.NotFound;
+
+            logger.LogError($"ProviderAdmin(id) {providerAdminModel.Id} not found. " +
+                            $"Request(id): {requestId}" +
+                            $"User(id): {userId}");
+
+            return response;
+        }
+
+        if (!providerAdmin.IsDeputy && !providerAdminModel.ManagedWorkshopIds.Any())
+        {
+            logger.LogError($"Cant create assistant provider admin without related workshops");
+            response.IsSuccess = false;
+            response.HttpStatusCode = HttpStatusCode.BadRequest;
+
+            return response;
+        }
+
+        var user = await userManager.FindByIdAsync(providerAdminModel.Id);
+
+        var executionStrategy = context.Database.CreateExecutionStrategy();
+        return await executionStrategy.Execute(UpdateProviderAdminOperation).ConfigureAwait(false);
+
+        async Task<ResponseDto> UpdateProviderAdminOperation()
+        {
+            await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+            try
+            {
+                user.FirstName = providerAdminModel.FirstName;
+                user.LastName = providerAdminModel.LastName;
+                user.MiddleName = providerAdminModel.MiddleName;
+                user.Email = providerAdminModel.Email;
+                user.PhoneNumber = providerAdminModel.PhoneNumber;
+
+                var updateResult = await userManager.UpdateAsync(user);
+
+                if (!updateResult.Succeeded)
+                {
+                    await transaction.RollbackAsync().ConfigureAwait(false);
+
+                    logger.LogError($"Error happened while updating ProviderAdmin. Request(id): {requestId}" +
+                                    $"User(id): {userId}" +
+                                    $"{string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description))}");
+
+                    response.IsSuccess = false;
+                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                    return response;
+                }
+
+                var updateSecurityStamp = await userManager.UpdateSecurityStampAsync(user);
+
+                if (!updateSecurityStamp.Succeeded)
+                {
+                    await transaction.RollbackAsync().ConfigureAwait(false);
+
+                    logger.LogError($"Error happened while updating security stamp. ProviderAdmin. Request(id): {requestId}" +
+                                    $"User(id): {userId}" +
+                                    $"{string.Join(Environment.NewLine, updateSecurityStamp.Errors.Select(e => e.Description))}");
+
+                    response.IsSuccess = false;
+                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                    return response;
+                }
+
+                providerAdmin.ManagedWorkshops = !providerAdmin.IsDeputy
+                    ? context.Workshops.Where(w => providerAdminModel.ManagedWorkshopIds.Contains(w.Id)).ToList()
+                    : new List<Workshop>();
+
+                var updatedProvider = await providerAdminRepository.Update(providerAdmin).ConfigureAwait(false);
+
+                await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Update)
+                    .ConfigureAwait(false);
+
+                await transaction.CommitAsync().ConfigureAwait(false);
+
+                logger.LogInformation($"ProviderAdmin(id):{providerAdminModel.Id} was successfully updated by " +
+                                      $"User(id): {userId}. Request(id): {requestId}");
+
+                response.IsSuccess = true;
+                response.HttpStatusCode = HttpStatusCode.OK;
+                response.Result = providerAdminModel;
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync().ConfigureAwait(false);
+
+                logger.LogError($"Error happened while updating ProviderAdmin. Request(id): {requestId}" +
+                                $"User(id): {userId} {ex.Message}");
+
+                response.IsSuccess = false;
+                response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                return response;
+            }
+        }
+    }
+
     public async Task<ResponseDto> DeleteProviderAdminAsync(
         string providerAdminId,
         string userId,
@@ -360,5 +475,5 @@ public class ProviderAdminService : IProviderAdminService
     }
 
     private ProviderAdmin GetProviderAdmin(string providerAdminId)
-        => context.ProviderAdmins.SingleOrDefault(pa => pa.UserId == providerAdminId);
+        => context.ProviderAdmins.Include(x => x.ManagedWorkshops).SingleOrDefault(pa => pa.UserId == providerAdminId);
 }

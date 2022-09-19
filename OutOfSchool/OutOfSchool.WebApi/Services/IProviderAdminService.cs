@@ -11,6 +11,12 @@ public interface IProviderAdminService
         CreateProviderAdminDto providerAdminDto,
         string token);
 
+    Task<Either<ErrorResponse, UpdateProviderAdminDto>> UpdateProviderAdminAsync(
+        UpdateProviderAdminDto providerAdminModel,
+        string userId,
+        Guid providerId,
+        string token);
+
     Task<Either<ErrorResponse, ActionResult>> DeleteProviderAdminAsync(
         string providerAdminId,
         string userId,

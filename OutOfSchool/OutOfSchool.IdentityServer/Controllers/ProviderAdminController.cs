@@ -47,6 +47,17 @@ public class ProviderAdminController : Controller
             .CreateProviderAdminAsync(providerAdminDto, Url, userId, Request.Headers["X-Request-ID"]);
     }
 
+    [HttpPut("{providerAdminId}")]
+    [HasPermission(Permissions.ProviderRemove)]
+    public async Task<ResponseDto> Update(string providerAdminId, UpdateProviderAdminDto providerAdminUpdateDto)
+    {
+        logger.LogDebug($"Received request " +
+                        $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
+
+        return await providerAdminService
+            .UpdateProviderAdminAsync(providerAdminUpdateDto, userId, Request.Headers["X-Request-ID"]);
+    }
+
     [HttpDelete("{providerAdminId}")]
     [HasPermission(Permissions.ProviderRemove)]
     public async Task<ResponseDto> Delete(string providerAdminId)
