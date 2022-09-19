@@ -80,7 +80,10 @@ public class MappingProfile : Profile
 
         CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>().ReverseMap();
 
-        CreateMap<WorkshopStatusDto, WorkshopStatusWithTitleDto>().ReverseMap();
+        CreateMap<WorkshopStatusDto, WorkshopStatusWithTitleDto>()
+            .ForMember(dest => dest.Title, opt => opt.Ignore());
+
+        CreateMap<WorkshopStatusWithTitleDto, WorkshopStatusDto>();
 
         CreateMap<Address, AddressDto>()
             .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
