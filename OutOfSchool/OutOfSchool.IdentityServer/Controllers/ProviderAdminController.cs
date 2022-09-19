@@ -44,8 +44,12 @@ public class ProviderAdminController : Controller
     [HasPermission(Permissions.ProviderRemove)]
     public async Task<ResponseDto> Update(string providerAdminId, UpdateProviderAdminDto providerAdminUpdateDto)
     {
-        logger.LogDebug($"Received request " +
-                        $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
+        logger.LogDebug(
+            "Received request " +
+            "{Headers}. {path} started. User(id): {userId}",
+            Request.Headers["X-Request-ID"],
+            path,
+            userId);
 
         return await providerAdminService
             .UpdateProviderAdminAsync(providerAdminUpdateDto, userId, Request.Headers["X-Request-ID"]);
