@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using IdentityServer4.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Common.Models;
@@ -7,7 +6,6 @@ using OutOfSchool.IdentityServer.Config.ExternalUriModels;
 using OutOfSchool.IdentityServer.Services.Password;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.Services.Enums;
-using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.IdentityServer.Services;
 
@@ -197,50 +195,56 @@ public class ProviderAdminService : IProviderAdminService
     }
 
     public async Task<ResponseDto> UpdateProviderAdminAsync(
-        UpdateProviderAdminDto providerAdminModel,
+        UpdateProviderAdminDto providerAdminUpdateDto,
         string userId,
         string requestId)
     {
+        _ = providerAdminUpdateDto ?? throw new ArgumentNullException(nameof(providerAdminUpdateDto));
+
         var response = new ResponseDto();
 
-        var providerAdmin = GetProviderAdmin(providerAdminModel.Id);
+        var providerAdmin = GetProviderAdmin(providerAdminUpdateDto.Id);
 
         if (providerAdmin is null)
         {
             response.IsSuccess = false;
             response.HttpStatusCode = HttpStatusCode.NotFound;
 
-            logger.LogError($"ProviderAdmin(id) {providerAdminModel.Id} not found. " +
-                            $"Request(id): {requestId}" +
-                            $"User(id): {userId}");
+            logger.LogError(
+                "ProviderAdmin(id) {providerAdminUpdateDto.Id} not found. " +
+                "Request(id): {requestId}" +
+                "User(id): {userId}",
+                providerAdminUpdateDto.Id,
+                requestId,
+                userId);
 
             return response;
         }
 
-        if (!providerAdmin.IsDeputy && !providerAdminModel.ManagedWorkshopIds.Any())
+        if (!providerAdmin.IsDeputy && !providerAdminUpdateDto.ManagedWorkshopIds.Any())
         {
-            logger.LogError($"Cant create assistant provider admin without related workshops");
+            logger.LogError("Cant create assistant provider admin without related workshops");
             response.IsSuccess = false;
             response.HttpStatusCode = HttpStatusCode.BadRequest;
 
             return response;
         }
 
-        var user = await userManager.FindByIdAsync(providerAdminModel.Id);
+        var user = await userManager.FindByIdAsync(providerAdminUpdateDto.Id);
 
         var executionStrategy = context.Database.CreateExecutionStrategy();
-        return await executionStrategy.Execute(UpdateProviderAdminOperation).ConfigureAwait(false);
+        return await executionStrategy.Execute(providerAdminUpdateDto, UpdateProviderAdminOperation).ConfigureAwait(false);
 
-        async Task<ResponseDto> UpdateProviderAdminOperation()
+        async Task<ResponseDto> UpdateProviderAdminOperation(UpdateProviderAdminDto providerAdminUpdateDto)
         {
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
             try
             {
-                user.FirstName = providerAdminModel.FirstName;
-                user.LastName = providerAdminModel.LastName;
-                user.MiddleName = providerAdminModel.MiddleName;
-                user.Email = providerAdminModel.Email;
-                user.PhoneNumber = providerAdminModel.PhoneNumber;
+                user.FirstName = providerAdminUpdateDto.FirstName;
+                user.LastName = providerAdminUpdateDto.LastName;
+                user.MiddleName = providerAdminUpdateDto.MiddleName;
+                user.Email = providerAdminUpdateDto.Email;
+                user.PhoneNumber = providerAdminUpdateDto.PhoneNumber;
 
                 var updateResult = await userManager.UpdateAsync(user);
 
@@ -248,9 +252,13 @@ public class ProviderAdminService : IProviderAdminService
                 {
                     await transaction.RollbackAsync().ConfigureAwait(false);
 
-                    logger.LogError($"Error happened while updating ProviderAdmin. Request(id): {requestId}" +
-                                    $"User(id): {userId}" +
-                                    $"{string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description))}");
+                    logger.LogError(
+                        "Error happened while updating ProviderAdmin. Request(id): {requestId}" +
+                        "User(id): {userId}" +
+                        "{Errors}",
+                        requestId,
+                        userId,
+                        string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description)));
 
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -264,9 +272,13 @@ public class ProviderAdminService : IProviderAdminService
                 {
                     await transaction.RollbackAsync().ConfigureAwait(false);
 
-                    logger.LogError($"Error happened while updating security stamp. ProviderAdmin. Request(id): {requestId}" +
-                                    $"User(id): {userId}" +
-                                    $"{string.Join(Environment.NewLine, updateSecurityStamp.Errors.Select(e => e.Description))}");
+                    logger.LogError(
+                        "Error happened while updating security stamp. ProviderAdmin. Request(id): {requestId}" +
+                        "User(id): {userId}" +
+                        "{Errors}",
+                        requestId,
+                        userId,
+                        string.Join(Environment.NewLine, updateSecurityStamp.Errors.Select(e => e.Description)));
 
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -275,22 +287,26 @@ public class ProviderAdminService : IProviderAdminService
                 }
 
                 providerAdmin.ManagedWorkshops = !providerAdmin.IsDeputy
-                    ? context.Workshops.Where(w => providerAdminModel.ManagedWorkshopIds.Contains(w.Id)).ToList()
+                    ? context.Workshops.Where(w => providerAdminUpdateDto.ManagedWorkshopIds.Contains(w.Id)).ToList()
                     : new List<Workshop>();
 
-                var updatedProvider = await providerAdminRepository.Update(providerAdmin).ConfigureAwait(false);
+                await providerAdminRepository.Update(providerAdmin).ConfigureAwait(false);
 
                 await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Update)
                     .ConfigureAwait(false);
 
                 await transaction.CommitAsync().ConfigureAwait(false);
 
-                logger.LogInformation($"ProviderAdmin(id):{providerAdminModel.Id} was successfully updated by " +
-                                      $"User(id): {userId}. Request(id): {requestId}");
+                logger.LogInformation(
+                    "ProviderAdmin(id):{providerAdminUpdateDto.Id} was successfully updated by " +
+                    "User(id): {userId}. Request(id): {requestId}",
+                    providerAdminUpdateDto.Id,
+                    userId,
+                    requestId);
 
                 response.IsSuccess = true;
                 response.HttpStatusCode = HttpStatusCode.OK;
-                response.Result = providerAdminModel;
+                response.Result = providerAdminUpdateDto;
 
                 return response;
             }
@@ -298,8 +314,12 @@ public class ProviderAdminService : IProviderAdminService
             {
                 await transaction.RollbackAsync().ConfigureAwait(false);
 
-                logger.LogError($"Error happened while updating ProviderAdmin. Request(id): {requestId}" +
-                                $"User(id): {userId} {ex.Message}");
+                logger.LogError(
+                    "Error happened while updating ProviderAdmin. Request(id): {requestId}" +
+                    "User(id): {userId} {ex.Message}",
+                    requestId,
+                    userId,
+                    ex.Message);
 
                 response.IsSuccess = false;
                 response.HttpStatusCode = HttpStatusCode.InternalServerError;

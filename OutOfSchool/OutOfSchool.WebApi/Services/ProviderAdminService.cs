@@ -87,6 +87,8 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         Guid providerId,
         string token)
     {
+        _ = providerAdminModel ?? throw new ArgumentNullException(nameof(providerAdminModel));
+
         Logger.LogDebug("ProviderAdmin(id): {ProviderAdminId} updating was started. User(id): {UserId}", providerAdminModel.Id, userId);
 
         var hasAccess = await IsAllowedAsync(providerId, userId)

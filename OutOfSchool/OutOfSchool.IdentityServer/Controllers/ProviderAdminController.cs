@@ -1,13 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Common;
-using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Common.PermissionsModule;
 
 namespace OutOfSchool.IdentityServer.Controllers;
 
