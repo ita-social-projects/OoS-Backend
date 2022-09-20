@@ -360,4 +360,13 @@
   <data name="Gender" xml:space="preserve">
     <value>Gender</value>
   </data>
+  <data name="Invalid email confirmation token" xml:space="preserve">
+    <value>Invalid mail confirmation token</value>
+  </data>
+  <data name="Confirm email {0} sent" xml:space="preserve">
+    <value>Confirm email {} sent</value>
+  </data>
+  <data name="Enter your email to send password recovery instructions" xml:space="preserve">
+    <value>Enter your email to send password recovery instructions</value>
+  </data>
 </root>

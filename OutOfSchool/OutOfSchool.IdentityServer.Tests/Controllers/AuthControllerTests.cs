@@ -23,8 +23,10 @@ using OutOfSchool.Services.Repository;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using OutOfSchool.EmailSender;
 using OutOfSchool.IdentityServer.Config;
 using OutOfSchool.IdentityServer.Services.Interfaces;
+using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.IdentityServer.Tests.Controllers;
@@ -41,6 +43,8 @@ public class AuthControllerTests
     private AuthController authController;
     private readonly Mock<IStringLocalizer<SharedResource>> fakeLocalizer;
     private static Mock<IOptions<IdentityServerConfig>> fakeIdentityServerConfig;
+    private readonly Mock<IEmailSender> fakeEmailSender;
+    private readonly Mock<IRazorViewToStringRenderer> fakeRenderer;
 
     public AuthControllerTests()
     {
@@ -51,6 +55,8 @@ public class AuthControllerTests
         fakeLogger = new Mock<ILogger<AuthController>>();
         fakeparentRepository = new Mock<IParentRepository>();
         fakeLocalizer = new Mock<IStringLocalizer<SharedResource>>();
+        fakeEmailSender = new Mock<IEmailSender>();
+        fakeRenderer = new Mock<IRazorViewToStringRenderer>();
     }
 
     [OneTimeSetUp]
@@ -77,7 +83,9 @@ public class AuthControllerTests
             fakeLogger.Object,
             fakeparentRepository.Object,
             fakeLocalizer.Object,
-            fakeIdentityServerConfig.Object);
+            fakeIdentityServerConfig.Object,
+            fakeRenderer.Object,
+            fakeEmailSender.Object);
     }
 
     [Test]

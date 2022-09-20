@@ -366,4 +366,13 @@ Login: {0}
   <data name="Gender" xml:space="preserve">
     <value>Стать</value>
   </data>
+  <data name="Invalid email confirmation token" xml:space="preserve">
+    <value>Token не пройшов перевірку</value>
+  </data>
+  <data name="Confirm email {0} sent" xml:space="preserve">
+    <value>Інструкція підтвердження емейлу була надіслана на {0}. Зайдіть на емейл і виконайте дії вказані в листі.</value>
+  </data>
+  <data name="Enter your email to send password recovery instructions" xml:space="preserve">
+    <value>Введіть ваш емейл на який буде надіслана інструкція по відновленню паролю</value>
+  </data>
 </root>
