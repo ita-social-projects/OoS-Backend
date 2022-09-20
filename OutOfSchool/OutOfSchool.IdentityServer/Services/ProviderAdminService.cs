@@ -63,6 +63,17 @@ public class ProviderAdminService : IProviderAdminService
         var result = await executionStrategy.Execute(async () =>
         {
             var response = new ResponseDto();
+
+            if (await context.Users.AnyAsync(x => x.Email == providerAdminDto.Email).ConfigureAwait(false))
+            {
+                logger.LogError("Cant create provider admin with duplicate email: {email}", providerAdminDto.Email);
+                response.IsSuccess = false;
+                response.HttpStatusCode = HttpStatusCode.BadRequest;
+                response.Message = $"Cant create provider admin with duplicate email: {providerAdminDto.Email}";
+
+                return response;
+            }
+
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
             try
             {
@@ -202,6 +213,17 @@ public class ProviderAdminService : IProviderAdminService
         _ = providerAdminUpdateDto ?? throw new ArgumentNullException(nameof(providerAdminUpdateDto));
 
         var response = new ResponseDto();
+
+        if (await context.Users.AnyAsync(x => x.Email == providerAdminUpdateDto.Email
+            && x.Id != providerAdminUpdateDto.Id).ConfigureAwait(false))
+        {
+            logger.LogError("Cant update provider admin with duplicate email: {email}", providerAdminUpdateDto.Email);
+            response.IsSuccess = false;
+            response.HttpStatusCode = HttpStatusCode.BadRequest;
+            response.Message = $"Cant update provider admin with duplicate email: {providerAdminUpdateDto.Email}";
+
+            return response;
+        }
 
         var providerAdmin = GetProviderAdmin(providerAdminUpdateDto.Id);
 
