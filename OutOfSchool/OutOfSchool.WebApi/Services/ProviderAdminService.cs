@@ -1,6 +1,4 @@
 ﻿using AutoMapper;
-using Grpc.Core;
-using GrpcService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -81,6 +79,75 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         return await providerAdminOperationsService
             .CreateProviderAdminAsync(userId, providerAdminDto, token)
             .ConfigureAwait(false);
+    }
+
+    public async Task<Either<ErrorResponse, UpdateProviderAdminDto>> UpdateProviderAdminAsync(
+        UpdateProviderAdminDto providerAdminModel,
+        string userId,
+        Guid providerId,
+        string token)
+    {
+        _ = providerAdminModel ?? throw new ArgumentNullException(nameof(providerAdminModel));
+
+        Logger.LogDebug("ProviderAdmin(id): {ProviderAdminId} updating was started. User(id): {UserId}", providerAdminModel.Id, userId);
+
+        var hasAccess = await IsAllowedAsync(providerId, userId)
+            .ConfigureAwait(true);
+
+        if (!hasAccess)
+        {
+            Logger.LogError("User(id): {UserId} doesn't have permission to update provider admin", userId);
+
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.Forbidden,
+            };
+        }
+
+        var provideradmin = await providerAdminRepository.GetByIdAsync(providerAdminModel.Id, providerId)
+            .ConfigureAwait(false);
+
+        if (provideradmin is null)
+        {
+            Logger.LogError("ProviderAdmin(id) {ProviderAdminId} not found. User(id): {UserId}", providerAdminModel.Id, userId);
+
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.NotFound,
+            };
+        }
+
+        var request = new Request()
+        {
+            HttpMethodType = HttpMethodType.Put,
+            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.UpdateProviderAdmin + providerAdminModel.Id),
+            Token = token,
+            Data = providerAdminModel,
+            RequestId = Guid.NewGuid(),
+        };
+
+        Logger.LogDebug(
+            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            request.HttpMethodType,
+            request.RequestId,
+            userId,
+            request.Url);
+
+        var response = await SendRequest<ResponseDto>(request)
+            .ConfigureAwait(false);
+
+        return response
+            .FlatMap<ResponseDto>(r => r.IsSuccess
+                ? r
+                : new ErrorResponse
+                {
+                    HttpStatusCode = r.HttpStatusCode,
+                    Message = r.Message,
+                })
+            .Map(result => result.Result is not null
+                ? JsonConvert
+                    .DeserializeObject<UpdateProviderAdminDto>(result.Result.ToString())
+                : null);
     }
 
     public async Task<Either<ErrorResponse, ActionResult>> DeleteProviderAdminAsync(

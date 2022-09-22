@@ -1,13 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Common;
-using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Common.PermissionsModule;
 
 namespace OutOfSchool.IdentityServer.Controllers;
 
@@ -45,6 +38,21 @@ public class ProviderAdminController : Controller
 
         return await providerAdminService
             .CreateProviderAdminAsync(providerAdminDto, Url, userId, Request.Headers["X-Request-ID"]);
+    }
+
+    [HttpPut("{providerAdminId}")]
+    [HasPermission(Permissions.ProviderRemove)]
+    public async Task<ResponseDto> Update(string providerAdminId, UpdateProviderAdminDto providerAdminUpdateDto)
+    {
+        logger.LogDebug(
+            "Received request " +
+            "{Headers}. {path} started. User(id): {userId}",
+            Request.Headers["X-Request-ID"],
+            path,
+            userId);
+
+        return await providerAdminService
+            .UpdateProviderAdminAsync(providerAdminUpdateDto, userId, Request.Headers["X-Request-ID"]);
     }
 
     [HttpDelete("{providerAdminId}")]

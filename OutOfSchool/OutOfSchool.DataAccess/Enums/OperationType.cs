@@ -9,4 +9,5 @@ public enum OperationType
     Create,
     Delete,
     Block,
+    Update,
 }
