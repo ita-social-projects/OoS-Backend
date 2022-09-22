@@ -1,21 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Hubs;
 using OutOfSchool.WebApi.Models.Notifications;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -56,14 +45,14 @@ public class NotificationService : INotificationService
     /// <inheritdoc/>
     public async Task<NotificationDto> Create(NotificationDto notificationDto)
     {
-        logger.LogInformation("Notification creating was started.");
+        logger.LogInformation("Notification creation started");
 
         var notification = mapper.Map<Notification>(notificationDto);
         notification.CreatedDateTime = DateTimeOffset.UtcNow;
 
         var newNotification = await notificationRepository.Create(notification).ConfigureAwait(false);
 
-        logger.LogInformation($"Notification with Id = {newNotification?.Id} created successfully.");
+        logger.LogInformation("Notification with Id = {Id} created successfully", newNotification?.Id);
 
         var notificationDtoReturn = mapper.Map<NotificationDto>(newNotification);
 
@@ -83,9 +72,9 @@ public class NotificationService : INotificationService
             return;
         }
 
-        logger.LogInformation($"Notifications (type: {type}, action: {action}) creating was started.");
+        logger.LogInformation("Notifications (type: {Type}, action: {Action}) creating was started", type, action);
 
-        var notification = new Notification()
+        var notification = new Notification
         {
             Type = type,
             Action = action,
@@ -103,33 +92,36 @@ public class NotificationService : INotificationService
             notification.UserId = userId;
             var newNotificationDto = await notificationRepository.Create(notification).ConfigureAwait(false);
 
-            logger.LogInformation($"Notification with Id = {newNotificationDto?.Id} was created successfully.");
+            logger.LogInformation("Notification with Id = {Id} was created successfully", newNotificationDto?.Id);
 
             await notificationHub.Clients
-                .Group(userId)
-                .SendAsync("ReceiveNotification", JsonConvert.SerializeObject(newNotificationDto))
-                .ConfigureAwait(false);
+                    .Group(userId)
+                    .SendAsync("ReceiveNotification", JsonConvert.SerializeObject(newNotificationDto))
+                    .ConfigureAwait(false);
 
-            logger.LogInformation($"Notification with Id = {newNotificationDto?.Id} was sent to {userId} successfully.");
+            logger.LogInformation(
+                "Notification with Id = {Id} was sent to {UserId} successfully",
+                newNotificationDto?.Id,
+                userId);
         }
     }
 
     /// <inheritdoc/>
     public async Task Delete(Guid id)
     {
-        logger.LogInformation($"Deleting Notification with Id = {id} started.");
+        logger.LogInformation("Deleting Notification with Id = {Id} started", id);
 
-        var entity = new Notification() { Id = id };
+        var entity = new Notification { Id = id };
 
         try
         {
             await notificationRepository.Delete(entity).ConfigureAwait(false);
 
-            logger.LogInformation($"Notification with Id = {id} succesfully deleted.");
+            logger.LogInformation("Notification with Id = {Id} successfully deleted", id);
         }
         catch (DbUpdateConcurrencyException)
         {
-            logger.LogError($"Deleting failed. Notification with Id = {id} doesn't exist in the system.");
+            logger.LogError("Deleting failed. Notification with Id = {Id} doesn't exist in the system", id);
             throw;
         }
     }
@@ -137,7 +129,7 @@ public class NotificationService : INotificationService
     /// <inheritdoc/>
     public async Task<NotificationDto> Read(Guid id)
     {
-        logger.LogInformation($"Updating ReadDateTime field in Notification with Id = {id} started.");
+        logger.LogInformation("Updating ReadDateTime field in Notification with Id = {Id} started", id);
 
         try
         {
@@ -154,13 +146,13 @@ public class NotificationService : INotificationService
 
             var result = await notificationRepository.Update(notification).ConfigureAwait(false);
 
-            logger.LogInformation($"Notification with Id = {id} updated succesfully.");
+            logger.LogInformation("Notification with Id = {Id} updated successfully", id);
 
             return mapper.Map<NotificationDto>(result);
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            logger.LogError($"Updating ReadDateTime in notification Id = {id} failed. Exception: {ex.Message}.");
+            logger.LogError(ex, "Updating ReadDateTime in notification Id = {Id} failed", id);
             throw;
         }
     }
@@ -168,18 +160,18 @@ public class NotificationService : INotificationService
     /// <inheritdoc/>
     public async Task ReadUsersNotificationsByType(string userId, NotificationType notificationType)
     {
-        logger.LogInformation($"Updating ReadDateTime UserId = {userId} NotificationType = {notificationType} started.");
+        logger.LogInformation("Updating ReadDateTime UserId = {UserId} NotificationType = {Type} started", userId, notificationType);
 
         try
         {
             var readDateTime = DateTimeOffset.UtcNow;
             _ = await notificationRepository.SetReadDateTimeByType(userId, notificationType, readDateTime).ConfigureAwait(false);
 
-            logger.LogInformation($"Notifications UserId = {userId} NotificationType = {notificationType} updated succesfully.");
+            logger.LogInformation("Notifications UserId = {UserId} NotificationType = {Type} updated successfully", userId, notificationType);
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            logger.LogError($"Updating ReadDateTime UserId = {userId} NotificationType = {notificationType} failed. Exception: {ex.Message}.");
+            logger.LogError(ex, "Updating ReadDateTime UserId = {UserId} NotificationType = {Type} failed", userId, notificationType);
             throw;
         }
     }
@@ -187,13 +179,14 @@ public class NotificationService : INotificationService
     /// <inheritdoc/>
     public async Task<NotificationGroupedAndSingle> GetAllUsersNotificationsGroupedAsync(string userId)
     {
-        logger.LogInformation($"Getting all notifications for user (userId = {userId}) started.");
+        logger.LogInformation("Getting all notifications for user (userId = {UserId}) started", userId);
 
-        var allNotifications = await notificationRepository.GetByFilter(n => n.UserId == userId && n.ReadDateTime == null).ConfigureAwait(false);
+        var allNotifications = (await notificationRepository.GetByFilter(n => n.UserId == userId && n.ReadDateTime == null)).ToList();
 
-        logger.LogInformation(!allNotifications.Any()
-            ? $"Notification table for user (userId = {userId}) is empty."
-            : $"All {allNotifications.Count()} records were successfully received from the Notification table for user (userId = {userId})");
+        logger.LogInformation(
+            "{Count} records were successfully received from the Notification table for user (userId = {UserId})",
+            allNotifications.Count,
+            userId);
 
         var result = new NotificationGroupedAndSingle()
         {
@@ -201,7 +194,7 @@ public class NotificationService : INotificationService
             Notifications = new List<NotificationDto>(),
         };
 
-        List<NotificationType> grouped = new List<NotificationType>();
+        var grouped = new List<NotificationType>();
 
         if (allNotifications.Any())
         {
@@ -213,7 +206,7 @@ public class NotificationService : INotificationService
                 }
                 catch (ArgumentException ex)
                 {
-                    logger.LogInformation($"Error convert value '{item}' to type 'NotificationType'. Message: {ex.Message}");
+                    logger.LogInformation(ex, "Error convert value '{Item}' to type 'NotificationType'", item);
                 }
             }
         }
@@ -241,22 +234,23 @@ public class NotificationService : INotificationService
     /// <inheritdoc/>
     public async Task<IEnumerable<NotificationDto>> GetAllUsersNotificationsByFilterAsync(string userId, NotificationType? notificationType)
     {
-        logger.LogInformation($"Getting all notifications for user (userId = {userId}) started.");
+        logger.LogInformation("Getting all notifications for user (userId = {UserId}) started", userId);
 
         var filter = PredicateBuilder.True<Notification>();
 
         filter = filter.And(n => n.UserId == userId && n.ReadDateTime == null);
 
-        if (!(notificationType is null))
+        if (notificationType is not null)
         {
             filter = filter.And(n => n.Type == notificationType);
         }
 
-        var notifications = await notificationRepository.GetByFilter(filter).ConfigureAwait(false);
+        var notifications = (await notificationRepository.GetByFilter(filter)).ToList();
 
-        logger.LogInformation(!notifications.Any()
-            ? $"Notification table for user (userId = {userId}) is empty."
-            : $"All {notifications.Count()} records were successfully received from the Notification table for user (userId = {userId})");
+        logger.LogInformation(
+            "{Count} records were successfully received from the Notification table for user (userId = {UserId})",
+            notifications.Count,
+            userId);
 
         return notifications.Select(notification => mapper.Map<NotificationDto>(notification)).ToList();
     }
@@ -264,21 +258,21 @@ public class NotificationService : INotificationService
     /// <inheritdoc/>
     public async Task<int> GetAmountOfNewUsersNotificationsAsync(string userId)
     {
-        logger.LogInformation($"Getting amount of new notifications for user (userId = {userId}) started.");
+        logger.LogInformation("Getting amount of new notifications for user (userId = {UserId}) started", userId);
 
         var notifications = await notificationRepository.GetByFilter(n => n.UserId == userId && n.ReadDateTime == null).ConfigureAwait(false);
 
-        logger.LogInformation(!notifications.Any()
-            ? $"Notification table for user (userId = {userId}) is empty."
-            : $"{notifications.Count()} records were successfully received from the Notification table for user (userId = {userId})");
+        var count = notifications.Count();
 
-        return notifications.Count();
+        logger.LogInformation("{Count} records were successfully received from the Notification table for user (userId = {UserId})", count, userId);
+
+        return count;
     }
 
     /// <inheritdoc/>
     public async Task<NotificationDto> GetById(Guid id)
     {
-        logger.LogInformation($"Getting Notification by Id started. Looking Id = {id}.");
+        logger.LogInformation("Getting Notification by Id started. Looking Id = {Id}", id);
 
         var notification = await notificationRepository.GetById(id).ConfigureAwait(false);
 
@@ -289,7 +283,7 @@ public class NotificationService : INotificationService
                 localizer["The id cannot be greater than number of table entities."]);
         }
 
-        logger.LogInformation($"Successfully got a Notification with Id = {id}.");
+        logger.LogInformation("Successfully got a Notification with Id = {Id}", id);
 
         return mapper.Map<NotificationDto>(notification);
     }
