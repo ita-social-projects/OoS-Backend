@@ -74,11 +74,23 @@ public class ChildService : IChildService
             throw new ArgumentException($"Forbidden to create child which related to the parent.");
         }
 
-        var child = mapper.Map<Child>(childDto);
-        child.Id = default;
-        child.SocialGroups = childDto.SocialGroups.Select(x => new SocialGroup { Id = x.Id }).ToList();
+        async Task<Child> CreateChild()
+        {
+            var child = mapper.Map<Child>(childDto);
+            child.Id = default;
+            child.SocialGroups = new List<SocialGroup>();
 
-        var newChild = await childRepository.Create(child).ConfigureAwait(false);
+            var newChild = await childRepository.Create(child).ConfigureAwait(false);
+
+            await UpdateSocialGroups(newChild, childDto.SocialGroups).ConfigureAwait(false);
+
+            await CompleteChildChangesAsync().ConfigureAwait(false);
+
+            return newChild;
+        }
+
+        var newChild = await childRepository
+           .RunInTransaction(CreateChild).ConfigureAwait(false);
 
         logger.LogDebug($"Child with Id:{newChild.Id} ({nameof(Child.ParentId)}:{newChild.ParentId}, {nameof(userId)}:{userId}) was created successfully.");
 
