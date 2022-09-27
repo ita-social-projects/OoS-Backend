@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Controllers;
@@ -174,7 +176,19 @@ public class MinistryAdminController : Controller
 
         if (userId != ministryAdminDto.Id)
         {
-            return StatusCode(403, "Forbidden to update another user.");
+            var currentUserRole = GettingUserProperties.GetUserRole(User);
+            if (currentUserRole == nameof(Role.TechAdmin).ToLower())
+            {
+                var updatedMinistryAdmin = await ministryAdminService.GetByIdAsync(ministryAdminDto.Id);
+                if (updatedMinistryAdmin.AccountStatus == AccountStatus.Accepted)
+                {
+                    return StatusCode(403, "Forbidden to update accepted user.");
+                }
+            }
+            else
+            {
+                return StatusCode(403, "Forbidden to update another user if you haven't techadmin role.");
+            }
         }
 
         return Ok(await ministryAdminService.Update(ministryAdminDto).ConfigureAwait(false));

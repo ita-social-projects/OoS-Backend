@@ -29,6 +29,7 @@ public class CreateMinistryAdminDto
     [DataType(DataType.DateTime)]
     public DateTimeOffset CreatingTime { get; set; }
 
+    [Required(ErrorMessage = "InstitutionId is required")]
     public Guid InstitutionId { get; set; }
 
     public string UserId { get; set; }
