@@ -232,6 +232,8 @@ public static class Startup
         services.AddTransient<IAchievementTypeService, AchievementTypeService>();
         services.AddTransient<IAchievementRepository, AchievementRepository>();
         services.AddTransient<IAchievementService, AchievementService>();
+        services.AddTransient(s => s.GetService<HttpContext>()?.User);
+        services.AddTransient<ICurrentUserService, CurrentUserService>();
 
         services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
 
