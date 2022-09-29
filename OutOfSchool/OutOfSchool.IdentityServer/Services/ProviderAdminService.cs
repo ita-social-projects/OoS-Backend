@@ -314,7 +314,7 @@ public class ProviderAdminService : IProviderAdminService
                     : new List<Workshop>();
 
                 await providerAdminRepository.Update(providerAdmin).ConfigureAwait(false);
-                
+
                 await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Update)
                     .ConfigureAwait(false);
 
