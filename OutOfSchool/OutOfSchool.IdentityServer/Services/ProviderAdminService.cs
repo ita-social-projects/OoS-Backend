@@ -243,7 +243,7 @@ public class ProviderAdminService : IProviderAdminService
             return response;
         }
 
-        if ((!providerAdmin.IsDeputy && !providerAdminUpdateDto.ManagedWorkshopIds.Any()) 
+        if ((!providerAdmin.IsDeputy && !providerAdminUpdateDto.ManagedWorkshopIds.Any())
             || providerAdminUpdateDto.ManagedWorkshopIds is null)
         {
             logger.LogError("Cant update assistant provider admin without related workshops");
