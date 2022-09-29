@@ -122,13 +122,7 @@ public class CurrentUserService : ICurrentUserService
         {
             var isUserRelatedAdmin = await providerAdminService
                 .CheckUserIsRelatedProviderAdmin(UserId, providerId, workshopId).ConfigureAwait(false);
-            if (!isUserRelatedAdmin)
-            {
-                return false;
-            }
+            return isUserRelatedAdmin;
         }
-
-        // TODO: probably messed up logic, was just ctrl+c/ctrl+v
-        return true;
     }
 }
