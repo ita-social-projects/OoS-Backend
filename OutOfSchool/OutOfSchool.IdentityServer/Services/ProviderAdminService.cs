@@ -243,9 +243,10 @@ public class ProviderAdminService : IProviderAdminService
             return response;
         }
 
-        if (!providerAdmin.IsDeputy && !providerAdminUpdateDto.ManagedWorkshopIds.Any())
+        if ((!providerAdmin.IsDeputy && !providerAdminUpdateDto.ManagedWorkshopIds.Any()) 
+            || providerAdminUpdateDto.ManagedWorkshopIds is null)
         {
-            logger.LogError("Cant create assistant provider admin without related workshops");
+            logger.LogError("Cant update assistant provider admin without related workshops");
             response.IsSuccess = false;
             response.HttpStatusCode = HttpStatusCode.BadRequest;
 
@@ -313,7 +314,7 @@ public class ProviderAdminService : IProviderAdminService
                     : new List<Workshop>();
 
                 await providerAdminRepository.Update(providerAdmin).ConfigureAwait(false);
-
+                
                 await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Update)
                     .ConfigureAwait(false);
 
