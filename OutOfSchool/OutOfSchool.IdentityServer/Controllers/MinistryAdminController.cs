@@ -54,6 +54,21 @@ public class MinistryAdminController : Controller
             .CreateMinistryAdminAsync(ministryAdminDto, Url, userId, Request.Headers["X-Request-ID"]);
     }
 
+    [HttpPut("{ministryAdminId}")]
+    [HasPermission(Permissions.MinistryAdminEdit)]
+    public async Task<ResponseDto> Update(string ministryAdminId, UpdateMinistryAdminDto updateMinistryAdminDto)
+    {
+        logger.LogDebug(
+            "Received request " +
+            "{Headers}. {path} started. User(id): {userId}",
+            Request.Headers["X-Request-ID"],
+            path,
+            userId);
+
+        return await ministryAdminService
+            .UpdateMinistryAdminAsync(updateMinistryAdminDto, userId, Request.Headers["X-Request-ID"]);
+    }
+    
     [HttpDelete("{ministryAdminId}")]
     [HasPermission(Permissions.ProviderRemove)]
     public async Task<ResponseDto> Delete(string ministryAdminId)

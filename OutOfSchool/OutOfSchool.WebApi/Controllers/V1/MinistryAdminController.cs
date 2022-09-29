@@ -154,7 +154,7 @@ public class MinistryAdminController : Controller
     /// <summary>
     /// To update MinistryAdmin entity that already exists.
     /// </summary>
-    /// <param name="ministryAdminDto">MinistryAdminDto object with new properties.</param>
+    /// <param name="updateMinistryAdminDto">MinistryAdminDto object with new properties.</param>
     /// <returns>MinistryAdmin's key.</returns>
     [HasPermission(Permissions.UserEdit)]
     [HttpPut]
@@ -162,9 +162,9 @@ public class MinistryAdminController : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Update(MinistryAdminDto ministryAdminDto)
+    public async Task<ActionResult> Update(UpdateMinistryAdminDto updateMinistryAdminDto)
     {
-        if (ministryAdminDto == null)
+        if (updateMinistryAdminDto == null)
         {
             return BadRequest("MinistryAdmin is null.");
         }
@@ -174,12 +174,12 @@ public class MinistryAdminController : Controller
             return BadRequest(ModelState);
         }
 
-        if (userId != ministryAdminDto.Id)
+        if (userId != updateMinistryAdminDto.UserId)
         {
             var currentUserRole = GettingUserProperties.GetUserRole(User);
             if (currentUserRole == nameof(Role.TechAdmin).ToLower())
             {
-                var updatedMinistryAdmin = await ministryAdminService.GetByIdAsync(ministryAdminDto.Id);
+                var updatedMinistryAdmin = await ministryAdminService.GetByIdAsync(updateMinistryAdminDto.UserId);
                 if (updatedMinistryAdmin.AccountStatus == AccountStatus.Accepted)
                 {
                     return StatusCode(403, "Forbidden to update accepted user.");
@@ -191,7 +191,28 @@ public class MinistryAdminController : Controller
             }
         }
 
-        return Ok(await ministryAdminService.Update(ministryAdminDto).ConfigureAwait(false));
+        try
+        {
+            var response = await ministryAdminService.UpdateMinistryAdminAsync(
+                    userId,
+                    updateMinistryAdminDto,
+                    await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
+                .ConfigureAwait(false);
+
+            return response.Match(
+                error => StatusCode((int)error.HttpStatusCode),
+                _ =>
+                {
+                    logger.LogInformation($"Can't update MinistryAdmin with such parameters.\n" +
+                                          "Please check that information are valid.");
+
+                    return Ok();
+                });
+        }
+        catch (DbUpdateConcurrencyException e)
+        {
+            return BadRequest(e);
+        }
     }
 
     /// <summary>

@@ -341,6 +341,142 @@ public class MinistryAdminService : IMinistryAdminService
         }
     }
 
+    public async Task<ResponseDto> UpdateMinistryAdminAsync(
+        UpdateMinistryAdminDto updateMinistryAdminDto,
+        string userId,
+        string requestId)
+    {
+        _ = updateMinistryAdminDto ?? throw new ArgumentNullException(nameof(updateMinistryAdminDto));
+
+        var response = new ResponseDto();
+
+        if (await context.Users.AnyAsync(x => x.Email == updateMinistryAdminDto.Email
+            && x.Id != updateMinistryAdminDto.UserId).ConfigureAwait(false))
+        {
+            logger.LogError("Cant update ministry admin with duplicate email: {email}", updateMinistryAdminDto.Email);
+            response.IsSuccess = false;
+            response.HttpStatusCode = HttpStatusCode.BadRequest;
+            response.Message = $"Cant update provider admin with duplicate email: {updateMinistryAdminDto.Email}";
+
+            return response;
+        }
+
+        var ministryAdmin = GetMinistryAdmin(updateMinistryAdminDto.UserId);
+
+        if (ministryAdmin is null)
+        {
+            response.IsSuccess = false;
+            response.HttpStatusCode = HttpStatusCode.NotFound;
+
+            logger.LogError(
+                "ProviderAdmin(id) {providerAdminUpdateDto.Id} not found. " +
+                "Request(id): {requestId}" +
+                "User(id): {userId}",
+                updateMinistryAdminDto.UserId,
+                requestId,
+                userId);
+
+            return response;
+        }
+
+        var user = await userManager.FindByIdAsync(updateMinistryAdminDto.UserId);
+
+        var executionStrategy = context.Database.CreateExecutionStrategy();
+        return await executionStrategy.Execute(updateMinistryAdminDto, UpdateMinistryAdminOperation).ConfigureAwait(false);
+
+        async Task<ResponseDto> UpdateMinistryAdminOperation(UpdateMinistryAdminDto ministryAdminUpdateDto)
+        {
+            await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+            try
+            {
+                user.FirstName = ministryAdminUpdateDto.FirstName;
+                user.LastName = ministryAdminUpdateDto.LastName;
+                user.MiddleName = ministryAdminUpdateDto.MiddleName;
+                // TODO Email is changed but UserName, NormalixzedUserName - no
+                user.Email = ministryAdminUpdateDto.Email;
+                user.PhoneNumber = ministryAdminUpdateDto.PhoneNumber;
+
+                var updateResult = await userManager.UpdateAsync(user);
+
+                if (!updateResult.Succeeded)
+                {
+                    await transaction.RollbackAsync().ConfigureAwait(false);
+
+                    logger.LogError(
+                        "Error happened while updating MinistryAdmin. Request(id): {requestId}" +
+                        "User(id): {userId}" +
+                        "{Errors}",
+                        requestId,
+                        userId,
+                        string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description)));
+
+                    response.IsSuccess = false;
+                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                    return response;
+                }
+
+                var updateSecurityStamp = await userManager.UpdateSecurityStampAsync(user);
+
+                if (!updateSecurityStamp.Succeeded)
+                {
+                    await transaction.RollbackAsync().ConfigureAwait(false);
+
+                    logger.LogError(
+                        "Error happened while updating security stamp. MinistryAdmin. Request(id): {requestId}" +
+                        "User(id): {userId}" +
+                        "{Errors}",
+                        requestId,
+                        userId,
+                        string.Join(Environment.NewLine, updateSecurityStamp.Errors.Select(e => e.Description)));
+
+                    response.IsSuccess = false;
+                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                    return response;
+                }
+
+                // TODO How handle if such InstitutionId doesn't exist
+                ministryAdmin.InstitutionId = updateMinistryAdminDto.InstitutionId;
+
+                await institutionAdminRepository.Update(ministryAdmin).ConfigureAwait(false);
+                
+                // TODO Add write changeslog
+
+                await transaction.CommitAsync().ConfigureAwait(false);
+
+                logger.LogInformation(
+                    "MinistryAdmin(id):{ministryAdminUpdateDto.UserId} was successfully updated by " +
+                    "User(id): {userId}. Request(id): {requestId}",
+                    ministryAdminUpdateDto.UserId,
+                    userId,
+                    requestId);
+
+                response.IsSuccess = true;
+                response.HttpStatusCode = HttpStatusCode.OK;
+                response.Result = ministryAdminUpdateDto;
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync().ConfigureAwait(false);
+
+                logger.LogError(
+                    "Error happened while updating ProviderAdmin. Request(id): {requestId}" +
+                    "User(id): {userId} {ex.Message}",
+                    requestId,
+                    userId,
+                    ex.Message);
+
+                response.IsSuccess = false;
+                response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                return response;
+            }
+        }
+    }
+    
     private InstitutionAdmin GetMinistryAdmin(string ministryAdminId)
         => context.InstitutionAdmins.SingleOrDefault(pa => pa.UserId == ministryAdminId);
 }

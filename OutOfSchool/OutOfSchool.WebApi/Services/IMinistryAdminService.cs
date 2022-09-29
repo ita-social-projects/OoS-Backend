@@ -33,9 +33,11 @@ public interface IMinistryAdminService
     /// <summary>
     /// Update Ministry Admin.
     /// </summary>
-    /// <param name="ministryAdminDto">Entity to update.</param>
-    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task<MinistryAdminDto> Update(MinistryAdminDto ministryAdminDto);
+    /// <param name="userId">Id of user.</param>
+    /// <param name="updateMinistryAdminDto">Entity to update.</param>
+    /// <param name="token">Valid token with MinistryAdminUpdate permissions.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    Task<Either<ErrorResponse, UpdateMinistryAdminDto>> UpdateMinistryAdminAsync(string userId, UpdateMinistryAdminDto updateMinistryAdminDto, string token);
 
     /// <summary>
     /// Delete Ministry Admin.

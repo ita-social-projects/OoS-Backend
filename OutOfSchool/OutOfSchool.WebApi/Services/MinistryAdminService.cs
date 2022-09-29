@@ -156,27 +156,62 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
     }
 
     /// <inheritdoc/>
-    public async Task<MinistryAdminDto> Update(MinistryAdminDto ministryAdminDto)
+    public async Task<Either<ErrorResponse, UpdateMinistryAdminDto>> UpdateMinistryAdminAsync(
+        string userId,
+        UpdateMinistryAdminDto updateMinistryAdminDto,
+        //Guid providerId,
+        string token)
     {
-        ArgumentNullException.ThrowIfNull(ministryAdminDto);
+        _ = updateMinistryAdminDto ?? throw new ArgumentNullException(nameof(updateMinistryAdminDto));
 
-        Logger.LogInformation("Updating MinistryAdmin with User Id = {ministryAdminDto.Id} started", ministryAdminDto.Id);
+        Logger.LogDebug("ProviderAdmin(id): {MinistryAdminId} updating was started. User(id): {UserId}", updateMinistryAdminDto.UserId, userId);
 
-        try
+        //TODO Add checking if ministry Admin belongs to Institution and is exist MinistryAdmin with such UserId
+
+        var ministryAdmin = await institutionAdminRepository.GetByIdAsync(updateMinistryAdminDto.UserId)
+            .ConfigureAwait(false);
+
+        if (ministryAdmin is null)
         {
-            var user = await userRepository.GetById(ministryAdminDto.Id);
+            Logger.LogError("MinistryAdmin(id) {MinistryAdminId} not found. User(id): {UserId}", updateMinistryAdminDto.UserId, userId);
 
-            var updatedUser = await userRepository.Update(mapper.Map((BaseUserDto)ministryAdminDto, user)).ConfigureAwait(false);
-
-            Logger.LogInformation("User with Id = {updatedUser.Id} updated successfully", updatedUser.Id);
-
-            return ministryAdminDto;
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.NotFound,
+            };
         }
-        catch (DbUpdateConcurrencyException)
+
+        var request = new Request()
         {
-            Logger.LogError("Updating failed. User with Id = {ministryAdminDto.Id} doesn't exist in the system", ministryAdminDto.Id);
-            throw;
-        }
+            HttpMethodType = HttpMethodType.Put,
+            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.UpdateMinistryAdmin + updateMinistryAdminDto.UserId),
+            Token = token,
+            Data = updateMinistryAdminDto,
+            RequestId = Guid.NewGuid(),
+        };
+
+        Logger.LogDebug(
+            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            request.HttpMethodType,
+            request.RequestId,
+            userId,
+            request.Url);
+
+        var response = await SendRequest<ResponseDto>(request)
+            .ConfigureAwait(false);
+
+        return response
+            .FlatMap<ResponseDto>(r => r.IsSuccess
+                ? r
+                : new ErrorResponse
+                {
+                    HttpStatusCode = r.HttpStatusCode,
+                    Message = r.Message,
+                })
+            .Map(result => result.Result is not null
+                ? JsonConvert
+                    .DeserializeObject<UpdateMinistryAdminDto>(result.Result.ToString())
+                : null);
     }
 
     public async Task<Either<ErrorResponse, ActionResult>> DeleteMinistryAdminAsync(string ministryAdminId, string userId, string token)
