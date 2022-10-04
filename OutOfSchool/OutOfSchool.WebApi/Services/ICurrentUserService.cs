@@ -9,5 +9,7 @@ public interface ICurrentUserService
 
     public bool IsInRole(Role role);
 
-    public Task UserHasRights(params IUserType[] userTypes);
+    public bool IsDeputyOrProviderAdmin();
+
+    public Task UserHasRights(params IUserRights[] userTypes);
 }
