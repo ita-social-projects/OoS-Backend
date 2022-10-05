@@ -56,8 +56,9 @@ public class CurrentUserService : ICurrentUserService
         if (user?.Identity?.IsAuthenticated ?? false)
         {
             var parent = userTypes.OfType<ParentRights>().FirstOrDefault();
-            var provider = userTypes.OfType<ProviderAdminRights>().FirstOrDefault();
-            var providerAdmin = userTypes.OfType<ProviderOrAdminRights>().FirstOrDefault();
+            var provider = userTypes.OfType<ProviderRights>().FirstOrDefault();
+            var providerAdmin = userTypes.OfType<ProviderAdminRights>().FirstOrDefault();
+            var providerAdminWorkshop = userTypes.OfType<ProviderAdminWorkshopRights>().FirstOrDefault();
 
             var result = await Task.WhenAll(
                 new List<Task<bool>>
@@ -65,6 +66,7 @@ public class CurrentUserService : ICurrentUserService
                         UserHasRights(parent),
                         UserHasRights(provider),
                         UserHasRights(providerAdmin),
+                        UserHasRights(providerAdminWorkshop),
                     }
                     .Select(Execute));
             userHasRights = result.Any(hasRight => hasRight);
@@ -100,16 +102,21 @@ public class CurrentUserService : ICurrentUserService
         where T : IUserRights
         => userType switch
         {
-            ParentRights parent when IsInRole(Role.Parent) => ParentHasRights(parent.parentId),
-            ProviderAdminRights providerAdmin when IsDeputyOrProviderAdmin() => ProviderAdminHasRights(providerAdmin.providerAdminId),
-            ProviderOrAdminRights providerOrAdmin when IsDeputyOrProviderAdmin() => ProviderAdminHasWorkshopRights(providerOrAdmin.providerId, providerOrAdmin.workshopId),
-            ProviderOrAdminRights providerOrAdmin when IsInRole(Role.Provider) && !IsDeputyOrProviderAdmin() => ProviderHasRights(providerOrAdmin.providerId),
+            ParentRights parent => ParentHasRights(parent.parentId),
+            ProviderAdminRights providerAdmin => ProviderAdminHasRights(providerAdmin.providerAdminId),
+            ProviderAdminWorkshopRights providerAdminWorkshop => ProviderAdminHasWorkshopRights(providerAdminWorkshop.providerId, providerAdminWorkshop.workshopId),
+            ProviderRights provider => ProviderHasRights(provider.providerId),
             null => Task.FromResult(false),
             _ => throw new NotImplementedException("Unknown user rights type")
         };
 
     private async Task<bool> ParentHasRights(Guid parentId)
     {
+        if (!IsInRole(Role.Parent))
+        {
+            return false;
+        }
+
         var parent = await cache.GetOrAddAsync($"Rights_{UserId}", () => parentService.GetByUserId(UserId), TimeSpan.FromMinutes(5.0));
 
         var result = parent.Id == parentId;
@@ -127,6 +134,11 @@ public class CurrentUserService : ICurrentUserService
 
     private async Task<bool> ProviderHasRights(Guid providerId)
     {
+        if (!IsInRole(Role.Provider) || IsDeputyOrProviderAdmin())
+        {
+            return false;
+        }
+
         var provider = await cache.GetOrAddAsync($"Rights_{UserId}", () => providerService.GetByUserId(UserId), TimeSpan.FromMinutes(5.0));
 
         var result = providerId == (provider?.Id ?? Guid.Empty);
@@ -144,6 +156,11 @@ public class CurrentUserService : ICurrentUserService
 
     private async Task<bool> ProviderAdminHasRights(string providerAdminId)
     {
+        if (!IsDeputyOrProviderAdmin())
+        {
+            return false;
+        }
+
         var providerAdmin = await cache.GetOrAddAsync($"Rights_{UserId}", () => providerAdminService.GetById(UserId), TimeSpan.FromMinutes(5.0));
 
         var result = providerAdmin.UserId == providerAdminId;
@@ -161,6 +178,11 @@ public class CurrentUserService : ICurrentUserService
 
     private async Task<bool> ProviderAdminHasWorkshopRights(Guid providerId, Guid workshopId)
     {
+        if (!IsDeputyOrProviderAdmin())
+        {
+            return false;
+        }
+
         var isUserRelatedAdmin = await cache.GetOrAddAsync(
             $"Rights_{UserId}_{providerId}_{workshopId}",
             () => providerAdminService.CheckUserIsRelatedProviderAdmin(UserId, providerId, workshopId),

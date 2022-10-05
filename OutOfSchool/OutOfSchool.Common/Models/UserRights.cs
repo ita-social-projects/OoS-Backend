@@ -12,5 +12,8 @@ public record ParentRights(Guid parentId)
 public record ProviderAdminRights(string providerAdminId)
     : IUserRights;
 
-public record ProviderOrAdminRights(Guid providerId, Guid workshopId = default)
+public record ProviderRights(Guid providerId)
+    : IUserRights;
+
+public record ProviderAdminWorkshopRights(Guid providerId, Guid workshopId)
     : IUserRights;
