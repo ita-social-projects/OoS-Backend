@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
 
@@ -9,10 +10,13 @@ public class Teacher : IKeyedEntity<Guid>, IImageDependentEntity<Teacher>
 {
     public Guid Id { get; set; }
 
+    [MaxLength(60)]
     public string FirstName { get; set; }
 
+    [MaxLength(60)]
     public string LastName { get; set; }
 
+    [MaxLength(60)]
     public string MiddleName { get; set; }
 
     public Gender Gender { get; set; }

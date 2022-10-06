@@ -25,7 +25,7 @@ public class WorkshopBaseCard
     public Guid WorkshopId { get; set; }
 
     [Required]
-    [MaxLength(60)]
+    [MaxLength(120)]
     public string ProviderTitle { get; set; } = string.Empty;
 
     public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;

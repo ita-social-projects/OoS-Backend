@@ -74,7 +74,7 @@ public class WorkshopDTO : IValidatableObject
     public IFormFile CoverImage { get; set; }
 
     [Required]
-    [MaxLength(60)]
+    [MaxLength(120)]
     public string ProviderTitle { get; set; } = string.Empty;
 
     [EnumDataType(typeof(OwnershipType), ErrorMessage = Constants.EnumErrorMessage)]

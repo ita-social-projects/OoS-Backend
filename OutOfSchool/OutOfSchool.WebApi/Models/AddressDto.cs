@@ -8,7 +8,7 @@ public class AddressDto
     public long Id { get; set; }
 
     [Required(ErrorMessage = "Street is required")]
-    [MaxLength(30)]
+    [MaxLength(60)]
     public string Street { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Building number is required")]

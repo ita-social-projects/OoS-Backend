@@ -71,7 +71,7 @@ public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>
     public string CoverImageId { get; set; } = string.Empty;
 
     [Required]
-    [MaxLength(60)]
+    [MaxLength(120)]
     public string ProviderTitle { get; set; } = string.Empty;
 
     public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;
