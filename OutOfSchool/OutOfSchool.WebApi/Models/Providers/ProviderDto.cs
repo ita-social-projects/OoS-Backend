@@ -18,7 +18,7 @@ public class ProviderDto
 
     [Required(ErrorMessage = "Full Title is required")]
     [DataType(DataType.Text)]
-    [MaxLength(60)]
+    [MaxLength(120)]
     [MinLength(1)]
     public string FullTitle { get; set; }
 
