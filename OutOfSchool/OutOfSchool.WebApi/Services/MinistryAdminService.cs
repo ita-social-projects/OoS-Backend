@@ -68,16 +68,16 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         return mapper.Map<MinistryAdminDto>(ministryAdmin);
     }
 
-    public async Task<Either<ErrorResponse, CreateMinistryAdminDto>> CreateMinistryAdminAsync(string userId, CreateMinistryAdminDto ministryAdminDto, string token)
+    public async Task<Either<ErrorResponse, MinistryAdminBaseDto>> CreateMinistryAdminAsync(string userId, MinistryAdminBaseDto ministryAdminBaseDto, string token)
     {
         Logger.LogDebug("ministryAdmin creating was started. User(id): {UserId}", userId);
 
-        ArgumentNullException.ThrowIfNull(ministryAdminDto);
+        ArgumentNullException.ThrowIfNull(ministryAdminBaseDto);
 
-        if (await IsSuchEmailExisted(ministryAdminDto.Email))
+        if (await IsSuchEmailExisted(ministryAdminBaseDto.Email))
         {
-            Logger.LogDebug("ministryAdmin creating is not possible. Username {Email} is already taken", ministryAdminDto.Email);
-            throw new InvalidOperationException($"Username {ministryAdminDto.Email} is already taken.");
+            Logger.LogDebug("ministryAdmin creating is not possible. Username {Email} is already taken", ministryAdminBaseDto.Email);
+            throw new InvalidOperationException($"Username {ministryAdminBaseDto.Email} is already taken.");
         }
 
         var request = new Request()
@@ -85,7 +85,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             HttpMethodType = HttpMethodType.Post,
             Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateMinistryAdmin),
             Token = token,
-            Data = ministryAdminDto,
+            Data = ministryAdminBaseDto,
             RequestId = Guid.NewGuid(),
         };
 
@@ -109,7 +109,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
                 })
             .Map(result => result.Result is not null
                 ? JsonConvert
-                    .DeserializeObject<CreateMinistryAdminDto>(result.Result.ToString())
+                    .DeserializeObject<MinistryAdminBaseDto>(result.Result.ToString())
                 : null);
     }
 
@@ -156,9 +156,9 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
     }
 
     /// <inheritdoc/>
-    public async Task<Either<ErrorResponse, UpdateMinistryAdminDto>> UpdateMinistryAdminAsync(
+    public async Task<Either<ErrorResponse, MinistryAdminBaseDto>> UpdateMinistryAdminAsync(
         string userId,
-        UpdateMinistryAdminDto updateMinistryAdminDto,
+        MinistryAdminBaseDto updateMinistryAdminDto,
         //Guid providerId,
         string token)
     {
@@ -210,7 +210,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
                 })
             .Map(result => result.Result is not null
                 ? JsonConvert
-                    .DeserializeObject<UpdateMinistryAdminDto>(result.Result.ToString())
+                    .DeserializeObject<MinistryAdminBaseDto>(result.Result.ToString())
                 : null);
     }
 

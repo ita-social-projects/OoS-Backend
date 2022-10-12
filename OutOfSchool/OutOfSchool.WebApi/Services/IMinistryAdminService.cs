@@ -25,10 +25,10 @@ public interface IMinistryAdminService
     /// Create Ministry Admin.
     /// </summary>
     /// <param name="userId">Id of user.</param>
-    /// <param name="ministryAdminDto">Entity to add.</param>
+    /// <param name="ministryAdminBaseDto">Entity to add.</param>
     /// <param name="token">Valid token with MinistryAdminAddNew permissions.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<Either<ErrorResponse, CreateMinistryAdminDto>> CreateMinistryAdminAsync(string userId, CreateMinistryAdminDto ministryAdminDto, string token);
+    Task<Either<ErrorResponse, MinistryAdminBaseDto>> CreateMinistryAdminAsync(string userId, MinistryAdminBaseDto ministryAdminBaseDto, string token);
 
     /// <summary>
     /// Update Ministry Admin.
@@ -37,7 +37,7 @@ public interface IMinistryAdminService
     /// <param name="updateMinistryAdminDto">Entity to update.</param>
     /// <param name="token">Valid token with MinistryAdminUpdate permissions.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<Either<ErrorResponse, UpdateMinistryAdminDto>> UpdateMinistryAdminAsync(string userId, UpdateMinistryAdminDto updateMinistryAdminDto, string token);
+    Task<Either<ErrorResponse, MinistryAdminBaseDto>> UpdateMinistryAdminAsync(string userId, MinistryAdminBaseDto updateMinistryAdminDto, string token);
 
     /// <summary>
     /// Delete Ministry Admin.

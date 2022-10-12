@@ -14,10 +14,10 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers;
 [TestFixture]
 public class MinistryAdminControllerTests
 {
-    private MinistryAdminController ministryAdminController;
+    private readonly MinistryAdminController ministryAdminController;
     private readonly Mock<ILogger<MinistryAdminController>> fakeLogger;
     private readonly Mock<IMinistryAdminService> fakeMinistryAdminService;
-    private Mock<HttpContext> fakehttpContext;
+    private readonly Mock<HttpContext> fakehttpContext;
 
     public MinistryAdminControllerTests()
     {
@@ -36,7 +36,7 @@ public class MinistryAdminControllerTests
     [SetUp]
     public void Setup()
     {
-        var fakeMinistryAdminDto = new CreateMinistryAdminDto()
+        var fakeMinistryAdminDto = new MinistryAdminBaseDto()
         {
             FirstName = "fakeFirstName",
             LastName = "fakeLastName",
@@ -50,7 +50,7 @@ public class MinistryAdminControllerTests
             Result = fakeMinistryAdminDto
         };
 
-        fakeMinistryAdminService.Setup(s => s.CreateMinistryAdminAsync(It.IsAny<CreateMinistryAdminDto>(),
+        fakeMinistryAdminService.Setup(s => s.CreateMinistryAdminAsync(It.IsAny<MinistryAdminBaseDto>(),
             It.IsAny<IUrlHelper>(), It.IsAny<string>(),
             It.IsAny<string>())).ReturnsAsync(fakeResponseDto);
 
@@ -73,7 +73,7 @@ public class MinistryAdminControllerTests
         ministryAdminController.ModelState.AddModelError("fakeKey", "Model is invalid");
 
         // Act
-        var result = await ministryAdminController.Create(new CreateMinistryAdminDto());
+        var result = await ministryAdminController.Create(new MinistryAdminBaseDto());
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -87,7 +87,7 @@ public class MinistryAdminControllerTests
         ministryAdminController.ModelState.Clear();
         
         // Act
-        var result = await ministryAdminController.Create(new CreateMinistryAdminDto());
+        var result = await ministryAdminController.Create(new MinistryAdminBaseDto());
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -105,7 +105,7 @@ public class MinistryAdminControllerTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(true, result.IsSuccess);
-        Assert.AreEqual("fakeFirstName", ((CreateMinistryAdminDto)result.Result).FirstName);
+        Assert.AreEqual("fakeFirstName", ((MinistryAdminBaseDto)result.Result).FirstName);
     }
     
     [Test]
@@ -119,6 +119,6 @@ public class MinistryAdminControllerTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(true, result.IsSuccess);
-        Assert.AreEqual("fakeFirstName", ((CreateMinistryAdminDto)result.Result).FirstName);
+        Assert.AreEqual("fakeFirstName", ((MinistryAdminBaseDto)result.Result).FirstName);
     }
 }

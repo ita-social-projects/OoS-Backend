@@ -115,9 +115,9 @@ public class MinistryAdminController : Controller
     /// <summary>
     /// Method for creating new MinistryAdmin.
     /// </summary>
-    /// <param name="ministryAdmin">Entity to add.</param>
+    /// <param name="ministryAdminBase">Entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CreateMinistryAdminDto))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(MinistryAdminBaseDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -125,7 +125,7 @@ public class MinistryAdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HasPermission(Permissions.MinistryAdminAddNew)]
     [HttpPost]
-    public async Task<ActionResult> Create(CreateMinistryAdminDto ministryAdmin)
+    public async Task<ActionResult> Create(MinistryAdminBaseDto ministryAdminBase)
     {
         logger.LogDebug("{Path} started. User(id): {UserId}", path, userId);
 
@@ -138,7 +138,7 @@ public class MinistryAdminController : Controller
 
         var response = await ministryAdminService.CreateMinistryAdminAsync(
                 userId,
-                ministryAdmin,
+                ministryAdminBase,
                 await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
             .ConfigureAwait(false);
 
@@ -162,7 +162,7 @@ public class MinistryAdminController : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Update(UpdateMinistryAdminDto updateMinistryAdminDto)
+    public async Task<ActionResult> Update(MinistryAdminBaseDto updateMinistryAdminDto)
     {
         if (updateMinistryAdminDto == null)
         {

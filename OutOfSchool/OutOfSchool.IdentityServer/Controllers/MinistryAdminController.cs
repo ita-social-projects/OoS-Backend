@@ -33,7 +33,7 @@ public class MinistryAdminController : Controller
 
     [HasPermission(Permissions.MinistryAdminAddNew)]
     [HttpPost]
-    public async Task<ResponseDto> Create(CreateMinistryAdminDto ministryAdminDto)
+    public async Task<ResponseDto> Create(MinistryAdminBaseDto ministryAdminBaseDto)
     {
         logger.LogDebug(
             "Received request {RequestHeader}. {Path} started. User(id): {UserId}",
@@ -51,12 +51,12 @@ public class MinistryAdminController : Controller
         }
 
         return await ministryAdminService
-            .CreateMinistryAdminAsync(ministryAdminDto, Url, userId, Request.Headers["X-Request-ID"]);
+            .CreateMinistryAdminAsync(ministryAdminBaseDto, Url, userId, Request.Headers["X-Request-ID"]);
     }
 
     [HttpPut("{ministryAdminId}")]
     [HasPermission(Permissions.MinistryAdminEdit)]
-    public async Task<ResponseDto> Update(string ministryAdminId, UpdateMinistryAdminDto updateMinistryAdminDto)
+    public async Task<ResponseDto> Update(string ministryAdminId, MinistryAdminBaseDto updateMinistryAdminDto)
     {
         logger.LogDebug(
             "Received request " +

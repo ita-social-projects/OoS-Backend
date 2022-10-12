@@ -49,17 +49,17 @@ public class MinistryAdminService : IMinistryAdminService
     }
 
     public async Task<ResponseDto> CreateMinistryAdminAsync(
-        CreateMinistryAdminDto ministryAdminDto,
+        MinistryAdminBaseDto ministryAdminBaseDto,
         IUrlHelper url,
         string userId,
         string requestId)
     {
-        ArgumentNullException.ThrowIfNull(ministryAdminDto);
+        ArgumentNullException.ThrowIfNull(ministryAdminBaseDto);
         ArgumentNullException.ThrowIfNull(url);
         ArgumentNullException.ThrowIfNull(userId);
         ArgumentNullException.ThrowIfNull(requestId);
 
-        var user = mapper.Map<User>(ministryAdminDto);
+        var user = mapper.Map<User>(ministryAdminBaseDto);
 
         var password = PasswordGenerator
             .GenerateRandomPassword(userManager.Options.Password);
@@ -117,14 +117,14 @@ public class MinistryAdminService : IMinistryAdminService
                     return response;
                 }
 
-                ministryAdminDto.UserId = user.Id;
+                ministryAdminBaseDto.UserId = user.Id;
 
-                var ministryAdmin = mapper.Map<InstitutionAdmin>(ministryAdminDto);
+                var ministryAdmin = mapper.Map<InstitutionAdmin>(ministryAdminBaseDto);
                 await institutionAdminRepository.Create(ministryAdmin)
                     .ConfigureAwait(false);
 
                 logger.LogInformation(
-                    $"MinistryAdmin(id):{ministryAdminDto.UserId} was successfully created by " +
+                    $"MinistryAdmin(id):{ministryAdminBaseDto.UserId} was successfully created by " +
                     $"User(id): {userId}. Request(id): {requestId}");
 
                 // TODO:
@@ -155,7 +155,7 @@ public class MinistryAdminService : IMinistryAdminService
                 await transaction.CommitAsync();
                 response.IsSuccess = true;
                 response.HttpStatusCode = HttpStatusCode.OK;
-                response.Result = ministryAdminDto;
+                response.Result = ministryAdminBaseDto;
 
                 return response;
             }
@@ -342,7 +342,7 @@ public class MinistryAdminService : IMinistryAdminService
     }
 
     public async Task<ResponseDto> UpdateMinistryAdminAsync(
-        UpdateMinistryAdminDto updateMinistryAdminDto,
+        MinistryAdminBaseDto updateMinistryAdminDto,
         string userId,
         string requestId)
     {
@@ -384,7 +384,7 @@ public class MinistryAdminService : IMinistryAdminService
         var executionStrategy = context.Database.CreateExecutionStrategy();
         return await executionStrategy.Execute(updateMinistryAdminDto, UpdateMinistryAdminOperation).ConfigureAwait(false);
 
-        async Task<ResponseDto> UpdateMinistryAdminOperation(UpdateMinistryAdminDto ministryAdminUpdateDto)
+        async Task<ResponseDto> UpdateMinistryAdminOperation(MinistryAdminBaseDto ministryAdminUpdateDto)
         {
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
             try
