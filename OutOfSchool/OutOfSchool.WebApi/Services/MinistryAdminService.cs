@@ -159,15 +159,13 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
     public async Task<Either<ErrorResponse, MinistryAdminBaseDto>> UpdateMinistryAdminAsync(
         string userId,
         MinistryAdminBaseDto updateMinistryAdminDto,
-        //Guid providerId,
         string token)
     {
         _ = updateMinistryAdminDto ?? throw new ArgumentNullException(nameof(updateMinistryAdminDto));
 
         Logger.LogDebug("ProviderAdmin(id): {MinistryAdminId} updating was started. User(id): {UserId}", updateMinistryAdminDto.UserId, userId);
 
-        //TODO Add checking if ministry Admin belongs to Institution and is exist MinistryAdmin with such UserId
-
+        // TODO Add checking if ministry Admin belongs to Institution and is exist MinistryAdmin with such UserId
         var ministryAdmin = await institutionAdminRepository.GetByIdAsync(updateMinistryAdminDto.UserId)
             .ConfigureAwait(false);
 

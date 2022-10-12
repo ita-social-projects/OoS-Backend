@@ -68,7 +68,7 @@ public class MinistryAdminController : Controller
         return await ministryAdminService
             .UpdateMinistryAdminAsync(updateMinistryAdminDto, userId, Request.Headers["X-Request-ID"]);
     }
-    
+
     [HttpDelete("{ministryAdminId}")]
     [HasPermission(Permissions.ProviderRemove)]
     public async Task<ResponseDto> Delete(string ministryAdminId)

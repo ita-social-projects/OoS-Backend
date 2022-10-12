@@ -392,7 +392,8 @@ public class MinistryAdminService : IMinistryAdminService
                 user.FirstName = ministryAdminUpdateDto.FirstName;
                 user.LastName = ministryAdminUpdateDto.LastName;
                 user.MiddleName = ministryAdminUpdateDto.MiddleName;
-                // TODO Email is changed but UserName, NormalixzedUserName - no
+
+                // TODO Email is changed but UserName, NormalizedUserName - no
                 user.Email = ministryAdminUpdateDto.Email;
                 user.PhoneNumber = ministryAdminUpdateDto.PhoneNumber;
 
@@ -440,9 +441,8 @@ public class MinistryAdminService : IMinistryAdminService
                 ministryAdmin.InstitutionId = updateMinistryAdminDto.InstitutionId;
 
                 await institutionAdminRepository.Update(ministryAdmin).ConfigureAwait(false);
-                
-                // TODO Add write changeslog
 
+                // TODO Add write changeslog
                 await transaction.CommitAsync().ConfigureAwait(false);
 
                 logger.LogInformation(
@@ -476,7 +476,7 @@ public class MinistryAdminService : IMinistryAdminService
             }
         }
     }
-    
+
     private InstitutionAdmin GetMinistryAdmin(string ministryAdminId)
         => context.InstitutionAdmins.SingleOrDefault(pa => pa.UserId == ministryAdminId);
 }
