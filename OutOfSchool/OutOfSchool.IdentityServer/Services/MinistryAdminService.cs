@@ -251,7 +251,8 @@ public class MinistryAdminService : IMinistryAdminService
     public async Task<ResponseDto> BlockMinistryAdminAsync(
         string ministryAdminId,
         string userId,
-        string requestId)
+        string requestId, 
+        bool isBlocked = false)
     {
         ArgumentNullException.ThrowIfNull(ministryAdminId);
         ArgumentNullException.ThrowIfNull(userId);
@@ -283,7 +284,7 @@ public class MinistryAdminService : IMinistryAdminService
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
             try
             {
-                user.IsBlocked = true;
+                user.IsBlocked = isBlocked;
                 var updateResult = await userManager.UpdateAsync(user);
 
                 if (!updateResult.Succeeded)

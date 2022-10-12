@@ -228,7 +228,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
                 : null);
     }
 
-    public async Task<Either<ErrorResponse, ActionResult>> BlockMinistryAdminAsync(string ministryAdminId, string userId, string token)
+    public async Task<Either<ErrorResponse, ActionResult>> BlockMinistryAdminAsync(string ministryAdminId, string userId, string token, bool isBlocked = false)
     {
         Logger.LogDebug("MinistryAdmin(id): {MinistryAdminId} blocking was started. User(id): {UserId}", ministryAdminId, userId);
 
@@ -248,7 +248,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.BlockMinistryAdmin + ministryAdminId),
+            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.BlockMinistryAdmin + ministryAdminId + @"/" + isBlocked),
             Token = token,
             RequestId = Guid.NewGuid(),
         };

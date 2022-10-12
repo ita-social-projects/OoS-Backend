@@ -232,14 +232,15 @@ public class MinistryAdminController : Controller
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HasPermission(Permissions.MinistryAdminEdit)]
     [HttpPut]
-    public async Task<ActionResult> Block(string ministryAdminId)
+    public async Task<ActionResult> Block(string ministryAdminId, bool isBlocked = false)
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
 
         var response = await ministryAdminService.BlockMinistryAdminAsync(
                 ministryAdminId,
                 userId,
-                await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
+                await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false),
+                isBlocked)
             .ConfigureAwait(false);
 
         return response.Match<ActionResult>(
