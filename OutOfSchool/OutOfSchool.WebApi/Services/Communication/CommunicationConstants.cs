@@ -12,6 +12,8 @@ public static class CommunicationConstants
 
     public const string CreateMinistryAdmin = "ministryadmin/create";
 
+    public const string UpdateMinistryAdmin = "ministryadmin/update/";
+
     public const string DeleteMinistryAdmin = "ministryadmin/delete/";
 
     public const string BlockMinistryAdmin = "ministryadmin/block/";

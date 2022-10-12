@@ -6,8 +6,13 @@ namespace OutOfSchool.IdentityServer.Services.Interfaces;
 public interface IMinistryAdminService
 {
     Task<ResponseDto> CreateMinistryAdminAsync(
-        CreateMinistryAdminDto ministryAdminDto,
+        MinistryAdminBaseDto ministryAdminBaseDto,
         IUrlHelper url,
+        string userId,
+        string requestId);
+
+    Task<ResponseDto> UpdateMinistryAdminAsync(
+        MinistryAdminBaseDto updateMinistryAdminDto,
         string userId,
         string requestId);
 

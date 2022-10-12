@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace OutOfSchool.Common.Models;
 
-public class CreateMinistryAdminDto
+public class AdminBaseDto
 {
     [Required(ErrorMessage = "FirstName is required")]
     public string FirstName { get; set; }
@@ -24,13 +21,7 @@ public class CreateMinistryAdminDto
     [RegularExpression(
         Constants.PhoneNumberRegexViewModel,
         ErrorMessage = Constants.PhoneErrorMessage)]
+    [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
+    [MaxLength(Constants.UnifiedPhoneLength)]
     public string PhoneNumber { get; set; }
-
-    [DataType(DataType.DateTime)]
-    public DateTimeOffset CreatingTime { get; set; }
-
-    [Required(ErrorMessage = "InstitutionId is required")]
-    public Guid InstitutionId { get; set; }
-
-    public string UserId { get; set; }
 }
