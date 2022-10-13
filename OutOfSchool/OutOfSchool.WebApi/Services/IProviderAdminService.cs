@@ -27,7 +27,8 @@ public interface IProviderAdminService
         string providerAdminId,
         string userId,
         Guid providerId,
-        string token);
+        string token,
+        bool isBlocked);
 
     Task GiveAssistantAccessToWorkshop(string userId, Guid workshopId);
 

@@ -70,7 +70,7 @@ public class MinistryAdminController : Controller
     }
 
     [HttpDelete("{ministryAdminId}")]
-    [HasPermission(Permissions.ProviderRemove)]
+    [HasPermission(Permissions.MinistryAdminRemove)]
     public async Task<ResponseDto> Delete(string ministryAdminId)
     {
         ArgumentNullException.ThrowIfNull(ministryAdminId);
@@ -83,15 +83,15 @@ public class MinistryAdminController : Controller
             .DeleteMinistryAdminAsync(ministryAdminId, userId, Request.Headers["X-Request-ID"]);
     }
 
-    [HttpPut("{ministryAdminId}")]
-    [HasPermission(Permissions.ProviderRemove)]
-    public async Task<ResponseDto> Block(string ministryAdminId)
+    [HttpPut("{ministryAdminId}/{isBlocked}")]
+    [HasPermission(Permissions.MinistryAdminEdit)]
+    public async Task<ResponseDto> Block(string ministryAdminId, bool isBlocked)
     {
         logger.LogDebug(
             "Received request {RequestHeader}. {Path} started. User(id): {UserId}",
             Request.Headers["X-Request-ID"], path, userId);
 
         return await ministryAdminService
-            .BlockMinistryAdminAsync(ministryAdminId, userId, Request.Headers["X-Request-ID"]);
+            .BlockMinistryAdminAsync(ministryAdminId, userId, Request.Headers["X-Request-ID"], isBlocked);
     }
 }

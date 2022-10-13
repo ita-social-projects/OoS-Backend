@@ -58,7 +58,7 @@ public class MinistryAdminControllerTests
             It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(fakeResponseDto);
         
         fakeMinistryAdminService.Setup(s => s.BlockMinistryAdminAsync(It.IsAny<string>(),
-            It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(fakeResponseDto);
+            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(fakeResponseDto);
         
         var fakeHttpContext = new Mock<HttpContext>();
         fakeHttpContext.Setup(s => s.Request.Headers[It.IsAny<string>()]).Returns("Ok");
@@ -114,7 +114,7 @@ public class MinistryAdminControllerTests
         // Arrange
         
         // Act
-        var result = await ministryAdminController.Block("fakeAdminId");
+        var result = await ministryAdminController.Block("fakeAdminId", It.IsAny<bool>());
 
         // Assert
         Assert.That(result, Is.Not.Null);

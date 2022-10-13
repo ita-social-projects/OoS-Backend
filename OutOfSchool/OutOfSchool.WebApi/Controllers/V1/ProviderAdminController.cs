@@ -153,23 +153,31 @@ public class ProviderAdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPut]
-    public async Task<ActionResult> Block(string providerAdminId, Guid providerId)
+    public async Task<ActionResult> Block(string providerAdminId, Guid providerId, bool? isBlocked)
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
+
+        if (isBlocked is null)
+        {
+            logger.LogDebug("IsBlocked parameter is not specified");
+            return BadRequest("IsBlocked parameter is required");
+        }
 
         var response = await providerAdminService.BlockProviderAdminAsync(
                 providerAdminId,
                 userId,
                 providerId,
-                await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
+                await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false),
+                (bool)isBlocked)
             .ConfigureAwait(false);
 
         return response.Match(
             error => StatusCode((int)error.HttpStatusCode),
             _ =>
             {
-                logger.LogInformation($"Succesfully blocked ProviderAdmin(id): {providerAdminId} by User(id): {userId}.");
+                logger.LogInformation($"Successfully blocked ProviderAdmin(id): {providerAdminId} by User(id): {userId}.");
 
                 return Ok();
             });
