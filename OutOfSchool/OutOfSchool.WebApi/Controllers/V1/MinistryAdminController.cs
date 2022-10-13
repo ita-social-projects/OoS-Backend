@@ -230,24 +230,31 @@ public class MinistryAdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HasPermission(Permissions.MinistryAdminEdit)]
     [HttpPut]
-    public async Task<ActionResult> Block(string ministryAdminId, bool isBlocked = false)
+    public async Task<ActionResult> Block(string ministryAdminId, bool? isBlocked)
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
+
+        if (isBlocked is null)
+        {
+            logger.LogDebug("IsBlocked parameter is not specified");
+            return BadRequest("IsBlocked parameter is required");
+        }
 
         var response = await ministryAdminService.BlockMinistryAdminAsync(
                 ministryAdminId,
                 userId,
                 await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false),
-                isBlocked)
+                (bool)isBlocked)
             .ConfigureAwait(false);
 
         return response.Match<ActionResult>(
             error => StatusCode((int)error.HttpStatusCode, error.Message),
             _ =>
             {
-                logger.LogInformation($"Succesfully blocked ministryAdmin(id): {ministryAdminId} by User(id): {userId}.");
+                logger.LogInformation($"Successfully blocked ministryAdmin(id): {ministryAdminId} by User(id): {userId}.");
                 return Ok();
             });
     }

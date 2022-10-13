@@ -20,5 +20,5 @@ public interface IMinistryAdminService
         string ministryAdminId,
         string userId,
         string requestId,
-        bool isBlocked = false);
+        bool isBlocked);
 }

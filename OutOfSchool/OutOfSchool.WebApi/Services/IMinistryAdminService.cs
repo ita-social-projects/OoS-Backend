@@ -54,7 +54,7 @@ public interface IMinistryAdminService
     /// <param name="token">Valid token with MinistryAdminEdit permissions.</param>
     /// <param name="isBlocked">Block/unblock flag.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<Either<ErrorResponse, ActionResult>> BlockMinistryAdminAsync(string ministryAdminId, string userId, string token, bool isBlocked = false);
+    Task<Either<ErrorResponse, ActionResult>> BlockMinistryAdminAsync(string ministryAdminId, string userId, string token, bool isBlocked);
 
     /// <summary>
     /// Determines whether provider is subordinate of the ministry admin.

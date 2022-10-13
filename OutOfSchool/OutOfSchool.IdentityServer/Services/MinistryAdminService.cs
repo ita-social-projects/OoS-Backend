@@ -251,8 +251,8 @@ public class MinistryAdminService : IMinistryAdminService
     public async Task<ResponseDto> BlockMinistryAdminAsync(
         string ministryAdminId,
         string userId,
-        string requestId, 
-        bool isBlocked = false)
+        string requestId,
+        bool isBlocked)
     {
         ArgumentNullException.ThrowIfNull(ministryAdminId);
         ArgumentNullException.ThrowIfNull(userId);
