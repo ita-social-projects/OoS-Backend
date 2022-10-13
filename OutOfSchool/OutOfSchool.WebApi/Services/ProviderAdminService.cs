@@ -220,7 +220,8 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         string providerAdminId,
         string userId,
         Guid providerId,
-        string token)
+        string token,
+        bool isBlocked)
     {
         Logger.LogDebug("ProviderAdmin(id): {ProviderAdminId} blocking was started. User(id): {UserId}", providerAdminId, userId);
 
@@ -253,7 +254,11 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.BlockProviderAdmin + providerAdminId),
+            Url = new Uri(identityServerConfig.Authority, string.Concat(
+                CommunicationConstants.BlockProviderAdmin,
+                providerAdminId,
+                new PathString("/"),
+                isBlocked)),
             Token = token,
             RequestId = Guid.NewGuid(),
         };

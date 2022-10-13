@@ -428,7 +428,8 @@ public class ProviderAdminService : IProviderAdminService
     public async Task<ResponseDto> BlockProviderAdminAsync(
         string providerAdminId,
         string userId,
-        string requestId)
+        string requestId,
+        bool isBlocked)
     {
         var response = new ResponseDto();
 
@@ -456,7 +457,7 @@ public class ProviderAdminService : IProviderAdminService
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
             try
             {
-                user.IsBlocked = true;
+                user.IsBlocked = isBlocked;
                 var updateResult = await userManager.UpdateAsync(user);
 
                 if (!updateResult.Succeeded)
