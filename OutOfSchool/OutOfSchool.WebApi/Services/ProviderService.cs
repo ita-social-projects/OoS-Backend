@@ -215,6 +215,7 @@ public class ProviderService : IProviderService, INotificationReciever
 
         // TODO: validate if current user has permission to update the provider status
         provider.Status = dto.Status;
+        provider.StatusReason = dto.StatusReason;
         await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
 
         logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.Status}");

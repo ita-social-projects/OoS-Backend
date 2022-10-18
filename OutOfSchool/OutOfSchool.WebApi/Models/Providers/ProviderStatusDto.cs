@@ -12,4 +12,7 @@ public class ProviderStatusDto
     [Required]
     [EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderStatus Status { get; set; }
+
+    [MaxLength(500)]
+    public string StatusReason { get; set; }
 }

@@ -86,6 +86,9 @@ public class ProviderDto
     [EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderStatus Status { get; set; }
 
+    [MaxLength(500)]
+    public string StatusReason { get; set; }
+
     [MaxLength(30)]
     public string License { get; set; }
 
