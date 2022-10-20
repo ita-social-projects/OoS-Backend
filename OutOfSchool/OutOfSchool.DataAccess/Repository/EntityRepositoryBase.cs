@@ -69,7 +69,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
                     await transaction.CommitAsync().ConfigureAwait(false);
                     return result;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     await transaction.RollbackAsync().ConfigureAwait(false);
                     throw;
@@ -90,6 +90,10 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     {
         return await dbSet.ToListAsync().ConfigureAwait(false);
     }
+    /*public virtual async Task<Provider> GetByEmail(string Email)
+    {
+        return await dbSet<Providers>.FirstOrDefault(x=> x)
+    }*/
 
     /// <inheritdoc/>
     public virtual async Task<IEnumerable<TEntity>> GetAllWithDetails(string includeProperties = "")
