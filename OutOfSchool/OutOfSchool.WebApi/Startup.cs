@@ -164,6 +164,7 @@ public static class Startup
         services.AddTransient<IFavoriteService, FavoriteService>();
         services.AddTransient<IParentService, ParentService>();
         services.AddTransient<IProviderService, ProviderService>();
+        services.AddTransient<IProviderTypeService, ProviderTypeService>();
         services.AddTransient<IProviderServiceV2, ProviderServiceV2>();
         services.AddTransient<IRatingService, RatingService>();
         services.AddTransient<ISocialGroupService, SocialGroupService>();

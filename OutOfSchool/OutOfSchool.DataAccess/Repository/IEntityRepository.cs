@@ -78,6 +78,14 @@ public interface IEntityRepositoryBase<TKey, TEntity>
     Task<TEntity> GetById(TKey id);
 
     /// <summary>
+    /// Get element by Id.
+    /// </summary>
+    /// <param name="id">Key in database.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The task result contains an entity that was found, or null.</returns>
+    //Task<TEntity> GetByEmail(string Email);
+
+    /// <summary>
     /// Get all elements with details.
     /// </summary>
     /// <param name="includeProperties">Name of properties which should be included.</param>
