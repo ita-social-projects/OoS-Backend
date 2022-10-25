@@ -114,23 +114,7 @@ public class AccountController : Controller
             return View("Email/ChangeEmail", model);
         }
 
-        var user = await userManager.FindByEmailAsync(User.Identity.Name);
-        var token = await userManager.GenerateChangeEmailTokenAsync(user, model.Email);
-        var callBackUrl = Url.Action(nameof(ConfirmChangeEmail), "Account", new { userId = user.Id, email = model.Email, token }, Request.Scheme);
-
-        var email = model.Email;
-        var subject = "Confirm email.";
-
-        var userActionViewModel = new UserActionViewModel
-        {
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            ActionUrl = HtmlEncoder.Default.Encode(callBackUrl),
-        };
-        var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ResetPassword, userActionViewModel);
-        await emailSender.SendAsync(email, subject, content);
-
-        logger.LogInformation($"{path} Confirmation message was sent for User(id) + {userId}.");
+        await SendConfirmEmail();
 
         return View("Email/SendChangeEmail", model);
     }
@@ -181,7 +165,7 @@ public class AccountController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> ConfirmEmail()
+    public async Task<IActionResult> SendConfirmEmail()
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
 
@@ -232,13 +216,13 @@ public class AccountController : Controller
         {
             logger.LogError($"{path} Token is not valid for user: {user.Id}");
 
-            return View("Password/ResetPasswordFailed", localizer["Invalid email confirmation token"]);
+            return View("Email/ConfirmEmailFailed", localizer["Invalid email confirmation token"]);
         }
 
         var result = await userManager.ConfirmEmailAsync(user, token);
         if (!result.Succeeded)
         {
-            logger.LogError($"{path} Email сonfirmation  was failed for User(id): {userId} " +
+            logger.LogError($"{path} Email сonfirmation was failed for User(id): {userId} " +
                             $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
             return BadRequest();
@@ -246,7 +230,7 @@ public class AccountController : Controller
 
         logger.LogInformation($"{path} Email was confirmed. User(id): {userId}.");
 
-        var redirectUrl = identityServerConfig.RedirectToStartPageUrl;
+        var redirectUrl = identityServerConfig.RedirectConfirmationUrl;
 
         return string.IsNullOrEmpty(redirectUrl) ? Ok() : Redirect(redirectUrl);
     }
@@ -281,7 +265,7 @@ public class AccountController : Controller
         if (!await userManager.IsEmailConfirmedAsync(user))
         {
             logger.LogError($"{path} User with Email: {model.Email} was not found or Email was not confirmed.");
-            ModelState.AddModelError(string.Empty, "Ця електронная адреса не підтверджена");
+            ModelState.AddModelError(string.Empty, "Ця електронна адреса не підтверджена");
             return View("Password/ForgotPassword", model);
         }
 
