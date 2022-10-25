@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
@@ -61,4 +59,7 @@ public class WorkshopFilter : OffsetFilter
     public bool IsStrictWorkdays { get; set; } = false;
 
     public long CATOTTGId { get; set; } = default(long);
+
+    [Range(2, 10, ErrorMessage = "Field value should be in a range from 2 to 10")]
+    public int RadiusKm { get; set; } = 5;
 }

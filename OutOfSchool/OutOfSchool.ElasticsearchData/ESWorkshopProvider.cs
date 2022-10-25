@@ -177,7 +177,7 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
                 Field = Infer.Field<WorkshopES>(w => w.Address.Point),
                 DistanceType = GeoDistanceType.Arc,
                 Location = new GeoLocation((double)filter.Latitude, (double)filter.Longitude),
-                Distance = GeoMathHelper.ElasticRadius,
+                Distance = filter.ElasticRadius,
                 ValidationMethod = GeoValidationMethod.IgnoreMalformed,
             };
         }
