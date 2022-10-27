@@ -11,7 +11,7 @@ public class ProviderTypeService:IProviderTypeService
     private readonly IMapper mapper;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SocialGroupService"/> class.
+    /// Initializes a new instance of the <see cref="ProviderTypeService"/> class.
     /// </summary>
     /// <param name="repository">Repository.</param>
     /// <param name="logger">Logger.</param>
@@ -33,13 +33,13 @@ public class ProviderTypeService:IProviderTypeService
     /// <inheritdoc/>
     public async Task<IEnumerable<ProviderTypeDto>> GetAll()
     {
-        logger.LogInformation("Getting all Social Groups started.");
+        logger.LogInformation("Getting all Provider types started.");
 
         var providerTypes = await repository.GetAll().ConfigureAwait(false);
 
         logger.LogInformation(!providerTypes.Any()
-            ? "SocialGroup table is empty."
-            : $"All {providerTypes.Count()} records were successfully received from the SocialGroup table");
+            ? "Provider types table is empty."
+            : $"All {providerTypes.Count()} records were successfully received from the Provider types table");
 
         return providerTypes.Select(providerType => mapper.Map<ProviderTypeDto>(providerType)).ToList();
     }
@@ -47,7 +47,7 @@ public class ProviderTypeService:IProviderTypeService
     /// <inheritdoc/>
     public async Task<ProviderTypeDto> GetById(long id)
     {
-        logger.LogInformation($"Getting SocialGroup by Id started. Looking Id = {id}.");
+        logger.LogInformation($"Getting Provider type by Id started. Looking Id = {id}.");
 
         var providerType = await repository.GetById(id).ConfigureAwait(false);
 
@@ -58,26 +58,21 @@ public class ProviderTypeService:IProviderTypeService
                 localizer["The id cannot be greater than number of table entities."]);
         }
 
-        logger.LogInformation($"Successfully got a SocialGroup with Id = {id}.");
+        logger.LogInformation($"Successfully got a Provider type with Id = {id}.");
 
         return mapper.Map<ProviderTypeDto>(providerType);
     }
 
-    public Task<ProviderTypeDto> Create(ProviderTypeDto dto)
-    {
-        throw new NotImplementedException();
-    }
-
     /// <inheritdoc/>
-    public async Task<ProviderTypeDto> Create(SocialGroupDto dto)
+    public async Task<ProviderTypeDto> Create(ProviderTypeDto dto)
     {
-        logger.LogInformation("SocialGroup creating was started.");
+        logger.LogInformation("Provider type creating was started.");
 
         var providerType = mapper.Map<ProviderType>(dto);
 
         var newProviderType = await repository.Create(providerType).ConfigureAwait(false);
 
-        logger.LogInformation($"SocialGroup with Id = {newProviderType?.Id} created successfully.");
+        logger.LogInformation($"Provider type with Id = {newProviderType?.Id} created successfully.");
 
         return mapper.Map<ProviderTypeDto>(newProviderType);
     }
@@ -85,19 +80,19 @@ public class ProviderTypeService:IProviderTypeService
     /// <inheritdoc/>
     public async Task<ProviderTypeDto> Update(ProviderTypeDto dto)
     {
-        logger.LogInformation($"Updating SocialGroup with Id = {dto?.Id} started.");
+        logger.LogInformation($"Updating Provider type with Id = {dto?.Id} started.");
 
         try
         {
             var providerType = await repository.Update(mapper.Map<ProviderType>(dto)).ConfigureAwait(false);
 
-            logger.LogInformation($"SocialGroup with Id = {providerType?.Id} updated succesfully.");
+            logger.LogInformation($"Provider type with Id = {providerType?.Id} updated succesfully.");
 
             return mapper.Map<ProviderTypeDto>(providerType);
         }
         catch (DbUpdateConcurrencyException)
         {
-            logger.LogError($"Updating failed. SocialGroup with Id = {dto?.Id} doesn't exist in the system.");
+            logger.LogError($"Updating failed. Provider type with Id = {dto?.Id} doesn't exist in the system.");
             throw;
         }
     }
@@ -105,7 +100,7 @@ public class ProviderTypeService:IProviderTypeService
     /// <inheritdoc/>
     public async Task Delete(long id)
     {
-        logger.LogInformation($"Deleting SocialGroup with Id = {id} started.");
+        logger.LogInformation($"Deleting Provider type with Id = {id} started.");
 
         var socialGroup = await repository.GetById(id).ConfigureAwait(false);
 
@@ -113,11 +108,11 @@ public class ProviderTypeService:IProviderTypeService
         {
             throw new ArgumentOutOfRangeException(
                 nameof(id),
-                localizer[$"SocialGroup with Id = {id} doesn't exist in the system"]);
+                localizer[$"Provider type with Id = {id} doesn't exist in the system"]);
         }
 
         await repository.Delete(socialGroup).ConfigureAwait(false);
 
-        logger.LogInformation($"SocialGroup with Id = {id} succesfully deleted.");
+        logger.LogInformation($"Provider type with Id = {id} succesfully deleted.");
     }
 }

@@ -30,18 +30,6 @@ public class ProviderRepository : SensitiveEntityRepository<Provider>, IProvider
     /// <returns>Bool.</returns>
     public bool ExistsUserId(string id) => db.Providers.Any(x => x.UserId == id);
 
-    /*async Task<Provider> IProviderRepository.GetByEmail(string email)
-    {
-        return await RunInTransaction(
-            () =>
-            {
-                var provider = db.Providers.Find(email);
-                db.SaveChanges();
-
-                return Task.FromResult(provider.);
-            }).ConfigureAwait(false);
-    } */
-
     /// <summary>
     /// Tries to insert a new <see cref="Provider"/> entity with all related objects into the database.
     /// Runs insert operation inside a transaction.
