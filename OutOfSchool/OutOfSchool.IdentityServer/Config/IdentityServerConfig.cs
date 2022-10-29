@@ -10,5 +10,5 @@ public class IdentityServerConfig
 
     public string RedirectToStartPageUrl { get; set; }
 
-    public string RedirectConfirmationUrl { get; set; }
+    public string RedirectFromEmailConfirmationUrl { get; set; }
 }

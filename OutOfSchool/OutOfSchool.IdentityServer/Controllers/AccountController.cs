@@ -230,7 +230,7 @@ public class AccountController : Controller
 
         logger.LogInformation($"{path} Email was confirmed. User(id): {userId}.");
 
-        var redirectUrl = identityServerConfig.RedirectConfirmationUrl;
+        var redirectUrl = identityServerConfig.RedirectFromEmailConfirmationUrl;
 
         return string.IsNullOrEmpty(redirectUrl) ? Ok() : Redirect(redirectUrl);
     }
