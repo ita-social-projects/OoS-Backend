@@ -9,4 +9,6 @@ public class IdentityServerConfig
     public Uri Authority { get; set; }
 
     public string RedirectToStartPageUrl { get; set; }
+
+    public string RedirectFromEmailConfirmationUrl { get; set; }
 }
