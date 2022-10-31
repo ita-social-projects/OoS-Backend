@@ -171,7 +171,8 @@ public class MappingProfile : Profile
         CreateMap<Workshop, WorkshopBaseCard>()
             .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
-            .ForMember(dest => dest.DirectionIds, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)));
+            .ForMember(dest => dest.DirectionIds, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)))
+            .ForMember(dest => dest.Rating, opt => opt.Ignore());
 
         CreateMap<Workshop, WorkshopProviderViewCard>()
             .IncludeBase<Workshop, WorkshopBaseCard>()

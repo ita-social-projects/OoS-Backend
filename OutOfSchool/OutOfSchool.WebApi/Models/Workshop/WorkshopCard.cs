@@ -15,8 +15,6 @@ public class WorkshopCard : WorkshopBaseCard
     public uint AvailableSeats { get; set; } = uint.MaxValue;
 
     public uint TakenSeats { get; set; } = 0;
-
-    public float Rating { get; set; }
 }
 
 public class WorkshopBaseCard
@@ -60,6 +58,8 @@ public class WorkshopBaseCard
     public AddressDto Address { get; set; }
 
     public bool WithDisabilityOptions { get; set; }
+
+    public float Rating { get; set; }
 }
 
 public class WorkshopProviderViewCard : WorkshopBaseCard

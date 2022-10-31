@@ -221,9 +221,9 @@ public class WorkshopService : IWorkshopService
             ? $"There aren't Workshops for Provider with Id = {id}."
             : $"From Workshop table were successfully received {workshops.Count()} records.");
 
-        var cards = mapper.Map<List<T>>(workshops);
+        var workshopBaseCards = mapper.Map<List<T>>(workshops);
 
-        return cards;
+        return await GetWorkshopsWithAverageRating(workshopBaseCards);
     }
 
     /// <inheritdoc/>
@@ -650,7 +650,7 @@ public class WorkshopService : IWorkshopService
         return sortExpression;
     }
 
-    private async Task<List<WorkshopCard>> GetWorkshopsWithAverageRating(List<WorkshopCard> workshops)
+    private async Task<List<T>> GetWorkshopsWithAverageRating<T>(List<T> workshops)  where T: WorkshopBaseCard
     {
         var averageRatings =
             await ratingService.GetAverageRatingForRangeAsync(workshops.Select(p => p.WorkshopId), RatingType.Workshop)
