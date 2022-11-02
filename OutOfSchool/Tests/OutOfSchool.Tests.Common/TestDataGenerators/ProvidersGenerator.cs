@@ -25,7 +25,7 @@ public static class ProvidersGenerator
         .RuleFor(x => x.PhoneNumber, f => f.Person.Phone)
         .RuleFor(x => x.Founder, f => f.Person.FullName)
         .RuleFor(x => x.Ownership, f => f.Random.ArrayElement((OwnershipType[])Enum.GetValues(typeof(OwnershipType))))
-        .RuleFor(x => x.Type, f => f.Random.ArrayElement((ProviderType[])Enum.GetValues(typeof(ProviderType))))
+        .RuleFor(x => x.TypeId, _ => 1)
         .RuleFor(x => x.Status, f => f.Random.ArrayElement((ProviderStatus[])Enum.GetValues(typeof(ProviderStatus))))
         .RuleFor(x => x.License, f => f.Random.AlphaNumeric(15))
         .RuleFor(x => x.UserId, f => f.Random.Guid().ToString())
