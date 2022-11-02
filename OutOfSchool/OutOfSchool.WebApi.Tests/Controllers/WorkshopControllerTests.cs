@@ -47,6 +47,7 @@ public class WorkshopControllerTests
     private string userId;
     private Mock<HttpContext> httpContextMoq;
     private List<WorkshopBaseCard> workshopBaseCards;
+    private List<ShortEntityDto> workshopShortEntitiesList;
 
     [OneTimeSetUp]
     public void OneTimeSetup()
@@ -63,6 +64,7 @@ public class WorkshopControllerTests
         provider = WithProvider();
         workshopCards = WithWorkshopCards();
         workshopBaseCards = WorkshopBaseCardGenerator.Generate(5);
+        workshopShortEntitiesList = WithWorkshopsShortEntityDto();
 
         var config = new AppDefaultsConfig();
         config.City = "Київ";
@@ -122,7 +124,7 @@ public class WorkshopControllerTests
     public async Task GetByProviderId_WhenThereAreWorkshops_ShouldReturnOkResultObject()
     {
         // Arrange
-        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<Guid?>())).ReturnsAsync(workshopBaseCards);
+        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<OffsetFilter>(), It.IsAny<Guid?>())).ReturnsAsync(workshopBaseCards);
 
         // Act
         var result = await controller.GetByProviderId(It.IsAny<Guid>()).ConfigureAwait(false) as OkObjectResult;
@@ -139,7 +141,7 @@ public class WorkshopControllerTests
     {
         // Arrange
         var emptyList = new List<WorkshopBaseCard>();
-        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<Guid?>())).ReturnsAsync(emptyList);
+        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<OffsetFilter>(), It.IsAny<Guid?>())).ReturnsAsync(emptyList);
 
         // Act
         var result = await controller.GetByProviderId(It.IsAny<Guid>()).ConfigureAwait(false) as NoContentResult;
@@ -148,6 +150,96 @@ public class WorkshopControllerTests
         workshopServiceMoq.VerifyAll();
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(NoContent, result.StatusCode);
+    }
+    #endregion
+
+    #region GetWorkshopListByProviderId
+    [Test]
+    public async Task GetWorkshopListByProviderId_WhenThereAreWorkshops_ShouldReturnOkResultObject()
+    {
+        // Arrange
+        var filter = new OffsetFilter() { From = 0, Size = int.MaxValue };
+        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>(), It.IsAny<OffsetFilter>()))
+            .ReturnsAsync(workshopShortEntitiesList);
+
+        // Act
+        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        workshopServiceMoq.VerifyAll();
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(Ok, result.StatusCode);
+        Assert.AreEqual(workshopShortEntitiesList.Count, (result.Value as List<ShortEntityDto>).Count);
+    }
+
+    [Test]
+    public async Task GetWorkshopListByProviderId_WhenThereIsNoWorkshops_ShouldReturnNoContentResult()
+    {
+        // Arrange
+        var filter = new OffsetFilter() { From = 0, Size = int.MaxValue };
+        var emptyList = new List<ShortEntityDto>();
+        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>(), It.IsAny<OffsetFilter>()))
+            .ReturnsAsync(emptyList);
+
+        // Act
+        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as NoContentResult;
+
+        // Assert
+        workshopServiceMoq.VerifyAll();
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(NoContent, result.StatusCode);
+    }
+
+    [Test]
+    public async Task GetWorkshopListByProviderId_WhenSizeFilterIsProvided_ShouldReturnOkResultObject()
+    {
+        // Arrange
+        var expectedCount = 1;
+        var filter = new OffsetFilter() { From = 0, Size = expectedCount };
+        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>(), It.IsAny<OffsetFilter>()))
+            .ReturnsAsync(workshopShortEntitiesList.Take(expectedCount).ToList());
+
+        // Act
+        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        workshopServiceMoq.VerifyAll();
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(Ok, result.StatusCode);
+        Assert.AreEqual(expectedCount, (result.Value as List<ShortEntityDto>).Count);
+    }
+
+    [Test]
+    public async Task GetWorkshopListByProviderId_WhenFromFilterIsProvided_ShouldReturnOkResultObject()
+    {
+        // Arrange
+        var skipCount = 1;
+        var expectedCount = 2;
+        var expectedResult = workshopShortEntitiesList.Skip(skipCount).Take(expectedCount).ToList();
+        var filter = new OffsetFilter() { From = skipCount, Size = expectedCount };
+        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>(), It.IsAny<OffsetFilter>()))
+            .ReturnsAsync(expectedResult);
+
+        // Act
+        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        workshopServiceMoq.VerifyAll();
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(Ok, result.StatusCode);
+        Assert.AreEqual(expectedCount, (result.Value as List<ShortEntityDto>).Count);
+        Assert.AreSame(expectedResult, result.Value as List<ShortEntityDto>);
+    }
+
+    [Test]
+    public async Task GetWorkshopListByProviderId_WhenProviderIdIsEmpty_ShouldReturnNoContentResult()
+    {
+        // Act
+        IActionResult result = await controller.GetWorkshopListByProviderId(Guid.Empty, null).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        Assert.AreEqual("Provider id is empty.", (result as BadRequestObjectResult).Value);
     }
     #endregion
 
@@ -683,6 +775,38 @@ public class WorkshopControllerTests
         {
             WorkshopId = workshopDtoId,
             Status = workshopStatus,
+        };
+    }
+
+    private List<ShortEntityDto> WithWorkshopsShortEntityDto()
+    {
+        return new List<ShortEntityDto>()
+        {
+            new ShortEntityDto()
+            {
+                Id = Guid.NewGuid(),
+                Title = "Title1",
+            },
+            new ShortEntityDto()
+            {
+                Id = Guid.NewGuid(),
+                Title = "Title2",
+            },
+            new ShortEntityDto()
+            {
+                Id = Guid.NewGuid(),
+                Title = "Title3",
+            },
+            new ShortEntityDto()
+            {
+                Id = Guid.NewGuid(),
+                Title = "Title4",
+            },
+            new ShortEntityDto()
+            {
+                Id = Guid.NewGuid(),
+                Title = "Title5",
+            },
         };
     }
 }

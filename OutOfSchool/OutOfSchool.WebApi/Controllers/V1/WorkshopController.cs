@@ -70,10 +70,11 @@ public class WorkshopController : ControllerBase
     }
 
     /// <summary>
-    /// Get all workshops (Id, Title) from the database by provider's id.
+    /// Get all workshops (Id, Title) from the database by provider's id sorted by Title.
     /// </summary>
     /// <param name="providerId">Id of the provider.</param>
-    /// <returns>The result is a <see cref="List{ShortEntityDto}"/> that contains a list of workshops that were received.</returns>
+    /// <param name="offsetFilter">Filter to get specified portion of workshop view cards for specified provider.</param>
+    /// <returns>The result is a <see cref="List{ShortEntityDto}"/> that contains a sorted by Title list of workshops that were received.</returns>
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ShortEntityDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -82,9 +83,14 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet("{providerId}")]
-    public async Task<IActionResult> GetWorkshopListByProviderId(Guid providerId)
+    public async Task<IActionResult> GetWorkshopListByProviderId(Guid providerId, [FromQuery] OffsetFilter offsetFilter)
     {
-        var workshops = await combinedWorkshopService.GetWorkshopListByProviderId(providerId).ConfigureAwait(false);
+        if (providerId == Guid.Empty)
+        {
+            return BadRequest("Provider id is empty.");
+        }
+
+        var workshops = await combinedWorkshopService.GetWorkshopListByProviderId(providerId, offsetFilter).ConfigureAwait(false);
 
         if (!workshops.Any())
         {
@@ -110,7 +116,8 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] Guid? excludedWorkshopId = null)
     {
-        var workshopCards = await combinedWorkshopService.GetByProviderId<WorkshopBaseCard>(id, excludedWorkshopId).ConfigureAwait(false);
+        var offsetFilter = new OffsetFilter() { From = 0, Size = int.MaxValue };
+        var workshopCards = await combinedWorkshopService.GetByProviderId<WorkshopBaseCard>(id, offsetFilter, excludedWorkshopId).ConfigureAwait(false);
 
         if (!workshopCards.Any())
         {
@@ -120,14 +127,25 @@ public class WorkshopController : ControllerBase
         return Ok(workshopCards);
     }
 
+    /// <summary>
+    /// Get a portion of workshop view cards for specified provider.
+    /// </summary>
+    /// <param name="id">Provider's Id.</param>
+    /// <param name="offsetFilter">Filter to get specified portion of workshop view cards for specified provider.</param>
+    /// <returns>Workshop view cards that were found.</returns>
     [AllowAnonymous]
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopProviderViewCard>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetWorkshopProviderViewCardByProviderId(Guid id)
+    public async Task<IActionResult> GetWorkshopProviderViewCardsByProviderId(Guid id, [FromQuery] OffsetFilter offsetFilter)
     {
-        var workshopProviderViewCards = await combinedWorkshopService.GetByProviderId<WorkshopProviderViewCard>(id).ConfigureAwait(false);
+        if (id == Guid.Empty)
+        {
+            return BadRequest("Provider id is null.");
+        }
+
+        var workshopProviderViewCards = await combinedWorkshopService.GetByProviderId<WorkshopProviderViewCard>(id, offsetFilter).ConfigureAwait(false);
 
         if (!workshopProviderViewCards.Any())
         {

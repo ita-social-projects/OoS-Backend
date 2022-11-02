@@ -197,25 +197,41 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
-    public async Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId)
+    public async Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId, OffsetFilter offsetFilter)
     {
         logger.LogDebug($"Getting Workshop (Id, Title) by organization started. Looking ProviderId = {providerId}.");
 
-        var workshops = await workshopRepository.GetByFilter(workshop => workshop.ProviderId == providerId)
+        offsetFilter ??= new OffsetFilter();
+        ValidateOffsetFilter(offsetFilter);
+
+        var workshops = await workshopRepository.Get(
+            skip: offsetFilter.From,
+            take: offsetFilter.Size,
+            where: x => x.ProviderId == providerId)
+            .ToListAsync()
             .ConfigureAwait(false);
+
         var result = mapper.Map<List<ShortEntityDto>>(workshops).OrderBy(entity => entity.Title).ToList();
 
         return result;
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<T>> GetByProviderId<T>(Guid id)
+    public async Task<IEnumerable<T>> GetByProviderId<T>(Guid id, OffsetFilter offsetFilter)
         where T : WorkshopBaseCard
     {
         logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
-        var workshops = await workshopRepository
-            .GetByFilter(x => x.ProviderId == id, includingPropertiesForMappingDtoModel).ConfigureAwait(false);
+        offsetFilter ??= new OffsetFilter();
+        ValidateOffsetFilter(offsetFilter);
+
+        var workshops = await workshopRepository.Get(
+            skip: offsetFilter.From,
+            take: offsetFilter.Size,
+            includeProperties: includingPropertiesForMappingDtoModel,
+            where: x => x.ProviderId == id)
+            .ToListAsync()
+            .ConfigureAwait(false);
 
         logger.LogInformation(!workshops.Any()
             ? $"There aren't Workshops for Provider with Id = {id}."
@@ -723,4 +739,6 @@ public class WorkshopService : IWorkshopService
             throw;
         }
     }
+
+    private void ValidateOffsetFilter(OffsetFilter offsetFilter) => ModelValidationHelper.ValidateOffsetFilter(offsetFilter);
 }
