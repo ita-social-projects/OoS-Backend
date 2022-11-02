@@ -201,7 +201,7 @@ public class WorkshopServiceTests
         mapperMock.Setup(m => m.Map<List<WorkshopBaseCard>>(It.IsAny<List<Workshop>>())).Returns(emptyListWorkshopCards);
 
         // Act
-        var result = await workshopService.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<OffsetFilter>()).ConfigureAwait(false);
+        var result = await workshopService.GetByProviderId<WorkshopBaseCard>(Guid.NewGuid(), It.IsAny<OffsetFilter>()).ConfigureAwait(false);
 
         // Assert
         workshopRepository.VerifyAll();
@@ -510,10 +510,14 @@ public class WorkshopServiceTests
     {
         workshopRepository
             .Setup(
-                w => w.GetByFilter(
+                w => w.Get(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string>(),
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
-                    It.IsAny<string>()))
-            .ReturnsAsync(workshopBaseCardsList);
+                    It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
+                    false))
+            .Returns(workshopBaseCardsList.AsTestAsyncEnumerableQuery());
     }
 
     private void SetupUpdate(Workshop workshop)
