@@ -124,10 +124,11 @@ public class WorkshopControllerTests
     public async Task GetByProviderId_WhenThereAreWorkshops_ShouldReturnOkResultObject()
     {
         // Arrange
+        var filter = new OffsetFilter() { From = 0, Size = int.MaxValue };
         workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<OffsetFilter>(), It.IsAny<Guid?>())).ReturnsAsync(workshopBaseCards);
 
         // Act
-        var result = await controller.GetByProviderId(It.IsAny<Guid>()).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.GetByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         workshopServiceMoq.VerifyAll();
@@ -140,11 +141,12 @@ public class WorkshopControllerTests
     public async Task GetByProviderId_WhenThereIsNoWorkshops_ShouldReturnNoContentResult([Random(uint.MinValue, uint.MaxValue, 1)] long randomNumber)
     {
         // Arrange
+        var filter = new OffsetFilter() { From = 0, Size = int.MaxValue };
         var emptyList = new List<WorkshopBaseCard>();
         workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<OffsetFilter>(), It.IsAny<Guid?>())).ReturnsAsync(emptyList);
 
         // Act
-        var result = await controller.GetByProviderId(It.IsAny<Guid>()).ConfigureAwait(false) as NoContentResult;
+        var result = await controller.GetByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as NoContentResult;
 
         // Assert
         workshopServiceMoq.VerifyAll();
