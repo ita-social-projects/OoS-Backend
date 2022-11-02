@@ -60,19 +60,20 @@ public class AchievementController : ControllerBase
     /// <summary>
     /// To recieve the Achievement list by Workshop id.
     /// </summary>
-    /// <param name="workshopId">Key of the Workshop in the table.</param>
-    /// <returns>List of achievements.</returns>
+    /// <param name="filter">Entity that represents searching parameters.</param>
+    /// <returns><see cref="SearchResult{AchievementDto}"/>.</returns>
     /// <response code="200">The entity was found by given Id.</response>
     /// <response code="500">If any server error occures. For example: Id was wrong.</response>
     [AllowAnonymous]
-    [HttpGet("{workshopId}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AchievementDto>))]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByWorkshopId(Guid workshopId)
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<AchievementDto>))]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetByWorkshopId([FromQuery] AchievementsFilter filter)
     {
-        var achievements = await achievementService.GetByWorkshopId(workshopId).ConfigureAwait(false);
+        var achievements = await achievementService.GetByFilter(filter).ConfigureAwait(false);
 
-        if (!achievements.Any())
+        if (achievements.TotalAmount < 1)
         {
             return NoContent();
         }

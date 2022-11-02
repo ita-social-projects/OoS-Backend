@@ -22,11 +22,12 @@ public interface IAchievementService
     Task<AchievementDto> GetById(Guid id);
 
     /// <summary>
-    /// To recieve all Achievement objects by Workshop id.
+    /// Get all Achievement objects  that match filter's parameters.
     /// </summary>
-    /// <param name="id">Workshop Key in the table.</param>
-    /// <returns>List of Achievement objects.</returns>
-    Task<IEnumerable<AchievementDto>> GetByWorkshopId(Guid id);
+    /// <param name="filter">Filter with specified searching parametrs.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asybcronous operation.
+    /// The task result contains a <see cref="SearchResult{AchievementDto}"/> that contains found elements.</returns>
+    Task<SearchResult<AchievementDto>> GetByFilter(AchievementsFilter filter);
 
     /// <summary>
     /// Add new Achievement to the DB.
