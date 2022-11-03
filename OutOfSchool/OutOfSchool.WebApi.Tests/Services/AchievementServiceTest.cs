@@ -22,6 +22,8 @@ namespace OutOfSchool.WebApi.Tests.Services;
 [TestFixture]
 public class AchievementServiceTest
 {
+    private readonly Guid validWorkshopGuid = new Guid("08da8474-a754-4d37-879e-4932d389b27a");
+    private readonly Guid notValidWorkshopGuid = new Guid("05da8774-d754-1d37-979e-4135d389c27a");
     private DbContextOptions<OutOfSchoolDbContext> options;
     private OutOfSchoolDbContext context;
     private AchievementService service;
@@ -29,8 +31,6 @@ public class AchievementServiceTest
     private Mock<ILogger<AchievementService>> logger;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private IMapper mapper;
-    private readonly Guid validWorkshopGuid = new Guid("08da8474-a754-4d37-879e-4932d389b27a");
-    private readonly Guid notValidWorkshopGuid = new Guid("05da8774-d754-1d37-979e-4135d389c27a");
 
     [SetUp]
     public void SetUp()
@@ -62,7 +62,7 @@ public class AchievementServiceTest
         var result = await service.GetByFilter(filter);
 
         // Assert
-        Assert.IsNotNull(result.Equals);
+        Assert.IsNotNull(result.Entities);
         Assert.AreEqual(expected.First().Id, result.Entities.First().Id);
         Assert.AreEqual(expected.Count, result.TotalAmount);
         Assert.IsInstanceOf<IReadOnlyCollection<AchievementDto>>(result.Entities);
@@ -111,7 +111,7 @@ public class AchievementServiceTest
                 {
                     new Child
                     {
-                        DateOfBirth =DateTime.Now,
+                        DateOfBirth = DateTime.Now,
                         FirstName = "Арієль",
                         Gender = Gender.Female,
                         Id = new Guid("0d3a847c-2f7a-482f-89f2-417b98c6d02a"),
@@ -132,12 +132,11 @@ public class AchievementServiceTest
                             Gender = Gender.Female,
                             DateOfBirth = DateTime.Now,
                             UserId = "06da847c-2f6d-4327-8184-b1a11c8f7008",
-                            Id = new Guid("05da847c-2f6d-4327-8184-b1a11c8f7008")
-
+                            Id = new Guid("05da847c-2f6d-4327-8184-b1a11c8f7008"),
                         },
                         ParentId = new Guid("05da847c-2f6d-4327-8184-b1a11c8f7008"),
                         PlaceOfStudy = null,
-                        SocialGroups= new List<SocialGroup>()
+                        SocialGroups = new List<SocialGroup>(),
                     },
                     new Child()
                     {
@@ -162,12 +161,11 @@ public class AchievementServiceTest
                             Gender = Gender.Female,
                             DateOfBirth = DateTime.Now,
                             UserId = "09da847c-2f6d-5327-8184-b1a11c8f7808",
-                            Id= new Guid("09da847c-2f6d-5327-8184-b1a11c8f7808")
-
+                            Id = new Guid("09da847c-2f6d-5327-8184-b1a11c8f7808"),
                         },
                         ParentId = new Guid("09da847c-2f6d-5327-8184-b1a11c8f7808"),
                         PlaceOfStudy = null,
-                        SocialGroups= new List<SocialGroup>()
+                        SocialGroups = new List<SocialGroup>(),
                     },
                 },
             },
@@ -182,7 +180,7 @@ public class AchievementServiceTest
                 {
                     new Child
                     {
-                        DateOfBirth =DateTime.Now,
+                        DateOfBirth = DateTime.Now,
                         FirstName = "Арієль",
                         Gender = Gender.Female,
                         Id = new Guid("08da847c-2f7a-482f-89f2-417b98c6d02a"),
@@ -203,12 +201,11 @@ public class AchievementServiceTest
                             Gender = Gender.Female,
                             DateOfBirth = DateTime.Now,
                             UserId = "06da847c-2f6d-4327-8184-b1a11c8f7008",
-                            Id = new Guid("02da847c-2f6d-4327-8184-b1a11c8f7008")
-
+                            Id = new Guid("02da847c-2f6d-4327-8184-b1a11c8f7008"),
                         },
                         ParentId = new Guid("02da847c-2f6d-4327-8184-b1a11c8f7008"),
                         PlaceOfStudy = null,
-                        SocialGroups= new List<SocialGroup>()
+                        SocialGroups = new List<SocialGroup>(),
                     },
                     new Child()
                     {
@@ -232,12 +229,11 @@ public class AchievementServiceTest
                             },
                             DateOfBirth = DateTime.Now,
                             Gender = Gender.Female,
-                            UserId = "578b8827-9985-4839-a3ab-258abef30a54"
-
+                            UserId = "578b8827-9985-4839-a3ab-258abef30a54",
                         },
                         ParentId = new Guid("03da847c-2f6d-4327-8184-b1a11c8f7008"),
                         PlaceOfStudy = null,
-                        SocialGroups= new List<SocialGroup>()
+                        SocialGroups = new List<SocialGroup>(),
                     },
                 },
             },

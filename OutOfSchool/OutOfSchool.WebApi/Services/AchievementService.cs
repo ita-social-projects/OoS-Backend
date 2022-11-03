@@ -5,7 +5,7 @@ using OutOfSchool.WebApi.Models.Achievement;
 
 namespace OutOfSchool.WebApi.Services;
 
-public class AchievementService: IAchievementService
+public class AchievementService : IAchievementService
 {
     private readonly IAchievementRepository achievementRepository;
     private readonly ILogger<AchievementService> logger;
@@ -78,7 +78,7 @@ public class AchievementService: IAchievementService
 
         logger.LogInformation(!achievements.Any()
             ? "This Workshop has no achievements."
-            : $"All {achievements.Count()} records were successfully received");
+            : $"All {achievements.Count} records were successfully received");
 
         var achievementsDto = achievements.Select(achievement => mapper.Map<AchievementDto>(achievement)).ToList();
 

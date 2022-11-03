@@ -30,7 +30,6 @@ internal class AchievementControllerTest
         controller = new AchievementController(achievementService.Object, providerService.Object, providerAdminService.Object, workshopService.Object);
     }
 
-
     [Test]
     public async Task GetByWorkshopId_Valid_ReturnsOkObject()
     {
@@ -72,9 +71,8 @@ internal class AchievementControllerTest
                 new AchievementDto(),
                 new AchievementDto(),
                 new AchievementDto(),
-                new AchievementDto()
+                new AchievementDto(),
             },
         };
     }
-
 }
