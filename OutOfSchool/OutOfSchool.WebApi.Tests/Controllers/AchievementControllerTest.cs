@@ -13,68 +13,68 @@ namespace OutOfSchool.WebApi.Tests.Controllers;
 [TestFixture]
 internal class AchievementControllerTest
 {
-	private AchievementController controller;
-	private Mock<IAchievementService> achievementService;
-	private Mock<IProviderService> providerService;
-	private Mock<IProviderAdminService> providerAdminService;
-	private Mock<IWorkshopService> workshopService;
+    private AchievementController controller;
+    private Mock<IAchievementService> achievementService;
+    private Mock<IProviderService> providerService;
+    private Mock<IProviderAdminService> providerAdminService;
+    private Mock<IWorkshopService> workshopService;
 
-	[SetUp]
-	public void Setup()
-	{
-		achievementService = new Mock<IAchievementService>();
-		providerService = new Mock<IProviderService>();
-		providerAdminService = new Mock<IProviderAdminService>();
-		workshopService = new Mock<IWorkshopService>();
-
-		controller = new AchievementController(achievementService.Object, providerService.Object, providerAdminService.Object, workshopService.Object);
-	}
-
-
-	[Test]
-	public async Task GetByWorkshopId_Valid_ReturnsOkObject()
+    [SetUp]
+    public void Setup()
     {
-		// Arrange
-		achievementService.Setup(a => a.GetByFilter(It.IsAny<AchievementsFilter>())).ReturnsAsync(SearchResult());
+        achievementService = new Mock<IAchievementService>();
+        providerService = new Mock<IProviderService>();
+        providerAdminService = new Mock<IProviderAdminService>();
+        workshopService = new Mock<IWorkshopService>();
 
-		// Act
-		var result = await controller.GetByWorkshopId(It.IsAny<AchievementsFilter>()).ConfigureAwait(false) as OkObjectResult;
-		var resultValue = result.Value as SearchResult<AchievementDto>;
+        controller = new AchievementController(achievementService.Object, providerService.Object, providerAdminService.Object, workshopService.Object);
+    }
 
-		// Assert
-		Assert.That(result, Is.Not.Null);
-		Assert.AreEqual(200, result.StatusCode);
-		Assert.AreEqual(10, resultValue.TotalAmount);
-		Assert.AreEqual(6, resultValue.Entities.Count);
-	}
 
-	[Test]
-	public async Task GetByWorkshopId_NotValid_RetunsNoCententResult()
-	{
-		// Arrange
-		achievementService.Setup(a => a.GetByFilter(It.IsAny<AchievementsFilter>())).ReturnsAsync(new SearchResult<AchievementDto>());
+    [Test]
+    public async Task GetByWorkshopId_Valid_ReturnsOkObject()
+    {
+        // Arrange
+        achievementService.Setup(a => a.GetByFilter(It.IsAny<AchievementsFilter>())).ReturnsAsync(SearchResult());
 
-		var result = await controller.GetByWorkshopId(It.IsAny<AchievementsFilter>()).ConfigureAwait(false) as NoContentResult;
+        // Act
+        var result = await controller.GetByWorkshopId(It.IsAny<AchievementsFilter>()).ConfigureAwait(false) as OkObjectResult;
+        var resultValue = result.Value as SearchResult<AchievementDto>;
 
-		Assert.That(result, Is.Not.Null);
-		Assert.AreEqual(204, result.StatusCode);
-	}
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(200, result.StatusCode);
+        Assert.AreEqual(10, resultValue.TotalAmount);
+        Assert.AreEqual(6, resultValue.Entities.Count);
+    }
 
-	private SearchResult<AchievementDto> SearchResult()
-	{
-		return new SearchResult<AchievementDto>
-		{
-			TotalAmount = 10,
-			Entities = new List<AchievementDto>()
-			{
-				new AchievementDto(),
-				new AchievementDto(),
-				new AchievementDto(),
-				new AchievementDto(),
-				new AchievementDto(),
-				new AchievementDto()
-			}
-		};
+    [Test]
+    public async Task GetByWorkshopId_NotValid_RetunsNoCententResult()
+    {
+        // Arrange
+        achievementService.Setup(a => a.GetByFilter(It.IsAny<AchievementsFilter>())).ReturnsAsync(new SearchResult<AchievementDto>());
+
+        var result = await controller.GetByWorkshopId(It.IsAny<AchievementsFilter>()).ConfigureAwait(false) as NoContentResult;
+
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(204, result.StatusCode);
+    }
+
+    private SearchResult<AchievementDto> SearchResult()
+    {
+        return new SearchResult<AchievementDto>
+        {
+            TotalAmount = 10,
+            Entities = new List<AchievementDto>()
+            {
+                new AchievementDto(),
+                new AchievementDto(),
+                new AchievementDto(),
+                new AchievementDto(),
+                new AchievementDto(),
+                new AchievementDto()
+            },
+        };
     }
 
 }

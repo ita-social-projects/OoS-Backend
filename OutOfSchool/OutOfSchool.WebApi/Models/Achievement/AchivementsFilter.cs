@@ -2,5 +2,5 @@
 
 public class AchievementsFilter : SearchStringFilter
 {
-	public Guid WorkshopId { get; set; } = Guid.Empty;
+    public Guid WorkshopId { get; set; } = Guid.Empty;
 }

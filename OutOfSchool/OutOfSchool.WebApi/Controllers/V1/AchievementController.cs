@@ -1,7 +1,6 @@
 ﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Achievement;
@@ -67,8 +66,8 @@ public class AchievementController : ControllerBase
     [AllowAnonymous]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<AchievementDto>))]
-	[ProducesResponseType(StatusCodes.Status204NoContent)]
-	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetByWorkshopId([FromQuery] AchievementsFilter filter)
     {
         var achievements = await achievementService.GetByFilter(filter).ConfigureAwait(false);
@@ -107,7 +106,7 @@ public class AchievementController : ControllerBase
         }
 
         var userHasRights = await this.IsUserProvidersOwnerOrAdmin(achievementDto.WorkshopId).ConfigureAwait(false);
-        
+
         if (!userHasRights)
         {
             return StatusCode(403, "Forbidden to create achievement for another providers.");
