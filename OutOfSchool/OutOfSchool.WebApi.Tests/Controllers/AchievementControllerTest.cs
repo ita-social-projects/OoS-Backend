@@ -59,7 +59,7 @@ internal class AchievementControllerTest
         Assert.AreEqual(204, result.StatusCode);
     }
 
-    private SearchResult<AchievementDto> SearchResult()
+    private static SearchResult<AchievementDto> SearchResult()
     {
         return new SearchResult<AchievementDto>
         {
