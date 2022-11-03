@@ -56,10 +56,6 @@ internal class ProviderConfiguration : IEntityTypeConfiguration<Provider>
         builder.Property(x => x.Ownership)
             .IsRequired();
 
-        //builder.HasOne(x => x.Type)
-          //  .WithOne()
-           // .OnDelete(DeleteBehavior.Restrict);
-
         builder.Property(x => x.UserId)
             .IsRequired();
 
