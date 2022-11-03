@@ -233,29 +233,12 @@ public static class ModelBuilderExtension
                 .IsFixedLength(true)
                 .HasMaxLength(84);
 
-            // TODO: Don't work with these changes
-            //u.Property(user => user.ConcurrencyStamp)
-            //    .IsUnicode(false)
-            //    .IsFixedLength(true)
-            //    .HasMaxLength(36)
-            //    .IsRequired(true);
-
             u.Property(user => user.SecurityStamp)
                 .IsUnicode(false)
                 .IsFixedLength(false)
                 .HasMaxLength(36)
                 .IsRequired(true);
         });
-
-        // TODO: Don't work with these changes
-        //builder.Entity<IdentityRole>(r =>
-        //{
-        //    r.Property(role => role.ConcurrencyStamp)
-        //        .IsUnicode(false)
-        //        .IsFixedLength(true)
-        //        .HasMaxLength(36)
-        //        .IsRequired(true);
-        //});
     }
 
     public static ModelBuilder ApplySoftDelete<T>(this ModelBuilder builder)
