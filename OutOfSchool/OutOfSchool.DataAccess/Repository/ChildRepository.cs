@@ -16,7 +16,6 @@ public class ChildRepository : EntityRepository<Guid, Child>, IEntityRepository<
 
     public override Task<Child> Create(Child child)
     {
-        db.SocialGroups.AttachRange(child.SocialGroups);
         return base.Create(child);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData.Enums;
 
@@ -52,4 +53,6 @@ public class WorkshopFilterES
     public bool IsStrictWorkdays { get; set; } = false;
 
     public long CATOTTGId { get; set; } = default(long);
+
+    public string ElasticRadius { get; set; } = GeoMathHelper.ElasticRadius;
 }

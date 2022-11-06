@@ -243,9 +243,10 @@ public class ProviderAdminService : IProviderAdminService
             return response;
         }
 
-        if (!providerAdmin.IsDeputy && !providerAdminUpdateDto.ManagedWorkshopIds.Any())
+        if ((!providerAdmin.IsDeputy && !providerAdminUpdateDto.ManagedWorkshopIds.Any())
+            || providerAdminUpdateDto.ManagedWorkshopIds is null)
         {
-            logger.LogError("Cant create assistant provider admin without related workshops");
+            logger.LogError("Cant update assistant provider admin without related workshops");
             response.IsSuccess = false;
             response.HttpStatusCode = HttpStatusCode.BadRequest;
 
@@ -427,7 +428,8 @@ public class ProviderAdminService : IProviderAdminService
     public async Task<ResponseDto> BlockProviderAdminAsync(
         string providerAdminId,
         string userId,
-        string requestId)
+        string requestId,
+        bool isBlocked)
     {
         var response = new ResponseDto();
 
@@ -455,7 +457,7 @@ public class ProviderAdminService : IProviderAdminService
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
             try
             {
-                user.IsBlocked = true;
+                user.IsBlocked = isBlocked;
                 var updateResult = await userManager.UpdateAsync(user);
 
                 if (!updateResult.Succeeded)

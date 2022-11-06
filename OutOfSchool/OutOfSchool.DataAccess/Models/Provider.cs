@@ -16,7 +16,7 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
 
     [Required(ErrorMessage = "Full Title is required")]
     [DataType(DataType.Text)]
-    [MaxLength(60)]
+    [MaxLength(120)]
     [MinLength(1)]
     public string FullTitle { get; set; }
 
@@ -70,7 +70,7 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
     public string PhoneNumber { get; set; } = string.Empty;
 
     [Required]
-    [MaxLength(30)]
+    [MaxLength(180)]
     public string Founder { get; set; } = string.Empty;
 
     [Required]
@@ -81,6 +81,9 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
 
     [Required]
     public ProviderStatus Status { get; set; }
+
+    [MaxLength(500)]
+    public string StatusReason { get; set; }
 
     [MaxLength(30)]
     public string License { get; set; }

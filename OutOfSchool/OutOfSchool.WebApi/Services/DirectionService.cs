@@ -1,5 +1,7 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
+using AutoMapper;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 
@@ -116,7 +118,14 @@ public class DirectionService : IDirectionService
         };
         var count = await repository.Count(predicate).ConfigureAwait(false);
 
-        var directions = await repository.Get(skip: filter.From, take: filter.Size, where: predicate).ToListAsync();
+        var sortExpression = new Dictionary<Expression<Func<Direction, object>>, SortDirection>
+        {
+            { x => x.Title, SortDirection.Ascending },
+        };
+
+        var directions = await repository
+            .Get(skip: filter.From, take: filter.Size, where: predicate, orderBy: sortExpression)
+            .ToListAsync();
 
         var workshopCount = await repositoryWorkshop
             .Get(where: w => w.InstitutionHierarchy.Directions.Any(d => directions.Contains(d)))

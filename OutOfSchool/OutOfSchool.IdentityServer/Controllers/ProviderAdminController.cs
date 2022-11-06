@@ -71,14 +71,14 @@ public class ProviderAdminController : Controller
             .DeleteProviderAdminAsync(providerAdminId, userId, Request.Headers["X-Request-ID"]);
     }
 
-    [HttpPut("{providerAdminId}")]
+    [HttpPut("{providerAdminId}/{isBlocked}")]
     [HasPermission(Permissions.ProviderRemove)]
-    public async Task<ResponseDto> Block(string providerAdminId)
+    public async Task<ResponseDto> Block(string providerAdminId, bool isBlocked)
     {
         logger.LogDebug($"Received request " +
                         $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
 
         return await providerAdminService
-            .BlockProviderAdminAsync(providerAdminId, userId, Request.Headers["X-Request-ID"]);
+            .BlockProviderAdminAsync(providerAdminId, userId, Request.Headers["X-Request-ID"], isBlocked);
     }
 }

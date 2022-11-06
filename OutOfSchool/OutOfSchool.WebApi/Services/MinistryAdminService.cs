@@ -68,16 +68,16 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         return mapper.Map<MinistryAdminDto>(ministryAdmin);
     }
 
-    public async Task<Either<ErrorResponse, CreateMinistryAdminDto>> CreateMinistryAdminAsync(string userId, CreateMinistryAdminDto ministryAdminDto, string token)
+    public async Task<Either<ErrorResponse, MinistryAdminBaseDto>> CreateMinistryAdminAsync(string userId, MinistryAdminBaseDto ministryAdminBaseDto, string token)
     {
         Logger.LogDebug("ministryAdmin creating was started. User(id): {UserId}", userId);
 
-        ArgumentNullException.ThrowIfNull(ministryAdminDto);
+        ArgumentNullException.ThrowIfNull(ministryAdminBaseDto);
 
-        if (await IsSuchEmailExisted(ministryAdminDto.Email))
+        if (await IsSuchEmailExisted(ministryAdminBaseDto.Email))
         {
-            Logger.LogDebug("ministryAdmin creating is not possible. Username {Email} is already taken", ministryAdminDto.Email);
-            throw new InvalidOperationException($"Username {ministryAdminDto.Email} is already taken.");
+            Logger.LogDebug("ministryAdmin creating is not possible. Username {Email} is already taken", ministryAdminBaseDto.Email);
+            throw new InvalidOperationException($"Username {ministryAdminBaseDto.Email} is already taken.");
         }
 
         var request = new Request()
@@ -85,7 +85,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             HttpMethodType = HttpMethodType.Post,
             Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateMinistryAdmin),
             Token = token,
-            Data = ministryAdminDto,
+            Data = ministryAdminBaseDto,
             RequestId = Guid.NewGuid(),
         };
 
@@ -109,7 +109,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
                 })
             .Map(result => result.Result is not null
                 ? JsonConvert
-                    .DeserializeObject<CreateMinistryAdminDto>(result.Result.ToString())
+                    .DeserializeObject<MinistryAdminBaseDto>(result.Result.ToString())
                 : null);
     }
 
@@ -156,27 +156,60 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
     }
 
     /// <inheritdoc/>
-    public async Task<MinistryAdminDto> Update(MinistryAdminDto ministryAdminDto)
+    public async Task<Either<ErrorResponse, MinistryAdminBaseDto>> UpdateMinistryAdminAsync(
+        string userId,
+        MinistryAdminBaseDto updateMinistryAdminDto,
+        string token)
     {
-        ArgumentNullException.ThrowIfNull(ministryAdminDto);
+        _ = updateMinistryAdminDto ?? throw new ArgumentNullException(nameof(updateMinistryAdminDto));
 
-        Logger.LogInformation("Updating MinistryAdmin with User Id = {ministryAdminDto.Id} started", ministryAdminDto.Id);
+        Logger.LogDebug("ProviderAdmin(id): {MinistryAdminId} updating was started. User(id): {UserId}", updateMinistryAdminDto.UserId, userId);
 
-        try
+        // TODO Add checking if ministry Admin belongs to Institution and is exist MinistryAdmin with such UserId
+        var ministryAdmin = await institutionAdminRepository.GetByIdAsync(updateMinistryAdminDto.UserId)
+            .ConfigureAwait(false);
+
+        if (ministryAdmin is null)
         {
-            var user = await userRepository.GetById(ministryAdminDto.Id);
+            Logger.LogError("MinistryAdmin(id) {MinistryAdminId} not found. User(id): {UserId}", updateMinistryAdminDto.UserId, userId);
 
-            var updatedUser = await userRepository.Update(mapper.Map((BaseUserDto)ministryAdminDto, user)).ConfigureAwait(false);
-
-            Logger.LogInformation("User with Id = {updatedUser.Id} updated successfully", updatedUser.Id);
-
-            return ministryAdminDto;
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.NotFound,
+            };
         }
-        catch (DbUpdateConcurrencyException)
+
+        var request = new Request()
         {
-            Logger.LogError("Updating failed. User with Id = {ministryAdminDto.Id} doesn't exist in the system", ministryAdminDto.Id);
-            throw;
-        }
+            HttpMethodType = HttpMethodType.Put,
+            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.UpdateMinistryAdmin + updateMinistryAdminDto.UserId),
+            Token = token,
+            Data = updateMinistryAdminDto,
+            RequestId = Guid.NewGuid(),
+        };
+
+        Logger.LogDebug(
+            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            request.HttpMethodType,
+            request.RequestId,
+            userId,
+            request.Url);
+
+        var response = await SendRequest<ResponseDto>(request)
+            .ConfigureAwait(false);
+
+        return response
+            .FlatMap<ResponseDto>(r => r.IsSuccess
+                ? r
+                : new ErrorResponse
+                {
+                    HttpStatusCode = r.HttpStatusCode,
+                    Message = r.Message,
+                })
+            .Map(result => result.Result is not null
+                ? JsonConvert
+                    .DeserializeObject<MinistryAdminBaseDto>(result.Result.ToString())
+                : null);
     }
 
     public async Task<Either<ErrorResponse, ActionResult>> DeleteMinistryAdminAsync(string ministryAdminId, string userId, string token)
@@ -228,7 +261,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
                 : null);
     }
 
-    public async Task<Either<ErrorResponse, ActionResult>> BlockMinistryAdminAsync(string ministryAdminId, string userId, string token)
+    public async Task<Either<ErrorResponse, ActionResult>> BlockMinistryAdminAsync(string ministryAdminId, string userId, string token, bool isBlocked)
     {
         Logger.LogDebug("MinistryAdmin(id): {MinistryAdminId} blocking was started. User(id): {UserId}", ministryAdminId, userId);
 
@@ -248,7 +281,11 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.BlockMinistryAdmin + ministryAdminId),
+            Url = new Uri(identityServerConfig.Authority, string.Concat(
+                CommunicationConstants.BlockMinistryAdmin,
+                ministryAdminId,
+                "/",
+                isBlocked)),
             Token = token,
             RequestId = Guid.NewGuid(),
         };

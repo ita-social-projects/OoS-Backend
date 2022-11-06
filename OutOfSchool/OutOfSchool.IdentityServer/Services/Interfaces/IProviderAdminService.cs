@@ -24,5 +24,6 @@ public interface IProviderAdminService
     Task<ResponseDto> BlockProviderAdminAsync(
         string providerAdminId,
         string userId,
-        string requestId);
+        string requestId,
+        bool isBlocked);
 }

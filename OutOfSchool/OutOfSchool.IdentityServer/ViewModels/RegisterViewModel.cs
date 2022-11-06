@@ -8,20 +8,20 @@ namespace OutOfSchool.IdentityServer.ViewModels;
 public class RegisterViewModel
 {
     [Required(ErrorMessage = "FirstName is required")]
-    [MaxLength(30)]
+    [MaxLength(60)]
     [RegularExpression(
         Constants.NameRegexViewModel,
         ErrorMessage = Constants.NameErrorMessage)]
     public string FirstName { get; set; }
 
     [Required(ErrorMessage = "LastName is required")]
-    [MaxLength(30)]
+    [MaxLength(60)]
     [RegularExpression(
         Constants.NameRegexViewModel,
         ErrorMessage = Constants.NameErrorMessage)]
     public string LastName { get; set; }
 
-    [MaxLength(30)]
+    [MaxLength(60)]
     [RegularExpression(
         Constants.NameRegexViewModel,
         ErrorMessage = Constants.NameErrorMessage)]
