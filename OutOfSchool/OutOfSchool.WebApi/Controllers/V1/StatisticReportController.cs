@@ -47,18 +47,25 @@ public class StatisticReportController : ControllerBase
     /// <param name="externalId">StatisticReport id.</param>
     /// <returns>Notification.</returns>
     /// <response code="200">Returns StatisticReport.</response>
+    /// <response code="204">If data for Id is not exists.</response>
     /// <response code="400">Id was wrong.</response>
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="500">If any server error occures.</response>
     [Authorize]
     [HttpGet("{externalId}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatisticReportDto))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetDataById(string externalId)
     {
         var fileData = await service.GetDataById(externalId).ConfigureAwait(false);
+
+        if (fileData is null)
+        {
+            return NoContent();
+        }
 
         return new FileStreamResult(fileData.ContentStream, fileData.ContentType);
     }
