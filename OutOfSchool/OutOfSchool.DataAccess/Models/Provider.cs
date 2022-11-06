@@ -90,6 +90,11 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
 
     public ProviderLicenseStatus LicenseStatus { get; set; }
 
+    public bool IsBlocked { get; set; } = false;
+
+    [MaxLength(500)]
+    public string BlockReason { get; set; }
+
     [Required]
     public string UserId { get; set; }
 
