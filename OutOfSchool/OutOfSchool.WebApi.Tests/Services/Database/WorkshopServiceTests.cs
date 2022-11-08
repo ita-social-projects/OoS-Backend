@@ -210,6 +210,71 @@ public class WorkshopServiceTests
     }
     #endregion
 
+    #region GetWorkshopListByProviderId
+    [Test]
+    public async Task GetWorkshopListByProviderId_WhenProviderWithIdExists_ShouldReturnEntities()
+    {
+        // Arrange
+        var workshops = WithWorkshopsList().ToList();
+        SetupGetByProviderById(workshops);
+        var expectedWorkshops = workshops.Select(w => new ShortEntityDto() { Id = w.Id, Title = w.Title }).OrderBy(x => x.Title).ToList();
+        mapperMock.Setup(m => m.Map<List<ShortEntityDto>>(It.IsAny<List<Workshop>>())).Returns(expectedWorkshops);
+
+        // Act
+        var result = await workshopService.GetWorkshopListByProviderId(It.IsAny<Guid>(), It.IsAny<OffsetFilter>()).ConfigureAwait(false);
+
+        // Assert
+        workshopRepository.VerifyAll();
+        mapperMock.VerifyAll();
+        result.Should().BeEquivalentTo(expectedWorkshops);
+    }
+
+    [Test]
+    public async Task GetWorkshopListByProviderId_WhenThereIsNoEntityWithId_ShouldReturnEmptyList()
+    {
+        // Arrange
+        var emptyListWorkshops = new List<ShortEntityDto>();
+        SetupGetByProviderById(new List<Workshop>());
+        mapperMock.Setup(m => m.Map<List<ShortEntityDto>>(It.IsAny<List<Workshop>>())).Returns(emptyListWorkshops);
+
+        // Act
+        var result = await workshopService.GetWorkshopListByProviderId(Guid.NewGuid(), It.IsAny<OffsetFilter>()).ConfigureAwait(false);
+
+        // Assert
+        workshopRepository.VerifyAll();
+        mapperMock.VerifyAll();
+        result.Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task GetWorkshopListByProviderId_WhenInvalidFilter_ShouldReturnException()
+    {
+        // Arrange
+        var invalidFilter = new OffsetFilter() { From = -1, Size = -1 };
+
+        // Act and Assert
+        await workshopService.Invoking(w => w.GetWorkshopListByProviderId(Guid.NewGuid(), invalidFilter)).Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task GetWorkshopListByProviderId_WhenFilterNull_ShouldReturnDefaultSize()
+    {
+        // Arrange
+        var workshops = WithWorkshopsList().ToList();
+        SetupGetByProviderById(workshops);
+        var expectedWorkshops = workshops.Select(w => new ShortEntityDto() { Id = w.Id, Title = w.Title }).Take(8).OrderBy(x => x.Title).ToList();
+        mapperMock.Setup(m => m.Map<List<ShortEntityDto>>(It.IsAny<List<Workshop>>())).Returns(expectedWorkshops);
+
+        // Act
+        var result = await workshopService.GetWorkshopListByProviderId(It.IsAny<Guid>(), It.IsAny<OffsetFilter>()).ConfigureAwait(false);
+
+        // Assert
+        workshopRepository.VerifyAll();
+        mapperMock.VerifyAll();
+        result.Should().BeEquivalentTo(expectedWorkshops);
+    }
+    #endregion
+
     #region Update
     [Test]
     public async Task Update_WhenEntityIsValid_ShouldReturnUpdatedEntity([Random(2, 5, 1)] int teachersInWorkshop)
@@ -376,6 +441,7 @@ public class WorkshopServiceTests
                 ProviderOwnership = OwnershipType.Private,
                 Status = WorkshopStatus.Open,
                 AvailableSeats = 30,
+                Title = "10",
             },
             new Workshop()
             {
@@ -384,11 +450,55 @@ public class WorkshopServiceTests
                 ProviderOwnership = OwnershipType.State,
                 Status = WorkshopStatus.Open,
                 AvailableSeats = 30,
+                Title = "9",
             },
             new Workshop()
             {
                 Id = new Guid("3e8845a8-1359-4676-b6d6-5a6b29c122ea"),
                 ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                Title = "1",
+            },
+            new Workshop()
+            {
+                Id = Guid.NewGuid(),
+                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                Title = "2",
+            },
+            new Workshop()
+            {
+                Id = Guid.NewGuid(),
+                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                Title = "3",
+            },
+            new Workshop()
+            {
+                Id = Guid.NewGuid(),
+                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                Title = "4",
+            },
+            new Workshop()
+            {
+                Id = Guid.NewGuid(),
+                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                Title = "5",
+            },
+            new Workshop()
+            {
+                Id = Guid.NewGuid(),
+                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                Title = "6",
+            },
+            new Workshop()
+            {
+                Id = Guid.NewGuid(),
+                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                Title = "7",
+            },
+            new Workshop()
+            {
+                Id = Guid.NewGuid(),
+                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                Title = "8",
             },
         };
     }

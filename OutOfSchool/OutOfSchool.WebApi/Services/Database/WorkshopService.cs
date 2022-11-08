@@ -235,7 +235,7 @@ public class WorkshopService : IWorkshopService
 
         logger.LogInformation(!workshops.Any()
             ? $"There aren't Workshops for Provider with Id = {id}."
-            : $"From Workshop table were successfully received {workshops.Count()} records.");
+            : $"From Workshop table were successfully received {workshops.Count} records.");
 
         var workshopBaseCards = mapper.Map<List<T>>(workshops);
 
