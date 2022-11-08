@@ -340,7 +340,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         {
             var providerAdmin = providersAdmins.SingleOrDefault(x => x.IsDeputy);
             if (providerAdmin == null) {
-                return null;
+                return new List<WorkshopProviderViewCard>();
             }
 
             var offsetFilter = new OffsetFilter() { From = 0, Size = int.MaxValue };
