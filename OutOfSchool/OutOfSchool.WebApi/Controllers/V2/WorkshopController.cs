@@ -97,7 +97,8 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetByProviderId(Guid id)
     {
-        var workshopCards = await combinedWorkshopService.GetByProviderId<WorkshopBaseCard>(id).ConfigureAwait(false);
+        var offsetFilter = new OffsetFilter() { From = 0, Size = int.MaxValue };
+        var workshopCards = await combinedWorkshopService.GetByProviderId<WorkshopBaseCard>(id, offsetFilter).ConfigureAwait(false);
 
         if (!workshopCards.Any())
         {
