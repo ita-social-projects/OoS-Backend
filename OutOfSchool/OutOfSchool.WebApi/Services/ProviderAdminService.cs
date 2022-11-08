@@ -339,8 +339,11 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         if (isProviderDeputy)
         {
             var providerAdmin = providersAdmins.SingleOrDefault(x => x.IsDeputy);
-            var offsetFilter = new OffsetFilter() { From = 0, Size = int.MaxValue };
+            if (providerAdmin == null) {
+                return null;
+            }
 
+            var offsetFilter = new OffsetFilter() { From = 0, Size = int.MaxValue };
             return await workshopService.GetByProviderId<WorkshopProviderViewCard>(providerAdmin.ProviderId, offsetFilter).ConfigureAwait(false);
         }
 
