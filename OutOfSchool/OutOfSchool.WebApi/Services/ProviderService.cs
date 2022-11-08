@@ -225,6 +225,31 @@ public class ProviderService : IProviderService, INotificationReciever
         return dto;
     }
 
+    public async Task<ProviderBlockDto> Block(ProviderBlockDto providerBlockDto)
+    {
+        logger.LogInformation($"Block/Unblock Provider by Id started.");
+
+        _ = providerBlockDto ?? throw new ArgumentNullException(nameof(providerBlockDto));
+
+        var provider = await providerRepository.GetById(providerBlockDto.Id).ConfigureAwait(false);
+
+        if (provider is null)
+        {
+            logger.LogInformation($"Provider(id) {providerBlockDto.Id} not found.");
+
+            return null;
+        }
+
+        // TODO: validate if current user has permission to block/unblock the provider
+        provider.IsBlocked = providerBlockDto.IsBlocked;
+        provider.BlockReason = providerBlockDto.IsBlocked ? providerBlockDto.BlockReason : null;
+        await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+
+        logger.LogInformation($"Provider(id) {providerBlockDto.Id} IsBlocked was changed to {provider.IsBlocked}");
+
+        return providerBlockDto;
+    }
+
     public async Task<ProviderLicenseStatusDto> UpdateLicenseStatus(ProviderLicenseStatusDto dto, string userId)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));

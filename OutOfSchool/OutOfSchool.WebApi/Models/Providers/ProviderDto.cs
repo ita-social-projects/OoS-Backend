@@ -95,6 +95,11 @@ public class ProviderDto
     [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus LicenseStatus { get; set; }
 
+    public bool IsBlocked { get; set; }
+
+    [MaxLength(500)]
+    public string BlockReason { get; set; }
+
     [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;
 
