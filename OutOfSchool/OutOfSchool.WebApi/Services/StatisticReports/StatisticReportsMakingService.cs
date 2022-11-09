@@ -2,6 +2,7 @@
 using CsvHelper;
 using CsvHelper.Configuration;
 using Microsoft.EntityFrameworkCore.Storage;
+using Nest;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Files;
 
@@ -28,6 +29,8 @@ public class StatisticReportsMakingService : IStatisticReportsMakingService
 
     public async Task CreateStatisticReports(CancellationToken cancellationToken = default)
     {
+        logger.LogDebug("Creating statistic reports was started");
+
         var reportData = await statisticReportRepository.GetDataForReport();
         var config = new CsvConfiguration(CultureInfo.InvariantCulture) { Delimiter = ";", Encoding = Encoding.UTF8 };
 
@@ -36,7 +39,7 @@ public class StatisticReportsMakingService : IStatisticReportsMakingService
             using (var writer = new StreamWriter(stream))
                 using (var csv = new CsvWriter(writer, config))
                 {
-                    await csv.WriteRecordsAsync(reportData);
+                    await csv.WriteRecordsAsync(reportData, cancellationToken);
                 }
 
             var fileModel = new FileModel()
@@ -50,7 +53,7 @@ public class StatisticReportsMakingService : IStatisticReportsMakingService
 
             async Task WriteStatisticReports()
             {
-                await using IDbContextTransaction transaction = await db.Database.BeginTransactionAsync().ConfigureAwait(false);
+                await using IDbContextTransaction transaction = await db.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
                     var existingReports = 
@@ -61,7 +64,7 @@ public class StatisticReportsMakingService : IStatisticReportsMakingService
                         await statisticReportRepository.Delete(report);
                     }
 
-                    var externalId = await storage.UploadAsync(fileModel);
+                    var externalId = await storage.UploadAsync(fileModel, cancellationToken);
 
                     var currentDate = DateTime.UtcNow;
 
@@ -78,7 +81,7 @@ public class StatisticReportsMakingService : IStatisticReportsMakingService
 
                     if (currentDate.Day == 1 && currentDate.Month == 1)
                     {
-                        externalId = await storage.UploadAsync(fileModel);
+                        externalId = await storage.UploadAsync(fileModel, cancellationToken);
 
                         statisticReport.ExternalStorageId = externalId;
                         statisticReport.ReportType = StatisticReportTypes.WorkshopsYear;
@@ -87,14 +90,17 @@ public class StatisticReportsMakingService : IStatisticReportsMakingService
                         await statisticReportRepository.Create(statisticReport);
                     }
 
-                    await transaction.CommitAsync();
+                    await transaction.CommitAsync(cancellationToken);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    await transaction.RollbackAsync();
+                    await transaction.RollbackAsync(cancellationToken);
+                    logger.LogError(ex, "Statistic report was not saved.");
                     throw;
                 }
             }
         }
+
+        logger.LogDebug("Creating statistic reports was finished");
     }
 }
