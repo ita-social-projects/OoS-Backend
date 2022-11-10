@@ -60,11 +60,13 @@ public abstract class FileInDbStorageBase<TFile> : IFilesStorage<TFile, string>
 
     public async Task<string> UploadAsync(TFile file, CancellationToken cancellationToken = default)
     {
+        _ = file ?? throw new ArgumentNullException(nameof(file));
+
         var fileInDb = new FileInDb()
         {
             Id = GenerateFileId(),
             ContentType = file.ContentType,
-            Data = ((MemoryStream) file.ContentStream).ToArray(),
+            Data = ((MemoryStream)file.ContentStream).ToArray(),
         };
 
         await fileInDbRepository.Create(fileInDb).ConfigureAwait(false);
