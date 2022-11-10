@@ -1,13 +1,9 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Notifications;
 using OutOfSchool.WebApi.Models.StatisticReports;
-using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -16,7 +12,6 @@ public class StatisticReportService : IStatisticReportService
     private readonly IStatisticReportFileStorage storage;
     private readonly IStatisticReportRepository statisticReportRepository;
     private readonly ILogger<StatisticReportService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
 
     /// <summary>
@@ -25,19 +20,16 @@ public class StatisticReportService : IStatisticReportService
     /// <param name="storage">Storage for StatisticReport entity.</param>
     /// <param name="statisticReportRepository">Repository for the StatisticReport entity.</param>
     /// <param name="logger">Logger.</param>
-    /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
     public StatisticReportService(
         IStatisticReportFileStorage storage,
         IStatisticReportRepository statisticReportRepository,
         ILogger<StatisticReportService> logger,
-        IStringLocalizer<SharedResource> localizer,
         IMapper mapper)
     {
         this.storage = storage;
         this.statisticReportRepository = statisticReportRepository;
         this.logger = logger;
-        this.localizer = localizer;
         this.mapper = mapper;
     }
 
@@ -68,6 +60,8 @@ public class StatisticReportService : IStatisticReportService
     public async Task<SearchResult<StatisticReportDto>> GetByFilter(StatisticReportFilter filter)
     {
         logger.LogInformation($"Getting StatisticReports by filter");
+
+        filter ??= new StatisticReportFilter();
 
         var predicate = PredicateBuild(filter);
 
@@ -108,7 +102,7 @@ public class StatisticReportService : IStatisticReportService
         }
     }
 
-    private Expression<Func<StatisticReport, bool>> PredicateBuild(StatisticReportFilter filter)
+    private static Expression<Func<StatisticReport, bool>> PredicateBuild(StatisticReportFilter filter)
     {
         var predicate = PredicateBuilder.True<StatisticReport>();
 

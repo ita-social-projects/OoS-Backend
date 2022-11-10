@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Notifications;
+﻿using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.StatisticReports;
 
 namespace OutOfSchool.WebApi.Services;
@@ -18,7 +16,6 @@ public interface IStatisticReportService
     /// The result is a <see cref="SearchResult{StatisticReportDto}"/> that contains the count of all found statistic reports and a list of statistic reports that were received.</returns>
     /// <exception cref="ArgumentNullException">If one of the parameters was null.</exception>
     /// <exception cref="ArgumentException">If one of the offsetFilter's properties is negative.</exception>
-    /// <exception cref="SqlException">If the database cannot execute the query.</exception>
     Task<SearchResult<StatisticReportDto>> GetByFilter(StatisticReportFilter filter);
 
     /// <summary>

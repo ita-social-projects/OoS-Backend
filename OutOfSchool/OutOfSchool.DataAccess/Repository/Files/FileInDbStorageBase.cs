@@ -18,7 +18,7 @@ public abstract class FileInDbStorageBase<TFile> : IFilesStorage<TFile, string>
 {
     private readonly IFileInDbRepository fileInDbRepository;
 
-    public FileInDbStorageBase(
+    protected FileInDbStorageBase(
         IFileInDbRepository fileInDbRepository)
     {
         this.fileInDbRepository = fileInDbRepository;
