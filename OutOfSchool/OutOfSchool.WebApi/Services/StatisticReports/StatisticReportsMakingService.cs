@@ -56,8 +56,9 @@ public class StatisticReportsMakingService : IStatisticReportsMakingService
                 await using IDbContextTransaction transaction = await db.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
-                    var existingReports = 
-                        await db.StatisticReports.Where(sr => sr.ReportType == StatisticReportTypes.WorkshopsDaily).ToListAsync();
+                    var existingReports =
+                        await db.StatisticReports.Where(sr => sr.ReportType == StatisticReportTypes.WorkshopsDaily)
+                            .ToListAsync(cancellationToken);
 
                     foreach (var report in existingReports)
                     {

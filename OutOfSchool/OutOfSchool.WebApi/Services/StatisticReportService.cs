@@ -65,8 +65,10 @@ public class StatisticReportService : IStatisticReportService
 
         var predicate = PredicateBuild(filter);
 
-        var sortExpression = new Dictionary<Expression<Func<StatisticReport, object>>, SortDirection>();
-        sortExpression.Add(sr => sr.Date, SortDirection.Ascending);
+        var sortExpression = new Dictionary<Expression<Func<StatisticReport, object>>, SortDirection>()
+        {
+            { sr => sr.Date, SortDirection.Ascending },
+        };
 
         var totalAmount = await statisticReportRepository.Count(where: predicate).ConfigureAwait(false);
         var statisticReports = await statisticReportRepository.Get(
