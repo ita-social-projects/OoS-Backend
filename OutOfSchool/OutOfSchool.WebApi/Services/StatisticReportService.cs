@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Models;
@@ -78,9 +79,14 @@ public class StatisticReportService : IStatisticReportService
             includeProperties: "Workshop,Child,Parent",
             orderBy: sortExpression).ToListAsync().ConfigureAwait(false);
 
-        logger.LogInformation(!statisticReports.Any()
-            ? $"There is no StatisticReports in the Db with filter."
-            : $"Successfully got StatisticReports with filter.");
+        if (!statisticReports.Any())
+        {
+            logger.LogInformation("There is no StatisticReports in the Db with filter.");
+        }
+        else
+        {
+            logger.LogInformation("Successfully got StatisticReports with filter.");
+        }
 
         var searchResult = new SearchResult<StatisticReportDto>()
         {
