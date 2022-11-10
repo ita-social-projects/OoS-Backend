@@ -23,22 +23,17 @@ public class StatisticReportRepository : SensitiveEntityRepository<StatisticRepo
 
     public async Task<List<StatisticReportCSV>> GetDataForReport()
     {
-        try
-        {
-            var result = await db.StatisticReportsCSV
-                .FromSqlRaw<StatisticReportCSV>(@"SELECT * FROM statisticreportdata;")
-                .ToListAsync<StatisticReportCSV>();
+        var result = await db.StatisticReportsCSV
+            .FromSqlRaw<StatisticReportCSV>(@"SELECT * FROM statisticreportdata;")
+            .ToListAsync<StatisticReportCSV>();
 
-            return result;
-        }
-        catch(Exception ex)
-        {
-            throw;
-        }
+        return result;
     }
 
     public new async Task Delete(StatisticReport entity)
     {
+        _ = entity ?? throw new ArgumentNullException(nameof(entity));
+
         db.Entry(entity).State = EntityState.Deleted;
 
         var fileInDb = await fileInDbRepository.GetById(entity.ExternalStorageId).ConfigureAwait(false);
