@@ -1,23 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Services;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Achievement;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services;
 
-public class AchievementService: IAchievementService
+public class AchievementService : IAchievementService
 {
     private readonly IAchievementRepository achievementRepository;
     private readonly ILogger<AchievementService> logger;
@@ -63,17 +51,44 @@ public class AchievementService: IAchievementService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<AchievementDto>> GetByWorkshopId(Guid id)
+    public async Task<SearchResult<AchievementDto>> GetByFilter(AchievementsFilter filter)
     {
-        logger.LogInformation("Getting all Achievements by Workshop Id started.");
+        logger.LogInformation("Getting all Achievements started (by filter)");
 
-        var achievements = await achievementRepository.GetByWorkshopId(id).ConfigureAwait(false);
+        filter ??= new AchievementsFilter();
+        ModelValidationHelper.ValidateOffsetFilter(filter);
+
+        var predicate = PredicateBuilder.True<Achievement>();
+
+        if (filter.WorkshopId != Guid.Empty)
+        {
+            predicate = predicate.And(a => a.WorkshopId == filter.WorkshopId);
+        }
+
+        int count = await achievementRepository.Count(predicate).ConfigureAwait(false);
+
+        var achievements = await achievementRepository
+            .Get(
+                skip: filter.From,
+                take: filter.Size,
+                includeProperties: "Children",
+                where: predicate)
+            .ToListAsync()
+            .ConfigureAwait(false);
 
         logger.LogInformation(!achievements.Any()
             ? "This Workshop has no achievements."
-            : $"All {achievements.Count()} records were successfully received");
+            : $"All {achievements.Count} records were successfully received");
 
-        return mapper.Map<List<AchievementDto>>(achievements);
+        var achievementsDto = achievements.Select(achievement => mapper.Map<AchievementDto>(achievement)).ToList();
+
+        var result = new SearchResult<AchievementDto>()
+        {
+            TotalAmount = count,
+            Entities = achievementsDto,
+        };
+
+        return result;
     }
 
     /// <inheritdoc/>

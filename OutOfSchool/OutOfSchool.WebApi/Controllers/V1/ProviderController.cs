@@ -224,6 +224,30 @@ public class ProviderController : ControllerBase
     }
 
     /// <summary>
+    /// Block/unblock Provider.
+    /// </summary>
+    /// <param name="providerBlockDto">Entity to update.</param>
+    /// <returns>Block Provider.</returns>
+    [HasPermission(Permissions.ProviderEdit)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderBlockDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPut]
+    public async Task<ActionResult> Block([FromBody] ProviderBlockDto providerBlockDto)
+    {
+        var result = await providerService.Block(providerBlockDto);
+
+        if (result is null)
+        {
+            return NotFound($"There is no Provider in DB with Id - {providerBlockDto.Id}");
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Delete a specific Provider from the database.
     /// </summary>
     /// <param name="uid">Provider's key.</param>
