@@ -1,10 +1,11 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Application;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -15,110 +16,117 @@ public class ApplicationService : IApplicationService, INotificationReciever
 {
     private readonly IApplicationRepository applicationRepository;
     private readonly IWorkshopRepository workshopRepository;
-    private readonly IEntityRepository<Guid, Child> childRepository;
     private readonly ILogger<ApplicationService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
     private readonly INotificationService notificationService;
     private readonly IProviderAdminService providerAdminService;
     private readonly IChangesLogService changesLogService;
     private readonly ApplicationsConstraintsConfig applicationsConstraintsConfig;
     private readonly IWorkshopServicesCombiner combinedWorkshopService;
+    private readonly ICurrentUserService currentUserService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationService"/> class.
     /// </summary>
     /// <param name="repository">Application repository.</param>
     /// <param name="logger">Logger.</param>
-    /// <param name="localizer">Localizer.</param>
     /// <param name="workshopRepository">Workshop repository.</param>
-    /// <param name="childRepository">Child repository.</param>
     /// <param name="mapper">Automapper DI service.</param>
     /// <param name="applicationsConstraintsConfig">Options for application's constraints.</param>
     /// <param name="notificationService">Notification service.</param>
     /// <param name="providerAdminService">Service for getting provider admins and deputies.</param>
     /// <param name="changesLogService">ChangesLogService.</param>
     /// <param name="combinedWorkshopService">WorkshopServicesCombiner.</param>
+    /// <param name="currentUserService">Service for managing current user rights.</param>
     public ApplicationService(
         IApplicationRepository repository,
         ILogger<ApplicationService> logger,
-        IStringLocalizer<SharedResource> localizer,
         IWorkshopRepository workshopRepository,
-        IEntityRepository<Guid, Child> childRepository,
         IMapper mapper,
         IOptions<ApplicationsConstraintsConfig> applicationsConstraintsConfig,
         INotificationService notificationService,
         IProviderAdminService providerAdminService,
         IChangesLogService changesLogService,
-        IWorkshopServicesCombiner combinedWorkshopService)
+        IWorkshopServicesCombiner combinedWorkshopService,
+        ICurrentUserService currentUserService)
     {
         applicationRepository = repository ?? throw new ArgumentNullException(nameof(repository));
         this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
-        this.childRepository = childRepository ?? throw new ArgumentNullException(nameof(childRepository));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
-        this.providerAdminService = providerAdminService ?? throw new ArgumentNullException(nameof(providerAdminService));
+        this.providerAdminService =
+            providerAdminService ?? throw new ArgumentNullException(nameof(providerAdminService));
         this.changesLogService = changesLogService ?? throw new ArgumentNullException(nameof(changesLogService));
-        this.applicationsConstraintsConfig = (applicationsConstraintsConfig ?? throw new ArgumentNullException(nameof(applicationsConstraintsConfig))).Value;
-        this.combinedWorkshopService = combinedWorkshopService ?? throw new ArgumentNullException(nameof(combinedWorkshopService));
+        this.applicationsConstraintsConfig = (applicationsConstraintsConfig ??
+                                              throw new ArgumentNullException(nameof(applicationsConstraintsConfig))).Value;
+        this.combinedWorkshopService =
+            combinedWorkshopService ?? throw new ArgumentNullException(nameof(combinedWorkshopService));
+        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
     }
 
     /// <inheritdoc/>
-    public async Task<ModelWithAdditionalData<ApplicationDto, int>> Create(ApplicationDto applicationDto)
+    public async Task<ModelWithAdditionalData<ApplicationDto, int>> Create(ApplicationCreate applicationDto)
     {
-        logger.LogInformation("Application creating started.");
+        logger.LogInformation("Application creating started");
 
-        ModelNullValidation(applicationDto);
+        ArgumentNullException.ThrowIfNull(applicationDto, nameof(applicationDto));
+
+        await currentUserService.UserHasRights(new ParentRights(applicationDto.ParentId, applicationDto.ChildId));
 
         var isNewApplicationAllowed = await IsNewApplicationAllowed(applicationDto.WorkshopId).ConfigureAwait(false);
 
         if (!isNewApplicationAllowed)
         {
-            logger.LogInformation("Unable to create a new application for a workshop because workshop status is closed.");
-            throw new ArgumentException("Unable to create a new application for a workshop because workshop status is closed.");
+            logger.LogInformation(
+                "Unable to create a new application for a workshop because workshop status is closed");
+            throw new ArgumentException(
+                "Unable to create a new application for a workshop because workshop status is closed.");
         }
 
-        var allowedNewApplicationForChild = await AllowedNewApplicationByChildStatus(applicationDto.WorkshopId, applicationDto.ChildId).ConfigureAwait(false);
+        var allowedNewApplicationForChild =
+            await AllowedNewApplicationByChildStatus(applicationDto.WorkshopId, applicationDto.ChildId)
+                .ConfigureAwait(false);
 
         if (!allowedNewApplicationForChild)
         {
-            logger.LogInformation("Unable to create a new application for a child because there's already appropriate status were found in this workshop.");
-            throw new ArgumentException("Unable to create a new application for a child because there's already appropriate status were found in this workshop.");
+            logger.LogInformation(
+                "Unable to create a new application for a child because there's already appropriate status were found in this workshop");
+            throw new ArgumentException(
+                "Unable to create a new application for a child because there's already appropriate status were found in this workshop.");
         }
 
-        (bool IsCorrect, int SecondsRetryAfter) resultOfCheck = await CheckApplicationsLimit(applicationDto).ConfigureAwait(false);
+        (bool IsCorrect, int SecondsRetryAfter) resultOfCheck =
+            await CheckApplicationsLimit(applicationDto).ConfigureAwait(false);
 
         if (!resultOfCheck.IsCorrect)
         {
             return new ModelWithAdditionalData<ApplicationDto, int>
             {
-                Description = $"Limit of applications per {applicationsConstraintsConfig.ApplicationsLimitDays} days is exceeded.",
+                Description =
+                    $"Limit of applications per {applicationsConstraintsConfig.ApplicationsLimitDays} days is exceeded.",
                 AdditionalData = resultOfCheck.SecondsRetryAfter,
             };
         }
 
-        var isChildParent = await CheckChildParent(applicationDto.ParentId, applicationDto.ChildId).ConfigureAwait(false);
-
-        if (!isChildParent)
-        {
-            logger.LogInformation("Operation failed. Unable to create application for another parent`s child.");
-            throw new ArgumentException(localizer["Unable to create application for another parent`s child."]);
-        }
-
         var application = mapper.Map<Application>(applicationDto);
+
+        application.Id = Guid.Empty;
+
+        application.CreationTime = DateTimeOffset.UtcNow;
+
+        application.Status = ApplicationStatus.Pending;
 
         var newApplication = await applicationRepository.Create(application).ConfigureAwait(false);
 
-        logger.LogInformation($"Application with Id = {newApplication?.Id} created successfully.");
+        logger.LogInformation("Application with Id = {Id} created successfully", newApplication?.Id);
 
         if (newApplication != null)
         {
-            var additionalData = new Dictionary<string, string>()
-        {
-            { "Status", newApplication.Status.ToString() },
-        };
+            var additionalData = new Dictionary<string, string>
+            {
+                { "Status", newApplication.Status.ToString() },
+            };
 
             string groupedData = newApplication.Status.ToString();
 
@@ -139,63 +147,51 @@ public class ApplicationService : IApplicationService, INotificationReciever
     }
 
     /// <inheritdoc/>
-    [Obsolete("This method doesn't check application restrictions")]
-    public async Task<IEnumerable<ApplicationDto>> Create(IEnumerable<ApplicationDto> applicationDtos)
+    public async Task<SearchResult<ApplicationDto>> GetAll(ApplicationFilter filter)
     {
-        logger.LogInformation("Multiple applications creating started.");
+        logger.LogInformation("Getting all Applications started");
 
-        MultipleModelCreationValidation(applicationDtos);
-
-        var applications = mapper.Map<List<Application>>(applicationDtos);
-
-        var newApplications = await applicationRepository.Create(applications).ConfigureAwait(false);
-
-        logger.LogInformation("Applications created successfully.");
-
-        return mapper.Map<List<ApplicationDto>>(newApplications);
-    }
-
-    /// <inheritdoc/>
-    public async Task Delete(Guid id)
-    {
-        logger.LogInformation($"Deleting Application with Id = {id} started.");
-
-        CheckApplicationExists(id);
-
-        var application = new Application { Id = id };
-
-        try
+        if (!currentUserService.IsAdmin())
         {
-            await applicationRepository.Delete(application).ConfigureAwait(false);
-
-            logger.LogInformation($"Application with Id = {id} succesfully deleted.");
+            throw new UnauthorizedAccessException("User has no rights to perform operation");
         }
-        catch (DbUpdateConcurrencyException ex)
+
+        filter ??= new ApplicationFilter();
+
+        var predicate = PredicateBuild(filter);
+
+        var sortPredicate = SortExpressionBuild(filter);
+
+        var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
+
+        var applications = await applicationRepository.Get(
+            skip: filter.From,
+            take: filter.Size,
+            where: predicate,
+            includeProperties: "Workshop,Child,Parent",
+            orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+
+        logger.LogInformation("There are {Count} applications in the Db", applications.Count);
+
+        var searchResult = new SearchResult<ApplicationDto>()
         {
-            logger.LogError($"Deleting failed. Exception: {ex.Message}.");
-            throw;
-        }
-    }
+            TotalAmount = totalAmount,
+            Entities = mapper.Map<List<ApplicationDto>>(applications),
+        };
 
-    /// <inheritdoc/>
-    public async Task<IEnumerable<ApplicationDto>> GetAll()
-    {
-        logger.LogInformation("Getting all Applications started.");
-
-        var applications = await applicationRepository.GetAllWithDetails("Workshop,Child,Parent").ConfigureAwait(false);
-
-        logger.LogInformation(!applications.Any()
-            ? "Application table is empty."
-            : $"All {applications.Count()} records were successfully received from the Application table");
-
-        return mapper.Map<List<ApplicationDto>>(applications);
+        return searchResult;
     }
 
     /// <inheritdoc/>
     public async Task<SearchResult<ApplicationDto>> GetAllByParent(Guid id, ApplicationFilter filter)
     {
-        logger.LogInformation($"Getting Applications by Parent Id started. Looking Parent Id = {id}.");
-        FilterNullValidation(filter);
+        logger.LogInformation("Getting Applications by Parent Id started. Looking Parent Id = {Id}", id);
+        if (!currentUserService.IsAdmin())
+        {
+            await currentUserService.UserHasRights(new ParentRights(id));
+        }
+
+        filter ??= new ApplicationFilter();
 
         var predicate = PredicateBuild(filter, a => a.ParentId == id);
 
@@ -210,9 +206,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
             includeProperties: "Workshop,Child,Parent",
             orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
-        logger.LogInformation(!applications.Any()
-            ? $"There is no applications in the Db with Parent Id = {id}."
-            : $"Successfully got Applications with Parent Id = {id}.");
+        logger.LogInformation("There are {Count} applications in the Db with Parent Id = {Id}", applications.Count, id);
 
         var searchResult = new SearchResult<ApplicationDto>()
         {
@@ -226,25 +220,43 @@ public class ApplicationService : IApplicationService, INotificationReciever
     /// <inheritdoc/>
     public async Task<IEnumerable<ApplicationDto>> GetAllByChild(Guid id)
     {
-        logger.LogInformation($"Getting Applications by Child Id started. Looking Child Id = {id}.");
+        logger.LogInformation("Getting Applications by Child Id started. Looking Child Id = {Id}", id);
 
-        Expression<Func<Application, bool>> filter = a => a.ChildId == id;
+        Expression<Func<Application, bool>> filter = a => false;
 
-        var applications = await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
+        if (currentUserService.IsInRole(Role.Parent))
+        {
+            filter = a => a.ChildId == id && a.Parent.UserId == currentUserService.UserId;
+        }
+        else if (currentUserService.IsInRole(Role.Provider))
+        {
+            filter = a => a.ChildId == id && a.Workshop.Provider.UserId == currentUserService.UserId;
+        }
+        else if (currentUserService.IsAdmin())
+        {
+            filter = a => a.ChildId == id;
+        }
 
-        logger.LogInformation(!applications.Any()
-            ? $"There is no applications in the Db with Child Id = {id}."
-            : $"Successfully got Applications with Child Id = {id}.");
+        var applications = (await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent")).ToList();
+
+        logger.LogInformation("There are {Count} applications in the Db with Parent Id = {Id}", applications.Count, id);
 
         return mapper.Map<List<ApplicationDto>>(applications);
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<ApplicationDto>> GetAllByWorkshop(Guid id, ApplicationFilter filter)
+    public async Task<SearchResult<ApplicationDto>> GetAllByWorkshop(Guid id, Guid providerId, ApplicationFilter filter)
     {
-        logger.LogInformation($"Getting Applications by Workshop Id started. Looking Workshop Id = {id}.");
+        logger.LogInformation("Getting Applications by Workshop Id started. Looking Workshop Id = {Id}", id);
 
-        FilterNullValidation(filter);
+        if (!currentUserService.IsAdmin())
+        {
+            await currentUserService.UserHasRights(
+                new ProviderRights(providerId),
+                new ProviderAdminWorkshopRights(providerId, id));
+        }
+
+        filter ??= new ApplicationFilter();
 
         var predicate = PredicateBuild(filter, a => a.WorkshopId == id);
 
@@ -258,9 +270,10 @@ public class ApplicationService : IApplicationService, INotificationReciever
             includeProperties: "Workshop,Child,Parent",
             orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
-        logger.LogInformation(!applications.Any()
-            ? $"There is no applications in the Db with Workshop Id = {id}."
-            : $"Successfully got Applications with Workshop Id = {id}.");
+        logger.LogInformation(
+            "There are {Count} applications in the Db with Workshop Id = {Id}",
+            applications.Count,
+            id);
 
         var searchResult = new SearchResult<ApplicationDto>()
         {
@@ -274,9 +287,14 @@ public class ApplicationService : IApplicationService, INotificationReciever
     /// <inheritdoc/>
     public async Task<SearchResult<ApplicationDto>> GetAllByProvider(Guid id, ApplicationFilter filter)
     {
-        logger.LogInformation($"Getting Applications by Provider Id started. Looking Provider Id = {id}.");
+        logger.LogInformation("Getting Applications by Provider Id started. Looking Provider Id = {Id}", id);
 
-        FilterNullValidation(filter);
+        if (!currentUserService.IsAdmin())
+        {
+            await currentUserService.UserHasRights(new ProviderRights(id));
+        }
+
+        filter ??= new ApplicationFilter();
 
         Expression<Func<Workshop, bool>> workshopFilter = w => w.ProviderId == id;
         var workshops = workshopRepository.Get(where: workshopFilter).Select(w => w.Id);
@@ -293,9 +311,10 @@ public class ApplicationService : IApplicationService, INotificationReciever
             includeProperties: "Workshop,Child,Parent",
             orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
-        logger.LogInformation(!applications.Any()
-            ? $"There is no applications in the Db with Provider Id = {id}."
-            : $"Successfully got Applications with Provider Id = {id}.");
+        logger.LogInformation(
+            "There are {Count} applications in the Db with Provider Id = {Id}", 
+            applications.Count,
+            id);
 
         var searchResult = new SearchResult<ApplicationDto>()
         {
@@ -307,11 +326,21 @@ public class ApplicationService : IApplicationService, INotificationReciever
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<ApplicationDto>> GetAllByProviderAdmin(string userId, ApplicationFilter filter, Guid providerId = default, bool isDeputy = false)
+    public async Task<SearchResult<ApplicationDto>> GetAllByProviderAdmin(
+        string userId,
+        ApplicationFilter filter,
+        Guid providerId = default,
+        bool isDeputy = false)
     {
-        logger.LogInformation($"Getting Applications by ProviderAdmin userId started. Looking ProviderAdmin userId = {userId}.");
+        logger.LogInformation(
+            "Getting Applications by ProviderAdmin userId started. Looking ProviderAdmin userId = {UserId}", userId);
 
-        FilterNullValidation(filter);
+        if (!currentUserService.IsAdmin())
+        {
+            await currentUserService.UserHasRights(new ProviderAdminRights(userId));
+        }
+
+        filter ??= new ApplicationFilter();
 
         if (providerId == Guid.Empty)
         {
@@ -322,10 +351,13 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         if (!isDeputy)
         {
-            workshopIds = (await providerAdminService.GetRelatedWorkshopIdsForProviderAdmins(userId).ConfigureAwait(false)).ToList();
+            workshopIds =
+                (await providerAdminService.GetRelatedWorkshopIdsForProviderAdmins(userId).ConfigureAwait(false))
+                .ToList();
         }
 
-        Expression<Func<Workshop, bool>> workshopFilter = w => isDeputy ? w.ProviderId == providerId : workshopIds.Contains(w.Id);
+        Expression<Func<Workshop, bool>> workshopFilter =
+            w => isDeputy ? w.ProviderId == providerId : workshopIds.Contains(w.Id);
         var workshops = workshopRepository.Get(where: workshopFilter).Select(w => w.Id);
 
         var predicate = PredicateBuild(filter, a => workshops.Contains(a.WorkshopId));
@@ -340,9 +372,10 @@ public class ApplicationService : IApplicationService, INotificationReciever
             includeProperties: "Workshop,Child,Parent",
             orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
-        logger.LogInformation(!applications.Any()
-            ? $"There is no applications in the Db with AdminProvider Id = {userId}."
-            : $"Successfully got Applications with AdminProvider Id = {userId}.");
+        logger.LogInformation(
+            "There are {Count} applications in the Db with AdminProvider Id = {UserId}",
+            applications.Count,
+            userId);
 
         var searchResult = new SearchResult<ApplicationDto>()
         {
@@ -354,96 +387,102 @@ public class ApplicationService : IApplicationService, INotificationReciever
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<ApplicationDto>> GetAllByStatus(int status)
-    {
-        logger.LogInformation($"Getting Applications by Status started. Looking Status = {status}.");
-
-        Expression<Func<Application, bool>> filter = a => (int)a.Status == status;
-
-        var applications = await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
-
-        logger.LogInformation(!applications.Any()
-            ? $"There is no applications in the Db with Status = {status}."
-            : $"Successfully got Applications with Status = {status}.");
-
-        return mapper.Map<List<ApplicationDto>>(applications);
-    }
-
-    /// <inheritdoc/>
     public async Task<ApplicationDto> GetById(Guid id)
     {
-        logger.LogInformation($"Getting Application by Id started. Looking Id = {id}.");
+        logger.LogInformation("Getting Application by Id started. Looking Id = {Id}", id);
 
         Expression<Func<Application, bool>> filter = a => a.Id == id;
 
-        var applications = await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
+        var applications =
+            await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
         var application = applications.FirstOrDefault();
 
         if (application is null)
         {
-            logger.LogInformation($"There is no application in the Db with Id = {id}.");
+            logger.LogInformation("There is no application in the Db with Id = {Id}", id);
             return null;
         }
 
-        logger.LogInformation($"Successfully got an Application with Id = {id}.");
+        logger.LogInformation("Successfully got an Application with Id = {Id}", id);
+
+        await currentUserService.UserHasRights(
+            new ParentRights(application.ParentId),
+            new ProviderAdminWorkshopRights(application.Workshop.ProviderId, application.Workshop.Id));
 
         return mapper.Map<ApplicationDto>(application);
     }
 
-    public async Task<ApplicationDto> Update(ApplicationDto applicationDto, string userId)
+    public async Task<ApplicationDto> Update(ApplicationUpdate applicationDto, Guid providerId)
     {
-        logger.LogInformation($"Updating Application with Id = {applicationDto?.Id} started.");
+        logger.LogInformation("Updating Application with Id = {Id} started", applicationDto?.Id);
 
-        ModelNullValidation(applicationDto);
+        ArgumentNullException.ThrowIfNull(applicationDto, nameof(applicationDto));
+
+        await currentUserService.UserHasRights(
+            new ParentRights(applicationDto.ParentId),
+            new ProviderRights(providerId),
+            new ProviderAdminWorkshopRights(providerId, applicationDto.WorkshopId));
 
         var currentApplication = CheckApplicationExists(applicationDto.Id);
+
+        if (currentApplication is null)
+        {
+            return null;
+        }
+
         var previewAppStatus = currentApplication.Status;
 
         try
         {
-            if (currentApplication.Status != applicationDto.Status)
+            if (currentApplication.Status == applicationDto.Status)
             {
-                var updatedApplication = await applicationRepository.Update(
-                        mapper.Map<Application>(applicationDto),
-                        x => changesLogService.AddEntityChangesToDbContext(x, userId))
-                    .ConfigureAwait(false);
+                return mapper.Map<ApplicationDto>(currentApplication);
+            }
 
-                logger.LogInformation($"Application with Id = {applicationDto?.Id} updated succesfully.");
+            UpdateStatus(applicationDto, currentApplication, currentUserService.IsInRole(Role.Provider));
 
-                var additionalData = new Dictionary<string, string>()
+            var updatedApplication = await applicationRepository.Update(
+                    currentApplication,
+                    x => changesLogService.AddEntityChangesToDbContext(x, currentUserService.UserId))
+                .ConfigureAwait(false);
+
+            logger.LogInformation("Application with Id = {Id} updated successfully", updatedApplication.Id);
+
+            var additionalData = new Dictionary<string, string>()
             {
                 { "Status", updatedApplication.Status.ToString() },
             };
 
-                string groupedData = updatedApplication.Status.ToString();
+            var groupedData = updatedApplication.Status.ToString();
 
-                await notificationService.Create(
-                    NotificationType.Application,
-                    NotificationAction.Update,
-                    updatedApplication.Id,
-                    this,
-                    additionalData,
-                    groupedData).ConfigureAwait(false);
+            await notificationService.Create(
+                NotificationType.Application,
+                NotificationAction.Update,
+                updatedApplication.Id,
+                this,
+                additionalData,
+                groupedData).ConfigureAwait(false);
 
-                await ControlWorkshopStatus(previewAppStatus, updatedApplication.Status, currentApplication.WorkshopId);
+            await ControlWorkshopStatus(previewAppStatus, updatedApplication.Status, currentApplication.WorkshopId);
 
-                return mapper.Map<ApplicationDto>(updatedApplication);
-            }
-
-            return applicationDto;
+            return mapper.Map<ApplicationDto>(updatedApplication);
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            logger.LogError($"Updating failed. Exception = {ex.Message}.");
+            logger.LogError(ex, "Updating failed");
             throw;
         }
     }
 
-    public async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
+    public async Task<IEnumerable<string>> GetNotificationsRecipientIds(
+        NotificationAction action,
+        Dictionary<string, string> additionalData,
+        Guid objectId)
     {
         var recipientIds = new List<string>();
 
-        var applications = await applicationRepository.GetByFilter(a => a.Id == objectId, "Workshop.Provider.User").ConfigureAwait(false);
+        var applications = await applicationRepository.GetByFilter(a => a.Id == objectId, "Workshop.Provider.User")
+            .ConfigureAwait(false);
         var application = applications.FirstOrDefault();
 
         if (application is null)
@@ -454,8 +493,10 @@ public class ApplicationService : IApplicationService, INotificationReciever
         if (action == NotificationAction.Create)
         {
             recipientIds.Add(application.Workshop.Provider.UserId);
-            recipientIds.AddRange(await providerAdminService.GetProviderAdminsIds(application.Workshop.Id).ConfigureAwait(false));
-            recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(application.Workshop.Provider.Id).ConfigureAwait(false));
+            recipientIds.AddRange(await providerAdminService.GetProviderAdminsIds(application.Workshop.Id)
+                .ConfigureAwait(false));
+            recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(application.Workshop.Provider.Id)
+                .ConfigureAwait(false));
         }
         else if (action == NotificationAction.Update)
         {
@@ -471,8 +512,10 @@ public class ApplicationService : IApplicationService, INotificationReciever
                 else if (applicationStatus == ApplicationStatus.Left)
                 {
                     recipientIds.Add(application.Workshop.Provider.UserId);
-                    recipientIds.AddRange(await providerAdminService.GetProviderAdminsIds(application.Workshop.Id).ConfigureAwait(false));
-                    recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(application.Workshop.Provider.Id).ConfigureAwait(false));
+                    recipientIds.AddRange(await providerAdminService.GetProviderAdminsIds(application.Workshop.Id)
+                        .ConfigureAwait(false));
+                    recipientIds.AddRange(await providerAdminService
+                        .GetProviderDeputiesIds(application.Workshop.Provider.Id).ConfigureAwait(false));
                 }
             }
         }
@@ -516,47 +559,15 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
     private async Task<bool> IsNewApplicationAllowed(Guid workshopId)
     {
-        var workshop = await workshopRepository.GetById(workshopId).ConfigureAwait(false);
+        var workshop = await combinedWorkshopService.GetById(workshopId).ConfigureAwait(false);
 
-        if (workshop is null)
+        if (workshop is not null)
         {
-            logger.LogInformation("Operation failed. Workshop in Application dto is null");
-            throw new ArgumentException(localizer["Workshop in Application dto is null."], nameof(workshopId));
+            return workshop.Status == WorkshopStatus.Open;
         }
 
-        return workshop.Status == WorkshopStatus.Open;
-    }
-
-    private void ModelNullValidation(ApplicationDto applicationDto)
-    {
-        if (applicationDto is null)
-        {
-            logger.LogInformation("Operation failed. ApplicationDto is null");
-            throw new ArgumentException(localizer["Application dto is null."], nameof(applicationDto));
-        }
-    }
-
-    private void FilterNullValidation(ApplicationFilter filter)
-    {
-        if (filter is null)
-        {
-            logger.LogInformation("Operation failed. Application filter is null.");
-            throw new ArgumentException(localizer["Application filter is null."], nameof(filter));
-        }
-    }
-
-    private void MultipleModelCreationValidation(IEnumerable<ApplicationDto> applicationDtos)
-    {
-        if (!applicationDtos.Any())
-        {
-            logger.LogInformation("Operation failed. There is no application to create.");
-            throw new ArgumentException(localizer["There is no application to create."]);
-        }
-
-        foreach (var application in applicationDtos)
-        {
-            ModelNullValidation(application);
-        }
+        logger.LogInformation("Operation failed. Workshop in Application dto is null");
+        throw new ArgumentException(@"Workshop in Application dto is null.", nameof(workshopId));
     }
 
     private Application CheckApplicationExists(Guid id)
@@ -565,25 +576,15 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         if (application == null)
         {
-            logger.LogInformation($"Operation failed. Application with Id = {id} doesn't exist in the system.");
-            throw new ArgumentException(localizer[$"Application with Id = {id} doesn't exist in the system."]);
+            logger.LogInformation("Application with Id = {Id} doesn't exist in the system", id);
         }
 
         return application;
     }
 
-    private async Task<bool> CheckChildParent(Guid parentId, Guid childId)
+    private async Task<(bool IsCorrect, int SecondsRetryAfter)> CheckApplicationsLimit(ApplicationCreate applicationDto)
     {
-        Expression<Func<Child, bool>> filter = c => c.ParentId == parentId;
-
-        var children = childRepository.Get(where: filter).Select(c => c.Id);
-
-        return await children.ContainsAsync(childId).ConfigureAwait(false);
-    }
-
-    private async Task<(bool IsCorrect, int SecondsRetryAfter)> CheckApplicationsLimit(ApplicationDto applicationDto)
-    {
-        var endDate = applicationDto.CreationTime;
+        var endDate = DateTimeOffset.UtcNow;
 
         var startDate = endDate.AddDays(-applicationsConstraintsConfig.ApplicationsLimitDays);
 
@@ -596,7 +597,9 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         if (applications.Length >= applicationsConstraintsConfig.ApplicationsLimit)
         {
-            logger.LogInformation($"Limit of applications per {applicationsConstraintsConfig.ApplicationsLimitDays} days is exceeded.");
+            logger.LogInformation(
+                "Limit of applications per {Limit} days is exceeded",
+                applicationsConstraintsConfig.ApplicationsLimitDays);
 
             DateTimeOffset dateStartingSendNewApplication = applications
                 .OrderByDescending(a => a.CreationTime)
@@ -656,7 +659,8 @@ public class ApplicationService : IApplicationService, INotificationReciever
         return predicate;
     }
 
-    private Dictionary<Expression<Func<Application, object>>, SortDirection> SortExpressionBuild(ApplicationFilter filter)
+    private Dictionary<Expression<Func<Application, object>>, SortDirection> SortExpressionBuild(
+        ApplicationFilter filter)
     {
         var sortExpression = new Dictionary<Expression<Func<Application, object>>, SortDirection>();
 
@@ -684,16 +688,19 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         if (providerAdmin == null)
         {
-            logger.LogInformation($"ProviderAdmin with userId = {userId} not exists.");
+            logger.LogInformation("ProviderAdmin with userId = {UserId} not exists", userId);
 
-            throw new ArgumentException(localizer[$"There is no providerAdmin with userId = {userId}"]);
+            throw new ArgumentException($"There is no providerAdmin with userId = {userId}");
         }
 
         providerId = providerAdmin.ProviderId;
         isDeputy = providerAdmin.IsDeputy;
     }
 
-    private async Task ControlWorkshopStatus(ApplicationStatus previewStatus, ApplicationStatus newStatus, Guid workshopId)
+    private async Task ControlWorkshopStatus(
+        ApplicationStatus previewStatus,
+        ApplicationStatus newStatus,
+        Guid workshopId)
     {
         var takenSeatsStatuses = new[]
         {
@@ -724,20 +731,48 @@ public class ApplicationService : IApplicationService, INotificationReciever
     {
         var countTakenSeats = await GetTakenSeats(workshopId);
 
-        var workshop = await workshopRepository.GetById(workshopId).ConfigureAwait(false);
+        var workshop = await combinedWorkshopService.GetById(workshopId).ConfigureAwait(false);
 
-        if (isIncreaseTakenSeats && countTakenSeats == workshop.AvailableSeats && workshop.Status != WorkshopStatus.Closed)
+        if (isIncreaseTakenSeats && countTakenSeats == workshop.AvailableSeats &&
+            workshop.Status != WorkshopStatus.Closed)
         {
-            _ = await combinedWorkshopService.UpdateStatus(new Models.Workshop.WorkshopStatusDto { WorkshopId = workshopId, Status = WorkshopStatus.Closed });
+            _ = await combinedWorkshopService.UpdateStatus(new Models.Workshop.WorkshopStatusDto
+                { WorkshopId = workshopId, Status = WorkshopStatus.Closed });
         }
-        else if (!isIncreaseTakenSeats && countTakenSeats == workshop.AvailableSeats - 1 && workshop.Status != WorkshopStatus.Open)
+        else if (!isIncreaseTakenSeats && countTakenSeats == workshop.AvailableSeats - 1 &&
+                 workshop.Status != WorkshopStatus.Open)
         {
-            _ = await combinedWorkshopService.UpdateStatus(new Models.Workshop.WorkshopStatusDto { WorkshopId = workshopId, Status = WorkshopStatus.Open });
+            _ = await combinedWorkshopService.UpdateStatus(new Models.Workshop.WorkshopStatusDto
+                { WorkshopId = workshopId, Status = WorkshopStatus.Open });
         }
     }
 
     private async ValueTask<int> GetTakenSeats(Guid workshopId)
     {
-        return await applicationRepository.Count(x => x.WorkshopId == workshopId && (x.Status == ApplicationStatus.Approved || x.Status == ApplicationStatus.StudyingForYears)).ConfigureAwait(false);
+        return await applicationRepository
+            .Count(x => x.WorkshopId == workshopId &&
+                        (x.Status == ApplicationStatus.Approved || x.Status == ApplicationStatus.StudyingForYears))
+            .ConfigureAwait(false);
+    }
+
+    private void UpdateStatus(ApplicationUpdate applicationDto, Application application, bool isUserProvider)
+    {
+        if (application.Status is ApplicationStatus.Completed or ApplicationStatus.Rejected or ApplicationStatus.Left && !isUserProvider)
+        {
+            throw new ArgumentException("Forbidden to update application.");
+        }
+
+        application.Status = applicationDto.Status;
+        application.RejectionMessage = applicationDto.RejectionMessage;
+
+        if (application.Status != ApplicationStatus.Rejected)
+        {
+            application.RejectionMessage = null;
+        }
+
+        if (application.Status == ApplicationStatus.Approved)
+        {
+            application.ApprovedTime = DateTimeOffset.UtcNow;
+        }
     }
 }

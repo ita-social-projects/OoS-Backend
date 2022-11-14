@@ -175,9 +175,9 @@ public class ProviderService : IProviderService, INotificationReciever
     }
 
     /// <inheritdoc/>
-    public async Task<ProviderDto> GetByUserId(string id, bool isDeputyOrAdmin = false)
+    public async Task<ProviderDto?> GetByUserId(string id, bool isDeputyOrAdmin = false)
     {
-        logger.LogInformation($"Getting Provider by UserId started. Looking UserId is {id}.");
+        logger.LogInformation("Getting Provider by UserId started. Looking UserId is {Id}", id);
         Provider provider = default;
 
         if (isDeputyOrAdmin)
@@ -195,12 +195,10 @@ public class ProviderService : IProviderService, INotificationReciever
             provider = providers.FirstOrDefault();
         }
 
-        if (provider == null)
+        if (provider != null)
         {
-            throw new ArgumentException(localizer["There is no Provider in the Db with such User id"], nameof(id));
+            logger.LogInformation("Successfully got a Provider with UserId = {Id}", id);
         }
-
-        logger.LogInformation($"Successfully got a Provider with UserId = {id}.");
 
         return mapper.Map<ProviderDto>(provider);
     }

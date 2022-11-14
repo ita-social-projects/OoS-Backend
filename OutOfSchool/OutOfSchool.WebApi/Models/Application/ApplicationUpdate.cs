@@ -1,11 +1,9 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-
+﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.WebApi.Models;
+namespace OutOfSchool.WebApi.Models.Application;
 
-public class ShortApplicationDto
+public class ApplicationUpdate
 {
     public Guid Id { get; set; }
 
@@ -15,4 +13,10 @@ public class ShortApplicationDto
 
     [MaxLength(500)]
     public string RejectionMessage { get; set; }
+
+    [Required]
+    public Guid WorkshopId { get; set; }
+
+    [Required]
+    public Guid ParentId { get; set; }
 }

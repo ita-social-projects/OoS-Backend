@@ -11,6 +11,7 @@ public class CurrentUserService : ICurrentUserService
 {
     private readonly ClaimsPrincipal? user;
     private readonly IParentService parentService;
+    private readonly IChildService childService;
     private readonly IProviderService providerService;
     private readonly IProviderAdminService providerAdminService;
     private readonly ILogger<CurrentUserService> logger;
@@ -22,6 +23,7 @@ public class CurrentUserService : ICurrentUserService
         IProviderService providerService,
         IProviderAdminService providerAdminService,
         IParentService parentService,
+        IChildService childService,
         ILogger<CurrentUserService> logger,
         ICacheService cache,
         IOptions<AppDefaultsConfig> options)
@@ -30,6 +32,7 @@ public class CurrentUserService : ICurrentUserService
         this.providerService = providerService;
         this.providerAdminService = providerAdminService;
         this.parentService = parentService;
+        this.childService = childService;
         this.logger = logger;
         this.cache = cache;
         this.options = options.Value;
@@ -49,6 +52,8 @@ public class CurrentUserService : ICurrentUserService
     public bool IsDeputyOrProviderAdmin() =>
         IsInRole(Role.Provider) &&
         (IsInSubRole(Subrole.ProviderDeputy) || IsInSubRole(Subrole.ProviderAdmin));
+
+    public bool IsAdmin() => IsInRole(Role.TechAdmin) || IsInRole(Role.MinistryAdmin);
 
     public async Task UserHasRights(params IUserRights[] userTypes)
     {
@@ -102,7 +107,7 @@ public class CurrentUserService : ICurrentUserService
         where T : IUserRights
         => userType switch
         {
-            ParentRights parent => ParentHasRights(parent.parentId),
+            ParentRights parent => ParentHasRights(parent.parentId, parent.childId),
             ProviderAdminRights providerAdmin => ProviderAdminHasRights(providerAdmin.providerAdminId),
             ProviderAdminWorkshopRights providerAdminWorkshop => ProviderAdminHasWorkshopRights(providerAdminWorkshop.providerId, providerAdminWorkshop.workshopId),
             ProviderRights provider => ProviderHasRights(provider.providerId),
@@ -110,7 +115,7 @@ public class CurrentUserService : ICurrentUserService
             _ => throw new NotImplementedException("Unknown user rights type")
         };
 
-    private async Task<bool> ParentHasRights(Guid parentId)
+    private async Task<bool> ParentHasRights(Guid parentId, Guid childId)
     {
         if (!IsInRole(Role.Parent))
         {
@@ -118,8 +123,13 @@ public class CurrentUserService : ICurrentUserService
         }
 
         var parent = await cache.GetOrAddAsync($"Rights_{UserId}", () => parentService.GetByUserId(UserId), TimeSpan.FromMinutes(5.0));
-
         var result = parent.Id == parentId;
+
+        if (result && childId != Guid.Empty)
+        {
+            var child = await cache.GetOrAddAsync($"Rights_{UserId}_{childId}", () => childService.GetByIdAndUserId(childId, UserId), TimeSpan.FromMinutes(5.0));
+            result = child.ParentId == parentId;
+        }
 
         if (!result && options.AccessLogEnabled)
         {

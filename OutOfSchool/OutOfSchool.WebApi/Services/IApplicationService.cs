@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Application;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -16,20 +17,7 @@ public interface IApplicationService
     /// </summary>
     /// <param name="applicationDto">Application entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<ModelWithAdditionalData<ApplicationDto, int>> Create(ApplicationDto applicationDto);
-
-    /// <summary>
-    /// Add collection of entities.
-    /// </summary>
-    /// <param name="applicationDtos">Collection of Application entities to add.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<IEnumerable<ApplicationDto>> Create(IEnumerable<ApplicationDto> applicationDtos);
-
-    /// <summary>
-    /// Get all entities.
-    /// </summary>
-    /// <returns>List of all applications.</returns>
-    Task<IEnumerable<ApplicationDto>> GetAll();
+    Task<ModelWithAdditionalData<ApplicationDto, int>> Create(ApplicationCreate applicationDto);
 
     /// <summary>
     /// Get entity by it's key.
@@ -44,7 +32,7 @@ public interface IApplicationService
     /// <param name="id">Key in the table.</param>
     /// <param name="filter">Application filter.</param>
     /// <returns>List of applications.</returns>
-    Task<SearchResult<ApplicationDto>> GetAllByWorkshop(Guid id, ApplicationFilter filter);
+    Task<SearchResult<ApplicationDto>> GetAllByWorkshop(Guid id, Guid providerId, ApplicationFilter filter);
 
     /// <summary>
     /// Get applications by provider id.
@@ -65,11 +53,11 @@ public interface IApplicationService
     Task<SearchResult<ApplicationDto>> GetAllByProviderAdmin(string userId, ApplicationFilter filter, Guid providerId = default, bool isDeputy = false);
 
     /// <summary>
-    /// Get applications by status.
+    /// Get applications for admin.
     /// </summary>
-    /// <param name="status">Status of application.</param>
+    /// <param name="filter">Application filter.</param>
     /// <returns>List of applications.</returns>
-    Task<IEnumerable<ApplicationDto>> GetAllByStatus(int status);
+    Task<SearchResult<ApplicationDto>> GetAll(ApplicationFilter filter);
 
     /// <summary>
     /// Get applications by parent id.
@@ -90,16 +78,9 @@ public interface IApplicationService
     /// Update entity.
     /// </summary>
     /// <param name="applicationDto">Application entity to update.</param>
-    /// <param name="userId">Id of the user that requests update.</param>
+    /// <param name="providerId">Id of the provider for workshop.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<ApplicationDto> Update(ApplicationDto applicationDto, string userId);
-
-    /// <summary>
-    /// Delete entity.
-    /// </summary>
-    /// <param name="id">Application's key.</param>
-    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task Delete(Guid id);
+    Task<ApplicationDto> Update(ApplicationUpdate applicationDto, Guid providerId);
 
     /// <summary>
     /// Determines ability to create a new application for a child based on previous attempts.

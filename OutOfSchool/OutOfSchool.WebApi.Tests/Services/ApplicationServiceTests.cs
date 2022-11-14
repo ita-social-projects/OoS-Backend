@@ -18,6 +18,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -129,12 +130,9 @@ public class ApplicationServiceTests
             ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
             ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
         };
-        var input = new ApplicationDto()
+        var input = new ApplicationCreate()
         {
-            Id = new Guid("6d4caeae-f0c3-492e-99b0-c8c105693376"),
             WorkshopId = workshopList.FirstOrDefault(x => x.Status == WorkshopStatus.Open).Id,
-            CreationTime = new DateTimeOffset(2022, 01, 12, 12, 34, 15, TimeSpan.Zero),
-            Status = ApplicationStatus.Pending,
             ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
             ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
         };
@@ -156,7 +154,7 @@ public class ApplicationServiceTests
     public void CreateApplication_WhenModelIsNull_ShouldThrowArgumentException()
     {
         // Arrange
-        ApplicationDto application = null;
+        ApplicationCreate application = null;
 
         // Act and Assert
         Assert.ThrowsAsync<ArgumentException>(
@@ -167,11 +165,9 @@ public class ApplicationServiceTests
     public void CreateApplication_WhenLimitIsExceeded_ShouldThrowArgumentException()
     {
         // Arrange
-        var application = new ApplicationDto()
+        var application = new ApplicationCreate()
         {
-            Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd"),
             WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-            Status = ApplicationStatus.Pending,
         };
 
         // Act and Assert
@@ -182,11 +178,9 @@ public class ApplicationServiceTests
     public void CreateApplication_WhenParametersAreNotValid_ShouldThrowArgumentException()
     {
         // Arrange
-        var application = new ApplicationDto()
+        var application = new ApplicationCreate()
         {
-            Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd"),
             WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-            Status = ApplicationStatus.Pending,
         };
 
         // Act and Assert
@@ -198,9 +192,8 @@ public class ApplicationServiceTests
     {
         var workshopList = WithWorkshopsList();
 
-        var input = new ApplicationDto()
+        var input = new ApplicationCreate()
         {
-            Id = Guid.NewGuid(),
             WorkshopId = workshopList.FirstOrDefault(x => x.Status == WorkshopStatus.Closed).Id,
         };
 
@@ -434,9 +427,16 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(changedEntity);
         mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto() { Id = id });
         var expected = new ApplicationDto() { Id = id };
+        var update = new ApplicationUpdate
+        {
+            Id = id,
+            Status = ApplicationStatus.Approved,
+            WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+        };
 
         // Act
-        var result = await service.Update(expected, userId).ConfigureAwait(false);
+        var result = await service.Update(update, userId, It.IsAny<bool>()).ConfigureAwait(false);
 
         // Assert
         AssertApplicationsDTOsAreEqual(expected, result);
@@ -458,9 +458,16 @@ public class ApplicationServiceTests
         workshopRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
         mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto() { Id = id, Status = ApplicationStatus.Approved });
         var expected = new ApplicationDto() { Id = id, Status = ApplicationStatus.Approved };
+        var update = new ApplicationUpdate
+        {
+            Id = id,
+            Status = ApplicationStatus.Approved,
+            WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+        };
 
         // Act
-        var result = await service.Update(expected, userId).ConfigureAwait(false);
+        var result = await service.Update(update, userId, true).ConfigureAwait(false);
 
         // Assert
         AssertApplicationsDTOsAreEqual(expected, result);
@@ -471,7 +478,7 @@ public class ApplicationServiceTests
     {
         // Arrange
         var userId = Guid.NewGuid().ToString();
-        var application = new ApplicationDto()
+        var application = new ApplicationUpdate()
         {
             Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd"),
             WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
@@ -480,7 +487,7 @@ public class ApplicationServiceTests
 
         // Act and Assert
         Assert.ThrowsAsync<ArgumentException>(
-            async () => await service.Update(application, userId).ConfigureAwait(false));
+            async () => await service.Update(application, userId, It.IsAny<bool>()).ConfigureAwait(false));
     }
 
     [Test]
@@ -488,7 +495,7 @@ public class ApplicationServiceTests
     {
         // Act and Assert
         var userId = Guid.NewGuid().ToString();
-        service.Invoking(s => s.Update(null, userId)).Should().ThrowAsync<ArgumentException>();
+        service.Invoking(s => s.Update(null, userId, It.IsAny<bool>())).Should().ThrowAsync<ArgumentException>();
     }
 
     [Test]

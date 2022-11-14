@@ -6,7 +6,7 @@ public interface IUserRights
 {
 }
 
-public record ParentRights(Guid parentId)
+public record ParentRights(Guid parentId, Guid childId = default)
     : IUserRights;
 
 public record ProviderAdminRights(string providerAdminId)
@@ -15,5 +15,5 @@ public record ProviderAdminRights(string providerAdminId)
 public record ProviderRights(Guid providerId)
     : IUserRights;
 
-public record ProviderAdminWorkshopRights(Guid providerId, Guid workshopId)
+public record ProviderAdminWorkshopRights(Guid providerId, Guid workshopId = default)
     : IUserRights;
