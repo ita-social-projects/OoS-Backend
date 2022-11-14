@@ -162,13 +162,14 @@ public class ChildController : ControllerBase
             try
             {
                 var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
-                return workshopProviderId == provider.Id;
+                return workshopProviderId == provider?.Id;
             }
             catch (ArgumentException)
             {
                 return await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, workshopProviderId, workshopId).ConfigureAwait(false);
             }
         }
+
         return false;
     }
 

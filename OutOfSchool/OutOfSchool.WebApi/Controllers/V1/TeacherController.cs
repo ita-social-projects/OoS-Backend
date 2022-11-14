@@ -185,7 +185,7 @@ public class TeacherController : ControllerBase // check permissions for worksho
             {
                 var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
 
-                if (providerId != provider.Id)
+                if (providerId != provider?.Id)
                 {
                     return false;
                 }
