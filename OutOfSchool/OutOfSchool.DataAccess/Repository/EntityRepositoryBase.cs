@@ -91,6 +91,8 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         return await dbSet.ToListAsync().ConfigureAwait(false);
     }
 
+    public virtual Task<TEntity> GetStatusById(TKey id) => dbSet.FirstOrDefaultAsync(x => x.Id.Equals(id));
+
     /// <inheritdoc/>
     public virtual async Task<IEnumerable<TEntity>> GetAllWithDetails(string includeProperties = "")
     {

@@ -70,13 +70,12 @@ public class ProviderDto
     [Required(ErrorMessage = "The phone number is required")]
     public string PhoneNumber { get; set; } = string.Empty;
 
-    [Required]
-    [MaxLength(30)]
-    public string Founder { get; set; } = string.Empty;
+    [Required] [MaxLength(30)] public string Founder { get; set; } = string.Empty;
 
     [Required]
     [EnumDataType(typeof(OwnershipType), ErrorMessage = Constants.EnumErrorMessage)]
     public OwnershipType Ownership { get; set; }
+
     public long TypeId { get; set; }
     public ProviderTypeDto Type { get; set; }
 
@@ -84,14 +83,12 @@ public class ProviderDto
     [EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderStatus Status { get; set; }
 
-    [MaxLength(30)]
-    public string License { get; set; }
+    [MaxLength(30)] public string License { get; set; }
 
     [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus LicenseStatus { get; set; }
 
-    [MaxLength(256)]
-    public string CoverImageId { get; set; } = string.Empty;
+    [MaxLength(256)] public string CoverImageId { get; set; } = string.Empty;
 
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public IFormFile CoverImage { get; set; }
@@ -108,8 +105,7 @@ public class ProviderDto
 
     // TODO: Does not used by front-end, can be removed.
     //       Unit test should be updated
-    [Required]
-    public string UserId { get; set; }
+    [Required] public string UserId { get; set; }
 
     [Required]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]

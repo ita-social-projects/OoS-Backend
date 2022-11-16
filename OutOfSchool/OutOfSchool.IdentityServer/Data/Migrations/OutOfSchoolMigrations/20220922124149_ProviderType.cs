@@ -3,24 +3,24 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations;
+
+public partial class ProviderType : Migration
 {
-    public partial class ProviderType : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "Type",
-                table: "Providers");
+        migrationBuilder.DropColumn(
+            name: "Type",
+            table: "Providers");
 
-            migrationBuilder.AddColumn<long>(
-                name: "TypeId",
-                table: "Providers",
-                type: "bigint",
-                nullable: false,
-                defaultValue: 0L);
+        migrationBuilder.AddColumn<long>(
+            name: "TypeId",
+            table: "Providers",
+            type: "bigint",
+            nullable: false,
+            defaultValue: 0L);
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ProviderTypes",
                 columns: table => new
                 {
@@ -33,45 +33,44 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_ProviderTypes", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_TypeId",
-                table: "Providers",
-                column: "TypeId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_TypeId",
+            table: "Providers",
+            column: "TypeId");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Providers_ProviderTypes_TypeId",
-                table: "Providers",
-                column: "TypeId",
-                principalTable: "ProviderTypes",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-        }
+        migrationBuilder.AddForeignKey(
+            name: "FK_Providers_ProviderTypes_TypeId",
+            table: "Providers",
+            column: "TypeId",
+            principalTable: "ProviderTypes",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Cascade);
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Providers_ProviderTypes_TypeId",
-                table: "Providers");
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropForeignKey(
+            name: "FK_Providers_ProviderTypes_TypeId",
+            table: "Providers");
 
-            migrationBuilder.DropTable(
-                name: "ProviderTypes");
+        migrationBuilder.DropTable(
+            name: "ProviderTypes");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Providers_TypeId",
-                table: "Providers");
+        migrationBuilder.DropIndex(
+            name: "IX_Providers_TypeId",
+            table: "Providers");
 
-            migrationBuilder.DropColumn(
-                name: "TypeId",
-                table: "Providers");
+        migrationBuilder.DropColumn(
+            name: "TypeId",
+            table: "Providers");
 
-            migrationBuilder.AddColumn<int>(
-                name: "Type",
-                table: "Providers",
-                type: "int",
-                nullable: false,
-                defaultValue: 0);
-        }
+        migrationBuilder.AddColumn<int>(
+            name: "Type",
+            table: "Providers",
+            type: "int",
+            nullable: false,
+            defaultValue: 0);
     }
 }

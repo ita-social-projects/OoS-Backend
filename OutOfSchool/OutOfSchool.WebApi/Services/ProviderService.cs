@@ -77,8 +77,10 @@ public class ProviderService : IProviderService, INotificationReciever
         this.usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
         this.ratingService = ratingService ?? throw new ArgumentNullException(nameof(ratingService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.workshopServiceCombiner = workshopServiceCombiner ?? throw new ArgumentNullException(nameof(workshopServiceCombiner));
-        this.providerAdminRepository = providerAdminRepository ?? throw new ArgumentNullException(nameof(providerAdminRepository));
+        this.workshopServiceCombiner =
+            workshopServiceCombiner ?? throw new ArgumentNullException(nameof(workshopServiceCombiner));
+        this.providerAdminRepository =
+            providerAdminRepository ?? throw new ArgumentNullException(nameof(providerAdminRepository));
         ProviderImagesService = providerImagesService ?? throw new ArgumentNullException(nameof(providerImagesService));
         this.changesLogService = changesLogService ?? throw new ArgumentNullException(nameof(changesLogService));
         this.notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
@@ -104,9 +106,9 @@ public class ProviderService : IProviderService, INotificationReciever
         int count = await providerRepository.Count(filterPredicate).ConfigureAwait(false);
 
         var sortExpression = new Dictionary<Expression<Func<Provider, object>>, SortDirection>
-    {
-        { x => x.User.FirstName, SortDirection.Ascending },
-    };
+        {
+            { x => x.User.FirstName, SortDirection.Ascending },
+        };
 
         var providers = await providerRepository
             .Get(
@@ -156,6 +158,23 @@ public class ProviderService : IProviderService, INotificationReciever
         providerDTO.NumberOfRatings = rating?.Item2 ?? default;
 
         return providerDTO;
+    }
+
+    public async Task<ProviderStatusDto> GetStatusById(Guid id)
+    {
+        logger.LogInformation($"Getting ProviderStatus by Id started. Looking Id = {id}.");
+        var provider = await providerRepository.GetStatusById(id).ConfigureAwait(false);
+
+        if (provider == null)
+        {
+            return null;
+        }
+
+        logger.LogInformation($"Successfully got a ProviderStatus with Id = {id}.");
+
+        var providerStatusDTO = provider.ToProvStatusDto();
+
+        return providerStatusDTO;
     }
 
     /// <inheritdoc/>
@@ -239,7 +258,8 @@ public class ProviderService : IProviderService, INotificationReciever
 
         if (string.IsNullOrEmpty(provider.License) && dto.LicenseStatus != ProviderLicenseStatus.NotProvided)
         {
-            logger.LogInformation($"Provider(id) {provider.Id} license is not provided. It cannot be approved. UserId: {userId}");
+            logger.LogInformation(
+                $"Provider(id) {provider.Id} license is not provided. It cannot be approved. UserId: {userId}");
             throw new ArgumentException("Provider license is not provided. It cannot be approved.");
         }
 
@@ -261,7 +281,8 @@ public class ProviderService : IProviderService, INotificationReciever
         return dto;
     }
 
-    async Task<IEnumerable<string>> INotificationReciever.GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
+    async Task<IEnumerable<string>> INotificationReciever.GetNotificationsRecipientIds(NotificationAction action,
+        Dictionary<string, string> additionalData, Guid objectId)
     {
         var recipientIds = new List<string>();
 
@@ -291,7 +312,8 @@ public class ProviderService : IProviderService, INotificationReciever
                          || status == ProviderStatus.Approved)
                 {
                     recipientIds.Add(provider.UserId);
-                    recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(provider.Id).ConfigureAwait(false));
+                    recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(provider.Id)
+                        .ConfigureAwait(false));
                 }
             }
 
@@ -306,7 +328,8 @@ public class ProviderService : IProviderService, INotificationReciever
                 else if (licenseStatus == ProviderLicenseStatus.Approved)
                 {
                     recipientIds.Add(provider.UserId);
-                    recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(provider.Id).ConfigureAwait(false));
+                    recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(provider.Id)
+                        .ConfigureAwait(false));
                 }
             }
         }
@@ -314,7 +337,8 @@ public class ProviderService : IProviderService, INotificationReciever
         return recipientIds.Distinct();
     }
 
-    private protected async Task<ProviderDto> CreateProviderWithActionAfterAsync(ProviderDto providerDto, Func<Provider, Task> actionAfterCreation = null)
+    private protected async Task<ProviderDto> CreateProviderWithActionAfterAsync(ProviderDto providerDto,
+        Func<Provider, Task> actionAfterCreation = null)
     {
         _ = providerDto ?? throw new ArgumentNullException(nameof(providerDto));
 
@@ -363,7 +387,8 @@ public class ProviderService : IProviderService, INotificationReciever
         return mapper.Map<ProviderDto>(newProvider);
     }
 
-    private protected async Task<ProviderDto> UpdateProviderWithActionBeforeSavingChanges(ProviderDto providerDto, string userId, Func<Provider, Task> actionBeforeUpdating = null)
+    private protected async Task<ProviderDto> UpdateProviderWithActionBeforeSavingChanges(ProviderDto providerDto,
+        string userId, Func<Provider, Task> actionBeforeUpdating = null)
     {
         _ = providerDto ?? throw new ArgumentNullException(nameof(providerDto));
         if (string.IsNullOrEmpty(userId))
@@ -482,7 +507,8 @@ public class ProviderService : IProviderService, INotificationReciever
         }
     }
 
-    private protected async Task DeleteProviderWithActionBefore(Guid id, Func<Provider, Task> actionBeforeDeleting = null)
+    private protected async Task DeleteProviderWithActionBefore(Guid id,
+        Func<Provider, Task> actionBeforeDeleting = null)
     {
         // BUG: Possible bug with deleting provider not owned by the user itself.
         // TODO: add unit tests to check ownership functionality
@@ -549,10 +575,10 @@ public class ProviderService : IProviderService, INotificationReciever
             {
                 tempPredicate = tempPredicate.Or(
                     x => x.FullTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.ActualAddress.CATOTTG.Name.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.LegalAddress.CATOTTG.Name.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.EdrpouIpn.StartsWith(word, StringComparison.InvariantCultureIgnoreCase));
+                         || x.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.ActualAddress.CATOTTG.Name.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.LegalAddress.CATOTTG.Name.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.EdrpouIpn.StartsWith(word, StringComparison.InvariantCultureIgnoreCase));
             }
 
             predicate = predicate.And(tempPredicate);
@@ -573,7 +599,8 @@ public class ProviderService : IProviderService, INotificationReciever
 
     private async Task FillRatingsForProviders(List<ProviderDto> providersDTO)
     {
-        var averageRatings = await ratingService.GetAverageRatingForProvidersAsync(providersDTO.Select(p => p.Id)).ConfigureAwait(false);
+        var averageRatings = await ratingService.GetAverageRatingForProvidersAsync(providersDTO.Select(p => p.Id))
+            .ConfigureAwait(false);
 
         foreach (var provider in providersDTO)
         {
