@@ -161,7 +161,7 @@ public class ProviderService : IProviderService, INotificationReciever
     public async Task<ProviderStatusDto> GetProviderStatusById(Guid id)
     {
         logger.LogInformation($"Getting ProviderStatus by Id started. Looking Id = {id}.");
-        var provider = await providerRepository.GetProviderStatusById(id).ConfigureAwait(false);
+        var provider = await providerRepository.GetById(id).ConfigureAwait(false);
 
         if (provider == null)
         {
@@ -170,7 +170,7 @@ public class ProviderService : IProviderService, INotificationReciever
 
         logger.LogInformation($"Successfully got a ProviderStatus with Id = {id}.");
 
-        var providerStatusDTO = provider.ToProviderStatusDto();
+        var providerStatusDTO = mapper.Map<ProviderStatusDto>(provider);
         return providerStatusDTO;
     }
 
