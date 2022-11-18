@@ -334,4 +334,24 @@ public class ProviderController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+    /// <summary>
+    /// Get Providers that match filter's parameters.
+    /// </summary>
+    /// <param name="filter">Entity that represents searching parameters.</param>
+    /// <returns><see cref="SearchResult{ProviderStatusDto}"/>, or no content.</returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderStatusDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetProviderStatusById(Guid providerId)
+    {
+        var provider = await providerService.GetProviderStatusById(providerId).ConfigureAwait(false);
+        if (provider == null)
+        {
+            return NotFound($"There is no Provider in DB with {nameof(provider.ProviderId)} - {providerId}");
+        }
+
+        return Ok(provider);
+    }
 }
