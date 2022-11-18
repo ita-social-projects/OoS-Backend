@@ -160,10 +160,10 @@ public class ProviderService : IProviderService, INotificationReciever
         return providerDTO;
     }
 
-    public async Task<ProviderStatusDto> GetStatusById(Guid id)
+    public async Task<ProviderStatusDto> GetProviderStatusById(Guid id)
     {
         logger.LogInformation($"Getting ProviderStatus by Id started. Looking Id = {id}.");
-        var provider = await providerRepository.GetStatusById(id).ConfigureAwait(false);
+        var provider = await providerRepository.GetProviderStatusById(id).ConfigureAwait(false);
 
         if (provider == null)
         {

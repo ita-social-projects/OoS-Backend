@@ -320,9 +320,9 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
     [AllowAnonymous]
-    public async Task<IActionResult> GetStatusById(Guid providerId)
+    public async Task<IActionResult> GetProviderStatusById(Guid providerId)
     {
-        var provider = await providerService.GetStatusById(providerId).ConfigureAwait(false);
+        var provider = await providerService.GetProviderStatusById(providerId).ConfigureAwait(false);
         if (provider == null)
         {
             return NotFound($"There is no Provider in DB with {nameof(provider.ProviderId)} - {providerId}");

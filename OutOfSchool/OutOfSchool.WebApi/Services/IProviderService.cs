@@ -40,7 +40,7 @@ public interface IProviderService
     /// <returns>Provider.</returns>
     Task<ProviderDto> GetByUserId(string id, bool isDeputyOrAdmin = false);
 
-    Task<ProviderStatusDto> GetStatusById(Guid providerId);
+    Task<ProviderStatusDto> GetProviderStatusById(Guid providerId);
     /// <summary>
     /// Update entity.
     /// </summary>

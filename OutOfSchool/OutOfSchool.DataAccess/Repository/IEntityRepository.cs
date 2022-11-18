@@ -82,7 +82,7 @@ public interface IEntityRepositoryBase<TKey, TEntity>
     /// <param name="id">Key in database.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains an entity that was found, or null.</returns>
-    Task<TEntity> GetStatusById(TKey id);
+    Task<TEntity> GetProviderStatusById(TKey id);
 
     /// <summary>
     /// Get all elements with details.

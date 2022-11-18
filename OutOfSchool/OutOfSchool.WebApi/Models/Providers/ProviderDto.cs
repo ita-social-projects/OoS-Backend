@@ -68,9 +68,10 @@ public class ProviderDto
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
     [MaxLength(Constants.UnifiedPhoneLength)]
     [Required(ErrorMessage = "The phone number is required")]
-    public string PhoneNumber { get; set; } = string.Empty;
-
-    [Required] [MaxLength(30)] public string Founder { get; set; } = string.Empty;
+    public string PhoneNumber { get; set; } = string.Empty; 
+    [Required]
+    [MaxLength(30)]
+    public string Founder { get; set; } = string.Empty;
 
     [Required]
     [EnumDataType(typeof(OwnershipType), ErrorMessage = Constants.EnumErrorMessage)]
@@ -82,13 +83,15 @@ public class ProviderDto
     [Required]
     [EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderStatus Status { get; set; }
-
-    [MaxLength(30)] public string License { get; set; }
+    
+    [MaxLength(30)] 
+    public string License { get; set; }
 
     [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus LicenseStatus { get; set; }
-
-    [MaxLength(256)] public string CoverImageId { get; set; } = string.Empty;
+    
+    [MaxLength(256)]
+    public string CoverImageId { get; set; } = string.Empty;
 
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public IFormFile CoverImage { get; set; }
@@ -105,7 +108,8 @@ public class ProviderDto
 
     // TODO: Does not used by front-end, can be removed.
     //       Unit test should be updated
-    [Required] public string UserId { get; set; }
+    [Required]
+    public string UserId { get; set; }
 
     [Required]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
