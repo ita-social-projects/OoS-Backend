@@ -158,6 +158,22 @@ public class ProviderService : IProviderService, INotificationReciever
         return providerDTO;
     }
 
+    public async Task<ProviderStatusDto> GetProviderStatusById(Guid id)
+    {
+        logger.LogInformation($"Getting ProviderStatus by Id started. Looking Id = {id}.");
+        var provider = await providerRepository.GetProviderStatusById(id).ConfigureAwait(false);
+
+        if (provider == null)
+        {
+            return null;
+        }
+
+        logger.LogInformation($"Successfully got a ProviderStatus with Id = {id}.");
+
+        var providerStatusDTO = provider.ToProviderStatusDto();
+        return providerStatusDTO;
+    }
+
     /// <inheritdoc/>
     public async Task<ProviderDto> GetByUserId(string id, bool isDeputyOrAdmin = false)
     {

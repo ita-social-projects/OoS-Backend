@@ -26,6 +26,14 @@ public interface IEntityRepositoryBase<TKey, TEntity>
     Task<TEntity> Create(TEntity entity);
 
     /// <summary>
+    /// Get element by Id.
+    /// </summary>
+    /// <param name="id">Key in database.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The task result contains an entity that was found, or null.</returns>
+    Task<TEntity> GetProviderStatusById(TKey id);
+
+    /// <summary>
     /// Add new elements.
     /// </summary>
     /// <param name="entities">Entities to create.</param>
