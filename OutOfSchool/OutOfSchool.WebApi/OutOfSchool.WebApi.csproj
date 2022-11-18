@@ -13,6 +13,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+	  <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="6.0.9" />
 	  <Protobuf Include="..\OutOfSchool.GRPC\Protos\ProviderAdmin.proto" GrpcServices="Client" />
     <PackageReference Include="AutoMapper" Version="10.1.1" />
     <PackageReference Include="Google.Protobuf" Version="3.21.2" />

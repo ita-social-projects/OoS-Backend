@@ -1,13 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Common;
-using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Common.PermissionsModule;
 
 namespace OutOfSchool.IdentityServer.Controllers;
 
@@ -47,6 +40,21 @@ public class ProviderAdminController : Controller
             .CreateProviderAdminAsync(providerAdminDto, Url, userId, Request.Headers["X-Request-ID"]);
     }
 
+    [HttpPut("{providerAdminId}")]
+    [HasPermission(Permissions.ProviderRemove)]
+    public async Task<ResponseDto> Update(string providerAdminId, UpdateProviderAdminDto providerAdminUpdateDto)
+    {
+        logger.LogDebug(
+            "Received request " +
+            "{Headers}. {path} started. User(id): {userId}",
+            Request.Headers["X-Request-ID"],
+            path,
+            userId);
+
+        return await providerAdminService
+            .UpdateProviderAdminAsync(providerAdminUpdateDto, userId, Request.Headers["X-Request-ID"]);
+    }
+
     [HttpDelete("{providerAdminId}")]
     [HasPermission(Permissions.ProviderRemove)]
     public async Task<ResponseDto> Delete(string providerAdminId)
@@ -63,14 +71,14 @@ public class ProviderAdminController : Controller
             .DeleteProviderAdminAsync(providerAdminId, userId, Request.Headers["X-Request-ID"]);
     }
 
-    [HttpPut("{providerAdminId}")]
+    [HttpPut("{providerAdminId}/{isBlocked}")]
     [HasPermission(Permissions.ProviderRemove)]
-    public async Task<ResponseDto> Block(string providerAdminId)
+    public async Task<ResponseDto> Block(string providerAdminId, bool isBlocked)
     {
         logger.LogDebug($"Received request " +
                         $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
 
         return await providerAdminService
-            .BlockProviderAdminAsync(providerAdminId, userId, Request.Headers["X-Request-ID"]);
+            .BlockProviderAdminAsync(providerAdminId, userId, Request.Headers["X-Request-ID"], isBlocked);
     }
 }

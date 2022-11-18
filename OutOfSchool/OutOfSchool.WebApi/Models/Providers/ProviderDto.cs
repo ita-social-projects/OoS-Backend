@@ -18,7 +18,7 @@ public class ProviderDto
 
     [Required(ErrorMessage = "Full Title is required")]
     [DataType(DataType.Text)]
-    [MaxLength(60)]
+    [MaxLength(120)]
     [MinLength(1)]
     public string FullTitle { get; set; }
 
@@ -86,11 +86,19 @@ public class ProviderDto
     [EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderStatus Status { get; set; }
 
+    [MaxLength(500)]
+    public string StatusReason { get; set; }
+
     [MaxLength(30)]
     public string License { get; set; }
 
     [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus LicenseStatus { get; set; }
+
+    public bool IsBlocked { get; set; }
+
+    [MaxLength(500)]
+    public string BlockReason { get; set; }
 
     [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;

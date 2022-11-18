@@ -11,16 +11,16 @@ public class ChildDto
     public Guid Id { get; set; }
 
     [Required(ErrorMessage = "First name is required")]
-    [StringLength(30, MinimumLength = 1)]
+    [StringLength(60, MinimumLength = 1)]
     [RegularExpression(@"^(?i)[А-ЯҐЄІЇ](([\'\-][А-ЯҐЄІЇ])?[А-ЯҐЄІЇ]*)*$", ErrorMessage = "First name contains invalid characters")]
     public string FirstName { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Last name is required")]
-    [StringLength(30, MinimumLength = 1)]
+    [StringLength(60, MinimumLength = 1)]
     [RegularExpression(@"^(?i)[А-ЯҐЄІЇ](([\'\-][А-ЯҐЄІЇ])?[А-ЯҐЄІЇ]*)*$", ErrorMessage = "Last name contains invalid characters")]
     public string LastName { get; set; } = string.Empty;
 
-    [StringLength(30, MinimumLength = 1)]
+    [StringLength(60, MinimumLength = 1)]
     [RegularExpression(@"^(?i)[А-ЯҐЄІЇ](([\'\-][А-ЯҐЄІЇ])?[А-ЯҐЄІЇ]*)*$", ErrorMessage = "Middle name contains invalid characters")]
     public string MiddleName { get; set; } = string.Empty;
 

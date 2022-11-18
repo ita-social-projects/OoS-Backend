@@ -1,7 +1,7 @@
 ﻿namespace OutOfSchool.WebApi.Models;
 
 /// <summary>
-/// The filter to take specified amount of entites from the collection.
+/// The filter to take specified amount of entities from the collection.
 /// </summary>
 public class SizeFilter
 {

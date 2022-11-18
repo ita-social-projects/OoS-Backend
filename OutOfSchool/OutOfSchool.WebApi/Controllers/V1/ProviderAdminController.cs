@@ -72,6 +72,50 @@ public class ProviderAdminController : Controller
     }
 
     /// <summary>
+    /// Update info about the ProviderAdmin.
+    /// </summary>
+    /// <param name="providerId">Provider's id for which operation perform.</param>
+    /// <param name="providerAdminModel">Entity to update.</param>
+    /// <returns>Updated ProviderAdmin.</returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderAdminDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPut]
+    public async Task<IActionResult> Update(Guid providerId, UpdateProviderAdminDto providerAdminModel)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var response = await providerAdminService.UpdateProviderAdminAsync(
+                providerAdminModel,
+                userId,
+                providerId,
+                await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
+            .ConfigureAwait(false);
+
+            return response.Match(
+                error => StatusCode((int)error.HttpStatusCode),
+                _ =>
+                {
+                    logger.LogInformation($"Can't change ProviderAdmin with such parameters.\n" +
+                        "Please check that information are valid.");
+
+                    return Ok();
+                });
+        }
+        catch (DbUpdateConcurrencyException e)
+        {
+            return BadRequest(e);
+        }
+    }
+
+    /// <summary>
     /// Method for deleting ProviderAdmin.
     /// </summary>
     /// <param name="providerAdminId">Entity's id to delete.</param>
@@ -109,23 +153,31 @@ public class ProviderAdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPut]
-    public async Task<ActionResult> Block(string providerAdminId, Guid providerId)
+    public async Task<ActionResult> Block(string providerAdminId, Guid providerId, bool? isBlocked)
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
+
+        if (isBlocked is null)
+        {
+            logger.LogDebug("IsBlocked parameter is not specified");
+            return BadRequest("IsBlocked parameter is required");
+        }
 
         var response = await providerAdminService.BlockProviderAdminAsync(
                 providerAdminId,
                 userId,
                 providerId,
-                await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
+                await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false),
+                (bool)isBlocked)
             .ConfigureAwait(false);
 
         return response.Match(
             error => StatusCode((int)error.HttpStatusCode),
             _ =>
             {
-                logger.LogInformation($"Succesfully blocked ProviderAdmin(id): {providerAdminId} by User(id): {userId}.");
+                logger.LogInformation($"Successfully blocked ProviderAdmin(id): {providerAdminId} by User(id): {userId}.");
 
                 return Ok();
             });

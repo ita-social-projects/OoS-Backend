@@ -2,6 +2,7 @@ using GrpcService;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Achievement;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
@@ -170,7 +171,8 @@ public class MappingProfile : Profile
         CreateMap<Workshop, WorkshopBaseCard>()
             .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
-            .ForMember(dest => dest.DirectionIds, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)));
+            .ForMember(dest => dest.DirectionIds, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)))
+            .ForMember(dest => dest.Rating, opt => opt.Ignore());
 
         CreateMap<Workshop, WorkshopProviderViewCard>()
             .IncludeBase<Workshop, WorkshopBaseCard>()
@@ -381,7 +383,14 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName))
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
-            .ForMember(dest => dest.AccountStatus, m => m.Ignore());
+            .ForMember(
+                dest => dest.AccountStatus,
+                opt => opt.MapFrom(src =>
+                    src.User.IsBlocked
+                        ? AccountStatus.Blocked
+                        : src.User.LastLogin == DateTimeOffset.MinValue
+                            ? AccountStatus.NeverLogged
+                            : AccountStatus.Accepted));
 
         CreateMap<ProviderChangesLogRequest, ChangesLogFilter>()
             .ForMember(dest => dest.EntityType, opt => opt.Ignore())

@@ -393,4 +393,48 @@ public class ProviderControllerTests
         // Assert
         result.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
     }
+
+    [Test]
+    public async Task Block_ReturnsProviderBlockDto_IfProviderExist()
+    {
+        // Arrange
+        var providerBlockDto = new ProviderBlockDto()
+        {
+            Id = provider.Id,
+            IsBlocked = true,
+            BlockReason = "Test reason",
+        };
+
+        providerService.Setup(x => x.Block(providerBlockDto))
+            .ReturnsAsync(providerBlockDto);
+
+        // Act
+        var result = await providerController.Block(providerBlockDto).ConfigureAwait(false);
+
+        // Assert
+        result.AssertResponseOkResultAndValidateValue(providerBlockDto);
+    }
+
+    [Test]
+    public async Task Block_ReturnsNotFoundResult_IfIdDoesNotExist()
+    {
+        // Arrange
+        var nonExistentProviderId = Guid.NewGuid();
+        var providerBlockDto = new ProviderBlockDto()
+        {
+            Id = nonExistentProviderId,
+            IsBlocked = true,
+            BlockReason = "Test reason",
+        };
+        var expected = new NotFoundObjectResult($"There is no Provider in DB with Id - {providerBlockDto.Id}");
+
+        providerService.Setup(x => x.Block(providerBlockDto))
+            .ReturnsAsync(null as ProviderBlockDto);
+
+        // Act
+        var result = await providerController.Block(providerBlockDto).ConfigureAwait(false);
+
+        // Assert
+        result.AssertExpectedResponseTypeAndCheckDataInside<NotFoundObjectResult>(expected);
+    }
 }

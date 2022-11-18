@@ -16,6 +16,7 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.IdentityServer.Config;
 using OutOfSchool.IdentityServer.ViewModels;
+using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -36,6 +37,8 @@ public class AuthController : Controller
     private readonly IParentRepository parentRepository;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IdentityServerConfig identityServerConfig;
+    private readonly IRazorViewToStringRenderer renderer;
+    private readonly IEmailSender emailSender;
     private string userId;
     private string path;
 
@@ -50,6 +53,7 @@ public class AuthController : Controller
     /// <param name="logger"> ILogger class.</param>
     /// <param name="localizer"> Localizer.</param>
     /// <param name="identityServerConfig"> IdentityServer config.</param>
+    /// <param name="renderer"> Renderer for Razor page</param>
     public AuthController(
         UserManager<User> userManager,
         IUserManagerAdditionalService userManagerAdditionalService,
@@ -58,7 +62,9 @@ public class AuthController : Controller
         ILogger<AuthController> logger,
         IParentRepository parentRepository,
         IStringLocalizer<SharedResource> localizer,
-        IOptions<IdentityServerConfig> identityServerConfig)
+        IOptions<IdentityServerConfig> identityServerConfig,
+        IRazorViewToStringRenderer renderer,
+        IEmailSender emailSender)
     {
         this.logger = logger;
         this.parentRepository = parentRepository;
@@ -68,6 +74,8 @@ public class AuthController : Controller
         this.interactionService = interactionService;
         this.localizer = localizer;
         this.identityServerConfig = identityServerConfig.Value;
+        this.renderer = renderer;
+        this.emailSender = emailSender;
     }
 
     public override void OnActionExecuting(ActionExecutingContext context)
@@ -365,6 +373,23 @@ public class AuthController : Controller
             {
                 logger.LogDebug($"{path} User was created. User(id): {user.Id}");
 
+                // TODO: Move sending email process to separated method
+                var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+                var callBackUrl = Url.Action("EmailConfirmation", "Account", new { token, user.Email, model.ReturnUrl }, Request.Scheme);
+
+                var email = model.Email;
+                var subject = localizer["Confirm email"];
+                var userActionViewModel = new UserActionViewModel
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    ActionUrl = callBackUrl,
+                };
+                var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ConfirmEmail, userActionViewModel);
+                await emailSender.SendAsync(email, subject, content);
+
+                logger.LogInformation($"{path} Message to confirm email was sent. User(id): {user.Id}.");
+
                 IdentityResult roleAssignResult = IdentityResult.Failed();
 
                 roleAssignResult = await userManager.AddToRoleAsync(user, user.Role);
@@ -389,7 +414,7 @@ public class AuthController : Controller
 
                     logger.LogInformation($"{path} User(id): {user.Id} was successfully registered with Role: {user.Role}.");
 
-                    return Redirect(model.ReturnUrl);
+                    return View("ConfirmEmail", model);
                 }
 
                 var deletionResult = await userManager.DeleteAsync(user);

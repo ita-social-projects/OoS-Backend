@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Controllers;
@@ -113,9 +115,9 @@ public class MinistryAdminController : Controller
     /// <summary>
     /// Method for creating new MinistryAdmin.
     /// </summary>
-    /// <param name="ministryAdmin">Entity to add.</param>
+    /// <param name="ministryAdminBase">Entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CreateMinistryAdminDto))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(MinistryAdminBaseDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -123,7 +125,7 @@ public class MinistryAdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HasPermission(Permissions.MinistryAdminAddNew)]
     [HttpPost]
-    public async Task<ActionResult> Create(CreateMinistryAdminDto ministryAdmin)
+    public async Task<ActionResult> Create(MinistryAdminBaseDto ministryAdminBase)
     {
         logger.LogDebug("{Path} started. User(id): {UserId}", path, userId);
 
@@ -136,7 +138,7 @@ public class MinistryAdminController : Controller
 
         var response = await ministryAdminService.CreateMinistryAdminAsync(
                 userId,
-                ministryAdmin,
+                ministryAdminBase,
                 await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
             .ConfigureAwait(false);
 
@@ -152,7 +154,7 @@ public class MinistryAdminController : Controller
     /// <summary>
     /// To update MinistryAdmin entity that already exists.
     /// </summary>
-    /// <param name="ministryAdminDto">MinistryAdminDto object with new properties.</param>
+    /// <param name="updateMinistryAdminDto">MinistryAdminDto object with new properties.</param>
     /// <returns>MinistryAdmin's key.</returns>
     [HasPermission(Permissions.UserEdit)]
     [HttpPut]
@@ -160,9 +162,9 @@ public class MinistryAdminController : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Update(MinistryAdminDto ministryAdminDto)
+    public async Task<ActionResult> Update(MinistryAdminBaseDto updateMinistryAdminDto)
     {
-        if (ministryAdminDto == null)
+        if (updateMinistryAdminDto == null)
         {
             return BadRequest("MinistryAdmin is null.");
         }
@@ -172,12 +174,45 @@ public class MinistryAdminController : Controller
             return BadRequest(ModelState);
         }
 
-        if (userId != ministryAdminDto.Id)
+        if (userId != updateMinistryAdminDto.UserId)
         {
-            return StatusCode(403, "Forbidden to update another user.");
+            var currentUserRole = GettingUserProperties.GetUserRole(User);
+            if (currentUserRole == nameof(Role.TechAdmin).ToLower())
+            {
+                var updatedMinistryAdmin = await ministryAdminService.GetByIdAsync(updateMinistryAdminDto.UserId);
+                if (updatedMinistryAdmin.AccountStatus == AccountStatus.Accepted)
+                {
+                    return StatusCode(403, "Forbidden to update accepted user.");
+                }
+            }
+            else
+            {
+                return StatusCode(403, "Forbidden to update another user if you haven't techadmin role.");
+            }
         }
 
-        return Ok(await ministryAdminService.Update(ministryAdminDto).ConfigureAwait(false));
+        try
+        {
+            var response = await ministryAdminService.UpdateMinistryAdminAsync(
+                    userId,
+                    updateMinistryAdminDto,
+                    await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
+                .ConfigureAwait(false);
+
+            return response.Match(
+                error => StatusCode((int)error.HttpStatusCode),
+                _ =>
+                {
+                    logger.LogInformation($"Can't update MinistryAdmin with such parameters.\n" +
+                                          "Please check that information are valid.");
+
+                    return Ok();
+                });
+        }
+        catch (DbUpdateConcurrencyException e)
+        {
+            return BadRequest(e);
+        }
     }
 
     /// <summary>
@@ -216,23 +251,31 @@ public class MinistryAdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HasPermission(Permissions.MinistryAdminEdit)]
     [HttpPut]
-    public async Task<ActionResult> Block(string ministryAdminId)
+    public async Task<ActionResult> Block(string ministryAdminId, bool? isBlocked)
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
+
+        if (isBlocked is null)
+        {
+            logger.LogDebug("IsBlocked parameter is not specified");
+            return BadRequest("IsBlocked parameter is required");
+        }
 
         var response = await ministryAdminService.BlockMinistryAdminAsync(
                 ministryAdminId,
                 userId,
-                await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
+                await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false),
+                (bool)isBlocked)
             .ConfigureAwait(false);
 
         return response.Match<ActionResult>(
             error => StatusCode((int)error.HttpStatusCode, error.Message),
             _ =>
             {
-                logger.LogInformation($"Succesfully blocked ministryAdmin(id): {ministryAdminId} by User(id): {userId}.");
+                logger.LogInformation($"Successfully blocked ministryAdmin(id): {ministryAdminId} by User(id): {userId}.");
                 return Ok();
             });
     }

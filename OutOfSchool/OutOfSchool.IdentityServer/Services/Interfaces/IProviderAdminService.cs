@@ -11,6 +11,11 @@ public interface IProviderAdminService
         string userId,
         string requestId);
 
+    Task<ResponseDto> UpdateProviderAdminAsync(
+        UpdateProviderAdminDto providerAdminUpdateDto,
+        string userId,
+        string requestId);
+
     Task<ResponseDto> DeleteProviderAdminAsync(
         string providerAdminId,
         string userId,
@@ -19,5 +24,6 @@ public interface IProviderAdminService
     Task<ResponseDto> BlockProviderAdminAsync(
         string providerAdminId,
         string userId,
-        string requestId);
+        string requestId,
+        bool isBlocked);
 }

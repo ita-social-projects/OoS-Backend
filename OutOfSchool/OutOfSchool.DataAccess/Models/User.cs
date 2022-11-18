@@ -15,14 +15,14 @@ public class User : IdentityUser, IKeyedEntity<string>
     public DateTimeOffset LastLogin { get; set; }
 
     [Required(ErrorMessage = "LastName is required")]
-    [MaxLength(30)]
+    [MaxLength(60)]
     public string LastName { get; set; }
 
-    [MaxLength(30)]
+    [MaxLength(60)]
     public string MiddleName { get; set; }
 
     [Required(ErrorMessage = "FirstName is required")]
-    [MaxLength(30)]
+    [MaxLength(60)]
     public string FirstName { get; set; }
 
     // If the flag is true, that user can no longer do anything to website.

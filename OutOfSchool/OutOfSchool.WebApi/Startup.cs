@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.SignalR;
 using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 using OutOfSchool.WebApi.Services.Strategies.WorkshopStrategies;
 
@@ -226,12 +227,9 @@ public static class Startup
         services.AddTransient<INotificationRepository, NotificationRepository>();
         services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
         services.AddTransient<IChangesLogRepository, ChangesLogRepository>();
-        services.AddTransient<IEntityRepository<long, ProviderAdminChangesLog>, EntityRepository<long, ProviderAdminChangesLog>>();
         services.AddTransient<IGeocodingService, GeocodingService>();
 
-        services.AddTransient<IEntityRepository<long, AchievementType>, EntityRepository<long, AchievementType>>();
         services.AddTransient<IAchievementTypeService, AchievementTypeService>();
-        services.AddTransient<IEntityRepository<long, AchievementTeacher>, EntityRepository<long, AchievementTeacher>>();
         services.AddTransient<IAchievementRepository, AchievementRepository>();
         services.AddTransient<IAchievementService, AchievementService>();
 
@@ -290,8 +288,6 @@ public static class Startup
 
         services.AddAutoMapper(typeof(MappingProfile));
 
-        services.AddSignalR();
-
         var quartzConfig = configuration.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
         services.AddDefaultQuartz(
             configuration,
@@ -302,10 +298,24 @@ public static class Startup
             q.AddElasticsearchSynchronization(services, configuration);
         });
 
+        var isRedisEnabled = configuration.GetValue<bool>("Redis:Enabled");
+        var redisConnection = $"{configuration.GetValue<string>("Redis:Server")}:{configuration.GetValue<int>("Redis:Port")},password={configuration.GetValue<string>("Redis:Password")}";
+
+        var signalRBuilder = services.AddSignalR();
+
+        if (isRedisEnabled)
+        {
+            signalRBuilder.AddStackExchangeRedis(redisConnection, options =>
+            {
+                options.Configuration.AbortOnConnectFail = false;
+            });
+
+            services.AddSingleton(typeof(HubLifetimeManager<>), typeof(LocalDistributedHubLifetimeManager<>));
+        }
+
         services.AddStackExchangeRedisCache(options =>
         {
-            options.Configuration =
-                $"{configuration.GetValue<string>("Redis:Server")}:{configuration.GetValue<int>("Redis:Port")},password={configuration.GetValue<string>("Redis:Password")}";
+            options.Configuration = redisConnection;
         });
 
         services.AddSingleton<ICacheService, CacheService>();

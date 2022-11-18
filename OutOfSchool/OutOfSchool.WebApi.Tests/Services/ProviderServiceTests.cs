@@ -788,6 +788,56 @@ public class ProviderServiceTests
 
     #endregion
 
+    #region Block
+
+    [Test]
+    public async Task Block_ReturnsProviderBlockDto_IfDtoIsValid()
+    {
+        // Arrange
+        var provider = fakeProviders.First();
+
+        var providerBlockDto = new ProviderBlockDto()
+        {
+            Id = provider.Id,
+            IsBlocked = true,
+            BlockReason = "Test reason",
+        };
+
+        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
+            .ReturnsAsync(provider);
+        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+            .ReturnsAsync(It.IsAny<int>());
+
+        // Act
+        var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(providerBlockDto, result);
+    }
+
+    [Test]
+    public async Task Block_ReturnsNull_IfDtoIsNotValid()
+    {
+        // Arrange
+        var providerBlockDto = new ProviderBlockDto()
+        {
+            Id = Guid.NewGuid(),
+            IsBlocked = true,
+            BlockReason = "Test reason",
+        };
+
+        providersRepositoryMock.Setup(r => r.GetById(providerBlockDto.Id))
+            .ReturnsAsync(null as Provider);
+
+        // Act
+        var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNull(result);
+    }
+
+    #endregion Block
+
     #region TestDataSets
 
     private static IEnumerable<object> AdditionalTestData()

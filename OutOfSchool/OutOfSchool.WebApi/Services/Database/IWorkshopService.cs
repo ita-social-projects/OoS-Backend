@@ -83,18 +83,20 @@ public interface IWorkshopService
     /// Get all workshops (Id, Title) by provider Id.
     /// </summary>
     /// <param name="providerId">Provider's key.</param>
+    /// <param name="offsetFilter">Filter to get a certain portion of all entities.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="List{ShortEntityDto}"/> that contains elements from the input sequence.</returns>
-    Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId);
+    Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId, OffsetFilter offsetFilter);
 
     /// <summary>
     /// Get all workshops by provider Id.
     /// </summary>
     /// <param name="id">Provider's key.</param>
+    /// <param name="offsetFilter">Filter to get a certain portion of all entities.</param>
     /// <typeparam name="T">Type of entity that must be return.</typeparam>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="IEnumerable{WorkshopCard}"/> that contains elements from the input sequence.</returns>
-    Task<IEnumerable<T>> GetByProviderId<T>(Guid id)
+    Task<IEnumerable<T>> GetByProviderId<T>(Guid id, OffsetFilter offsetFilter)
         where T : WorkshopBaseCard;
 
     /// <summary>

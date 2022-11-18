@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.EmailSender;
@@ -26,6 +27,7 @@ public class AccountController : Controller
     private readonly ILogger<AccountController> logger;
     private readonly IRazorViewToStringRenderer renderer;
     private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly IdentityServerConfig identityServerConfig;
     private string userId;
     private string path;
 
@@ -35,7 +37,8 @@ public class AccountController : Controller
         IEmailSender emailSender,
         ILogger<AccountController> logger,
         IRazorViewToStringRenderer renderer,
-        IStringLocalizer<SharedResource> localizer)
+        IStringLocalizer<SharedResource> localizer,
+        IOptions<IdentityServerConfig> identityServerConfig)
     {
         this.signInManager = signInManager;
         this.userManager = userManager;
@@ -44,6 +47,7 @@ public class AccountController : Controller
         this.localizer = localizer;
         this.renderer = renderer;
         this.localizer = localizer;
+        this.identityServerConfig = identityServerConfig.Value;
     }
 
     public override void OnActionExecuting(ActionExecutingContext context)
@@ -110,23 +114,7 @@ public class AccountController : Controller
             return View("Email/ChangeEmail", model);
         }
 
-        var user = await userManager.FindByEmailAsync(User.Identity.Name);
-        var token = await userManager.GenerateChangeEmailTokenAsync(user, model.Email);
-        var callBackUrl = Url.Action(nameof(ConfirmChangeEmail), "Account", new { userId = user.Id, email = model.Email, token }, Request.Scheme);
-
-        var email = model.Email;
-        var subject = "Confirm email.";
-
-        var userActionViewModel = new UserActionViewModel
-        {
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            ActionUrl = HtmlEncoder.Default.Encode(callBackUrl),
-        };
-        var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ResetPassword, userActionViewModel);
-        await emailSender.SendAsync(email, subject, content);
-
-        logger.LogInformation($"{path} Confirmation message was sent for User(id) + {userId}.");
+        await SendConfirmEmail();
 
         return View("Email/SendChangeEmail", model);
     }
@@ -177,7 +165,7 @@ public class AccountController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> ConfirmEmail()
+    public async Task<IActionResult> SendConfirmEmail()
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
 
@@ -203,7 +191,7 @@ public class AccountController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> EmailConfirmation(string userId, string token, string redirectUrl = null)
+    public async Task<IActionResult> EmailConfirmation(string token)
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
 
@@ -222,16 +210,27 @@ public class AccountController : Controller
             return NotFound($"Unable to load user with ID: '{userId}'.");
         }
 
+        var purpose = UserManager<User>.ConfirmEmailTokenPurpose;
+        var checkToken = await userManager.VerifyUserTokenAsync(user, userManager.Options.Tokens.EmailConfirmationTokenProvider, purpose, token);
+        if (!checkToken)
+        {
+            logger.LogError($"{path} Token is not valid for user: {user.Id}");
+
+            return View("Email/ConfirmEmailFailed", localizer["Invalid email confirmation token"]);
+        }
+
         var result = await userManager.ConfirmEmailAsync(user, token);
         if (!result.Succeeded)
         {
-            logger.LogError($"{path} Email сonfirmation  was failed for User(id): {userId} " +
+            logger.LogError($"{path} Email сonfirmation was failed for User(id): {userId} " +
                             $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
             return BadRequest();
         }
 
         logger.LogInformation($"{path} Email was confirmed. User(id): {userId}.");
+
+        var redirectUrl = identityServerConfig.RedirectFromEmailConfirmationUrl;
 
         return string.IsNullOrEmpty(redirectUrl) ? Ok() : Redirect(redirectUrl);
     }
@@ -255,11 +254,19 @@ public class AccountController : Controller
         }
 
         var user = await userManager.FindByEmailAsync(model.Email);
-        if (user == null || !(await userManager.IsEmailConfirmedAsync(user)))
+
+        if (user == null)
         {
             logger.LogError($"{path} User with Email: {model.Email} was not found or Email was not confirmed.");
+            ModelState.AddModelError(string.Empty, "Користувача з такою адресою не знайдено.");
+            return View("Password/ForgotPassword", model);
+        }
 
-            return View("Password/ForgotPasswordConfirmation");
+        if (!await userManager.IsEmailConfirmedAsync(user))
+        {
+            logger.LogError($"{path} User with Email: {model.Email} was not found or Email was not confirmed.");
+            ModelState.AddModelError(string.Empty, "Ця електронна адреса не підтверджена");
+            return View("Password/ForgotPassword", model);
         }
 
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
