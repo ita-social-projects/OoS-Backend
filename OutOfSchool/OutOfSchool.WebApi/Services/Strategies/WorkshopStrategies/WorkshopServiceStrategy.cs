@@ -1,4 +1,5 @@
-﻿using OutOfSchool.WebApi.Models;
+﻿using OutOfSchool.WebApi.Enums;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 
 namespace OutOfSchool.WebApi.Services.Strategies.WorkshopStrategies;
@@ -16,7 +17,9 @@ public class WorkshopServiceStrategy : IWorkshopStrategy
 
     public async Task<SearchResult<WorkshopCard>> SearchAsync(WorkshopFilter filter)
     {
-        var databaseResult = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+        var databaseResult = filter.OrderByField == nameof(OrderBy.Nearest)
+            ? await workshopService.GetNearestByFilter(filter).ConfigureAwait(false)
+            : await workshopService.GetByFilter(filter).ConfigureAwait(false);
 
         if (databaseResult.TotalAmount <= 0)
         {

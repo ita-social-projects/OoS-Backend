@@ -23,7 +23,7 @@ public class Address : IKeyedEntity<long>
     public double Longitude { get; set; }
 
     // parameter r means size (resolution) of hexagon
-    public ulong GeoHash => Api.GeoToH3(default(GeoCoord).SetDegrees((decimal)Latitude, (decimal)Longitude), GeoMathHelper.Resolution);
+    public ulong GeoHash { get; set; } = default;
 
     [Required(ErrorMessage = "CATOTTGId is required")]
     public long CATOTTGId { get; set; }
