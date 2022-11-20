@@ -17,6 +17,8 @@ public class WorkshopServiceStrategy : IWorkshopStrategy
 
     public async Task<SearchResult<WorkshopCard>> SearchAsync(WorkshopFilter filter)
     {
+        filter ??= new WorkshopFilter();
+
         var databaseResult = filter.OrderByField == nameof(OrderBy.Nearest)
             ? await workshopService.GetNearestByFilter(filter).ConfigureAwait(false)
             : await workshopService.GetByFilter(filter).ConfigureAwait(false);

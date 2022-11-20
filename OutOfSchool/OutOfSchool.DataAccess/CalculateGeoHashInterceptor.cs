@@ -18,6 +18,7 @@ public class CalculateGeoHashInterceptor : ISaveChangesInterceptor
 {
     public void SaveChangesFailed(DbContextErrorEventData eventData)
     {
+        // we don't need to do anything
     }
 
     public Task SaveChangesFailedAsync(DbContextErrorEventData eventData, CancellationToken cancellationToken = default)
@@ -37,17 +38,21 @@ public class CalculateGeoHashInterceptor : ISaveChangesInterceptor
 
     public InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {
+        _ = eventData ?? throw new ArgumentNullException(nameof(eventData));
+
         CalculateGeoHash(eventData.Context);
         return result;
     }
 
     public ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
     {
+        _ = eventData ?? throw new ArgumentNullException(nameof(eventData));
+
         CalculateGeoHash(eventData.Context);
         return ValueTask.FromResult(result);
     }
 
-    private void CalculateGeoHash(DbContext context)
+    private static void CalculateGeoHash(DbContext context)
     {
         var states = new[]
         {
@@ -55,9 +60,7 @@ public class CalculateGeoHashInterceptor : ISaveChangesInterceptor
             EntityState.Modified,
         };
 
-        var addresses = context.ChangeTracker.Entries<Address>().Where(x => states.Contains(x.State));
-
-        foreach (var entry in addresses)
+        foreach (var entry in context.ChangeTracker.Entries<Address>().Where(x => states.Contains(x.State)))
         {
             entry.CurrentValues["GeoHash"] =
                 Api.GeoToH3(
