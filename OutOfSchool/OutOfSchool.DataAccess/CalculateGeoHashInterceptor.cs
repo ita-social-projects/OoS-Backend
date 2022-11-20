@@ -60,13 +60,13 @@ public class CalculateGeoHashInterceptor : ISaveChangesInterceptor
             EntityState.Modified,
         };
 
-        foreach (var entry in context.ChangeTracker.Entries<Address>().Where(x => states.Contains(x.State)))
+        foreach (var entry in context.ChangeTracker.Entries<Address>().Where(x => states.Contains(x.State)).Select(x => x.CurrentValues))
         {
-            entry.CurrentValues["GeoHash"] =
+            entry["GeoHash"] =
                 Api.GeoToH3(
                     default(GeoCoord).SetDegrees(
-                        Convert.ToDecimal(entry.CurrentValues["Latitude"]),
-                        Convert.ToDecimal(entry.CurrentValues["Longitude"])), GeoMathHelper.Resolution).Value;
+                        Convert.ToDecimal(entry["Latitude"]),
+                        Convert.ToDecimal(entry["Longitude"])), GeoMathHelper.Resolution).Value;
         }
     }
 }
