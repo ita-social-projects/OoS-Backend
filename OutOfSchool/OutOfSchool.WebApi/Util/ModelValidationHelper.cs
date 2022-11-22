@@ -16,7 +16,7 @@ public static class ModelValidationHelper
         var isValid = true;
 
         var stringBuilder = new StringBuilder();
-        stringBuilder.AppendLine($"Validation of {nameof(OffsetFilter)} faild.");
+        stringBuilder.AppendLine($"Validation of {nameof(OffsetFilter)} failed.");
 
         if (offsetFilter.Size < 0)
         {
@@ -33,6 +33,30 @@ public static class ModelValidationHelper
         if (!isValid)
         {
             throw new ArgumentException(stringBuilder.ToString(), nameof(offsetFilter));
+        }
+    }
+
+    public static void ValidateExcludedIdFilter(ExcludeIdFilter filter)
+    {
+        if (filter == null)
+        {
+            throw new ArgumentNullException(nameof(filter));
+        }
+
+        ValidateOffsetFilter(filter);
+
+        var isValid = true;
+        var stringBuilder = new StringBuilder();
+        stringBuilder.AppendLine($"Validation of {nameof(ExcludeIdFilter)} failed.");
+
+        if (filter.ExcludedId != null && filter.ExcludedId == Guid.Empty) {
+            isValid = false;
+            stringBuilder.AppendLine($"{nameof(ExcludeIdFilter.ExcludedId)}: ExcludedId cannot be Empty Guid.");
+        }
+
+        if (!isValid)
+        {
+            throw new ArgumentException(stringBuilder.ToString(), nameof(filter));
         }
     }
 }

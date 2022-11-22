@@ -323,7 +323,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<WorkshopProviderViewCard>> GetWorkshopsThatProviderAdminCanManage(
+    public async Task<SearchResult<WorkshopProviderViewCard>> GetWorkshopsThatProviderAdminCanManage(
         string userId,
         bool isProviderDeputy)
     {
@@ -333,22 +333,35 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
 
         if (!providersAdmins.Any())
         {
-            return new List<WorkshopProviderViewCard>();
+            return new SearchResult<WorkshopProviderViewCard>() {
+                Entities = new List<WorkshopProviderViewCard>(),
+                TotalAmount = 0,
+            };
         }
 
         if (isProviderDeputy)
         {
             var providerAdmin = providersAdmins.SingleOrDefault(x => x.IsDeputy);
             if (providerAdmin == null) {
-                return new List<WorkshopProviderViewCard>();
+                return new SearchResult<WorkshopProviderViewCard>()
+                {
+                    Entities = new List<WorkshopProviderViewCard>(),
+                    TotalAmount = 0,
+                };
             }
 
-            var offsetFilter = new OffsetFilter() { From = 0, Size = int.MaxValue };
-            return await workshopService.GetByProviderId<WorkshopProviderViewCard>(providerAdmin.ProviderId, offsetFilter).ConfigureAwait(false);
+            var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
+            return await workshopService.GetByProviderId<WorkshopProviderViewCard>(providerAdmin.ProviderId, filter).ConfigureAwait(false);
         }
 
-        return providersAdmins.SingleOrDefault().ManagedWorkshops
-            .Select(workshop => mapper.Map<WorkshopProviderViewCard>(workshop));
+        var workshops = providersAdmins.SingleOrDefault()
+                        .ManagedWorkshops.Select(workshop => mapper.Map<WorkshopProviderViewCard>(workshop)).ToList();
+
+        return new SearchResult<WorkshopProviderViewCard>()
+        {
+            Entities = workshops,
+            TotalAmount = workshops.Count(),
+        };
     }
 
     /// <inheritdoc/>

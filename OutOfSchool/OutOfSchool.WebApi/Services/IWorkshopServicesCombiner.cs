@@ -28,7 +28,7 @@ public interface IWorkshopServicesCombiner
     /// <param name="offsetFilter">Filter to get a certain portion of all entities.</param>
     /// <returns>A <see cref="Task{ShortEntityDto}"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="List{ShortEntityDto}"/> that contains elements from the input sequence.</returns>
-    Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId, OffsetFilter offsetFilter);
+    Task<SearchResult<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId, OffsetFilter offsetFilter);
 
     /// <summary>
     /// Get entity by it's key.
@@ -71,12 +71,11 @@ public interface IWorkshopServicesCombiner
     /// Get all workshop cards with the specified provider's Id.
     /// </summary>
     /// <param name="id">Provider's key.</param>
-    /// <param name="offsetFilter">Filter to get a certain portion of all entities.</param>
-    /// <param name="excludedWorkshopId">Id of the excluded workshop.</param>
+    /// <param name="filter">Filter to get a certain portion of all entities or exclude some entities by excluded ids.</param>
     /// <typeparam name="T">Type of entity that must be return.</typeparam>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="List{WorkshopBaseCard}"/> that contains elements from the input sequence.</returns>
-    Task<List<T>> GetByProviderId<T>(Guid id, OffsetFilter offsetFilter, Guid? excludedWorkshopId = null)
+    Task<SearchResult<T>> GetByProviderId<T>(Guid id, ExcludeIdFilter filter)
         where T : WorkshopBaseCard;
 
     /// <summary>
