@@ -22,7 +22,6 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
 {
     protected readonly OutOfSchoolDbContext dbContext;
     protected readonly DbSet<TEntity> dbSet;
-    private IEntityRepositoryBase<TKey, TEntity> entityRepositoryBaseImplementation;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EntityRepositoryBase{TKey, TEntity}"/> class.
@@ -136,9 +135,6 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
 
     /// <inheritdoc/>
     public virtual Task<TEntity> GetById(TKey id) => dbSet.FirstOrDefaultAsync(x => x.Id.Equals(id));
-
-    /// <inheritdoc/>
-    public virtual Task<TEntity> GetProviderStatusById(TKey id) => dbSet.FirstOrDefaultAsync(x => x.Id.Equals(id));
 
     /// <inheritdoc/>
     public virtual async Task<TEntity> Update(TEntity entity)

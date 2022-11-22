@@ -52,24 +52,6 @@ public static class ElasticsearchMappingExtensions
         });
     }
 
-    public static ProviderStatusDto ToProviderStatusDto(this Provider provider)
-    {
-        return Mapper<Provider, ProviderStatusDto>(provider, ctg => 
-            ctg.CreateMap<Provider, ProviderStatusDto>()
-                .ForMember(
-                    dest => dest.ProviderId,
-                    opt => 
-                        opt.MapFrom(src=> src.Id))
-                .ForMember(
-                    dest => dest.Status,
-                    opt => 
-                        opt.MapFrom(src=> src.Status))
-                .ForMember(
-                    dest => dest.StatusReason,
-                    opt => 
-                        opt.MapFrom(src=> String.Empty))
-        );
-    }
     public static WorkshopFilterES ToESModel(this WorkshopFilter workshopFilterDto)
     {
         return Mapper<WorkshopFilter, WorkshopFilterES>(workshopFilterDto, cfg =>

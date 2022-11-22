@@ -343,7 +343,7 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
-    [AllowAnonymous]
+    [HasPermission(Permissions.ProviderRead)]
     public async Task<IActionResult> GetProviderStatusById(Guid providerId)
     {
         var provider = await providerService.GetProviderStatusById(providerId).ConfigureAwait(false);

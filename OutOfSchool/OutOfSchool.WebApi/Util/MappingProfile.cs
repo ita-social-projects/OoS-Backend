@@ -54,7 +54,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
             .ForMember(dest => dest.Applications, opt => opt.Ignore())
             .ForMember(dest => dest.ChatRooms, opt => opt.Ignore())
-
             .ForMember(dest => dest.Images, opt => opt.Ignore())
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
@@ -66,7 +65,8 @@ public class MappingProfile : Profile
                 opt => opt.MapFrom(src => src.Keywords.Split(SEPARATOR, StringSplitOptions.None)))
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
-            .ForMember(dest => dest.DirectionIds, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(d => d.Id)))
+            .ForMember(dest => dest.DirectionIds,
+                opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(d => d.Id)))
             .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
             .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
@@ -74,10 +74,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
             .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
             .ForMember(dest => dest.TakenSeats, opt =>
-                            opt.MapFrom(src =>
-                                src.Applications.Count(x =>
-                                    x.Status == ApplicationStatus.Approved
-                                    || x.Status == ApplicationStatus.StudyingForYears)));
+                opt.MapFrom(src =>
+                    src.Applications.Count(x =>
+                        x.Status == ApplicationStatus.Approved
+                        || x.Status == ApplicationStatus.StudyingForYears)));
 
         CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>().ReverseMap();
 
@@ -163,15 +163,16 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.TakenSeats, opt =>
-                            opt.MapFrom(src =>
-                                src.Applications.Count(x =>
-                                    x.Status == ApplicationStatus.Approved
-                                    || x.Status == ApplicationStatus.StudyingForYears)));
+                opt.MapFrom(src =>
+                    src.Applications.Count(x =>
+                        x.Status == ApplicationStatus.Approved
+                        || x.Status == ApplicationStatus.StudyingForYears)));
 
         CreateMap<Workshop, WorkshopBaseCard>()
             .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
-            .ForMember(dest => dest.DirectionIds, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)))
+            .ForMember(dest => dest.DirectionIds,
+                opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)))
             .ForMember(dest => dest.Rating, opt => opt.Ignore());
 
         CreateMap<Workshop, WorkshopProviderViewCard>()
@@ -264,7 +265,8 @@ public class MappingProfile : Profile
         CreateMap<Workshop, WorkshopES>()
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
-            .ForMember(dest => dest.DirectionIds, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(d => d.Id)))
+            .ForMember(dest => dest.DirectionIds,
+                opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(d => d.Id)))
             .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
             .ForMember(
@@ -461,18 +463,22 @@ public class MappingProfile : Profile
         CreateMap<InstitutionStatus, InstitutionStatusDTO>().ReverseMap();
 
         CreateMap<PermissionsForRole, PermissionsForRoleDTO>()
-            .ForMember(dest => dest.Permissions, opt => opt.MapFrom(c => c.PackedPermissions.UnpackPermissionsFromString()));
+            .ForMember(dest => dest.Permissions,
+                opt => opt.MapFrom(c => c.PackedPermissions.UnpackPermissionsFromString()));
         CreateMap<PermissionsForRoleDTO, PermissionsForRole>()
-            .ForMember(dest => dest.PackedPermissions, opt => opt.MapFrom(c => c.Permissions.PackPermissionsIntoString()));
+            .ForMember(dest => dest.PackedPermissions,
+                opt => opt.MapFrom(c => c.Permissions.PackPermissionsIntoString()));
 
         CreateMap<Child, ShortEntityDto>()
-            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.LastName + " " + src.FirstName + " " + src.MiddleName));
+            .ForMember(dest => dest.Title,
+                opt => opt.MapFrom(src => src.LastName + " " + src.FirstName + " " + src.MiddleName));
 
         CreateMap<Workshop, ShortEntityDto>()
             .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title));
 
         CreateMap<GeocodingSingleFeatureResponse, GeocodingResponse>()
-            .ForMember(dest => dest.Street, opt => opt.MapFrom(src => $"{src.Properties.StreetType} {src.Properties.Street}"))
+            .ForMember(dest => dest.Street,
+                opt => opt.MapFrom(src => $"{src.Properties.StreetType} {src.Properties.Street}"))
             .ForMember(dest => dest.BuildingNumber, opt => opt.MapFrom(src => src.Properties.Name))
             .ForMember(dest => dest.Lon, opt => opt.MapFrom(src => src.GeoCentroid.Coordinates.FirstOrDefault()))
             .ForMember(dest => dest.Lat, opt => opt.MapFrom(src => src.GeoCentroid.Coordinates.LastOrDefault()))
@@ -508,5 +514,19 @@ public class MappingProfile : Profile
             .ForMember(
                 dest => dest.AddressParts,
                 opt => opt.MapFrom(src => src));
+
+        CreateMap<Provider, ProviderStatusDto>()
+            .ForMember(
+                dest => dest.ProviderId,
+                opt =>
+                    opt.MapFrom(src => src.Id))
+            .ForMember(
+                dest => dest.Status,
+                opt =>
+                    opt.MapFrom(src => src.Status))
+            .ForMember(
+                dest => dest.StatusReason,
+                opt =>
+                    opt.MapFrom(src => String.Empty));
     }
 }
