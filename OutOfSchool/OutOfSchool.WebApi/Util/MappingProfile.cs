@@ -90,7 +90,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
 
         CreateMap<AddressDto, Address>()
-            .ForMember(dest => dest.CATOTTG, opt => opt.Ignore());
+            .ForMember(dest => dest.CATOTTG, opt => opt.Ignore())
+            .ForMember(dest => dest.GeoHash, opt => opt.Ignore());
 
         CreateMap<BlockedProviderParentBlockDto, BlockedProviderParent>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())

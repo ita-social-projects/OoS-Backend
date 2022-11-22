@@ -22,10 +22,7 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
     /// <inheritdoc/>
     public override async Task<SearchResultES<WorkshopES>> Search(WorkshopFilterES filter = null)
     {
-        if (filter is null)
-        {
-            filter = new WorkshopFilterES();
-        }
+        filter ??= new WorkshopFilterES();
 
         var query = this.CreateQueryFromFilter(filter);
         var sorts = this.CreateSortFromFilter(filter);

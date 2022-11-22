@@ -123,4 +123,10 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.Seed();
         builder.UpdateIdentityTables();
     }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder
+            .AddInterceptors(new CalculateGeoHashInterceptor());
+    }
 }

@@ -449,10 +449,7 @@ public class WorkshopService : IWorkshopService
     {
         logger.LogInformation("Getting Workshops by filter started.");
 
-        if (filter is null)
-        {
-            filter = new WorkshopFilter();
-        }
+        filter ??= new WorkshopFilter();
 
         var filterPredicate = PredicateBuild(filter);
         var orderBy = GetOrderParameter(filter);
@@ -484,13 +481,10 @@ public class WorkshopService : IWorkshopService
     public async Task<SearchResult<WorkshopCard>> GetNearestByFilter(WorkshopFilter filter = null)
     {
         logger.LogInformation("Getting Workshops by filter started.");
-        if (filter is null)
-        {
-            filter = new WorkshopFilter();
-        }
+        filter ??= new WorkshopFilter();
 
-        var geo = default(GeoCoord).SetDegrees(filter.Latitude, filter.Longitude);
-        var h3Location = Api.GeoToH3(geo, GeoMathHelper.Resolution);
+        var hash = default(GeoCoord).SetDegrees(filter.Latitude, filter.Longitude);
+        var h3Location = Api.GeoToH3(hash, GeoMathHelper.Resolution);
         Api.KRing(h3Location, GeoMathHelper.KRingForResolution, out var neighbours);
 
         var filterPredicate = PredicateBuild(filter);
@@ -561,6 +555,7 @@ public class WorkshopService : IWorkshopService
         if (!string.IsNullOrWhiteSpace(filter.SearchText))
         {
             var tempPredicate = PredicateBuilder.False<Workshop>();
+
             foreach (var word in filter.SearchText.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
             {
                 tempPredicate = tempPredicate.Or(x => EF.Functions.Like(x.Keywords, $"%{word}%"));
@@ -666,7 +661,7 @@ public class WorkshopService : IWorkshopService
         return sortExpression;
     }
 
-    private async Task<List<T>> GetWorkshopsWithAverageRating<T>(List<T> workshops)  where T: WorkshopBaseCard
+    private async Task<List<T>> GetWorkshopsWithAverageRating<T>(List<T> workshops) where T: WorkshopBaseCard
     {
         var averageRatings =
             await ratingService.GetAverageRatingForRangeAsync(workshops.Select(p => p.WorkshopId), RatingType.Workshop)
