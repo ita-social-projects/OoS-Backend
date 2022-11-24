@@ -333,7 +333,8 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
 
         if (!providersAdmins.Any())
         {
-            return new SearchResult<WorkshopProviderViewCard>() {
+            return new SearchResult<WorkshopProviderViewCard>()
+            {
                 Entities = new List<WorkshopProviderViewCard>(),
                 TotalAmount = 0,
             };
@@ -360,7 +361,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         return new SearchResult<WorkshopProviderViewCard>()
         {
             Entities = workshops,
-            TotalAmount = workshops.Count(),
+            TotalAmount = workshops.Count,
         };
     }
 

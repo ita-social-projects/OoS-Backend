@@ -753,5 +753,4 @@ public class WorkshopService : IWorkshopService
     private void ValidateOffsetFilter(OffsetFilter offsetFilter) => ModelValidationHelper.ValidateOffsetFilter(offsetFilter);
 
     private void ValidateExcludedIdFilter(ExcludeIdFilter filter) => ModelValidationHelper.ValidateExcludedIdFilter(filter);
-
 }

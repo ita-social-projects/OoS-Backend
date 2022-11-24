@@ -49,7 +49,8 @@ public static class ModelValidationHelper
         var stringBuilder = new StringBuilder();
         stringBuilder.AppendLine($"Validation of {nameof(ExcludeIdFilter)} failed.");
 
-        if (filter.ExcludedId != null && filter.ExcludedId == Guid.Empty) {
+        if (filter.ExcludedId != null && filter.ExcludedId == Guid.Empty)
+        {
             isValid = false;
             stringBuilder.AppendLine($"{nameof(ExcludeIdFilter.ExcludedId)}: ExcludedId cannot be Empty Guid.");
         }
