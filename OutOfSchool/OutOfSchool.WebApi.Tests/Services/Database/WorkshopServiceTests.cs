@@ -236,8 +236,6 @@ public class WorkshopServiceTests
         (result as SearchResult<WorkshopBaseCard>).TotalAmount.Should().Be(workshops.Count);
         (result as SearchResult<WorkshopBaseCard>).Entities.Should().BeEquivalentTo(expectedWorkshopBaseCards);
     }
-
-
     #endregion
 
     #region GetWorkshopListByProviderId
@@ -673,7 +671,6 @@ public class WorkshopServiceTests
            .Setup(repo => repo.Count(It.IsAny<Expression<Func<Workshop, bool>>>()))
             .Returns(Task.FromResult(count));
     }
-
 
     private void SetupUpdate(Workshop workshop)
     {

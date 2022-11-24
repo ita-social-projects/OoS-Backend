@@ -35,7 +35,6 @@ public class ModelValidationHelperTests
         Assert.Throws<ArgumentException>(() => ModelValidationHelper.ValidateExcludedIdFilter(filter));
     }
 
-
     [Test]
     public void ValidateExcludedIdFilter_WhenValidFilter_Should_Not_ThrowException()
     {

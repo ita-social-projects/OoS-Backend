@@ -343,7 +343,8 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         if (isProviderDeputy)
         {
             var providerAdmin = providersAdmins.SingleOrDefault(x => x.IsDeputy);
-            if (providerAdmin == null) {
+            if (providerAdmin == null)
+            {
                 return new SearchResult<WorkshopProviderViewCard>()
                 {
                     Entities = new List<WorkshopProviderViewCard>(),
