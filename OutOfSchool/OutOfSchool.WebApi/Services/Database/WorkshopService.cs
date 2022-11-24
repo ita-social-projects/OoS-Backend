@@ -231,7 +231,9 @@ public class WorkshopService : IWorkshopService
         filter ??= new ExcludeIdFilter();
         ValidateExcludedIdFilter(filter);
 
-        var workshopBaseCardsCount = await workshopRepository.Count(where: x => x.ProviderId == id).ConfigureAwait(false);
+        var workshopBaseCardsCount = await workshopRepository.Count(where: x =>
+                                                filter.ExcludedId == null ? (x.ProviderId == id)
+                                                : (x.ProviderId == id && x.Id != filter.ExcludedId)).ConfigureAwait(false);
         var workshops = await workshopRepository.Get(
             skip: filter.From,
             take: filter.Size,
