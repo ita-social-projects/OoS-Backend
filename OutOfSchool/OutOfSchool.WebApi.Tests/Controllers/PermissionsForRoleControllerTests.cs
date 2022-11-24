@@ -17,6 +17,7 @@ using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -34,7 +35,7 @@ public class PermissionsForRoleControllerTests
     public void Setup()
     {
         service = new Mock<IPermissionsForRoleService>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         controller = new PermissionsForRoleController(service.Object);
 
         permissionsForAllRoles = PermissionsForRolesGenerator.GenerateForExistingRoles();

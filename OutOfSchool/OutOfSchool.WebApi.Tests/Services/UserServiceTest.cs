@@ -16,6 +16,7 @@ using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -42,7 +43,7 @@ public class UserServiceTest
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         repo = new EntityRepository<string, User>(context);
         logger = new Mock<ILogger<UserService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         service = new UserService(repo, logger.Object, localizer.Object, mapper);
 
         SeedDatabase();

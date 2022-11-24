@@ -17,6 +17,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Images;
+using OutOfSchool.WebApi.Util;
 using Quartz.Impl.AdoJobStore.Common;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -58,7 +59,7 @@ public class ProviderServiceTests
         notificationService = new Mock<INotificationService>(MockBehavior.Strict);
         providerAdminService = new Mock<IProviderAdminService>();
 
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
 
         providerService = new ProviderService(
             providersRepositoryMock.Object,
