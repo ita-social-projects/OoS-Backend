@@ -34,8 +34,9 @@ public class CodeficatorRepository : EntityRepository<long, CATOTTG>, ICodeficat
     /// <inheritdoc/>
     public async Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(string namePart, string categories = default)
     {
-        int cityAmountIfNamePartIsEmpty = 10;
+        int cityAmountIfNamePartIsEmpty = 100;
 
+        // TODO: Refactor this query, please
         var query = from e in db.CATOTTGs
                      from p in db.CATOTTGs.Where(x1 => e.ParentId == x1.Id).DefaultIfEmpty()
                      from pp in db.CATOTTGs.Where(x2 => p.ParentId == x2.Id).DefaultIfEmpty()
