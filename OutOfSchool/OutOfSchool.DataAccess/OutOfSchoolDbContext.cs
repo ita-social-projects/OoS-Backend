@@ -117,6 +117,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new NotificationConfiguration());
         builder.ApplyConfiguration(new AchievementConfiguration());
         builder.ApplyConfiguration(new AddressConfiguration());
+        builder.ApplyConfiguration(new CodeficatorConfiguration());
 
         ApplySoftDelete(builder);
 

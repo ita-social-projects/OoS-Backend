@@ -34,13 +34,18 @@ public class CodeficatorRepository : EntityRepository<long, CATOTTG>, ICodeficat
     /// <inheritdoc/>
     public async Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(string namePart, string categories = default)
     {
+        int cityAmountIfNamePartIsEmpty = 100;
+
+        // TODO: Refactor this query, please
         var query = from e in db.CATOTTGs
                      from p in db.CATOTTGs.Where(x1 => e.ParentId == x1.Id).DefaultIfEmpty()
                      from pp in db.CATOTTGs.Where(x2 => p.ParentId == x2.Id).DefaultIfEmpty()
                      from ppp in db.CATOTTGs.Where(x3 => pp.ParentId == x3.Id).DefaultIfEmpty()
                      from pppp in db.CATOTTGs.Where(x4 => ppp.ParentId == x4.Id).DefaultIfEmpty()
-                     where ((CodeficatorCategory.Level4.Name.Contains(e.Category) && e.Name.StartsWith(namePart)) || (e.Category == CodeficatorCategory.CityDistrict.Name && p.Name.StartsWith(namePart))) && categories.Contains(e.Category)
-                     select new CodeficatorAddressDto
+                     where string.IsNullOrEmpty(namePart)
+                        ? EF.Property<bool>(e, "IsTop")
+                        : ((CodeficatorCategory.Level4.Name.Contains(e.Category) && e.Name.StartsWith(namePart)) || (e.Category == CodeficatorCategory.CityDistrict.Name && p.Name.StartsWith(namePart))) && categories.Contains(e.Category)
+                    select new CodeficatorAddressDto
                      {
                          Id = e.Id,
                          Category = e.Category,
@@ -54,6 +59,13 @@ public class CodeficatorRepository : EntityRepository<long, CATOTTG>, ICodeficat
                          CityDistrict = e.Category == CodeficatorCategory.CityDistrict.Name ? e.Name : null,
                      };
 
-        return await query.OrderBy(x => x.Order).ToListAsync();
+        query = query.OrderBy(x => x.Order);
+
+        if (string.IsNullOrEmpty(namePart))
+        {
+            query = query.Take(cityAmountIfNamePartIsEmpty);
+        }
+
+        return await query.ToListAsync();
     }
 }
