@@ -1,8 +1,12 @@
-﻿using AutoMapper;
+﻿using System.Linq;
+using System.Linq.Expressions;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Nest;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 
@@ -377,6 +381,37 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         return providerAdmin != null;
     }
 
+    public async Task<SearchResult<ProviderAdminDto>> GetFilteredRelatedProviderAdmins(string userId, ProviderAdminSearchFilter filter)
+    {
+        filter ??= new ProviderAdminSearchFilter();
+        ModelValidationHelper.ValidateOffsetFilter(filter);
+
+        var relatedAdmins = await GetRelatedProviderAdmins(userId).ConfigureAwait(false);
+
+        int totalAmount;
+
+        if (string.IsNullOrEmpty(filter.SearchString) && (filter.DeputyOnly == filter.AssistantsOnly))
+        {
+            totalAmount = relatedAdmins.Count();
+        }
+        else
+        {
+            var filterPredicate = PredicateBuild(filter).Compile();
+            totalAmount = relatedAdmins.Count(filterPredicate);
+            relatedAdmins = relatedAdmins.Where(filterPredicate);
+        }
+
+        var providerAdmins = relatedAdmins.Skip(filter.From).Take(filter.Size).ToList();
+
+        var searchResult = new SearchResult<ProviderAdminDto>()
+        {
+            TotalAmount = totalAmount,
+            Entities = providerAdmins,
+        };
+
+        return searchResult;
+    }
+
     public async Task<IEnumerable<ProviderAdminDto>> GetRelatedProviderAdmins(string userId)
     {
         var provider = await providerAdminRepository.GetProviderWithUserIdAsync(userId).ConfigureAwait(false);
@@ -443,5 +478,34 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
                                                                                && p.IsDeputy).ConfigureAwait(false);
 
         return providersDeputies.Select(d => d.UserId);
+    }
+
+    private static Expression<Func<ProviderAdminDto, bool>> PredicateBuild(ProviderAdminSearchFilter filter)
+    {
+        var predicate = PredicateBuilder.True<ProviderAdminDto>();
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchString))
+        {
+            var tempPredicate = PredicateBuilder.False<ProviderAdminDto>();
+
+            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                tempPredicate = tempPredicate.Or(
+                    x => x.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
+            }
+
+            predicate = predicate.And(tempPredicate);
+        }
+
+        if (filter.DeputyOnly != filter.AssistantsOnly)
+        {
+            predicate = predicate.And(p => p.IsDeputy == filter.DeputyOnly);
+        }
+
+        return predicate;
     }
 }
