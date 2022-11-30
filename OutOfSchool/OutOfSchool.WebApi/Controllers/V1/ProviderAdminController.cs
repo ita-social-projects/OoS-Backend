@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 
@@ -186,34 +187,23 @@ public class ProviderAdminController : Controller
     /// <summary>
     /// Method to Get filtered data about related ProviderAdmins.
     /// </summary>
-    /// <param name="deputyOnly">Returns only deputy provider admins.</param>
-    /// <param name="assistantsOnly">Returns only assistants (workshop) provider admins.</param>
+    /// <param name="filter">Filter to get a part of all provider admins that were found.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ProviderAdminDto>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderAdminDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HasPermission(Permissions.ProviderRead)]
     [HttpGet]
-    public async Task<IActionResult> GetFilteredProviderAdminsAsync(bool deputyOnly, bool assistantsOnly)
+    public async Task<IActionResult> GetFilteredProviderAdminsAsync([FromQuery] ProviderAdminSearchFilter filter)
     {
-        var relatedAdmins = await providerAdminService.GetRelatedProviderAdmins(userId).ConfigureAwait(false);
+        var relatedAdmins = await providerAdminService.GetFilteredRelatedProviderAdmins(userId, filter).ConfigureAwait(false);
 
-        IActionResult result = Ok(relatedAdmins);
-
-        if (assistantsOnly && deputyOnly)
+        if (relatedAdmins.TotalAmount == 0)
         {
-            return result;
-        }
-        else if (deputyOnly)
-        {
-            result = Ok(relatedAdmins.Where(w => w.IsDeputy));
-        }
-        else if (assistantsOnly)
-        {
-            result = Ok(relatedAdmins.Where(w => !w.IsDeputy));
+            return NoContent();
         }
 
-        return result;
+        return Ok(relatedAdmins);
     }
 
     /// <summary>
@@ -233,9 +223,7 @@ public class ProviderAdminController : Controller
             return NoContent();
         }
 
-        IActionResult result = Ok(relatedAdmins);
-
-        return result;
+        return Ok(relatedAdmins);
     }
 
     /// <summary>
