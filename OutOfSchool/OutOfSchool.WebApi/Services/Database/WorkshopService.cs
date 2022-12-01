@@ -556,6 +556,8 @@ public class WorkshopService : IWorkshopService
             .ConfigureAwait(false)).ProviderId;
     }
 
+    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) => ModelValidationHelper.ValidateExcludedIdFilter(filter);
+
     private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
     {
         var predicate = PredicateBuilder.True<Workshop>();
@@ -633,7 +635,7 @@ public class WorkshopService : IWorkshopService
             predicate = filter.IsAppropriateHours
                 ? predicate.And(x => x.DateTimeRanges.Any(tr =>
                     tr.StartTime >= filter.MinStartTime && tr.EndTime.Hours <= filter.MaxStartTime.Hours))
-                : predicate = predicate.And(x => x.DateTimeRanges.Any(tr =>
+                : predicate.And(x => x.DateTimeRanges.Any(tr =>
                     tr.StartTime >= filter.MinStartTime && tr.StartTime.Hours <= filter.MaxStartTime.Hours));
         }
 
@@ -751,6 +753,4 @@ public class WorkshopService : IWorkshopService
     }
 
     private void ValidateOffsetFilter(OffsetFilter offsetFilter) => ModelValidationHelper.ValidateOffsetFilter(offsetFilter);
-
-    private void ValidateExcludedIdFilter(ExcludeIdFilter filter) => ModelValidationHelper.ValidateExcludedIdFilter(filter);
 }

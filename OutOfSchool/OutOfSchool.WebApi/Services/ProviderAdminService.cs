@@ -327,9 +327,9 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         string userId,
         bool isProviderDeputy)
     {
-        var providersAdmins = await providerAdminRepository
-            .GetByFilter(p => p.UserId == userId && p.IsDeputy == isProviderDeputy, includingPropertiesForMaping)
-            .ConfigureAwait(false);
+        var providersAdmins = (await providerAdminRepository
+            .GetByFilter(p => p.UserId == userId && p.IsDeputy == isProviderDeputy, includingPropertiesForMaping))
+            .ToList();
 
         if (!providersAdmins.Any())
         {
@@ -356,8 +356,11 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             return await workshopService.GetByProviderId<WorkshopProviderViewCard>(providerAdmin.ProviderId, filter).ConfigureAwait(false);
         }
 
-        var workshops = providersAdmins.SingleOrDefault()
-                        .ManagedWorkshops.Select(workshop => mapper.Map<WorkshopProviderViewCard>(workshop)).ToList();
+        var pa = providersAdmins.SingleOrDefault();
+
+        var workshops = pa is not null
+            ? pa.ManagedWorkshops.Select(workshop => mapper.Map<WorkshopProviderViewCard>(workshop)).ToList()
+            : new List<WorkshopProviderViewCard>();
 
         return new SearchResult<WorkshopProviderViewCard>()
         {
