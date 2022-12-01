@@ -59,7 +59,7 @@ public interface IProviderAdminService
     /// <param name="userId">Key in the table.</param>
     /// <param name="isProviderDeputy">Is providerAdmin deputy or no.</param>
     /// <returns>List of the workshops that providerAdmin can manage.</returns>
-    Task<IEnumerable<WorkshopProviderViewCard>> GetWorkshopsThatProviderAdminCanManage(string userId, bool isProviderDeputy);
+    Task<SearchResult<WorkshopProviderViewCard>> GetWorkshopsThatProviderAdminCanManage(string userId, bool isProviderDeputy);
 
     /// <summary>
     /// Get entity by it's key.

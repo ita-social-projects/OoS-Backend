@@ -16,6 +16,7 @@ using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -44,7 +45,7 @@ public class ParentControllerTests
         serviceChild = new Mock<IChildService>();
 
         localizer = new Mock<IStringLocalizer<SharedResource>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
 
         httpContextMoq = new Mock<HttpContext>();
         httpContextMoq.Setup(x => x.User.FindFirst("sub"))

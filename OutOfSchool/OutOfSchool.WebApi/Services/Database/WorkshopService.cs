@@ -197,13 +197,14 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
-    public async Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId, OffsetFilter offsetFilter)
+    public async Task<SearchResult<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId, OffsetFilter offsetFilter)
     {
         logger.LogDebug($"Getting Workshop (Id, Title) by organization started. Looking ProviderId = {providerId}.");
 
         offsetFilter ??= new OffsetFilter();
         ValidateOffsetFilter(offsetFilter);
 
+        var workshopsCount = await workshopRepository.Count(where: x => x.ProviderId == providerId).ConfigureAwait(false);
         var workshops = await workshopRepository.Get(
             skip: offsetFilter.From,
             take: offsetFilter.Size,
@@ -211,25 +212,34 @@ public class WorkshopService : IWorkshopService
             .ToListAsync()
             .ConfigureAwait(false);
 
-        var result = mapper.Map<List<ShortEntityDto>>(workshops).OrderBy(entity => entity.Title).ToList();
+        var workshopDTOs = mapper.Map<List<ShortEntityDto>>(workshops).OrderBy(entity => entity.Title).ToList();
+        var result = new SearchResult<ShortEntityDto>()
+        {
+            TotalAmount = workshopsCount,
+            Entities = workshopDTOs,
+        };
 
         return result;
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<T>> GetByProviderId<T>(Guid id, OffsetFilter offsetFilter)
+    public async Task<SearchResult<T>> GetByProviderId<T>(Guid id, ExcludeIdFilter filter)
         where T : WorkshopBaseCard
     {
         logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
-        offsetFilter ??= new OffsetFilter();
-        ValidateOffsetFilter(offsetFilter);
+        filter ??= new ExcludeIdFilter();
+        ValidateExcludedIdFilter(filter);
 
+        var workshopBaseCardsCount = await workshopRepository.Count(where: x =>
+                                                filter.ExcludedId == null ? (x.ProviderId == id)
+                                                : (x.ProviderId == id && x.Id != filter.ExcludedId)).ConfigureAwait(false);
         var workshops = await workshopRepository.Get(
-            skip: offsetFilter.From,
-            take: offsetFilter.Size,
+            skip: filter.From,
+            take: filter.Size,
             includeProperties: includingPropertiesForMappingDtoModel,
-            where: x => x.ProviderId == id)
+            where: x => filter.ExcludedId == null ? (x.ProviderId == id)
+                                  : (x.ProviderId == id && x.Id != filter.ExcludedId))
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -237,9 +247,14 @@ public class WorkshopService : IWorkshopService
             ? $"There aren't Workshops for Provider with Id = {id}."
             : $"From Workshop table were successfully received {workshops.Count} records.");
 
-        var workshopBaseCards = mapper.Map<List<T>>(workshops);
+        var workshopBaseCards = mapper.Map<List<T>>(workshops).ToList();
+        var result = new SearchResult<T>()
+        {
+            TotalAmount = workshopBaseCardsCount,
+            Entities = await GetWorkshopsWithAverageRating(workshopBaseCards).ConfigureAwait(false),
+        };
 
-        return await GetWorkshopsWithAverageRating(workshopBaseCards);
+        return result;
     }
 
     /// <inheritdoc/>
@@ -541,6 +556,8 @@ public class WorkshopService : IWorkshopService
             .ConfigureAwait(false)).ProviderId;
     }
 
+    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) => ModelValidationHelper.ValidateExcludedIdFilter(filter);
+
     private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
     {
         var predicate = PredicateBuilder.True<Workshop>();
@@ -618,7 +635,7 @@ public class WorkshopService : IWorkshopService
             predicate = filter.IsAppropriateHours
                 ? predicate.And(x => x.DateTimeRanges.Any(tr =>
                     tr.StartTime >= filter.MinStartTime && tr.EndTime.Hours <= filter.MaxStartTime.Hours))
-                : predicate = predicate.And(x => x.DateTimeRanges.Any(tr =>
+                : predicate.And(x => x.DateTimeRanges.Any(tr =>
                     tr.StartTime >= filter.MinStartTime && tr.StartTime.Hours <= filter.MaxStartTime.Hours));
         }
 

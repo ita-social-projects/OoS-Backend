@@ -19,6 +19,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -61,7 +62,7 @@ public class MinistryAdminServiceTests
 
         institutionAdminRepositoryMock = new Mock<IInstitutionAdminRepository>();
         var logger = new Mock<ILogger<MinistryAdminService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         userRepositoryMock = new Mock<IEntityRepository<string, User>>();
 
         ministryAdminService = new MinistryAdminService(

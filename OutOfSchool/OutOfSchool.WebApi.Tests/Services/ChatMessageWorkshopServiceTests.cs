@@ -16,6 +16,7 @@ using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -56,7 +57,7 @@ public class ChatMessageWorkshopServiceTests
         messageRepository = new EntityRepository<Guid, ChatMessageWorkshop>(dbContext);
         roomServiceMock = new Mock<IChatRoomWorkshopService>();
         loggerMock = new Mock<ILogger<ChatMessageWorkshopService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
 
         messageService = new ChatMessageWorkshopService(
             messageRepository,

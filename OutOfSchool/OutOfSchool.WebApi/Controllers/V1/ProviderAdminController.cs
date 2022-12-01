@@ -230,7 +230,7 @@ public class ProviderAdminController : Controller
     /// Method to Get data about managed Workshops.
     /// </summary>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopProviderViewCard>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopProviderViewCard>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -246,7 +246,7 @@ public class ProviderAdminController : Controller
 
         var relatedWorkshops = await providerAdminService.GetWorkshopsThatProviderAdminCanManage(userId, userSubrole == Subrole.ProviderDeputy).ConfigureAwait(false);
 
-        if (!relatedWorkshops.Any())
+        if (relatedWorkshops.TotalAmount == 0)
         {
             return NoContent();
         }

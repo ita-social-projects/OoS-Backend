@@ -74,9 +74,9 @@ public class WorkshopController : ControllerBase
     /// </summary>
     /// <param name="providerId">Id of the provider.</param>
     /// <param name="offsetFilter">Filter to get specified portion of workshop view cards for specified provider.</param>
-    /// <returns>The result is a <see cref="List{ShortEntityDto}"/> that contains a sorted by Title list of workshops that were received.</returns>
+    /// <returns>The result is a <see cref="SearchResult{ShortEntityDto}"/> that contains a sorted by Title list of workshops that were received.</returns>
     [AllowAnonymous]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ShortEntityDto>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ShortEntityDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -92,7 +92,7 @@ public class WorkshopController : ControllerBase
 
         var workshops = await combinedWorkshopService.GetWorkshopListByProviderId(providerId, offsetFilter).ConfigureAwait(false);
 
-        if (!workshops.Any())
+        if (workshops.TotalAmount == 0)
         {
             return NoContent();
         }
@@ -104,30 +104,30 @@ public class WorkshopController : ControllerBase
     /// Get workshop cards by Provider's Id.
     /// </summary>
     /// <param name="id">Provider's id.</param>
-    /// <param name="offsetFilter">Filter to get specified portion of workshop view cards for specified provider.</param>
-    /// <param name="excludedWorkshopId">Id of the excluded workshop.</param>
-    /// <returns><see cref="IEnumerable{WorkshopBaseCard}"/>, or no content.</returns>
+    /// <param name="filter">Filter to get specified portion of workshop view cards for specified provider.
+    /// Id of the excluded workshop could be specified.</param>
+    /// <returns><see cref="SearchResult{WorkshopBaseCard}"/>, or no content.</returns>
     /// <response code="200">The list of found entities by given Id.</response>
     /// <response code="204">No entity with given Id was found.</response>
     /// <response code="400">Provider id is empty.</response>
     /// <response code="500">If any server error occures. For example: Id was less than one.</response>
     [AllowAnonymous]
     [HttpGet("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopBaseCard>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopBaseCard>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] OffsetFilter offsetFilter, [FromQuery] Guid? excludedWorkshopId = null)
+    public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] ExcludeIdFilter filter)
     {
         if (id == Guid.Empty)
         {
             return BadRequest("Provider id is empty.");
         }
 
-        var workshopCards = await combinedWorkshopService.GetByProviderId<WorkshopBaseCard>(id, offsetFilter, excludedWorkshopId)
+        var workshopCards = await combinedWorkshopService.GetByProviderId<WorkshopBaseCard>(id, filter)
             .ConfigureAwait(false);
 
-        if (!workshopCards.Any())
+        if (workshopCards.TotalAmount == 0)
         {
             return NoContent();
         }
@@ -139,24 +139,24 @@ public class WorkshopController : ControllerBase
     /// Get a portion of workshop view cards for specified provider.
     /// </summary>
     /// <param name="id">Provider's Id.</param>
-    /// <param name="offsetFilter">Filter to get specified portion of workshop view cards for specified provider.</param>
-    /// <returns>Workshop view cards that were found.</returns>
+    /// <param name="filter">Filter to get specified portion of workshop view cards for specified provider, Id of the excluded workshop could be specified..</param>
+    /// <returns><see cref="SearchResult{WorkshopProviderViewCard}"/>, or no content.</returns>
     [AllowAnonymous]
     [HttpGet("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopProviderViewCard>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopProviderViewCard>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetWorkshopProviderViewCardsByProviderId(Guid id, [FromQuery] OffsetFilter offsetFilter)
+    public async Task<IActionResult> GetWorkshopProviderViewCardsByProviderId(Guid id, [FromQuery] ExcludeIdFilter filter)
     {
         if (id == Guid.Empty)
         {
             return BadRequest("Provider id is empty.");
         }
 
-        var workshopProviderViewCards = await combinedWorkshopService.GetByProviderId<WorkshopProviderViewCard>(id, offsetFilter).ConfigureAwait(false);
+        var workshopProviderViewCards = await combinedWorkshopService.GetByProviderId<WorkshopProviderViewCard>(id, filter).ConfigureAwait(false);
 
-        if (!workshopProviderViewCards.Any())
+        if (workshopProviderViewCards.TotalAmount == 0)
         {
             return NoContent();
         }
