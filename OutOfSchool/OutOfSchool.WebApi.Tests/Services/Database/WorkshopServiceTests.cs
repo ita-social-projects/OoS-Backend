@@ -244,19 +244,17 @@ public class WorkshopServiceTests
     {
         // Arrange
         var workshops = WithWorkshopsList().ToList();
-        SetupGetByProviderById(workshops);
-        SetupGetRepositoryCount(10);
+        SetupGetWorkshopsByProviderById(workshops);
         var expectedWorkshops = workshops.Select(w => new ShortEntityDto() { Id = w.Id, Title = w.Title }).OrderBy(x => x.Title).ToList();
         mapperMock.Setup(m => m.Map<List<ShortEntityDto>>(It.IsAny<List<Workshop>>())).Returns(expectedWorkshops);
 
         // Act
-        var result = await workshopService.GetWorkshopListByProviderId(It.IsAny<Guid>(), It.IsAny<OffsetFilter>()).ConfigureAwait(false);
+        var result = await workshopService.GetWorkshopListByProviderId(It.IsAny<Guid>()).ConfigureAwait(false);
 
         // Assert
         workshopRepository.VerifyAll();
         mapperMock.VerifyAll();
-        result.TotalAmount.Should().Be(workshops.Count);
-        result.Entities.Should().BeEquivalentTo(expectedWorkshops);
+        result.Should().BeEquivalentTo(expectedWorkshops);
     }
 
     [Test]
@@ -264,49 +262,48 @@ public class WorkshopServiceTests
     {
         // Arrange
         var emptyListWorkshops = new List<ShortEntityDto>();
-        SetupGetByProviderById(new List<Workshop>());
-        SetupGetRepositoryCount(0);
+        SetupGetWorkshopsByProviderById(new List<Workshop>());
         mapperMock.Setup(m => m.Map<List<ShortEntityDto>>(It.IsAny<List<Workshop>>())).Returns(emptyListWorkshops);
 
         // Act
-        var result = await workshopService.GetWorkshopListByProviderId(Guid.NewGuid(), It.IsAny<OffsetFilter>()).ConfigureAwait(false);
+        var result = await workshopService.GetWorkshopListByProviderId(Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         workshopRepository.VerifyAll();
         mapperMock.VerifyAll();
-        result.TotalAmount.Should().Be(0);
-        result.Entities.Should().BeEmpty();
+        result.Should().BeEmpty();
     }
 
     [Test]
+    [Ignore("Frontend asked to refactor without pagination, leave test for now maybe pagination will return")]
     public async Task GetWorkshopListByProviderId_WhenInvalidFilter_ShouldReturnException()
     {
         // Arrange
         var invalidFilter = new OffsetFilter() { From = -1, Size = -1 };
 
         // Act and Assert
-        await workshopService.Invoking(w => w.GetWorkshopListByProviderId(Guid.NewGuid(), invalidFilter)).Should().ThrowAsync<ArgumentException>();
+        await workshopService.Invoking(w => w.GetWorkshopListByProviderId(Guid.NewGuid())).Should().ThrowAsync<ArgumentException>();
     }
 
     [Test]
+    [Ignore("Frontend asked to refactor without pagination, leave test for now maybe pagination will return")]
     public async Task GetWorkshopListByProviderId_WhenFilterNull_ShouldReturnDefaultSize()
     {
         // Arrange
         var workshops = WithWorkshopsList().ToList();
         var expectedCount = 10;
-        SetupGetByProviderById(workshops);
+        SetupGetWorkshopsByProviderById(workshops);
         SetupGetRepositoryCount(expectedCount);
         var expectedWorkshops = workshops.Select(w => new ShortEntityDto() { Id = w.Id, Title = w.Title }).Take(8).OrderBy(x => x.Title).ToList();
         mapperMock.Setup(m => m.Map<List<ShortEntityDto>>(It.IsAny<List<Workshop>>())).Returns(expectedWorkshops);
 
         // Act
-        var result = await workshopService.GetWorkshopListByProviderId(It.IsAny<Guid>(), It.IsAny<OffsetFilter>()).ConfigureAwait(false);
+        var result = await workshopService.GetWorkshopListByProviderId(It.IsAny<Guid>()).ConfigureAwait(false);
 
         // Assert
         workshopRepository.VerifyAll();
         mapperMock.VerifyAll();
-        result.TotalAmount.Should().Be(expectedCount);
-        result.Entities.Should().BeEquivalentTo(expectedWorkshops);
+        result.Should().BeEquivalentTo(expectedWorkshops);
     }
     #endregion
 
@@ -662,7 +659,17 @@ public class WorkshopServiceTests
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                     false))
-            .Returns(workshopBaseCardsList.AsTestAsyncEnumerableQuery());
+            .Returns(workshopBaseCardsList.AsTestAsyncEnumerableQuery);
+    }
+
+    private void SetupGetWorkshopsByProviderById(List<Workshop> workshopBaseCardsList)
+    {
+        workshopRepository
+            .Setup(
+                w => w.GetByFilter(
+                    It.IsAny<Expression<Func<Workshop, bool>>>(),
+                    It.IsAny<string>()))
+            .ReturnsAsync(workshopBaseCardsList);
     }
 
     private void SetupGetRepositoryCount(int count)

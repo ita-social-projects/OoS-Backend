@@ -25,10 +25,9 @@ public interface IWorkshopServicesCombiner
     /// Get all workshop cards (Id, Title) with the specified provider's Id.
     /// </summary>
     /// <param name="providerId">Provider's key.</param>
-    /// <param name="offsetFilter">Filter to get a certain portion of all entities.</param>
     /// <returns>A <see cref="Task{ShortEntityDto}"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="List{ShortEntityDto}"/> that contains elements from the input sequence.</returns>
-    Task<SearchResult<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId, OffsetFilter offsetFilter);
+    Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId);
 
     /// <summary>
     /// Get entity by it's key.

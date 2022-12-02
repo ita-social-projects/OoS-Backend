@@ -198,32 +198,29 @@ public class WorkshopControllerTests
     public async Task GetWorkshopListByProviderId_WhenThereAreWorkshops_ShouldReturnOkResultObject()
     {
         // Arrange
-        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
-        var searchResult = new SearchResult<ShortEntityDto>() { TotalAmount = 10, Entities = workshopShortEntitiesList };
-        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
-            .ReturnsAsync(searchResult);
+        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>()))
+            .ReturnsAsync(workshopShortEntitiesList);
 
         // Act
-        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid()).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         workshopServiceMoq.VerifyAll();
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(Ok, result.StatusCode);
-        Assert.AreEqual(workshopShortEntitiesList.Count, (result.Value as SearchResult<ShortEntityDto>).TotalAmount);
+        Assert.AreEqual(workshopShortEntitiesList.Count, (result.Value as List<ShortEntityDto>).Count);
     }
 
     [Test]
     public async Task GetWorkshopListByProviderId_WhenThereIsNoWorkshops_ShouldReturnNoContentResult()
     {
         // Arrange
-        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
-        var emptySearchResult = new SearchResult<ShortEntityDto>() { TotalAmount = 0, Entities = new List<ShortEntityDto>() };
-        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
-            .ReturnsAsync(emptySearchResult);
+        var emptyList = new List<ShortEntityDto>();
+        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>()))
+            .ReturnsAsync(emptyList);
 
         // Act
-        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as NoContentResult;
+        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid()).ConfigureAwait(false) as NoContentResult;
 
         // Assert
         workshopServiceMoq.VerifyAll();
@@ -236,21 +233,17 @@ public class WorkshopControllerTests
     {
         // Arrange
         var expectedCount = 1;
-        var expectedTotalCount = 10;
-        var filter = new ExcludeIdFilter() { From = 0, Size = expectedCount };
-        var searchResult = new SearchResult<ShortEntityDto>() { TotalAmount = expectedTotalCount, Entities = workshopShortEntitiesList.Take(expectedCount).ToList() };
-        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
-            .ReturnsAsync(searchResult);
+        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>()))
+            .ReturnsAsync(workshopShortEntitiesList.Take(expectedCount).ToList());
 
         // Act
-        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid()).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         workshopServiceMoq.VerifyAll();
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(Ok, result.StatusCode);
-        Assert.AreEqual(expectedTotalCount, (result.Value as SearchResult<ShortEntityDto>).TotalAmount);
-        Assert.AreEqual(expectedCount, (result.Value as SearchResult<ShortEntityDto>).Entities.Count);
+        Assert.AreEqual(expectedCount, (result.Value as List<ShortEntityDto>).Count);
     }
 
     [Test]
@@ -259,29 +252,26 @@ public class WorkshopControllerTests
         // Arrange
         var skipCount = 1;
         var expectedCount = 2;
-        var expectedTotalCount = 10;
         var expectedResult = workshopShortEntitiesList.Skip(skipCount).Take(expectedCount).ToList();
-        var filter = new ExcludeIdFilter() { From = skipCount, Size = expectedCount };
-        var searchResult = new SearchResult<ShortEntityDto>() { TotalAmount = expectedTotalCount, Entities = expectedResult };
-        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
-            .ReturnsAsync(searchResult);
+        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>()))
+            .ReturnsAsync(expectedResult);
 
         // Act
-        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid()).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         workshopServiceMoq.VerifyAll();
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(Ok, result.StatusCode);
-        Assert.AreEqual(expectedTotalCount, (result.Value as SearchResult<ShortEntityDto>).TotalAmount);
-        Assert.AreSame(expectedResult, (result.Value as SearchResult<ShortEntityDto>).Entities);
+        Assert.AreEqual(expectedCount, (result.Value as List<ShortEntityDto>).Count);
+        Assert.AreSame(expectedResult, result.Value as List<ShortEntityDto>);
     }
 
     [Test]
     public async Task GetWorkshopListByProviderId_WhenProviderIdIsEmpty_ShouldReturnNoContentResult()
     {
         // Act
-        IActionResult result = await controller.GetWorkshopListByProviderId(Guid.Empty, null).ConfigureAwait(false);
+        IActionResult result = await controller.GetWorkshopListByProviderId(Guid.Empty).ConfigureAwait(false);
 
         // Assert
         Assert.IsInstanceOf<BadRequestObjectResult>(result);
