@@ -83,10 +83,9 @@ public interface IWorkshopService
     /// Get all workshops (Id, Title) by provider Id.
     /// </summary>
     /// <param name="providerId">Provider's key.</param>
-    /// <param name="offsetFilter">Filter to get a certain portion of all entities.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
-    /// The task result contains a <see cref="SearchResult{ShortEntityDto}"/> that contains elements from the input sequence.</returns>
-    Task<SearchResult<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId, OffsetFilter offsetFilter);
+    /// The task result contains a <see cref="List{ShortEntityDto}"/> that contains elements from the input sequence.</returns>
+    Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId);
 
     /// <summary>
     /// Get all workshops by provider Id.

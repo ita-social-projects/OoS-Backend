@@ -153,9 +153,9 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId, OffsetFilter offsetFilter)
+    public async Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId)
     {
-        return await workshopService.GetWorkshopListByProviderId(providerId, offsetFilter).ConfigureAwait(false);
+        return await workshopService.GetWorkshopListByProviderId(providerId).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

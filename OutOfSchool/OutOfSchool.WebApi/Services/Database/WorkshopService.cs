@@ -197,27 +197,14 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId, OffsetFilter offsetFilter)
+    public async Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId)
     {
-        logger.LogDebug($"Getting Workshop (Id, Title) by organization started. Looking ProviderId = {providerId}.");
+        logger.LogDebug("Getting Workshop (Id, Title) by organization started. Looking ProviderId = {ProviderId}", providerId);
 
-        offsetFilter ??= new OffsetFilter();
-        ValidateOffsetFilter(offsetFilter);
+        var workshops = await workshopRepository.GetByFilter(
+            predicate: x => x.ProviderId == providerId);
 
-        var workshopsCount = await workshopRepository.Count(where: x => x.ProviderId == providerId).ConfigureAwait(false);
-        var workshops = await workshopRepository.Get(
-            skip: offsetFilter.From,
-            take: offsetFilter.Size,
-            where: x => x.ProviderId == providerId)
-            .ToListAsync()
-            .ConfigureAwait(false);
-
-        var workshopDTOs = mapper.Map<List<ShortEntityDto>>(workshops).OrderBy(entity => entity.Title).ToList();
-        var result = new SearchResult<ShortEntityDto>()
-        {
-            TotalAmount = workshopsCount,
-            Entities = workshopDTOs,
-        };
+        var result = mapper.Map<List<ShortEntityDto>>(workshops).OrderBy(entity => entity.Title).ToList();
 
         return result;
     }
