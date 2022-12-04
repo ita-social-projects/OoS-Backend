@@ -30,6 +30,7 @@ public interface IApplicationService
     /// Get applications by workshop id.
     /// </summary>
     /// <param name="id">Key in the table.</param>
+    /// <param name="providerId">Id of the workshop's provider.</param>
     /// <param name="filter">Application filter.</param>
     /// <returns>List of applications.</returns>
     Task<SearchResult<ApplicationDto>> GetAllByWorkshop(Guid id, Guid providerId, ApplicationFilter filter);
