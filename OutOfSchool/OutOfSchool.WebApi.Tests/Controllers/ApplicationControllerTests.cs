@@ -384,160 +384,150 @@ public class ApplicationControllerTests
         result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
     }
 
-    // [Test]
-    // public async Task CreateApplication_WhenModelIsValid_ShouldReturnCreatedAtAction()
-    // {
-    //     // Arrange
-    //     httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
-    //
-    //     parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(parent);
-    //     applicationService.Setup(s => s.Create(applications.First()))
-    //         .ReturnsAsync(new ModelWithAdditionalData<ApplicationDto, int> { Model = applications.First(), AdditionalData = 0});
-    //
-    //     // Act
-    //     var result = await controller.Create(applications.First()).ConfigureAwait(false) as CreatedAtActionResult;
-    //
-    //     // Assert
-    //     result.Should().NotBeNull();
-    //     result.StatusCode.Should().Be(StatusCodes.Status201Created);
-    // }
+    [Test]
+    public async Task CreateApplication_WhenModelIsValid_ShouldReturnCreatedAtAction()
+    {
+        // Arrange
+        httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
+        var app = new ApplicationCreate()
+        {
+            ChildId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
+            ParentId = new Guid("1f91783d-a68f-41fa-9ded-d879f187a94b"),
+            WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
+        };
 
-    // [Test]
-    // public async Task CreateApplication_WhenModelIsNotValid_ShouldReturnBadRequest()
-    // {
-    //     // Arrange
-    //     controller.ModelState.AddModelError("CreateApplication", "Invalid model state.");
-    //
-    //     // Act
-    //     var result = await controller.Create(applications.First()).ConfigureAwait(false) as BadRequestObjectResult;
-    //
-    //     // Assert
-    //     result.Should().NotBeNull();
-    //     result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-    // }
+        applicationService.Setup(s => s.Create(app))
+            .ReturnsAsync(new ModelWithAdditionalData<ApplicationDto, int>
+                {Model = applications.First(), AdditionalData = 0});
 
-    // [Test]
-    // public async Task CreateApplication_WhenModelIsNull_ShouldReturnBadRequest()
-    // {
-    //     // Arrange
-    //     ApplicationDto application = null;
-    //
-    //     // Act
-    //     var result = await controller.Create(application).ConfigureAwait(false) as BadRequestObjectResult;
-    //
-    //     // Assert
-    //     result.Should().NotBeNull();
-    //     result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-    // }
+        // Act
+        var result = await controller.Create(app).ConfigureAwait(false) as CreatedAtActionResult;
 
-    // [Test]
-    // public async Task CreateApplication_WhenParentHasNoRights_ShouldReturnBadRequest()
-    // {
-    //     // Arrange
-    //     var anotherParent = new ParentDTO { Id = new Guid("1f91783d-a68f-41fa-9ded-d879f187a94b"), UserId = userId };
-    //
-    //     httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
-    //     parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(anotherParent);
-    //     applicationService.Setup(s => s.Create(applications.First()))
-    //         .ReturnsAsync(new ModelWithAdditionalData<ApplicationDto, int> { Model = applications.First(), AdditionalData = 0 });
-    //
-    //     // Act
-    //     var result = await controller.Create(applications.First()).ConfigureAwait(false) as BadRequestObjectResult;
-    //
-    //     // Assert
-    //     result.Should().NotBeNull();
-    //     result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-    // }
+        // Assert
+        result.Should().NotBeNull();
+        result.StatusCode.Should().Be(StatusCodes.Status201Created);
+    }
 
-    // [Test]
-    // public async Task CreateApplication_WhenParametersAreNotValid_ShouldReturnBadRequest()
-    // {
-    //     // Arrange
-    //     httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
-    //     parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(parent);
-    //     applicationService.Setup(s => s.Create(applications.First())).ThrowsAsync(new ArgumentException());
-    //
-    //     // Act
-    //     var result = await controller.Create(applications.First()).ConfigureAwait(false) as BadRequestObjectResult;
-    //
-    //     // Assert
-    //     result.Should().NotBeNull();
-    //     result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-    // }
+    [Test]
+    public async Task CreateApplication_WhenModelIsNotValid_ShouldReturnBadRequest()
+    {
+        // Arrange
+        controller.ModelState.AddModelError("CreateApplication", "Invalid model state.");
 
-    // [Test]
-    // [TestCase("provider")]
-    // [TestCase("parent")]
-    // public async Task UpdateApplication_WhenModelIsValid_ShouldReturnOkObjectResult(string role)
-    // {
-    //     // Arrange
-    //     var shortApplication = new ShortApplicationDto
-    //     {
-    //         Id = applications.First().Id,
-    //         Status = ApplicationStatus.Pending,
-    //         RejectionMessage = applications.First().RejectionMessage,
-    //     };
-    //
-    //     httpContext.Setup(c => c.User.IsInRole(It.IsAny<string>())).Returns(true);
-    //
-    //     parentService.Setup(s => s.GetByUserId(It.IsAny<string>())).ReturnsAsync(parent);
-    //     providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
-    //
-    //     applicationService.Setup(s => s.Update(It.IsAny<ApplicationDto>(), userId)).ReturnsAsync(applications.First());
-    //     applicationService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(applications.First());
-    //
-    //     // Act
-    //     var result = await controller.Update(shortApplication).ConfigureAwait(false);
-    //
-    //     // Assert
-    //     Assert.That(result, Is.InstanceOf<OkObjectResult>());
-    // }
+        // Act
+        var result = await controller.Create(new ApplicationCreate()).ConfigureAwait(false) as BadRequestObjectResult;
 
-    // [Test]
-    // public async Task UpdateApplication_WhenModelIsNotValid_ShouldReturnBadRequest()
-    // {
-    //     // Arrange
-    //     var shortApplication = new ShortApplicationDto
-    //     {
-    //         Id = Guid.NewGuid(),
-    //         Status = ApplicationStatus.Pending,
-    //     };
-    //
-    //     controller.ModelState.AddModelError("UpdateApplication", "Invalid model state.");
-    //
-    //     // Act
-    //     var result = await controller.Update(shortApplication).ConfigureAwait(false);
-    //
-    //     // Assert
-    //     Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
-    // }
+        // Assert
+        result.Should().NotBeNull();
+        result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+    }
 
-    // [TestCase("parent")]
-    // [TestCase("provider")]
-    // public async Task UpdateApplication_WhenUserHasNoRights_ShouldReturnBadRequest(string role)
-    // {
-    //     // Arrange
-    //     var shortApplication = new ShortApplicationDto
-    //     {
-    //         Id = applications.First().Id,
-    //         Status = ApplicationStatus.Pending,
-    //     };
-    //
-    //     var anotherParent = new ParentDTO { Id = new Guid("1f91783d-a68f-41fa-9ded-d879f187a94b"), UserId = userId };
-    //     var anotherProvider = new ProviderDto { Id = new Guid("2f91783d-a68f-41fa-9ded-d879f187a94c"), UserId = userId };
-    //
-    //     httpContext.Setup(c => c.User.IsInRole(role)).Returns(true);
-    //     providerService.Setup(s => s.GetByUserId(userId, It.IsAny<bool>())).ReturnsAsync(anotherProvider);
-    //     parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(anotherParent);
-    //     applicationService.Setup(s => s.Update(applications.First(), userId)).ReturnsAsync(applications.First());
-    //     applicationService.Setup(s => s.GetById(shortApplication.Id)).ReturnsAsync(applications.First());
-    //
-    //     // Act
-    //     var result = await controller.Update(shortApplication).ConfigureAwait(false);
-    //
-    //     // Assert
-    //     Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
-    // }
+    [Test]
+    public async Task CreateApplication_WhenModelIsNull_ShouldReturnBadRequest()
+    {
+        // Arrange
+        ApplicationCreate application = null;
+
+        // Act
+        var result = await controller.Create(application).ConfigureAwait(false) as BadRequestObjectResult;
+
+        // Assert
+        result.Should().NotBeNull();
+        result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+    }
+
+    [Test]
+    public void CreateApplication_WhenParentHasNoRights_ShouldThrowUnauthorizedAccess()
+    {
+        // Arrange
+        var anotherParent = new ParentDTO {Id = new Guid("1f91783d-a68f-41fa-9ded-d879f187a94b"), UserId = userId};
+
+        httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
+
+        applicationService.Setup(s => s.Create(It.IsAny<ApplicationCreate>()))
+            .ThrowsAsync(new UnauthorizedAccessException());
+
+        // Act & Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await controller.Create(new ApplicationCreate()));
+    }
+
+    [Test]
+    public async Task CreateApplication_WhenParametersAreNotValid_ShouldReturnBadRequest()
+    {
+        // Arrange
+        httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
+        applicationService.Setup(s => s.Create(It.IsAny<ApplicationCreate>())).ThrowsAsync(new ArgumentException());
+
+        // Act
+        var result = await controller.Create(new ApplicationCreate()).ConfigureAwait(false) as BadRequestObjectResult;
+
+        // Assert
+        result.Should().NotBeNull();
+        result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+    }
+
+    [Test]
+    [TestCase("provider")]
+    [TestCase("parent")]
+    public async Task UpdateApplication_WhenModelIsValid_ShouldReturnOkObjectResult(string role)
+    {
+        // Arrange
+        var shortApplication = new ApplicationUpdate()
+        {
+            Id = applications.First().Id,
+            Status = ApplicationStatus.Pending,
+            RejectionMessage = applications.First().RejectionMessage,
+        };
+
+        applicationService.Setup(s => s.Update(It.IsAny<ApplicationUpdate>(), It.IsAny<Guid>())).ReturnsAsync(applications.First());
+        workshopService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(new WorkshopDTO());
+
+        // Act
+        var result = await controller.Update(shortApplication).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+    }
+
+    [Test]
+    public async Task UpdateApplication_WhenModelIsNotValid_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var shortApplication = new ApplicationUpdate()
+        {
+            Id = Guid.NewGuid(),
+            Status = ApplicationStatus.Pending,
+        };
+
+        controller.ModelState.AddModelError("UpdateApplication", "Invalid model state.");
+
+        // Act
+        var result = await controller.Update(shortApplication).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
+    }
+
+    [TestCase("parent")]
+    [TestCase("provider")]
+    public void UpdateApplication_WhenUserHasNoRights_ShouldThrowUnauthorizedAccess(string role)
+    {
+        // Arrange
+        var shortApplication = new ApplicationUpdate()
+        {
+            Id = applications.First().Id,
+            Status = ApplicationStatus.Pending,
+            WorkshopId = Guid.NewGuid(),
+        };
+        httpContext.Setup(c => c.User.IsInRole(role)).Returns(true);
+
+        applicationService.Setup(s => s.Update(shortApplication, It.IsAny<Guid>()))
+            .ThrowsAsync(new UnauthorizedAccessException());
+        workshopService.Setup(s => s.GetById(shortApplication.WorkshopId)).ReturnsAsync(new WorkshopDTO());
+
+        // Act & Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await controller.Update(shortApplication));
+    }
 
     [Test]
     public async Task UpdateApplication_WhenThereIsNoApplicationWithId_ShouldReturnBadRequest()
