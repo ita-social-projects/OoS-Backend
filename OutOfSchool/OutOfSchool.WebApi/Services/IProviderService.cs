@@ -41,10 +41,9 @@ public interface IProviderService
     Task<ProviderDto?> GetByUserId(string id, bool isDeputyOrAdmin = false);
 
     /// <summary>
-    /// Get entity by User id.
+    /// Get provider's status.
     /// </summary>
-    /// <param name="id">Key of the User entity in the table.</param>
-    /// <param name="isDeputyOrAdmin">Is user a deputy or delegated provider admin.</param>
+    /// <param name="providerId">Key of the Provider entity in the table.</param>
     /// <returns>ProviderStatus.</returns>
     Task<ProviderStatusDto> GetProviderStatusById(Guid providerId);
 

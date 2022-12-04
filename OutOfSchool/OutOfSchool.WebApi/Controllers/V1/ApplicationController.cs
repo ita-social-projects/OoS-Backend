@@ -303,9 +303,9 @@ public class ApplicationController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update(ApplicationUpdate applicationDto)
     {
-        if (!ModelState.IsValid)
+        if (applicationDto is null)
         {
-            return BadRequest(ModelState);
+            return BadRequest("Application data is not provided.");
         }
 
         var workshop = await workshopService.GetById(applicationDto.WorkshopId).ConfigureAwait(false);
