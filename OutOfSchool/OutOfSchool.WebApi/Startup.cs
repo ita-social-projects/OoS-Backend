@@ -101,6 +101,7 @@ public static class Startup
                     AutomaticDecompression = DecompressionMethods.GZip,
                 });
 
+        services.AddHttpContextAccessor();
         services.AddScoped<IProviderAdminService, ProviderAdminService>();
         services.AddScoped<IMinistryAdminService, MinistryAdminService>();
 
@@ -232,7 +233,7 @@ public static class Startup
         services.AddTransient<IAchievementTypeService, AchievementTypeService>();
         services.AddTransient<IAchievementRepository, AchievementRepository>();
         services.AddTransient<IAchievementService, AchievementService>();
-        services.AddTransient(s => s.GetService<HttpContext>()?.User);
+        services.AddTransient(s => s.GetService<IHttpContextAccessor>()?.HttpContext?.User);
         services.AddTransient<ICurrentUserService, CurrentUserService>();
 
         services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
