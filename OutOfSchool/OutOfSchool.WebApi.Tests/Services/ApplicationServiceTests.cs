@@ -12,12 +12,14 @@ using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -28,14 +30,13 @@ public class ApplicationServiceTests
     private IApplicationService service;
     private Mock<IApplicationRepository> applicationRepositoryMock;
     private Mock<IWorkshopRepository> workshopRepositoryMock;
-    private Mock<IEntityRepository<Guid, Child>> childRepositoryMock;
-    private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<ApplicationService>> logger;
     private Mock<IMapper> mapper;
     private Mock<INotificationService> notificationService;
     private Mock<IProviderAdminService> providerAdminService;
     private Mock<IChangesLogService> changesLogService;
     private Mock<IWorkshopServicesCombiner> workshopServiceCombinerMock;
+    private Mock<ICurrentUserService> currentUserServiceMock;
 
     private Mock<IOptions<ApplicationsConstraintsConfig>> applicationsConstraintsConfig;
 
@@ -44,13 +45,12 @@ public class ApplicationServiceTests
     {
         applicationRepositoryMock = new Mock<IApplicationRepository>();
         workshopRepositoryMock = new Mock<IWorkshopRepository>();
-        childRepositoryMock = new Mock<IEntityRepository<Guid, Child>>();
         notificationService = new Mock<INotificationService>();
         providerAdminService = new Mock<IProviderAdminService>();
         changesLogService = new Mock<IChangesLogService>();
         workshopServiceCombinerMock = new Mock<IWorkshopServicesCombiner>();
+        currentUserServiceMock = new Mock<ICurrentUserService>();
 
-        localizer = new Mock<IStringLocalizer<SharedResource>>();
         logger = new Mock<ILogger<ApplicationService>>();
         mapper = new Mock<IMapper>();
 
@@ -65,15 +65,14 @@ public class ApplicationServiceTests
         service = new ApplicationService(
             applicationRepositoryMock.Object,
             logger.Object,
-            localizer.Object,
             workshopRepositoryMock.Object,
-            childRepositoryMock.Object,
             mapper.Object,
             applicationsConstraintsConfig.Object,
             notificationService.Object,
             providerAdminService.Object,
             changesLogService.Object,
-            workshopServiceCombinerMock.Object);
+            workshopServiceCombinerMock.Object,
+            currentUserServiceMock.Object);
     }
 
     [Test]
@@ -82,12 +81,13 @@ public class ApplicationServiceTests
         // Arrange
         var application = WithApplicationsList();
         SetupGetAll(application);
+        currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
 
         // Act
-        var result = await service.GetAll().ConfigureAwait(false);
+        var result = await service.GetAll(new ApplicationFilter());
 
         // Assert
-        Assert.AreEqual(result.ToList().Count(), application.Count());
+        Assert.AreEqual(result.Entities.Count, application.Count());
     }
 
     [Test]
@@ -129,12 +129,9 @@ public class ApplicationServiceTests
             ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
             ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
         };
-        var input = new ApplicationDto()
+        var input = new ApplicationCreate()
         {
-            Id = new Guid("6d4caeae-f0c3-492e-99b0-c8c105693376"),
             WorkshopId = workshopList.FirstOrDefault(x => x.Status == WorkshopStatus.Open).Id,
-            CreationTime = new DateTimeOffset(2022, 01, 12, 12, 34, 15, TimeSpan.Zero),
-            Status = ApplicationStatus.Pending,
             ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
             ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
         };
@@ -156,10 +153,10 @@ public class ApplicationServiceTests
     public void CreateApplication_WhenModelIsNull_ShouldThrowArgumentException()
     {
         // Arrange
-        ApplicationDto application = null;
+        ApplicationCreate application = null;
 
         // Act and Assert
-        Assert.ThrowsAsync<ArgumentException>(
+        Assert.ThrowsAsync<ArgumentNullException>(
             async () => await service.Create(application).ConfigureAwait(false));
     }
 
@@ -167,11 +164,9 @@ public class ApplicationServiceTests
     public void CreateApplication_WhenLimitIsExceeded_ShouldThrowArgumentException()
     {
         // Arrange
-        var application = new ApplicationDto()
+        var application = new ApplicationCreate()
         {
-            Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd"),
             WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-            Status = ApplicationStatus.Pending,
         };
 
         // Act and Assert
@@ -182,11 +177,9 @@ public class ApplicationServiceTests
     public void CreateApplication_WhenParametersAreNotValid_ShouldThrowArgumentException()
     {
         // Arrange
-        var application = new ApplicationDto()
+        var application = new ApplicationCreate()
         {
-            Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd"),
             WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-            Status = ApplicationStatus.Pending,
         };
 
         // Act and Assert
@@ -198,9 +191,8 @@ public class ApplicationServiceTests
     {
         var workshopList = WithWorkshopsList();
 
-        var input = new ApplicationDto()
+        var input = new ApplicationCreate()
         {
-            Id = Guid.NewGuid(),
             WorkshopId = workshopList.FirstOrDefault(x => x.Status == WorkshopStatus.Closed).Id,
         };
 
@@ -228,10 +220,14 @@ public class ApplicationServiceTests
         };
 
         // Act
-        var result = await service.GetAllByWorkshop(existingApplications.First().Id, applicationFilter).ConfigureAwait(false);
+        var result = await service.GetAllByWorkshop(existingApplications.First().Id, existingApplications.First().Workshop.ProviderId, applicationFilter)
+            .ConfigureAwait(false);
 
         // Assert
         result.Entities.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
+        currentUserServiceMock.Verify(
+            a => a.UserHasRights(
+                It.Is<IUserRights[]>(u => u.First() is ProviderRights && ((ProviderRights)u.First()).providerId == existingApplications.First().Workshop.ProviderId)));
     }
 
     [Test]
@@ -248,7 +244,7 @@ public class ApplicationServiceTests
         };
 
         // Act
-        var result = await service.GetAllByWorkshop(Guid.NewGuid(), filter).ConfigureAwait(false);
+        var result = await service.GetAllByWorkshop(Guid.NewGuid(), Guid.NewGuid(), filter).ConfigureAwait(false);
 
         // Assert
         result.Entities.Should().BeEmpty();
@@ -261,7 +257,7 @@ public class ApplicationServiceTests
         ApplicationFilter filter = null;
 
         // Act and Assert
-        service.Invoking(s => s.GetAllByWorkshop(Guid.NewGuid(), filter)).Should().ThrowAsync<ArgumentException>();
+        service.Invoking(s => s.GetAllByWorkshop(Guid.NewGuid(), Guid.NewGuid(), filter)).Should().ThrowAsync<ArgumentException>();
     }
 
     [Test]
@@ -279,7 +275,8 @@ public class ApplicationServiceTests
         };
 
         // Act
-        var result = await service.GetAllByProvider(existingApplications.First().Id, applicationFilter).ConfigureAwait(false);
+        var result = await service.GetAllByProvider(existingApplications.First().Id, applicationFilter)
+            .ConfigureAwait(false);
 
         // Assert
         result.Entities.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
@@ -383,32 +380,6 @@ public class ApplicationServiceTests
         Assert.That(result, Is.Null);
     }
 
-    [Test]
-    public async Task GetAllByStatus_WhenStatusIsValid_ShouldReturnApplications()
-    {
-        // Arrange
-        var existingApplications = WithApplicationsList();
-        var status = (int)existingApplications.First().Status;
-        SetupGetAllBy(existingApplications);
-
-        // Act
-        var result = await service.GetAllByStatus(status).ConfigureAwait(false);
-
-        // Assert
-        result.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
-    }
-
-    [Test]
-    [TestCase(-1)]
-    [TestCase(10)]
-    public async Task GetAllByStatus_WhenStatusIsNotValid_ShouldReturnEmptyCollection(int status)
-    {
-        // Act
-        var result = await service.GetAllByStatus(status).ConfigureAwait(false);
-
-        // Assert
-        Assert.That(result, Is.Null);
-    }
 
     [Test]
     public async Task UpdateApplication_WhenIdIsValid_ShouldReturnApplication()
@@ -430,13 +401,29 @@ public class ApplicationServiceTests
             .Returns(applicationsMock)
             .Verifiable();
 
-        applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>())).ReturnsAsync(changedEntity);
+        applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>()))
+            .ReturnsAsync(changedEntity);
         applicationRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(changedEntity);
-        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto() { Id = id });
-        var expected = new ApplicationDto() { Id = id };
+        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto() {Id = id});
+        var expected = new ApplicationDto() {Id = id};
+        var update = new ApplicationUpdate
+        {
+            Id = id,
+            Status = ApplicationStatus.Approved,
+            WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+        };
+        workshopServiceCombinerMock.Setup(c =>
+                c.GetById(It.Is<Guid>(i => i == update.WorkshopId)))
+            .ReturnsAsync(new WorkshopDTO()
+            {
+                Id = update.WorkshopId,
+                AvailableSeats = uint.MaxValue,
+                Status = WorkshopStatus.Open,
+            });
 
         // Act
-        var result = await service.Update(expected, userId).ConfigureAwait(false);
+        var result = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         AssertApplicationsDTOsAreEqual(expected, result);
@@ -452,26 +439,46 @@ public class ApplicationServiceTests
         var userId = Guid.NewGuid().ToString();
         var workshop = WithWorkshop(new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"));
 
-        applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>())).ReturnsAsync(changedEntity);
+        applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>()))
+            .ReturnsAsync(changedEntity);
         applicationRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(entity);
-        applicationRepositoryMock.Setup(a => a.Count(x => x.WorkshopId == workshop.Id && (x.Status == ApplicationStatus.Approved || x.Status == ApplicationStatus.StudyingForYears))).ReturnsAsync(1);
+        applicationRepositoryMock.Setup(a => a.Count(x =>
+                x.WorkshopId == workshop.Id &&
+                (x.Status == ApplicationStatus.Approved || x.Status == ApplicationStatus.StudyingForYears)))
+            .ReturnsAsync(1);
         workshopRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
-        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto() { Id = id, Status = ApplicationStatus.Approved });
-        var expected = new ApplicationDto() { Id = id, Status = ApplicationStatus.Approved };
+        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto()
+            {Id = id, Status = ApplicationStatus.Approved});
+        var expected = new ApplicationDto() {Id = id, Status = ApplicationStatus.Approved};
+        var update = new ApplicationUpdate
+        {
+            Id = id,
+            Status = ApplicationStatus.Approved,
+            WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+        };
+        workshopServiceCombinerMock.Setup(c =>
+                c.GetById(It.Is<Guid>(i => i == update.WorkshopId)))
+            .ReturnsAsync(new WorkshopDTO()
+            {
+                Id = update.WorkshopId,
+                AvailableSeats = 5,
+                Status = WorkshopStatus.Open,
+            });
 
         // Act
-        var result = await service.Update(expected, userId).ConfigureAwait(false);
+        var result = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         AssertApplicationsDTOsAreEqual(expected, result);
     }
 
     [Test]
-    public void UpdateApplication_WhenThereIsNoApplicationWithId_ShouldTrowArgumentException()
+    public async Task UpdateApplication_WhenThereIsNoApplicationWithId_ShouldReturnNull()
     {
         // Arrange
         var userId = Guid.NewGuid().ToString();
-        var application = new ApplicationDto()
+        var application = new ApplicationUpdate()
         {
             Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd"),
             WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
@@ -479,8 +486,7 @@ public class ApplicationServiceTests
         };
 
         // Act and Assert
-        Assert.ThrowsAsync<ArgumentException>(
-            async () => await service.Update(application, userId).ConfigureAwait(false));
+        Assert.IsNull(await service.Update(application, Guid.NewGuid()));
     }
 
     [Test]
@@ -488,29 +494,7 @@ public class ApplicationServiceTests
     {
         // Act and Assert
         var userId = Guid.NewGuid().ToString();
-        service.Invoking(s => s.Update(null, userId)).Should().ThrowAsync<ArgumentException>();
-    }
-
-    [Test]
-    public async Task DeleteApplication_WhenIdIsValid_ShouldTryToDelete()
-    {
-        // Arrange
-        var id = Guid.NewGuid();
-        SetupDelete(WithApplication(id));
-
-        // Act
-        await service.Delete(id).ConfigureAwait(false);
-
-        // Assert
-        applicationRepositoryMock.Verify(w => w.Delete(It.IsAny<Application>()), Times.Once);
-    }
-
-    [Test]
-    public void DeleteApplication_WhenIdIsNotValid_ShouldThrowArgumentException()
-    {
-        // Assert
-        Assert.ThrowsAsync<ArgumentException>(
-            async () => await service.Delete(Guid.NewGuid()).ConfigureAwait(false));
+        service.Invoking(s => s.Update(null, Guid.NewGuid())).Should().ThrowAsync<ArgumentException>();
     }
 
     private static void AssertApplicationsDTOsAreEqual(ApplicationDto expected, ApplicationDto actual)
@@ -529,54 +513,60 @@ public class ApplicationServiceTests
 
     private void SetupCreate(Application application)
     {
-        var childsMock = WithChildList().AsQueryable().BuildMock();
-        var workshopMock = WithWorkshopsList().FirstOrDefault(x => x.Id == application.WorkshopId);
+        // var workshopMock = WithWorkshopsList().FirstOrDefault(x => x.Id == application.WorkshopId);
+        var workshopMock = new WorkshopDTO
+        {
+            Status = WorkshopStatus.Open,
+        };
 
         applicationRepositoryMock.Setup(a => a.GetByFilter(
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<string>()))
-            .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> { application }));
-        workshopRepositoryMock.Setup(x => x.GetById(application.WorkshopId)).ReturnsAsync(workshopMock);
-        childRepositoryMock.Setup(r => r.Get(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Expression<Func<Child, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
-            .Returns(childsMock)
-            .Verifiable();
+            .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> {application}));
+        workshopServiceCombinerMock.Setup(x => x.GetById(application.WorkshopId)).ReturnsAsync(workshopMock);
+
         applicationRepositoryMock.Setup(
                 w => w.Create(It.IsAny<Application>()))
             .Returns(Task.FromResult(It.IsAny<Application>()));
+        mapper.Setup(m => m.Map<Application>(It.IsAny<ApplicationCreate>()))
+            .Returns(application);
         mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>()))
-            .Returns(new ApplicationDto() { Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd") });
+            .Returns(new ApplicationDto() {Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd")});
     }
 
-    private void SetupGetAll(IEnumerable<Application> apps)
+    private void SetupGetAll(List<Application> apps)
     {
-        var mappedDtos = apps.Select(a => new ApplicationDto() { Id = a.Id }).ToList();
-        applicationRepositoryMock.Setup(w => w.GetAllWithDetails(
-                It.IsAny<string>()))
-            .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> { apps.First() }));
+        var mappedDtos = apps.Select(a => new ApplicationDto() {Id = a.Id}).ToList();
+        applicationRepositoryMock.Setup(w => w.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Application,bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Application,object>>,SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(new List<Application> { apps.First() }.AsTestAsyncEnumerableQuery());
         mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
     }
 
     private void SetupGetAllBy(IEnumerable<Application> apps)
     {
-        var mappedDtos = apps.Select(a => new ApplicationDto() { Id = a.Id }).ToList();
+        var mappedDtos = apps.Select(a => new ApplicationDto() {Id = a.Id}).ToList();
 
         applicationRepositoryMock.Setup(a => a.GetByFilter(
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<string>()))
-            .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> { apps.First() }));
+            .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> {apps.First()}));
         mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
     }
 
-    private void SetupGetAllByWorkshop(IEnumerable<Application> apps)
+    private void SetupGetAllByWorkshop(List<Application> apps)
     {
         var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
-        var mappedDtos = apps.Select(a => new ApplicationDto() { Id = a.Id }).ToList();
+        var mappedDtos = apps.Select(a => new ApplicationDto() {Id = a.Id}).ToList();
+
+        currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(false);
+        currentUserServiceMock.Setup(c => c.UserHasRights(new IUserRights[] {new ProviderRights(apps.First().Workshop.ProviderId)}))
+            .Verifiable();
 
         applicationRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
@@ -611,7 +601,7 @@ public class ApplicationServiceTests
     {
         var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
         var workshopsMock = WithWorkshopsList().AsQueryable().BuildMock();
-        var mappedDtos = apps.Select(a => new ApplicationDto() { Id = a.Id }).ToList();
+        var mappedDtos = apps.Select(a => new ApplicationDto() {Id = a.Id}).ToList();
 
         workshopRepositoryMock.Setup(w => w.Get(
                 It.IsAny<int>(),
@@ -668,8 +658,8 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(a => a.GetByFilter(
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<string>()))
-            .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> { application }));
-        mapper.Setup(m => m.Map<ApplicationDto>(application)).Returns(new ApplicationDto() { Id = application.Id });
+            .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> {application}));
+        mapper.Setup(m => m.Map<ApplicationDto>(application)).Returns(new ApplicationDto() {Id = application.Id});
     }
 
     private void SetupDelete(Application application)
@@ -688,63 +678,82 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(application);
         applicationRepositoryMock.Setup(a => a.Delete(It.IsAny<Application>())).Returns(Task.CompletedTask);
     }
+
     #endregion
 
     #region With
 
-    private IEnumerable<Application> WithApplicationsList()
+    private List<Application> WithApplicationsList()
     {
         return new List<Application>()
-    {
-        new Application()
         {
-            Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8db"),
-            Status = ApplicationStatus.Pending,
-            WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
-            ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
-            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-            Parent = new Parent()
+            new Application()
             {
-                Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-                User = new User()
+                Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8db"),
+                Status = ApplicationStatus.Pending,
+                WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
+                ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
+                ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+                Parent = new Parent()
                 {
-                    LastName = "Petroffski",
+                    Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+                    User = new User()
+                    {
+                        LastName = "Petroffski",
+                    },
+                },
+                Workshop = new Workshop()
+                {
+                    Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
+                    ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                    Status = WorkshopStatus.Open,
                 },
             },
-        },
-        new Application()
-        {
-            Id = new Guid("7c5f8f7c-d850-44d0-8d4e-fd2de99453be"),
-            Status = ApplicationStatus.Rejected,
-            WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
-            ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
-            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-            Parent = new Parent()
+            new Application()
             {
-                Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-                User = new User()
+                Id = new Guid("7c5f8f7c-d850-44d0-8d4e-fd2de99453be"),
+                Status = ApplicationStatus.Rejected,
+                WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
+                ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
+                ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+                Parent = new Parent()
                 {
-                    LastName = "Petroffski",
+                    Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+                    User = new User()
+                    {
+                        LastName = "Petroffski",
+                    },
+                },
+                Workshop = new Workshop()
+                {
+                    Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
+                    ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                    Status = WorkshopStatus.Open,
                 },
             },
-        },
-        new Application()
-        {
-            Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-            Status = ApplicationStatus.Pending,
-            WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
-            ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
-            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-            Parent = new Parent()
+            new Application()
             {
-                Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-                User = new User()
+                Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+                Status = ApplicationStatus.Pending,
+                WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
+                ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
+                ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+                Parent = new Parent()
                 {
-                    LastName = "Petroffski",
+                    Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+                    User = new User()
+                    {
+                        LastName = "Petroffski",
+                    },
+                },
+                Workshop = new Workshop()
+                {
+                    Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
+                    ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                    Status = WorkshopStatus.Open,
                 },
             },
-        },
-    };
+        };
     }
 
     private Application WithApplication(Guid id, ApplicationStatus status = ApplicationStatus.Pending)
@@ -753,7 +762,23 @@ public class ApplicationServiceTests
         {
             Id = id,
             WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+            ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
+            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
             Status = status,
+            Parent = new Parent()
+            {
+                Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+                User = new User()
+                {
+                    LastName = "Petroffski",
+                },
+            },
+            Workshop = new Workshop()
+            {
+                Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                Status = WorkshopStatus.Open,
+            },
         };
     }
 
@@ -768,43 +793,59 @@ public class ApplicationServiceTests
         };
     }
 
-    private IEnumerable<Workshop> WithWorkshopsList()
+    private List<Workshop> WithWorkshopsList()
     {
         return new List<Workshop>()
-    {
-        new Workshop()
         {
-            Id = new Guid("b94f1989-c4e7-4878-ac86-21c4a402fb43"),
-            ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-            Status = WorkshopStatus.Closed,
-        },
-        new Workshop()
-        {
-            Id = new Guid("8c14044b-e30d-4b14-a18b-5b3b859ad676"),
-            ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-            Status = WorkshopStatus.Open,
-        },
-        new Workshop()
-        {
-            Id = new Guid("3e8845a8-1359-4676-b6d6-5a6b29c122ea"),
-            ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-        },
-    };
+            new Workshop()
+            {
+                Id = new Guid("b94f1989-c4e7-4878-ac86-21c4a402fb43"),
+                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                Status = WorkshopStatus.Closed,
+            },
+            new Workshop()
+            {
+                Id = new Guid("8c14044b-e30d-4b14-a18b-5b3b859ad676"),
+                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                Status = WorkshopStatus.Open,
+            },
+            new Workshop()
+            {
+                Id = new Guid("3e8845a8-1359-4676-b6d6-5a6b29c122ea"),
+                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+            },
+        };
     }
 
-    private IEnumerable<Child> WithChildList()
+    private List<Child> WithChildList()
     {
-        var fakeSocialGroups = new List<SocialGroup>() {
-        new SocialGroup() { Id = 1, Name = "FakeSocialGroup1" },
-        new SocialGroup() { Id = 2, Name = "FakeSocialGroup2" },
-    };
+        var fakeSocialGroups = new List<SocialGroup>()
+        {
+            new SocialGroup() {Id = 1, Name = "FakeSocialGroup1"},
+            new SocialGroup() {Id = 2, Name = "FakeSocialGroup2"},
+        };
 
         return new List<Child>()
-    {
-        new Child { Id = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"), FirstName = "fn1", LastName = "ln1", MiddleName = "mn1", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"), SocialGroups = fakeSocialGroups },
-        new Child { Id = new Guid("f29d0e07-e4f2-440b-b0fe-eaa11e31ddae"), FirstName = "fn2", LastName = "ln2", MiddleName = "mn2", DateOfBirth = new DateTime(2004, 11, 8), Gender = Gender.Female, ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"), SocialGroups = fakeSocialGroups },
-        new Child { Id = new Guid("6ddd21d0-2f2e-48a0-beec-fefcb44cd3f0"), FirstName = "fn3", LastName = "ln3", MiddleName = "mn3", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"), SocialGroups = fakeSocialGroups },
-    };
+        {
+            new Child
+            {
+                Id = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"), FirstName = "fn1", LastName = "ln1",
+                MiddleName = "mn1", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male,
+                ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"), SocialGroups = fakeSocialGroups
+            },
+            new Child
+            {
+                Id = new Guid("f29d0e07-e4f2-440b-b0fe-eaa11e31ddae"), FirstName = "fn2", LastName = "ln2",
+                MiddleName = "mn2", DateOfBirth = new DateTime(2004, 11, 8), Gender = Gender.Female,
+                ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"), SocialGroups = fakeSocialGroups
+            },
+            new Child
+            {
+                Id = new Guid("6ddd21d0-2f2e-48a0-beec-fefcb44cd3f0"), FirstName = "fn3", LastName = "ln3",
+                MiddleName = "mn3", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male,
+                ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"), SocialGroups = fakeSocialGroups
+            },
+        };
     }
 
     #endregion
@@ -818,10 +859,10 @@ public class ApplicationServiceTests
 
     private ApplicationDto ExpectedApplicationGetByIdSuccess(Guid id)
     {
-        return new ApplicationDto() { Id = id };
+        return new ApplicationDto() {Id = id};
     }
 
-    private IEnumerable<ApplicationDto> ExpectedApplicationsGetAll(IEnumerable<Application> apps)
+    private List<ApplicationDto> ExpectedApplicationsGetAll(IEnumerable<Application> apps)
     {
         return mapper.Object.Map<List<ApplicationDto>>(apps);
     }

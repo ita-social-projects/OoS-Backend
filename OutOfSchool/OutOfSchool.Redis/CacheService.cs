@@ -38,7 +38,11 @@ public class CacheService : ICacheService, IDisposable
         }
     }
 
-    public async Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> newValueFactory)
+    public async Task<T> GetOrAddAsync<T>(
+        string key,
+        Func<Task<T>> newValueFactory,
+        TimeSpan? absoluteExpirationRelativeToNowInterval = null,
+        TimeSpan? slidingExpirationInterval = null)
     {
         T returnValue = default;
 
@@ -64,18 +68,22 @@ public class CacheService : ICacheService, IDisposable
         if (EqualityComparer<T>.Default.Equals(returnValue, default))
         {
             returnValue = await newValueFactory();
-            await SetAsync(key, returnValue);
+            await SetAsync(key, returnValue, absoluteExpirationRelativeToNowInterval, slidingExpirationInterval);
         }
 
         return returnValue;
     }
 
-    public Task SetAsync<T>(string key, T value)
+    public Task SetAsync<T>(
+        string key,
+        T value,
+        TimeSpan? absoluteExpirationRelativeToNowInterval = null,
+        TimeSpan? slidingExpirationInterval = null)
         => ExecuteRedisMethod(() => {
             var options = new DistributedCacheEntryOptions
             {
-                AbsoluteExpirationRelativeToNow = redisConfig.AbsoluteExpirationRelativeToNowInterval,
-                SlidingExpiration = redisConfig.SlidingExpirationInterval
+                AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? redisConfig.AbsoluteExpirationRelativeToNowInterval,
+                SlidingExpiration = slidingExpirationInterval ?? redisConfig.SlidingExpirationInterval
             };
 
             cacheLock.EnterWriteLock();

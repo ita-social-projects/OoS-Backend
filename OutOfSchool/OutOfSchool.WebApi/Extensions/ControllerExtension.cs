@@ -25,7 +25,7 @@ public static class ControllerExtension
     {
         if (controller == null)
         {
-            throw new ArgumentException("Controller cannot be null", nameof(controller));
+            throw new ArgumentException(@"Controller cannot be null", nameof(controller));
         }
     }
 }

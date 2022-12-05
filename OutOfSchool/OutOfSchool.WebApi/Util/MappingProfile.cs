@@ -5,6 +5,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Achievement;
+using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Models.Changes;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
@@ -155,6 +156,11 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.WorkshopId, opt => opt.Ignore());
 
         CreateMap<Application, ApplicationDto>();
+        CreateMap<ApplicationCreate, Application>()
+            .ForMember(dest => dest.ChildId, opt => opt.MapFrom(src => src.ChildId))
+            .ForMember(dest => dest.ParentId, opt => opt.MapFrom(src => src.ParentId))
+            .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(src => src.WorkshopId))
+            .ForAllOtherMembers(opt => opt.Ignore());
 
         CreateMap<ApplicationDto, Application>().ForMember(dest => dest.Workshop, opt => opt.Ignore());
 
