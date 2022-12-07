@@ -267,6 +267,14 @@ public class ProviderAdminController : Controller
     [HttpGet("{providerAdminId}")]
     public async Task<IActionResult> GetProviderAdminById(string providerAdminId)
     {
-        throw new NotImplementedException();
+        var providerAdmin = await providerAdminService.GetProviderAdminById(userId, providerAdminId)
+            .ConfigureAwait(false);
+
+        if (providerAdmin == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(providerAdmin);
     }
 }

@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 using Nest;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
@@ -496,6 +497,34 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
                                                                                && p.IsDeputy).ConfigureAwait(false);
 
         return providersDeputies.Select(d => d.UserId);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ProviderAdminDto> GetProviderAdminById(string userId, string providerAdminId)
+    {
+        var providerAdmin = (await providerAdminRepository.GetByFilter(p => p.UserId == providerAdminId)
+            .ConfigureAwait(false)).SingleOrDefault();
+        if (providerAdmin == null)
+        {
+            return null;
+        }
+
+        var user = (await userRepository.GetByFilter(u => u.Id == providerAdminId).ConfigureAwait(false))
+            .SingleOrDefault();
+        var dto = mapper.Map<ProviderAdminDto>(user);
+        dto.IsDeputy = providerAdmin.IsDeputy;
+        if (user.IsBlocked)
+        {
+            dto.AccountStatus = AccountStatus.Blocked;
+        }
+        else
+        {
+            dto.AccountStatus = user.LastLogin == DateTimeOffset.MinValue
+                ? AccountStatus.NeverLogged
+                : AccountStatus.Accepted;
+        }
+
+        return dto;
     }
 
     private static Expression<Func<ProviderAdminDto, bool>> PredicateBuild(ProviderAdminSearchFilter filter)
