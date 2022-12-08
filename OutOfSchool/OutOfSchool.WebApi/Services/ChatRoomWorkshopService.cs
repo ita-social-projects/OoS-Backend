@@ -1,14 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-
-using OutOfSchool.Services.Models.ChatWorkshop;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
+﻿using AutoMapper;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 
 namespace OutOfSchool.WebApi.Services;
@@ -120,6 +110,53 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         catch (Exception exception)
         {
             logger.LogError($"Getting {nameof(ChatRoomWorkshop)} with id:{id} failed. Exception: {exception.Message}");
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<ChatRoomWorkshopDto>> GetByParentIdProviderIdAsync(Guid parentId, Guid providerId)
+    {
+        logger.LogDebug($"Process of getting  {nameof(ChatRoomWorkshopDto)}(s/es) with {nameof(parentId)}:{parentId} and {nameof(providerId)}:{providerId} was started.");
+
+        try
+        {
+            var rooms = (await roomRepository.GetByFilter(
+                predicate: x => x.ParentId == parentId && x.Workshop.ProviderId == providerId)
+                .ConfigureAwait(false)).Select(x => mapper.Map<ChatRoomWorkshopDto>(x)).ToList();
+
+            logger.LogDebug(rooms.Count > 0
+                ? $"There is no Chat rooms in the system with parentId:{parentId} and providerId:{providerId}."
+                : $"Successfully got all {rooms.Count} records with parentId:{parentId} and providerId:{providerId}.");
+
+            return rooms;
+        }
+        catch (Exception exception)
+        {
+            logger.LogError($"Getting all {nameof(ChatRoomWorkshopDto)}(s/es) with {nameof(parentId)}:{parentId} and {nameof(providerId)}:{providerId}. Exception: {exception.Message}");
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<ChatRoomWorkshopDto> GetByParentIdWorkshopIdAsync(Guid parentId, Guid workshopId)
+    {
+        logger.LogDebug($"Process of getting  {nameof(ChatRoomWorkshopDto)}(s/es) with {nameof(parentId)}:{parentId} and {nameof(workshopId)}:{workshopId} was started.");
+        try
+        {
+            var room = (await roomRepository.GetByFilter(
+                predicate: x => x.ParentId == parentId && x.WorkshopId == workshopId)
+                .ConfigureAwait(false)).SingleOrDefault();
+
+            logger.LogDebug(room is null
+            ? $"There is no Chat rooms in the system with parentId:{parentId} and workshopId:{workshopId}."
+            : $"Successfully got record with parentId:{parentId} and workshopId:{workshopId}.");
+
+            return mapper.Map<ChatRoomWorkshopDto>(room);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError($"Getting {nameof(ChatRoomWorkshopDto)} with {nameof(parentId)}:{parentId} and {nameof(workshopId)}:{workshopId}. Exception: {exception.Message}");
             throw;
         }
     }

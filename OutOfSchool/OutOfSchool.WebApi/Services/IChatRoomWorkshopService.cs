@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-using Microsoft.EntityFrameworkCore;
-
-using OutOfSchool.WebApi.Models.ChatWorkshop;
+﻿using OutOfSchool.WebApi.Models.ChatWorkshop;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -29,6 +23,22 @@ public interface IChatRoomWorkshopService
     /// <param name="id">Key in the table.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomWorkshopDto"/> that was found, or null.</returns>
     Task<ChatRoomWorkshopDto> GetByIdAsync(Guid id);
+
+    /// <summary>
+    /// Get ChatRooms by specified Parent and Provider.
+    /// </summary>
+    /// <param name="parentId">Parent's identifier.</param>
+    /// <param name="providerId">Provider's identifier.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{ChatRoomWorkshopDto}"/> that contains elements from the input sequence.</returns>
+    Task<IEnumerable<ChatRoomWorkshopDto>> GetByParentIdProviderIdAsync(Guid parentId, Guid providerId);
+
+    /// <summary>
+    /// Get ChatRooms by specified Parent and Provider.
+    /// </summary>
+    /// <param name="parentId">Parent's identifier.</param>
+    /// <param name="workshopId">Workshop's identifier.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomWorkshopDto"/> that contains elements from the input sequence.</returns>
+    Task<ChatRoomWorkshopDto> GetByParentIdWorkshopIdAsync(Guid parentId, Guid workshopId);
 
     /// <summary>
     /// Get ChatRooms with last message and count of not read messages by specified Parent.

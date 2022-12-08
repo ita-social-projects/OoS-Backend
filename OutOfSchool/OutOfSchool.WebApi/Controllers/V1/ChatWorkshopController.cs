@@ -1,21 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Authentication;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.JsonPatch.Operations;
+﻿using System.Security.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Common;
-using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -176,6 +165,36 @@ public class ChatWorkshopController : ControllerBase
         => this.GetUsersRoomsAsync(providerId => roomService.GetByProviderIdAsync(providerId));
 
     /// <summary>
+    /// Get a chat room for current parent and workshopId.
+    /// </summary>
+    /// <param name="workshopId">WorkShop's Id.</param>
+    /// <returns>ChatRoom that was found.</returns>
+    [HttpGet("parent/chatroomforworkshop/{workshopId}")]
+    [Authorize(Roles = "parent")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomWorkshopDtoWithLastMessage))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public Task<IActionResult> GetParentsRoomByWorkshopAsync(Guid workshopId)
+        => GetParentRoomByWorkshopIdAsync(workshopId);
+
+    /// <summary>
+    /// Get a chat room for current provider and parentId.
+    /// </summary>
+    /// <param name="parentId">ChatRoom's Id.</param>
+    /// <returns>ChatRoom that was found.</returns>
+    [HttpGet("provider/chatroomsforparent/{parentId}")]
+    [Authorize(Roles = "provider")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ChatRoomWorkshopDtoWithLastMessage>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public Task<IActionResult> GetProvidersRoomsByParentAsync(Guid parentId)
+        => GetProvidersRoomsByParentIdAsync(parentId);
+
+    /// <summary>
     /// Get a list of chat rooms for the ministry admin by specific provider id.
     /// </summary>
     /// <param name="providerId">Provider Id.</param>
@@ -298,6 +317,56 @@ public class ChatWorkshopController : ControllerBase
                 var messages = await messageService.GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(chatRoomId, offsetFilter, GettingUserProperties.GetUserRole(HttpContext)).ConfigureAwait(false);
 
                 return messages.Any() ? Ok(messages) : NoContent();
+            }
+
+            return NoContent();
+        }
+
+        return await HandleOperationAsync(Operation);
+    }
+
+    private async Task<IActionResult> GetParentRoomByWorkshopIdAsync(Guid workshopId)
+    {
+        async Task<IActionResult> Operation()
+        {
+            var userId = GettingUserProperties.GetUserId(HttpContext);
+            var userRole = Role.Parent;
+
+            var parentId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
+
+            if (parentId != default)
+            {
+                var chatRoom = await roomService.GetByParentIdWorkshopIdAsync(parentId, workshopId).ConfigureAwait(false);
+
+                if (chatRoom is not null)
+                {
+                    return Ok(chatRoom);
+                }
+            }
+
+            return NoContent();
+        }
+
+        return await HandleOperationAsync(Operation);
+    }
+
+    private async Task<IActionResult> GetProvidersRoomsByParentIdAsync(Guid parentId)
+    {
+        async Task<IActionResult> Operation()
+        {
+            var userId = GettingUserProperties.GetUserId(HttpContext);
+            var userRole = Role.Provider;
+
+            var providerId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
+
+            if (providerId != default)
+            {
+                var chatRooms = await roomService.GetByParentIdProviderIdAsync(parentId, providerId).ConfigureAwait(false);
+
+                if (chatRooms.Any())
+                {
+                    return Ok(chatRooms);
+                }
             }
 
             return NoContent();
