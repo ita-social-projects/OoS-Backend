@@ -323,7 +323,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     {
         var providersAdmins = await providerAdminRepository.GetByFilter(p => p.UserId == userId && !p.IsDeputy)
             .ConfigureAwait(false);
-        return providersAdmins.SelectMany(admin => admin.ManagedWorkshops, (admin, workshops) => new {workshops})
+        return providersAdmins.SelectMany(admin => admin.ManagedWorkshops, (admin, workshops) => new { workshops })
             .Select(x => x.workshops.Id);
     }
 
@@ -504,7 +504,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     {
         var providerAdmin = (await providerAdminRepository.GetByFilter(p => p.UserId == providerAdminId)
             .ConfigureAwait(false)).SingleOrDefault();
-        if (providerAdmin == null)
+        if (providerAdmin == null || !(await CanUserReadProviderAdmin(userId, providerAdmin)))
         {
             return null;
         }
@@ -525,6 +525,15 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         }
 
         return dto;
+    }
+
+    public async Task<bool> CanUserReadProviderAdmin(string userId, ProviderAdmin providerAdmin)
+    {
+        var isProvider = await providerAdminRepository.IsExistProviderWithUserIdAsync(userId)
+            .ConfigureAwait(false);
+        var isDeputy = await providerAdminRepository
+            .IsExistProviderAdminDeputyWithUserIdAsync(providerAdmin.ProviderId, userId).ConfigureAwait(false);
+        return isProvider || (isDeputy && !providerAdmin.IsDeputy);
     }
 
     private static Expression<Func<ProviderAdminDto, bool>> PredicateBuild(ProviderAdminSearchFilter filter)
