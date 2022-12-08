@@ -69,10 +69,9 @@ public interface IProviderAdminService
     Task<ProviderAdminProviderRelationDto> GetById(string userId);
 
     /// <summary>
-    /// Get ProviderAdmin by it's id.
+    /// Get ProviderAdmin by it's ProviderAdminProviderRelationDto.
     /// </summary>
-    /// <param name="userId">User's id.</param>
-    /// <param name="providerAdminId">ProviderAdmin's id.</param>
+    /// <param name="providerAdmin">ProviderAdmin's ProviderAdminProviderRelationDto.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<ProviderAdminDto> GetProviderAdminById(string userId, string providerAdminId);
+    Task<ProviderAdminDto> GetFullProviderAdmin(ProviderAdminProviderRelationDto providerAdmin);
 }

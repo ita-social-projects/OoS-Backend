@@ -500,40 +500,24 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     }
 
     /// <inheritdoc/>
-    public async Task<ProviderAdminDto> GetProviderAdminById(string userId, string providerAdminId)
+    public async Task<ProviderAdminDto> GetFullProviderAdmin(ProviderAdminProviderRelationDto providerAdmin)
     {
-        var providerAdmin = (await providerAdminRepository.GetByFilter(p => p.UserId == providerAdminId)
-            .ConfigureAwait(false)).SingleOrDefault();
-        if (providerAdmin == null || !(await CanUserReadProviderAdmin(userId, providerAdmin)))
-        {
-            return null;
-        }
-
-        var user = (await userRepository.GetByFilter(u => u.Id == providerAdminId).ConfigureAwait(false))
+        var user = (await userRepository.GetByFilter(u => u.Id == providerAdmin.UserId).ConfigureAwait(false))
             .SingleOrDefault();
-        var dto = mapper.Map<ProviderAdminDto>(user);
-        dto.IsDeputy = providerAdmin.IsDeputy;
+        var result = mapper.Map<ProviderAdminDto>(user);
+        result.IsDeputy = providerAdmin.IsDeputy;
         if (user.IsBlocked)
         {
-            dto.AccountStatus = AccountStatus.Blocked;
+            result.AccountStatus = AccountStatus.Blocked;
         }
         else
         {
-            dto.AccountStatus = user.LastLogin == DateTimeOffset.MinValue
+            result.AccountStatus = user.LastLogin == DateTimeOffset.MinValue
                 ? AccountStatus.NeverLogged
                 : AccountStatus.Accepted;
         }
 
-        return dto;
-    }
-
-    public async Task<bool> CanUserReadProviderAdmin(string userId, ProviderAdmin providerAdmin)
-    {
-        var isProvider = await providerAdminRepository.IsExistProviderWithUserIdAsync(userId)
-            .ConfigureAwait(false);
-        var isDeputy = await providerAdminRepository
-            .IsExistProviderAdminDeputyWithUserIdAsync(providerAdmin.ProviderId, userId).ConfigureAwait(false);
-        return isProvider || (isDeputy && !providerAdmin.IsDeputy);
+        return result;
     }
 
     private static Expression<Func<ProviderAdminDto, bool>> PredicateBuild(ProviderAdminSearchFilter filter)
