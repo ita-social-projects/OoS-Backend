@@ -33,7 +33,7 @@ public class AchievementTypeService : IAchievementTypeService
     }
 
     /// <inheritdoc/>
-     public async Task<IEnumerable<AchievementTypeDto>> GetAll(AchievementTypeLocalization localization = AchievementTypeLocalization.Ua)
+    public async Task<IEnumerable<AchievementTypeDto>> GetAll(LocalizationType localization = LocalizationType.Ua)
     {
         logger.LogInformation($"Getting all Achievement Types, {localization} localization, started.");
 
@@ -42,7 +42,7 @@ public class AchievementTypeService : IAchievementTypeService
             new AchievementType
             {
                 Id = x.Id,
-                Title = localization == AchievementTypeLocalization.En ? x.TitleEn : x.Title,
+                Title = localization == LocalizationType.En ? x.TitleEn : x.Title,
             });
 
         logger.LogInformation(!achievementTypes.Any()
