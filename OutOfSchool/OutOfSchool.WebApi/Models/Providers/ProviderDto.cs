@@ -77,10 +77,8 @@ public class ProviderDto
     [Required]
     [EnumDataType(typeof(OwnershipType), ErrorMessage = Constants.EnumErrorMessage)]
     public OwnershipType Ownership { get; set; }
-
-    [Required]
-    [EnumDataType(typeof(ProviderType), ErrorMessage = Constants.EnumErrorMessage)]
-    public ProviderType Type { get; set; }
+    public long TypeId { get; set; }
+    public ProviderTypeDto Type { get; set; }
 
     [Required]
     [EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]

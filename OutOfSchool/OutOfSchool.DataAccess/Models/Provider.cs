@@ -76,9 +76,10 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
     [Required]
     public OwnershipType Ownership { get; set; }
 
+   
+    public virtual ProviderType Type { get; set; }
     [Required]
-    public ProviderType Type { get; set; }
-
+    public long TypeId { get; set; }
     [Required]
     public ProviderStatus Status { get; set; }
 

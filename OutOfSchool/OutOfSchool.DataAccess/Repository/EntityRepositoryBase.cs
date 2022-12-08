@@ -69,7 +69,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
                     await transaction.CommitAsync().ConfigureAwait(false);
                     return result;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     await transaction.RollbackAsync().ConfigureAwait(false);
                     throw;

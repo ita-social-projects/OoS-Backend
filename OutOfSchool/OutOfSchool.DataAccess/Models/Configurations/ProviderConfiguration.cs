@@ -56,9 +56,6 @@ internal class ProviderConfiguration : IEntityTypeConfiguration<Provider>
         builder.Property(x => x.Ownership)
             .IsRequired();
 
-        builder.Property(x => x.Type)
-            .IsRequired();
-
         builder.Property(x => x.UserId)
             .IsRequired();
 
