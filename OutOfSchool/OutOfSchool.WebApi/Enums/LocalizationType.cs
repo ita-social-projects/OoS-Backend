@@ -1,7 +1,7 @@
 ﻿namespace OutOfSchool.WebApi.Enums;
 
-public enum AchievementTypeLocalization
+public enum LocalizationType
 {
     Ua,
-    En
+    En,
 }
