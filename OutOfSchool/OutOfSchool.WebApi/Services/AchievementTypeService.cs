@@ -33,7 +33,7 @@ public class AchievementTypeService : IAchievementTypeService
     }
 
     /// <inheritdoc/>
-     public async Task<IEnumerable<AchievementTypeDto>> GetAll(AchievementTypeLocalization localization = default)
+     public async Task<IEnumerable<AchievementTypeDto>> GetAll(AchievementTypeLocalization localization = AchievementTypeLocalization.Ua)
     {
         logger.LogInformation($"Getting all Achievement Types, {localization} localization, started.");
 
