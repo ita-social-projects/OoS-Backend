@@ -34,7 +34,7 @@ public class AchievementTypeController : Controller
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AchievementTypeDto>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetAll(AchievementTypeLocalization localization = AchievementTypeLocalization.Ua)
+    public async Task<IActionResult> GetAll(LocalizationType localization = LocalizationType.Ua)
     {
         return Ok(await achievementTypeService.GetAll(localization).ConfigureAwait(false));
     }
