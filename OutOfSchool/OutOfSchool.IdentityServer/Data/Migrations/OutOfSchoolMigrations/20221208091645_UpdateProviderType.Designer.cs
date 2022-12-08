@@ -11,8 +11,8 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20221208091645_Provider_Type")]
-    partial class Provider_Type
+    [Migration("20221208091645_UpdateProviderType")]
+    partial class UpdateProviderType
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
