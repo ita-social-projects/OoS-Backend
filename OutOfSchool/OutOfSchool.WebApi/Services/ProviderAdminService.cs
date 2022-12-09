@@ -3,7 +3,6 @@ using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using MongoDB.Driver;
 using Nest;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
@@ -502,9 +501,17 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     /// <inheritdoc/>
     public async Task<ProviderAdminDto> GetFullProviderAdmin(ProviderAdminProviderRelationDto providerAdmin)
     {
+        _ = providerAdmin ?? throw new ArgumentException("ProviderAdmin cannot be null!");
+
         var user = (await userRepository.GetByFilter(u => u.Id == providerAdmin.UserId).ConfigureAwait(false))
             .SingleOrDefault();
+        if (user == null)
+        {
+            return null;
+        }
+
         var result = mapper.Map<ProviderAdminDto>(user);
+
         result.IsDeputy = providerAdmin.IsDeputy;
         if (user.IsBlocked)
         {
