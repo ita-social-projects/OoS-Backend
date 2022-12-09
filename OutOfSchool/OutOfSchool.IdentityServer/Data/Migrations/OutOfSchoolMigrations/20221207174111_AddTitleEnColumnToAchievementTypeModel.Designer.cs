@@ -297,43 +297,43 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 1L,
                             Title = "Переможці міжнародних та всеукраїнських спортивних змагань (індивідуальних та командних)",
-                            TitleEn = "Peremozhtsi mizhnarodnykh ta vseukrainskykh sportyvnykh zmahan (indyvidualnykh ta komandnykh)"
+                            TitleEn = "Winners of international and all-Ukrainian sports competitions (individual and team)"
                         },
                         new
                         {
                             Id = 2L,
                             Title = "Призери та учасники міжнародних, всеукраїнських та призери регіональних конкурсів і виставок наукових, технічних, дослідницьких, інноваційних, ІТ проектів",
-                            TitleEn = "Pryzery ta uchasnyky mizhnarodnykh, vseukrainskykh ta pryzery rehionalnykh konkursiv i vystavok naukovykh, tekhnichnykh, doslidnytskykh, innovatsiinykh, IT proektiv"
+                            TitleEn = "Winners and participants of international, all-Ukrainian and regional contests and exhibitions of scientific, technical, research, innovation, IT projects"
                         },
                         new
                         {
                             Id = 3L,
                             Title = "Реципієнти міжнародних грантів",
-                            TitleEn = "Retsypiienty mizhnarodnykh hrantiv"
+                            TitleEn = "Recipients of international grants"
                         },
                         new
                         {
                             Id = 4L,
                             Title = "Призери міжнародних культурних конкурсів та фестивалів",
-                            TitleEn = "Pryzery mizhnarodnykh kulturnykh konkursiv ta festyvaliv"
+                            TitleEn = "Winners of international cultural competitions and festivals"
                         },
                         new
                         {
                             Id = 5L,
                             Title = "Соціально активні категорії учнів",
-                            TitleEn = "Sotsialno aktyvni katehorii uchniv"
+                            TitleEn = "Socially active categories of students"
                         },
                         new
                         {
                             Id = 6L,
                             Title = "Цифрові інструменти Google для закладів вищої та фахової передвищої освіти",
-                            TitleEn = "Tsyfrovi instrumenty Google dlia zakladiv vyshchoi ta fakhovoi peredvyshchoi osvity"
+                            TitleEn = "Google digital tools for institutions of higher and professional pre-higher education"
                         },
                         new
                         {
                             Id = 7L,
                             Title = "Переможці та учасники олімпіад міжнародного та всеукраїнського рівнів",
-                            TitleEn = "Peremozhtsi ta uchasnyky olimpiad mizhnarodnoho ta vseukrainskoho rivniv"
+                            TitleEn = "Winners and participants of olympiads at the international and all-Ukrainian levels"
                         });
                 });
 
