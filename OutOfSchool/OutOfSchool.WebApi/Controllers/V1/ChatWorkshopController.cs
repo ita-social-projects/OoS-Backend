@@ -334,7 +334,7 @@ public class ChatWorkshopController : ControllerBase
 
             var parentId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
 
-            if (parentId != default)
+            if (parentId != Guid.Empty)
             {
                 var chatRoom = await roomService.GetByParentIdWorkshopIdAsync(parentId, workshopId).ConfigureAwait(false);
 
@@ -359,7 +359,7 @@ public class ChatWorkshopController : ControllerBase
 
             var providerId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
 
-            if (providerId != default)
+            if (providerId != Guid.Empty)
             {
                 var chatRooms = await roomService.GetByParentIdProviderIdAsync(parentId, providerId).ConfigureAwait(false);
 
