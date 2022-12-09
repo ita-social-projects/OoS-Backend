@@ -14,5 +14,5 @@ public interface IAchievementTypeService
     /// </summary>
     /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <returns>List of all applications.</returns>
-    Task<IEnumerable<AchievementTypeDto>> GetAll(LocalizationType localization);
+    Task<IEnumerable<AchievementTypeDto>> GetAll(LocalizationType localization = LocalizationType.Ua);
 }
