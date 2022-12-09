@@ -118,7 +118,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     /// <inheritdoc/>
     public async Task<IEnumerable<ChatRoomWorkshopDto>> GetByParentIdProviderIdAsync(Guid parentId, Guid providerId)
     {
-        logger.LogDebug($"Process of getting  {nameof(ChatRoomWorkshopDto)}(s/es) with {nameof(parentId)}:{parentId} and {nameof(providerId)}:{providerId} was started.");
+        logger.LogDebug("Process of getting ChatRooms with parentId:{parentId} and providerId:{providerId} was started.", parentId, providerId);
 
         try
         {
@@ -126,15 +126,25 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
                 predicate: x => x.ParentId == parentId && x.Workshop.ProviderId == providerId)
                 .ConfigureAwait(false)).Select(x => mapper.Map<ChatRoomWorkshopDto>(x)).ToList();
 
-            logger.LogDebug(rooms.Count > 0
-                ? $"There is no Chat rooms in the system with parentId:{parentId} and providerId:{providerId}."
-                : $"Successfully got all {rooms.Count} records with parentId:{parentId} and providerId:{providerId}.");
+            if (rooms.Count > 0)
+            {
+                logger.LogDebug("There is no Chat rooms in the system with parentId:{parentId} and providerId:{providerId}.", parentId, providerId);
+            }
+            else
+            {
+                logger.LogDebug("Successfully got all {roomsCount} records with parentId:{parentId} and providerId:{providerId}.", rooms.Count, parentId, providerId);
+            }
 
             return rooms;
         }
         catch (Exception exception)
         {
-            logger.LogError($"Getting all {nameof(ChatRoomWorkshopDto)}(s/es) with {nameof(parentId)}:{parentId} and {nameof(providerId)}:{providerId}. Exception: {exception.Message}");
+            logger.LogError(
+                "Getting all ChatRooms with parentId:{parentId} and providerId:{providerId}. Exception: {exception}",
+                parentId,
+                providerId,
+                exception.Message);
+
             throw;
         }
     }
