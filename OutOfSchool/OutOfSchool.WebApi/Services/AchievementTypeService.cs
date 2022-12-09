@@ -1,8 +1,8 @@
-﻿using AutoMapper;
+﻿using System.Text.RegularExpressions;
+using AutoMapper;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
-using System.Text.RegularExpressions;
 
 namespace OutOfSchool.WebApi.Services;
 

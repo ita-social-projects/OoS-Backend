@@ -107,43 +107,50 @@ public static class ModelBuilderExtension
             {
                 Id = 1L,
                 Title = "Переможці міжнародних та всеукраїнських спортивних змагань (індивідуальних та командних)",
-                TitleEn = "Peremozhtsi mizhnarodnykh ta vseukrainskykh sportyvnykh zmahan (indyvidualnykh ta komandnykh)",
+                TitleEn =
+                    "Peremozhtsi mizhnarodnykh ta vseukrainskykh sportyvnykh zmahan (indyvidualnykh ta komandnykh)",
             },
             new AchievementType
             {
                 Id = 2L,
                 Title = "Призери та учасники міжнародних, всеукраїнських та призери регіональних конкурсів і виставок наукових, технічних, дослідницьких, інноваційних, ІТ проектів",
-                TitleEn = "Pryzery ta uchasnyky mizhnarodnykh, vseukrainskykh ta pryzery rehionalnykh konkursiv i vystavok naukovykh, tekhnichnykh, doslidnytskykh, innovatsiinykh, IT proektiv",
+                TitleEn =
+                    "Pryzery ta uchasnyky mizhnarodnykh, vseukrainskykh ta pryzery rehionalnykh konkursiv i vystavok naukovykh, tekhnichnykh, doslidnytskykh, innovatsiinykh, IT proektiv",
             },
             new AchievementType
             {
                 Id = 3L,
                 Title = "Реципієнти міжнародних грантів",
-                TitleEn = "Retsypiienty mizhnarodnykh hrantiv",
+                TitleEn =
+                    "Retsypiienty mizhnarodnykh hrantiv",
             },
             new AchievementType
             {
                 Id = 4L,
                 Title = "Призери міжнародних культурних конкурсів та фестивалів",
-                TitleEn = "Pryzery mizhnarodnykh kulturnykh konkursiv ta festyvaliv",
+                TitleEn =
+                    "Pryzery mizhnarodnykh kulturnykh konkursiv ta festyvaliv",
             },
             new AchievementType
             {
                 Id = 5L,
                 Title = "Соціально активні категорії учнів",
-                TitleEn = "Sotsialno aktyvni katehorii uchniv",
+                TitleEn =
+                    "Sotsialno aktyvni katehorii uchniv",
             },
             new AchievementType
             {
                 Id = 6L,
                 Title = "Цифрові інструменти Google для закладів вищої та фахової передвищої освіти",
-                TitleEn = "Tsyfrovi instrumenty Google dlia zakladiv vyshchoi ta fakhovoi peredvyshchoi osvity",
+                TitleEn =
+                    "Tsyfrovi instrumenty Google dlia zakladiv vyshchoi ta fakhovoi peredvyshchoi osvity",
             },
             new AchievementType
             {
                 Id = 7L,
                 Title = "Переможці та учасники олімпіад міжнародного та всеукраїнського рівнів",
-                TitleEn = "Peremozhtsi ta uchasnyky olimpiad mizhnarodnoho ta vseukrainskoho rivniv",
+                TitleEn =
+                    "Peremozhtsi ta uchasnyky olimpiad mizhnarodnoho ta vseukrainskoho rivniv",
             });
 
         builder.Entity<ProviderType>().HasData(
