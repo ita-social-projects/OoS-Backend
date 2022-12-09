@@ -21,49 +21,49 @@ public partial class AddTitleEnColumnToAchievementTypeModel : Migration
             keyColumn: "Id",
             keyValue: 1L,
             column: "TitleEn",
-            value: "Peremozhtsi mizhnarodnykh ta vseukrainskykh sportyvnykh zmahan (indyvidualnykh ta komandnykh)");
+            value: "Winners of international and all-Ukrainian sports competitions (individual and team)");
 
         migrationBuilder.UpdateData(
             table: "AchievementTypes",
             keyColumn: "Id",
             keyValue: 2L,
             column: "TitleEn",
-            value: "Pryzery ta uchasnyky mizhnarodnykh, vseukrainskykh ta pryzery rehionalnykh konkursiv i vystavok naukovykh, tekhnichnykh, doslidnytskykh, innovatsiinykh, IT proektiv");
+            value: "Winners and participants of international, all-Ukrainian and regional contests and exhibitions of scientific, technical, research, innovation, IT projects");
 
         migrationBuilder.UpdateData(
             table: "AchievementTypes",
             keyColumn: "Id",
             keyValue: 3L,
             column: "TitleEn",
-            value: "Retsypiienty mizhnarodnykh hrantiv");
+            value: "Recipients of international grants");
 
         migrationBuilder.UpdateData(
             table: "AchievementTypes",
             keyColumn: "Id",
             keyValue: 4L,
             column: "TitleEn",
-            value: "Pryzery mizhnarodnykh kulturnykh konkursiv ta festyvaliv");
+            value: "Winners of international cultural competitions and festivals");
 
         migrationBuilder.UpdateData(
             table: "AchievementTypes",
             keyColumn: "Id",
             keyValue: 5L,
             column: "TitleEn",
-            value: "Sotsialno aktyvni katehorii uchniv");
+            value: "Socially active categories of students");
 
         migrationBuilder.UpdateData(
             table: "AchievementTypes",
             keyColumn: "Id",
             keyValue: 6L,
             column: "TitleEn",
-            value: "Tsyfrovi instrumenty Google dlia zakladiv vyshchoi ta fakhovoi peredvyshchoi osvity");
+            value: "Google digital tools for institutions of higher and professional pre-higher education");
 
         migrationBuilder.UpdateData(
             table: "AchievementTypes",
             keyColumn: "Id",
             keyValue: 7L,
             column: "TitleEn",
-            value: "Peremozhtsi ta uchasnyky olimpiad mizhnarodnoho ta vseukrainskoho rivniv");
+            value: "Winners and participants of olympiads at the international and all-Ukrainian levels");
     }
 
     protected override void Down(MigrationBuilder migrationBuilder)
