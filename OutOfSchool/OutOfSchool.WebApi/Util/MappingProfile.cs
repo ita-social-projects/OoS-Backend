@@ -438,7 +438,10 @@ public class MappingProfile : Profile
         CreateMap<Workshop, WorkshopInfoForChatListDto>();
         CreateMap<ChatRoomWorkshopForChatList, ChatRoomWorkshopDtoWithLastMessage>();
         CreateMap<WorkshopInfoForChatList, WorkshopInfoForChatListDto>();
-        CreateMap<ParentInfoForChatList, ParentDtoWithContactInfo>();
+        
+        CreateMap<ParentInfoForChatList, ParentDtoWithContactInfo>()
+            .ForMember(dest => dest.EmailConfirmed, opt => opt.Ignore());
+
         CreateMap<ChatMessageInfoForChatList, ChatMessageWorkshopDto>();
 
         CreateMap<Favorite, FavoriteDto>().ReverseMap();
