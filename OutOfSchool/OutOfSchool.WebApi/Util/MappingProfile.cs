@@ -438,7 +438,7 @@ public class MappingProfile : Profile
         CreateMap<Workshop, WorkshopInfoForChatListDto>();
         CreateMap<ChatRoomWorkshopForChatList, ChatRoomWorkshopDtoWithLastMessage>();
         CreateMap<WorkshopInfoForChatList, WorkshopInfoForChatListDto>();
-        
+
         CreateMap<ParentInfoForChatList, ParentDtoWithContactInfo>()
             .ForMember(dest => dest.EmailConfirmed, opt => opt.Ignore());
 
