@@ -1,0 +1,7 @@
+addReviewers: true
+addAssignees: author
+reviewers:
+  - andriy-korchynskyy
+  - DmyMi
+  - ita-social-projects/oos-backend
+numberOfReviewers: 0
