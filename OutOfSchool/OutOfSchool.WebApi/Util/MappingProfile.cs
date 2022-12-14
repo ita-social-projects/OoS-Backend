@@ -207,6 +207,7 @@ public class MappingProfile : Profile
 
         CreateMap<Parent, ParentDtoWithContactInfo>()
             .ForMember(dest => dest.Email, opt => opt.MapFrom(s => s.User.Email))
+            .ForMember(dest => dest.EmailConfirmed, opt => opt.MapFrom(s => s.User.EmailConfirmed))
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(s => s.User.PhoneNumber))
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(s => s.User.LastName))
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(s => s.User.MiddleName))
