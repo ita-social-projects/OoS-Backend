@@ -11,7 +11,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20221208091645_UpdateProviderType")]
+    [Migration("20221215144631_UpdateProviderType")]
     partial class UpdateProviderType
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -340,6 +340,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("CATOTTGId")
                         .HasColumnType("bigint");
 
+                    b.Property<ulong>("GeoHash")
+                        .HasColumnType("bigint unsigned");
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)");
@@ -352,8 +355,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("Street")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
 
                     b.HasKey("Id");
 
@@ -472,6 +475,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsTop")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<double>("Latitude")
@@ -1026,6 +1032,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long?>("ActualAddressId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("BlockReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
                     b.Property<string>("CoverImageId")
                         .HasColumnType("longtext");
 
@@ -1077,6 +1087,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<int>("InstitutionType")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)");
@@ -1111,6 +1124,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0);
+
+                    b.Property<string>("StatusReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
 
                     b.Property<long>("TypeId")
                         .HasColumnType("bigint");
@@ -1281,6 +1298,36 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 7L,
                             Name = "Центр, палац, будинок, клуб художньої творчості дітей, юнацтва та молоді, художньо-естетичної творчості учнівської молоді, дитячої та юнацької творчості, естетичного виховання"
+                        },
+                        new
+                        {
+                            Id = 8L,
+                            Name = "Центр, будинок, клуб еколого-натуралістичної творчості учнівської молоді, станція юних натуралістів"
+                        },
+                        new
+                        {
+                            Id = 9L,
+                            Name = "Центр, будинок, клуб науково-технічної творчості учнівської молоді, станція юних техніків"
+                        },
+                        new
+                        {
+                            Id = 10L,
+                            Name = "Центр, будинок, клуб, бюро туризму, краєзнавства, спорту та екскурсій учнівської молоді, туристсько-краєзнавчої творчості учнівської молоді, станція юних туристів"
+                        },
+                        new
+                        {
+                            Id = 11L,
+                            Name = "Центри: військово-патріотичного та інших напрямів позашкільної освіти"
+                        },
+                        new
+                        {
+                            Id = 12L,
+                            Name = "Дитяча бібліотека, дитяча флотилія моряків і річковиків, дитячий парк, дитячий стадіон, дитячо-юнацька картинна галерея, дитячо-юнацька студія (хорова, театральна, музична, фольклорна тощо), кімната школяра, курси, студії, школи мистецтв, освітньо-культурні центри національних меншин"
+                        },
+                        new
+                        {
+                            Id = 13L,
+                            Name = "Інше"
                         });
                 });
 
@@ -1516,8 +1563,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
 
                     b.Property<bool>("IsBlocked")
                         .HasColumnType("tinyint(1)");
@@ -1537,8 +1584,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("tinyint(1)");
@@ -1547,8 +1594,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("MiddleName")
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
 
                     b.Property<bool>("MustChangePassword")
                         .HasColumnType("tinyint(1)");
@@ -1675,8 +1722,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("ProviderTitle")
                         .IsRequired()
-                        .HasMaxLength(60)
-                        .HasColumnType("varchar(60)");
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
