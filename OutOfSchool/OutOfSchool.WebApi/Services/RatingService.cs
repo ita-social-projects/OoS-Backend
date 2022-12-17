@@ -101,12 +101,16 @@ public class RatingService : IRatingService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<RatingDto>> GetAllByEntityId(Guid entityId, RatingType type, OffsetFilter filter)
+    public async Task<SearchResult<RatingDto>> GetAllByEntityId(Guid entityId, RatingType type, OffsetFilter filter)
     {
         logger.LogInformation($"Getting all Ratings with EntityId = {entityId} and RatingType = {type} started.");
 
+        var filterPredicate = PredicateBuilder.True<Rating>().And(r => r.EntityId == entityId && r.Type == type);
+
+        var totalAmount = await ratingRepository.Count(filterPredicate).ConfigureAwait(false);
+
         var ratings = await ratingRepository
-            .Get(filter.From, filter.Size, where: r => r.EntityId == entityId && r.Type == type)
+            .Get(filter.From, filter.Size, where: filterPredicate)
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -116,8 +120,15 @@ public class RatingService : IRatingService
               $"were successfully received from the Rating table");
 
         var ratingsDto = ratings.Select(r => mapper.Map<RatingDto>(r));
+        ratingsDto = await AddParentInfoAsync(ratingsDto).ConfigureAwait(false);
 
-        return await AddParentInfoAsync(ratingsDto).ConfigureAwait(false);
+        var searchResult = new SearchResult<RatingDto>()
+        {
+            TotalAmount = totalAmount,
+            Entities = ratingsDto.ToList(),
+        };
+
+        return searchResult;
     }
 
     /// <inheritdoc/>
