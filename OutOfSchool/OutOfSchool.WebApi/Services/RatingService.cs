@@ -105,6 +105,7 @@ public class RatingService : IRatingService
     {
         logger.LogInformation($"Getting all Ratings with EntityId = {entityId} and RatingType = {type} started.");
 
+        filter ??= new OffsetFilter();
         var filterPredicate = PredicateBuilder.True<Rating>().And(r => r.EntityId == entityId && r.Type == type);
 
         var totalAmount = await ratingRepository.Count(filterPredicate).ConfigureAwait(false);
