@@ -244,9 +244,17 @@ public class CurrentUserService : ICurrentUserService
             return false;
         }
 
-        var providerDeputy = await cache.GetOrAddAsync($"Rights_{UserId}", () => providerAdminService.GetById(UserId), TimeSpan.FromMinutes(5.0));
+        var providerDeputy = await cache.GetOrAddAsync(
+            $"Rights_{UserId}",
+            async () =>
+            {
+                var providerAdmins = await providerAdminRepository
+                    .GetByFilter(p => p.UserId == UserId);
+                return providerAdmins?.Select(mapper.Map<ProviderAdminProviderRelationDto>).FirstOrDefault();
+            },
+            TimeSpan.FromMinutes(5.0));
 
-        var result = providerDeputy.ProviderId == providerId;
+        var result = providerDeputy?.ProviderId == providerId && providerDeputy.IsDeputy;
 
         if (!result && options.AccessLogEnabled)
         {

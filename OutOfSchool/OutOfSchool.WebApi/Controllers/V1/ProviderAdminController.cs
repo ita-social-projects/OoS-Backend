@@ -16,18 +16,15 @@ namespace OutOfSchool.WebApi.Controllers;
 public class ProviderAdminController : Controller
 {
     private readonly IProviderAdminService providerAdminService;
-    private readonly ICurrentUserService currentUserService;
     private readonly ILogger<ProviderAdminController> logger;
     private string path;
     private string userId;
 
     public ProviderAdminController(
         IProviderAdminService providerAdminService,
-        ICurrentUserService currentUserService,
         ILogger<ProviderAdminController> logger)
     {
         this.providerAdminService = providerAdminService;
-        this.currentUserService = currentUserService;
         this.logger = logger;
     }
 
@@ -270,27 +267,13 @@ public class ProviderAdminController : Controller
     [HttpGet("{providerAdminId}")]
     public async Task<IActionResult> GetProviderAdminById(string providerAdminId)
     {
-        var providerAdmin = await providerAdminService.GetById(providerAdminId).ConfigureAwait(false);
-
+        var providerAdmin = await providerAdminService.GetFullProviderAdmin(providerAdminId)
+            .ConfigureAwait(false);
         if (providerAdmin == null)
         {
             return NoContent();
         }
 
-        if (providerAdmin.IsDeputy)
-        {
-            await currentUserService.UserHasRights(new ProviderRights(providerAdmin.ProviderId))
-                .ConfigureAwait(false);
-        }
-        else
-        {
-            await currentUserService.UserHasRights(
-                new ProviderRights(providerAdmin.ProviderId),
-                new ProviderDeputyRights(providerAdmin.ProviderId)).ConfigureAwait(false);
-        }
-
-        var result = await providerAdminService.GetFullProviderAdmin(providerAdmin)
-            .ConfigureAwait(false);
-        return Ok(result);
+        return Ok(providerAdmin);
     }
 }

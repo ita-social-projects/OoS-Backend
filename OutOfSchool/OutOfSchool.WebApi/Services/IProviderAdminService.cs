@@ -73,5 +73,5 @@ public interface IProviderAdminService
     /// </summary>
     /// <param name="providerAdmin">ProviderAdmin's ProviderAdminProviderRelationDto.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<ProviderAdminDto> GetFullProviderAdmin(ProviderAdminProviderRelationDto providerAdmin);
+    Task<ProviderAdminDto> GetFullProviderAdmin(string providerAdminId);
 }

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Nest;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
@@ -23,6 +24,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     private readonly IMapper mapper;
     private readonly IProviderAdminOperationsService providerAdminOperationsService;
     private readonly IWorkshopService workshopService;
+    private readonly ICurrentUserService currentUserService;
 
     public ProviderAdminService(
         IHttpClientFactory httpClientFactory,
@@ -34,7 +36,8 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         IMapper mapper,
         ILogger<ProviderAdminService> logger,
         IProviderAdminOperationsService providerAdminOperationsService,
-        IWorkshopService workshopService)
+        IWorkshopService workshopService,
+        ICurrentUserService currentUserService)
         : base(httpClientFactory, communicationConfig.Value, logger)
     {
         this.identityServerConfig = identityServerConfig.Value;
@@ -44,6 +47,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         this.mapper = mapper;
         this.providerAdminOperationsService = providerAdminOperationsService;
         this.workshopService = workshopService;
+        this.currentUserService = currentUserService;
     }
 
     public async Task<Either<ErrorResponse, CreateProviderAdminDto>> CreateProviderAdminAsync(
@@ -499,16 +503,18 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     }
 
     /// <inheritdoc/>
-    public async Task<ProviderAdminDto> GetFullProviderAdmin(ProviderAdminProviderRelationDto providerAdmin)
+    public async Task<ProviderAdminDto> GetFullProviderAdmin(string providerAdminId)
     {
-        _ = providerAdmin ?? throw new ArgumentException("ProviderAdmin cannot be null!");
-
-        var user = (await userRepository.GetByFilter(u => u.Id == providerAdmin.UserId).ConfigureAwait(false))
-            .SingleOrDefault();
-        if (user == null)
+        var providerAdmin = await GetById(providerAdminId).ConfigureAwait(false);
+        if (providerAdmin == null)
         {
             return null;
         }
+
+        await CheckProviderOrDeputyRights(providerAdmin.ProviderId, providerAdmin.IsDeputy).ConfigureAwait(false);
+
+        var user = (await userRepository.GetByFilter(u => u.Id == providerAdmin.UserId).ConfigureAwait(false))
+            .SingleOrDefault();
 
         var result = mapper.Map<ProviderAdminDto>(user);
 
@@ -525,6 +531,21 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         }
 
         return result;
+    }
+
+    private async Task CheckProviderOrDeputyRights(Guid providerId, bool onlyProvider)
+    {
+        if (onlyProvider)
+        {
+            await currentUserService.UserHasRights(new ProviderRights(providerId))
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            await currentUserService.UserHasRights(
+                new ProviderRights(providerId),
+                new ProviderDeputyRights(providerId)).ConfigureAwait(false);
+        }
     }
 
     private static Expression<Func<ProviderAdminDto, bool>> PredicateBuild(ProviderAdminSearchFilter filter)
