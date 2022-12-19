@@ -1,41 +1,47 @@
 #nullable enable
 
 using System.Security.Claims;
+using AutoMapper;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.WebApi.Services;
 
 public class CurrentUserService : ICurrentUserService
 {
     private readonly ClaimsPrincipal? user;
-    private readonly IParentService parentService;
-    private readonly IChildService childService;
-    private readonly IProviderService providerService;
-    private readonly IProviderAdminService providerAdminService;
+    private readonly IParentRepository parentRepository;
+    private readonly IEntityRepository<Guid, Child> childRepository;
+    private readonly IProviderRepository providerRepository;
+    private readonly IProviderAdminRepository providerAdminRepository;
     private readonly ILogger<CurrentUserService> logger;
     private readonly ICacheService cache;
     private readonly AppDefaultsConfig options;
+    private readonly IMapper mapper;
 
     public CurrentUserService(
         ClaimsPrincipal? user,
-        IProviderService providerService,
-        IProviderAdminService providerAdminService,
-        IParentService parentService,
-        IChildService childService,
+        IProviderRepository providerRepository,
+        IProviderAdminRepository providerAdminRepository,
+        IParentRepository parentRepository,
+        IEntityRepository<Guid, Child> childRepository,
         ILogger<CurrentUserService> logger,
         ICacheService cache,
-        IOptions<AppDefaultsConfig> options)
+        IOptions<AppDefaultsConfig> options,
+        IMapper mapper)
     {
         this.user = user;
-        this.providerService = providerService;
-        this.providerAdminService = providerAdminService;
-        this.parentService = parentService;
-        this.childService = childService;
+        this.providerRepository = providerRepository;
+        this.providerAdminRepository = providerAdminRepository;
+        this.parentRepository = parentRepository;
+        this.childRepository = childRepository;
         this.logger = logger;
         this.cache = cache;
         this.options = options.Value;
+        this.mapper = mapper;
     }
 
     public string UserId => user?.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? string.Empty;
@@ -122,13 +128,35 @@ public class CurrentUserService : ICurrentUserService
             return false;
         }
 
-        var parent = await cache.GetOrAddAsync($"Rights_{UserId}", () => parentService.GetByUserId(UserId), TimeSpan.FromMinutes(5.0));
-        var result = parent.Id == parentId;
+        var parent = await cache.GetOrAddAsync(
+            $"Rights_{UserId}",
+            async () =>
+            {
+                var parents = await parentRepository
+                    .GetByFilter(p => p.UserId == UserId && p.Id == parentId);
+                return parents?.Select(mapper.Map<ParentDTO>).FirstOrDefault();
+            },
+            TimeSpan.FromMinutes(5.0));
+
+        // parentId == parent?.Id check is done in the filter,
+        // so only need to check if the filter worked
+        var result = parent is not null;
 
         if (result && childId != Guid.Empty)
         {
-            var child = await cache.GetOrAddAsync($"Rights_{UserId}_{childId}", () => childService.GetByIdAndUserId(childId, UserId), TimeSpan.FromMinutes(5.0));
-            result = child.ParentId == parentId;
+            var child = await cache.GetOrAddAsync(
+                $"Rights_{UserId}_{childId}",
+                async () =>
+                {
+                    var children = await childRepository
+                        .GetByFilter(child => child.Id == childId && child.ParentId == parentId);
+                    return children?.Select(mapper.Map<ChildDto>).FirstOrDefault();
+                },
+                TimeSpan.FromMinutes(5.0));
+
+            // parentId == child?.ParentId check is done in the filter,
+            // so only need to check if the filter worked
+            result = child is not null;
         }
 
         if (!result && options.AccessLogEnabled)
@@ -149,9 +177,19 @@ public class CurrentUserService : ICurrentUserService
             return false;
         }
 
-        var provider = await cache.GetOrAddAsync($"Rights_{UserId}", () => providerService.GetByUserId(UserId), TimeSpan.FromMinutes(5.0));
+        var provider = await cache.GetOrAddAsync(
+            $"Rights_{UserId}",
+            async () =>
+            {
+                var providers = await providerRepository
+                    .GetByFilter(p => p.UserId == UserId && p.Id == providerId);
+                return providers?.Select(mapper.Map<ProviderDto>).FirstOrDefault();
+            },
+            TimeSpan.FromMinutes(5.0));
 
-        var result = providerId == (provider?.Id ?? Guid.Empty);
+        // providerId == provider?.Id check is done in the filter,
+        // so only need to check if the filter worked
+        var result = provider is not null;
 
         if (!result && options.AccessLogEnabled)
         {
@@ -166,14 +204,24 @@ public class CurrentUserService : ICurrentUserService
 
     private async Task<bool> ProviderAdminHasRights(string providerAdminId)
     {
-        if (!IsDeputyOrProviderAdmin())
+        if (!IsDeputyOrProviderAdmin() || UserId != providerAdminId)
         {
             return false;
         }
 
-        var providerAdmin = await cache.GetOrAddAsync($"Rights_{UserId}", () => providerAdminService.GetById(UserId), TimeSpan.FromMinutes(5.0));
+        var providerAdmin = await cache.GetOrAddAsync(
+            $"Rights_{UserId}",
+            async () =>
+            {
+                var providerAdmins = await providerAdminRepository
+                    .GetByFilter(p => p.UserId == UserId);
+                return providerAdmins?.Select(mapper.Map<ProviderAdminProviderRelationDto>).FirstOrDefault();
+            },
+            TimeSpan.FromMinutes(5.0));
 
-        var result = providerAdmin.UserId == providerAdminId;
+        // providerAdminId == providerAdmin?.UserId check is done before the filter,
+        // so only need to check if the filter worked
+        var result = providerAdmin is not null;
 
         if (!result && options.AccessLogEnabled)
         {
@@ -195,7 +243,22 @@ public class CurrentUserService : ICurrentUserService
 
         var isUserRelatedAdmin = await cache.GetOrAddAsync(
             $"Rights_{UserId}_{providerId}_{workshopId}",
-            () => providerAdminService.CheckUserIsRelatedProviderAdmin(UserId, providerId, workshopId),
+            async () =>
+            {
+                var providerAdmin = await providerAdminRepository.GetByIdAsync(UserId, providerId);
+
+                if (providerAdmin is null)
+                {
+                    return false;
+                }
+
+                if (!providerAdmin.IsDeputy && workshopId != Guid.Empty)
+                {
+                    return providerAdmin.ManagedWorkshops.Any(w => w.Id == workshopId);
+                }
+
+                return true;
+            },
             TimeSpan.FromMinutes(5.0));
 
         if (!isUserRelatedAdmin && options.AccessLogEnabled)
