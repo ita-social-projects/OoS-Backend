@@ -27,6 +27,7 @@ public class WorkshopService : IWorkshopService
     private readonly string includingPropertiesForMappingWorkShopCard = $"{nameof(Workshop.Address)}";
 
     private readonly IWorkshopRepository workshopRepository;
+    private readonly IEntityRepository<long, DateTimeRange> dateTimeRangeRepository;
     private readonly IRatingService ratingService;
     private readonly ITeacherService teacherService;
     private readonly ILogger<WorkshopService> logger;
@@ -37,6 +38,7 @@ public class WorkshopService : IWorkshopService
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
     /// </summary>
     /// <param name="workshopRepository">Repository for Workshop entity.</param>
+    /// <param name="dateTimeRangeRepository">Repository for DateTimeRange entity.</param>
     /// <param name="ratingService">Rating service.</param>
     /// <param name="teacherService">Teacher service.</param>
     /// <param name="logger">Logger.</param>
@@ -44,6 +46,7 @@ public class WorkshopService : IWorkshopService
     /// <param name="workshopImagesService">Workshop images mediator.</param>
     public WorkshopService(
         IWorkshopRepository workshopRepository,
+        IEntityRepository<long, DateTimeRange> dateTimeRangeRepository,
         IRatingService ratingService,
         ITeacherService teacherService,
         ILogger<WorkshopService> logger,
@@ -51,6 +54,7 @@ public class WorkshopService : IWorkshopService
         IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService)
     {
         this.workshopRepository = workshopRepository;
+        this.dateTimeRangeRepository = dateTimeRangeRepository;
         this.ratingService = ratingService;
         this.teacherService = teacherService;
         this.logger = logger;
@@ -330,6 +334,7 @@ public class WorkshopService : IWorkshopService
         async Task<(Workshop updatedWorkshop, MultipleImageChangingResult multipleImageChangingResult,
             ImageChangingResult changingCoverImageResult)> UpdateWorkshopWithDependencies()
         {
+            await UpdateDateTimeRanges(dto.DateTimeRanges, dto.Id).ConfigureAwait(false);
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto.Id).ConfigureAwait(false);
 
             dto.ImageIds ??= new List<string>();
@@ -722,6 +727,19 @@ public class WorkshopService : IWorkshopService
                 var newTeacher = mapper.Map<TeacherDTO>(teacherDto);
                 newTeacher.WorkshopId = currentWorkshop.Id;
                 await teacherService.Create(newTeacher).ConfigureAwait(false);
+            }
+        }
+    }
+
+    private async Task UpdateDateTimeRanges(List<DateTimeRangeDto> dtos, Guid workshopId)
+    {
+        var ranges = mapper.Map<List<DateTimeRange>>(dtos);
+        foreach (var range in ranges)
+        {
+            if (await dateTimeRangeRepository.Any(r => r.Id == range.Id))
+            {
+                range.WorkshopId = workshopId;
+                await dateTimeRangeRepository.Update(range);
             }
         }
     }
