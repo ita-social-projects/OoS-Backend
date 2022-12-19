@@ -180,7 +180,7 @@ public class ChatWorkshopHub : Hub
             }
 
             // Send chatMessage.
-            await Clients.OthersInGroup(createdMessageDto.ChatRoomId.ToString())
+            await Clients.Group(createdMessageDto.ChatRoomId.ToString())
                 .SendAsync("ReceiveMessageInChatGroup", JsonConvert.SerializeObject(createdMessageDto))
                 .ConfigureAwait(false);
         }
