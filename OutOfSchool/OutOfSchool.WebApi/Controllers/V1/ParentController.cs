@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
-using OutOfSchool.Common.PermissionsModule;
-using OutOfSchool.WebApi.Extensions;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -19,13 +11,12 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// </summary>
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/[controller]/[action]")]
+[Route("api/v{version:apiVersion}/parents")]
 public class ParentController : ControllerBase
 {
     private readonly IParentService serviceParent;
     private readonly IApplicationService serviceApplication;
     private readonly IChildService serviceChild;
-    private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
 
     /// <summary>
@@ -35,41 +26,17 @@ public class ParentController : ControllerBase
     /// <param name="serviceParent">Parent service for ParentController.</param>
     /// <param name="serviceApplication">Application service for ParentController.</param>
     /// <param name="serviceChild">Child service for ParentController.</param>
-    /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
     public ParentController(
         IParentService serviceParent,
         IApplicationService serviceApplication,
         IChildService serviceChild,
-        IStringLocalizer<SharedResource> localizer,
         IMapper mapper)
     {
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.serviceParent = serviceParent ?? throw new ArgumentNullException(nameof(serviceParent));
         this.serviceApplication = serviceApplication ?? throw new ArgumentNullException(nameof(serviceApplication));
         this.serviceChild = serviceChild ?? throw new ArgumentNullException(nameof(serviceChild));
-    }
-
-    /// <summary>
-    /// To get all Parents from DB.
-    /// </summary>
-    /// <returns>List of Parents.</returns>
-    [HasPermission(Permissions.SystemManagement)]
-    [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ParentDTO>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Get()
-    {
-        var parents = await serviceParent.GetAll().ConfigureAwait(false);
-
-        if (!parents.Any())
-        {
-            return NoContent();
-        }
-
-        return Ok(parents);
     }
 
     /// <summary>
@@ -95,7 +62,7 @@ public class ParentController : ControllerBase
     /// To get information about workshops that parent applied child for.
     /// </summary>
     /// <returns>List of ParentCardDto.</returns>
-    [HttpGet]
+    [HttpGet("childrenworkshops")]
     [HasPermission(Permissions.ParentRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ParentCard>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -104,11 +71,10 @@ public class ParentController : ControllerBase
     {
         try
         {
-            string userId = User.FindFirst("sub")?.Value;
+            var userId = GettingUserProperties.GetUserId(HttpContext);
 
-            var parent = await serviceParent.GetByUserId(userId).ConfigureAwait(false);
-
-            var children = await serviceChild.GetByUserId(userId, new OffsetFilter() { From = 0, Size = int.MaxValue }).ConfigureAwait(false);
+            var children = await serviceChild.GetByUserId(userId, new OffsetFilter() {From = 0, Size = int.MaxValue})
+                .ConfigureAwait(false);
 
             var cards = new List<ParentCard>();
 
@@ -154,19 +120,8 @@ public class ParentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> Update(ParentPersonalInfo dto)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
-        string userId = User.FindFirst("sub")?.Value;
-
-        if (userId != dto.Id)
-        {
-            return StatusCode(403, "Forbidden to update another user.");
-        }
-
-        return Ok(await serviceParent.Update(dto).ConfigureAwait(false));
+        var result = await serviceParent.Update(dto);
+        return Ok(result);
     }
 
     /// <summary>
@@ -182,20 +137,6 @@ public class ParentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> Delete(Guid id)
     {
-        var parent = await serviceParent.GetById(id).ConfigureAwait(false);
-
-        if (parent is null)
-        {
-            return NoContent();
-        }
-
-        var userHasRights = await IsUserParentProfileOwner(parent.Id).ConfigureAwait(false);
-
-        if (!userHasRights)
-        {
-            return StatusCode(403, "Forbidden to delete another parent account.");
-        }
-
         await serviceParent.Delete(id).ConfigureAwait(false);
 
         return NoContent();
@@ -206,39 +147,14 @@ public class ParentController : ControllerBase
     /// </summary>
     /// <returns>Authorized parent's profile.</returns>
     [HasPermission(Permissions.ParentRead)]
-    [HttpGet]
+    [HttpGet("profile")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentDTO))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ParentDTO>> GetProfile()
     {
-        try
-        {
-            string userId = User.FindFirst("sub")?.Value;
-            var parentDTO = await serviceParent.GetByUserId(userId).ConfigureAwait(false);
-            return this.Ok(parentDTO);
-        }
-        catch (ArgumentException ex)
-        {
-            return this.BadRequest(ex.Message);
-        }
-    }
-
-    private async Task<bool> IsUserParentProfileOwner(Guid parentId)
-    {
-        // Parent can create/update/delete his/her account only if parent is the owner.
-        // Admin can manipulate data without checks.
-        if (User.IsInRole("parent"))
-        {
-            var userId = User.FindFirst("sub")?.Value;
-            var parent = await serviceParent.GetByUserId(userId).ConfigureAwait(false);
-
-            if (parentId != parent.Id)
-            {
-                return false;
-            }
-        }
-
-        return true;
+        var userId = GettingUserProperties.GetUserId(HttpContext);
+        var parentDto = await serviceParent.GetByUserId(userId).ConfigureAwait(false);
+        return parentDto is not null ? Ok(parentDto) : NoContent();
     }
 }

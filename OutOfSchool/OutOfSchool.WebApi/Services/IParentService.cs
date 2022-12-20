@@ -13,19 +13,6 @@ namespace OutOfSchool.WebApi.Services;
 public interface IParentService
 {
     /// <summary>
-    /// Add new Parent to the DB.
-    /// </summary>
-    /// <param name="parent">ParentDTO element.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<ParentDTO> Create(ParentDTO parent);
-
-    /// <summary>
-    /// Get all Parent objects from DB.
-    /// </summary>
-    /// <returns>List of Parent objects.</returns>
-    Task<IEnumerable<ParentDTO>> GetAll();
-
-    /// <summary>
     /// Get Parent objects from DB by filter.
     /// </summary>
     /// <param name="filter">Filter for Parent dto.</param>

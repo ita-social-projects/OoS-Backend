@@ -31,6 +31,7 @@ public class InstitutionController : Controller
     /// <summary>
     /// To get all Institution from DB.
     /// </summary>
+    /// <param name="filterNonGovernment">Should we show only government institutions.</param>
     /// <returns>List of all Institution, or no content.</returns>
     /// <response code="200">One or more Institution were found.</response>
     /// <response code="204">No Institution was found.</response>
@@ -42,9 +43,9 @@ public class InstitutionController : Controller
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] bool filterNonGovernment = false)
     {
-        var institutions = await service.GetAll().ConfigureAwait(false);
+        var institutions = await service.GetAll(filterNonGovernment).ConfigureAwait(false);
 
         if (!institutions.Any())
         {

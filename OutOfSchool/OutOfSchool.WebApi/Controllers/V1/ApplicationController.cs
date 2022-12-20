@@ -49,7 +49,7 @@ public class ApplicationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
-    public async Task<IActionResult> Get(ApplicationFilter filter)
+    public async Task<IActionResult> Get([FromQuery] ApplicationFilter filter)
     {
         var applications = await applicationService.GetAll(filter).ConfigureAwait(false);
 

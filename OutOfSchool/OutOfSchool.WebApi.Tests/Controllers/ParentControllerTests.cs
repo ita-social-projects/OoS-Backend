@@ -29,7 +29,6 @@ public class ParentControllerTests
     private Mock<IApplicationService> serviceApplication;
     private Mock<IChildService> serviceChild;
     private Mock<HttpContext> httpContextMoq;
-    private Mock<IStringLocalizer<SharedResource>> localizer;
     private IMapper mapper;
 
     private List<ParentDTO> parents;
@@ -45,7 +44,6 @@ public class ParentControllerTests
         serviceApplication = new Mock<IApplicationService>();
         serviceChild = new Mock<IChildService>();
 
-        localizer = new Mock<IStringLocalizer<SharedResource>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
 
         httpContextMoq = new Mock<HttpContext>();
@@ -58,7 +56,6 @@ public class ParentControllerTests
             serviceParent.Object,
             serviceApplication.Object,
             serviceChild.Object,
-            localizer.Object,
             mapper)
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
@@ -163,12 +160,11 @@ public class ParentControllerTests
         httpContextMoq.Setup(x => x.User.IsInRole("parent"))
             .Returns(true);
 
-        controller = new ParentController(serviceParent.Object, serviceApplication.Object, serviceChild.Object, localizer.Object, mapper)
+        controller = new ParentController(serviceParent.Object, serviceApplication.Object, serviceChild.Object, mapper)
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
         };
 
-        serviceParent.Setup(x => x.GetByUserId("de804f35-bda8-4b8n-5eb7-70a5tyfg90a6")).ReturnsAsync(parent);
         serviceChild.Setup(x => x.GetByUserId("de804f35-bda8-4b8n-5eb7-70a5tyfg90a6", It.IsAny<OffsetFilter>()))
             .ReturnsAsync(new SearchResult<ChildDto>() { TotalAmount = children.Count(), Entities = children });
         serviceApplication.Setup(x => x.GetAllByChild(children.First().Id)).ReturnsAsync(application);
@@ -181,37 +177,6 @@ public class ParentControllerTests
         Assert.AreEqual(result.StatusCode, 200);
     }
 
-    #endregion
-
-    #region GetParents
-    [Test]
-    public async Task GetParents_WhenCalled_ReturnsOkResultObject()
-    {
-        // Arrange
-        serviceParent.Setup(x => x.GetAll()).ReturnsAsync(parents);
-
-        // Act
-        var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(result.StatusCode, 200);
-    }
-
-    [Test]
-    public async Task GetParents_WhenThereIsNoTAnyParents_ShouldReturnNoConterntResult()
-    {
-        // Arrange
-        var emptyList = new List<ParentDTO>();
-        serviceParent.Setup(x => x.GetAll()).ReturnsAsync(emptyList);
-
-        // Act
-        var result = await controller.Get().ConfigureAwait(false) as NoContentResult;
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(204, result.StatusCode);
-    }
     #endregion
 
     #region GetParentById
@@ -284,34 +249,14 @@ public class ParentControllerTests
     }
 
     [Test]
-    public async Task UpdateParent_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
+    public void UpdateParent_WhenIdUserHasNoRights_ShouldReturn403ObjectResult()
     {
         // Arrange
-        controller.ModelState.AddModelError("UpdateParent", "Invalid model state.");
+        serviceParent.Setup(x => x.Update(It.IsAny<ParentPersonalInfo>())).ThrowsAsync(new UnauthorizedAccessException());
 
-        // Act
-        var result = await controller.Update(new ParentPersonalInfo()).ConfigureAwait(false);
-
-        // Assert
-        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-        Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+        // Act & Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(() => controller.Update(new ParentPersonalInfo()));
     }
-
-    //[Test]
-    //public async Task UpdateParent_WhenIdUserHasNoRights_ShouldReturn403ObjectResult()
-    //{
-    //    // Arrange
-    //    var notAuthorParent = new ParentDTO() { Id = 7, UserId = "Forbidden Id" };
-    //    serviceParent.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(notAuthorParent);
-
-    //    // Act
-    //    var result = await controller.Update(new ShortUserDto()).ConfigureAwait(false) as ObjectResult;
-
-    //    // Assert
-    //    serviceParent.Verify(x => x.Update(It.IsAny<ShortUserDto>()), Times.Never);
-    //    Assert.IsNotNull(result);
-    //    Assert.AreEqual(403, result.StatusCode);
-    //}
     #endregion
 
     #region DeleteParent
