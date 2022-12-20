@@ -28,6 +28,7 @@ public class WorkshopServiceTests
 {
     private IWorkshopService workshopService;
     private Mock<IWorkshopRepository> workshopRepository;
+    private Mock<IEntityRepository<long, DateTimeRange>> dateTimeRangeRepository;
     private Mock<IRatingService> ratingService;
     private Mock<ITeacherService> teacherService;
     private Mock<ILogger<WorkshopService>> logger;
@@ -39,6 +40,7 @@ public class WorkshopServiceTests
     public void SetUp()
     {
         workshopRepository = new Mock<IWorkshopRepository>();
+        dateTimeRangeRepository = new Mock<IEntityRepository<long, DateTimeRange>>();
         ratingService = new Mock<IRatingService>();
         teacherService = new Mock<ITeacherService>();
         logger = new Mock<ILogger<WorkshopService>>();
@@ -48,6 +50,7 @@ public class WorkshopServiceTests
         workshopService =
             new WorkshopService(
                 workshopRepository.Object,
+                dateTimeRangeRepository.Object,
                 ratingService.Object,
                 teacherService.Object,
                 logger.Object,
