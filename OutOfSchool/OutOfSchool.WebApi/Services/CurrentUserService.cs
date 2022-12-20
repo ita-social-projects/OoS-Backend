@@ -70,6 +70,7 @@ public class CurrentUserService : ICurrentUserService
             var provider = userTypes.OfType<ProviderRights>().FirstOrDefault();
             var providerAdmin = userTypes.OfType<ProviderAdminRights>().FirstOrDefault();
             var providerAdminWorkshop = userTypes.OfType<ProviderAdminWorkshopRights>().FirstOrDefault();
+            var providerDeputy = userTypes.OfType<ProviderDeputyRights>().FirstOrDefault();
 
             var result = await Task.WhenAll(
                 new List<Task<bool>>
@@ -78,6 +79,7 @@ public class CurrentUserService : ICurrentUserService
                         UserHasRights(provider),
                         UserHasRights(providerAdmin),
                         UserHasRights(providerAdminWorkshop),
+                        UserHasRights(providerDeputy),
                     }
                     .Select(Execute));
             userHasRights = result.Any(hasRight => hasRight);
@@ -117,6 +119,7 @@ public class CurrentUserService : ICurrentUserService
             ProviderAdminRights providerAdmin => ProviderAdminHasRights(providerAdmin.providerAdminId),
             ProviderAdminWorkshopRights providerAdminWorkshop => ProviderAdminHasWorkshopRights(providerAdminWorkshop.providerId, providerAdminWorkshop.workshopId),
             ProviderRights provider => ProviderHasRights(provider.providerId),
+            ProviderDeputyRights providerDeputy => ProviderDeputyHasRights(providerDeputy.providerId),
             null => Task.FromResult(false),
             _ => throw new NotImplementedException("Unknown user rights type")
         };
@@ -229,6 +232,36 @@ public class CurrentUserService : ICurrentUserService
                 "Unauthorized access: User ({UserId}) tried to access ProviderAdmin ({ProviderAdminId}) data",
                 UserId,
                 providerAdminId);
+        }
+
+        return result;
+    }
+
+    private async Task<bool> ProviderDeputyHasRights(Guid providerId)
+    {
+        if (!IsInSubRole(Subrole.ProviderDeputy))
+        {
+            return false;
+        }
+
+        var providerDeputy = await cache.GetOrAddAsync(
+            $"Rights_{UserId}",
+            async () =>
+            {
+                var providerAdmins = await providerAdminRepository
+                    .GetByFilter(p => p.UserId == UserId);
+                return providerAdmins?.Select(mapper.Map<ProviderAdminProviderRelationDto>).FirstOrDefault();
+            },
+            TimeSpan.FromMinutes(5.0));
+
+        var result = providerDeputy?.ProviderId == providerId && providerDeputy.IsDeputy;
+
+        if (!result && options.AccessLogEnabled)
+        {
+            logger.LogWarning(
+                "Unauthorized access: User ({UserId}) tried to access ProviderDeputy ({providerId}) data",
+                UserId,
+                providerId);
         }
 
         return result;

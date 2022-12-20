@@ -17,3 +17,6 @@ public record ProviderRights(Guid providerId)
 
 public record ProviderAdminWorkshopRights(Guid providerId, Guid workshopId = default)
     : IUserRights;
+
+public record ProviderDeputyRights(Guid providerId)
+    : IUserRights;

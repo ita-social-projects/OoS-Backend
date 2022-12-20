@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Nest;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
@@ -23,6 +24,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     private readonly IMapper mapper;
     private readonly IProviderAdminOperationsService providerAdminOperationsService;
     private readonly IWorkshopService workshopService;
+    private readonly ICurrentUserService currentUserService;
 
     public ProviderAdminService(
         IHttpClientFactory httpClientFactory,
@@ -34,7 +36,8 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         IMapper mapper,
         ILogger<ProviderAdminService> logger,
         IProviderAdminOperationsService providerAdminOperationsService,
-        IWorkshopService workshopService)
+        IWorkshopService workshopService,
+        ICurrentUserService currentUserService)
         : base(httpClientFactory, communicationConfig.Value, logger)
     {
         this.identityServerConfig = identityServerConfig.Value;
@@ -44,6 +47,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         this.mapper = mapper;
         this.providerAdminOperationsService = providerAdminOperationsService;
         this.workshopService = workshopService;
+        this.currentUserService = currentUserService;
     }
 
     public async Task<Either<ErrorResponse, CreateProviderAdminDto>> CreateProviderAdminAsync(
@@ -322,7 +326,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     {
         var providersAdmins = await providerAdminRepository.GetByFilter(p => p.UserId == userId && !p.IsDeputy)
             .ConfigureAwait(false);
-        return providersAdmins.SelectMany(admin => admin.ManagedWorkshops, (admin, workshops) => new {workshops})
+        return providersAdmins.SelectMany(admin => admin.ManagedWorkshops, (admin, workshops) => new { workshops })
             .Select(x => x.workshops.Id);
     }
 
@@ -496,6 +500,52 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
                                                                                && p.IsDeputy).ConfigureAwait(false);
 
         return providersDeputies.Select(d => d.UserId);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ProviderAdminDto> GetFullProviderAdmin(string providerAdminId)
+    {
+        var providerAdmin = await GetById(providerAdminId).ConfigureAwait(false);
+        if (providerAdmin == null)
+        {
+            return null;
+        }
+
+        await CheckProviderOrDeputyRights(providerAdmin.ProviderId, providerAdmin.IsDeputy).ConfigureAwait(false);
+
+        var user = (await userRepository.GetByFilter(u => u.Id == providerAdmin.UserId).ConfigureAwait(false))
+            .SingleOrDefault();
+
+        var result = mapper.Map<ProviderAdminDto>(user);
+
+        result.IsDeputy = providerAdmin.IsDeputy;
+        if (user.IsBlocked)
+        {
+            result.AccountStatus = AccountStatus.Blocked;
+        }
+        else
+        {
+            result.AccountStatus = user.LastLogin == DateTimeOffset.MinValue
+                ? AccountStatus.NeverLogged
+                : AccountStatus.Accepted;
+        }
+
+        return result;
+    }
+
+    private async Task CheckProviderOrDeputyRights(Guid providerId, bool onlyProvider)
+    {
+        if (onlyProvider)
+        {
+            await currentUserService.UserHasRights(new ProviderRights(providerId))
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            await currentUserService.UserHasRights(
+                new ProviderRights(providerId),
+                new ProviderDeputyRights(providerId)).ConfigureAwait(false);
+        }
     }
 
     private static Expression<Func<ProviderAdminDto, bool>> PredicateBuild(ProviderAdminSearchFilter filter)

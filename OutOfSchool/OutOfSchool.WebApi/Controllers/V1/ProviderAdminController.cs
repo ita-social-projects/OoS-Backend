@@ -253,4 +253,27 @@ public class ProviderAdminController : Controller
 
         return Ok(relatedWorkshops);
     }
+
+    /// <summary>
+    /// Get ProviderAdmin by its id.
+    /// </summary>
+    /// <param name="providerAdminId">ProviderAdmin's id.</param>
+    /// <returns>Info about ProviderAdmin.</returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderAdminDto))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("{providerAdminId}")]
+    public async Task<IActionResult> GetProviderAdminById(string providerAdminId)
+    {
+        var providerAdmin = await providerAdminService.GetFullProviderAdmin(providerAdminId)
+            .ConfigureAwait(false);
+        if (providerAdmin == null)
+        {
+            return NoContent();
+        }
+
+        return Ok(providerAdmin);
+    }
 }
