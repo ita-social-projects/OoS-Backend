@@ -196,6 +196,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Address, opt => opt.Ignore());
 
         CreateMap<SocialGroup, SocialGroupDto>().ReverseMap();
+        CreateMap<SocialGroup, SocialGroupCreate>().ReverseMap();
 
         CreateMap<Child, ChildDto>();
         CreateMap<ChildDto, Child>()
