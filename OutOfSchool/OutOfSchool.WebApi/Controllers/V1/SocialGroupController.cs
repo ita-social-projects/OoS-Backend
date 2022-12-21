@@ -97,6 +97,7 @@ public class SocialGroupController : ControllerBase
     /// <summary>
     /// Update info about a Social Group in the database.
     /// </summary>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <param name="dto">Social Group to update.</param>
     /// <returns>Social Group.</returns>
     [HasPermission(Permissions.SystemManagement)]
@@ -105,9 +106,9 @@ public class SocialGroupController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(SocialGroupDto dto)
+    public async Task<IActionResult> Update(SocialGroupDto dto, LocalizationType localization = LocalizationType.Ua)
     {
-        return Ok(await service.Update(dto).ConfigureAwait(false));
+        return Ok(await service.Update(dto, localization).ConfigureAwait(false));
     }
 
     /// <summary>

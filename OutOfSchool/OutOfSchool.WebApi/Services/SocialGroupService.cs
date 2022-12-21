@@ -102,17 +102,28 @@ public class SocialGroupService : ISocialGroupService
     }
 
     /// <inheritdoc/>
-    public async Task<SocialGroupDto> Update(SocialGroupDto dto)
+    public async Task<SocialGroupDto> Update(SocialGroupDto dto, LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogInformation($"Updating SocialGroup with Id = {dto?.Id} started.");
+        logger.LogInformation($"Updating SocialGroup with Id = {dto?.Id}, {localization} localization, started.");
+
+        var socialGroupLocalized = await repository.GetById(dto.Id).ConfigureAwait(false);
+
+        if (localization == LocalizationType.En) socialGroupLocalized.NameEn = dto.Name;
+        else socialGroupLocalized.Name = dto.Name;
 
         try
         {
-            var socialGroup = await repository.Update(mapper.Map<SocialGroup>(dto)).ConfigureAwait(false);
+            var socialGroup = await repository.Update(mapper.Map<SocialGroup>(socialGroupLocalized)).ConfigureAwait(false);
 
             logger.LogInformation($"SocialGroup with Id = {socialGroup?.Id} updated succesfully.");
 
-            return mapper.Map<SocialGroupDto>(socialGroup);
+            var socialGroupDto = new SocialGroupDto()
+            {
+                Id = socialGroup.Id,
+                Name = localization == LocalizationType.En ? socialGroup.NameEn : socialGroup.Name,
+            };
+
+            return socialGroupDto;
         }
         catch (DbUpdateConcurrencyException)
         {

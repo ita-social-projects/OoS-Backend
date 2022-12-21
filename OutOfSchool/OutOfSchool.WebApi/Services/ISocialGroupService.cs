@@ -35,9 +35,10 @@ public interface ISocialGroupService
     /// <summary>
     /// Update entity.
     /// </summary>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <param name="dto">SocialGroup entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<SocialGroupDto> Update(SocialGroupDto dto);
+    Task<SocialGroupDto> Update(SocialGroupDto dto, LocalizationType localization = LocalizationType.Ua);
 
     /// <summary>
     ///  Delete entity.
