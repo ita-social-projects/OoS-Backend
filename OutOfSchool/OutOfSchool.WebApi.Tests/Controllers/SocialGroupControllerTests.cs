@@ -126,7 +126,7 @@ public class SocialGroupControllerTests
     public async Task UpdateSocialGroup_WhenModelIsValid_ReturnsOkObjectResult()
     {
         // Arrange
-        service.Setup(x => x.Update(socialGroup)).ReturnsAsync(socialGroup);
+        service.Setup(x => x.Update(socialGroup, LocalizationType.Ua)).ReturnsAsync(socialGroup);
 
         // Act
         var result = await controller.Update(socialGroup).ConfigureAwait(false) as OkObjectResult;
