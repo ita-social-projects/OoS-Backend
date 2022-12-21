@@ -77,43 +77,6 @@ public class ParentService : IParentService
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<ParentDTO>> GetByFilter(SearchStringFilter filter)
-    {
-        logger.LogInformation("Getting all Parents started (by filter)");
-
-        if (!currentUserService.IsAdmin())
-        {
-            throw new UnauthorizedAccessException("User has no rights to perform operation");
-        }
-
-        filter ??= new SearchStringFilter();
-
-        var filterPredicate = PredicateBuild(filter);
-
-        var count = await repositoryParent.Count(filterPredicate).ConfigureAwait(false);
-
-        var sortExpression = new Dictionary<Expression<Func<Parent, object>>, SortDirection>
-        {
-            {x => x.User.FirstName, SortDirection.Ascending},
-        };
-
-        var parents = await repositoryParent
-            .Get(filter.From, filter.Size, string.Empty, filterPredicate, sortExpression)
-            .ToListAsync()
-            .ConfigureAwait(false);
-
-        logger.LogInformation("All {Count} records were successfully received from the Parent table", parents.Count);
-
-        var result = new SearchResult<ParentDTO>()
-        {
-            TotalAmount = count,
-            Entities = parents.Select(entity => mapper.Map<ParentDTO>(entity)).ToList(),
-        };
-
-        return result;
-    }
-
-    /// <inheritdoc/>
     public async Task<ParentDTO> GetByUserId(string id)
     {
         logger.LogInformation("Getting Parent by UserId started. Looking UserId is {Id}", id);
@@ -146,23 +109,6 @@ public class ParentService : IParentService
         await currentUserService.UserHasRights(new ParentRights(info?.Id ?? Guid.Empty));
 
         return mapper.Map<ParentPersonalInfo>(info);
-    }
-
-    /// <inheritdoc/>
-    public async Task<ParentDTO> GetById(Guid id)
-    {
-        logger.LogInformation("Getting Parent by Id started. Looking Id = {Id}", id);
-
-        if (!currentUserService.IsAdmin())
-        {
-            await currentUserService.UserHasRights(new ParentRights(id));
-        }
-
-        var parent = await repositoryParent.GetById(id);
-
-        logger.LogInformation("Successfully got a Parent with Id = {Id}", id);
-
-        return mapper.Map<ParentDTO>(parent);
     }
 
     /// <inheritdoc/>
@@ -210,29 +156,5 @@ public class ParentService : IParentService
             logger.LogError(ex, "Updating Parent with UserId = {ParentId} failed", dto.Id);
             throw;
         }
-    }
-
-    private Expression<Func<Parent, bool>> PredicateBuild(SearchStringFilter filter)
-    {
-        var predicate = PredicateBuilder.True<Parent>();
-
-        if (!string.IsNullOrWhiteSpace(filter.SearchString))
-        {
-            var tempPredicate = PredicateBuilder.False<Parent>();
-
-            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
-            {
-                tempPredicate = tempPredicate.Or(
-                    x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                         || x.User.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                         || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                         || x.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                         || x.User.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
-            }
-
-            predicate = predicate.And(tempPredicate);
-        }
-
-        return predicate;
     }
 }
