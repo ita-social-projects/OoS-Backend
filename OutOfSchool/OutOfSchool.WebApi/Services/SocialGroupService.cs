@@ -64,11 +64,16 @@ public class SocialGroupService : ISocialGroupService
     }
 
     /// <inheritdoc/>
-    public async Task<SocialGroupDto> GetById(long id)
+    public async Task<SocialGroupDto> GetById(long id, LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogInformation($"Getting SocialGroup by Id started. Looking Id = {id}.");
+        logger.LogInformation($"Getting SocialGroup by Id, {localization} localization, started. Looking Id = {id}.");
 
         var socialGroup = await repository.GetById(id).ConfigureAwait(false);
+        var socialGroupsLocalized = new SocialGroupDto()
+        {
+            Id = socialGroup.Id,
+            Name = localization == LocalizationType.En ? socialGroup.NameEn : socialGroup.Name,
+        };
 
         if (socialGroup == null)
         {
@@ -77,9 +82,9 @@ public class SocialGroupService : ISocialGroupService
                 localizer["The id cannot be greater than number of table entities."]);
         }
 
-        logger.LogInformation($"Successfully got a SocialGroup with Id = {id}.");
+        logger.LogInformation($"Successfully got a SocialGroup with Id = {id} and {localization} localization.");
 
-        return mapper.Map<SocialGroupDto>(socialGroup);
+        return socialGroupsLocalized;
     }
 
     /// <inheritdoc/>

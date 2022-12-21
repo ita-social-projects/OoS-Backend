@@ -65,13 +65,13 @@ public class SocialGroupControllerTests
 
     [Test]
     [TestCase(1)]
-    public async Task GetSocialGroupById_WhenIdIsValid_ReturnOkResultObject(long id)
+    public async Task GetSocialGroupById_WhenIdIsValid_ReturnOkResultObject(long id, LocalizationType localization = LocalizationType.Ua)
     {
         // Arrange
-        service.Setup(x => x.GetById(id)).ReturnsAsync(socialGroups.SingleOrDefault(x => x.Id == id));
+        service.Setup(x => x.GetById(id, localization)).ReturnsAsync(socialGroups.SingleOrDefault(x => x.Id == id));
 
         // Act
-        var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.GetById(id, localization).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -80,25 +80,25 @@ public class SocialGroupControllerTests
 
     [Test]
     [TestCase(-50)]
-    public void GetSocialGroupById_WhenIdIsInvalid_ReturnsArgumentOutOfRangeException(long id)
+    public void GetSocialGroupById_WhenIdIsInvalid_ReturnsArgumentOutOfRangeException(long id, LocalizationType localization = LocalizationType.Ua)
     {
         // Arrange
-        service.Setup(x => x.GetById(id)).ReturnsAsync(socialGroups.SingleOrDefault(x => x.Id == id));
+        service.Setup(x => x.GetById(id, localization)).ReturnsAsync(socialGroups.SingleOrDefault(x => x.Id == id));
 
         // Act and Assert
         Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-            async () => await controller.GetById(id).ConfigureAwait(false));
+            async () => await controller.GetById(id, localization).ConfigureAwait(false));
     }
 
     [Test]
     [TestCase(100)]
-    public async Task GetSocialGroupById_WhenIdIsNotValid_ReturnsEmptyObject(long id)
-    {
+    public async Task GetSocialGroupById_WhenIdIsNotValid_ReturnsEmptyObject(long id, LocalizationType localization = LocalizationType.Ua)
+    {   
         // Arrange
-        service.Setup(x => x.GetById(id)).ReturnsAsync(socialGroups.SingleOrDefault(x => x.Id == id));
+        service.Setup(x => x.GetById(id, localization)).ReturnsAsync(socialGroups.SingleOrDefault(x => x.Id == id));
 
         // Act
-        var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.GetById(id, localization).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
