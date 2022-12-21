@@ -22,6 +22,7 @@ public class SocialGroupControllerTests
 
     private IEnumerable<SocialGroupDto> socialGroups;
     private SocialGroupDto socialGroup;
+    private SocialGroupCreate socialGroupLocalized;
 
     [SetUp]
     public void Setup()
@@ -33,6 +34,7 @@ public class SocialGroupControllerTests
 
         socialGroups = FakeSocialGroups();
         socialGroup = FakeSocialGroup();
+        socialGroupLocalized = FakeSocialGroupLocalized();
     }
 
     [Test]
@@ -110,10 +112,10 @@ public class SocialGroupControllerTests
     public async Task CreateSocialGroup_WhenModelIsValid_ReturnsCreatedAtActionResult()
     {
         // Arrange
-        service.Setup(x => x.Create(socialGroup)).ReturnsAsync(socialGroup);
+        service.Setup(x => x.Create(socialGroupLocalized)).ReturnsAsync(socialGroupLocalized);
 
         // Act
-        var result = await controller.Create(socialGroup).ConfigureAwait(false) as CreatedAtActionResult;
+        var result = await controller.Create(socialGroupLocalized).ConfigureAwait(false) as CreatedAtActionResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -181,6 +183,16 @@ public class SocialGroupControllerTests
         {
             Id = 1,
             Name = "Test",
+        };
+    }
+
+    private SocialGroupCreate FakeSocialGroupLocalized()
+    {
+        return new SocialGroupCreate()
+        {
+            Id = 1,
+            Name = "Тест",
+            NameEn = "Test",
         };
     }
 

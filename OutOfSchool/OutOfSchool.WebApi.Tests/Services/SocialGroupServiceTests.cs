@@ -87,13 +87,14 @@ public class SocialGroupServiceTests
     public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
     {
         // Arrange
-        var expected = new SocialGroupDto() { Name = "TestName", };
+        var expected = new SocialGroupCreate() { Name = "ТестІмя", NameEn = "TestName" };
 
         // Act
         var result = await service.Create(expected).ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(expected.Name, result.Name);
+        Assert.AreEqual(expected.NameEn, result.NameEn);
     }
 
     [Test]

@@ -88,7 +88,7 @@ public class SocialGroupService : ISocialGroupService
     }
 
     /// <inheritdoc/>
-    public async Task<SocialGroupDto> Create(SocialGroupDto dto)
+    public async Task<SocialGroupCreate> Create(SocialGroupCreate dto)
     {
         logger.LogInformation("SocialGroup creating was started.");
 
@@ -98,7 +98,7 @@ public class SocialGroupService : ISocialGroupService
 
         logger.LogInformation($"SocialGroup with Id = {newSocialGroup?.Id} created successfully.");
 
-        return mapper.Map<SocialGroupDto>(newSocialGroup);
+        return mapper.Map<SocialGroupCreate>(newSocialGroup);
     }
 
     /// <inheritdoc/>

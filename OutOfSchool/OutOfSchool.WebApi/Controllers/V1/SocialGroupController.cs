@@ -84,7 +84,7 @@ public class SocialGroupController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(SocialGroupDto dto)
+    public async Task<IActionResult> Create(SocialGroupCreate dto)
     {
         var socialGroup = await service.Create(dto).ConfigureAwait(false);
 
