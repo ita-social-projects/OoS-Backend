@@ -20,9 +20,10 @@ public interface ISocialGroupService
     /// <summary>
     /// Get entity by it's key.
     /// </summary>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <param name="id">Key in the table.</param>
     /// <returns>SocialGroup.</returns>
-    Task<SocialGroupDto> GetById(long id);
+    Task<SocialGroupDto> GetById(long id, LocalizationType localization = LocalizationType.Ua);
 
     /// <summary>
     /// Add entity.

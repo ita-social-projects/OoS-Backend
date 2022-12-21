@@ -58,6 +58,7 @@ public class SocialGroupController : ControllerBase
     /// <summary>
     /// Get Social Group by it's id.
     /// </summary>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <param name="id">Social Group id.</param>
     /// <returns>Social Group.</returns>
     [HasPermission(Permissions.ImpersonalDataRead)]
@@ -65,11 +66,11 @@ public class SocialGroupController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(long id)
+    public async Task<IActionResult> GetById(long id, LocalizationType localization = LocalizationType.Ua)
     {
         this.ValidateId(id, localizer);
 
-        return Ok(await service.GetById(id).ConfigureAwait(false));
+        return Ok(await service.GetById(id, localization).ConfigureAwait(false));
     }
 
     /// <summary>
