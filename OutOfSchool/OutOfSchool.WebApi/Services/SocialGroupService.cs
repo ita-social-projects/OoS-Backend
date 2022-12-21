@@ -8,6 +8,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 
@@ -44,17 +45,22 @@ public class SocialGroupService : ISocialGroupService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<SocialGroupDto>> GetAll()
+    public async Task<IEnumerable<SocialGroupDto>> GetAll(LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogInformation("Getting all Social Groups started.");
+        logger.LogInformation($"Getting all Social Groups, {localization} localization, started.");
 
         var socialGroups = await repository.GetAll().ConfigureAwait(false);
-
+        var socialGroupsLocalized = socialGroups.Select(x =>
+        new SocialGroupDto()
+        {
+            Id = x.Id,
+            Name = localization == LocalizationType.En ? x.NameEn : x.Name,
+        });
         logger.LogInformation(!socialGroups.Any()
             ? "SocialGroup table is empty."
             : $"All {socialGroups.Count()} records were successfully received from the SocialGroup table");
 
-        return socialGroups.Select(socialGroup => mapper.Map<SocialGroupDto>(socialGroup)).ToList();
+        return mapper.Map<List<SocialGroupDto>>(socialGroupsLocalized);
     }
 
     /// <inheritdoc/>

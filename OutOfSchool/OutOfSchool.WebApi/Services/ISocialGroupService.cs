@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -12,8 +13,9 @@ public interface ISocialGroupService
     /// <summary>
     /// Get all entities.
     /// </summary>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <returns>List of all SocialGroups.</returns>
-    Task<IEnumerable<SocialGroupDto>> GetAll();
+    Task<IEnumerable<SocialGroupDto>> GetAll(LocalizationType localization = LocalizationType.Ua);
 
     /// <summary>
     /// Get entity by it's key.
