@@ -7,6 +7,7 @@ using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.WebApi.Controllers.V1;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -35,10 +36,10 @@ public class SocialGroupControllerTests
     }
 
     [Test]
-    public async Task GetSocialGroups_WhenCalled_ReturnsOkResultObject()
+    public async Task GetSocialGroups_WhenCalled_ReturnsOkResultObject(LocalizationType localization = LocalizationType.Ua)
     {
         // Arrange
-        service.Setup(x => x.GetAll()).ReturnsAsync(socialGroups);
+        service.Setup(x => x.GetAll(localization)).ReturnsAsync(socialGroups);
 
         // Act
         var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
@@ -49,10 +50,10 @@ public class SocialGroupControllerTests
     }
 
     [Test]
-    public async Task GetSocialGroups_WhenEmptyCollection_ReturnsNoContentResult()
+    public async Task GetSocialGroups_WhenEmptyCollection_ReturnsNoContentResult(LocalizationType localization = LocalizationType.Ua)
     {
         // Arrange
-        service.Setup(x => x.GetAll()).ReturnsAsync(new List<SocialGroupDto>());
+        service.Setup(x => x.GetAll(localization)).ReturnsAsync(new List<SocialGroupDto>());
 
         // Act
         var result = await controller.Get().ConfigureAwait(false) as NoContentResult;
