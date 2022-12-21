@@ -38,9 +38,8 @@ public class PersonalInfoController : ControllerBase
     /// Gets Parent personal information.
     /// </summary>
     /// <returns>Parent personal information.</returns>
-    [Route($"Parent/{GetPersonalInfoActionName}")]
     [HasPermission(Permissions.ParentPersonalInfo)]
-    [HttpGet]
+    [HttpGet("parents/personalinfo")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentPersonalInfo))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -98,9 +97,8 @@ public class PersonalInfoController : ControllerBase
     /// </summary>
     /// <param name="dto">New Parent personal information.</param>
     /// <returns>Updated Parent personal information.</returns>
-    [Route($"Parent/{UpdatePersonalInfoActionName}")]
     [HasPermission(Permissions.ParentPersonalInfo)]
-    [HttpPut]
+    [HttpPut("parents/personalinfo")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentPersonalInfo))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -108,11 +106,8 @@ public class PersonalInfoController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdateParentPersonalInfo(ParentPersonalInfo dto)
     {
-        var userId = GettingUserProperties.GetUserId(HttpContext);
-
-        return userId != dto.Id ?
-            StatusCode(403, "Forbidden to update another user")
-            : Ok(await parentService.Update(dto));
+        var result = await parentService.Update(dto);
+        return Ok(result);
     }
 
     /// <summary>

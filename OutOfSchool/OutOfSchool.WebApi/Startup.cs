@@ -157,7 +157,6 @@ public static class Startup
         services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
 
         // entities services
-        services.AddTransient<IAddressService, AddressService>();
         services.AddTransient<IApplicationService, ApplicationService>();
         services.AddTransient<IChatMessageWorkshopService, ChatMessageWorkshopService>();
         services.AddTransient<IChatRoomWorkshopService, ChatRoomWorkshopService>();
