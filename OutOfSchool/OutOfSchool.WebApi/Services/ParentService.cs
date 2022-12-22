@@ -95,7 +95,7 @@ public class ParentService : IParentService
     }
 
     /// <inheritdoc/>
-    public async Task<ParentPersonalInfo> GetPersonalInfoByUserId(string userId)
+    public async Task<ShortUserDto> GetPersonalInfoByUserId(string userId)
     {
         if (string.IsNullOrEmpty(userId))
         {
@@ -108,13 +108,23 @@ public class ParentService : IParentService
 
         await currentUserService.UserHasRights(new ParentRights(info?.Id ?? Guid.Empty));
 
-        return mapper.Map<ParentPersonalInfo>(info);
+        return mapper.Map<ShortUserDto>(info);
     }
 
     /// <inheritdoc/>
-    public async Task<ParentPersonalInfo> Update(ParentPersonalInfo dto)
+    public Task<ShortUserDto> Update(ShortUserDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
+        if (dto.Gender is null || dto.DateOfBirth is null)
+        {
+            throw new ArgumentException($"{nameof(dto.Gender)} and/or {nameof(dto.DateOfBirth)} are required but were not provided.");
+        }
+
+        return ExecuteUpdate(dto);
+    }
+
+    private async Task<ShortUserDto> ExecuteUpdate(ShortUserDto dto)
+    {
         logger.LogDebug("Updating Parent with User Id = {UserId} started", dto.Id);
 
         try
@@ -129,7 +139,7 @@ public class ParentService : IParentService
 
             await currentUserService.UserHasRights(new ParentRights(parent.Id));
 
-            mapper.Map((ShortUserDto)dto, parent.User);
+            mapper.Map(dto, parent.User);
             parent.Gender = dto.Gender;
             parent.DateOfBirth = dto.DateOfBirth;
 
@@ -149,7 +159,7 @@ public class ParentService : IParentService
 
             await repositoryParent.UnitOfWork.CompleteAsync();
 
-            return mapper.Map<ParentPersonalInfo>(parent);
+            return mapper.Map<ShortUserDto>(parent);
         }
         catch (DbUpdateException ex)
         {

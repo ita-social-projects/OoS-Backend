@@ -24,16 +24,16 @@ public interface IParentService
     /// </summary>
     /// <param name="userId">Key of the User entity in the table.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-    /// The task result contains an instance of <see cref="ParentPersonalInfo"/>.
+    /// The task result contains an instance of <see cref="ShortUserDto"/>.
     /// </returns>
-    Task<ParentPersonalInfo> GetPersonalInfoByUserId(string userId);
+    Task<ShortUserDto> GetPersonalInfoByUserId(string userId);
 
     /// <summary>
     /// To Update our object in DB.
     /// </summary>
     /// <param name="info">Parent Personal Info with new properties.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task<ParentPersonalInfo> Update(ParentPersonalInfo info);
+    Task<ShortUserDto> Update(ShortUserDto info);
 
     /// <summary>
     /// To delete the object from DB.
