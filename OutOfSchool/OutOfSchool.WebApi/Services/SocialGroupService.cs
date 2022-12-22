@@ -69,7 +69,7 @@ public class SocialGroupService : ISocialGroupService
         logger.LogInformation($"Getting SocialGroup by Id, {localization} localization, started. Looking Id = {id}.");
 
         var socialGroup = await repository.GetById(id).ConfigureAwait(false);
-        var socialGroupsLocalized = new SocialGroupDto()
+        var socialGroupLocalized = new SocialGroupDto()
         {
             Id = socialGroup.Id,
             Name = localization == LocalizationType.En ? socialGroup.NameEn : socialGroup.Name,
@@ -84,7 +84,7 @@ public class SocialGroupService : ISocialGroupService
 
         logger.LogInformation($"Successfully got a SocialGroup with Id = {id} and {localization} localization.");
 
-        return socialGroupsLocalized;
+        return socialGroupLocalized;
     }
 
     /// <inheritdoc/>
