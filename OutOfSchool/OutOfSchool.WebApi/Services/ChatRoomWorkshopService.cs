@@ -418,7 +418,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
             predicate = predicate.And(x => x.ParentId == userId || x.Workshop.ProviderId == userId);
         }
 
-        if (filter.WorkshopIds.Any())
+        if (filter.WorkshopIds is not null && filter.WorkshopIds.Any())
         {
             predicate = predicate.And(x => filter.WorkshopIds.Any(c => c == x.WorkshopId));
         }

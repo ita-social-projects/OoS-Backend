@@ -419,8 +419,10 @@ public class ChatWorkshopController : ControllerBase
 
     private bool IsFilterEmpty(ChatWorkshopFilter filter)
     {
-        return filter.WorkshopIds.Count() == 0 && string.IsNullOrEmpty(filter.SearchText) && filter.From == 0;
+        filter.WorkshopIds = null;
+        return (filter.WorkshopIds is null || filter.WorkshopIds.Count() == 0) && string.IsNullOrEmpty(filter.SearchText) && filter.From == 0;
     }
+
     private async Task<IActionResult> HandleOperationAsync(Func<Task<IActionResult>> operation)
     {
         try
