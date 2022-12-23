@@ -242,7 +242,7 @@ public class ChatWorkshopController : ControllerBase
     private async Task<bool> IsProviderAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
     {
         var userId = GettingUserProperties.GetUserId(HttpContext);
-        var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
+        var userSubrole = GettingUserProperties.GetUserProviderSubRole(HttpContext);
 
         var result = await validationService.UserIsWorkshopOwnerAsync(userId, chatRoom.WorkshopId, userSubrole).ConfigureAwait(false);
 
@@ -381,9 +381,9 @@ public class ChatWorkshopController : ControllerBase
         {
             var userId = GettingUserProperties.GetUserId(HttpContext);
             var userRole = GettingUserProperties.GetUserRole(HttpContext);
-            var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
+            var userSubrole = GettingUserProperties.GetUserProviderSubRole(HttpContext);
 
-            if (userSubrole == Subrole.ProviderAdmin)
+            if (userSubrole == ProviderSubRole.Manager)
             {
                 var workshopIds = await providerAdminService.GetRelatedWorkshopIdsForProviderAdmins(userId).ConfigureAwait(false);
                 var chatRooms = await roomService.GetByWorkshopIdsAsync(workshopIds).ConfigureAwait(false);

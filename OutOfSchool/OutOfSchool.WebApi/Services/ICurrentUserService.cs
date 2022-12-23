@@ -23,10 +23,10 @@ public interface ICurrentUserService
     public bool IsInRole(Role role);
 
     /// <summary>
-    /// Check if user has <see cref="Subrole.ProviderDeputy"/> or <see cref="Subrole.ProviderAdmin"/> subrole.
+    /// Check if user has <see cref="ProviderSubRole.Deputy"/> or <see cref="ProviderSubRole.Manager"/> subrole.
     /// </summary>
     /// <returns>A <see cref="bool"/> with value true if user has both role <see cref="Role.Provider"/>
-    /// and subrole in not <see cref="Subrole.None"/>, false otherwise.</returns>
+    /// and subrole in not <see cref="ProviderSubRole.Provider"/>, false otherwise.</returns>
     public bool IsDeputyOrProviderAdmin();
 
     /// <summary>

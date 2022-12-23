@@ -237,14 +237,14 @@ public class ProviderAdminController : Controller
     [HttpGet]
     public async Task<IActionResult> ManagedWorkshops()
     {
-        var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
+        var userSubrole = GettingUserProperties.GetUserProviderSubRole(HttpContext);
 
-        if (userSubrole != Subrole.ProviderDeputy && userSubrole != Subrole.ProviderAdmin)
+        if (userSubrole != ProviderSubRole.Deputy && userSubrole != ProviderSubRole.Manager)
         {
             return BadRequest();
         }
 
-        var relatedWorkshops = await providerAdminService.GetWorkshopsThatProviderAdminCanManage(userId, userSubrole == Subrole.ProviderDeputy).ConfigureAwait(false);
+        var relatedWorkshops = await providerAdminService.GetWorkshopsThatProviderAdminCanManage(userId, userSubrole == ProviderSubRole.Deputy).ConfigureAwait(false);
 
         if (relatedWorkshops.TotalAmount == 0)
         {
