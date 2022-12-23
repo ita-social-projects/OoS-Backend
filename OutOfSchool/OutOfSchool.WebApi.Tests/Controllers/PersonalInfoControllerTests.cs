@@ -7,6 +7,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Controllers.V1;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services;
 
@@ -16,6 +17,7 @@ public class PersonalInfoControllerTests
 {
     private Mock<IParentService> parentService;
     private Mock<IUserService> userService;
+    private Mock<ICurrentUserService> currentUserService;
     private Mock<HttpContext> httpContext;
 
     [SetUp]
@@ -24,6 +26,7 @@ public class PersonalInfoControllerTests
         httpContext = new Mock<HttpContext>();
         parentService = new Mock<IParentService>();
         userService = new Mock<IUserService>();
+        currentUserService = new Mock<ICurrentUserService>();
     }
 
     #region UpdateParent
@@ -33,7 +36,7 @@ public class PersonalInfoControllerTests
     {
         // Arrange
         var controller = SetupParentTests();
-        var changedParent = new ParentPersonalInfo()
+        var changedParent = new ShortUserDto()
         {
             Id = "38776161-734b-4aec-96eb-4a1f87a2e5f3",
             PhoneNumber = "1160327456",
@@ -44,9 +47,11 @@ public class PersonalInfoControllerTests
             DateOfBirth = DateTime.Today,
         };
         parentService.Setup(x => x.Update(changedParent)).ReturnsAsync(changedParent);
+        currentUserService.Setup(c => c.UserId).Returns("38776161-734b-4aec-96eb-4a1f87a2e5f3");
+        currentUserService.Setup(c => c.IsInRole(Role.Parent)).Returns(true);
 
         // Act
-        var result = await controller.UpdateParentPersonalInfo(changedParent).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.UpdatePersonalInfo(changedParent).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -58,11 +63,13 @@ public class PersonalInfoControllerTests
     {
         // Arrange
         var controller = SetupParentTests();
-        parentService.Setup(x => x.Update(It.IsAny<ParentPersonalInfo>()))
+        parentService.Setup(x => x.Update(It.IsAny<ShortUserDto>()))
             .ThrowsAsync(new UnauthorizedAccessException());
+        currentUserService.Setup(c => c.UserId).Returns("38776161-734b-4aec-96eb-4a1f87a2e5f3");
+        currentUserService.Setup(c => c.IsInRole(Role.Parent)).Returns(true);
 
         // Act & Assert
-        Assert.ThrowsAsync<UnauthorizedAccessException>(() => controller.UpdateParentPersonalInfo(new ParentPersonalInfo()));
+        Assert.ThrowsAsync<UnauthorizedAccessException>(() => controller.UpdatePersonalInfo(new ShortUserDto()));
     }
 
     #endregion
@@ -76,7 +83,8 @@ public class PersonalInfoControllerTests
 
         return new PersonalInfoController(
             userService.Object,
-            parentService.Object)
+            parentService.Object,
+            currentUserService.Object)
         {
             ControllerContext = new ControllerContext { HttpContext = httpContext.Object },
         };
