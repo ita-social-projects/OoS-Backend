@@ -30,7 +30,8 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
         IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
         IChangesLogService changesLogService,
         INotificationService notificationService,
-        IProviderAdminService providerAdminService)
+        IProviderAdminService providerAdminService,
+        IInstitutionAdminRepository institutionAdminRepository)
         : base(
               providerRepository,
               usersRepository,
@@ -44,7 +45,8 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
               providerImagesService,
               changesLogService,
               notificationService,
-              providerAdminService)
+              providerAdminService,
+              institutionAdminRepository)
     {
     }
 
