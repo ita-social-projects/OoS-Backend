@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Data;
+using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.Extensions.Options;
 using Nest;
@@ -15,29 +16,38 @@ public class ChangesLogService : IChangesLogService
     private readonly IChangesLogRepository changesLogRepository;
     private readonly IProviderRepository providerRepository;
     private readonly IApplicationRepository applicationRepository;
+    private readonly IWorkshopRepository workshopRepository;
     private readonly IEntityRepository<long, ProviderAdminChangesLog> providerAdminChangesLogRepository;
     private readonly ILogger<ChangesLogService> logger;
     private readonly IMapper mapper;
     private readonly IValueProjector valueProjector;
+    private readonly ICurrentUserService currentUserService;
+    private readonly IMinistryAdminService ministryAdminService;
 
     public ChangesLogService(
         IOptions<ChangesLogConfig> config,
         IChangesLogRepository changesLogRepository,
         IProviderRepository providerRepository,
         IApplicationRepository applicationRepository,
+        IWorkshopRepository workshopRepository,
         IEntityRepository<long, ProviderAdminChangesLog> providerAdminChangesLogRepository,
         ILogger<ChangesLogService> logger,
         IMapper mapper,
-        IValueProjector valueProjector)
+        IValueProjector valueProjector,
+        ICurrentUserService currentUserService,
+        IMinistryAdminService ministryAdminService)
     {
         this.config = config;
         this.changesLogRepository = changesLogRepository;
         this.providerRepository = providerRepository;
         this.applicationRepository = applicationRepository;
+        this.workshopRepository = workshopRepository;
         this.providerAdminChangesLogRepository = providerAdminChangesLogRepository;
         this.logger = logger;
         this.mapper = mapper;
         this.valueProjector = valueProjector;
+        this.currentUserService = currentUserService;
+        this.ministryAdminService = ministryAdminService;
     }
 
     public int AddEntityChangesToDbContext<TEntity>(TEntity entity, string userId)
@@ -64,6 +74,12 @@ public class ChangesLogService : IChangesLogService
         var (changesLog, count) = await GetChangesLogAsync(mapper.Map<ChangesLogFilter>(request))
             .ConfigureAwait(false);
         var providers = providerRepository.Get();
+
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+            providers = providers.Where(p => p.InstitutionId == ministryAdmin.InstitutionId);
+        }
 
         var query = from l in changesLog
                     join p in providers
@@ -98,6 +114,14 @@ public class ChangesLogService : IChangesLogService
         var (changesLog, count) = await GetChangesLogAsync(mapper.Map<ChangesLogFilter>(request))
             .ConfigureAwait(false);
         var applications = applicationRepository.Get();
+
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+            Expression<Func<Workshop, bool>> workshopFilter = w => w.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId;
+            var workshops = await workshopRepository.Get(where: workshopFilter).ToListAsync().ConfigureAwait(false);
+            applications = applications.Join(workshops, a => a.WorkshopId, w => w.Id, (a, w) => a);
+        }
 
         var query = from l in changesLog
                     join a in applications

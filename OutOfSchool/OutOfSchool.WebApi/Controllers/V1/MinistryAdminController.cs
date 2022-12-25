@@ -41,7 +41,7 @@ public class MinistryAdminController : Controller
     /// To Get the Profile of authorized MinistryAdmin.
     /// </summary>
     /// <returns>Authorized MinistryAdmin's profile.</returns>
-    [HasPermission(Permissions.UserRead)]
+    [HasPermission(Permissions.MinistryAdminPersonalInfo)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MinistryAdminDto))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -68,7 +68,7 @@ public class MinistryAdminController : Controller
     /// </summary>
     /// <param name="id">MinistryAdmin id.</param>
     /// <returns>Authorized MinistryAdmin's profile.</returns>
-    [HasPermission(Permissions.SystemManagement)]
+    [HasPermission(Permissions.MinistryAdminRead)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MinistryAdminDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -92,7 +92,7 @@ public class MinistryAdminController : Controller
     /// </summary>
     /// <param name="filter">Entity that represents searching parameters.</param>
     /// <returns><see cref="SearchResult{MinistryAdminDto}"/>, or no content.</returns>
-    [HasPermission(Permissions.SystemManagement)]
+    [HasPermission(Permissions.MinistryAdminRead)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<MinistryAdminDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -156,7 +156,7 @@ public class MinistryAdminController : Controller
     /// </summary>
     /// <param name="updateMinistryAdminDto">MinistryAdminDto object with new properties.</param>
     /// <returns>MinistryAdmin's key.</returns>
-    [HasPermission(Permissions.UserEdit)]
+    [HasPermission(Permissions.MinistryAdminEdit)]
     [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MinistryAdminDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

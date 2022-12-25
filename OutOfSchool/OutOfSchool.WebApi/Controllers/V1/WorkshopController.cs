@@ -21,6 +21,8 @@ public class WorkshopController : ControllerBase
     private readonly IProviderAdminService providerAdminService;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly AppDefaultsConfig options;
+    private readonly ICurrentUserService currentUserService;
+    private readonly IMinistryAdminService ministryAdminService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopController"/> class.
@@ -30,18 +32,24 @@ public class WorkshopController : ControllerBase
     /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="options">Application default values.</param>
+    /// <param name="currentUserService">Service for manage current user.</param>
+    /// <param name="ministryAdminService">Service for manage ministry admin.</param>
     public WorkshopController(
         IWorkshopServicesCombiner combinedWorkshopService,
         IProviderService providerService,
         IProviderAdminService providerAdminService,
         IStringLocalizer<SharedResource> localizer,
-        IOptions<AppDefaultsConfig> options)
+        IOptions<AppDefaultsConfig> options,
+        ICurrentUserService currentUserService,
+        IMinistryAdminService ministryAdminService)
     {
         this.localizer = localizer;
         this.combinedWorkshopService = combinedWorkshopService;
         this.providerAdminService = providerAdminService;
         this.providerService = providerService;
         this.options = options.Value;
+        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
+        this.ministryAdminService= ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
     }
 
     /// <summary>

@@ -55,4 +55,6 @@ public class WorkshopFilterES
     public long CATOTTGId { get; set; } = default(long);
 
     public string ElasticRadius { get; set; } = GeoMathHelper.ElasticRadius;
+
+    public Guid? InstitutionId { get; set; } = Guid.Empty;
 }

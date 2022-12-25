@@ -643,6 +643,11 @@ public class WorkshopService : IWorkshopService
             predicate = predicate.And(x => filter.Statuses.Contains(x.Status));
         }
 
+        if (filter.InstitutionId != Guid.Empty)
+        {
+            predicate = predicate.And(x => x.InstitutionHierarchy.InstitutionId == filter.InstitutionId);
+        }
+
         return predicate;
     }
 

@@ -31,7 +31,9 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
         IChangesLogService changesLogService,
         INotificationService notificationService,
         IProviderAdminService providerAdminService,
-        IInstitutionAdminRepository institutionAdminRepository)
+        IInstitutionAdminRepository institutionAdminRepository,
+        ICurrentUserService currentUserService,
+        IMinistryAdminService ministryAdminService)
         : base(
               providerRepository,
               usersRepository,
@@ -46,7 +48,9 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
               changesLogService,
               notificationService,
               providerAdminService,
-              institutionAdminRepository)
+              institutionAdminRepository,
+              currentUserService,
+              ministryAdminService)
     {
     }
 

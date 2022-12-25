@@ -18,6 +18,8 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     private readonly IEntityRepository<long, Favorite> favoriteRepository;
     private readonly IApplicationRepository applicationRepository;
     private readonly IWorkshopStrategy workshopStrategy;
+    private readonly ICurrentUserService currentUserService;
+    private readonly IMinistryAdminService ministryAdminService;
 
     public WorkshopServicesCombiner(
         IWorkshopService workshopService,
@@ -25,7 +27,9 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         INotificationService notificationService,
         IEntityRepository<long, Favorite> favoriteRepository,
         IApplicationRepository applicationRepository,
-        IWorkshopStrategy workshopStrategy)
+        IWorkshopStrategy workshopStrategy,
+        ICurrentUserService currentUserService,
+        IMinistryAdminService ministryAdminService)
     {
         this.workshopService = workshopService;
         this.elasticsearchSynchronizationService = elasticsearchSynchronizationService;
@@ -33,6 +37,8 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         this.favoriteRepository = favoriteRepository;
         this.applicationRepository = applicationRepository;
         this.workshopStrategy = workshopStrategy;
+        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
+        this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
     }
 
     /// <inheritdoc/>
@@ -148,8 +154,18 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         {
             return new SearchResult<WorkshopCard> { TotalAmount = 0, Entities = new List<WorkshopCard>() };
         }
+        
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+            filter.InstitutionId = ministryAdmin.InstitutionId;
+        }
 
-        return await workshopStrategy.SearchAsync(filter);
+        var workshops = await workshopStrategy.SearchAsync(filter);
+
+        
+        
+        return workshops;
     }
 
     /// <inheritdoc/>

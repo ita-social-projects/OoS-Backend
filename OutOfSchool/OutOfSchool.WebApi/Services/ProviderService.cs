@@ -11,6 +11,7 @@ using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.Images;
@@ -35,6 +36,8 @@ public class ProviderService : IProviderService, INotificationReciever
     private readonly INotificationService notificationService;
     private readonly IProviderAdminService providerAdminService;
     private readonly IInstitutionAdminRepository institutionAdminRepository;
+    private readonly ICurrentUserService currentUserService;
+    private readonly IMinistryAdminService ministryAdminService;
 
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
@@ -57,6 +60,8 @@ public class ProviderService : IProviderService, INotificationReciever
     /// <param name="notificationService">Notification service.</param>
     /// <param name="providerAdminService">Service for getting provider admins and deputies.</param>
     /// <param name="institutionAdminRepository">Repository for getting ministry admins.</param>
+    /// <param name="currentUserService">Service for manage current user.</param>
+    /// <param name="ministryAdminService">Service for manage ministry admin.</param>
     public ProviderService(
         IProviderRepository providerRepository,
         IEntityRepository<string, User> usersRepository,
@@ -71,7 +76,9 @@ public class ProviderService : IProviderService, INotificationReciever
         IChangesLogService changesLogService,
         INotificationService notificationService,
         IProviderAdminService providerAdminService,
-        IInstitutionAdminRepository institutionAdminRepository)
+        IInstitutionAdminRepository institutionAdminRepository,
+        ICurrentUserService currentUserService,
+        IMinistryAdminService ministryAdminService)
     {
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -85,8 +92,10 @@ public class ProviderService : IProviderService, INotificationReciever
         ProviderImagesService = providerImagesService ?? throw new ArgumentNullException(nameof(providerImagesService));
         this.changesLogService = changesLogService ?? throw new ArgumentNullException(nameof(changesLogService));
         this.notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
-        this.providerAdminService = providerAdminService;
         this.institutionAdminRepository = institutionAdminRepository;
+        this.providerAdminService = providerAdminService ?? throw new ArgumentNullException(nameof(providerAdminService));
+        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
+        this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
     }
 
     private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
@@ -104,6 +113,12 @@ public class ProviderService : IProviderService, INotificationReciever
         ModelValidationHelper.ValidateOffsetFilter(filter);
 
         var filterPredicate = PredicateBuild(filter);
+
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+            filterPredicate = filterPredicate.And(p => p.InstitutionId == ministryAdmin.InstitutionId);
+        }
 
         int count = await providerRepository.Count(filterPredicate).ConfigureAwait(false);
 
