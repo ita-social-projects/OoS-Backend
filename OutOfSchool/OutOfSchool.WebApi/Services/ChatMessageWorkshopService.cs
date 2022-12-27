@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-
+using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models.ChatWorkshop;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 
@@ -23,6 +15,7 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
 {
     private readonly IEntityRepository<Guid, ChatMessageWorkshop> messageRepository;
     private readonly IChatRoomWorkshopService roomService;
+    private readonly IHubContext<ChatWorkshopHub> workshopHub;
     private readonly ILogger<ChatMessageWorkshopService> logger;
     private readonly IMapper mapper;
 
@@ -31,16 +24,19 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
     /// </summary>
     /// <param name="chatMessageRepository">Repository for the ChatMessage entity.</param>
     /// <param name="roomRepository">Repository for the ChatRoom entity.</param>
+    /// <param name="workshopHub">ChatWorkshopHub.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Mapper.</param>
     public ChatMessageWorkshopService(
         IEntityRepository<Guid, ChatMessageWorkshop> chatMessageRepository,
         IChatRoomWorkshopService roomRepository,
+        IHubContext<ChatWorkshopHub> workshopHub,
         ILogger<ChatMessageWorkshopService> logger,
         IMapper mapper)
     {
         this.messageRepository = chatMessageRepository ?? throw new ArgumentNullException(nameof(chatMessageRepository));
         this.roomService = roomRepository ?? throw new ArgumentNullException(nameof(roomRepository));
+        this.workshopHub = workshopHub ?? throw new ArgumentNullException(nameof(workshopHub));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
@@ -107,9 +103,17 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
             var chatMessages = await this.GetMessagesForChatRoomDomainModelAsync(chatRoomId, offsetFilter).ConfigureAwait(false);
 
             var userRoleIsProvider = userRole != Role.Parent;
-            var notReadChatMessages = chatMessages.Where(x => x.SenderRoleIsProvider != userRoleIsProvider && x.ReadDateTime == null);
+            var notReadChatMessages = chatMessages.Where(x => x.SenderRoleIsProvider != userRoleIsProvider && x.ReadDateTime == null).ToList();
 
             await this.SetReadDateTimeUtcNow(notReadChatMessages).ConfigureAwait(false);
+
+            if (notReadChatMessages.Count > 0)
+            {
+                var chatMessageIds = notReadChatMessages.Select(x => x.Id);
+                var resultMessage = JsonConvert.SerializeObject(chatMessageIds);
+
+                await workshopHub.Clients.Group(chatRoomId.ToString()).SendAsync("ReadChatMessagesByUser", resultMessage).ConfigureAwait(false);
+            }
 
             return chatMessages.Select(item => mapper.Map<ChatMessageWorkshopDto>(item)).ToList();
         }
