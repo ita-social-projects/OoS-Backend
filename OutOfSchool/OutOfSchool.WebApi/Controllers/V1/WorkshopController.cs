@@ -49,7 +49,7 @@ public class WorkshopController : ControllerBase
         this.providerService = providerService;
         this.options = options.Value;
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
-        this.ministryAdminService= ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
+        this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
     }
 
     /// <summary>

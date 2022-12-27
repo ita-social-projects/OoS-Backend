@@ -28,6 +28,8 @@ public class DirectionServiceTests
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<DirectionService>> logger;
     private Mock<IMapper> mapper;
+    private Mock<ICurrentUserService> currentUserServiceMock;
+    private Mock<IMinistryAdminService> ministryAdminServiceMock;
 
     [SetUp]
     public void SetUp()
@@ -44,7 +46,17 @@ public class DirectionServiceTests
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         logger = new Mock<ILogger<DirectionService>>();
         mapper = new Mock<IMapper>();
-        service = new DirectionService(repo, repositoryWorkshop, logger.Object, localizer.Object, mapper.Object);
+        currentUserServiceMock = new Mock<ICurrentUserService>();
+        ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+
+        service = new DirectionService(
+            repo,
+            repositoryWorkshop,
+            logger.Object,
+            localizer.Object,
+            mapper.Object,
+            currentUserServiceMock.Object,
+            ministryAdminServiceMock.Object);
 
         SeedDatabase();
     }

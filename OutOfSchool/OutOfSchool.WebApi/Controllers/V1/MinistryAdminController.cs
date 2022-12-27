@@ -41,7 +41,7 @@ public class MinistryAdminController : Controller
     /// To Get the Profile of authorized MinistryAdmin.
     /// </summary>
     /// <returns>Authorized MinistryAdmin's profile.</returns>
-    [HasPermission(Permissions.MinistryAdminPersonalInfo)]
+    [HasPermission(Permissions.PersonalInfo)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MinistryAdminDto))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]

@@ -37,6 +37,7 @@ public class ApplicationServiceTests
     private Mock<IChangesLogService> changesLogService;
     private Mock<IWorkshopServicesCombiner> workshopServiceCombinerMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
+    private Mock<IMinistryAdminService> ministryAdminServiceMock;
 
     private Mock<IOptions<ApplicationsConstraintsConfig>> applicationsConstraintsConfig;
 
@@ -50,6 +51,7 @@ public class ApplicationServiceTests
         changesLogService = new Mock<IChangesLogService>();
         workshopServiceCombinerMock = new Mock<IWorkshopServicesCombiner>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
+        ministryAdminServiceMock = new Mock<IMinistryAdminService>();
 
         logger = new Mock<ILogger<ApplicationService>>();
         mapper = new Mock<IMapper>();
@@ -72,7 +74,8 @@ public class ApplicationServiceTests
             providerAdminService.Object,
             changesLogService.Object,
             workshopServiceCombinerMock.Object,
-            currentUserServiceMock.Object);
+            currentUserServiceMock.Object,
+            ministryAdminServiceMock.Object);
     }
 
     [Test]

@@ -35,6 +35,8 @@ public class ProviderServiceTests
     private Mock<INotificationService> notificationService;
     private Mock<IProviderAdminService> providerAdminService;
     private Mock<IInstitutionAdminRepository> institutionAdminRepositoryMock;
+    private Mock<ICurrentUserService> currentUserServiceMock;
+    private Mock<IMinistryAdminService> ministryAdminServiceMock;
 
     private List<Provider> fakeProviders;
     private User fakeUser;
@@ -60,6 +62,8 @@ public class ProviderServiceTests
         notificationService = new Mock<INotificationService>(MockBehavior.Strict);
         providerAdminService = new Mock<IProviderAdminService>();
         institutionAdminRepositoryMock = new Mock<IInstitutionAdminRepository>();
+        currentUserServiceMock= new Mock<ICurrentUserService>();
+        ministryAdminServiceMock = new Mock<IMinistryAdminService>();
 
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
 
@@ -77,7 +81,9 @@ public class ProviderServiceTests
             changesLogService.Object,
             notificationService.Object,
             providerAdminService.Object,
-            institutionAdminRepositoryMock.Object);
+            institutionAdminRepositoryMock.Object,
+            currentUserServiceMock.Object,
+            ministryAdminServiceMock.Object);
     }
 
     #region Create
