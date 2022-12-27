@@ -69,11 +69,6 @@ public class SocialGroupService : ISocialGroupService
         logger.LogInformation($"Getting SocialGroup by Id, {localization} localization, started. Looking Id = {id}.");
 
         var socialGroup = await repository.GetById(id).ConfigureAwait(false);
-        var socialGroupLocalized = new SocialGroupDto()
-        {
-            Id = socialGroup.Id,
-            Name = localization == LocalizationType.En ? socialGroup.NameEn : socialGroup.Name,
-        };
 
         if (socialGroup == null)
         {
@@ -81,6 +76,12 @@ public class SocialGroupService : ISocialGroupService
                 nameof(id),
                 localizer["The id cannot be greater than number of table entities."]);
         }
+
+        var socialGroupLocalized = new SocialGroupDto()
+        {
+            Id = socialGroup.Id,
+            Name = localization == LocalizationType.En ? socialGroup.NameEn : socialGroup.Name,
+        };
 
         logger.LogInformation($"Successfully got a SocialGroup with Id = {id} and {localization} localization.");
 
@@ -106,14 +107,19 @@ public class SocialGroupService : ISocialGroupService
     {
         logger.LogInformation($"Updating SocialGroup with Id = {dto?.Id}, {localization} localization, started.");
 
-        var socialGroupLocalized = await repository.GetById(dto.Id).ConfigureAwait(false);
-
-        if (localization == LocalizationType.En) socialGroupLocalized.NameEn = dto.Name;
-        else socialGroupLocalized.Name = dto.Name;
-
         try
         {
-            var socialGroup = await repository.Update(mapper.Map<SocialGroup>(socialGroupLocalized)).ConfigureAwait(false);
+            var socialGroupLocalized = await repository.GetById(dto.Id).ConfigureAwait(false);
+
+            if (socialGroupLocalized == null)
+            {
+                throw new DbUpdateConcurrencyException();
+            }
+
+            if (localization == LocalizationType.En) socialGroupLocalized.NameEn = dto.Name;
+            else socialGroupLocalized.Name = dto.Name;
+
+            var socialGroup = await repository.Update(socialGroupLocalized).ConfigureAwait(false);
 
             logger.LogInformation($"SocialGroup with Id = {socialGroup?.Id} updated succesfully.");
 
