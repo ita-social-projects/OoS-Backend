@@ -36,7 +36,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         this.institutionAdminRepository = institutionAdminRepository ?? throw new ArgumentNullException(nameof(institutionAdminRepository));
         this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        this.currentUserService = currentUserService;
+        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
     }
 
     public async Task<MinistryAdminDto> GetByIdAsync(string id)
