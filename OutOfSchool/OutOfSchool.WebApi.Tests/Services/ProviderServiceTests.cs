@@ -62,7 +62,7 @@ public class ProviderServiceTests
         notificationService = new Mock<INotificationService>(MockBehavior.Strict);
         providerAdminService = new Mock<IProviderAdminService>();
         institutionAdminRepositoryMock = new Mock<IInstitutionAdminRepository>();
-        currentUserServiceMock= new Mock<ICurrentUserService>();
+        currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
 
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();

@@ -137,8 +137,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             }
             else if (ministryAdmin.InstitutionId != filter.InstitutionId)
             {
-                Logger.LogInformation($"Filter institutionId {filter.InstitutionId} " +
-                    $"is not equals to logined Ministry admin institutionId {ministryAdmin.InstitutionId}");
+                Logger.LogInformation($"Filter institutionId {filter.InstitutionId} is not equals to logined Ministry admin institutionId {ministryAdmin.InstitutionId}");
 
                 return new SearchResult<MinistryAdminDto>()
                 {
