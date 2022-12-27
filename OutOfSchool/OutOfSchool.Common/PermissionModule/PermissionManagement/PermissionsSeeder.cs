@@ -58,6 +58,7 @@ public static class PermissionsSeeder
         Permissions.TeacherRead,
         Permissions.PersonalInfo,
         Permissions.MinistryAdminRead,
+        Permissions.WorkshopEdit,
     };
 
     private static readonly IEnumerable<Permissions> SeedParentPermissions = new List<Permissions>
