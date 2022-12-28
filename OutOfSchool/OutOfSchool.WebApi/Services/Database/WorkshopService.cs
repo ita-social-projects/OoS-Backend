@@ -554,6 +554,8 @@ public class WorkshopService : IWorkshopService
     {
         var predicate = PredicateBuilder.True<Workshop>();
 
+        predicate = predicate.And(x => x.Provider.Status == ProviderStatus.Approved);
+
         if (filter.Ids.Any())
         {
             predicate = predicate.And(x => filter.Ids.Any(c => c == x.Id));

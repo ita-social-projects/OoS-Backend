@@ -385,6 +385,63 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         }
     }
 
+    public async Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetChatRoomByFilter(ChatWorkshopFilter filter, Guid userId)
+    {
+        logger.LogInformation("Getting ChatRoomWorkshops by filter started.");
+
+        filter ??= new ChatWorkshopFilter();
+
+        var filterPredicate = PredicateBuild(filter, userId);
+
+        var rooms = roomRepository.Get(
+                skip: filter.From,
+                take: filter.Size,
+                where: filterPredicate)
+            .ToList();
+
+        var chatRoomsWithMessages = await roomWorkshopWithLastMessageRepository
+            .GetByWorkshopIdsAsync(rooms.Select(x => x.WorkshopId));
+
+        logger.LogInformation(!rooms.Any()
+            ? "There was no matching entity found."
+            : $"All matching {rooms.Count} records were successfully received from the Workshop table");
+
+        return chatRoomsWithMessages.Select(x => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(x));
+    }
+
+    private Expression<Func<ChatRoomWorkshop, bool>> PredicateBuild(ChatWorkshopFilter filter, Guid userId)
+    {
+        var predicate = PredicateBuilder.True<ChatRoomWorkshop>();
+
+        if (userId != default)
+        {
+            predicate = predicate.And(x => x.ParentId == userId || x.Workshop.ProviderId == userId);
+        }
+
+        if (filter.WorkshopIds is not null && filter.WorkshopIds.Any())
+        {
+            predicate = predicate.And(x => filter.WorkshopIds.Any(c => c == x.WorkshopId));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchText))
+        {
+            var tempPredicate = PredicateBuilder.False<ChatRoomWorkshop>()
+                .Or(x => x.Workshop.Provider.User.LastName.ToLower().StartsWith(filter.SearchText.ToLower()))
+                .Or(x => x.Parent.User.LastName.ToLower().StartsWith(filter.SearchText.ToLower()))
+                .Or(x => x.Workshop.Provider.User.FirstName.ToLower().StartsWith(filter.SearchText.ToLower()))
+                .Or(x => x.Parent.User.FirstName.ToLower().StartsWith(filter.SearchText.ToLower()))
+                .Or(x => x.Workshop.Provider.User.Email.StartsWith(filter.SearchText))
+                .Or(x => x.Parent.User.Email.StartsWith(filter.SearchText))
+                .Or(x => x.Workshop.Title.ToLower().Contains(filter.SearchText.ToLower()))
+                .Or(x => x.Parent.User.PhoneNumber.StartsWith(filter.SearchText))
+                .Or(x => x.Workshop.Provider.PhoneNumber.StartsWith(filter.SearchText));
+
+            predicate = predicate.And(tempPredicate);
+        }
+
+        return predicate;
+    }
+
     public async Task<SearchResult<ChatRoomWorkshopDtoWithLastMessage>> GetChatRoomByFilter(ChatWorkshopFilter filter, Guid userId)
     {
         logger.LogInformation("Getting ChatRoomWorkshops by filter started.");

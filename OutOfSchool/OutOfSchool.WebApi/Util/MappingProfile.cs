@@ -331,7 +331,9 @@ public class MappingProfile : Profile
                 return managedWorkshopIds;
             }));
 
-        CreateMap<User, ShortUserDto>();
+        CreateMap<User, ShortUserDto>()
+            .ForMember(dest => dest.Gender, opt => opt.Ignore())
+            .ForMember(dest => dest.DateOfBirth, opt => opt.Ignore());
 
         CreateMap<ShortUserDto, User>()
             .ForMember(dest => dest.IsRegistered, opt => opt.Ignore())
@@ -355,7 +357,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.MustChangePassword, opt => opt.Ignore())
             .ForMember(dest => dest.AccessFailedCount, opt => opt.Ignore());
 
-        CreateMap<Parent, ParentPersonalInfo>()
+        CreateMap<Parent, ShortUserDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.User.Id))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
             .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.User.Role))

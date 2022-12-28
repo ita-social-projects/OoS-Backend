@@ -13,34 +13,6 @@ namespace OutOfSchool.WebApi.Services;
 public interface IParentService
 {
     /// <summary>
-    /// Add new Parent to the DB.
-    /// </summary>
-    /// <param name="parent">ParentDTO element.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<ParentDTO> Create(ParentDTO parent);
-
-    /// <summary>
-    /// Get all Parent objects from DB.
-    /// </summary>
-    /// <returns>List of Parent objects.</returns>
-    Task<IEnumerable<ParentDTO>> GetAll();
-
-    /// <summary>
-    /// Get Parent objects from DB by filter.
-    /// </summary>
-    /// <param name="filter">Filter for Parent dto.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-    /// The task result contains a List of <see cref="ParentDTO"/> that were found.</returns>
-    Task<SearchResult<ParentDTO>> GetByFilter(SearchStringFilter filter);
-
-    /// <summary>
-    /// To recieve the Parent object with define id.
-    /// </summary>
-    /// <param name="id">Key in the table.</param>
-    /// <returns>Parent object.</returns>
-    Task<ParentDTO> GetById(Guid id);
-
-    /// <summary>
     /// Get entity by User id.
     /// </summary>
     /// <param name="id">Key of the User entity in the table.</param>
@@ -52,16 +24,16 @@ public interface IParentService
     /// </summary>
     /// <param name="userId">Key of the User entity in the table.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-    /// The task result contains an instance of <see cref="ParentPersonalInfo"/>.
+    /// The task result contains an instance of <see cref="ShortUserDto"/>.
     /// </returns>
-    Task<ParentPersonalInfo> GetPersonalInfoByUserId(string userId);
+    Task<ShortUserDto> GetPersonalInfoByUserId(string userId);
 
     /// <summary>
     /// To Update our object in DB.
     /// </summary>
     /// <param name="info">Parent Personal Info with new properties.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task<ParentPersonalInfo> Update(ParentPersonalInfo info);
+    Task<ShortUserDto> Update(ShortUserDto info);
 
     /// <summary>
     /// To delete the object from DB.
