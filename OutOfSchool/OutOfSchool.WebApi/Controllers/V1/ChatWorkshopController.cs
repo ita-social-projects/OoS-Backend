@@ -147,7 +147,7 @@ public class ChatWorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public Task<IActionResult> GetParentsRoomsAsync([FromQuery] ChatWorkshopFilter filter = null)
+    public Task<IActionResult> GetParentsRoomsAsync(ChatWorkshopFilter filter = null)
         => this.GetUsersRoomsAsync(parentId => roomService.GetByParentIdAsync(parentId), filter);
 
     /// <summary>
@@ -161,7 +161,7 @@ public class ChatWorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public Task<IActionResult> GetProvidersRoomsAsync([FromQuery] ChatWorkshopFilter filter = null)
+    public Task<IActionResult> GetProvidersRoomsAsync(ChatWorkshopFilter filter = null)
         => this.GetUsersRoomsAsync(providerId => roomService.GetByProviderIdAsync(providerId), filter);
 
     /// <summary>
@@ -389,7 +389,7 @@ public class ChatWorkshopController : ControllerBase
                 filter.WorkshopIds = workshopIds;
                 var chatRooms = await roomService.GetChatRoomByFilter(filter, default).ConfigureAwait(false);
 
-                return chatRooms.Any() ? Ok(chatRooms) : NoContent();
+                return chatRooms.Entities.Any() ? Ok(chatRooms) : NoContent();
             }
 
             var providerOrParentId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
@@ -400,14 +400,19 @@ public class ChatWorkshopController : ControllerBase
                 if (IsFilterEmpty(filter))
                 {
                     chatRooms = await getChatRoomsByRole(providerOrParentId).ConfigureAwait(false);
+                    if (chatRooms.Any())
+                    {
+                        return Ok(chatRooms);
+                    }
                 }
                 else
                 {
-                    chatRooms = await roomService.GetChatRoomByFilter(filter, providerOrParentId).ConfigureAwait(false);
-                }
-                if (chatRooms.Any())
-                {
-                    return Ok(chatRooms);
+                    var chatroomFiltration = await roomService.GetChatRoomByFilter(filter, providerOrParentId).ConfigureAwait(false);
+                    chatRooms = chatroomFiltration.Entities;
+                    if (chatRooms.Any())
+                    {
+                        return Ok(chatroomFiltration);
+                    }
                 }
             }
 
@@ -421,7 +426,7 @@ public class ChatWorkshopController : ControllerBase
     {
         filter ??= new ChatWorkshopFilter();
         filter.WorkshopIds ??= new List<Guid>();
-        return filter.WorkshopIds.Count() == 0 && string.IsNullOrEmpty(filter.SearchText) && filter.From == 0;
+        return filter.WorkshopIds.Count() == 0 && string.IsNullOrEmpty(filter.SearchText) && filter.From == 0 && filter.Size == 0;
     }
 
     private async Task<IActionResult> HandleOperationAsync(Func<Task<IActionResult>> operation)

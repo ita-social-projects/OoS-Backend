@@ -385,7 +385,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         }
     }
 
-    public async Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetChatRoomByFilter(ChatWorkshopFilter filter, Guid userId)
+    public async Task<SearchResult<ChatRoomWorkshopDtoWithLastMessage>> GetChatRoomByFilter(ChatWorkshopFilter filter, Guid userId)
     {
         logger.LogInformation("Getting ChatRoomWorkshops by filter started.");
 
@@ -406,7 +406,13 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
             ? "There was no matching entity found."
             : $"All matching {rooms.Count} records were successfully received from the Workshop table");
 
-        return chatRoomsWithMessages.Select(x => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(x));
+        var results = chatRoomsWithMessages.Select(x => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(x)).ToList();
+
+        return new SearchResult<ChatRoomWorkshopDtoWithLastMessage>()
+        {
+            Entities = results,
+            TotalAmount = results.Count,
+        };
     }
 
     private Expression<Func<ChatRoomWorkshop, bool>> PredicateBuild(ChatWorkshopFilter filter, Guid userId)
