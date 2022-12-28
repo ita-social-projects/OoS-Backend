@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services.Strategies.Interfaces;
@@ -153,6 +154,39 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     }
 
     /// <inheritdoc/>
+    public async Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetWithMessagesByParentIdProviderIdAsync(Guid parentId, Guid providerId)
+    {
+        logger.LogDebug("Process of getting ChatRoomWorkshopDtoWithLastMessage with parentId:{parentId} and providerId:{providerId} was started.", parentId, providerId);
+
+        try
+        {
+            var rooms = (await roomWorkshopWithLastMessageRepository.GetByParentIdProviderIdAsync(
+                parentId, providerId).ConfigureAwait(false)).Select(x => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(x)).ToList();
+
+            if (rooms.Count > 0)
+            {
+                logger.LogDebug("There is no Chat rooms in the system with parentId:{parentId} and providerId:{providerId}.", parentId, providerId);
+            }
+            else
+            {
+                logger.LogDebug("Successfully got all {roomsCount} records with parentId:{parentId} and providerId:{providerId}.", rooms.Count, parentId, providerId);
+            }
+
+            return rooms;
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(
+                "Getting all ChatRoomWorkshopDtoWithLastMessage with parentId:{parentId} and providerId:{providerId}. Exception: {exception}",
+                parentId,
+                providerId,
+                exception.Message);
+
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
     public async Task<ChatRoomWorkshopDto> GetByParentIdWorkshopIdAsync(Guid parentId, Guid workshopId)
     {
         logger.LogDebug("Process of getting ChatRoom with parentId:{parentId} and workshopId:{workshopId} was started.", parentId, workshopId);
@@ -178,6 +212,42 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         {
             logger.LogError(
                 "Getting ChatRoom with parentId:{parentId} and workshopId:{workshopId}. Exception: {exception}",
+                parentId,
+                workshopId,
+                exception.Message);
+
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<ChatRoomWorkshopDtoWithLastMessage> GetWithMessagesByParentIdWorkshopIdAsync(Guid parentId, Guid workshopId)
+    {
+        logger.LogDebug(
+            "Process of getting ChatRoomWorkshopDtoWithLastMessage with parentId:{parentId} and workshopId:{workshopId} was started.",
+            parentId,
+            workshopId);
+
+        try
+        {
+            var room = (await roomWorkshopWithLastMessageRepository.GetByParentIdWorkshopIdAsync(
+                parentId, workshopId).ConfigureAwait(false)).SingleOrDefault();
+
+            if (room is null)
+            {
+                logger.LogDebug("There is no Chat rooms in the system with parentId:{parentId} and workshopId:{workshopId}.", parentId, workshopId);
+            }
+            else
+            {
+                logger.LogDebug("Successfully got record with parentId:{parentId} and workshopId:{workshopId}.", parentId, workshopId);
+            }
+
+            return mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(room);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(
+                "Getting ChatRoomWorkshopDtoWithLastMessage with parentId:{parentId} and workshopId:{workshopId}. Exception: {exception}",
                 parentId,
                 workshopId,
                 exception.Message);

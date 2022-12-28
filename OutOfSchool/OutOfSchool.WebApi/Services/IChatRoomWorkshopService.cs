@@ -34,12 +34,28 @@ public interface IChatRoomWorkshopService
     Task<IEnumerable<ChatRoomWorkshopDto>> GetByParentIdProviderIdAsync(Guid parentId, Guid providerId);
 
     /// <summary>
-    /// Get ChatRooms by specified Parent and Provider.
+    /// Get ChatRooms with messages by specified Parent and Provider.
+    /// </summary>
+    /// <param name="parentId">Parent's identifier.</param>
+    /// <param name="providerId">Provider's identifier.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{ChatRoomWorkshopDtoWithLastMessage}"/> that contains elements from the input sequence.</returns>
+    Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetWithMessagesByParentIdProviderIdAsync(Guid parentId, Guid providerId);
+
+    /// <summary>
+    /// Get ChatRoom by specified Parent and Workshop.
     /// </summary>
     /// <param name="parentId">Parent's identifier.</param>
     /// <param name="workshopId">Workshop's identifier.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomWorkshopDto"/> that contains elements from the input sequence.</returns>
     Task<ChatRoomWorkshopDto> GetByParentIdWorkshopIdAsync(Guid parentId, Guid workshopId);
+
+    /// <summary>
+    /// Get ChatRoom with messages by specified Parent and Workshop.
+    /// </summary>
+    /// <param name="parentId">Parent's identifier.</param>
+    /// <param name="workshopId">Workshop's identifier.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomWorkshopDtoWithLastMessage"/> that contains elements from the input sequence.</returns>
+    Task<ChatRoomWorkshopDtoWithLastMessage> GetWithMessagesByParentIdWorkshopIdAsync(Guid parentId, Guid workshopId);
 
     /// <summary>
     /// Get ChatRooms with last message and count of not read messages by specified Parent.

@@ -39,9 +39,23 @@ public class ChatRoomWorkshopModelForChatListRepository : IChatRoomWorkshopModel
         return this.GetByParametersAsync(condition, searchMessagesForProvider);
     }
 
+    public Task<List<ChatRoomWorkshopForChatList>> GetByParentIdWorkshopIdAsync(Guid parentId, Guid workshopId, bool searchMessagesForProvider = false)
+    {
+        Expression<Func<ChatRoomWorkshop, bool>> condition = x => x.ParentId == parentId && x.WorkshopId == workshopId;
+
+        return this.GetByParametersAsync(condition, searchMessagesForProvider);
+    }
+
     public Task<List<ChatRoomWorkshopForChatList>> GetByProviderIdAsync(Guid providerId, bool searchMessagesForProvider = true)
     {
         Expression<Func<ChatRoomWorkshop, bool>> condition = x => x.Workshop.ProviderId == providerId;
+
+        return this.GetByParametersAsync(condition, searchMessagesForProvider);
+    }
+
+    public Task<List<ChatRoomWorkshopForChatList>> GetByParentIdProviderIdAsync(Guid parentId, Guid providerId, bool searchMessagesForProvider = true)
+    {
+        Expression<Func<ChatRoomWorkshop, bool>> condition = x => x.ParentId == parentId && x.Workshop.ProviderId == providerId;
 
         return this.GetByParametersAsync(condition, searchMessagesForProvider);
     }
