@@ -55,6 +55,7 @@ public class ProviderServiceUpdate
         var changesLogService = new Mock<IChangesLogService>();
         var notificationService = new Mock<INotificationService>();
         var providerAdminService = new Mock<IProviderAdminService>();
+        var institutionAdminRepository = new Mock<IInstitutionAdminRepository>();
 
         this.providerService = new ProviderService(
             providerRepository,
@@ -69,7 +70,8 @@ public class ProviderServiceUpdate
             providerImagesService.Object,
             changesLogService.Object,
             notificationService.Object,
-            providerAdminService.Object);
+            providerAdminService.Object,
+            institutionAdminRepository.Object);
     }
 
     [Test]
