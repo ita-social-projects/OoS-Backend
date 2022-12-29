@@ -492,6 +492,17 @@ public class ApplicationService : IApplicationService, INotificationReciever
             predicate = predicate.And(tempPredicate);
         }
 
+        if (!string.IsNullOrEmpty(filter.SearchString))
+        {
+            var tempPredicate = PredicateBuilder.False<Application>();
+            tempPredicate = tempPredicate
+                .Or(a => a.Workshop.Title == filter.SearchString)
+                .Or(a => a.Parent.User.FirstName.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase)
+                         || a.Parent.User.MiddleName.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase)
+                         || a.Parent.User.LastName.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase));
+            predicate = predicate.And(tempPredicate);
+        }
+
         predicate = predicate.And(a => a.IsBlocked == filter.ShowBlocked);
 
         return predicate;

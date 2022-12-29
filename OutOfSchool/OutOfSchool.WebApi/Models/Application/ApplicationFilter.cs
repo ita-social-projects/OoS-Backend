@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.WebApi.Models.Application;
 
-public class ApplicationFilter : OffsetFilter
+public class ApplicationFilter : SearchStringFilter
 {
     public IEnumerable<ApplicationStatus> Statuses { get; set; } = null;
 
