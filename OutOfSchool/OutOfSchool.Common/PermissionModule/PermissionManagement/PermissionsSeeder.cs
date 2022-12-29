@@ -7,7 +7,7 @@ public static class PermissionsSeeder
     // basic seed for PermissionsToRole table in DB due to current state of application
     private static readonly IEnumerable<Permissions> SeedAdminPermissions = new List<Permissions>
     {
-        Permissions.SystemManagement, Permissions.ImpersonalDataRead,
+        Permissions.SystemManagement, Permissions.ImpersonalDataRead, Permissions.LogDataRead,
         Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
         Permissions.ApplicationRead, Permissions.ApplicationEdit, Permissions.ApplicationRemove, Permissions.ApplicationAddNew,
         Permissions.FavoriteRead, Permissions.FavoriteAddNew, Permissions.FavoriteEdit, Permissions.FavoriteRemove,
@@ -48,7 +48,7 @@ public static class PermissionsSeeder
 
     private static readonly IEnumerable<Permissions> SeedMinistryAdminPermissions = new List<Permissions>
     {
-        Permissions.ImpersonalDataRead,
+        Permissions.ImpersonalDataRead, Permissions.LogDataRead,
         Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
         Permissions.ApplicationRead,
         Permissions.ProviderRead, Permissions.ProviderRemove, Permissions.ProviderApprove,

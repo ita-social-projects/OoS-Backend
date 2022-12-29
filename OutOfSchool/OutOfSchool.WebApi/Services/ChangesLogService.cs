@@ -4,6 +4,7 @@ using AutoMapper;
 using Microsoft.Extensions.Options;
 using Nest;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Changes;
 using OutOfSchool.WebApi.Util;
@@ -21,6 +22,8 @@ public class ChangesLogService : IChangesLogService
     private readonly ILogger<ChangesLogService> logger;
     private readonly IMapper mapper;
     private readonly IValueProjector valueProjector;
+    private readonly ICurrentUserService currentUserService;
+    private readonly IMinistryAdminService ministryAdminService;
 
     public ChangesLogService(
         IOptions<ChangesLogConfig> config,
@@ -30,7 +33,9 @@ public class ChangesLogService : IChangesLogService
         IEntityRepository<long, ProviderAdminChangesLog> providerAdminChangesLogRepository,
         ILogger<ChangesLogService> logger,
         IMapper mapper,
-        IValueProjector valueProjector)
+        IValueProjector valueProjector,
+        ICurrentUserService currentUserService,
+        IMinistryAdminService ministryAdminService)
     {
         this.config = config;
         this.changesLogRepository = changesLogRepository;
@@ -40,6 +45,8 @@ public class ChangesLogService : IChangesLogService
         this.logger = logger;
         this.mapper = mapper;
         this.valueProjector = valueProjector;
+        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
+        this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
     }
 
     public int AddEntityChangesToDbContext<TEntity>(TEntity entity, string userId)
@@ -63,7 +70,15 @@ public class ChangesLogService : IChangesLogService
 
     public async Task<SearchResult<ProviderChangesLogDto>> GetProviderChangesLogAsync(ProviderChangesLogRequest request)
     {
-        var (changesLog, count) = await GetChangesLogAsync(mapper.Map<ChangesLogFilter>(request))
+        var changeLogFilter = mapper.Map<ChangesLogFilter>(request);
+
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+            changeLogFilter.InstitutionId = ministryAdmin.InstitutionId;
+        }
+
+        var (changesLog, count) = await GetChangesLogAsync(changeLogFilter)
             .ConfigureAwait(false);
         var providers = providerRepository.Get();
 
@@ -71,6 +86,7 @@ public class ChangesLogService : IChangesLogService
                     join p in providers
                         on l.EntityIdGuid equals p.Id into pg
                     from provider in pg.DefaultIfEmpty()
+                    where changeLogFilter.InstitutionId == Guid.Empty ? true : provider.InstitutionId == changeLogFilter.InstitutionId
                     select new ProviderChangesLogDto
                     {
                         FieldName = l.PropertyName,
@@ -86,18 +102,26 @@ public class ChangesLogService : IChangesLogService
                             ? null : provider.Institution.Title,
                     };
 
-        var entities = await query.ToListAsync().ConfigureAwait(false);
+        var entities = await query.Skip(request.From).Take(request.Size).ToListAsync().ConfigureAwait(false);
 
         return new SearchResult<ProviderChangesLogDto>
         {
             Entities = entities,
-            TotalAmount = count,
+            TotalAmount = currentUserService.IsMinistryAdmin() ? query.Count() : count,
         };
     }
 
     public async Task<SearchResult<ApplicationChangesLogDto>> GetApplicationChangesLogAsync(ApplicationChangesLogRequest request)
     {
-        var (changesLog, count) = await GetChangesLogAsync(mapper.Map<ChangesLogFilter>(request))
+        var changeLogFilter = mapper.Map<ChangesLogFilter>(request);
+
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+            changeLogFilter.InstitutionId = ministryAdmin.InstitutionId;
+        }
+
+        var (changesLog, count) = await GetChangesLogAsync(changeLogFilter)
             .ConfigureAwait(false);
         var applications = applicationRepository.Get();
 
@@ -105,6 +129,7 @@ public class ChangesLogService : IChangesLogService
                     join a in applications
                         on l.EntityIdGuid equals a.Id into ag
                     from app in ag.DefaultIfEmpty()
+                    where changeLogFilter.InstitutionId == Guid.Empty ? true : app.Workshop.Provider.InstitutionId == changeLogFilter.InstitutionId
                     select new ApplicationChangesLogDto
                     {
                         FieldName = l.PropertyName,
@@ -120,12 +145,12 @@ public class ChangesLogService : IChangesLogService
                             ? null : app.Workshop.Provider.Institution.Title,
                     };
 
-        var entities = await query.ToListAsync().ConfigureAwait(false);
+        var entities = await query.Skip(request.From).Take(request.Size).ToListAsync().ConfigureAwait(false);
 
         return new SearchResult<ApplicationChangesLogDto>
         {
             Entities = entities,
-            TotalAmount = count,
+            TotalAmount = currentUserService.IsMinistryAdmin() ? query.Count() : count,
         };
     }
 
@@ -136,10 +161,16 @@ public class ChangesLogService : IChangesLogService
         var where = GetQueryFilter(request);
         var sortExpression = GetProviderAdminChangesOrderParams();
 
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+            where = where.And(x => x.Provider.InstitutionId == ministryAdmin.InstitutionId);
+        }
+
         var count = await providerAdminChangesLogRepository.Count(where).ConfigureAwait(false);
         var query = providerAdminChangesLogRepository
-            .Get(request.From, request.Size, string.Empty, where, sortExpression, true)
-            .Select(x => new ProviderAdminChangesLogDto
+            .Get(0, 0, string.Empty, where, sortExpression, true)
+            .Select(x => new ProviderAdminChangesLogDto()
             {
                 ProviderAdminId = x.ProviderAdminUserId,
                 ProviderAdminFullName = $"{x.ProviderAdminUser.LastName} {x.ProviderAdminUser.FirstName} {x.ProviderAdminUser.MiddleName}".TrimEnd(),
@@ -153,7 +184,7 @@ public class ChangesLogService : IChangesLogService
                     ? null : x.Provider.Institution.Title,
             });
 
-        var entities = await query.ToListAsync().ConfigureAwait(false);
+        var entities = await query.Skip(request.From).Take(request.Size).ToListAsync().ConfigureAwait(false);
 
         return new SearchResult<ProviderAdminChangesLogDto>
         {
@@ -170,7 +201,8 @@ public class ChangesLogService : IChangesLogService
         var sortExpression = GetOrderParams();
 
         var count = await changesLogRepository.Count(where).ConfigureAwait(false);
-        var query = changesLogRepository.Get(filter.From, filter.Size, string.Empty, where, sortExpression, true);
+
+        var query = changesLogRepository.Get(0, 0, string.Empty, where, sortExpression, true);
 
         return (query, count);
     }
@@ -232,7 +264,7 @@ public class ChangesLogService : IChangesLogService
 
     private Expression<Func<ProviderAdminChangesLog, bool>> GetQueryFilter(ProviderAdminChangesLogRequest request)
     {
-        Expression<Func<ProviderAdminChangesLog, bool>> expr = null;
+        Expression<Func<ProviderAdminChangesLog, bool>> expr = PredicateBuilder.True<ProviderAdminChangesLog>();
 
         expr = request.AdminType switch
         {

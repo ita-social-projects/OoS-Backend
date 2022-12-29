@@ -33,7 +33,7 @@ public class ChangesLogController : ControllerBase
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden.</response>
     /// <response code="500">If any server error occures. For example: Id was less than one.</response>
-    [HasPermission(Permissions.SystemManagement)]
+    [HasPermission(Permissions.LogDataRead)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderChangesLogDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -63,7 +63,7 @@ public class ChangesLogController : ControllerBase
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden.</response>
     /// <response code="500">If any server error occures. For example: Id was less than one.</response>
-    [HasPermission(Permissions.SystemManagement)]
+    [HasPermission(Permissions.LogDataRead)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ApplicationChangesLogDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -93,7 +93,7 @@ public class ChangesLogController : ControllerBase
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden.</response>
     /// <response code="500">If any server error occures. For example: Id was less than one.</response>
-    [HasPermission(Permissions.SystemManagement)]
+    [HasPermission(Permissions.LogDataRead)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderAdminChangesLogDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
