@@ -30,6 +30,8 @@ public class ChangesLogServiceTests
     private Mock<IApplicationRepository> applicationRepository;
     private Mock<IEntityRepository<long, ProviderAdminChangesLog>> providerAdminChangesLogRepository;
     private Mock<IValueProjector> valueProjector;
+    private Mock<ICurrentUserService> currentUserService;
+    private Mock<IMinistryAdminService> ministryAdminService;
 
     private User user;
     private Provider provider;
@@ -63,6 +65,8 @@ public class ChangesLogServiceTests
         applicationRepository = new Mock<IApplicationRepository>(MockBehavior.Strict);
         providerAdminChangesLogRepository = new Mock<IEntityRepository<long, ProviderAdminChangesLog>>(MockBehavior.Strict);
         valueProjector = new Mock<IValueProjector>();
+        currentUserService = new Mock<ICurrentUserService>();
+        ministryAdminService = new Mock<IMinistryAdminService>();
     }
 
     #region AddEntityChangesToDbContext
@@ -280,5 +284,7 @@ public class ChangesLogServiceTests
             providerAdminChangesLogRepository.Object,
             logger.Object,
             mapper.Object,
-            valueProjector.Object);
+            valueProjector.Object,
+            currentUserService.Object,
+            ministryAdminService.Object);
 }
