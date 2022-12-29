@@ -147,7 +147,7 @@ public class ChatWorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public Task<IActionResult> GetParentsRoomsAsync(ChatWorkshopFilter filter = null)
+    public Task<IActionResult> GetParentsRoomsAsync([FromQuery]ChatWorkshopFilter filter = null)
         => this.GetUsersRoomsAsync(parentId => roomService.GetByParentIdAsync(parentId), filter);
 
     /// <summary>
@@ -161,7 +161,7 @@ public class ChatWorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public Task<IActionResult> GetProvidersRoomsAsync(ChatWorkshopFilter filter = null)
+    public Task<IActionResult> GetProvidersRoomsAsync([FromQuery] ChatWorkshopFilter filter = null)
         => this.GetUsersRoomsAsync(providerId => roomService.GetByProviderIdAsync(providerId), filter);
 
     /// <summary>
