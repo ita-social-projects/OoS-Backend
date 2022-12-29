@@ -17,7 +17,6 @@ public class ChangesLogService : IChangesLogService
     private readonly IChangesLogRepository changesLogRepository;
     private readonly IProviderRepository providerRepository;
     private readonly IApplicationRepository applicationRepository;
-    private readonly IWorkshopRepository workshopRepository;
     private readonly IEntityRepository<long, ProviderAdminChangesLog> providerAdminChangesLogRepository;
     private readonly ILogger<ChangesLogService> logger;
     private readonly IMapper mapper;
@@ -86,7 +85,7 @@ public class ChangesLogService : IChangesLogService
                     join p in providers
                         on l.EntityIdGuid equals p.Id into pg
                     from provider in pg.DefaultIfEmpty()
-                    where changeLogFilter.InstitutionId == Guid.Empty ? true : provider.InstitutionId == changeLogFilter.InstitutionId
+                    where provider.InstitutionId == (changeLogFilter.InstitutionId ?? provider.InstitutionId)
                     select new ProviderChangesLogDto
                     {
                         FieldName = l.PropertyName,
@@ -129,7 +128,7 @@ public class ChangesLogService : IChangesLogService
                     join a in applications
                         on l.EntityIdGuid equals a.Id into ag
                     from app in ag.DefaultIfEmpty()
-                    where changeLogFilter.InstitutionId == Guid.Empty ? true : app.Workshop.Provider.InstitutionId == changeLogFilter.InstitutionId
+                    where app.Workshop.Provider.InstitutionId == (changeLogFilter.InstitutionId ?? app.Workshop.Provider.InstitutionId)
                     select new ApplicationChangesLogDto
                     {
                         FieldName = l.PropertyName,
