@@ -38,13 +38,14 @@ public class SocialGroupControllerTests
     }
 
     [Test]
-    public async Task GetSocialGroups_WhenCalled_ReturnsOkResultObject(LocalizationType localization = LocalizationType.Ua)
+    [TestCase(LocalizationType.Ua)]
+    public async Task GetSocialGroups_WhenCalledUa_ReturnsOkResultObject(LocalizationType localization)
     {
         // Arrange
         service.Setup(x => x.GetAll(localization)).ReturnsAsync(socialGroups);
 
         // Act
-        var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.Get(localization).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -52,13 +53,44 @@ public class SocialGroupControllerTests
     }
 
     [Test]
-    public async Task GetSocialGroups_WhenEmptyCollection_ReturnsNoContentResult(LocalizationType localization = LocalizationType.Ua)
+    [TestCase(LocalizationType.En)]
+    public async Task GetSocialGroups_WhenCalledEn_ReturnsOkResultObject(LocalizationType localization)
+    {
+        // Arrange
+        service.Setup(x => x.GetAll(localization)).ReturnsAsync(socialGroups);
+
+        // Act
+        var result = await controller.Get(localization).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(200, result.StatusCode);
+    }
+
+    [Test]
+    [TestCase(LocalizationType.Ua)]
+    public async Task GetSocialGroups_WhenEmptyCollectionUa_ReturnsNoContentResult(LocalizationType localization)
     {
         // Arrange
         service.Setup(x => x.GetAll(localization)).ReturnsAsync(new List<SocialGroupDto>());
 
         // Act
-        var result = await controller.Get().ConfigureAwait(false) as NoContentResult;
+        var result = await controller.Get(localization).ConfigureAwait(false) as NoContentResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(204, result.StatusCode);
+    }
+
+    [Test]
+    [TestCase(LocalizationType.En)]
+    public async Task GetSocialGroups_WhenEmptyCollectionEn_ReturnsNoContentResult(LocalizationType localization)
+    {
+        // Arrange
+        service.Setup(x => x.GetAll(localization)).ReturnsAsync(new List<SocialGroupDto>());
+
+        // Act
+        var result = await controller.Get(localization).ConfigureAwait(false) as NoContentResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -67,7 +99,22 @@ public class SocialGroupControllerTests
 
     [Test]
     [TestCase(1)]
-    public async Task GetSocialGroupById_WhenIdIsValid_ReturnOkResultObject(long id, LocalizationType localization = LocalizationType.Ua)
+    public async Task GetSocialGroupById_WhenIdIsValidUa_ReturnOkResultObject(long id, LocalizationType localization = LocalizationType.Ua)
+    {
+        // Arrange
+        service.Setup(x => x.GetById(id, localization)).ReturnsAsync(socialGroups.SingleOrDefault(x => x.Id == id));
+
+        // Act
+        var result = await controller.GetById(id, localization).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(200, result.StatusCode);
+    }
+
+    [Test]
+    [TestCase(1)]
+    public async Task GetSocialGroupById_WhenIdIsValidEn_ReturnOkResultObject(long id, LocalizationType localization = LocalizationType.En)
     {
         // Arrange
         service.Setup(x => x.GetById(id, localization)).ReturnsAsync(socialGroups.SingleOrDefault(x => x.Id == id));
@@ -82,7 +129,19 @@ public class SocialGroupControllerTests
 
     [Test]
     [TestCase(-50)]
-    public void GetSocialGroupById_WhenIdIsInvalid_ReturnsArgumentOutOfRangeException(long id, LocalizationType localization = LocalizationType.Ua)
+    public void GetSocialGroupById_WhenIdIsInvalidUa_ReturnsArgumentOutOfRangeException(long id, LocalizationType localization = LocalizationType.Ua)
+    {
+        // Arrange
+        service.Setup(x => x.GetById(id, localization)).ReturnsAsync(socialGroups.SingleOrDefault(x => x.Id == id));
+
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            async () => await controller.GetById(id, localization).ConfigureAwait(false));
+    }
+
+    [Test]
+    [TestCase(-50)]
+    public void GetSocialGroupById_WhenIdIsInvalidEn_ReturnsArgumentOutOfRangeException(long id, LocalizationType localization = LocalizationType.En)
     {
         // Arrange
         service.Setup(x => x.GetById(id, localization)).ReturnsAsync(socialGroups.SingleOrDefault(x => x.Id == id));
@@ -94,8 +153,24 @@ public class SocialGroupControllerTests
 
     [Test]
     [TestCase(100)]
-    public async Task GetSocialGroupById_WhenIdIsNotValid_ReturnsEmptyObject(long id, LocalizationType localization = LocalizationType.Ua)
+    public async Task GetSocialGroupById_WhenIdIsNotValidUa_ReturnsEmptyObject(long id, LocalizationType localization = LocalizationType.Ua)
     {   
+        // Arrange
+        service.Setup(x => x.GetById(id, localization)).ReturnsAsync(socialGroups.SingleOrDefault(x => x.Id == id));
+
+        // Act
+        var result = await controller.GetById(id, localization).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Value, Is.Null);
+        Assert.AreEqual(200, result.StatusCode);
+    }
+
+    [Test]
+    [TestCase(100)]
+    public async Task GetSocialGroupById_WhenIdIsNotValidEn_ReturnsEmptyObject(long id, LocalizationType localization = LocalizationType.En)
+    {
         // Arrange
         service.Setup(x => x.GetById(id, localization)).ReturnsAsync(socialGroups.SingleOrDefault(x => x.Id == id));
 
@@ -123,13 +198,29 @@ public class SocialGroupControllerTests
     }
 
     [Test]
-    public async Task UpdateSocialGroup_WhenModelIsValid_ReturnsOkObjectResult()
+    [TestCase(LocalizationType.Ua)]
+    public async Task UpdateSocialGroup_WhenModelIsValidUa_ReturnsOkObjectResult(LocalizationType localization)
     {
         // Arrange
-        service.Setup(x => x.Update(socialGroup, LocalizationType.Ua)).ReturnsAsync(socialGroup);
+        service.Setup(x => x.Update(socialGroup, localization)).ReturnsAsync(socialGroup);
 
         // Act
-        var result = await controller.Update(socialGroup).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.Update(socialGroup, localization).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(200, result.StatusCode);
+    }
+
+    [Test]
+    [TestCase(LocalizationType.En)]
+    public async Task UpdateSocialGroup_WhenModelIsValidEn_ReturnsOkObjectResult(LocalizationType localization)
+    {
+        // Arrange
+        service.Setup(x => x.Update(socialGroup, localization)).ReturnsAsync(socialGroup);
+
+        // Act
+        var result = await controller.Update(socialGroup, localization).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
