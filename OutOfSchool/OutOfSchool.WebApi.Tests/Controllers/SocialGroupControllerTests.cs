@@ -154,7 +154,7 @@ public class SocialGroupControllerTests
     [Test]
     [TestCase(100)]
     public async Task GetSocialGroupById_WhenIdIsNotValidUa_ReturnsEmptyObject(long id, LocalizationType localization = LocalizationType.Ua)
-    {   
+    {
         // Arrange
         service.Setup(x => x.GetById(id, localization)).ReturnsAsync(socialGroups.SingleOrDefault(x => x.Id == id));
 
