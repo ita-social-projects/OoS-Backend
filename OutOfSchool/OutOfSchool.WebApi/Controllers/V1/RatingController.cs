@@ -99,9 +99,9 @@ public class RatingController : ControllerBase
     /// <param name="entityType">Entity type (provider or workshop).</param>
     /// <param name="entityId">Id of Entity.</param>
     /// <param name="filter">Skip & Take number.</param>
-    /// <returns>List of all ratings.</returns>
+    /// <returns>The result is a <see cref="SearchResult{RatingDto}"/> that contains the count of all found ratings and a list of ratings that were received.</returns>
     [AllowAnonymous]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<RatingDto>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<RatingDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -112,7 +112,7 @@ public class RatingController : ControllerBase
 
         var ratings = await ratingService.GetAllByEntityId(entityId, type, filter).ConfigureAwait(false);
 
-        if (ratings.IsNullOrEmpty())
+        if (ratings.TotalAmount == 0)
         {
             return NoContent();
         }

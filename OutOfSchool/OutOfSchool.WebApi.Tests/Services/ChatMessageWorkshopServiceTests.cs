@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
@@ -13,9 +14,11 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.WebApi.Hubs;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -34,6 +37,7 @@ public class ChatMessageWorkshopServiceTests
 
     private IEntityRepository<Guid, ChatMessageWorkshop> messageRepository;
     private Mock<IChatRoomWorkshopService> roomServiceMock;
+    private Mock<IHubContext<ChatWorkshopHub>> workshopHub;
     private Mock<ILogger<ChatMessageWorkshopService>> loggerMock;
     private IMapper mapper;
 
@@ -41,6 +45,9 @@ public class ChatMessageWorkshopServiceTests
     private OutOfSchoolDbContext dbContext;
 
     private IChatMessageWorkshopService messageService;
+
+    private Mock<IHubClients> clientsMock;
+    private Mock<IClientProxy> clientProxyMock;
 
     [SetUp]
     public void SetUp()
@@ -55,12 +62,20 @@ public class ChatMessageWorkshopServiceTests
 
         messageRepository = new EntityRepository<Guid, ChatMessageWorkshop>(dbContext);
         roomServiceMock = new Mock<IChatRoomWorkshopService>();
+        workshopHub = new Mock<IHubContext<ChatWorkshopHub>>();
         loggerMock = new Mock<ILogger<ChatMessageWorkshopService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+
+        clientsMock = new Mock<IHubClients>();
+        clientProxyMock = new Mock<IClientProxy>();
+
+        workshopHub.Setup(wh => wh.Clients).Returns(clientsMock.Object);
+        clientsMock.Setup(client => client.Group(It.IsAny<string>())).Returns(clientProxyMock.Object);
 
         messageService = new ChatMessageWorkshopService(
             messageRepository,
             roomServiceMock.Object,
+            workshopHub.Object,
             loggerMock.Object,
             mapper);
 

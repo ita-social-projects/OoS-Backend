@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-using Microsoft.EntityFrameworkCore;
-
+﻿using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 
 namespace OutOfSchool.WebApi.Services;
@@ -31,6 +26,22 @@ public interface IChatRoomWorkshopService
     Task<ChatRoomWorkshopDto> GetByIdAsync(Guid id);
 
     /// <summary>
+    /// Get ChatRooms by specified Parent and Provider.
+    /// </summary>
+    /// <param name="parentId">Parent's identifier.</param>
+    /// <param name="providerId">Provider's identifier.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{ChatRoomWorkshopDto}"/> that contains elements from the input sequence.</returns>
+    Task<IEnumerable<ChatRoomWorkshopDto>> GetByParentIdProviderIdAsync(Guid parentId, Guid providerId);
+
+    /// <summary>
+    /// Get ChatRooms by specified Parent and Provider.
+    /// </summary>
+    /// <param name="parentId">Parent's identifier.</param>
+    /// <param name="workshopId">Workshop's identifier.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomWorkshopDto"/> that contains elements from the input sequence.</returns>
+    Task<ChatRoomWorkshopDto> GetByParentIdWorkshopIdAsync(Guid parentId, Guid workshopId);
+
+    /// <summary>
     /// Get ChatRooms with last message and count of not read messages by specified Parent.
     /// </summary>
     /// <param name="parentId">Parent's identifier.</param>
@@ -52,14 +63,14 @@ public interface IChatRoomWorkshopService
     Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetByWorkshopIdAsync(Guid workshopId);
 
     /// <summary>
-    /// Get ChatRooms with last message and count of not read messages by specified Workshop's Ids.
+    /// Get ChatRooms with last message and count of not read messages by specified Workshop's WorkshopIds.
     /// </summary>
     /// <param name="workshopIds">Workshop's identifiers.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{ChatRoomWithLastMessage}"/> that contains elements from the input sequence.</returns>
     Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetByWorkshopIdsAsync(IEnumerable<Guid> workshopIds);
 
     /// <summary>
-    /// Get a list of ChatRoom's Ids by specified Parent.
+    /// Get a list of ChatRoom's WorkshopIds by specified Parent.
     /// </summary>
     /// <param name="parentId">Parent's identifier.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
@@ -67,7 +78,7 @@ public interface IChatRoomWorkshopService
     Task<IEnumerable<Guid>> GetChatRoomIdsByParentIdAsync(Guid parentId);
 
     /// <summary>
-    /// Get a list of ChatRoom's Ids by specified Provider.
+    /// Get a list of ChatRoom's WorkshopIds by specified Provider.
     /// </summary>
     /// <param name="providerId">Provider's identifier.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
@@ -75,7 +86,7 @@ public interface IChatRoomWorkshopService
     Task<IEnumerable<Guid>> GetChatRoomIdsByProviderIdAsync(Guid providerId);
 
     /// <summary>
-    /// Get a list of ChatRoom's Ids by specified Worshops.
+    /// Get a list of ChatRoom's WorkshopIds by specified Worshops.
     /// </summary>
     /// <param name="workshopIds">List of workshops ids.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
@@ -99,4 +110,12 @@ public interface IChatRoomWorkshopService
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomWorkshopDto"/> that was found, or null.</returns>
     /// <exception cref="InvalidOperationException">If the logic of creating chat was compromised.</exception>
     Task<ChatRoomWorkshopDto> GetUniqueChatRoomAsync(Guid workshopId, Guid parentId);
+
+    /// <summary>
+    /// Get all entities that matches filter's parameters.
+    /// </summary>
+    /// <param name="filter">Entity that represents searching parameters.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The task result contains a <see cref="IEnumerable{ChatRoomWorkshopDtoWithLastMessage}"/> that contains elements that were found.</returns>
+    Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetChatRoomByFilter(ChatWorkshopFilter filter, Guid userId);
 }

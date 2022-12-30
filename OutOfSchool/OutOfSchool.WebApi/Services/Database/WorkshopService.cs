@@ -27,6 +27,7 @@ public class WorkshopService : IWorkshopService
     private readonly string includingPropertiesForMappingWorkShopCard = $"{nameof(Workshop.Address)}";
 
     private readonly IWorkshopRepository workshopRepository;
+    private readonly IEntityRepository<long, DateTimeRange> dateTimeRangeRepository;
     private readonly IRatingService ratingService;
     private readonly ITeacherService teacherService;
     private readonly ILogger<WorkshopService> logger;
@@ -37,6 +38,7 @@ public class WorkshopService : IWorkshopService
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
     /// </summary>
     /// <param name="workshopRepository">Repository for Workshop entity.</param>
+    /// <param name="dateTimeRangeRepository">Repository for DateTimeRange entity.</param>
     /// <param name="ratingService">Rating service.</param>
     /// <param name="teacherService">Teacher service.</param>
     /// <param name="logger">Logger.</param>
@@ -44,6 +46,7 @@ public class WorkshopService : IWorkshopService
     /// <param name="workshopImagesService">Workshop images mediator.</param>
     public WorkshopService(
         IWorkshopRepository workshopRepository,
+        IEntityRepository<long, DateTimeRange> dateTimeRangeRepository,
         IRatingService ratingService,
         ITeacherService teacherService,
         ILogger<WorkshopService> logger,
@@ -51,6 +54,7 @@ public class WorkshopService : IWorkshopService
         IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService)
     {
         this.workshopRepository = workshopRepository;
+        this.dateTimeRangeRepository = dateTimeRangeRepository;
         this.ratingService = ratingService;
         this.teacherService = teacherService;
         this.logger = logger;
@@ -197,19 +201,12 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
-    public async Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId, OffsetFilter offsetFilter)
+    public async Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId)
     {
-        logger.LogDebug($"Getting Workshop (Id, Title) by organization started. Looking ProviderId = {providerId}.");
+        logger.LogDebug("Getting Workshop (Id, Title) by organization started. Looking ProviderId = {ProviderId}", providerId);
 
-        offsetFilter ??= new OffsetFilter();
-        ValidateOffsetFilter(offsetFilter);
-
-        var workshops = await workshopRepository.Get(
-            skip: offsetFilter.From,
-            take: offsetFilter.Size,
-            where: x => x.ProviderId == providerId)
-            .ToListAsync()
-            .ConfigureAwait(false);
+        var workshops = await workshopRepository.GetByFilter(
+            predicate: x => x.ProviderId == providerId);
 
         var result = mapper.Map<List<ShortEntityDto>>(workshops).OrderBy(entity => entity.Title).ToList();
 
@@ -217,19 +214,23 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<T>> GetByProviderId<T>(Guid id, OffsetFilter offsetFilter)
+    public async Task<SearchResult<T>> GetByProviderId<T>(Guid id, ExcludeIdFilter filter)
         where T : WorkshopBaseCard
     {
         logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
-        offsetFilter ??= new OffsetFilter();
-        ValidateOffsetFilter(offsetFilter);
+        filter ??= new ExcludeIdFilter();
+        ValidateExcludedIdFilter(filter);
 
+        var workshopBaseCardsCount = await workshopRepository.Count(where: x =>
+                                                filter.ExcludedId == null ? (x.ProviderId == id)
+                                                : (x.ProviderId == id && x.Id != filter.ExcludedId)).ConfigureAwait(false);
         var workshops = await workshopRepository.Get(
-            skip: offsetFilter.From,
-            take: offsetFilter.Size,
+            skip: filter.From,
+            take: filter.Size,
             includeProperties: includingPropertiesForMappingDtoModel,
-            where: x => x.ProviderId == id)
+            where: x => filter.ExcludedId == null ? (x.ProviderId == id)
+                                  : (x.ProviderId == id && x.Id != filter.ExcludedId))
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -237,9 +238,14 @@ public class WorkshopService : IWorkshopService
             ? $"There aren't Workshops for Provider with Id = {id}."
             : $"From Workshop table were successfully received {workshops.Count} records.");
 
-        var workshopBaseCards = mapper.Map<List<T>>(workshops);
+        var workshopBaseCards = mapper.Map<List<T>>(workshops).ToList();
+        var result = new SearchResult<T>()
+        {
+            TotalAmount = workshopBaseCardsCount,
+            Entities = await GetWorkshopsWithAverageRating(workshopBaseCards).ConfigureAwait(false),
+        };
 
-        return await GetWorkshopsWithAverageRating(workshopBaseCards);
+        return result;
     }
 
     /// <inheritdoc/>
@@ -328,6 +334,7 @@ public class WorkshopService : IWorkshopService
         async Task<(Workshop updatedWorkshop, MultipleImageChangingResult multipleImageChangingResult,
             ImageChangingResult changingCoverImageResult)> UpdateWorkshopWithDependencies()
         {
+            await UpdateDateTimeRanges(dto.DateTimeRanges, dto.Id).ConfigureAwait(false);
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto.Id).ConfigureAwait(false);
 
             dto.ImageIds ??= new List<string>();
@@ -449,10 +456,7 @@ public class WorkshopService : IWorkshopService
     {
         logger.LogInformation("Getting Workshops by filter started.");
 
-        if (filter is null)
-        {
-            filter = new WorkshopFilter();
-        }
+        filter ??= new WorkshopFilter();
 
         var filterPredicate = PredicateBuild(filter);
         var orderBy = GetOrderParameter(filter);
@@ -484,13 +488,10 @@ public class WorkshopService : IWorkshopService
     public async Task<SearchResult<WorkshopCard>> GetNearestByFilter(WorkshopFilter filter = null)
     {
         logger.LogInformation("Getting Workshops by filter started.");
-        if (filter is null)
-        {
-            filter = new WorkshopFilter();
-        }
+        filter ??= new WorkshopFilter();
 
-        var geo = default(GeoCoord).SetDegrees(filter.Latitude, filter.Longitude);
-        var h3Location = Api.GeoToH3(geo, GeoMathHelper.Resolution);
+        var hash = default(GeoCoord).SetDegrees(filter.Latitude, filter.Longitude);
+        var h3Location = Api.GeoToH3(hash, GeoMathHelper.Resolution);
         Api.KRing(h3Location, GeoMathHelper.KRingForResolution, out var neighbours);
 
         var filterPredicate = PredicateBuild(filter);
@@ -547,9 +548,13 @@ public class WorkshopService : IWorkshopService
             .ConfigureAwait(false)).ProviderId;
     }
 
+    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) => ModelValidationHelper.ValidateExcludedIdFilter(filter);
+
     private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
     {
         var predicate = PredicateBuilder.True<Workshop>();
+
+        predicate = predicate.And(x => x.Provider.Status == ProviderStatus.Approved);
 
         if (filter.Ids.Any())
         {
@@ -561,6 +566,7 @@ public class WorkshopService : IWorkshopService
         if (!string.IsNullOrWhiteSpace(filter.SearchText))
         {
             var tempPredicate = PredicateBuilder.False<Workshop>();
+
             foreach (var word in filter.SearchText.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
             {
                 tempPredicate = tempPredicate.Or(x => EF.Functions.Like(x.Keywords, $"%{word}%"));
@@ -623,7 +629,7 @@ public class WorkshopService : IWorkshopService
             predicate = filter.IsAppropriateHours
                 ? predicate.And(x => x.DateTimeRanges.Any(tr =>
                     tr.StartTime >= filter.MinStartTime && tr.EndTime.Hours <= filter.MaxStartTime.Hours))
-                : predicate = predicate.And(x => x.DateTimeRanges.Any(tr =>
+                : predicate.And(x => x.DateTimeRanges.Any(tr =>
                     tr.StartTime >= filter.MinStartTime && tr.StartTime.Hours <= filter.MaxStartTime.Hours));
         }
 
@@ -666,7 +672,7 @@ public class WorkshopService : IWorkshopService
         return sortExpression;
     }
 
-    private async Task<List<T>> GetWorkshopsWithAverageRating<T>(List<T> workshops)  where T: WorkshopBaseCard
+    private async Task<List<T>> GetWorkshopsWithAverageRating<T>(List<T> workshops) where T: WorkshopBaseCard
     {
         var averageRatings =
             await ratingService.GetAverageRatingForRangeAsync(workshops.Select(p => p.WorkshopId), RatingType.Workshop)
@@ -723,6 +729,19 @@ public class WorkshopService : IWorkshopService
                 var newTeacher = mapper.Map<TeacherDTO>(teacherDto);
                 newTeacher.WorkshopId = currentWorkshop.Id;
                 await teacherService.Create(newTeacher).ConfigureAwait(false);
+            }
+        }
+    }
+
+    private async Task UpdateDateTimeRanges(List<DateTimeRangeDto> dtos, Guid workshopId)
+    {
+        var ranges = mapper.Map<List<DateTimeRange>>(dtos);
+        foreach (var range in ranges)
+        {
+            if (await dateTimeRangeRepository.Any(r => r.Id == range.Id))
+            {
+                range.WorkshopId = workshopId;
+                await dateTimeRangeRepository.Update(range);
             }
         }
     }

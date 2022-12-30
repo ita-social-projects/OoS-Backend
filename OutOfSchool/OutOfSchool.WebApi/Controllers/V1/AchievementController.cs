@@ -223,7 +223,7 @@ public class AchievementController : ControllerBase
         try
         {
             var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
-            if (providerId != provider.Id)
+            if (providerId != provider?.Id)
             {
                 return false;
             }

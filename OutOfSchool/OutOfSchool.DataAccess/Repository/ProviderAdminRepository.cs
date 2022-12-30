@@ -17,7 +17,7 @@ public class ProviderAdminRepository : EntityRepository<(string, Guid), Provider
         db = dbContext;
     }
 
-    public async Task<ProviderAdmin> GetByIdAsync(string userId, Guid providerId)
+    public async Task<ProviderAdmin?> GetByIdAsync(string userId, Guid providerId)
     {
         return await db.ProviderAdmins
             .Where(pa => pa.ProviderId == providerId)

@@ -1,8 +1,13 @@
-﻿using AutoMapper;
+﻿using System.Linq;
+using System.Linq.Expressions;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Nest;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 
@@ -19,6 +24,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     private readonly IMapper mapper;
     private readonly IProviderAdminOperationsService providerAdminOperationsService;
     private readonly IWorkshopService workshopService;
+    private readonly ICurrentUserService currentUserService;
 
     public ProviderAdminService(
         IHttpClientFactory httpClientFactory,
@@ -30,7 +36,8 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         IMapper mapper,
         ILogger<ProviderAdminService> logger,
         IProviderAdminOperationsService providerAdminOperationsService,
-        IWorkshopService workshopService)
+        IWorkshopService workshopService,
+        ICurrentUserService currentUserService)
         : base(httpClientFactory, communicationConfig.Value, logger)
     {
         this.identityServerConfig = identityServerConfig.Value;
@@ -40,6 +47,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         this.mapper = mapper;
         this.providerAdminOperationsService = providerAdminOperationsService;
         this.workshopService = workshopService;
+        this.currentUserService = currentUserService;
     }
 
     public async Task<Either<ErrorResponse, CreateProviderAdminDto>> CreateProviderAdminAsync(
@@ -318,37 +326,55 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     {
         var providersAdmins = await providerAdminRepository.GetByFilter(p => p.UserId == userId && !p.IsDeputy)
             .ConfigureAwait(false);
-        return providersAdmins.SelectMany(admin => admin.ManagedWorkshops, (admin, workshops) => new {workshops})
+        return providersAdmins.SelectMany(admin => admin.ManagedWorkshops, (admin, workshops) => new { workshops })
             .Select(x => x.workshops.Id);
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<WorkshopProviderViewCard>> GetWorkshopsThatProviderAdminCanManage(
+    public async Task<SearchResult<WorkshopProviderViewCard>> GetWorkshopsThatProviderAdminCanManage(
         string userId,
         bool isProviderDeputy)
     {
-        var providersAdmins = await providerAdminRepository
-            .GetByFilter(p => p.UserId == userId && p.IsDeputy == isProviderDeputy, includingPropertiesForMaping)
-            .ConfigureAwait(false);
+        var providersAdmins = (await providerAdminRepository
+            .GetByFilter(p => p.UserId == userId && p.IsDeputy == isProviderDeputy, includingPropertiesForMaping))
+            .ToList();
 
         if (!providersAdmins.Any())
         {
-            return new List<WorkshopProviderViewCard>();
+            return new SearchResult<WorkshopProviderViewCard>()
+            {
+                Entities = new List<WorkshopProviderViewCard>(),
+                TotalAmount = 0,
+            };
         }
 
         if (isProviderDeputy)
         {
             var providerAdmin = providersAdmins.SingleOrDefault(x => x.IsDeputy);
-            if (providerAdmin == null) {
-                return new List<WorkshopProviderViewCard>();
+            if (providerAdmin == null)
+            {
+                return new SearchResult<WorkshopProviderViewCard>()
+                {
+                    Entities = new List<WorkshopProviderViewCard>(),
+                    TotalAmount = 0,
+                };
             }
 
-            var offsetFilter = new OffsetFilter() { From = 0, Size = int.MaxValue };
-            return await workshopService.GetByProviderId<WorkshopProviderViewCard>(providerAdmin.ProviderId, offsetFilter).ConfigureAwait(false);
+            var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
+            return await workshopService.GetByProviderId<WorkshopProviderViewCard>(providerAdmin.ProviderId, filter).ConfigureAwait(false);
         }
 
-        return providersAdmins.SingleOrDefault().ManagedWorkshops
-            .Select(workshop => mapper.Map<WorkshopProviderViewCard>(workshop));
+        var pa = providersAdmins.SingleOrDefault();
+
+        var workshops = pa is not null
+            ? pa.ManagedWorkshops.Select(workshop => mapper.Map<WorkshopProviderViewCard>(workshop)).ToList()
+            : new List<WorkshopProviderViewCard>();
+
+        return new SearchResult<WorkshopProviderViewCard>()
+        {
+            Entities = workshops,
+            TotalAmount = workshops.Count,
+        };
     }
 
     /// <inheritdoc/>
@@ -375,6 +401,37 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         }
 
         return providerAdmin != null;
+    }
+
+    public async Task<SearchResult<ProviderAdminDto>> GetFilteredRelatedProviderAdmins(string userId, ProviderAdminSearchFilter filter)
+    {
+        filter ??= new ProviderAdminSearchFilter();
+        ModelValidationHelper.ValidateOffsetFilter(filter);
+
+        var relatedAdmins = await GetRelatedProviderAdmins(userId).ConfigureAwait(false);
+
+        int totalAmount;
+
+        if (string.IsNullOrEmpty(filter.SearchString) && (filter.DeputyOnly == filter.AssistantsOnly))
+        {
+            totalAmount = relatedAdmins.Count();
+        }
+        else
+        {
+            var filterPredicate = PredicateBuild(filter).Compile();
+            totalAmount = relatedAdmins.Count(filterPredicate);
+            relatedAdmins = relatedAdmins.Where(filterPredicate);
+        }
+
+        var providerAdmins = relatedAdmins.Skip(filter.From).Take(filter.Size).ToList();
+
+        var searchResult = new SearchResult<ProviderAdminDto>()
+        {
+            TotalAmount = totalAmount,
+            Entities = providerAdmins,
+        };
+
+        return searchResult;
     }
 
     public async Task<IEnumerable<ProviderAdminDto>> GetRelatedProviderAdmins(string userId)
@@ -443,5 +500,80 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
                                                                                && p.IsDeputy).ConfigureAwait(false);
 
         return providersDeputies.Select(d => d.UserId);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ProviderAdminDto> GetFullProviderAdmin(string providerAdminId)
+    {
+        var providerAdmin = await GetById(providerAdminId).ConfigureAwait(false);
+        if (providerAdmin == null)
+        {
+            return null;
+        }
+
+        await CheckProviderOrDeputyRights(providerAdmin.ProviderId, providerAdmin.IsDeputy).ConfigureAwait(false);
+
+        var user = (await userRepository.GetByFilter(u => u.Id == providerAdmin.UserId).ConfigureAwait(false))
+            .SingleOrDefault();
+
+        var result = mapper.Map<ProviderAdminDto>(user);
+
+        result.IsDeputy = providerAdmin.IsDeputy;
+        if (user.IsBlocked)
+        {
+            result.AccountStatus = AccountStatus.Blocked;
+        }
+        else
+        {
+            result.AccountStatus = user.LastLogin == DateTimeOffset.MinValue
+                ? AccountStatus.NeverLogged
+                : AccountStatus.Accepted;
+        }
+
+        return result;
+    }
+
+    private async Task CheckProviderOrDeputyRights(Guid providerId, bool onlyProvider)
+    {
+        if (onlyProvider)
+        {
+            await currentUserService.UserHasRights(new ProviderRights(providerId))
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            await currentUserService.UserHasRights(
+                new ProviderRights(providerId),
+                new ProviderDeputyRights(providerId)).ConfigureAwait(false);
+        }
+    }
+
+    private static Expression<Func<ProviderAdminDto, bool>> PredicateBuild(ProviderAdminSearchFilter filter)
+    {
+        var predicate = PredicateBuilder.True<ProviderAdminDto>();
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchString))
+        {
+            var tempPredicate = PredicateBuilder.False<ProviderAdminDto>();
+
+            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                tempPredicate = tempPredicate.Or(
+                    x => x.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
+            }
+
+            predicate = predicate.And(tempPredicate);
+        }
+
+        if (filter.DeputyOnly != filter.AssistantsOnly)
+        {
+            predicate = predicate.And(p => p.IsDeputy == filter.DeputyOnly);
+        }
+
+        return predicate;
     }
 }

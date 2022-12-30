@@ -92,6 +92,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
     public DbSet<AchievementTeacher> AchievementTeachers { get; set; }
 
     public DbSet<Achievement> Achievements { get; set; }
+    public DbSet<ProviderType> ProviderTypes { get; set; }
 
     public DbSet<StatisticReport> StatisticReports { get; set; }
 
@@ -123,10 +124,17 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new NotificationConfiguration());
         builder.ApplyConfiguration(new AchievementConfiguration());
         builder.ApplyConfiguration(new AddressConfiguration());
+        builder.ApplyConfiguration(new CodeficatorConfiguration());
 
         ApplySoftDelete(builder);
 
         builder.Seed();
         builder.UpdateIdentityTables();
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder
+            .AddInterceptors(new CalculateGeoHashInterceptor());
     }
 }

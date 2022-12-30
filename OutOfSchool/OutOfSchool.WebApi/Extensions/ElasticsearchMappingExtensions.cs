@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
 using Nest;
+using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.Common.Models;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.WebApi.Models;

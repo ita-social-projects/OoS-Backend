@@ -126,8 +126,10 @@ public class WorkshopControllerTests
     public async Task GetByProviderId_WhenThereAreWorkshops_ShouldReturnOkResultObject()
     {
         // Arrange
-        var filter = new OffsetFilter() { From = 0, Size = int.MaxValue };
-        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<OffsetFilter>(), It.IsAny<Guid?>())).ReturnsAsync(workshopBaseCards);
+        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
+        var searchResult = new SearchResult<WorkshopBaseCard>() { TotalAmount = 5, Entities = workshopBaseCards };
+        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+            .ReturnsAsync(searchResult);
 
         // Act
         var result = await controller.GetByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as OkObjectResult;
@@ -136,16 +138,17 @@ public class WorkshopControllerTests
         workshopServiceMoq.VerifyAll();
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(Ok, result.StatusCode);
-        Assert.AreEqual(workshops.Count, (result.Value as List<WorkshopBaseCard>).Count);
+        Assert.AreEqual(workshops.Count, (result.Value as SearchResult<WorkshopBaseCard>).TotalAmount);
     }
 
     [Test]
     public async Task GetByProviderId_WhenThereIsNoWorkshops_ShouldReturnNoContentResult([Random(uint.MinValue, uint.MaxValue, 1)] long randomNumber)
     {
         // Arrange
-        var filter = new OffsetFilter() { From = 0, Size = int.MaxValue };
-        var emptyList = new List<WorkshopBaseCard>();
-        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<OffsetFilter>(), It.IsAny<Guid?>())).ReturnsAsync(emptyList);
+        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
+        var emptySearchResult = new SearchResult<WorkshopBaseCard>() { TotalAmount = 0, Entities = new List<WorkshopBaseCard>() };
+        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+            .ReturnsAsync(emptySearchResult);
 
         // Act
         var result = await controller.GetByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as NoContentResult;
@@ -167,6 +170,27 @@ public class WorkshopControllerTests
         Assert.AreEqual("Provider id is empty.", (result as BadRequestObjectResult).Value);
     }
 
+    [Test]
+    public async Task GetByProviderId_WhenThereIsExcludedId_ShouldReturnOkResultObject()
+    {
+        // Arrange
+        var expectedWorkshopCount = workshopBaseCards.Count - 1;
+        var excludedId = workshopBaseCards.FirstOrDefault().WorkshopId;
+        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue, ExcludedId = excludedId };
+        var searchResult = new SearchResult<WorkshopBaseCard>() { TotalAmount = 4, Entities = workshopBaseCards.Skip(1).ToList() };
+        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+            .ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.GetByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        workshopServiceMoq.VerifyAll();
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(Ok, result.StatusCode);
+        Assert.AreEqual(expectedWorkshopCount, (result.Value as SearchResult<WorkshopBaseCard>).TotalAmount);
+    }
+
     #endregion
 
     #region GetWorkshopListByProviderId
@@ -174,12 +198,11 @@ public class WorkshopControllerTests
     public async Task GetWorkshopListByProviderId_WhenThereAreWorkshops_ShouldReturnOkResultObject()
     {
         // Arrange
-        var filter = new OffsetFilter() { From = 0, Size = int.MaxValue };
-        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>(), It.IsAny<OffsetFilter>()))
+        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>()))
             .ReturnsAsync(workshopShortEntitiesList);
 
         // Act
-        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid()).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         workshopServiceMoq.VerifyAll();
@@ -192,13 +215,12 @@ public class WorkshopControllerTests
     public async Task GetWorkshopListByProviderId_WhenThereIsNoWorkshops_ShouldReturnNoContentResult()
     {
         // Arrange
-        var filter = new OffsetFilter() { From = 0, Size = int.MaxValue };
         var emptyList = new List<ShortEntityDto>();
-        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>(), It.IsAny<OffsetFilter>()))
+        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>()))
             .ReturnsAsync(emptyList);
 
         // Act
-        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as NoContentResult;
+        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid()).ConfigureAwait(false) as NoContentResult;
 
         // Assert
         workshopServiceMoq.VerifyAll();
@@ -211,12 +233,11 @@ public class WorkshopControllerTests
     {
         // Arrange
         var expectedCount = 1;
-        var filter = new OffsetFilter() { From = 0, Size = expectedCount };
-        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>(), It.IsAny<OffsetFilter>()))
+        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>()))
             .ReturnsAsync(workshopShortEntitiesList.Take(expectedCount).ToList());
 
         // Act
-        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid()).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         workshopServiceMoq.VerifyAll();
@@ -232,12 +253,11 @@ public class WorkshopControllerTests
         var skipCount = 1;
         var expectedCount = 2;
         var expectedResult = workshopShortEntitiesList.Skip(skipCount).Take(expectedCount).ToList();
-        var filter = new OffsetFilter() { From = skipCount, Size = expectedCount };
-        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>(), It.IsAny<OffsetFilter>()))
+        workshopServiceMoq.Setup(x => x.GetWorkshopListByProviderId(It.IsAny<Guid>()))
             .ReturnsAsync(expectedResult);
 
         // Act
-        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.GetWorkshopListByProviderId(Guid.NewGuid()).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         workshopServiceMoq.VerifyAll();
@@ -251,7 +271,7 @@ public class WorkshopControllerTests
     public async Task GetWorkshopListByProviderId_WhenProviderIdIsEmpty_ShouldReturnNoContentResult()
     {
         // Act
-        IActionResult result = await controller.GetWorkshopListByProviderId(Guid.Empty, null).ConfigureAwait(false);
+        IActionResult result = await controller.GetWorkshopListByProviderId(Guid.Empty).ConfigureAwait(false);
 
         // Assert
         Assert.IsInstanceOf<BadRequestObjectResult>(result);
@@ -297,9 +317,10 @@ public class WorkshopControllerTests
     public async Task GetWorkshopProviderViewCardsByProviderId_WhenThereAreWorkshops_ShouldReturnOkResultObject()
     {
         // Arrange
-        var filter = new OffsetFilter() { From = 0, Size = int.MaxValue };
-        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopProviderViewCard>(It.IsAny<Guid>(), It.IsAny<OffsetFilter>(), It.IsAny<Guid?>()))
-            .ReturnsAsync(workshopProviderViewCardList);
+        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
+        var searchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = 5, Entities = workshopProviderViewCardList };
+        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopProviderViewCard>(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+            .ReturnsAsync(searchResult);
 
         // Act
         var result = await controller.GetWorkshopProviderViewCardsByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as OkObjectResult;
@@ -308,17 +329,17 @@ public class WorkshopControllerTests
         workshopServiceMoq.VerifyAll();
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(Ok, result.StatusCode);
-        Assert.AreEqual(workshopProviderViewCardList.Count, (result.Value as List<WorkshopProviderViewCard>).Count);
+        Assert.AreEqual(workshopProviderViewCardList.Count, (result.Value as SearchResult<WorkshopProviderViewCard>).TotalAmount);
     }
 
     [Test]
     public async Task GetWorkshopProviderViewCardsByProviderId_WhenThereIsNoWorkshops_ShouldReturnNoContentResult()
     {
         // Arrange
-        var filter = new OffsetFilter() { From = 0, Size = int.MaxValue };
-        var emptyList = new List<WorkshopProviderViewCard>();
-        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopProviderViewCard>(It.IsAny<Guid>(), It.IsAny<OffsetFilter>(), It.IsAny<Guid?>()))
-            .ReturnsAsync(emptyList);
+        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
+        var emptySearchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = 0, Entities = new List<WorkshopProviderViewCard>() };
+        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopProviderViewCard>(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+            .ReturnsAsync(emptySearchResult);
 
         // Act
         var result = await controller.GetWorkshopProviderViewCardsByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as NoContentResult;
@@ -334,9 +355,11 @@ public class WorkshopControllerTests
     {
         // Arrange
         var expectedCount = 1;
-        var filter = new OffsetFilter() { From = 0, Size = expectedCount };
-        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopProviderViewCard>(It.IsAny<Guid>(), It.IsAny<OffsetFilter>(), It.IsAny<Guid?>()))
-            .ReturnsAsync(workshopProviderViewCardList.Take(expectedCount).ToList());
+        var filter = new ExcludeIdFilter() { From = 0, Size = expectedCount };
+        var expectedTotalAmount = 5;
+        var searchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = expectedTotalAmount, Entities = workshopProviderViewCardList.Take(expectedCount).ToList() };
+        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopProviderViewCard>(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+            .ReturnsAsync(searchResult);
 
         // Act
         var result = await controller.GetWorkshopProviderViewCardsByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as OkObjectResult;
@@ -345,7 +368,8 @@ public class WorkshopControllerTests
         workshopServiceMoq.VerifyAll();
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(Ok, result.StatusCode);
-        Assert.AreEqual(expectedCount, (result.Value as List<WorkshopProviderViewCard>).Count);
+        Assert.AreEqual(expectedCount, (result.Value as SearchResult<WorkshopProviderViewCard>).Entities.Count);
+        Assert.AreEqual(expectedTotalAmount, (result.Value as SearchResult<WorkshopProviderViewCard>).TotalAmount);
     }
 
     [Test]
@@ -354,10 +378,12 @@ public class WorkshopControllerTests
         // Arrange
         var skipCount = 1;
         var expectedCount = 2;
+        var expectedTotalAmount = 5;
         var expectedResult = workshopProviderViewCardList.Skip(skipCount).Take(expectedCount).ToList();
-        var filter = new OffsetFilter() { From = skipCount, Size = expectedCount };
-        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopProviderViewCard>(It.IsAny<Guid>(), It.IsAny<OffsetFilter>(), It.IsAny<Guid?>()))
-            .ReturnsAsync(expectedResult);
+        var filter = new ExcludeIdFilter() { From = skipCount, Size = expectedCount };
+        var searchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = expectedTotalAmount, Entities = expectedResult };
+        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopProviderViewCard>(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+            .ReturnsAsync(searchResult);
 
         // Act
         var result = await controller.GetWorkshopProviderViewCardsByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as OkObjectResult;
@@ -366,8 +392,8 @@ public class WorkshopControllerTests
         workshopServiceMoq.VerifyAll();
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(Ok, result.StatusCode);
-        Assert.AreEqual(expectedCount, (result.Value as List<WorkshopProviderViewCard>).Count);
-        Assert.AreSame(expectedResult, result.Value as List<WorkshopProviderViewCard>);
+        Assert.AreEqual(expectedTotalAmount, (result.Value as SearchResult<WorkshopProviderViewCard>).TotalAmount);
+        Assert.AreSame(expectedResult, (result.Value as SearchResult<WorkshopProviderViewCard>).Entities);
     }
 
     [Test]

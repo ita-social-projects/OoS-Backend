@@ -134,7 +134,7 @@ public class ChatWorkshopHubTests
 
         // Assert
         clientsMock.Verify(clients => clients.Caller, Times.Once);
-        clientsMock.Verify(clients => clients.OthersInGroup(It.IsAny<string>()), Times.Never);
+        clientsMock.Verify(clients => clients.Group(It.IsAny<string>()), Times.Never);
     }
 
     [Test]
@@ -149,7 +149,7 @@ public class ChatWorkshopHubTests
 
         // Assert
         clientsMock.Verify(clients => clients.Caller, Times.Once);
-        clientsMock.Verify(clients => clients.OthersInGroup(It.IsAny<string>()), Times.Never);
+        clientsMock.Verify(clients => clients.Group(It.IsAny<string>()), Times.Never);
     }
 
     [Test]
@@ -173,7 +173,7 @@ public class ChatWorkshopHubTests
 
         // Assert
         clientsMock.Verify(clients => clients.Caller, Times.Once);
-        clientsMock.Verify(clients => clients.OthersInGroup(It.IsAny<string>()), Times.Never);
+        clientsMock.Verify(clients => clients.Group(It.IsAny<string>()), Times.Never);
     }
 
     [Test]
@@ -212,7 +212,7 @@ public class ChatWorkshopHubTests
         groupsMock.Setup(x => x.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        clientsMock.Setup(clients => clients.OthersInGroup(It.IsAny<string>())).Returns(clientProxyMock.Object);
+        clientsMock.Setup(clients => clients.Group(It.IsAny<string>())).Returns(clientProxyMock.Object);
 
         var validProviderAdmins = new List<ProviderAdmin>();
         providerAdminRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<ProviderAdmin, bool>>>(), It.IsAny<string>())).ReturnsAsync(validProviderAdmins);
@@ -222,7 +222,7 @@ public class ChatWorkshopHubTests
 
         // Assert
         messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopCreateDto>(), It.IsAny<Role>()), Times.Once);
-        clientsMock.Verify(clients => clients.OthersInGroup(It.IsAny<string>()), Times.Once);
+        clientsMock.Verify(clients => clients.Group(It.IsAny<string>()), Times.Once);
     }
 
     [Test]
@@ -264,7 +264,7 @@ public class ChatWorkshopHubTests
         groupsMock.Setup(x => x.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        clientsMock.Setup(clients => clients.OthersInGroup(It.IsAny<string>())).Returns(clientProxyMock.Object);
+        clientsMock.Setup(clients => clients.Group(It.IsAny<string>())).Returns(clientProxyMock.Object);
 
         var validProviderAdmins = new List<ProviderAdmin>();
         providerAdminRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<ProviderAdmin, bool>>>(), It.IsAny<string>())).ReturnsAsync(validProviderAdmins);
@@ -274,6 +274,6 @@ public class ChatWorkshopHubTests
 
         // Assert
         messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopCreateDto>(), It.IsAny<Role>()), Times.Once);
-        clientsMock.Verify(clients => clients.OthersInGroup(validChatRoom.Id.ToString()), Times.Once);
+        clientsMock.Verify(clients => clients.Group(validChatRoom.Id.ToString()), Times.Once);
     }
 }

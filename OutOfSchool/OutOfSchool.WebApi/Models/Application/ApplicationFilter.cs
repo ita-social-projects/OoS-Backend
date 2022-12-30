@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using OutOfSchool.Services.Enums;
+﻿using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.WebApi.Models;
+namespace OutOfSchool.WebApi.Models.Application;
 
 public class ApplicationFilter : OffsetFilter
 {

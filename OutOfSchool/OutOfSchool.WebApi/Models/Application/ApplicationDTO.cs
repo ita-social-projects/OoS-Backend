@@ -1,12 +1,7 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-
+﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.WebApi.Models;
+namespace OutOfSchool.WebApi.Models.Application;
 
 public class ApplicationDto
 {

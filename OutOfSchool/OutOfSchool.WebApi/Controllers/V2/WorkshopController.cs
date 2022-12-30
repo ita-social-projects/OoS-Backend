@@ -86,21 +86,21 @@ public class WorkshopController : ControllerBase
     /// Get workshop cards by Provider's Id.
     /// </summary>
     /// <param name="id">Provider's id.</param>
-    /// <returns><see cref="IEnumerable{WorkshopCard}"/>, or no content.</returns>
+    /// <param name="filter">Filter to get specified portion of workshops for specified provider. Ids of the excluded workshops could be specified.</param>
+    /// <returns><see cref="SearchResult{WorkshopCard}"/>, or no content.</returns>
     /// <response code="200">The list of found entities by given Id.</response>
     /// <response code="204">No entity with given Id was found.</response>
     /// <response code="500">If any server error occures. For example: Id was less than one.</response>
     [AllowAnonymous]
     [HttpGet("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopCard>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopCard>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByProviderId(Guid id)
+    public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] ExcludeIdFilter filter)
     {
-        var offsetFilter = new OffsetFilter() { From = 0, Size = int.MaxValue };
-        var workshopCards = await combinedWorkshopService.GetByProviderId<WorkshopBaseCard>(id, offsetFilter).ConfigureAwait(false);
+        var workshopCards = await combinedWorkshopService.GetByProviderId<WorkshopBaseCard>(id, filter).ConfigureAwait(false);
 
-        if (!workshopCards.Any())
+        if (workshopCards.TotalAmount == 0)
         {
             return NoContent();
         }
@@ -265,7 +265,7 @@ public class WorkshopController : ControllerBase
             var userId = User.FindFirst("sub")?.Value;
             var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
 
-            if (providerId != provider.Id)
+            if (providerId != provider?.Id)
             {
                 return false;
             }

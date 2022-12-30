@@ -104,6 +104,7 @@ public static class Startup
                     AutomaticDecompression = DecompressionMethods.GZip,
                 });
 
+        services.AddHttpContextAccessor();
         services.AddScoped<IProviderAdminService, ProviderAdminService>();
         services.AddScoped<IMinistryAdminService, MinistryAdminService>();
 
@@ -159,7 +160,6 @@ public static class Startup
         services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
 
         // entities services
-        services.AddTransient<IAddressService, AddressService>();
         services.AddTransient<IApplicationService, ApplicationService>();
         services.AddTransient<IChatMessageWorkshopService, ChatMessageWorkshopService>();
         services.AddTransient<IChatRoomWorkshopService, ChatRoomWorkshopService>();
@@ -168,6 +168,7 @@ public static class Startup
         services.AddTransient<IFavoriteService, FavoriteService>();
         services.AddTransient<IParentService, ParentService>();
         services.AddTransient<IProviderService, ProviderService>();
+        services.AddTransient<IProviderTypeService, ProviderTypeService>();
         services.AddTransient<IProviderServiceV2, ProviderServiceV2>();
         services.AddTransient<IRatingService, RatingService>();
         services.AddTransient<ISocialGroupService, SocialGroupService>();
@@ -238,6 +239,8 @@ public static class Startup
         services.AddTransient<IAchievementTypeService, AchievementTypeService>();
         services.AddTransient<IAchievementRepository, AchievementRepository>();
         services.AddTransient<IAchievementService, AchievementService>();
+        services.AddTransient(s => s.GetService<IHttpContextAccessor>()?.HttpContext?.User);
+        services.AddTransient<ICurrentUserService, CurrentUserService>();
 
         services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
 

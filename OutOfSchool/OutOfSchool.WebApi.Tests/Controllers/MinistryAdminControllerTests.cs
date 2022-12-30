@@ -11,6 +11,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -26,7 +27,7 @@ public class MinistryAdminControllerTests
     [SetUp]
     public void Setup()
     {
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         ministryAdminController =
             new MinistryAdminController(ministryAdminServiceMock.Object, new Mock<ILogger<MinistryAdminController>>().Object);

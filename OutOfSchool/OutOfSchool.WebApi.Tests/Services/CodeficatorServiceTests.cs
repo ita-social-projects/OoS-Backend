@@ -13,6 +13,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Models.Codeficator;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -35,7 +36,7 @@ public class CodeficatorServiceTests
         options = builder.Options;
         context = new OutOfSchoolDbContext(options);
 
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         repository = new CodeficatorRepository(context);
         service = new CodeficatorService(repository, mapper);
 

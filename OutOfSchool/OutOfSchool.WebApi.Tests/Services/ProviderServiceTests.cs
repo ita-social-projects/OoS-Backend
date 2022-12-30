@@ -17,6 +17,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Images;
+using OutOfSchool.WebApi.Util;
 using Quartz.Impl.AdoJobStore.Common;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -33,6 +34,7 @@ public class ProviderServiceTests
     private IMapper mapper;
     private Mock<INotificationService> notificationService;
     private Mock<IProviderAdminService> providerAdminService;
+    private Mock<IInstitutionAdminRepository> institutionAdminRepositoryMock;
 
     private List<Provider> fakeProviders;
     private User fakeUser;
@@ -57,8 +59,9 @@ public class ProviderServiceTests
         var changesLogService = new Mock<IChangesLogService>();
         notificationService = new Mock<INotificationService>(MockBehavior.Strict);
         providerAdminService = new Mock<IProviderAdminService>();
+        institutionAdminRepositoryMock = new Mock<IInstitutionAdminRepository>();
 
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
 
         providerService = new ProviderService(
             providersRepositoryMock.Object,
@@ -73,7 +76,8 @@ public class ProviderServiceTests
             providerImagesService.Object,
             changesLogService.Object,
             notificationService.Object,
-            providerAdminService.Object);
+            providerAdminService.Object,
+            institutionAdminRepositoryMock.Object);
     }
 
     #region Create
@@ -783,7 +787,7 @@ public class ProviderServiceTests
             provider.Id);
 
         // Assert
-        CollectionAssert.AreEquivalent(expected, recipientIds);
+        CollectionAssert.IsSubsetOf(expected, recipientIds);
     }
 
     #endregion

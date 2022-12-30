@@ -16,6 +16,7 @@ using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Achievement;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -45,7 +46,7 @@ public class AchievementServiceTest
         achievementRepository = new AchievementRepository(context);
         logger = new Mock<ILogger<AchievementService>>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         service = new AchievementService(achievementRepository, logger.Object, localizer.Object, mapper);
 
         SeedDatabase();

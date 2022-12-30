@@ -1,0 +1,16 @@
+name: "Auto Assign Reviewers for Team Branches"
+on:
+  pull_request:
+    types:
+      - opened
+      - ready_for_review
+      - reopened
+    branches:
+      - "develop"
+jobs:
+  add-reviews:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: kentaro-m/auto-assign-action@v1.2.0
+        with:
+          configuration-path: ".github/assign/auto_assign.yml"

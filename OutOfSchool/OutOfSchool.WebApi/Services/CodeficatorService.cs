@@ -57,7 +57,7 @@ public class CodeficatorService : ICodeficatorService
             return null;
         }
 
-        return new AllAddressPartsDto { AddressParts = mapper.Map<CodeficatorDto>(codeficator) };
+        return mapper.Map<AllAddressPartsDto>(codeficator);
     }
 
     /// <inheritdoc/>
@@ -70,8 +70,8 @@ public class CodeficatorService : ICodeficatorService
     public async Task<CodeficatorAddressDto> GetNearestByCoordinates(double lat, double lon, string categories = default)
     {
         var searchableEntries = string.IsNullOrEmpty(categories) ? CodeficatorCategory.Level4.Name : categories;
-        var hash = default(GeoCoord).SetDegrees(Convert.ToDecimal(lat), Convert.ToDecimal(lon));
 
+        var hash = default(GeoCoord).SetDegrees(Convert.ToDecimal(lat), Convert.ToDecimal(lon));
         var h3Location = Api.GeoToH3(hash, GeoMathHelper.ResolutionForCity);
         Api.KRing(h3Location, GeoMathHelper.KRingForResolution, out var neighbours);
 

@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
-
-using OutOfSchool.Services.Models.ChatWorkshop;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
+using OutOfSchool.WebApi.Services.Strategies.Interfaces;
+using System.Linq.Expressions;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -22,7 +16,6 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     private readonly IChatRoomWorkshopModelForChatListRepository roomWorkshopWithLastMessageRepository;
     private readonly ILogger<ChatRoomWorkshopService> logger;
     private readonly IMapper mapper;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatRoomWorkshopService"/> class.
     /// </summary>
@@ -33,7 +26,8 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     public ChatRoomWorkshopService(
         IEntityRepository<Guid, ChatRoomWorkshop> chatRoomRepository,
         ILogger<ChatRoomWorkshopService> logger,
-        IChatRoomWorkshopModelForChatListRepository roomWorkshopWithLastMessageRepository, IMapper mapper)
+        IChatRoomWorkshopModelForChatListRepository roomWorkshopWithLastMessageRepository,
+        IMapper mapper)
     {
         this.roomRepository = chatRoomRepository ?? throw new ArgumentNullException(nameof(chatRoomRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -125,6 +119,74 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     }
 
     /// <inheritdoc/>
+    public async Task<IEnumerable<ChatRoomWorkshopDto>> GetByParentIdProviderIdAsync(Guid parentId, Guid providerId)
+    {
+        logger.LogDebug("Process of getting ChatRooms with parentId:{parentId} and providerId:{providerId} was started.", parentId, providerId);
+
+        try
+        {
+            var rooms = (await roomRepository.GetByFilter(
+                predicate: x => x.ParentId == parentId && x.Workshop.ProviderId == providerId)
+                .ConfigureAwait(false)).Select(x => mapper.Map<ChatRoomWorkshopDto>(x)).ToList();
+
+            if (rooms.Count > 0)
+            {
+                logger.LogDebug("There is no Chat rooms in the system with parentId:{parentId} and providerId:{providerId}.", parentId, providerId);
+            }
+            else
+            {
+                logger.LogDebug("Successfully got all {roomsCount} records with parentId:{parentId} and providerId:{providerId}.", rooms.Count, parentId, providerId);
+            }
+
+            return rooms;
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(
+                "Getting all ChatRooms with parentId:{parentId} and providerId:{providerId}. Exception: {exception}",
+                parentId,
+                providerId,
+                exception.Message);
+
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<ChatRoomWorkshopDto> GetByParentIdWorkshopIdAsync(Guid parentId, Guid workshopId)
+    {
+        logger.LogDebug("Process of getting ChatRoom with parentId:{parentId} and workshopId:{workshopId} was started.", parentId, workshopId);
+
+        try
+        {
+            var room = (await roomRepository.GetByFilter(
+                predicate: x => x.ParentId == parentId && x.WorkshopId == workshopId)
+                .ConfigureAwait(false)).SingleOrDefault();
+
+            if (room is null)
+            {
+                logger.LogDebug("There is no Chat rooms in the system with parentId:{parentId} and workshopId:{workshopId}.", parentId, workshopId);
+            }
+            else
+            {
+                logger.LogDebug("Successfully got record with parentId:{parentId} and workshopId:{workshopId}.", parentId, workshopId);
+            }
+
+            return mapper.Map<ChatRoomWorkshopDto>(room);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(
+                "Getting ChatRoom with parentId:{parentId} and workshopId:{workshopId}. Exception: {exception}",
+                parentId,
+                workshopId,
+                exception.Message);
+
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
     public async Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetByParentIdAsync(Guid parentId)
     {
         logger.LogDebug($"Process of getting  {nameof(ChatRoomWorkshopDtoWithLastMessage)}(s/es) with {nameof(parentId)}:{parentId} was started.");
@@ -210,7 +272,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     /// <inheritdoc/>
     public async Task<IEnumerable<Guid>> GetChatRoomIdsByParentIdAsync(Guid parentId)
     {
-        logger.LogDebug($"Process of getting {nameof(ChatRoomWorkshop)} Ids with {nameof(parentId)}:{parentId} was started.");
+        logger.LogDebug($"Process of getting {nameof(ChatRoomWorkshop)} WorkshopIds with {nameof(parentId)}:{parentId} was started.");
 
         try
         {
@@ -222,7 +284,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         }
         catch (Exception exception)
         {
-            logger.LogError($"Getting all {nameof(ChatRoomWorkshop)} Ids with {nameof(parentId)}:{parentId}. Exception: {exception.Message}");
+            logger.LogError($"Getting all {nameof(ChatRoomWorkshop)} WorkshopIds with {nameof(parentId)}:{parentId}. Exception: {exception.Message}");
             throw;
         }
     }
@@ -230,7 +292,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     /// <inheritdoc/>
     public async Task<IEnumerable<Guid>> GetChatRoomIdsByProviderIdAsync(Guid providerId)
     {
-        logger.LogDebug($"Process of getting {nameof(ChatRoomWorkshop)} Ids with {nameof(providerId)}:{providerId} was started.");
+        logger.LogDebug($"Process of getting {nameof(ChatRoomWorkshop)} WorkshopIds with {nameof(providerId)}:{providerId} was started.");
 
         try
         {
@@ -242,7 +304,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         }
         catch (Exception exception)
         {
-            logger.LogError($"Getting all {nameof(ChatRoomWorkshop)} Ids with {nameof(providerId)}:{providerId}. Exception: {exception.Message}");
+            logger.LogError($"Getting all {nameof(ChatRoomWorkshop)} WorkshopIds with {nameof(providerId)}:{providerId}. Exception: {exception.Message}");
             throw;
         }
     }
@@ -251,7 +313,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     public async Task<IEnumerable<Guid>> GetChatRoomIdsByWorkshopIdsAsync(IEnumerable<Guid> workshopIds)
     {
         string workshopIdsStr = $"{nameof(workshopIds)}:{string.Join(", ", workshopIds)}";
-        logger.LogDebug($"Process of getting {nameof(ChatRoomWorkshop)} Ids with {workshopIdsStr} was started.");
+        logger.LogDebug($"Process of getting {nameof(ChatRoomWorkshop)} WorkshopIds with {workshopIdsStr} was started.");
 
         try
         {
@@ -263,7 +325,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         }
         catch (Exception exception)
         {
-            logger.LogError($"Getting all {nameof(ChatRoomWorkshop)} Ids with {workshopIdsStr}. Exception: {exception.Message}");
+            logger.LogError($"Getting all {nameof(ChatRoomWorkshop)} WorkshopIds with {workshopIdsStr}. Exception: {exception.Message}");
             throw;
         }
     }
@@ -295,7 +357,6 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
             throw;
         }
     }
-
     /// <summary>
     /// Create new ChatRoom without checking if it exists.
     /// </summary>
@@ -322,5 +383,62 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
             logger.LogError($"ChatRoom was not created. Exception: {exception.Message}");
             throw;
         }
+    }
+
+    public async Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetChatRoomByFilter(ChatWorkshopFilter filter, Guid userId)
+    {
+        logger.LogInformation("Getting ChatRoomWorkshops by filter started.");
+
+        filter ??= new ChatWorkshopFilter();
+
+        var filterPredicate = PredicateBuild(filter, userId);
+
+        var rooms = roomRepository.Get(
+                skip: filter.From,
+                take: filter.Size,
+                where: filterPredicate)
+            .ToList();
+
+        var chatRoomsWithMessages = await roomWorkshopWithLastMessageRepository
+            .GetByWorkshopIdsAsync(rooms.Select(x => x.WorkshopId));
+
+        logger.LogInformation(!rooms.Any()
+            ? "There was no matching entity found."
+            : $"All matching {rooms.Count} records were successfully received from the Workshop table");
+
+        return chatRoomsWithMessages.Select(x => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(x));
+    }
+
+    private Expression<Func<ChatRoomWorkshop, bool>> PredicateBuild(ChatWorkshopFilter filter, Guid userId)
+    {
+        var predicate = PredicateBuilder.True<ChatRoomWorkshop>();
+
+        if (userId != default)
+        {
+            predicate = predicate.And(x => x.ParentId == userId || x.Workshop.ProviderId == userId);
+        }
+
+        if (filter.WorkshopIds is not null && filter.WorkshopIds.Any())
+        {
+            predicate = predicate.And(x => filter.WorkshopIds.Any(c => c == x.WorkshopId));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchText))
+        {
+            var tempPredicate = PredicateBuilder.False<ChatRoomWorkshop>()
+                .Or(x => x.Workshop.Provider.User.LastName.ToLower().StartsWith(filter.SearchText.ToLower()))
+                .Or(x => x.Parent.User.LastName.ToLower().StartsWith(filter.SearchText.ToLower()))
+                .Or(x => x.Workshop.Provider.User.FirstName.ToLower().StartsWith(filter.SearchText.ToLower()))
+                .Or(x => x.Parent.User.FirstName.ToLower().StartsWith(filter.SearchText.ToLower()))
+                .Or(x => x.Workshop.Provider.User.Email.StartsWith(filter.SearchText))
+                .Or(x => x.Parent.User.Email.StartsWith(filter.SearchText))
+                .Or(x => x.Workshop.Title.ToLower().Contains(filter.SearchText.ToLower()))
+                .Or(x => x.Parent.User.PhoneNumber.StartsWith(filter.SearchText))
+                .Or(x => x.Workshop.Provider.PhoneNumber.StartsWith(filter.SearchText));
+
+            predicate = predicate.And(tempPredicate);
+        }
+
+        return predicate;
     }
 }

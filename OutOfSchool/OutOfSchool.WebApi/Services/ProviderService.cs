@@ -34,6 +34,7 @@ public class ProviderService : IProviderService, INotificationReciever
     private readonly IChangesLogService changesLogService;
     private readonly INotificationService notificationService;
     private readonly IProviderAdminService providerAdminService;
+    private readonly IInstitutionAdminRepository institutionAdminRepository;
 
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
@@ -55,6 +56,7 @@ public class ProviderService : IProviderService, INotificationReciever
     /// <param name="changesLogService">ChangesLogService.</param>
     /// <param name="notificationService">Notification service.</param>
     /// <param name="providerAdminService">Service for getting provider admins and deputies.</param>
+    /// <param name="institutionAdminRepository">Repository for getting ministry admins.</param>
     public ProviderService(
         IProviderRepository providerRepository,
         IEntityRepository<string, User> usersRepository,
@@ -68,7 +70,8 @@ public class ProviderService : IProviderService, INotificationReciever
         IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
         IChangesLogService changesLogService,
         INotificationService notificationService,
-        IProviderAdminService providerAdminService)
+        IProviderAdminService providerAdminService,
+        IInstitutionAdminRepository institutionAdminRepository)
     {
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -83,6 +86,7 @@ public class ProviderService : IProviderService, INotificationReciever
         this.changesLogService = changesLogService ?? throw new ArgumentNullException(nameof(changesLogService));
         this.notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         this.providerAdminService = providerAdminService;
+        this.institutionAdminRepository = institutionAdminRepository;
     }
 
     private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
@@ -158,10 +162,26 @@ public class ProviderService : IProviderService, INotificationReciever
         return providerDTO;
     }
 
-    /// <inheritdoc/>
-    public async Task<ProviderDto> GetByUserId(string id, bool isDeputyOrAdmin = false)
+    public async Task<ProviderStatusDto> GetProviderStatusById(Guid id)
     {
-        logger.LogInformation($"Getting Provider by UserId started. Looking UserId is {id}.");
+        logger.LogInformation($"Getting ProviderStatus by Id started. Looking Id = {id}.");
+        var provider = await providerRepository.GetById(id).ConfigureAwait(false);
+
+        if (provider == null)
+        {
+            return null;
+        }
+
+        logger.LogInformation($"Successfully got a ProviderStatus with Id = {id}.");
+
+        var providerStatusDTO = mapper.Map<ProviderStatusDto>(provider);
+        return providerStatusDTO;
+    }
+
+    /// <inheritdoc/>
+    public async Task<ProviderDto?> GetByUserId(string id, bool isDeputyOrAdmin = false)
+    {
+        logger.LogInformation("Getting Provider by UserId started. Looking UserId is {Id}", id);
         Provider provider = default;
 
         if (isDeputyOrAdmin)
@@ -179,12 +199,10 @@ public class ProviderService : IProviderService, INotificationReciever
             provider = providers.FirstOrDefault();
         }
 
-        if (provider == null)
+        if (provider != null)
         {
-            throw new ArgumentException(localizer["There is no Provider in the Db with such User id"], nameof(id));
+            logger.LogInformation("Successfully got a Provider with UserId = {Id}", id);
         }
-
-        logger.LogInformation($"Successfully got a Provider with UserId = {id}.");
 
         return mapper.Map<ProviderDto>(provider);
     }
@@ -300,8 +318,9 @@ public class ProviderService : IProviderService, INotificationReciever
 
         if (action == NotificationAction.Create)
         {
-            // TODO: approval request is sent to district admin
-            // AND Service provider waits until(district admin / ministry admin / tech admin) approves the profile
+            // there should be District admin
+            recipientIds.AddRange(await GetTechAdminsIds().ConfigureAwait(false));
+            recipientIds.AddRange(await GetMinistryAdminsIds(provider.InstitutionId).ConfigureAwait(false));
         }
         else if (action == NotificationAction.Update)
         {
@@ -311,7 +330,9 @@ public class ProviderService : IProviderService, INotificationReciever
             {
                 if (status == ProviderStatus.Pending)
                 {
-                    // TODO: create a NEW approve request to District admin
+                    // there should be District admin
+                    recipientIds.AddRange(await GetTechAdminsIds().ConfigureAwait(false));
+                    recipientIds.AddRange(await GetMinistryAdminsIds(provider.InstitutionId).ConfigureAwait(false));
                 }
                 else if (status == ProviderStatus.Editing
                          || status == ProviderStatus.Approved)
@@ -327,7 +348,9 @@ public class ProviderService : IProviderService, INotificationReciever
             {
                 if (licenseStatus == ProviderLicenseStatus.Pending)
                 {
-                    // TODO: create a NEW approve request to District admin
+                    // there should be District admin
+                    recipientIds.AddRange(await GetTechAdminsIds().ConfigureAwait(false));
+                    recipientIds.AddRange(await GetMinistryAdminsIds(provider.InstitutionId).ConfigureAwait(false));
                 }
                 else if (licenseStatus == ProviderLicenseStatus.Approved)
                 {
@@ -641,5 +664,29 @@ public class ProviderService : IProviderService, INotificationReciever
                     additionalData)
                 .ConfigureAwait(false);
         }
+    }
+
+    private async Task<IEnumerable<string>> GetTechAdminsIds()
+    {
+        var techAdminIds = (await usersRepository
+                        .GetByFilter(u => u.Role == nameof(Role.TechAdmin).ToLower())
+                        .ConfigureAwait(false))
+                        .Select(u => u.Id);
+        return techAdminIds;
+    }
+
+    private async Task<IEnumerable<string>> GetMinistryAdminsIds(Guid? ministryId)
+    {
+        if (ministryId == null)
+        {
+            return new List<string>();
+        }
+
+        var ministryAdminsIds = await institutionAdminRepository
+                        .GetByFilterNoTracking(a => a.InstitutionId == ministryId)
+                        .Select(a => a.UserId)
+                        .ToListAsync()
+                        .ConfigureAwait(false);
+        return ministryAdminsIds;
     }
 }

@@ -108,9 +108,9 @@ public class CodeficatorController : ControllerBase
             return BadRequest("CodeficatorFilter is null.");
         }
 
-        if (!ModelState.IsValid)
+        if (!string.IsNullOrEmpty(filter.Name) && filter.Name.Length < 3)
         {
-            return BadRequest(this.ModelState);
+            return BadRequest("The field Name must be a string type with a minimum length of '3'.");
         }
 
         var fullAddressNames = await codeficatorService.GetFullAddressesByPartOfName(filter).ConfigureAwait(false);

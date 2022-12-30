@@ -38,16 +38,15 @@ public class InstitutionService : IInstitutionService
     }
 
     /// <inheritdoc/>
-    public async Task<List<InstitutionDto>> GetAll()
+    public async Task<List<InstitutionDto>> GetAll(bool filterNonGovernment)
     {
-        logger.LogInformation("Getting all Institutions started.");
+        logger.LogInformation("Getting all Institutions started");
 
         string cacheKey = "InstitutionService_GetAll";
 
-        var institutions = await cache.GetOrAddAsync(cacheKey, () =>
-            GetAllFromDatabase()).ConfigureAwait(false);
+        var institutions = await cache.GetOrAddAsync(cacheKey, GetAllFromDatabase);
 
-        return institutions;
+        return !filterNonGovernment ? institutions : institutions.Where(i => !i.Title.Equals("Інше", StringComparison.OrdinalIgnoreCase)).ToList();
     }
 
     /// <inheritdoc/>

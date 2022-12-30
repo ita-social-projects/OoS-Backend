@@ -36,6 +36,12 @@ public class ExceptionMiddlewareExtension
         {
             await next(context).ConfigureAwait(false);
         }
+        catch (ArgumentNullException ex)
+        {
+            logger.LogError(ex, "Request data is null");
+            var messageForUser = "Request data is empty. Please check your input data and try again.";
+            await HandleExceptionAsync(context, messageForUser, StatusCodes.Status400BadRequest).ConfigureAwait(false);
+        }
         catch (ArgumentException ex)
         {
             logger.LogError($"Exception information: {ex}");

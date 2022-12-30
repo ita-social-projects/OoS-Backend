@@ -69,7 +69,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
                     await transaction.CommitAsync().ConfigureAwait(false);
                     return result;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     await transaction.RollbackAsync().ConfigureAwait(false);
                     throw;
@@ -96,7 +96,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     {
         IQueryable<TEntity> query = dbSet;
         foreach (var includeProperty in includeProperties.Split(
-            new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                     new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
         {
             query = query.Include(includeProperty);
         }
@@ -104,7 +104,8 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         return await query.ToListAsync();
     }
 
-    public virtual async Task<IEnumerable<TEntity>> GetByFilter(Expression<Func<TEntity, bool>> predicate, string includeProperties = "")
+    public virtual async Task<IEnumerable<TEntity>> GetByFilter(Expression<Func<TEntity, bool>> predicate,
+        string includeProperties = "")
     {
         var query = this.dbSet.Where(predicate);
 
@@ -118,7 +119,8 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     }
 
     /// <inheritdoc/>
-    public virtual IQueryable<TEntity> GetByFilterNoTracking(Expression<Func<TEntity, bool>> predicate, string includeProperties = "")
+    public virtual IQueryable<TEntity> GetByFilterNoTracking(Expression<Func<TEntity, bool>> predicate,
+        string includeProperties = "")
     {
         var query = this.dbSet.Where(predicate);
 
@@ -148,16 +150,16 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     public virtual Task<int> Count(Expression<Func<TEntity, bool>> where = null)
     {
         return where == null
-               ? dbSet.CountAsync()
-               : dbSet.Where(where).CountAsync();
+            ? dbSet.CountAsync()
+            : dbSet.Where(where).CountAsync();
     }
 
     /// <inheritdoc/>
     public virtual Task<bool> Any(Expression<Func<TEntity, bool>> where = null)
     {
         return where == null
-                 ? dbSet.AnyAsync()
-                 : dbSet.Where(where).AnyAsync();
+            ? dbSet.AnyAsync()
+            : dbSet.Where(where).AnyAsync();
     }
 
     /// <inheritdoc/>

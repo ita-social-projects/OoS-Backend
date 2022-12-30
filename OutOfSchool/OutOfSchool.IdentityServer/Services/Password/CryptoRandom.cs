@@ -82,7 +82,7 @@ internal class CryptoRandom : Random
             case OutputFormat.Hex:
                 return BitConverter.ToString(bytes).Replace("-", "");
             default:
-                throw new ArgumentException("Invalid output format", nameof(format));
+                throw new ArgumentException(@"Invalid output format", nameof(format));
         }
     }
 

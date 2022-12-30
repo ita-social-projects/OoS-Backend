@@ -1,12 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
 ﻿using OutOfSchool.Common.Enums;
 
-﻿namespace OutOfSchool.WebApi.Models.Codeficator;
+namespace OutOfSchool.WebApi.Models.Codeficator;
 
 public class CodeficatorFilter
 {
-    [Required]
-    [MinLength(3)]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>

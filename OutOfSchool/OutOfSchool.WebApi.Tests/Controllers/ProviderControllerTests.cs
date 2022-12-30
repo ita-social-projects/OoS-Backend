@@ -23,6 +23,7 @@ using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -39,7 +40,7 @@ public class ProviderControllerTests
     [SetUp]
     public void Setup()
     {
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         userId = Guid.NewGuid().ToString();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var user = new ClaimsPrincipal

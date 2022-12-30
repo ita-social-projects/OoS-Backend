@@ -16,6 +16,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -37,7 +38,7 @@ public class StatusServiceTests
         options = builder.Options;
         context = new OutOfSchoolDbContext(options);
         repository = new EntityRepository<long, InstitutionStatus>(context);
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<Util.MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         var logger = new Mock<ILogger<StatusService>>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         service = new StatusService(repository, logger.Object, localizer.Object, mapper);

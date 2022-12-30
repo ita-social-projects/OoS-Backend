@@ -1,21 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Authentication;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.JsonPatch.Operations;
+﻿using System.Security.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Common;
-using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -158,8 +147,8 @@ public class ChatWorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public Task<IActionResult> GetParentsRoomsAsync()
-        => this.GetUsersRoomsAsync(parentId => roomService.GetByParentIdAsync(parentId));
+    public Task<IActionResult> GetParentsRoomsAsync([FromQuery] ChatWorkshopFilter filter = null)
+        => this.GetUsersRoomsAsync(parentId => roomService.GetByParentIdAsync(parentId), filter);
 
     /// <summary>
     /// Get a list of chat rooms for current provider.
@@ -172,8 +161,38 @@ public class ChatWorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public Task<IActionResult> GetProvidersRoomsAsync()
-        => this.GetUsersRoomsAsync(providerId => roomService.GetByProviderIdAsync(providerId));
+    public Task<IActionResult> GetProvidersRoomsAsync([FromQuery] ChatWorkshopFilter filter = null)
+        => this.GetUsersRoomsAsync(providerId => roomService.GetByProviderIdAsync(providerId), filter);
+
+    /// <summary>
+    /// Get a chat room for current parent and workshopId.
+    /// </summary>
+    /// <param name="workshopId">WorkShop's Id.</param>
+    /// <returns>ChatRoom that was found.</returns>
+    [HttpGet("parent/chatroomforworkshop/{workshopId}")]
+    [Authorize(Roles = "parent")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomWorkshopDtoWithLastMessage))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public Task<IActionResult> GetParentsRoomByWorkshopAsync(Guid workshopId)
+        => GetParentRoomByWorkshopIdAsync(workshopId);
+
+    /// <summary>
+    /// Get a chat room for current provider and parentId.
+    /// </summary>
+    /// <param name="parentId">ChatRoom's Id.</param>
+    /// <returns>ChatRoom that was found.</returns>
+    [HttpGet("provider/chatroomsforparent/{parentId}")]
+    [Authorize(Roles = "provider")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ChatRoomWorkshopDtoWithLastMessage>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public Task<IActionResult> GetProvidersRoomsByParentAsync(Guid parentId)
+        => GetProvidersRoomsByParentIdAsync(parentId);
 
     /// <summary>
     /// Get a list of chat rooms for the ministry admin by specific provider id.
@@ -306,27 +325,43 @@ public class ChatWorkshopController : ControllerBase
         return await HandleOperationAsync(Operation);
     }
 
-    private async Task<IActionResult> GetUsersRoomsAsync(Func<Guid, Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>>> getChatRoomsByRole)
+    private async Task<IActionResult> GetParentRoomByWorkshopIdAsync(Guid workshopId)
     {
         async Task<IActionResult> Operation()
         {
             var userId = GettingUserProperties.GetUserId(HttpContext);
-            var userRole = GettingUserProperties.GetUserRole(HttpContext);
-            var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
+            var userRole = Role.Parent;
 
-            if (userSubrole == Subrole.ProviderAdmin)
+            var parentId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
+
+            if (parentId != Guid.Empty)
             {
-                var workshopIds = await providerAdminService.GetRelatedWorkshopIdsForProviderAdmins(userId).ConfigureAwait(false);
-                var chatRooms = await roomService.GetByWorkshopIdsAsync(workshopIds).ConfigureAwait(false);
+                var chatRoom = await roomService.GetByParentIdWorkshopIdAsync(parentId, workshopId).ConfigureAwait(false);
 
-                return chatRooms.Any() ? Ok(chatRooms) : NoContent();
+                if (chatRoom is not null)
+                {
+                    return Ok(chatRoom);
+                }
             }
 
-            var providerOrParentId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
+            return NoContent();
+        }
 
-            if (providerOrParentId != default)
+        return await HandleOperationAsync(Operation);
+    }
+
+    private async Task<IActionResult> GetProvidersRoomsByParentIdAsync(Guid parentId)
+    {
+        async Task<IActionResult> Operation()
+        {
+            var userId = GettingUserProperties.GetUserId(HttpContext);
+            var userRole = Role.Provider;
+
+            var providerId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
+
+            if (providerId != Guid.Empty)
             {
-                var chatRooms = await getChatRoomsByRole(providerOrParentId).ConfigureAwait(false);
+                var chatRooms = await roomService.GetByParentIdProviderIdAsync(parentId, providerId).ConfigureAwait(false);
 
                 if (chatRooms.Any())
                 {
@@ -338,6 +373,55 @@ public class ChatWorkshopController : ControllerBase
         }
 
         return await HandleOperationAsync(Operation);
+    }
+
+    private async Task<IActionResult> GetUsersRoomsAsync(Func<Guid, Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>>> getChatRoomsByRole, ChatWorkshopFilter filter)
+    {
+        async Task<IActionResult> Operation()
+        {
+            var userId = GettingUserProperties.GetUserId(HttpContext);
+            var userRole = GettingUserProperties.GetUserRole(HttpContext);
+            var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
+
+            if (userSubrole == Subrole.ProviderAdmin)
+            {
+                var workshopIds = await providerAdminService.GetRelatedWorkshopIdsForProviderAdmins(userId).ConfigureAwait(false);
+                filter.WorkshopIds = workshopIds;
+                var chatRooms = await roomService.GetChatRoomByFilter(filter, default).ConfigureAwait(false);
+
+                return chatRooms.Any() ? Ok(chatRooms) : NoContent();
+            }
+
+            var providerOrParentId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
+
+            if (providerOrParentId != default)
+            {
+                IEnumerable<ChatRoomWorkshopDtoWithLastMessage> chatRooms = null;
+                if (IsFilterEmpty(filter))
+                {
+                    chatRooms = await getChatRoomsByRole(providerOrParentId).ConfigureAwait(false);
+                }
+                else
+                {
+                    chatRooms = await roomService.GetChatRoomByFilter(filter, providerOrParentId).ConfigureAwait(false);
+                }
+                if (chatRooms.Any())
+                {
+                    return Ok(chatRooms);
+                }
+            }
+
+            return NoContent();
+        }
+
+        return await HandleOperationAsync(Operation);
+    }
+
+    private bool IsFilterEmpty(ChatWorkshopFilter filter)
+    {
+        filter ??= new ChatWorkshopFilter();
+        filter.WorkshopIds ??= new List<Guid>();
+        return filter.WorkshopIds.Count() == 0 && string.IsNullOrEmpty(filter.SearchText) && filter.From == 0;
     }
 
     private async Task<IActionResult> HandleOperationAsync(Func<Task<IActionResult>> operation)

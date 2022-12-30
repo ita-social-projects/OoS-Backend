@@ -17,5 +17,5 @@ public interface IProviderAdminRepository : IEntityRepository<(string, Guid), Pr
 
     Task<int> GetNumberProviderAdminsAsync(Guid providerId);
 
-    Task<ProviderAdmin> GetByIdAsync(string userId, Guid providerId);
+    Task<ProviderAdmin?> GetByIdAsync(string userId, Guid providerId);
 }

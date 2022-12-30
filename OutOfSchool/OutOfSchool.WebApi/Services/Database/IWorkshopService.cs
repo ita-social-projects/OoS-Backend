@@ -76,27 +76,26 @@ public interface IWorkshopService
     /// </summary>
     /// <param name="offsetFilter">Filter to get a certain portion of all entities.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-    /// The task result contains the <see cref="IEnumerable{TEntity}"/> that contains found elements.</returns>
+    /// The task result contains the <see cref="SearchResult{TEntity}"/> that contains found elements.</returns>
     Task<SearchResult<WorkshopDTO>> GetAll(OffsetFilter offsetFilter);
 
     /// <summary>
     /// Get all workshops (Id, Title) by provider Id.
     /// </summary>
     /// <param name="providerId">Provider's key.</param>
-    /// <param name="offsetFilter">Filter to get a certain portion of all entities.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="List{ShortEntityDto}"/> that contains elements from the input sequence.</returns>
-    Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId, OffsetFilter offsetFilter);
+    Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId);
 
     /// <summary>
     /// Get all workshops by provider Id.
     /// </summary>
     /// <param name="id">Provider's key.</param>
-    /// <param name="offsetFilter">Filter to get a certain portion of all entities.</param>
+    /// <param name="filter">Filter to get a certain portion of all entities Or/And exclude by Workshop id.</param>
     /// <typeparam name="T">Type of entity that must be return.</typeparam>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
-    /// The task result contains a <see cref="IEnumerable{WorkshopCard}"/> that contains elements from the input sequence.</returns>
-    Task<IEnumerable<T>> GetByProviderId<T>(Guid id, OffsetFilter offsetFilter)
+    /// The task result contains a <see cref="SearchResult{WorkshopCard}"/> that contains elements from the input sequence.</returns>
+    Task<SearchResult<T>> GetByProviderId<T>(Guid id, ExcludeIdFilter filter)
         where T : WorkshopBaseCard;
 
     /// <summary>
