@@ -153,32 +153,7 @@ public class ProviderAdminService : IProviderAdminService
                     $"ProviderAdmin(id):{providerAdminDto.UserId} was successfully created by " +
                     $"User(id): {userId}. Request(id): {requestId}");
 
-                // TODO:
-                // Endpoint with sending new password
-
-                // TODO:
-                // Use template instead
-                var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-
-                string confirmationLink =
-                    url is null
-                        ? $"{gPRCConfig.ProviderAdminConfirmationLink}?userId={user.Id}&token={token}?redirectUrl={externalUrisConfig.Login}"
-                        : url.Action(
-                            "EmailConfirmation",
-                            "Account",
-                            new { userId = user.Id, token, redirectUrl = externalUrisConfig.Login },
-                            "https");
-
-                var subject = "Запрошення!";
-                var adminInvitationViewModel = new AdminInvitationViewModel
-                {
-                    ConfirmationUrl = confirmationLink,
-                    Email = user.Email,
-                    Password = password,
-                };
-                var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.NewAdminInvitation, adminInvitationViewModel);
-
-                await emailSender.SendAsync(user.Email, subject, content);
+                await SendInvitationEmail(user, url, password);
 
                 // No sense to commit if the email was not sent, as user will not be able to login
                 // and needs to be re-created
@@ -516,6 +491,107 @@ public class ProviderAdminService : IProviderAdminService
                 return response;
             }
         }
+    }
+
+    public async Task<ResponseDto> ReinviteProviderAdminAsync(
+    string providerAdminId,
+    string userId,
+    IUrlHelper url,
+    string requestId)
+    {
+        var executionStrategy = context.Database.CreateExecutionStrategy();
+        var result = await executionStrategy.Execute(async () =>
+        {
+            var response = new ResponseDto();
+            await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+            try
+            {
+                var providerAdmin = GetProviderAdmin(providerAdminId);
+
+                if (providerAdmin is null)
+                {
+                    response.IsSuccess = false;
+                    response.HttpStatusCode = HttpStatusCode.NotFound;
+
+                    logger.LogError($"ProviderAdmin(id) {providerAdminId} not found. " +
+                                    $"Request(id): {requestId}" +
+                                    $"User(id): {userId}");
+
+                    return response;
+                }
+
+                var user = await userManager.FindByIdAsync(providerAdminId);
+                var password = PasswordGenerator.GenerateRandomPassword(userManager.Options.Password);
+                await userManager.RemovePasswordAsync(user);
+                var result = await userManager.AddPasswordAsync(user, password);
+
+                if (!result.Succeeded)
+                {
+                    await transaction.RollbackAsync();
+
+                    logger.LogError($"Error happened while updating ProviderAdmin. Request(id): {requestId}" +
+                                    $"User(id): {userId}" +
+                                    $"{string.Join(Environment.NewLine, result.Errors.Select(e => e.Description))}");
+
+                    response.IsSuccess = false;
+                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                    return response;
+                }
+
+                await SendInvitationEmail(user, url, password);
+
+                await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Update)
+                    .ConfigureAwait(false);
+
+                await transaction.CommitAsync();
+                response.IsSuccess = true;
+                response.HttpStatusCode = HttpStatusCode.OK;
+
+                logger.LogInformation($"ProviderAdmin(id):{providerAdminId} was successfully updated by " +
+                                      $"User(id): {userId}. Request(id): {requestId}");
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+
+                logger.LogError($"Error happened while updating ProviderAdmin. Request(id): {requestId}" +
+                                $"User(id): {userId} {ex.Message}");
+
+                response.IsSuccess = false;
+                response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                return response;
+            }
+        });
+        return result;
+    }
+
+    private async Task SendInvitationEmail(User user, IUrlHelper url, string password)
+    {
+        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+
+        string confirmationLink =
+        url is null
+                ? $"{gPRCConfig.ProviderAdminConfirmationLink}?userId={user.Id}&token={token}?redirectUrl={externalUrisConfig.Login}"
+                : url.Action(
+                    "EmailConfirmation",
+                    "Account",
+                    new { userId = user.Id, token, redirectUrl = externalUrisConfig.Login },
+                    "https");
+
+        var subject = "Запрошення!";
+        var adminInvitationViewModel = new AdminInvitationViewModel
+        {
+            ConfirmationUrl = confirmationLink,
+            Email = user.Email,
+            Password = password,
+        };
+        var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.NewAdminInvitation, adminInvitationViewModel);
+
+        await emailSender.SendAsync(user.Email, subject, content);
     }
 
     private ProviderAdmin GetProviderAdmin(string providerAdminId)

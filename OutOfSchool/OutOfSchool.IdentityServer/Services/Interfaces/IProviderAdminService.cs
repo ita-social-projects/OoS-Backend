@@ -26,4 +26,10 @@ public interface IProviderAdminService
         string userId,
         string requestId,
         bool isBlocked);
+
+    Task<ResponseDto> ReinviteProviderAdminAsync(
+        string providerAdminId,
+        string userId,
+        IUrlHelper url,
+        string requestId);
 }
