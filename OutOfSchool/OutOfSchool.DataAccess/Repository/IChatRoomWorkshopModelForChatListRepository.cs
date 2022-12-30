@@ -27,6 +27,16 @@ public interface IChatRoomWorkshopModelForChatListRepository
     Task<List<ChatRoomWorkshopForChatList>> GetByParentIdAsync(Guid parentId, bool searchMessagesForProvider = false);
 
     /// <summary>
+    /// Get a List of chat rooms for workshops by specified Parent key.
+    /// </summary>
+    /// <param name="parentId">Parent key in the system.</param>
+    /// <param name="workshopId">Workshop key in the system.</param>
+    /// <param name="searchMessagesForProvider">Destination side.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The task result contains a <see cref="List{ChatRoomWorkshopForChatList}"/> that contains found elements.</returns>
+    Task<List<ChatRoomWorkshopForChatList>> GetByParentIdWorkshopIdAsync(Guid parentId, Guid workshopId, bool searchMessagesForProvider = false);
+
+    /// <summary>
     /// Get a List of chat rooms for workshops by specified Provider key.
     /// </summary>
     /// <param name="providerId">Provider key in the system.</param>
@@ -34,6 +44,16 @@ public interface IChatRoomWorkshopModelForChatListRepository
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="List{ChatRoomWorkshopForChatList}"/> that contains found elements.</returns>
     Task<List<ChatRoomWorkshopForChatList>> GetByProviderIdAsync(Guid providerId, bool searchMessagesForProvider = true);
+
+    /// <summary>
+    /// Get a List of chat rooms for workshops by specified Provider key.
+    /// </summary>
+    /// <param name="parentId">Parent key in the system.</param>
+    /// <param name="providerId">Provider key in the system.</param>
+    /// <param name="searchMessagesForProvider">Destination side.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The task result contains a <see cref="List{ChatRoomWorkshopForChatList}"/> that contains found elements.</returns>
+    Task<List<ChatRoomWorkshopForChatList>> GetByParentIdProviderIdAsync(Guid parentId, Guid providerId, bool searchMessagesForProvider = true);
 
     /// <summary>
     /// Get a List of chat rooms for workshops by specified Workshop key.
