@@ -497,9 +497,9 @@ public class ApplicationService : IApplicationService, INotificationReciever
             var tempPredicate = PredicateBuilder.False<Application>();
             tempPredicate = tempPredicate
                 .Or(a => a.Workshop.Title == filter.SearchString)
-                .Or(a => a.Parent.User.FirstName.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase)
-                         || a.Parent.User.MiddleName.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase)
-                         || a.Parent.User.LastName.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase));
+                .Or(a => a.Child.FirstName.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase)
+                         || a.Child.MiddleName.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase)
+                         || a.Child.LastName.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase));
             predicate = predicate.And(tempPredicate);
         }
 
