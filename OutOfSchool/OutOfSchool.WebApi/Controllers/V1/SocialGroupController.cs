@@ -63,6 +63,7 @@ public class SocialGroupController : ControllerBase
     /// <returns>Social Group.</returns>
     [HasPermission(Permissions.ImpersonalDataRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SocialGroupDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet("{id}")]
@@ -108,7 +109,14 @@ public class SocialGroupController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update(SocialGroupDto dto, LocalizationType localization = LocalizationType.Ua)
     {
-        return Ok(await service.Update(dto, localization).ConfigureAwait(false));
+        var socialGroup = await service.Update(dto, localization).ConfigureAwait(false);
+
+        if (socialGroup == null)
+        {
+            return BadRequest(socialGroup);
+        }
+
+        return Ok(socialGroup);
     }
 
     /// <summary>
@@ -118,6 +126,7 @@ public class SocialGroupController : ControllerBase
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.SystemManagement)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpDelete("{id}")]

@@ -107,35 +107,29 @@ public class SocialGroupService : ISocialGroupService
     {
         logger.LogInformation($"Updating SocialGroup with Id = {dto?.Id}, {localization} localization, started.");
 
-        try
-        {
-            var socialGroupLocalized = await repository.GetById(dto.Id).ConfigureAwait(false);
+        var socialGroupLocalized = await repository.GetById(dto.Id).ConfigureAwait(false);
 
-            if (socialGroupLocalized == null)
-            {
-                throw new DbUpdateConcurrencyException();
-            }
-
-            if (localization == LocalizationType.En) socialGroupLocalized.NameEn = dto.Name;
-            else socialGroupLocalized.Name = dto.Name;
-
-            var socialGroup = await repository.Update(socialGroupLocalized).ConfigureAwait(false);
-
-            logger.LogInformation($"SocialGroup with Id = {socialGroup?.Id} updated succesfully.");
-
-            var socialGroupDto = new SocialGroupDto()
-            {
-                Id = socialGroup.Id,
-                Name = localization == LocalizationType.En ? socialGroup.NameEn : socialGroup.Name,
-            };
-
-            return socialGroupDto;
-        }
-        catch (DbUpdateConcurrencyException)
+        if (socialGroupLocalized == null)
         {
             logger.LogError($"Updating failed. SocialGroup with Id = {dto?.Id} doesn't exist in the system.");
-            throw;
+
+            return null;
         }
+
+        if (localization == LocalizationType.En) socialGroupLocalized.NameEn = dto.Name;
+        else socialGroupLocalized.Name = dto.Name;
+
+        var socialGroup = await repository.Update(socialGroupLocalized).ConfigureAwait(false);
+
+        logger.LogInformation($"SocialGroup with Id = {socialGroup?.Id} updated succesfully.");
+
+        var socialGroupDto = new SocialGroupDto()
+        {
+            Id = socialGroup.Id,
+            Name = localization == LocalizationType.En ? socialGroup.NameEn : socialGroup.Name,
+        };
+
+        return socialGroupDto;
     }
 
     /// <inheritdoc/>
