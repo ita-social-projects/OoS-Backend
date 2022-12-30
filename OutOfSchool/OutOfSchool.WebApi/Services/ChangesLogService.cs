@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Linq.Expressions;
 using AutoMapper;
+using AutoMapper.Configuration.Annotations;
 using Microsoft.Extensions.Options;
 using Nest;
 using OutOfSchool.Services.Enums;
@@ -168,7 +169,7 @@ public class ChangesLogService : IChangesLogService
 
         var count = await providerAdminChangesLogRepository.Count(where).ConfigureAwait(false);
         var query = providerAdminChangesLogRepository
-            .Get(0, 0, string.Empty, where, sortExpression, true)
+            .Get(request.From, request.Size, string.Empty, where, sortExpression, true)
             .Select(x => new ProviderAdminChangesLogDto()
             {
                 ProviderAdminId = x.ProviderAdminUserId,
@@ -181,9 +182,9 @@ public class ChangesLogService : IChangesLogService
                 User = mapper.Map<ShortUserDto>(x.User),
                 InstitutionTitle = x.Provider.Institution == null
                     ? null : x.Provider.Institution.Title,
-            });
+            }).IgnoreQueryFilters();
 
-        var entities = await query.Skip(request.From).Take(request.Size).ToListAsync().ConfigureAwait(false);
+        var entities = await query.ToListAsync().ConfigureAwait(false);
 
         return new SearchResult<ProviderAdminChangesLogDto>
         {
@@ -201,7 +202,7 @@ public class ChangesLogService : IChangesLogService
 
         var count = await changesLogRepository.Count(where).ConfigureAwait(false);
 
-        var query = changesLogRepository.Get(0, 0, string.Empty, where, sortExpression, true);
+        var query = changesLogRepository.Get(filter.From, filter.Size, string.Empty, where, sortExpression, true);
 
         return (query, count);
     }
