@@ -1,5 +1,8 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.SignalR;
+using OutOfSchool.Services.Contexts;
+using OutOfSchool.Services.Repository.Files;
+using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 using OutOfSchool.WebApi.Services.Strategies.WorkshopStrategies;
 
@@ -195,6 +198,7 @@ public static class Startup
         services.AddScoped<IImageDependentEntityImagesInteractionService<Provider>, ImageDependentEntityImagesInteractionService<Provider>>();
         services.AddScoped<IEntityCoverImageInteractionService<Teacher>, ImageDependentEntityImagesInteractionService<Teacher>>();
         services.AddTransient<INotificationService, NotificationService>();
+        services.AddTransient<IStatisticReportService, StatisticReportService>();
         services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();
         services.AddTransient<ICodeficatorService, CodeficatorService>();
         services.AddTransient<IGRPCCommonService, GRPCCommonService>();
@@ -226,6 +230,8 @@ public static class Startup
 
         services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
         services.AddTransient<INotificationRepository, NotificationRepository>();
+        services.AddTransient<IStatisticReportRepository, StatisticReportRepository>();
+        services.AddTransient<IFileInDbRepository, FileInDbRepository>();
         services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
         services.AddTransient<IChangesLogRepository, ChangesLogRepository>();
         services.AddTransient<IGeocodingService, GeocodingService>();
@@ -265,6 +271,18 @@ public static class Startup
             .Bind(configuration.GetSection(RedisConfig.Name))
             .ValidateDataAnnotations();
 
+        // StatisticReports
+        var statisticReportsConfig = configuration.GetSection(StatisticReportConfig.Name).Get<StatisticReportConfig>();
+        if (statisticReportsConfig.UseExternalStorage)
+        {
+            // use StorageSaverGoogle
+        }
+        else
+        {
+            services.AddTransient<IStatisticReportFileStorage, FileStatisticReportStorage>(provider
+                => new FileStatisticReportStorage(provider.GetRequiredService<IFileInDbRepository>()));
+        }
+
         // Notification options
         services.Configure<NotificationsConfig>(configuration.GetSection(NotificationsConfig.Name));
 
@@ -299,6 +317,7 @@ public static class Startup
         {
             q.AddGcpSynchronization(services, quartzConfig);
             q.AddElasticsearchSynchronization(services, configuration);
+            q.AddStatisticReportsCreating(services, quartzConfig);
         });
 
         var isRedisEnabled = configuration.GetValue<bool>("Redis:Enabled");
