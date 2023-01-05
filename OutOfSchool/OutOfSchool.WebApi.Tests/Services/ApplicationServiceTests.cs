@@ -5,16 +5,19 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
 using Moq;
+using Nest;
 using NUnit.Framework;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Config;
@@ -85,12 +88,51 @@ public class ApplicationServiceTests
         var application = WithApplicationsList();
         SetupGetAll(application);
         currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
+        currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(false);
 
         // Act
         var result = await service.GetAll(new ApplicationFilter());
 
         // Assert
         Assert.AreEqual(result.Entities.Count, application.Count());
+    }
+
+    [Test]
+    public void GetApplications_WhenUnathorizedCalled_ShouldReturnUnauthorizedAccessException()
+    {
+        // Arange
+        var application = WithApplicationsList();
+        SetupGetAll(application);
+        currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(false);
+
+        // Act, Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(
+            async () => await service.GetAll(new ApplicationFilter()).ConfigureAwait(false));
+    }
+
+    [Test]
+    public async Task GetApplications_WhenMinistryAdminCalled_ShouldReturnApplications()
+    {
+        // Arrange
+        var institutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4");
+        var applications = WithApplicationsList();
+        SetupGetAllByInstitutionId(applications);
+
+        currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
+        currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(true);
+        ministryAdminServiceMock
+            .Setup(m => m.GetByIdAsync(It.IsAny<string>()))
+            .Returns(Task.FromResult<MinistryAdminDto>(new MinistryAdminDto()
+            {
+                InstitutionId = institutionId,
+            }));
+
+        // Act
+        var result = await service.GetAll(new ApplicationFilter());
+
+        // Assert
+        Assert.That(result.Entities.Count, Is.EqualTo(1));
+        Assert.That(result.Entities.FirstOrDefault().Workshop.InstitutionId, Is.EqualTo(institutionId));
     }
 
     [Test]
@@ -539,13 +581,36 @@ public class ApplicationServiceTests
 
     private void SetupGetAll(List<Application> apps)
     {
-        var mappedDtos = apps.Select(a => new ApplicationDto() {Id = a.Id}).ToList();
+        var mappedDtos = apps.Select(a => new ApplicationDto() {Id = a.Id }).ToList();
         applicationRepositoryMock.Setup(w => w.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
                 It.IsAny<Expression<Func<Application,bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Application,object>>,SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(new List<Application> { apps.First() }.AsTestAsyncEnumerableQuery());
+        mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
+    }
+
+    private void SetupGetAllByInstitutionId(List<Application> apps)
+    {
+        var mappedDtos = apps.Where(a => a.Workshop.InstitutionHierarchy.InstitutionId == new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"))
+            .Select(a => new ApplicationDto()
+            {
+                Id = a.Id,
+                Workshop = new WorkshopCard()
+                {
+                    InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
+                },
+            })
+            .ToList();
+        applicationRepositoryMock.Setup(w => w.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Application, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
             .Returns(new List<Application> { apps.First() }.AsTestAsyncEnumerableQuery());
         mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
@@ -710,6 +775,10 @@ public class ApplicationServiceTests
                     Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
                     ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
                     Status = WorkshopStatus.Open,
+                    InstitutionHierarchy = new InstitutionHierarchy()
+                    {
+                        InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
+                    },
                 },
             },
             new Application()
@@ -732,6 +801,10 @@ public class ApplicationServiceTests
                     Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
                     ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
                     Status = WorkshopStatus.Open,
+                    InstitutionHierarchy = new InstitutionHierarchy()
+                    {
+                        InstitutionId = Guid.NewGuid(),
+                    },
                 },
             },
             new Application()
@@ -754,10 +827,16 @@ public class ApplicationServiceTests
                     Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
                     ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
                     Status = WorkshopStatus.Open,
+                    InstitutionHierarchy = new InstitutionHierarchy()
+                    {
+                        InstitutionId = Guid.NewGuid(),
+                    },
                 },
             },
         };
     }
+
+
 
     private Application WithApplication(Guid id, ApplicationStatus status = ApplicationStatus.Pending)
     {
