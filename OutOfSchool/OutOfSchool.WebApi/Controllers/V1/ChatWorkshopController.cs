@@ -87,6 +87,46 @@ public class ChatWorkshopController : ControllerBase
         => this.GetRoomByIdAsync(id, this.IsProviderAChatRoomParticipantAsync);
 
     /// <summary>
+    /// Get a portion of chat messages for specified workshop's chat room.
+    /// Set read current date and time in UTC format in messages that are not read by the parent.
+    /// </summary>
+    /// <param name="id">Workshop's Id.</param>
+    /// <param name="offsetFilter">Filter to get specified portion of messages in the chat room.</param>
+    /// <returns>User's chat room's messages that were found.</returns>
+    [HttpGet("parent/workshops/{id}/messages")]
+    [Authorize(Roles = "parent")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ChatMessageWorkshopDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetMessagesForParentByWorkshopIdAsync(Guid id, [FromQuery] OffsetFilter offsetFilter)
+    {
+        IActionResult result = NoContent();
+        var userId = GettingUserProperties.GetUserId(HttpContext);
+        var userRole = Role.Parent;
+
+        var parentId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
+
+        if (parentId != Guid.Empty)
+        {
+            var chatRoom = await roomService.GetByParentIdWorkshopIdAsync(parentId, id).ConfigureAwait(false);
+
+            if (chatRoom is not null)
+            {
+                var messages = await messageService.GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(chatRoom.Id, offsetFilter, userRole).ConfigureAwait(false);
+
+                if (messages.Any())
+                {
+                    result = Ok(messages);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
     /// Get a portion of chat messages for specified parent's chat room.
     /// Set read current date and time in UTC format in messages that are not read by the parent.
     /// </summary>
