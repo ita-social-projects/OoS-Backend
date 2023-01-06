@@ -92,6 +92,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
     public DbSet<AchievementTeacher> AchievementTeachers { get; set; }
 
     public DbSet<Achievement> Achievements { get; set; }
+
     public DbSet<ProviderType> ProviderTypes { get; set; }
 
     public DbSet<StatisticReport> StatisticReports { get; set; }
@@ -101,6 +102,8 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
     public DbSet<CodeficatorParent> CodeficatorParents { get; set; }
 
     public DbSet<FileInDb> FilesInDb { get; set; }
+
+    public DbSet<RegionAdmin> RegionAdmins { get; set; }
 
     public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
