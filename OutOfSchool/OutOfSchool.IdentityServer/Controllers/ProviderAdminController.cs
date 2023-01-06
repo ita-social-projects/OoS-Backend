@@ -81,4 +81,15 @@ public class ProviderAdminController : Controller
         return await providerAdminService
             .BlockProviderAdminAsync(providerAdminId, userId, Request.Headers["X-Request-ID"], isBlocked);
     }
+
+    [HttpPut("{providerAdminId}")]
+    [HasPermission(Permissions.ProviderRemove)]
+    public async Task<ResponseDto> Reinvite(string providerAdminId)
+    {
+        logger.LogDebug($"Received request " +
+                        $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
+
+        return await providerAdminService
+            .ReinviteProviderAdminAsync(providerAdminId, userId, Url, Request.Headers["X-Request-ID"]);
+    }
 }

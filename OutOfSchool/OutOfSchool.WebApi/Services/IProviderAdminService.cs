@@ -74,4 +74,16 @@ public interface IProviderAdminService
     /// <param name="providerAdminId">ProviderAdmin's Id.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     Task<ProviderAdminDto> GetFullProviderAdmin(string providerAdminId);
+
+    /// <summary>
+    /// Send invitation to ProviderAdmin by Id.
+    /// </summary>
+    /// <param name="providerAdminId">ProviderAdmin's Id.</param>
+    /// <param name="userId">Current user's Id.</param>
+    /// <param name="token">Current user's token.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    Task<Either<ErrorResponse, ActionResult>> ReinviteProviderAdminAsync(
+    string providerAdminId,
+    string userId,
+    string token);
 }

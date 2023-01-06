@@ -10,6 +10,8 @@ public static class CommunicationConstants
 
     public const string BlockProviderAdmin = "provideradmin/block/";
 
+    public const string ReinviteProviderAdmin = "provideradmin/reinvite/";
+
     public const string CreateMinistryAdmin = "ministryadmin/create";
 
     public const string UpdateMinistryAdmin = "ministryadmin/update/";

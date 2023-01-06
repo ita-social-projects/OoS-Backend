@@ -533,6 +533,75 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         return result;
     }
 
+    public async Task<Either<ErrorResponse, ActionResult>> ReinviteProviderAdminAsync(
+        string providerAdminId,
+        string userId,
+        string token)
+    {
+        Logger.LogDebug(
+            "ProviderAdmin(id): {ProviderAdminId} reinvite was started. User(id): {UserId}",
+            providerAdminId,
+            userId);
+
+        var providerAdmin = await GetById(providerAdminId).ConfigureAwait(false);
+        if (providerAdmin == null)
+        {
+            return null;
+        }
+
+        await CheckProviderOrDeputyRights(providerAdmin.ProviderId, providerAdmin.IsDeputy)
+            .ConfigureAwait(false);
+
+        var user = (await userRepository.GetByFilter(u => u.Id == providerAdmin.UserId).ConfigureAwait(false))
+            .SingleOrDefault();
+        if (user == null)
+        {
+            return null;
+        }
+        else if (user.LastLogin != DateTimeOffset.MinValue)
+        {
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Message = "Only neverlogged users can be invited.",
+            };
+        }
+
+        var request = new Request()
+        {
+            HttpMethodType = HttpMethodType.Put,
+            Url = new Uri(identityServerConfig.Authority, string.Concat(
+                CommunicationConstants.ReinviteProviderAdmin,
+                providerAdminId,
+                new PathString("/"))),
+            Token = token,
+            RequestId = Guid.NewGuid(),
+        };
+
+        Logger.LogDebug(
+            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            request.HttpMethodType,
+            request.RequestId,
+            userId,
+            request.Url);
+
+        var response = await SendRequest<ResponseDto>(request)
+            .ConfigureAwait(false);
+
+        return response
+            .FlatMap<ResponseDto>(r => r.IsSuccess
+                ? r
+                : new ErrorResponse
+                {
+                    HttpStatusCode = r.HttpStatusCode,
+                    Message = r.Message,
+                })
+            .Map(result => result.Result is not null
+                ? JsonConvert
+                    .DeserializeObject<ActionResult>(result.Result.ToString())
+                : null);
+    }
+
     private async Task CheckProviderOrDeputyRights(Guid providerId, bool onlyProvider)
     {
         if (onlyProvider)
