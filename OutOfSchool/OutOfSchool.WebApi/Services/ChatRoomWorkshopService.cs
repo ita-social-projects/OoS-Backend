@@ -454,8 +454,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
             throw;
         }
     }
-
-    public async Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetChatRoomByFilter(ChatWorkshopFilter filter, Guid userId)
+    public async Task<SearchResult<ChatRoomWorkshopDtoWithLastMessage>> GetChatRoomByFilter(ChatWorkshopFilter filter, Guid userId)
     {
         logger.LogInformation("Getting ChatRoomWorkshops by filter started.");
 
@@ -464,19 +463,25 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         var filterPredicate = PredicateBuild(filter, userId);
 
         var rooms = roomRepository.Get(
-                skip: filter.From,
-                take: filter.Size,
-                where: filterPredicate)
-            .ToList();
+                where: filterPredicate);
+
+        var roomsCount = rooms.Count();
+        var roomsList = rooms.Skip(filter.From).Take(filter.Size).ToList();
 
         var chatRoomsWithMessages = await roomWorkshopWithLastMessageRepository
-            .GetByWorkshopIdsAsync(rooms.Select(x => x.WorkshopId));
+            .GetByWorkshopIdsAsync(roomsList.Select(x => x.WorkshopId));
 
         logger.LogInformation(!rooms.Any()
             ? "There was no matching entity found."
-            : $"All matching {rooms.Count} records were successfully received from the Workshop table");
+            : $"All matching {roomsCount} records were successfully received from the ChatWorkshop table");
 
-        return chatRoomsWithMessages.Select(x => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(x));
+        var results = chatRoomsWithMessages.Select(x => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(x)).ToList();
+
+        return new SearchResult<ChatRoomWorkshopDtoWithLastMessage>()
+        {
+            Entities = results,
+            TotalAmount = roomsCount,
+        };
     }
 
     private Expression<Func<ChatRoomWorkshop, bool>> PredicateBuild(ChatWorkshopFilter filter, Guid userId)

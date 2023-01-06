@@ -133,5 +133,5 @@ public interface IChatRoomWorkshopService
     /// <param name="filter">Entity that represents searching parameters.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="IEnumerable{ChatRoomWorkshopDtoWithLastMessage}"/> that contains elements that were found.</returns>
-    Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetChatRoomByFilter(ChatWorkshopFilter filter, Guid userId);
+    Task<SearchResult<ChatRoomWorkshopDtoWithLastMessage>> GetChatRoomByFilter(ChatWorkshopFilter filter, Guid userId);
 }
