@@ -20,5 +20,13 @@ public static class CommunicationConstants
 
     public const string BlockMinistryAdmin = "ministryadmin/block/";
 
+    public const string CreateRegionAdmin = "regionadmin/create";
+
+    public const string UpdateRegionAdmin = "regionadmin/update/";
+
+    public const string DeleteRegionAdmin = "regionadmin/delete/";
+
+    public const string BlockRegionAdmin = "regionadmin/block/";
+
     public const int BufferSize = 1024;
 }

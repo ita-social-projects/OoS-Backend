@@ -107,6 +107,7 @@ public static class Startup
         services.AddHttpContextAccessor();
         services.AddScoped<IProviderAdminService, ProviderAdminService>();
         services.AddScoped<IMinistryAdminService, MinistryAdminService>();
+        services.AddScoped<IRegionAdminService, RegionAdminService>();
 
         // Images limits options
         services.Configure<ImagesLimits<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
@@ -216,6 +217,7 @@ public static class Startup
 
         services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
         services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
+        services.AddTransient<IRegionAdminRepository, RegionAdminRepository>();
 
         services.AddTransient<IApplicationRepository, ApplicationRepository>();
         services
