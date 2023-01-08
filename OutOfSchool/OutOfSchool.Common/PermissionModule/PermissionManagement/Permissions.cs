@@ -146,4 +146,17 @@ public enum Permissions : short
     [Display(GroupName = "MinistryAdmin", Name = "Ministry Admins", Description = "Can manage ministry admins")]
     MinistryAdmins = 114,
     #endregion
+
+    #region RegionAdmin Control permissions # 13
+    [Display(GroupName = "RegionAdmin", Name = "Read", Description = "Can read region admin")]
+    RegionAdminRead = 120,
+    [Display(GroupName = "RegionAdmin", Name = "Edit", Description = "Can edit region admin")]
+    RegionAdminEdit = 121,
+    [Display(GroupName = "RegionAdmin", Name = "Add new", Description = "Can add a new region admin")]
+    RegionAdminAddNew = 122,
+    [Display(GroupName = "RegionAdmin", Name = "Remove", Description = "Can remove region admin")]
+    RegionAdminRemove = 123,
+    [Display(GroupName = "RegionAdmin", Name = "Region Admins", Description = "Can manage region admins")]
+    RegionAdmins = 124,
+    #endregion
 }

@@ -11,6 +11,8 @@ public class RegionAdmin : IKeyedEntity<(string, long)>
     public string UserId { get; set; }
 
     [Required(ErrorMessage = "InstitutionId is required")]
+    public Guid InstitutionId { get; set; }
+
     public virtual Institution Institution { get; set; }
 
     [ForeignKey("UserId")]

@@ -52,5 +52,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
 
         CreateMap<MinistryAdminBaseDto, InstitutionAdmin>();
+
+        CreateMap<RegionAdminBaseDto, User>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
+
+        CreateMap<RegionAdminBaseDto, RegionAdmin>();
     }
 }

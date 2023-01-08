@@ -131,6 +131,7 @@ public static class Startup
         services.AddTransient<IUserManagerAdditionalService, UserManagerAdditionalService>();
         services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
         services.AddTransient<IMinistryAdminService, MinistryAdminService>();
+        services.AddTransient<IRegionAdminRepository, RegionAdminRepository>();
 
         services.AddTransient<IEntityRepository<long, ProviderAdminChangesLog>, EntityRepository<long, ProviderAdminChangesLog>>();
         services.AddTransient<IProviderAdminChangesLogService, ProviderAdminChangesLogService>();
