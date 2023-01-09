@@ -52,6 +52,7 @@ public class CurrentUserService : ICurrentUserService
         Role.Parent => user?.IsInRole("parent") ?? false,
         Role.TechAdmin => user?.IsInRole("techadmin") ?? false,
         Role.MinistryAdmin => user?.IsInRole("ministryadmin") ?? false,
+        Role.RegionAdmin => user?.IsInRole("regionadmin") ?? false,
         _ => throw new NotImplementedException("Role not handled")
     };
 
@@ -59,7 +60,9 @@ public class CurrentUserService : ICurrentUserService
         IsInRole(Role.Provider) &&
         (IsInSubRole(Subrole.ProviderDeputy) || IsInSubRole(Subrole.ProviderAdmin));
 
-    public bool IsAdmin() => IsInRole(Role.TechAdmin) || IsInRole(Role.MinistryAdmin);
+    public bool IsAdmin() => IsInRole(Role.TechAdmin) || IsInRole(Role.MinistryAdmin) || IsInRole(Role.RegionAdmin);
+
+    public bool IsRegionAdmin() => IsInRole(Role.RegionAdmin);
 
     public bool IsMinistryAdmin() => IsInRole(Role.MinistryAdmin);
 
