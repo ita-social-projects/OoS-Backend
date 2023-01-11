@@ -102,4 +102,10 @@ public interface IApplicationService
     /// The task result contains <see langword="true" /> if exists an any application with approve status in workshop for parent;
     /// otherwise, <see langword="false" />.</returns>
     Task<bool> AllowedToReview(Guid parentId, Guid workshopId);
+
+    /// <summary>
+    /// Sets Studying status for all approved applications.
+    /// </summary>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    Task<int> ChangeApprovedStatusesToStudying();
 }
