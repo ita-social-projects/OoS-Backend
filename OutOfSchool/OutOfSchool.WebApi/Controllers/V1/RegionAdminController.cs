@@ -41,7 +41,7 @@ public class RegionAdminController : Controller
     /// To Get the Profile of authorized RegionAdmin.
     /// </summary>
     /// <returns>Authorized RegionAdmin's profile.</returns>
-    [HasPermission(Permissions.UserRead)]
+    [HasPermission(Permissions.PersonalInfo)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RegionAdminDto))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]

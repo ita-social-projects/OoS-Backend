@@ -132,6 +132,8 @@ public static class Startup
         services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
         services.AddTransient<IMinistryAdminService, MinistryAdminService>();
         services.AddTransient<IRegionAdminRepository, RegionAdminRepository>();
+        services.AddTransient<IRegionAdminService, RegionAdminService>();
+
 
         services.AddTransient<IEntityRepository<long, ProviderAdminChangesLog>, EntityRepository<long, ProviderAdminChangesLog>>();
         services.AddTransient<IProviderAdminChangesLogService, ProviderAdminChangesLogService>();
@@ -231,7 +233,9 @@ public static class Startup
                 new IdentityRole {Name = "ministryadmin"},
                 new IdentityRole {Name = "regionadmin"},
         };
-        foreach (var role in roles)
+        var newRoles = roles.ExceptBy(manager.Roles.Select(r => r.Name), role => role.Name);
+
+        foreach (var role in newRoles)
         {
             manager.CreateAsync(role).Wait();
         }

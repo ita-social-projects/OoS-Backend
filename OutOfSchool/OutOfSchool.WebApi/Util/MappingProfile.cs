@@ -415,6 +415,25 @@ public class MappingProfile : Profile
                             ? AccountStatus.NeverLogged
                             : AccountStatus.Accepted));
 
+        CreateMap<RegionAdmin, RegionAdminDto>()
+            .ForMember(dest => dest.InstitutionTitle, opt => opt.MapFrom(src => src.Institution.Title))
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.User.Id))
+            .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
+            .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName))
+            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber))
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+            .ForMember(dest => dest.CATOTTGCategory, opt => opt.MapFrom(src => src.CATOTTG.Category))
+            .ForMember(dest => dest.CATOTTGName, opt => opt.MapFrom(src => src.CATOTTG.Name))
+            .ForMember(
+                dest => dest.AccountStatus,
+                opt => opt.MapFrom(src =>
+                    src.User.IsBlocked
+                        ? AccountStatus.Blocked
+                        : src.User.LastLogin == DateTimeOffset.MinValue
+                            ? AccountStatus.NeverLogged
+                            : AccountStatus.Accepted));
+
         CreateMap<ProviderChangesLogRequest, ChangesLogFilter>()
             .ForMember(dest => dest.EntityType, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionId, opt => opt.Ignore())

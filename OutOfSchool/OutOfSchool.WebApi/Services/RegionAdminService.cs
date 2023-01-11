@@ -133,7 +133,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: "Institution,User,CATOTTGs",
+                includeProperties: "Institution,User,CATOTTG",
                 where: filterPredicate,
                 orderBy: sortExpression,
                 asNoTracking: true)
