@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
@@ -18,14 +19,17 @@ public class RegionAdminController : Controller
     private readonly IRegionAdminService regionAdminService;
     private readonly ILogger<RegionAdminController> logger;
     private string path;
-    private string userId;
+    private string currentUserId;
+    private string currentUserRole;
 
     public RegionAdminController(
         IRegionAdminService regionAdminService,
-        ILogger<RegionAdminController> logger)
+        ILogger<RegionAdminController> logger,
+        ICurrentUserService currentUserService,
+        IMinistryAdminService ministryAdminService)
     {
-        ArgumentNullException.ThrowIfNull(regionAdminService);
-        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(regionAdminService, nameof(regionAdminService));
+        ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
         this.regionAdminService = regionAdminService;
         this.logger = logger;
@@ -34,27 +38,28 @@ public class RegionAdminController : Controller
     public override void OnActionExecuting(ActionExecutingContext context)
     {
         path = $"{context.HttpContext.Request.Path.Value}[{context.HttpContext.Request.Method}]";
-        userId = GettingUserProperties.GetUserId(User);
+        currentUserId = GettingUserProperties.GetUserId(User);
+        currentUserRole = GettingUserProperties.GetUserRole(User);
     }
 
     /// <summary>
     /// To Get the Profile of authorized RegionAdmin.
     /// </summary>
     /// <returns>Authorized RegionAdmin's profile.</returns>
-    [HasPermission(Permissions.PersonalInfo)]
-    [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RegionAdminDto))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HasPermission(Permissions.PersonalInfo)]
+    [HttpGet]
     public async Task<IActionResult> Profile()
     {
-        if (userId == null)
+        if (currentUserId == null)
         {
-            BadRequest("Invalid user information.");
+            return BadRequest("Invalid user information.");
         }
 
         try
         {
-            var regionAdmin = await regionAdminService.GetByUserId(userId).ConfigureAwait(false);
+            var regionAdmin = await regionAdminService.GetByUserId(currentUserId).ConfigureAwait(false);
             return Ok(regionAdmin);
         }
         catch (ArgumentException e)
@@ -68,20 +73,20 @@ public class RegionAdminController : Controller
     /// </summary>
     /// <param name="id">RegionAdmin id.</param>
     /// <returns>Authorized RegionAdmin's profile.</returns>
-    [HasPermission(Permissions.SystemManagement)]
-    [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RegionAdminDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HasPermission(Permissions.RegionAdminRead)]
+    [HttpGet]
     public async Task<IActionResult> GetById([FromQuery] string id)
     {
         var regionAdmin = await regionAdminService.GetByIdAsync(id).ConfigureAwait(false);
         if (regionAdmin == null)
         {
-            return NotFound($"There is no Region admin in DB with {nameof(regionAdmin.Id)} - {id}");
+            return NotFound($"There is no RegionAdmin in DB with {nameof(regionAdmin.Id)} - {id}");
         }
 
         return Ok(regionAdmin);
@@ -92,14 +97,14 @@ public class RegionAdminController : Controller
     /// </summary>
     /// <param name="filter">Entity that represents searching parameters.</param>
     /// <returns><see cref="SearchResult{RegionAdminDto}"/>, or no content.</returns>
-    [HasPermission(Permissions.SystemManagement)]
-    [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<RegionAdminDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HasPermission(Permissions.RegionAdminRead)]
+    [HttpGet]
     public async Task<IActionResult> GetByFilter([FromQuery] RegionAdminFilter filter)
     {
         var regionAdmins = await regionAdminService.GetByFilter(filter).ConfigureAwait(false);
@@ -127,17 +132,17 @@ public class RegionAdminController : Controller
     [HttpPost]
     public async Task<ActionResult> Create(RegionAdminBaseDto regionAdminBase)
     {
-        logger.LogDebug("{Path} started. User(id): {UserId}", path, userId);
+        logger.LogDebug("{Path} started. User(id): {UserId}", path, currentUserId);
 
         if (!ModelState.IsValid)
         {
-            logger.LogError("Input data was not valid for User(id): {UserId}", userId);
+            logger.LogError("Input data was not valid for User(id): {UserId}", currentUserId);
 
             return StatusCode(StatusCodes.Status422UnprocessableEntity);
         }
 
         var response = await regionAdminService.CreateRegionAdminAsync(
-                userId,
+                currentUserId,
                 regionAdminBase,
                 await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
             .ConfigureAwait(false);
@@ -146,7 +151,7 @@ public class RegionAdminController : Controller
             error => StatusCode((int)error.HttpStatusCode, error.Message),
             result =>
             {
-                logger.LogInformation("Successfully created RegionAdmin(id): {result.UserId} by User(id): {UserId}", result.UserId, userId);
+                logger.LogInformation("Successfully created RegionAdmin(id): {result.UserId} by User(id): {UserId}", result.UserId, currentUserId);
                 return Ok(result);
             });
     }
@@ -156,12 +161,12 @@ public class RegionAdminController : Controller
     /// </summary>
     /// <param name="updateRegionAdminDto">RegionAdminDto object with new properties.</param>
     /// <returns>RegionAdmin's key.</returns>
-    [HasPermission(Permissions.UserEdit)]
-    [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RegionAdminDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HasPermission(Permissions.RegionAdminEdit)]
+    [HttpPut]
     public async Task<ActionResult> Update(RegionAdminBaseDto updateRegionAdminDto)
     {
         if (updateRegionAdminDto == null)
@@ -174,15 +179,20 @@ public class RegionAdminController : Controller
             return BadRequest(ModelState);
         }
 
-        if (userId != updateRegionAdminDto.UserId)
+        if (currentUserId != updateRegionAdminDto.UserId)
         {
-            var currentUser = GettingUserProperties.GetUserId(User);
-            var currentUserRole = GettingUserProperties.GetUserRole(User);
-
-            // TODO Add checking if Region admin belongs to the same Institution as Ministry Admin
             if (currentUserRole == nameof(Role.TechAdmin).ToLower()
                 || currentUserRole == nameof(Role.MinistryAdmin).ToLower())
             {
+                if (currentUserRole == nameof(Role.MinistryAdmin).ToLower())
+                {
+                    if (!await regionAdminService.IsRegionAdminSubordinateAsync(currentUserId, updateRegionAdminDto.UserId))
+                    {
+                        logger.LogDebug("Forbidden to update RegionAdmin. RegionAdmin doesn't subordinate to MinistryAdmin.");
+                        return StatusCode(403, "Forbidden to update RegionAdmin. RegionAdmin doesn't subordinate to MinistryAdmin.");
+                    }
+                }
+
                 var updatedRegionAdmin = await regionAdminService.GetByIdAsync(updateRegionAdminDto.UserId);
                 if (updatedRegionAdmin.AccountStatus == AccountStatus.Accepted)
                 {
@@ -191,14 +201,14 @@ public class RegionAdminController : Controller
             }
             else
             {
-                return StatusCode(403, "Forbidden to update another user if you haven't techadmin or ministryadmin role.");
+                return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin or MinistryAdmin role.");
             }
         }
 
         try
         {
             var response = await regionAdminService.UpdateRegionAdminAsync(
-                    userId,
+                    currentUserId,
                     updateRegionAdminDto,
                     await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
                 .ConfigureAwait(false);
@@ -234,11 +244,20 @@ public class RegionAdminController : Controller
     [HttpDelete]
     public async Task<ActionResult> Delete(string regionAdminId)
     {
-        logger.LogDebug($"{path} started. User(id): {userId}.");
+        logger.LogDebug($"{path} started. User(id): {currentUserId}.");
+
+        if (currentUserRole == nameof(Role.MinistryAdmin).ToLower())
+        {
+            if (!await regionAdminService.IsRegionAdminSubordinateAsync(currentUserId, regionAdminId))
+            {
+                logger.LogDebug("Forbidden to delete RegionAdmin. RegionAdmin doesn't subordinate to MinistryAdmin.");
+                return StatusCode(403, "Forbidden to delete RegionAdmin. RegionAdmin doesn't subordinate to MinistryAdmin.");
+            }
+        }
 
         var response = await regionAdminService.DeleteRegionAdminAsync(
                 regionAdminId,
-                userId,
+                currentUserId,
                 await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
             .ConfigureAwait(false);
 
@@ -246,7 +265,7 @@ public class RegionAdminController : Controller
             error => StatusCode((int)error.HttpStatusCode, error.Message),
             _ =>
             {
-                logger.LogInformation($"Succesfully deleted regionAdmin(id): {regionAdminId} by User(id): {userId}.");
+                logger.LogInformation($"Succesfully deleted RegionAdmin(id): {regionAdminId} by User(id): {currentUserId}.");
                 return Ok();
             });
     }
@@ -256,11 +275,20 @@ public class RegionAdminController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [HasPermission(Permissions.RegionAdminEdit)]
+    [HasPermission(Permissions.RegionAdminBlock)]
     [HttpPut]
     public async Task<ActionResult> Block(string regionAdminId, bool? isBlocked)
     {
-        logger.LogDebug($"{path} started. User(id): {userId}.");
+        logger.LogDebug($"{path} started. User(id): {currentUserId}.");
+
+        if (currentUserRole == nameof(Role.MinistryAdmin).ToLower())
+        {
+            if (!await regionAdminService.IsRegionAdminSubordinateAsync(currentUserId, regionAdminId))
+            {
+                logger.LogDebug("Forbidden to block RegionAdmin. RegionAdmin doesn't subordinate to MinistryAdmin.");
+                return StatusCode(403, "Forbidden to block RegionAdmin. RegionAdmin doesn't subordinate to MinistryAdmin.");
+            }
+        }
 
         if (isBlocked is null)
         {
@@ -270,7 +298,7 @@ public class RegionAdminController : Controller
 
         var response = await regionAdminService.BlockRegionAdminAsync(
                 regionAdminId,
-                userId,
+                currentUserId,
                 await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false),
                 (bool)isBlocked)
             .ConfigureAwait(false);
@@ -279,7 +307,7 @@ public class RegionAdminController : Controller
             error => StatusCode((int)error.HttpStatusCode, error.Message),
             _ =>
             {
-                logger.LogInformation($"Successfully blocked regionAdmin(id): {regionAdminId} by User(id): {userId}.");
+                logger.LogInformation($"Successfully blocked RegionAdmin(id): {regionAdminId} by User(id): {currentUserId}.");
                 return Ok();
             });
     }

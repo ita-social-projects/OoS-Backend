@@ -62,6 +62,8 @@ public class CurrentUserService : ICurrentUserService
 
     public bool IsAdmin() => IsInRole(Role.TechAdmin) || IsInRole(Role.MinistryAdmin) || IsInRole(Role.RegionAdmin);
 
+    public bool IsMinistryAdmin() => IsInRole(Role.MinistryAdmin);
+
     public bool IsRegionAdmin() => IsInRole(Role.RegionAdmin);
 
     public bool IsMinistryAdmin() => IsInRole(Role.MinistryAdmin);

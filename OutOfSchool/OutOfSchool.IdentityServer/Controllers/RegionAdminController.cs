@@ -13,7 +13,7 @@ public class RegionAdminController : Controller
     private readonly IRegionAdminService regionAdminService;
 
     private string path;
-    private string userId;
+    private string currentUserId;
 
     public RegionAdminController(
         ILogger<RegionAdminController> logger,
@@ -28,7 +28,7 @@ public class RegionAdminController : Controller
         ArgumentNullException.ThrowIfNull(context);
 
         path = $"{context.HttpContext.Request.Path.Value}[{context.HttpContext.Request.Method}]";
-        userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+        currentUserId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
     }
 
     [HasPermission(Permissions.RegionAdminAddNew)]
@@ -37,11 +37,13 @@ public class RegionAdminController : Controller
     {
         logger.LogDebug(
             "Received request {RequestHeader}. {Path} started. User(id): {UserId}",
-            Request.Headers["X-Request-ID"], path, userId);
+            Request.Headers["X-Request-ID"],
+            path,
+            currentUserId);
 
         if (!ModelState.IsValid)
         {
-            logger.LogError($"Input data was not valid for User(id): {userId}");
+            logger.LogError($"Input data was not valid for User(id): {currentUserId}");
 
             return new ResponseDto()
             {
@@ -51,7 +53,7 @@ public class RegionAdminController : Controller
         }
 
         return await regionAdminService
-            .CreateRegionAdminAsync(regionAdminBaseDto, Url, userId, Request.Headers["X-Request-ID"]);
+            .CreateRegionAdminAsync(regionAdminBaseDto, Url, currentUserId, Request.Headers["X-Request-ID"]);
     }
 
     [HttpPut("{regionAdminId}")]
@@ -59,14 +61,13 @@ public class RegionAdminController : Controller
     public async Task<ResponseDto> Update(string regionAdminId, RegionAdminBaseDto updateRegionAdminDto)
     {
         logger.LogDebug(
-            "Received request " +
-            "{Headers}. {path} started. User(id): {userId}",
+            "Received request {Headers}. {path} started. User(id): {userId}",
             Request.Headers["X-Request-ID"],
             path,
-            userId);
+            currentUserId);
 
         return await regionAdminService
-            .UpdateRegionAdminAsync(updateRegionAdminDto, userId, Request.Headers["X-Request-ID"]);
+            .UpdateRegionAdminAsync(updateRegionAdminDto, currentUserId, Request.Headers["X-Request-ID"]);
     }
 
     [HttpDelete("{regionAdminId}")]
@@ -77,10 +78,12 @@ public class RegionAdminController : Controller
 
         logger.LogDebug(
             "Received request {RequestHeader}. {Path} started. User(id): {UserId}",
-            Request.Headers["X-Request-ID"], path, userId);
+            Request.Headers["X-Request-ID"],
+            path,
+            currentUserId);
 
         return await regionAdminService
-            .DeleteRegionAdminAsync(regionAdminId, userId, Request.Headers["X-Request-ID"]);
+            .DeleteRegionAdminAsync(regionAdminId, currentUserId, Request.Headers["X-Request-ID"]);
     }
 
     [HttpPut("{regionAdminId}/{isBlocked}")]
@@ -89,9 +92,11 @@ public class RegionAdminController : Controller
     {
         logger.LogDebug(
             "Received request {RequestHeader}. {Path} started. User(id): {UserId}",
-            Request.Headers["X-Request-ID"], path, userId);
+            Request.Headers["X-Request-ID"],
+            path,
+            currentUserId);
 
         return await regionAdminService
-            .BlockRegionAdminAsync(regionAdminId, userId, Request.Headers["X-Request-ID"], isBlocked);
+            .BlockRegionAdminAsync(regionAdminId, currentUserId, Request.Headers["X-Request-ID"], isBlocked);
     }
 }

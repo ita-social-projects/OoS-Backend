@@ -18,7 +18,7 @@ public static class PermissionsSeeder
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.WorkshopEdit, Permissions.WorkshopRemove, Permissions.WorkshopAddNew,
         Permissions.MinistryAdmins, Permissions.MinistryAdminAddNew, Permissions.MinistryAdminRemove, Permissions.MinistryAdminEdit, Permissions.MinistryAdminRead,
-        Permissions.RegionAdmins, Permissions.RegionAdminAddNew, Permissions.RegionAdminRemove, Permissions.RegionAdminEdit, Permissions.RegionAdminRead,
+        Permissions.RegionAdmins, Permissions.RegionAdminAddNew, Permissions.RegionAdminRemove, Permissions.RegionAdminEdit, Permissions.RegionAdminRead, Permissions.RegionAdminBlock,
         Permissions.PersonalInfo,
     };
 
@@ -60,6 +60,7 @@ public static class PermissionsSeeder
         Permissions.PersonalInfo,
         Permissions.MinistryAdminRead,
         Permissions.WorkshopEdit,
+        Permissions.RegionAdminAddNew, Permissions.RegionAdminRead, Permissions.RegionAdminEdit, Permissions.RegionAdminRemove, Permissions.RegionAdminBlock,
     };
 
     private static readonly IEnumerable<Permissions> SeedParentPermissions = new List<Permissions>
@@ -86,7 +87,7 @@ public static class PermissionsSeeder
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.TeacherRead,
         Permissions.PersonalInfo,
-        Permissions.RegionAdminRead,
+        Permissions.RegionAdminEdit,
         Permissions.WorkshopEdit,
     };
 

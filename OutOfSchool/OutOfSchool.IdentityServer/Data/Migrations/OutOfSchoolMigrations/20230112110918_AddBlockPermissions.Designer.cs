@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
@@ -10,9 +11,10 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230112110918_AddBlockPermissions")]
+    partial class AddBlockPermissions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -282,10 +284,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
 
-                    b.Property<string>("TitleEn")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
                     b.HasKey("Id");
 
                     b.ToTable("AchievementTypes");
@@ -294,44 +292,37 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         new
                         {
                             Id = 1L,
-                            Title = "Переможці міжнародних та всеукраїнських спортивних змагань (індивідуальних та командних)",
-                            TitleEn = "Winners of international and all-Ukrainian sports competitions (individual and team)"
+                            Title = "Переможці міжнародних та всеукраїнських спортивних змагань (індивідуальних та командних)"
                         },
                         new
                         {
                             Id = 2L,
-                            Title = "Призери та учасники міжнародних, всеукраїнських та призери регіональних конкурсів і виставок наукових, технічних, дослідницьких, інноваційних, ІТ проектів",
-                            TitleEn = "Winners and participants of international, all-Ukrainian and regional contests and exhibitions of scientific, technical, research, innovation, IT projects"
+                            Title = "Призери та учасники міжнародних, всеукраїнських та призери регіональних конкурсів і виставок наукових, технічних, дослідницьких, інноваційних, ІТ проектів"
                         },
                         new
                         {
                             Id = 3L,
-                            Title = "Реципієнти міжнародних грантів",
-                            TitleEn = "Recipients of international grants"
+                            Title = "Реципієнти міжнародних грантів"
                         },
                         new
                         {
                             Id = 4L,
-                            Title = "Призери міжнародних культурних конкурсів та фестивалів",
-                            TitleEn = "Winners of international cultural competitions and festivals"
+                            Title = "Призери міжнародних культурних конкурсів та фестивалів"
                         },
                         new
                         {
                             Id = 5L,
-                            Title = "Соціально активні категорії учнів",
-                            TitleEn = "Socially active categories of students"
+                            Title = "Соціально активні категорії учнів"
                         },
                         new
                         {
                             Id = 6L,
-                            Title = "Цифрові інструменти Google для закладів вищої та фахової передвищої освіти",
-                            TitleEn = "Google digital tools for institutions of higher and professional pre-higher education"
+                            Title = "Цифрові інструменти Google для закладів вищої та фахової передвищої освіти"
                         },
                         new
                         {
                             Id = 7L,
-                            Title = "Переможці та учасники олімпіад міжнародного та всеукраїнського рівнів",
-                            TitleEn = "Winners and participants of olympiads at the international and all-Ukrainian levels"
+                            Title = "Переможці та учасники олімпіад міжнародного та всеукраїнського рівнів"
                         });
                 });
 
@@ -669,24 +660,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("ParentId");
 
                     b.ToTable("Children");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.CodeficatorParent", b =>
-                {
-                    b.Property<long>("CatottgsId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("Level")
-                        .HasColumnType("int");
-
-                    b.Property<long>("ParentId")
-                        .HasColumnType("bigint");
-
-                    b.HasIndex("CatottgsId");
-
-                    b.HasIndex("ParentId");
-
-                    b.ToTable("CodeficatorParents");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformation", b =>
@@ -1061,7 +1034,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 5L,
                             Description = "ministry admin permissions",
-                            PackedPermissions = "ef\n257(PQFTn[",
+                            PackedPermissions = "e\n257(PQFTzxy{}",
                             RoleName = "MinistryAdmin"
                         },
                         new
@@ -1448,11 +1421,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<string>("NameEn")
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
@@ -1464,32 +1432,27 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         new
                         {
                             Id = 1L,
-                            Name = "Діти із багатодітних сімей",
-                            NameEn = "Children from large families"
+                            Name = "Діти із багатодітних сімей"
                         },
                         new
                         {
                             Id = 2L,
-                            Name = "Діти із малозабезпечених сімей",
-                            NameEn = "Children from low-income families"
+                            Name = "Діти із малозабезпечених сімей"
                         },
                         new
                         {
                             Id = 3L,
-                            Name = "Діти з інвалідністю",
-                            NameEn = "Children with disabilities"
+                            Name = "Діти з інвалідністю"
                         },
                         new
                         {
                             Id = 4L,
-                            Name = "Діти-сироти",
-                            NameEn = "Orphans"
+                            Name = "Діти-сироти"
                         },
                         new
                         {
                             Id = 5L,
-                            Name = "Діти, позбавлені батьківського піклування",
-                            NameEn = "Children deprived of parental care"
+                            Name = "Діти, позбавлені батьківського піклування"
                         });
                 });
 
@@ -2254,25 +2217,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Parent");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.CodeficatorParent", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.CATOTTG", "CATOTTG")
-                        .WithMany()
-                        .HasForeignKey("CatottgsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.CATOTTG", "Parent")
-                        .WithMany()
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CATOTTG");
 
                     b.Navigation("Parent");
                 });

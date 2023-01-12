@@ -18,6 +18,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
     private readonly IRegionAdminRepository regionAdminRepository;
     private readonly IEntityRepository<string, User> userRepository;
     private readonly IMapper mapper;
+    private readonly IMinistryAdminService ministryAdminService;
 
     public RegionAdminService(
         IHttpClientFactory httpClientFactory,
@@ -26,13 +27,21 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         IRegionAdminRepository regionAdminRepository,
         ILogger<MinistryAdminService> logger,
         IEntityRepository<string, User> userRepository,
-        IMapper mapper)
+        IMapper mapper,
+        IMinistryAdminService ministryAdminService)
         : base(httpClientFactory, communicationConfig?.Value, logger)
     {
-        this.identityServerConfig = (identityServerConfig ?? throw new ArgumentNullException(nameof(identityServerConfig))).Value;
-        this.regionAdminRepository = regionAdminRepository ?? throw new ArgumentNullException(nameof(regionAdminRepository));
-        this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        ArgumentNullException.ThrowIfNull(identityServerConfig, nameof(identityServerConfig));
+        ArgumentNullException.ThrowIfNull(regionAdminRepository, nameof(regionAdminRepository));
+        ArgumentNullException.ThrowIfNull(userRepository, nameof(userRepository));
+        ArgumentNullException.ThrowIfNull(mapper, nameof(mapper));
+        ArgumentNullException.ThrowIfNull(ministryAdminService, nameof(ministryAdminService));
+
+        this.identityServerConfig = identityServerConfig.Value;
+        this.regionAdminRepository = regionAdminRepository;
+        this.userRepository = userRepository;
+        this.mapper = mapper;
+        this.ministryAdminService = ministryAdminService;
     }
 
     public async Task<RegionAdminDto> GetByIdAsync(string id)
@@ -116,7 +125,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
     /// <inheritdoc/>
     public async Task<SearchResult<RegionAdminDto>> GetByFilter(RegionAdminFilter filter)
     {
-        Logger.LogInformation("Getting all Region admins started (by filter)");
+        Logger.LogInformation("Getting all RegionAdmins started (by filter)");
 
         filter ??= new RegionAdminFilter();
         ModelValidationHelper.ValidateOffsetFilter(filter);
@@ -141,8 +150,8 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             .ConfigureAwait(false);
 
         Logger.LogInformation(!regionAdmins.Any()
-            ? "Parents table is empty."
-            : $"All {regionAdmins.Count} records were successfully received from the Parent table");
+            ? "RegionAdmins table is empty."
+            : $"All {regionAdmins.Count} records were successfully received from the RegionAdmins table");
 
         var regionAdminsDto = regionAdmins.Select(admin => mapper.Map<RegionAdminDto>(admin)).ToList();
 
@@ -161,11 +170,10 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         RegionAdminBaseDto updateRegionAdminDto,
         string token)
     {
-        _ = updateRegionAdminDto ?? throw new ArgumentNullException(nameof(updateRegionAdminDto));
+        ArgumentNullException.ThrowIfNull(updateRegionAdminDto, nameof(updateRegionAdminDto));
 
         Logger.LogDebug("RegionAdmin(id): {RegionAdminId} updating was started. User(id): {UserId}", updateRegionAdminDto.UserId, userId);
 
-        // TODO Add checking if region Admin belongs to Institution and is exist regionAdmin with such UserId
         var regionAdmin = await regionAdminRepository.GetByIdAsync(updateRegionAdminDto.UserId)
             .ConfigureAwait(false);
 
@@ -317,12 +325,13 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
     /// <inheritdoc/>
     public async Task<bool> IsRegionAdminSubordinateAsync(string ministryAdminUserId, string regionAdminId)
     {
-        //ArgumentNullException.ThrowIfNull(ministryAdminUserId);
+        ArgumentNullException.ThrowIfNull(ministryAdminUserId, nameof(ministryAdminUserId));
+        ArgumentNullException.ThrowIfNull(regionAdminId, nameof(regionAdminId));
 
-        //return await regionAdminRepository
-        //    .Any(x => x.UserId == ministryAdminUserId
-        //              && x.Institution.RelatedProviders.Any(rp => rp.Id == providerId)).ConfigureAwait(false);
-        return true;
+        var ministryAdmin = await ministryAdminService.GetByIdAsync(ministryAdminUserId).ConfigureAwait(false);
+        var regionAdmin = await regionAdminRepository.GetByIdAsync(regionAdminId).ConfigureAwait(false);
+
+        return ministryAdmin.InstitutionId == regionAdmin.InstitutionId;
     }
 
     private static Expression<Func<RegionAdmin, bool>> PredicateBuild(RegionAdminFilter filter)

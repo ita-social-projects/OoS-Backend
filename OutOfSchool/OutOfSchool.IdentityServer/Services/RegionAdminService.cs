@@ -347,17 +347,17 @@ public class RegionAdminService : IRegionAdminService
         string userId,
         string requestId)
     {
-        _ = updateRegionAdminDto ?? throw new ArgumentNullException(nameof(updateRegionAdminDto));
+        ArgumentNullException.ThrowIfNull(updateRegionAdminDto, nameof(updateRegionAdminDto));
 
         var response = new ResponseDto();
 
         if (await context.Users.AnyAsync(x => x.Email == updateRegionAdminDto.Email
             && x.Id != updateRegionAdminDto.UserId).ConfigureAwait(false))
         {
-            logger.LogError($"Cant update region admin with duplicate email: {updateRegionAdminDto.Email}");
+            logger.LogError($"Cant update RegionAdmin with duplicate email: {updateRegionAdminDto.Email}");
             response.IsSuccess = false;
             response.HttpStatusCode = HttpStatusCode.BadRequest;
-            response.Message = $"Cant update region admin with duplicate email: {updateRegionAdminDto.Email}";
+            response.Message = $"Cant update RegionAdmin with duplicate email: {updateRegionAdminDto.Email}";
 
             return response;
         }

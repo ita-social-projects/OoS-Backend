@@ -158,5 +158,7 @@ public enum Permissions : short
     RegionAdminRemove = 123,
     [Display(GroupName = "RegionAdmin", Name = "Region Admins", Description = "Can manage region admins")]
     RegionAdmins = 124,
+    [Display(GroupName = "RegionAdmin", Name = "Block", Description = "Can block region admin")]
+    RegionAdminBlock = 125,
     #endregion
 }

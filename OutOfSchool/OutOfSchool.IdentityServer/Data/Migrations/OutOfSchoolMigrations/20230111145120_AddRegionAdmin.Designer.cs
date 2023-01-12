@@ -11,7 +11,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20230110220511_AddRegionAdmin")]
+    [Migration("20230111145120_AddRegionAdmin")]
     partial class AddRegionAdmin
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1041,7 +1041,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 6L,
                             Description = "region admin permissions",
-                            PackedPermissions = "ef\n257(PQFTx[",
+                            PackedPermissions = "ef\n257(PQFTxy[",
                             RoleName = "RegionAdmin"
                         });
                 });

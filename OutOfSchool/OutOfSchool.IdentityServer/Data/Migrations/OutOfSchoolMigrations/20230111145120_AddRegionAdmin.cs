@@ -53,7 +53,7 @@ public partial class AddRegionAdmin : Migration
         migrationBuilder.InsertData(
             table: "PermissionsForRoles",
             columns: new[] { "Id", "Description", "PackedPermissions", "RoleName" },
-            values: new object[] { 6L, "region admin permissions", "ef\n257(PQFTx[", "RegionAdmin" });
+            values: new object[] { 6L, "region admin permissions", "ef\n257(PQFTxy[", "RegionAdmin" });
 
         migrationBuilder.CreateIndex(
             name: "IX_RegionAdmins_CATOTTGId",
