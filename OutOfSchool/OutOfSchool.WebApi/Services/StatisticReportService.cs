@@ -76,7 +76,7 @@ public class StatisticReportService : IStatisticReportService
             skip: filter.From,
             take: filter.Size,
             where: predicate,
-            includeProperties: "Workshop,Child,Parent",
+            includeProperties: "",
             orderBy: sortExpression).ToListAsync().ConfigureAwait(false);
 
         if (!statisticReports.Any())
