@@ -13,14 +13,14 @@ public partial class UpdateAdminAndMinistryAdminPermissions : Migration
             keyColumn: "Id",
             keyValue: 1L,
             column: "PackedPermissions",
-            value: "de\n\r !()+43257>=<?HGIFPQ[]\\rpqonT");
+            value: "def\n\r !()+43257>=<?HGIFPQ[]\\rpqonT");
 
         migrationBuilder.UpdateData(
             table: "PermissionsForRoles",
             keyColumn: "Id",
             keyValue: 5L,
             column: "PackedPermissions",
-            value: "e\n257(PQFTn[");
+            value: "ef\n257(PQFTn[");
     }
 
     protected override void Down(MigrationBuilder migrationBuilder)

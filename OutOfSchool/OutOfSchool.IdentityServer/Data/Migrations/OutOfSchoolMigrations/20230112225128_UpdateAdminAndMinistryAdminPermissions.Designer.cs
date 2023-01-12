@@ -11,7 +11,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20221227014713_UpdateAdminAndMinistryAdminPermissions")]
+    [Migration("20230112225128_UpdateAdminAndMinistryAdminPermissions")]
     partial class UpdateAdminAndMinistryAdminPermissions
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -816,6 +816,22 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Favorites");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.FileInDb", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("ContentType")
+                        .HasColumnType("longtext");
+
+                    b.Property<byte[]>("Data")
+                        .HasColumnType("longblob");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FilesInDb");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Provider>", b =>
                 {
                     b.Property<Guid>("EntityId")
@@ -990,7 +1006,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 1L,
                             Description = "techadmin permissions",
-                            PackedPermissions = "de\n\r !()+43257>=<?HGIFPQ[]\\rpqonT",
+                            PackedPermissions = "def\n\r !()+43257>=<?HGIFPQ[]\\rpqonT",
                             RoleName = "TechAdmin"
                         },
                         new
@@ -1018,7 +1034,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 5L,
                             Description = "ministry admin permissions",
-                            PackedPermissions = "e\n257(PQFTn[",
+                            PackedPermissions = "ef\n257(PQFTn[",
                             RoleName = "MinistryAdmin"
                         });
                 });
@@ -1407,6 +1423,142 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                             Id = 5L,
                             Name = "Діти, позбавлені батьківського піклування"
                         });
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.StatisticReport", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("binary(16)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("ExternalStorageId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("ReportDataType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReportType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StatisticReports");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.StatisticReportCSV", b =>
+                {
+                    b.Property<int>("ApplicationsAmount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ApplicationsApproved")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CATOTTGCategory")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("CATOTTGCode")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("ChildrenStudying")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ChildrenStudyingAchievementsInstitutionHierarchy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ChildrenStudyingDisabilityInstitutionHierarchy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ChildrenStudyingFemale")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ChildrenStudyingFemaleInstitutionHierarchy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ChildrenStudyingInstitutionHierarchy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ChildrenStudyingLargeFamilyInstitutionHierarchy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ChildrenStudyingLess18")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ChildrenStudyingOrphanInstitutionHierarchy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ChildrenStudyingPoorFamilyInstitutionHierarchy")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Complex")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("EDRPOU")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("InstitutionTitle")
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("ProviderId")
+                        .HasColumnType("binary(16)");
+
+                    b.Property<string>("ProviderName")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ProviderType")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Region")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Settlement")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Teachers")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TeachersFrom31To40InstitutionHierarchy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TeachersFrom41To50InstitutionHierarchy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TeachersFrom51To55InstitutionHierarchy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TeachersFrom55InstitutionHierarchy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TeachersInstitutionHierarchy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TeachersLess30InstitutionHierarchy")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TerritorialCommunity")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("WorkshopsAmount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WorkshopsAmountInstitutionHierarchy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.ToTable("StatisticReportsCSV");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SubordinationStructure.Institution", b =>
