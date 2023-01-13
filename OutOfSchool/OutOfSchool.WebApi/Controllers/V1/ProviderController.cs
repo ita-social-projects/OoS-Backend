@@ -72,7 +72,7 @@ public class ProviderController : ControllerBase
     /// </summary>
     /// <param name="filter">Filter to get a part of all providers that were found.</param>
     /// <returns>The result is a <see cref="SearchResult{ProviderDto}"/> that contains the count of all found providers and a list of providers that were received.</returns>
-    [AllowAnonymous]
+    [HasPermission(Permissions.ProviderRead)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

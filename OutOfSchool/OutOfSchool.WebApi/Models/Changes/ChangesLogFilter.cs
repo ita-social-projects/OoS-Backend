@@ -6,4 +6,5 @@ public class ChangesLogFilter : ChangesLogFilterBase
 {
     [Required]
     public string EntityType { get; set; }
+    public Guid? InstitutionId { get; set; }
 }

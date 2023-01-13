@@ -30,6 +30,8 @@ public class StatisticServiceTest
 
     private Mock<IMapper> mapper;
     private Mock<ICacheService> cache;
+    private Mock<ICurrentUserService> currentUserServiceMock;
+    private Mock<IMinistryAdminService> ministryAdminServiceMock;
 
     [SetUp]
     public void SetUp()
@@ -41,6 +43,8 @@ public class StatisticServiceTest
         var logger = new Mock<ILogger<StatisticService>>();
         mapper = new Mock<IMapper>();
         cache = new Mock<ICacheService>();
+        currentUserServiceMock = new Mock<ICurrentUserService>();
+        ministryAdminServiceMock = new Mock<IMinistryAdminService>();
 
         service = new StatisticService(
             applicationRepository.Object,
@@ -49,7 +53,9 @@ public class StatisticServiceTest
             directionRepository.Object,
             logger.Object,
             mapper.Object,
-            cache.Object);
+            cache.Object,
+            currentUserServiceMock.Object,
+            ministryAdminServiceMock.Object);
     }
 
     [Test]
@@ -59,6 +65,37 @@ public class StatisticServiceTest
         List<WorkshopCard> expectedWorkshopCards = ExpectedWorkshopCardsNoCityFilter();
 
         SetupGetPopularWorkshops();
+
+        mapper.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>()))
+            .Returns(expectedWorkshopCards);
+
+        // Act
+        var result = await service
+            .GetPopularWorkshopsFromDatabase(2, 0)
+            .ConfigureAwait(false);
+
+        // Assert
+        result
+            .Should()
+            .BeEquivalentTo(
+                expectedWorkshopCards, options => options.WithStrictOrdering());
+    }
+
+    [Test]
+    public async Task GetPopularWorkshops_WhenMinistryAdminLogged_ShouldReturnCertainWorkshops()
+    {
+        // Arrange
+        List<WorkshopCard> expectedWorkshopCards = ExpectedWorkshopCardsInstitutionId();
+
+        SetupGetPopularWorkshops();
+
+        currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(true);
+        ministryAdminServiceMock
+            .Setup(m => m.GetByUserId(It.IsAny<string>()))
+            .Returns(Task.FromResult<MinistryAdminDto>(new MinistryAdminDto()
+            {
+                InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
+            }));
 
         mapper.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>()))
             .Returns(expectedWorkshopCards);
@@ -106,6 +143,40 @@ public class StatisticServiceTest
         List<DirectionDto> expectedDirectionStatistic = ExpectedDirectionStatisticsNoCityFilter();
 
         SetupGetPopularDirections();
+
+        foreach (var stat in expectedDirectionStatistic)
+        {
+            mapper.Setup(m => m.Map<DirectionDto>(It.IsAny<Direction>()))
+                .Returns(stat);
+        }
+
+        // Act
+        var result = await service
+            .GetPopularDirectionsFromDatabase(1, 0)
+            .ConfigureAwait(false);
+
+        // Assert
+        result
+            .Should()
+            .BeEquivalentTo(
+                expectedDirectionStatistic, options => options.WithStrictOrdering());
+    }
+
+    [Test]
+    public async Task GetPopularDirections_WhenMinistryAdminLogged_ShouldReturnCertainDirections()
+    {
+        // Arrange
+        List<DirectionDto> expectedDirectionStatistic = ExpectedDirectionStatisticsNoCityFilter();
+
+        SetupGetPopularDirections();
+
+        currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(true);
+        ministryAdminServiceMock
+            .Setup(m => m.GetByUserId(It.IsAny<string>()))
+            .Returns(Task.FromResult<MinistryAdminDto>(new MinistryAdminDto()
+            {
+                InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
+            }));
 
         foreach (var stat in expectedDirectionStatistic)
         {
@@ -253,6 +324,7 @@ public class StatisticServiceTest
                             Id = 1,
                         },
                     },
+                    InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
                 },
                 Address = new Address
                 {
@@ -282,6 +354,7 @@ public class StatisticServiceTest
                             Id = 2,
                         },
                     },
+                    InstitutionId = Guid.NewGuid(),
                 },
                 Address = new Address
                 {
@@ -312,6 +385,7 @@ public class StatisticServiceTest
                             Id = 3,
                         },
                     },
+                    InstitutionId = Guid.NewGuid(),
                 },
                 Address = new Address
                 {
@@ -459,6 +533,7 @@ public class StatisticServiceTest
                                 Id = 1,
                             },
                         },
+                        InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
                     },
                 },
             },
@@ -476,6 +551,7 @@ public class StatisticServiceTest
                                 Id = 2,
                             },
                         },
+                        InstitutionId = Guid.NewGuid(),
                     },
                 },
             },
@@ -493,6 +569,7 @@ public class StatisticServiceTest
                             Id = 2,
                             },
                         },
+                        InstitutionId = Guid.NewGuid(),
                     },
                 },
             },
@@ -510,6 +587,7 @@ public class StatisticServiceTest
                                 Id = 3,
                             },
                         },
+                        InstitutionId = Guid.NewGuid(),
                     },
                 },
             },
@@ -527,6 +605,7 @@ public class StatisticServiceTest
                                 Id = 3,
                             },
                         },
+                        InstitutionId = Guid.NewGuid(),
                     },
                 },
             },
@@ -544,6 +623,7 @@ public class StatisticServiceTest
                                 Id = 3,
                             },
                         },
+                        InstitutionId = Guid.NewGuid(),
                     },
                 },
             },
@@ -584,6 +664,23 @@ public class StatisticServiceTest
         {
             new WorkshopCard {WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Title = "w3", Address = new AddressDto {CATOTTGId = 5000}},
             new WorkshopCard {WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Title = "w2", Address = new AddressDto {CATOTTGId = 4970}},
+        };
+    }
+
+    private List<WorkshopCard> ExpectedWorkshopCardsInstitutionId()
+    {
+        return new List<WorkshopCard>
+        {
+            new WorkshopCard
+            {
+                WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"),
+                Title = "w3",
+                Address = new AddressDto
+                {
+                    CATOTTGId = 5000,
+                },
+                InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
+            },
         };
     }
 

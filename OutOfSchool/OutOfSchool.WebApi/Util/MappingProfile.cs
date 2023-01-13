@@ -411,10 +411,16 @@ public class MappingProfile : Profile
 
         CreateMap<ProviderChangesLogRequest, ChangesLogFilter>()
             .ForMember(dest => dest.EntityType, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore())
+            .ForMember(dest => dest.From, opt => opt.Ignore())
+            .ForMember(dest => dest.Size, opt => opt.MapFrom(o => default(int)))
             .AfterMap((src, dest) => dest.EntityType = "Provider");
 
         CreateMap<ApplicationChangesLogRequest, ChangesLogFilter>()
             .ForMember(dest => dest.EntityType, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore())
+            .ForMember(dest => dest.From, opt => opt.Ignore())
+            .ForMember(dest => dest.Size, opt => opt.MapFrom(o => default(int)))
             .AfterMap((src, dest) => dest.EntityType = "Application");
 
         CreateMap<AchievementType, AchievementTypeDto>();

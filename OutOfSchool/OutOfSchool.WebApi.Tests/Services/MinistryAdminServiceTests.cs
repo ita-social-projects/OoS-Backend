@@ -32,6 +32,7 @@ public class MinistryAdminServiceTests
     private Mock<IInstitutionAdminRepository> institutionAdminRepositoryMock;
     private Mock<IEntityRepository<string, User>> userRepositoryMock;
     private IMapper mapper;
+    private Mock<ICurrentUserService> currentUserServiceMock;
 
     private MinistryAdminService ministryAdminService;
     private InstitutionAdmin institutionAdmin;
@@ -64,6 +65,7 @@ public class MinistryAdminServiceTests
         var logger = new Mock<ILogger<MinistryAdminService>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         userRepositoryMock = new Mock<IEntityRepository<string, User>>();
+        currentUserServiceMock = new Mock<ICurrentUserService>();
 
         ministryAdminService = new MinistryAdminService(
             httpClientFactory.Object,
@@ -72,7 +74,8 @@ public class MinistryAdminServiceTests
             institutionAdminRepositoryMock.Object,
             logger.Object,
             userRepositoryMock.Object,
-            mapper);
+            mapper,
+            currentUserServiceMock.Object);
     }
 
     [Test]

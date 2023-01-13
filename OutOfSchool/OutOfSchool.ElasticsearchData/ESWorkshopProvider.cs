@@ -250,6 +250,17 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
             queryContainer &= catottgIdFilter || (categoryFilter && parentCatottgIdFilter);
         }
 
+        if (filter.InstitutionId != Guid.Empty)
+        {
+            queryContainer &= new TermQuery()
+            {
+                Field = Infer.Field<WorkshopES>(w => w.InstitutionId),
+                Value = filter.InstitutionId,
+            };
+
+            return queryContainer;
+        }
+
         return queryContainer;
     }
 

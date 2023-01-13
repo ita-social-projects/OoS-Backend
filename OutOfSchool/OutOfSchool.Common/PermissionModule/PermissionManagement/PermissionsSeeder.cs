@@ -7,7 +7,7 @@ public static class PermissionsSeeder
     // basic seed for PermissionsToRole table in DB due to current state of application
     private static readonly IEnumerable<Permissions> SeedAdminPermissions = new List<Permissions>
     {
-        Permissions.SystemManagement, Permissions.ImpersonalDataRead,
+        Permissions.SystemManagement, Permissions.ImpersonalDataRead, Permissions.LogDataRead,
         Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
         Permissions.ApplicationRead, Permissions.ApplicationEdit, Permissions.ApplicationRemove, Permissions.ApplicationAddNew,
         Permissions.FavoriteRead, Permissions.FavoriteAddNew, Permissions.FavoriteEdit, Permissions.FavoriteRemove,
@@ -17,7 +17,7 @@ public static class PermissionsSeeder
         Permissions.TeacherAddNew, Permissions.TeacherEdit, Permissions.TeacherRemove, Permissions.TeacherRead,
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.WorkshopEdit, Permissions.WorkshopRemove, Permissions.WorkshopAddNew,
-        Permissions.MinistryAdmins, Permissions.MinistryAdminAddNew, Permissions.MinistryAdminRemove, Permissions.MinistryAdminEdit,
+        Permissions.MinistryAdmins, Permissions.MinistryAdminAddNew, Permissions.MinistryAdminRemove, Permissions.MinistryAdminEdit, Permissions.MinistryAdminRead,
         Permissions.PersonalInfo,
     };
 
@@ -48,7 +48,7 @@ public static class PermissionsSeeder
 
     private static readonly IEnumerable<Permissions> SeedMinistryAdminPermissions = new List<Permissions>
     {
-        Permissions.ImpersonalDataRead,
+        Permissions.ImpersonalDataRead, Permissions.LogDataRead,
         Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
         Permissions.ApplicationRead,
         Permissions.ProviderRead, Permissions.ProviderRemove, Permissions.ProviderApprove,
@@ -57,6 +57,8 @@ public static class PermissionsSeeder
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.TeacherRead,
         Permissions.PersonalInfo,
+        Permissions.MinistryAdminRead,
+        Permissions.WorkshopEdit,
     };
 
     private static readonly IEnumerable<Permissions> SeedParentPermissions = new List<Permissions>
