@@ -24,9 +24,7 @@ public class RegionAdminController : Controller
 
     public RegionAdminController(
         IRegionAdminService regionAdminService,
-        ILogger<RegionAdminController> logger,
-        ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService)
+        ILogger<RegionAdminController> logger)
     {
         ArgumentNullException.ThrowIfNull(regionAdminService, nameof(regionAdminService));
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));

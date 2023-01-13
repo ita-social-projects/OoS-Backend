@@ -25,7 +25,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         IOptions<IdentityServerConfig> identityServerConfig,
         IOptions<CommunicationConfig> communicationConfig,
         IRegionAdminRepository regionAdminRepository,
-        ILogger<MinistryAdminService> logger,
+        ILogger<RegionAdminService> logger,
         IEntityRepository<string, User> userRepository,
         IMapper mapper,
         IMinistryAdminService ministryAdminService)
