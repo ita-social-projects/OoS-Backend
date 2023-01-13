@@ -54,10 +54,10 @@ public class RegionAdminService : IRegionAdminService
         string userId,
         string requestId)
     {
-        ArgumentNullException.ThrowIfNull(regionAdminBaseDto);
-        ArgumentNullException.ThrowIfNull(url);
-        ArgumentNullException.ThrowIfNull(userId);
-        ArgumentNullException.ThrowIfNull(requestId);
+        _ = regionAdminBaseDto ?? throw new ArgumentNullException(nameof(regionAdminBaseDto));
+        _ = url ?? throw new ArgumentNullException(nameof(url));
+        _ = userId ?? throw new ArgumentNullException(nameof(userId));
+        _ = requestId ?? throw new ArgumentNullException(nameof(requestId));
 
         var user = mapper.Map<User>(regionAdminBaseDto);
 
@@ -178,9 +178,9 @@ public class RegionAdminService : IRegionAdminService
         string userId,
         string requestId)
     {
-        ArgumentNullException.ThrowIfNull(regionAdminId);
-        ArgumentNullException.ThrowIfNull(userId);
-        ArgumentNullException.ThrowIfNull(requestId);
+        _ = regionAdminId ?? throw new ArgumentNullException(nameof(regionAdminId));
+        _ = userId ?? throw new ArgumentNullException(nameof(userId));
+        _ = requestId ?? throw new ArgumentNullException(nameof(requestId));
 
         var executionStrategy = context.Database.CreateExecutionStrategy();
         return await executionStrategy.Execute(DeleteRegionAdminOperation).ConfigureAwait(false);
@@ -254,9 +254,9 @@ public class RegionAdminService : IRegionAdminService
         string requestId,
         bool isBlocked)
     {
-        ArgumentNullException.ThrowIfNull(regionAdminId);
-        ArgumentNullException.ThrowIfNull(userId);
-        ArgumentNullException.ThrowIfNull(requestId);
+        _ = regionAdminId ?? throw new ArgumentNullException(nameof(regionAdminId));
+        _ = userId ?? throw new ArgumentNullException(nameof(userId));
+        _ = requestId ?? throw new ArgumentNullException(nameof(requestId));
 
         var response = new ResponseDto();
 
@@ -347,7 +347,7 @@ public class RegionAdminService : IRegionAdminService
         string userId,
         string requestId)
     {
-        ArgumentNullException.ThrowIfNull(updateRegionAdminDto, nameof(updateRegionAdminDto));
+        _ = updateRegionAdminDto ?? throw new ArgumentNullException(nameof(updateRegionAdminDto));
 
         var response = new ResponseDto();
 

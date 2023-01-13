@@ -74,7 +74,7 @@ public class RegionAdminController : Controller
     [HasPermission(Permissions.RegionAdminRemove)]
     public async Task<ResponseDto> Delete(string regionAdminId)
     {
-        ArgumentNullException.ThrowIfNull(regionAdminId);
+        _ = regionAdminId ?? throw new ArgumentNullException(nameof(regionAdminId));
 
         logger.LogDebug(
             "Received request {RequestHeader}. {Path} started. User(id): {UserId}",

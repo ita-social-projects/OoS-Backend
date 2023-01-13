@@ -26,8 +26,8 @@ public class RegionAdminController : Controller
         IRegionAdminService regionAdminService,
         ILogger<RegionAdminController> logger)
     {
-        ArgumentNullException.ThrowIfNull(regionAdminService, nameof(regionAdminService));
-        ArgumentNullException.ThrowIfNull(logger, nameof(logger));
+        ArgumentNullException.ThrowIfNull(regionAdminService);
+        ArgumentNullException.ThrowIfNull(logger);
 
         this.regionAdminService = regionAdminService;
         this.logger = logger;
@@ -179,27 +179,24 @@ public class RegionAdminController : Controller
 
         if (currentUserId != updateRegionAdminDto.UserId)
         {
-            if (currentUserRole == nameof(Role.TechAdmin).ToLower()
-                || currentUserRole == nameof(Role.MinistryAdmin).ToLower())
+            if (!(currentUserRole == nameof(Role.TechAdmin).ToLower() || currentUserRole == nameof(Role.MinistryAdmin).ToLower()))
             {
-                if (currentUserRole == nameof(Role.MinistryAdmin).ToLower())
-                {
-                    if (!await regionAdminService.IsRegionAdminSubordinateAsync(currentUserId, updateRegionAdminDto.UserId))
-                    {
-                        logger.LogDebug("Forbidden to update RegionAdmin. RegionAdmin doesn't subordinate to MinistryAdmin.");
-                        return StatusCode(403, "Forbidden to update RegionAdmin. RegionAdmin doesn't subordinate to MinistryAdmin.");
-                    }
-                }
-
-                var updatedRegionAdmin = await regionAdminService.GetByIdAsync(updateRegionAdminDto.UserId);
-                if (updatedRegionAdmin.AccountStatus == AccountStatus.Accepted)
-                {
-                    return StatusCode(403, "Forbidden to update accepted user.");
-                }
-            }
-            else
-            {
+                logger.LogDebug("Forbidden to update another user if you don't have TechAdmin or MinistryAdmin role.");
                 return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin or MinistryAdmin role.");
+            }
+
+            if (currentUserRole == nameof(Role.MinistryAdmin).ToLower()
+                && !await regionAdminService.IsRegionAdminSubordinateAsync(currentUserId, updateRegionAdminDto.UserId))
+            {
+                logger.LogDebug("Forbidden to update RegionAdmin. RegionAdmin doesn't subordinate to MinistryAdmin.");
+                return StatusCode(403, "Forbidden to update RegionAdmin. RegionAdmin doesn't subordinate to MinistryAdmin.");
+            }
+
+            var updatedRegionAdmin = await regionAdminService.GetByIdAsync(updateRegionAdminDto.UserId);
+            if (updatedRegionAdmin.AccountStatus == AccountStatus.Accepted)
+            {
+                logger.LogDebug("Forbidden to update accepted user.");
+                return StatusCode(403, "Forbidden to update accepted user.");
             }
         }
 

@@ -31,11 +31,11 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         IMinistryAdminService ministryAdminService)
         : base(httpClientFactory, communicationConfig?.Value, logger)
     {
-        ArgumentNullException.ThrowIfNull(identityServerConfig, nameof(identityServerConfig));
-        ArgumentNullException.ThrowIfNull(regionAdminRepository, nameof(regionAdminRepository));
-        ArgumentNullException.ThrowIfNull(userRepository, nameof(userRepository));
-        ArgumentNullException.ThrowIfNull(mapper, nameof(mapper));
-        ArgumentNullException.ThrowIfNull(ministryAdminService, nameof(ministryAdminService));
+        ArgumentNullException.ThrowIfNull(identityServerConfig);
+        ArgumentNullException.ThrowIfNull(regionAdminRepository);
+        ArgumentNullException.ThrowIfNull(userRepository);
+        ArgumentNullException.ThrowIfNull(mapper);
+        ArgumentNullException.ThrowIfNull(ministryAdminService);
 
         this.identityServerConfig = identityServerConfig.Value;
         this.regionAdminRepository = regionAdminRepository;
@@ -81,7 +81,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
     {
         Logger.LogDebug("RegionAdmin creating was started. User(id): {UserId}", userId);
 
-        ArgumentNullException.ThrowIfNull(regionAdminBaseDto);
+        _ = regionAdminBaseDto ?? throw new ArgumentNullException(nameof(regionAdminBaseDto));
 
         if (await IsSuchEmailExisted(regionAdminBaseDto.Email))
         {
@@ -170,7 +170,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         RegionAdminBaseDto updateRegionAdminDto,
         string token)
     {
-        ArgumentNullException.ThrowIfNull(updateRegionAdminDto, nameof(updateRegionAdminDto));
+        _ = updateRegionAdminDto ?? throw new ArgumentNullException(nameof(updateRegionAdminDto));
 
         Logger.LogDebug("RegionAdmin(id): {RegionAdminId} updating was started. User(id): {UserId}", updateRegionAdminDto.UserId, userId);
 
@@ -325,8 +325,8 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
     /// <inheritdoc/>
     public async Task<bool> IsRegionAdminSubordinateAsync(string ministryAdminUserId, string regionAdminId)
     {
-        ArgumentNullException.ThrowIfNull(ministryAdminUserId, nameof(ministryAdminUserId));
-        ArgumentNullException.ThrowIfNull(regionAdminId, nameof(regionAdminId));
+        _= ministryAdminUserId ?? throw new ArgumentNullException(nameof(ministryAdminUserId));
+        _ = regionAdminId ?? throw new ArgumentNullException(nameof(regionAdminId));
 
         var ministryAdmin = await ministryAdminService.GetByIdAsync(ministryAdminUserId).ConfigureAwait(false);
         var regionAdmin = await regionAdminRepository.GetByIdAsync(regionAdminId).ConfigureAwait(false);
