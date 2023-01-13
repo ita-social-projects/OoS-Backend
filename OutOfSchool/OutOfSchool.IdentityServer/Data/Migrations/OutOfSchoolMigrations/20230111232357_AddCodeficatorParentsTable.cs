@@ -48,8 +48,8 @@ public partial class AddCodeficatorParentsTable : Migration
 
         CREATE DEFINER = CURRENT_USER TRIGGER catottgs_AFTER_DELETE AFTER DELETE ON catottgs FOR EACH ROW
         BEGIN
-	        DELETE FROM codeficatorparents WHERE catottgsId = old.Id;	
-	        DELETE FROM codeficatorparents WHERE parentId = old.Id;
+	        DELETE FROM CodeficatorParents WHERE CatottgsId = old.Id;	
+	        DELETE FROM CodeficatorParents WHERE ParentId = old.Id;
         END;");
 
         migrationBuilder.Sql(@"
@@ -57,15 +57,15 @@ public partial class AddCodeficatorParentsTable : Migration
 
         CREATE DEFINER = CURRENT_USER TRIGGER catottgs_AFTER_INSERT AFTER INSERT ON catottgs FOR EACH ROW
         BEGIN
-	        INSERT INTO codeficatorparents (catottgsId, parentId, level)(
-	        with recursive parent_users (id, parentid, level) AS (
-	          SELECT new.id, new.parentid, 1 level
-	          union all
-	          SELECT t.id, t.parentid, level + 1
-	          FROM catottgs t INNER JOIN parent_users pu
-	          ON t.id = pu.parentid
+	        INSERT INTO CodeficatorParents (CatottgsId, ParentId, Level)(
+	        WITH recursive parent_users (Id, Parentid, Level) AS (
+	          SELECT new.Id, new.ParentId, 1 Level
+	          UNION ALL
+	          SELECT t.Id, t.ParentId, Level + 1
+	          FROM CATOTTGs t INNER JOIN parent_users pu
+	          ON t.Id = pu.ParentId
 	        )
-	        SELECT new.id, parentid, level FROM parent_users WHERE parentid IS NOT NULL);
+	        SELECT new.Id, ParentId, Level FROM parent_users WHERE ParentId IS NOT NULL);
         END;");
 
         migrationBuilder.Sql(@"
@@ -73,57 +73,57 @@ public partial class AddCodeficatorParentsTable : Migration
 
         CREATE DEFINER = CURRENT_USER TRIGGER catottgs_AFTER_UPDATE AFTER UPDATE ON catottgs FOR EACH ROW
         BEGIN
-	        IF (new.parentId <> old.parentId OR new.id <> old.id) THEN
+	        IF (new.ParentId <> old.ParentId OR new.Id <> old.Id) THEN
 		        DELETE 
 	                c1 
                 FROM 
-	                codeficatorparents c1 
-                    INNER JOIN  (SELECT catottgsid FROM codeficatorparents WHERE parentid = old.id
+	                CodeficatorParents c1 
+                    INNER JOIN  (SELECT CatottgsId FROM CodeficatorParents WHERE ParentId = old.Id
 			
 			                UNION
 			
-			                SELECT new.id
+			                SELECT new.Id
             
 			                UNION
             
-			                SELECT old.id) c2 
-		                ON c2.catottgsId = c1.catottgsId;
+			                SELECT old.Id) c2 
+		                ON c2.CatottgsId = c1.CatottgsId;
         
-                INSERT INTO codeficatorparents (catottgsId, parentId, level)(
-		        with recursive parent_users (id, parentid, level) AS (
-		          SELECT id, parentid, 1 level
-                  FROM catottgs t
-                  WHERE id IN (SELECT catottgsid From codeficatorparents WHERE parentid = old.id
+                INSERT INTO CodeficatorParents (CatottgsId, ParentId, Level)(
+		        WITH recursive parent_users (Id, ParentId, Level) AS (
+		          SELECT Id, ParentId, 1 Level
+                  FROM CATOTTGs t
+                  WHERE Id IN (SELECT CatottgsId From CodeficatorParents WHERE ParentId = old.Id
 			
 			            UNION
 			
-			            SELECT new.id
+			            SELECT new.Id
             
 			            UNION
             
-			            SELECT old.id)
-		          union all
-		          SELECT pu.id, t.parentid, level + 1
-		          FROM catottgs t INNER JOIN parent_users pu
-		          ON t.id = pu.parentid
+			            SELECT old.Id)
+		          UNION ALL
+		          SELECT pu.Id, t.ParentId, Level + 1
+		          FROM CATOTTGs t INNER JOIN parent_users pu
+		          ON t.Id = pu.ParentId
 		        )
-		        SELECT id, parentid, level FROM parent_users WHERE parentid IS NOT NULL);        
+		        SELECT Id, ParentId, Level FROM parent_users WHERE ParentId IS NOT NULL);        
 	        END IF;
         END;");
 
         migrationBuilder.Sql(@"
-	    DELETE FROM codeficatorparents;
+	    DELETE FROM CodeficatorParents;
 
-        INSERT INTO codeficatorparents (catottgsId, parentId, level)(
-        with recursive parent_users (id, parentid, level) AS (
-          SELECT id, parentid, 1 level
-          FROM catottgs t
-          union all
+        INSERT INTO CodeficatorParents (CatottgsId, ParentId, Level)(
+        WITH RECURSIVE parent_users (Id, ParentId, Level) AS (
+          SELECT Id, ParentId, 1 Level
+          FROM CATOTTGs t
+          UNION ALL
           SELECT pu.id, t.parentid, level + 1
-          FROM catottgs t INNER JOIN parent_users pu
-          ON t.id = pu.parentid
+          FROM CATOTTGs t INNER JOIN parent_users pu
+          ON t.Id = pu.ParentId
         )
-        SELECT id, parentid, level FROM parent_users WHERE parentid IS NOT NULL);");
+        SELECT Id, ParentId, Level FROM parent_users WHERE ParentId IS NOT NULL);");
     }
 
     protected override void Down(MigrationBuilder migrationBuilder)
