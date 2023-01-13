@@ -66,8 +66,6 @@ public class CurrentUserService : ICurrentUserService
 
     public bool IsRegionAdmin() => IsInRole(Role.RegionAdmin);
 
-    public bool IsMinistryAdmin() => IsInRole(Role.MinistryAdmin);
-
     public async Task UserHasRights(params IUserRights[] userTypes)
     {
         var userHasRights = false;
