@@ -22,7 +22,7 @@ public static class ApplicationStatusChangingExtensions
 
         quartz.AddJob<ApplicationStatusChangingJob>(j => j.WithIdentity(applicationStatusChangingJobKey));
         quartz.AddTrigger(t => t
-            .WithIdentity(JobTriggerConstants.ApplicationStatusChanging, GroupConstants.StatisticReports)
+            .WithIdentity(JobTriggerConstants.ApplicationStatusChanging, GroupConstants.ApplicationStatusChange)
             .ForJob(applicationStatusChangingJobKey)
             .StartNow()
             .WithCronSchedule(quartzConfig.CronSchedules.ApplicationStatusChangingCronScheduleString));
