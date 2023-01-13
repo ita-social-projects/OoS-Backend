@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.Services.Models;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -31,16 +33,22 @@ public class AchievementTypeService : IAchievementTypeService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<AchievementTypeDto>> GetAll()
+    public async Task<IEnumerable<AchievementTypeDto>> GetAll(LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogInformation($"Getting all Achievement Types started.");
+        logger.LogInformation($"Getting all Achievement Types, {localization} localization, started.");
 
-        var achievement = await achievementTypeRepository.GetAll().ConfigureAwait(false);
+        var achievementTypes = await achievementTypeRepository.GetAll().ConfigureAwait(false);
+        var achievementTypesLocalized = achievementTypes.Select(x =>
+            new AchievementType
+            {
+                Id = x.Id,
+                Title = localization == LocalizationType.En ? x.TitleEn : x.Title,
+            });
 
-        logger.LogInformation(!achievement.Any()
+        logger.LogInformation(!achievementTypes.Any()
             ? "Achievement Type table is empty."
-            : $"All {achievement.Count()} records were successfully received from the Address table");
+            : $"All {achievementTypes.Count()} records were successfully received from the Address table");
 
-        return mapper.Map<List<AchievementTypeDto>>(achievement);
+        return mapper.Map<List<AchievementTypeDto>>(achievementTypesLocalized);
     }
 }

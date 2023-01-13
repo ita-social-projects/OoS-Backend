@@ -107,37 +107,43 @@ public static class ModelBuilderExtension
             {
                 Id = 1L,
                 Title = "Переможці міжнародних та всеукраїнських спортивних змагань (індивідуальних та командних)",
+                TitleEn = "Winners of international and all-Ukrainian sports competitions (individual and team)",
             },
             new AchievementType
             {
                 Id = 2L,
-                Title =
-                    "Призери та учасники міжнародних, всеукраїнських та призери регіональних конкурсів і виставок наукових, технічних, дослідницьких, інноваційних, ІТ проектів",
+                Title = "Призери та учасники міжнародних, всеукраїнських та призери регіональних конкурсів і виставок наукових, технічних, дослідницьких, інноваційних, ІТ проектів",
+                TitleEn = "Winners and participants of international, all-Ukrainian and regional contests and exhibitions of scientific, technical, research, innovation, IT projects",
             },
             new AchievementType
             {
                 Id = 3L,
                 Title = "Реципієнти міжнародних грантів",
+                TitleEn = "Recipients of international grants",
             },
             new AchievementType
             {
                 Id = 4L,
                 Title = "Призери міжнародних культурних конкурсів та фестивалів",
+                TitleEn = "Winners of international cultural competitions and festivals",
             },
             new AchievementType
             {
                 Id = 5L,
                 Title = "Соціально активні категорії учнів",
+                TitleEn = "Socially active categories of students",
             },
             new AchievementType
             {
                 Id = 6L,
                 Title = "Цифрові інструменти Google для закладів вищої та фахової передвищої освіти",
+                TitleEn = "Google digital tools for institutions of higher and professional pre-higher education",
             },
             new AchievementType
             {
                 Id = 7L,
                 Title = "Переможці та учасники олімпіад міжнародного та всеукраїнського рівнів",
+                TitleEn = "Winners and participants of olympiads at the international and all-Ukrainian levels",
             });
 
         builder.Entity<ProviderType>().HasData(
