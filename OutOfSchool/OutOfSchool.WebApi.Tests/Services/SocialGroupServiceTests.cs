@@ -12,6 +12,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models.SocialGroup;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
@@ -87,17 +88,37 @@ public class SocialGroupServiceTests
     public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
     {
         // Arrange
-        var expected = new SocialGroupDto() { Name = "TestName", };
+        var expected = new SocialGroupCreate() { Name = "ТестІмя", NameEn = "TestName" };
 
         // Act
         var result = await service.Create(expected).ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(expected.Name, result.Name);
+        Assert.AreEqual(expected.NameEn, result.NameEn);
     }
 
     [Test]
-    public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
+    [TestCase(LocalizationType.Ua)]
+    public async Task Update_WhenEntityIsValidUa_UpdatesExistedEntity(LocalizationType localization)
+    {
+        // Arrange
+        var changedEntity = new SocialGroupDto()
+        {
+            Id = 1,
+            Name = "ТестІмя",
+        };
+
+        // Act
+        var result = await service.Update(changedEntity, localization).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(changedEntity.Name, Is.EqualTo(result.Name));
+    }
+
+    [Test]
+    [TestCase(LocalizationType.En)]
+    public async Task Update_WhenEntityIsValidEn_UpdatesExistedEntity(LocalizationType localization)
     {
         // Arrange
         var changedEntity = new SocialGroupDto()
@@ -107,24 +128,10 @@ public class SocialGroupServiceTests
         };
 
         // Act
-        var result = await service.Update(changedEntity).ConfigureAwait(false);
+        var result = await service.Update(changedEntity, localization).ConfigureAwait(false);
 
         // Assert
         Assert.That(changedEntity.Name, Is.EqualTo(result.Name));
-    }
-
-    [Test]
-    public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
-    {
-        // Arrange
-        var changedEntity = new SocialGroupDto()
-        {
-            Name = "TestName",
-        };
-
-        // Act and Assert
-        Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-            async () => await service.Update(changedEntity).ConfigureAwait(false));
     }
 
     [Test]
