@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Common.PermissionsModule;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models.SocialGroup;
 using OutOfSchool.WebApi.Services;
@@ -34,6 +35,7 @@ public class SocialGroupController : ControllerBase
     /// <summary>
     /// Get all Social Groups from the database.
     /// </summary>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <returns>List of all Social Groups.</returns>
     [HasPermission(Permissions.ImpersonalDataRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<SocialGroupDto>))]
@@ -41,9 +43,9 @@ public class SocialGroupController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
-    public async Task<IActionResult> Get()
+    public async Task<IActionResult> Get(LocalizationType localization = LocalizationType.Ua)
     {
-        var socialGroup = await service.GetAll().ConfigureAwait(false);
+        var socialGroup = await service.GetAll(localization).ConfigureAwait(false);
 
         if (!socialGroup.Any())
         {
@@ -56,18 +58,20 @@ public class SocialGroupController : ControllerBase
     /// <summary>
     /// Get Social Group by it's id.
     /// </summary>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <param name="id">Social Group id.</param>
     /// <returns>Social Group.</returns>
     [HasPermission(Permissions.ImpersonalDataRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SocialGroupDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(long id)
+    public async Task<IActionResult> GetById(long id, LocalizationType localization = LocalizationType.Ua)
     {
         this.ValidateId(id, localizer);
 
-        return Ok(await service.GetById(id).ConfigureAwait(false));
+        return Ok(await service.GetById(id, localization).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -81,7 +85,7 @@ public class SocialGroupController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(SocialGroupDto dto)
+    public async Task<IActionResult> Create(SocialGroupCreate dto)
     {
         var socialGroup = await service.Create(dto).ConfigureAwait(false);
 
@@ -94,6 +98,7 @@ public class SocialGroupController : ControllerBase
     /// <summary>
     /// Update info about a Social Group in the database.
     /// </summary>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <param name="dto">Social Group to update.</param>
     /// <returns>Social Group.</returns>
     [HasPermission(Permissions.SystemManagement)]
@@ -102,10 +107,18 @@ public class SocialGroupController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(SocialGroupDto dto)
+    public async Task<IActionResult> Update(SocialGroupDto dto, LocalizationType localization = LocalizationType.Ua)
     {
-        return Ok(await service.Update(dto).ConfigureAwait(false));
+        var socialGroup = await service.Update(dto, localization).ConfigureAwait(false);
+
+        if (socialGroup == null)
+        {
+            return BadRequest(socialGroup);
+        }
+
+        return Ok(socialGroup);
     }
+
 
     /// <summary>
     /// Delete a specific Social Group from the database.
@@ -114,6 +127,7 @@ public class SocialGroupController : ControllerBase
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.SystemManagement)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpDelete("{id}")]

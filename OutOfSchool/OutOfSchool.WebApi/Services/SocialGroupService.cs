@@ -8,6 +8,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models.SocialGroup;
 
@@ -44,23 +45,29 @@ public class SocialGroupService : ISocialGroupService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<SocialGroupDto>> GetAll()
+    public async Task<IEnumerable<SocialGroupDto>> GetAll(LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogInformation("Getting all Social Groups started.");
+        logger.LogInformation($"Getting all Social Groups, {localization} localization, started.");
 
         var socialGroups = await repository.GetAll().ConfigureAwait(false);
-
+        var socialGroupsLocalized = socialGroups.Select(x =>
+        new SocialGroupDto()
+        {
+            Id = x.Id,
+            Name = localization == LocalizationType.En ? x.NameEn : x.Name,
+        });
         logger.LogInformation(!socialGroups.Any()
             ? "SocialGroup table is empty."
             : $"All {socialGroups.Count()} records were successfully received from the SocialGroup table");
 
-        return socialGroups.Select(socialGroup => mapper.Map<SocialGroupDto>(socialGroup)).ToList();
+        return mapper.Map<List<SocialGroupDto>>(socialGroupsLocalized);
     }
 
+
     /// <inheritdoc/>
-    public async Task<SocialGroupDto> GetById(long id)
+    public async Task<SocialGroupDto> GetById(long id, LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogInformation($"Getting SocialGroup by Id started. Looking Id = {id}.");
+        logger.LogInformation($"Getting SocialGroup by Id, {localization} localization, started. Looking Id = {id}.");
 
         var socialGroup = await repository.GetById(id).ConfigureAwait(false);
 
@@ -71,13 +78,19 @@ public class SocialGroupService : ISocialGroupService
                 localizer["The id cannot be greater than number of table entities."]);
         }
 
-        logger.LogInformation($"Successfully got a SocialGroup with Id = {id}.");
+        var socialGroupLocalized = new SocialGroupDto()
+        {
+            Id = socialGroup.Id,
+            Name = localization == LocalizationType.En ? socialGroup.NameEn : socialGroup.Name,
+        };
 
-        return mapper.Map<SocialGroupDto>(socialGroup);
+        logger.LogInformation($"Successfully got a SocialGroup with Id = {id} and {localization} localization.");
+
+        return socialGroupLocalized;
     }
 
     /// <inheritdoc/>
-    public async Task<SocialGroupDto> Create(SocialGroupDto dto)
+    public async Task<SocialGroupCreate> Create(SocialGroupCreate dto)
     {
         logger.LogInformation("SocialGroup creating was started.");
 
@@ -87,27 +100,37 @@ public class SocialGroupService : ISocialGroupService
 
         logger.LogInformation($"SocialGroup with Id = {newSocialGroup?.Id} created successfully.");
 
-        return mapper.Map<SocialGroupDto>(newSocialGroup);
+        return mapper.Map<SocialGroupCreate>(newSocialGroup);
     }
 
     /// <inheritdoc/>
-    public async Task<SocialGroupDto> Update(SocialGroupDto dto)
+    public async Task<SocialGroupDto> Update(SocialGroupDto dto, LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogInformation($"Updating SocialGroup with Id = {dto?.Id} started.");
+        logger.LogInformation($"Updating SocialGroup with Id = {dto?.Id}, {localization} localization, started.");
 
-        try
-        {
-            var socialGroup = await repository.Update(mapper.Map<SocialGroup>(dto)).ConfigureAwait(false);
+        var socialGroupLocalized = await repository.GetById(dto.Id).ConfigureAwait(false);
 
-            logger.LogInformation($"SocialGroup with Id = {socialGroup?.Id} updated succesfully.");
-
-            return mapper.Map<SocialGroupDto>(socialGroup);
-        }
-        catch (DbUpdateConcurrencyException)
+        if (socialGroupLocalized == null)
         {
             logger.LogError($"Updating failed. SocialGroup with Id = {dto?.Id} doesn't exist in the system.");
-            throw;
+
+            return null;
         }
+
+        if (localization == LocalizationType.En) socialGroupLocalized.NameEn = dto.Name;
+        else socialGroupLocalized.Name = dto.Name;
+
+        var socialGroup = await repository.Update(socialGroupLocalized).ConfigureAwait(false);
+
+        logger.LogInformation($"SocialGroup with Id = {socialGroup?.Id} updated succesfully.");
+
+        var socialGroupDto = new SocialGroupDto()
+        {
+            Id = socialGroup.Id,
+            Name = localization == LocalizationType.En ? socialGroup.NameEn : socialGroup.Name,
+        };
+
+        return socialGroupDto;
     }
 
     /// <inheritdoc/>
