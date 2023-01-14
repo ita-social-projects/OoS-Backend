@@ -12,7 +12,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
-using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.SocialGroup;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
 

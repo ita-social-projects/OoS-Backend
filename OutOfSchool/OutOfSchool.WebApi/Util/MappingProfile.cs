@@ -13,6 +13,7 @@ using OutOfSchool.WebApi.Models.Codeficator;
 using OutOfSchool.WebApi.Models.Geocoding;
 using OutOfSchool.WebApi.Models.Notifications;
 using OutOfSchool.WebApi.Models.Providers;
+using OutOfSchool.WebApi.Models.SocialGroup;
 using OutOfSchool.WebApi.Models.StatisticReports;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Models.Workshop;
