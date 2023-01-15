@@ -50,17 +50,17 @@ public class SocialGroupService : ISocialGroupService
         logger.LogInformation($"Getting all Social Groups, {localization} localization, started.");
 
         var socialGroups = await repository.GetAll().ConfigureAwait(false);
-        var socialGroupsLocalized = socialGroups.Select(x =>
-        new SocialGroupDto()
-        {
-            Id = x.Id,
-            Name = localization == LocalizationType.En ? x.NameEn : x.Name,
-        });
+
         logger.LogInformation(!socialGroups.Any()
             ? "SocialGroup table is empty."
             : $"All {socialGroups.Count()} records were successfully received from the SocialGroup table");
 
-        return mapper.Map<List<SocialGroupDto>>(socialGroupsLocalized);
+        return socialGroups.Select(x =>
+        new SocialGroupDto()
+        {
+            Id = x.Id,
+            Name = localization == LocalizationType.En ? x.NameEn : x.Name,
+        }).ToList();
     }
 
 
@@ -78,15 +78,13 @@ public class SocialGroupService : ISocialGroupService
                 localizer["The id cannot be greater than number of table entities."]);
         }
 
-        var socialGroupLocalized = new SocialGroupDto()
+        logger.LogInformation($"Successfully got a SocialGroup with Id = {id} and {localization} localization.");
+
+        return new SocialGroupDto()
         {
             Id = socialGroup.Id,
             Name = localization == LocalizationType.En ? socialGroup.NameEn : socialGroup.Name,
         };
-
-        logger.LogInformation($"Successfully got a SocialGroup with Id = {id} and {localization} localization.");
-
-        return socialGroupLocalized;
     }
 
     /// <inheritdoc/>
@@ -124,13 +122,11 @@ public class SocialGroupService : ISocialGroupService
 
         logger.LogInformation($"SocialGroup with Id = {socialGroup?.Id} updated succesfully.");
 
-        var socialGroupDto = new SocialGroupDto()
+        return new SocialGroupDto()
         {
             Id = socialGroup.Id,
             Name = localization == LocalizationType.En ? socialGroup.NameEn : socialGroup.Name,
         };
-
-        return socialGroupDto;
     }
 
     /// <inheritdoc/>
