@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -149,6 +150,17 @@ public class RegionAdminServiceTests
     {
         // Act
         regionAdminService.Invoking(x => x.GetByFilter(new RegionAdminFilter())).Should()
+            .ThrowAsync<ArgumentNullException>();
+    }
+
+    [Test]
+    public void Create_WhenInvalidModel_ReturnsException()
+    {
+        // Act
+        regionAdminService
+            .Invoking(x => x
+                .CreateRegionAdminAsync(It.IsAny<string>(), new RegionAdminBaseDto(), It.IsAny<string>()))
+            .Should()
             .ThrowAsync<ArgumentNullException>();
     }
 }
