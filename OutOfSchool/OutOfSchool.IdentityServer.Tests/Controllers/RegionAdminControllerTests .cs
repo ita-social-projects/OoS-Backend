@@ -8,6 +8,7 @@ using OutOfSchool.IdentityServer.Controllers;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
 using OutOfSchool.IdentityServer.Services.Interfaces;
+using System;
 
 namespace OutOfSchool.IdentityServer.Tests.Controllers;
 
@@ -142,7 +143,13 @@ public class RegionAdminControllerTests
         Assert.That(result.IsSuccess, Is.True);
         Assert.That(((RegionAdminBaseDto)result.Result).FirstName, Is.EqualTo("fakeFirstName"));
     }
-    
+
+    [Test]
+    public async Task Delete_WithNullId_ReturnsException()
+    {
+        Assert.That(() => regionAdminController.Delete(null), Throws.ArgumentNullException);
+    }
+
     [Test]
     public async Task Block_WithValidModel_ReturnsSuccessResponseDto()
     {
@@ -155,5 +162,11 @@ public class RegionAdminControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result.IsSuccess, Is.True);
         Assert.That(((RegionAdminBaseDto)result.Result).FirstName, Is.EqualTo("fakeFirstName"));
+    }
+
+    [Test]
+    public async Task OnActionExecuting_WithNullContext_ReturnsException()
+    {
+        Assert.That(() => regionAdminController.OnActionExecuting(null), Throws.ArgumentNullException);
     }
 }

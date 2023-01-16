@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using AutoMapper;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
@@ -21,6 +22,7 @@ using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
+using Serilog.Configuration;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -62,15 +64,15 @@ public class RegionAdminServiceTests
         httpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>()))
             .Returns(new HttpClient()
             {
-                  Timeout = new TimeSpan(2),
-                  BaseAddress = It.IsAny<Uri>(),
+                Timeout = new TimeSpan(2),
+                BaseAddress = It.IsAny<Uri>(),
             });
 
         regionAdminRepositoryMock = new Mock<IRegionAdminRepository>();
         var logger = new Mock<ILogger<RegionAdminService>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         userRepositoryMock = new Mock<IEntityRepository<string, User>>();
-        ministryAdminServiceMock= new Mock<IMinistryAdminService>();
+        ministryAdminServiceMock = new Mock<IMinistryAdminService>();
 
         regionAdminService = new RegionAdminService(
             httpClientFactory.Object,
@@ -107,6 +109,39 @@ public class RegionAdminServiceTests
 
         // Assert
         Assert.That(result, Is.Null);
+    }
+
+    [Test]
+    public async Task GetByUserId_WhenCalled_ReturnsEntity()
+    {
+        // Arrange
+        var expected = mapper.Map<RegionAdminDto>(regionAdmin);
+        regionAdminRepositoryMock
+            .Setup(x => x
+                .GetByFilter(It.IsAny<Expression<Func<RegionAdmin, bool>>>(), It.IsAny<string>()))
+            .Returns(Task.FromResult<IEnumerable<RegionAdmin>>(new List<RegionAdmin> { regionAdmin }));
+
+        // Act
+        var result = await regionAdminService.GetByUserId(It.IsAny<string>()).ConfigureAwait(false);
+
+        // Assert
+        regionAdminRepositoryMock.VerifyAll();
+        Assert.That(result, Is.Not.Null);
+        TestHelper.AssertDtosAreEqual(expected, result);
+    }
+
+    [Test]
+    public void GetByUserId_WhenCalled_ReturnsException()
+    {
+        // Arrange
+        var expected = mapper.Map<RegionAdminDto>(regionAdmin);
+        regionAdminRepositoryMock
+            .Setup(x => x
+                .GetByFilter(It.IsAny<Expression<Func<RegionAdmin, bool>>>(), It.IsAny<string>()))
+            .Returns(Task.FromResult<IEnumerable<RegionAdmin>>(new List<RegionAdmin>()));
+
+        // Act, Assert
+        Assert.That(() => regionAdminService.GetByUserId(It.IsAny<string>()), Throws.ArgumentException);
     }
 
     [Test]
@@ -154,13 +189,55 @@ public class RegionAdminServiceTests
     }
 
     [Test]
-    public void Create_WhenInvalidModel_ReturnsException()
+    public void Update_WhenNullModel_ReturnsException()
     {
         // Act
         regionAdminService
             .Invoking(x => x
-                .CreateRegionAdminAsync(It.IsAny<string>(), new RegionAdminBaseDto(), It.IsAny<string>()))
+                .UpdateRegionAdminAsync(It.IsAny<string>(), It.IsAny<RegionAdminBaseDto>(), It.IsAny<string>()))
             .Should()
             .ThrowAsync<ArgumentNullException>();
+    }
+
+    [Test]
+    public void Subordinate_WhenNullIds_ReturnsException()
+    {
+        // Act
+        regionAdminService
+            .Invoking(x => x
+                .IsRegionAdminSubordinateAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Should()
+            .ThrowAsync<ArgumentNullException>();
+    }
+
+    [Test]
+    public async Task Subordinate_WhenIsSubordinate_ReturnsTrue()
+    {
+        // Arrange
+        MinistryAdminDto ministryAdmin = AdminGenerator.GenerateMinistryAdminDto();
+        ministryAdmin.InstitutionId = regionAdmin.InstitutionId;
+        ministryAdminServiceMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).Returns(Task.FromResult(ministryAdmin));
+        regionAdminRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).Returns(Task.FromResult(regionAdmin));
+
+        // Act
+        var result = await regionAdminService.IsRegionAdminSubordinateAsync(ministryAdmin.Id, regionAdmin.UserId);
+
+        // Assert
+        Assert.That(result, Is.True);
+    }
+
+    [Test]
+    public async Task Subordinate_WhenIsNotSubordinate_ReturnsFalse()
+    {
+        // Arrange
+        MinistryAdminDto ministryAdmin = AdminGenerator.GenerateMinistryAdminDto();
+        ministryAdminServiceMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).Returns(Task.FromResult(ministryAdmin));
+        regionAdminRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).Returns(Task.FromResult(regionAdmin));
+
+        // Act
+        var result = await regionAdminService.IsRegionAdminSubordinateAsync(ministryAdmin.Id, regionAdmin.UserId);
+
+        // Assert
+        Assert.That(result, Is.False);
     }
 }
