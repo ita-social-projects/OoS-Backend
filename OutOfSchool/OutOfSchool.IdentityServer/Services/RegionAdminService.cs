@@ -109,7 +109,7 @@ public class RegionAdminService : IRegionAdminService
                     logger.LogError(
                         $"Error happened while adding role to user. Request(id): {requestId}" +
                         $"User(id): {userId}" +
-                        $"{string.Join(Environment.NewLine, result.Errors.Select(e => e.Description))}");
+                        $"{string.Join(Environment.NewLine, roleAssignResult.Errors.Select(e => e.Description))}");
 
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.InternalServerError;

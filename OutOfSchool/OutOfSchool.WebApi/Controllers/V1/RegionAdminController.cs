@@ -241,13 +241,11 @@ public class RegionAdminController : Controller
     {
         logger.LogDebug($"{path} started. User(id): {currentUserId}.");
 
-        if (currentUserRole == nameof(Role.MinistryAdmin).ToLower())
+        if (currentUserRole == nameof(Role.MinistryAdmin).ToLower()
+            && !await regionAdminService.IsRegionAdminSubordinateAsync(currentUserId, regionAdminId))
         {
-            if (!await regionAdminService.IsRegionAdminSubordinateAsync(currentUserId, regionAdminId))
-            {
-                logger.LogDebug("Forbidden to delete RegionAdmin. RegionAdmin doesn't subordinate to MinistryAdmin.");
-                return StatusCode(403, "Forbidden to delete RegionAdmin. RegionAdmin doesn't subordinate to MinistryAdmin.");
-            }
+            logger.LogDebug("Forbidden to delete RegionAdmin. RegionAdmin doesn't subordinate to MinistryAdmin.");
+            return StatusCode(403, "Forbidden to delete RegionAdmin. RegionAdmin doesn't subordinate to MinistryAdmin.");
         }
 
         var response = await regionAdminService.DeleteRegionAdminAsync(
