@@ -34,6 +34,8 @@ public class ChangesLogServiceTests
     private Mock<IValueProjector> valueProjector;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock<IRegionAdminService> regionAdminServiceMock;
+    private Mock<ICodeficatorService> codeficatorServiceMock;
 
     private User user;
     private Provider provider;
@@ -69,6 +71,8 @@ public class ChangesLogServiceTests
         valueProjector = new Mock<IValueProjector>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        regionAdminServiceMock= new Mock<IRegionAdminService>();
+        codeficatorServiceMock= new Mock<ICodeficatorService>();
     }
 
     #region AddEntityChangesToDbContext
@@ -480,5 +484,7 @@ public class ChangesLogServiceTests
             mapper.Object,
             valueProjector.Object,
             currentUserServiceMock.Object,
-            ministryAdminServiceMock.Object);
+            ministryAdminServiceMock.Object,
+            regionAdminServiceMock.Object,
+            codeficatorServiceMock.Object);
 }

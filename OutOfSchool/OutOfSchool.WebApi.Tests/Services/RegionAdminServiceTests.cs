@@ -35,6 +35,7 @@ public class RegionAdminServiceTests
     private Mock<IRegionAdminRepository> regionAdminRepositoryMock;
     private Mock<IEntityRepository<string, User>> userRepositoryMock;
     private IMapper mapper;
+    private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
 
     private RegionAdminService regionAdminService;
@@ -72,6 +73,7 @@ public class RegionAdminServiceTests
         var logger = new Mock<ILogger<RegionAdminService>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         userRepositoryMock = new Mock<IEntityRepository<string, User>>();
+        currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
 
         regionAdminService = new RegionAdminService(
@@ -82,6 +84,7 @@ public class RegionAdminServiceTests
             logger.Object,
             userRepositoryMock.Object,
             mapper,
+            currentUserServiceMock.Object,
             ministryAdminServiceMock.Object);
     }
 

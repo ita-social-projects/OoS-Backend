@@ -554,7 +554,21 @@ public class WorkshopService : IWorkshopService
     {
         var predicate = PredicateBuilder.True<Workshop>();
 
-        predicate = predicate.And(x => x.Provider.Status == ProviderStatus.Approved);
+        if (filter is WorkshopBySettlementsFilter settlementsFilter && settlementsFilter.SettlementsIds.Any())
+        {
+            var tempPredicate = PredicateBuilder.False<Workshop>();
+
+            foreach (var item in settlementsFilter.SettlementsIds)
+            {
+                tempPredicate = tempPredicate.Or(x => x.Provider.LegalAddress.CATOTTGId == item);
+            }
+
+            predicate = predicate.And(tempPredicate);
+        }
+        else
+        {
+            predicate = predicate.And(x => x.Provider.Status == ProviderStatus.Approved);
+        }
 
         if (filter.Ids.Any())
         {
@@ -645,7 +659,7 @@ public class WorkshopService : IWorkshopService
 
         if (filter.InstitutionId != Guid.Empty)
         {
-            predicate = predicate.And(x => x.InstitutionHierarchy.InstitutionId == filter.InstitutionId);
+            predicate = predicate.And(x => x.Provider.InstitutionId == filter.InstitutionId);
         }
 
         return predicate;

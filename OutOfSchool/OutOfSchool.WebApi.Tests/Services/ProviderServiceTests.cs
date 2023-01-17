@@ -38,6 +38,8 @@ public class ProviderServiceTests
     private Mock<IInstitutionAdminRepository> institutionAdminRepositoryMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock<IRegionAdminService> regionAdminServiceMock;
+    private Mock<ICodeficatorService> codeficatorServiceMock;
 
     private List<Provider> fakeProviders;
     private User fakeUser;
@@ -65,6 +67,9 @@ public class ProviderServiceTests
         institutionAdminRepositoryMock = new Mock<IInstitutionAdminRepository>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        regionAdminServiceMock = new Mock<IRegionAdminService>();
+        codeficatorServiceMock = new Mock<ICodeficatorService>();
+
 
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
 
@@ -84,7 +89,9 @@ public class ProviderServiceTests
             providerAdminService.Object,
             institutionAdminRepositoryMock.Object,
             currentUserServiceMock.Object,
-            ministryAdminServiceMock.Object);
+            ministryAdminServiceMock.Object,
+            regionAdminServiceMock.Object,
+            codeficatorServiceMock.Object);
     }
 
     #region Create

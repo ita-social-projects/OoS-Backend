@@ -2,6 +2,7 @@
 using AutoMapper;
 using H3Lib;
 using H3Lib.Extensions;
+using NuGet.Configuration;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Models.Codeficator;
@@ -94,6 +95,11 @@ public class CodeficatorService : ICodeficatorService
             .Select(c => c.city)
             .Select(mapper.Map<CodeficatorAddressDto>)
             .FirstOrDefault();
+    }
+
+    public async Task<IEnumerable<long>> GetSubSettlementsIdsAsync(long catottgId)
+    {
+        return await codeficatorRepository.GetSubSettlementsIds(catottgId);
     }
 
     #region privateMethods

@@ -19,6 +19,7 @@ public class DirectionService : IDirectionService
     private readonly IMapper mapper;
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
+    private readonly IRegionAdminService regionAdminService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DirectionService"/> class.
@@ -30,6 +31,7 @@ public class DirectionService : IDirectionService
     /// <param name="mapper">Mapper.</param>
     /// <param name="currentUserService">Service for manage current user.</param>
     /// <param name="ministryAdminService">Service for manage ministry admin.</param>
+    /// <param name="regionAdminService">Service for managing region admin rigths.</param>
     public DirectionService(
         IEntityRepository<long, Direction> repository,
         IWorkshopRepository repositoryWorkshop,
@@ -37,7 +39,8 @@ public class DirectionService : IDirectionService
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper,
         ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService)
+        IMinistryAdminService ministryAdminService,
+        IRegionAdminService regionAdminService)
     {
         this.localizer = localizer;
         this.repository = repository;
@@ -46,6 +49,7 @@ public class DirectionService : IDirectionService
         this.mapper = mapper;
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
+        this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
     }
 
     /// <inheritdoc/>
@@ -143,6 +147,15 @@ public class DirectionService : IDirectionService
                 .And<Direction>(d => d.InstitutionHierarchies.Any(h => h.InstitutionId == ministryAdmin.InstitutionId));
             workshopCountFilter = workshopCountFilter
                 .And<Workshop>(w => w.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
+        }
+
+        if (currentUserService.IsRegionAdmin())
+        {
+            var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
+            predicate = predicate
+                .And<Direction>(d => d.InstitutionHierarchies.Any(h => h.InstitutionId == regionAdmin.InstitutionId));
+            workshopCountFilter = workshopCountFilter
+                .And<Workshop>(w => w.InstitutionHierarchy.InstitutionId == regionAdmin.InstitutionId);
         }
 
         var count = await repository.Count(predicate).ConfigureAwait(false);

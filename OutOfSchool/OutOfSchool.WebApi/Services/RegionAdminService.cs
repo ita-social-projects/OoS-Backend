@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -18,6 +19,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
     private readonly IRegionAdminRepository regionAdminRepository;
     private readonly IEntityRepository<string, User> userRepository;
     private readonly IMapper mapper;
+    private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
 
     public RegionAdminService(
@@ -28,6 +30,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         ILogger<RegionAdminService> logger,
         IEntityRepository<string, User> userRepository,
         IMapper mapper,
+        ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService)
         : base(httpClientFactory, communicationConfig?.Value, logger)
     {
@@ -41,6 +44,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         this.regionAdminRepository = regionAdminRepository;
         this.userRepository = userRepository;
         this.mapper = mapper;
+        this.currentUserService = currentUserService;
         this.ministryAdminService = ministryAdminService;
     }
 
@@ -131,6 +135,67 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         ModelValidationHelper.ValidateOffsetFilter(filter);
 
         var filterPredicate = PredicateBuild(filter);
+
+        if (currentUserService.IsTechAdmin())
+        {
+            if (filter.InstitutionId != Guid.Empty)
+            {
+                filterPredicate = filterPredicate.And(p => p.InstitutionId == filter.InstitutionId);
+            }
+
+            if (filter.CATOTTGId != 0)
+            {
+                filterPredicate = filterPredicate.And(p => p.CATOTTGId == filter.CATOTTGId);
+            }
+        }
+
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var ministryAdmin = await GetByUserId(currentUserService.UserId);
+
+            if (filter.InstitutionId == ministryAdmin.InstitutionId || filter.InstitutionId == Guid.Empty)
+            {
+                filterPredicate = filterPredicate.And(p => p.InstitutionId == ministryAdmin.InstitutionId);
+            }
+            else
+            {
+                Logger.LogInformation($"Filter institutionId {filter.InstitutionId} is not equals to logined Ministry admin institutionId {ministryAdmin.InstitutionId}");
+
+                return new SearchResult<RegionAdminDto>()
+                {
+                    TotalAmount = 0,
+                    Entities = default,
+                };
+            }
+
+            if (filter.CATOTTGId != 0)
+            {
+                filterPredicate = filterPredicate.And(p => p.CATOTTGId == filter.CATOTTGId);
+            }
+        }
+
+        if (currentUserService.IsRegionAdmin())
+        {
+            var regionAdmin = await GetByUserId(currentUserService.UserId);
+
+            if ((filter.InstitutionId == regionAdmin.InstitutionId || filter.InstitutionId == Guid.Empty)
+                && (filter.CATOTTGId == regionAdmin.CATOTTGId || filter.CATOTTGId == 0))
+            {
+                filterPredicate = filterPredicate.And(p => p.InstitutionId == regionAdmin.InstitutionId);
+                filterPredicate = filterPredicate.And(p => p.CATOTTGId == regionAdmin.CATOTTGId);
+            }
+            else
+            {
+                Logger.LogInformation($"Filter institutionId {filter.InstitutionId} or CATOTTGId {filter.CATOTTGId} " +
+                        $"is not equals to logined Region admin institutionId {regionAdmin.InstitutionId} or CATOTTGId {regionAdmin.CATOTTGId}");
+
+                return new SearchResult<RegionAdminDto>()
+                {
+                    TotalAmount = 0,
+                    Entities = default,
+                };
+            }
+        }
 
         int count = await regionAdminRepository.Count(filterPredicate).ConfigureAwait(false);
 

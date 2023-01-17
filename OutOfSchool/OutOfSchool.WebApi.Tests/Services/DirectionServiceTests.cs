@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.Build.Framework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -30,6 +31,7 @@ public class DirectionServiceTests
     private Mock<IMapper> mapper;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock<IRegionAdminService> regionAdminServiceMock;
 
     [SetUp]
     public void SetUp()
@@ -48,6 +50,7 @@ public class DirectionServiceTests
         mapper = new Mock<IMapper>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        regionAdminServiceMock = new Mock<IRegionAdminService>();
 
         service = new DirectionService(
             repo,
@@ -56,7 +59,8 @@ public class DirectionServiceTests
             localizer.Object,
             mapper.Object,
             currentUserServiceMock.Object,
-            ministryAdminServiceMock.Object);
+            ministryAdminServiceMock.Object,
+            regionAdminServiceMock.Object);
 
         SeedDatabase();
     }

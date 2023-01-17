@@ -32,6 +32,7 @@ public class StatisticServiceTest
     private Mock<ICacheService> cache;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock<IRegionAdminService> regionAdminServiceMock;
 
     [SetUp]
     public void SetUp()
@@ -45,6 +46,7 @@ public class StatisticServiceTest
         cache = new Mock<ICacheService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        regionAdminServiceMock = new Mock<IRegionAdminService>();
 
         service = new StatisticService(
             applicationRepository.Object,
@@ -55,7 +57,8 @@ public class StatisticServiceTest
             mapper.Object,
             cache.Object,
             currentUserServiceMock.Object,
-            ministryAdminServiceMock.Object);
+            ministryAdminServiceMock.Object,
+            regionAdminServiceMock.Object);
     }
 
     [Test]

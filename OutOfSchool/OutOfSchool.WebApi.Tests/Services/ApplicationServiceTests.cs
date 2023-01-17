@@ -41,6 +41,8 @@ public class ApplicationServiceTests
     private Mock<IWorkshopServicesCombiner> workshopServiceCombinerMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock<IRegionAdminService> regionAdminServiceMock;
+    private Mock<ICodeficatorService> codeficatorServiceMock;
 
     private Mock<IOptions<ApplicationsConstraintsConfig>> applicationsConstraintsConfig;
 
@@ -55,6 +57,8 @@ public class ApplicationServiceTests
         workshopServiceCombinerMock = new Mock<IWorkshopServicesCombiner>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        regionAdminServiceMock = new Mock<IRegionAdminService>();
+        codeficatorServiceMock = new Mock<ICodeficatorService>();
 
         logger = new Mock<ILogger<ApplicationService>>();
         mapper = new Mock<IMapper>();
@@ -78,7 +82,9 @@ public class ApplicationServiceTests
             changesLogService.Object,
             workshopServiceCombinerMock.Object,
             currentUserServiceMock.Object,
-            ministryAdminServiceMock.Object);
+            ministryAdminServiceMock.Object,
+            regionAdminServiceMock.Object,
+            codeficatorServiceMock.Object);
     }
 
     [Test]

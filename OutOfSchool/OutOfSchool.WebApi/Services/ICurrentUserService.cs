@@ -36,6 +36,12 @@ public interface ICurrentUserService
     public bool IsAdmin();
 
     /// <summary>
+    /// Check if user is an techadmin.
+    /// </summary>
+    /// <returns>A <see cref="bool"/> with value true if user is in techadmin role, false otherwise.</returns>
+    public bool IsTechAdmin();
+
+    /// <summary>
     /// Check if user is an ministryadmin.
     /// </summary>
     /// <returns>A <see cref="bool"/> with value true if user is in ministryadmin role, false otherwise.</returns>

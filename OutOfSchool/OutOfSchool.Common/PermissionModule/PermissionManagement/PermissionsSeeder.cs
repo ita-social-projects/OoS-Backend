@@ -87,7 +87,7 @@ public static class PermissionsSeeder
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.TeacherRead,
         Permissions.PersonalInfo,
-        Permissions.RegionAdminEdit,
+        Permissions.RegionAdminRead, Permissions.RegionAdminEdit,
         Permissions.WorkshopEdit,
     };
 

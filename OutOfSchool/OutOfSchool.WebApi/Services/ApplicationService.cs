@@ -7,6 +7,7 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -26,6 +27,8 @@ public class ApplicationService : IApplicationService, INotificationReciever
     private readonly IWorkshopServicesCombiner combinedWorkshopService;
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
+    private readonly IRegionAdminService regionAdminService;
+    private readonly ICodeficatorService codeficatorService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationService"/> class.
@@ -41,6 +44,8 @@ public class ApplicationService : IApplicationService, INotificationReciever
     /// <param name="combinedWorkshopService">WorkshopServicesCombiner.</param>
     /// <param name="currentUserService">Service for managing current user rights.</param>
     /// <param name="ministryAdminService">Service for managing ministry admin rigths.</param>
+    /// <param name="regionAdminService">Service for managing region admin rigths.</param>
+    /// <param name="codeficatorService">Codeficator service.</param>
     public ApplicationService(
         IApplicationRepository repository,
         ILogger<ApplicationService> logger,
@@ -52,7 +57,9 @@ public class ApplicationService : IApplicationService, INotificationReciever
         IChangesLogService changesLogService,
         IWorkshopServicesCombiner combinedWorkshopService,
         ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService)
+        IMinistryAdminService ministryAdminService,
+        IRegionAdminService regionAdminService,
+        ICodeficatorService codeficatorService)
     {
         applicationRepository = repository ?? throw new ArgumentNullException(nameof(repository));
         this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
@@ -68,6 +75,8 @@ public class ApplicationService : IApplicationService, INotificationReciever
             combinedWorkshopService ?? throw new ArgumentNullException(nameof(combinedWorkshopService));
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
+        this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
+        this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
     }
 
     /// <inheritdoc/>
@@ -99,6 +108,28 @@ public class ApplicationService : IApplicationService, INotificationReciever
             var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId);
             predicate = predicate
                 .And(p => p.Workshop.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
+        }
+
+        if (currentUserService.IsRegionAdmin())
+        {
+            var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
+            predicate = predicate
+                .And(p => p.Workshop.InstitutionHierarchy.InstitutionId == regionAdmin.InstitutionId);
+
+            var subSettlementsIds = await codeficatorService
+                .GetSubSettlementsIdsAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+
+            if (subSettlementsIds.Any())
+            {
+                var tempPredicate = PredicateBuilder.False<Application>();
+
+                foreach (var item in subSettlementsIds)
+                {
+                    tempPredicate = tempPredicate.Or(x => x.Workshop.Provider.LegalAddress.CATOTTGId == item);
+                }
+
+                predicate = predicate.And(tempPredicate);
+            }
         }
 
         var sortPredicate = SortExpressionBuild(filter);

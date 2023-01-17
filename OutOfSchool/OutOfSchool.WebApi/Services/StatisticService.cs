@@ -19,6 +19,7 @@ public class StatisticService : IStatisticService
     private readonly ICacheService cache;
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
+    private readonly IRegionAdminService regionAdminService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StatisticService"/> class.
@@ -32,6 +33,7 @@ public class StatisticService : IStatisticService
     /// <param name="cache">Redis cache service.</param>
     /// <param name="currentUserService">Service for manage current user.</param>
     /// <param name="ministryAdminService">Service for manage ministry admin.</param>
+    /// <param name="regionAdminService">Service for managing region admin rigths.</param>
     public StatisticService(
         IApplicationRepository applicationRepository,
         IWorkshopRepository workshopRepository,
@@ -41,7 +43,8 @@ public class StatisticService : IStatisticService
         IMapper mapper,
         ICacheService cache,
         ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService)
+        IMinistryAdminService ministryAdminService,
+        IRegionAdminService regionAdminService)
     {
         this.applicationRepository = applicationRepository;
         this.workshopRepository = workshopRepository;
@@ -52,6 +55,7 @@ public class StatisticService : IStatisticService
         this.cache = cache;
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
+        this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
     }
 
     // Return categories with 1 SQL query
@@ -82,6 +86,15 @@ public class StatisticService : IStatisticService
                 .Where(w => w.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
             applications = applications
                 .Where(a => a.Workshop.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
+        }
+
+        if (currentUserService.IsRegionAdmin())
+        {
+            var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
+            workshops = workshops
+                .Where(w => w.InstitutionHierarchy.InstitutionId == regionAdmin.InstitutionId);
+            applications = applications
+                .Where(a => a.Workshop.InstitutionHierarchy.InstitutionId == regionAdmin.InstitutionId);
         }
 
         if (catottgId > 0)
@@ -178,6 +191,13 @@ public class StatisticService : IStatisticService
             var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
             workshops = workshops
                 .Where(w => w.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
+        }
+
+        if (currentUserService.IsRegionAdmin())
+        {
+            var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
+            workshops = workshops
+                .Where(w => w.InstitutionHierarchy.InstitutionId == regionAdmin.InstitutionId);
         }
 
         if (catottgId > 0)

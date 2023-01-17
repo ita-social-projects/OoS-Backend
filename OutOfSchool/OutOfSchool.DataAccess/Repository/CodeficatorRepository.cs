@@ -68,4 +68,52 @@ public class CodeficatorRepository : EntityRepository<long, CATOTTG>, ICodeficat
 
         return await query.ToListAsync();
     }
+
+    /// <inheritdoc/>
+    public async Task<List<long>> GetSubSettlementsIds(long catottgId)
+    {
+        var queryLevel1 = db.CATOTTGs.Where(c => c.Id == catottgId).Select(c => c.Id);
+        var settlementsIdsLevel1 = await queryLevel1.ToListAsync();
+
+        if (!settlementsIdsLevel1.Any())
+        {
+            return settlementsIdsLevel1;
+        }
+
+        var queryLevel2 = db.CATOTTGs.Where(c => settlementsIdsLevel1.Contains(c.ParentId.Value)).Select(c => c.Id);
+        var settlementsIdsLevel2 = await queryLevel2.ToListAsync();
+
+        if (!settlementsIdsLevel2.Any())
+        {
+            return settlementsIdsLevel1;
+        }
+
+        var queryLevel3 = db.CATOTTGs.Where(c => settlementsIdsLevel2.Contains(c.ParentId.Value)).Select(c => c.Id);
+        var settlementsIdsLevel3 = await queryLevel3.ToListAsync();
+
+        if (!settlementsIdsLevel3.Any())
+        {
+            return settlementsIdsLevel1
+                .Union(settlementsIdsLevel2)
+                .ToList();
+        }
+
+        var queryLevel4 = db.CATOTTGs.Where(c => settlementsIdsLevel3.Contains(c.ParentId.Value)).Select(c => c.Id);
+        var settlementsIdsLevel4 = await queryLevel4.ToListAsync();
+
+        if (!settlementsIdsLevel4.Any())
+        {
+            return settlementsIdsLevel1
+                .Union(settlementsIdsLevel2)
+                .Union(settlementsIdsLevel3).ToList();
+        }
+        else
+        {
+            return settlementsIdsLevel1
+                .Union(settlementsIdsLevel2)
+                .Union(settlementsIdsLevel3)
+                .Union(settlementsIdsLevel4)
+                .ToList();
+        }
+    }
 }

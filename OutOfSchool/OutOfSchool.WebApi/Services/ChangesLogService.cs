@@ -2,12 +2,15 @@
 using System.Linq.Expressions;
 using AutoMapper;
 using AutoMapper.Configuration.Annotations;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Options;
 using Nest;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Changes;
+using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services;
@@ -24,6 +27,8 @@ public class ChangesLogService : IChangesLogService
     private readonly IValueProjector valueProjector;
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
+    private readonly IRegionAdminService regionAdminService;
+    private readonly ICodeficatorService codeficatorService;
 
     public ChangesLogService(
         IOptions<ChangesLogConfig> config,
@@ -35,7 +40,9 @@ public class ChangesLogService : IChangesLogService
         IMapper mapper,
         IValueProjector valueProjector,
         ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService)
+        IMinistryAdminService ministryAdminService,
+        IRegionAdminService regionAdminService,
+        ICodeficatorService codeficatorService)
     {
         this.config = config;
         this.changesLogRepository = changesLogRepository;
@@ -47,6 +54,8 @@ public class ChangesLogService : IChangesLogService
         this.valueProjector = valueProjector;
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
+        this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
+        this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
     }
 
     public int AddEntityChangesToDbContext<TEntity>(TEntity entity, string userId)
@@ -72,22 +81,47 @@ public class ChangesLogService : IChangesLogService
     {
         var changeLogFilter = mapper.Map<ChangesLogFilter>(request);
 
-        if (currentUserService.IsMinistryAdmin())
+        Expression<Func<Provider, bool>> predicate = PredicateBuilder.True<Provider>();
+
+        if (currentUserService.IsAdmin())
         {
-            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
-            changeLogFilter.InstitutionId = ministryAdmin.InstitutionId;
+            if (currentUserService.IsMinistryAdmin())
+            {
+                var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+                predicate = predicate.And(p => p.InstitutionId == ministryAdmin.InstitutionId);
+            }
+
+            if (currentUserService.IsRegionAdmin())
+            {
+                var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
+                predicate = predicate.And(p => p.InstitutionId == regionAdmin.InstitutionId);
+
+                var subSettlementsIds = await codeficatorService
+                    .GetSubSettlementsIdsAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+
+                if (subSettlementsIds.Any())
+                {
+                    var tempPredicate = PredicateBuilder.False<Provider>();
+
+                    foreach (var item in subSettlementsIds)
+                    {
+                        tempPredicate = tempPredicate.Or(x => x.LegalAddress.CATOTTGId == item);
+                    }
+
+                    predicate = predicate.And(tempPredicate);
+                }
+            }
         }
 
-        var (changesLog, count) = await GetChangesLogAsync(changeLogFilter)
-            .ConfigureAwait(false);
-        var providers = providerRepository.Get();
+        var (changesLog, count) = await GetChangesLogAsync(changeLogFilter).ConfigureAwait(false);
+        var providers = providerRepository.Get(where: predicate);
 
-        var query = from l in changesLog
-                    join p in providers
-                        on l.EntityIdGuid equals p.Id into pg
-                    from provider in pg.DefaultIfEmpty()
-                    where provider.InstitutionId == (changeLogFilter.InstitutionId ?? provider.InstitutionId)
-                    select new ProviderChangesLogDto
+        var query = changesLog
+                .Join(
+                    providers,
+                    l => l.EntityIdGuid,
+                    p => p.Id,
+                    (l, provider) => new ProviderChangesLogDto
                     {
                         FieldName = l.PropertyName,
                         OldValue = l.OldValue,
@@ -97,17 +131,20 @@ public class ChangesLogService : IChangesLogService
                         ProviderId = l.EntityIdGuid.Value,
                         ProviderTitle = provider == null ? null : provider.FullTitle,
                         ProviderCity = provider == null || provider.LegalAddress == null
-                            ? null : provider.LegalAddress.CATOTTG.Name,
+                                ? null : provider.LegalAddress.CATOTTG.Name,
                         InstitutionTitle = provider == null || provider.Institution == null
-                            ? null : provider.Institution.Title,
-                    };
+                                ? null : provider.Institution.Title,
+                    })
+                .IgnoreQueryFilters();
 
         var entities = await query.Skip(request.From).Take(request.Size).ToListAsync().ConfigureAwait(false);
 
         return new SearchResult<ProviderChangesLogDto>
         {
             Entities = entities,
-            TotalAmount = currentUserService.IsMinistryAdmin() ? query.Count() : count,
+            TotalAmount = currentUserService.IsMinistryAdmin() || currentUserService.IsRegionAdmin()
+                ? query.Count()
+                : count,
         };
     }
 
@@ -115,22 +152,47 @@ public class ChangesLogService : IChangesLogService
     {
         var changeLogFilter = mapper.Map<ChangesLogFilter>(request);
 
-        if (currentUserService.IsMinistryAdmin())
+        Expression<Func<Application, bool>> predicate = PredicateBuilder.True<Application>();
+
+        if (currentUserService.IsAdmin())
         {
-            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
-            changeLogFilter.InstitutionId = ministryAdmin.InstitutionId;
+            if (currentUserService.IsMinistryAdmin())
+            {
+                var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+                predicate = predicate.And(a => a.Workshop.Provider.InstitutionId == ministryAdmin.InstitutionId);
+            }
+
+            if (currentUserService.IsRegionAdmin())
+            {
+                var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
+                predicate = predicate.And(a => a.Workshop.Provider.InstitutionId == regionAdmin.InstitutionId);
+
+                var subSettlementsIds = await codeficatorService
+                    .GetSubSettlementsIdsAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+
+                if (subSettlementsIds.Any())
+                {
+                    var tempPredicate = PredicateBuilder.False<Application>();
+
+                    foreach (var item in subSettlementsIds)
+                    {
+                        tempPredicate = tempPredicate.Or(a => a.Workshop.Provider.LegalAddress.CATOTTGId == item);
+                    }
+
+                    predicate = predicate.And(tempPredicate);
+                }
+            }
         }
 
-        var (changesLog, count) = await GetChangesLogAsync(changeLogFilter)
-            .ConfigureAwait(false);
-        var applications = applicationRepository.Get();
+        var (changesLog, count) = await GetChangesLogAsync(changeLogFilter).ConfigureAwait(false);
+        var applications = applicationRepository.Get(where: predicate);
 
-        var query = from l in changesLog
-                    join a in applications
-                        on l.EntityIdGuid equals a.Id into ag
-                    from app in ag.DefaultIfEmpty()
-                    where app.Workshop.Provider.InstitutionId == (changeLogFilter.InstitutionId ?? app.Workshop.Provider.InstitutionId)
-                    select new ApplicationChangesLogDto
+        var query = changesLog
+                .Join(
+                    applications,
+                    l => l.EntityIdGuid,
+                    a => a.Id,
+                    (l, app) => new ApplicationChangesLogDto
                     {
                         FieldName = l.PropertyName,
                         OldValue = l.OldValue,
@@ -142,15 +204,18 @@ public class ChangesLogService : IChangesLogService
                         WorkshopCity = app == null ? null : app.Workshop.Address.CATOTTG.Name,
                         ProviderTitle = app == null ? null : app.Workshop.ProviderTitle,
                         InstitutionTitle = app == null || app.Workshop.Provider.Institution == null
-                            ? null : app.Workshop.Provider.Institution.Title,
-                    };
+                                    ? null : app.Workshop.Provider.Institution.Title,
+                    })
+                .IgnoreQueryFilters();
 
         var entities = await query.Skip(request.From).Take(request.Size).ToListAsync().ConfigureAwait(false);
 
         return new SearchResult<ApplicationChangesLogDto>
         {
             Entities = entities,
-            TotalAmount = currentUserService.IsMinistryAdmin() ? query.Count() : count,
+            TotalAmount = currentUserService.IsMinistryAdmin() || currentUserService.IsRegionAdmin()
+                ? query.Count()
+                : count,
         };
     }
 
@@ -161,10 +226,34 @@ public class ChangesLogService : IChangesLogService
         var where = GetQueryFilter(request);
         var sortExpression = GetProviderAdminChangesOrderParams();
 
-        if (currentUserService.IsMinistryAdmin())
+        if (currentUserService.IsAdmin())
         {
-            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
-            where = where.And(x => x.Provider.InstitutionId == ministryAdmin.InstitutionId);
+            if (currentUserService.IsMinistryAdmin())
+            {
+                var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+                where = where.And(p => p.Provider.InstitutionId == ministryAdmin.InstitutionId);
+            }
+
+            if (currentUserService.IsRegionAdmin())
+            {
+                var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
+                where = where.And(p => p.Provider.InstitutionId == regionAdmin.InstitutionId);
+
+                var subSettlementsIds = await codeficatorService
+                    .GetSubSettlementsIdsAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+
+                if (subSettlementsIds.Any())
+                {
+                    var tempPredicate = PredicateBuilder.False<ProviderAdminChangesLog>();
+
+                    foreach (var item in subSettlementsIds)
+                    {
+                        tempPredicate = tempPredicate.Or(x => x.Provider.LegalAddress.CATOTTGId == item);
+                    }
+
+                    where = where.And(tempPredicate);
+                }
+            }
         }
 
         var count = await providerAdminChangesLogRepository.Count(where).ConfigureAwait(false);
@@ -182,7 +271,8 @@ public class ChangesLogService : IChangesLogService
                 User = mapper.Map<ShortUserDto>(x.User),
                 InstitutionTitle = x.Provider.Institution == null
                     ? null : x.Provider.Institution.Title,
-            }).IgnoreQueryFilters();
+            })
+            .IgnoreQueryFilters();
 
         var entities = await query.ToListAsync().ConfigureAwait(false);
 
