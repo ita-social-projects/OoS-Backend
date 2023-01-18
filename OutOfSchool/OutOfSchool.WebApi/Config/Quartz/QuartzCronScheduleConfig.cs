@@ -7,4 +7,6 @@ public class QuartzCronScheduleConfig
     public string GcpImagesSyncCronScheduleString { get; set; }
 
     public string StatisticReportsMakingCronScheduleString { get; set; }
+
+    public string NotificationsClearingCronScheduleString { get; set; }
 }
