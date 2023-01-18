@@ -319,6 +319,7 @@ public static class Startup
             q.AddElasticsearchSynchronization(services, configuration);
             q.AddStatisticReportsCreating(services, quartzConfig);
             q.AddOldNotificationsClearing(services, quartzConfig);
+            q.AddApplicationStatusChanging(services, quartzConfig);
         });
 
         var isRedisEnabled = configuration.GetValue<bool>("Redis:Enabled");

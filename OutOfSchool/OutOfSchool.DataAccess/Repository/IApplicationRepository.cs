@@ -9,4 +9,6 @@ public interface IApplicationRepository : IEntityRepositoryBase<Guid, Applicatio
     Task<Application> Update(Application entity, Action<Application> onSaveChanges);
 
     Task<int> GetCountByWorkshop(Guid workshopId);
+
+    Task<int> UpdateAllApprovedApplications();
 }
