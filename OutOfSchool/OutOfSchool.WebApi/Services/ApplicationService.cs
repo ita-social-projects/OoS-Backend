@@ -445,6 +445,16 @@ public class ApplicationService : IApplicationService, INotificationReciever
         return await applicationRepository.Any(filter).ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
+    public async Task<int> ChangeApprovedStatusesToStudying()
+    {
+        var result = await applicationRepository.UpdateAllApprovedApplications().ConfigureAwait(false);
+
+        logger.LogInformation("Updated statuses to Studying of {count} applications.", result);
+
+        return result;
+    }
+
     private static void UpdateStatus(ApplicationUpdate applicationDto, Application application, bool isUserProvider)
     {
         if (application.Status is ApplicationStatus.Completed or ApplicationStatus.Rejected or ApplicationStatus.Left && !isUserProvider)
