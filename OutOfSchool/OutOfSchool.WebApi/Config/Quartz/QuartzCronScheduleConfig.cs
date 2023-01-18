@@ -8,5 +8,7 @@ public class QuartzCronScheduleConfig
 
     public string StatisticReportsMakingCronScheduleString { get; set; }
 
+    public string NotificationsClearingCronScheduleString { get; set; }
+
     public string ApplicationStatusChangingCronScheduleString { get; set; }
 }
