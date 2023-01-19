@@ -44,7 +44,7 @@ public class StatisticReportsMakingService : IStatisticReportsMakingService
 
             var fileModel = new FileModel()
             {
-                ContentType = "application/octet-stream",
+                ContentType = StatisticReportDataTypes.CSV.GetContentType(),
                 ContentStream = stream,
             };
 

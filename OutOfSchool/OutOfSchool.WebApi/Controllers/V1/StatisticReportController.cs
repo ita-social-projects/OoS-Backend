@@ -53,7 +53,7 @@ public class StatisticReportController : ControllerBase
     /// <response code="500">If any server error occures.</response>
     [Authorize]
     [HttpGet("{externalId}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatisticReportDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FileStreamResult))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -66,6 +66,11 @@ public class StatisticReportController : ControllerBase
         {
             return NoContent();
         }
+
+        string contentDisposition = "attachment; filename="
+            + Uri.EscapeDataString(await service.GetNameByExternalId(externalId));
+
+        Response.Headers.Add("Content-Disposition", contentDisposition);
 
         return new FileStreamResult(fileData.ContentStream, fileData.ContentType);
     }
