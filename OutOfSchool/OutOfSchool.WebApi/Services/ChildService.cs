@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
+using Google.Type;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Nest;
@@ -13,6 +14,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Util;
+using DateTime = System.DateTime;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -46,10 +48,12 @@ public class ChildService : IChildService
     {
         this.childRepository = childRepository ?? throw new ArgumentNullException(nameof(childRepository));
         this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
-        this.socialGroupRepository = socialGroupRepository ?? throw new ArgumentNullException(nameof(socialGroupRepository));
+        this.socialGroupRepository =
+            socialGroupRepository ?? throw new ArgumentNullException(nameof(socialGroupRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        this.applicationRepository = applicationRepository ?? throw new ArgumentNullException(nameof(applicationRepository));
+        this.applicationRepository =
+            applicationRepository ?? throw new ArgumentNullException(nameof(applicationRepository));
     }
 
     /// <inheritdoc/>
@@ -58,14 +62,18 @@ public class ChildService : IChildService
         ValidateChildDto(childDto);
         ValidateUserId(userId);
 
-        logger.LogDebug($"Started creation of a new child with {nameof(Child.ParentId)}:{childDto.ParentId}, {nameof(userId)}:{userId}.");
+        logger.LogDebug(
+            $"Started creation of a new child with {nameof(Child.ParentId)}:{childDto.ParentId}, {nameof(userId)}:{userId}.");
 
-        var parent = (await parentRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false)).SingleOrDefault()
-                     ?? throw new UnauthorizedAccessException($"Trying to create a new child the Parent with {nameof(userId)}:{userId} was not found.");
+        var parent =
+            (await parentRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false)).SingleOrDefault()
+            ?? throw new UnauthorizedAccessException(
+                $"Trying to create a new child the Parent with {nameof(userId)}:{userId} was not found.");
 
         if (childDto.ParentId != parent.Id)
         {
-            logger.LogWarning($"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{parent.Id} was trying to create a new child with not his own {nameof(Child.ParentId)}:{childDto.ParentId}.");
+            logger.LogWarning(
+                $"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{parent.Id} was trying to create a new child with not his own {nameof(Child.ParentId)}:{childDto.ParentId}.");
             childDto.ParentId = parent.Id;
         }
 
@@ -92,7 +100,8 @@ public class ChildService : IChildService
         var newChild = await childRepository
            .RunInTransaction(CreateChild).ConfigureAwait(false);
 
-        logger.LogDebug($"Child with Id:{newChild.Id} ({nameof(Child.ParentId)}:{newChild.ParentId}, {nameof(userId)}:{userId}) was created successfully.");
+        logger.LogDebug(
+            $"Child with Id:{newChild.Id} ({nameof(Child.ParentId)}:{newChild.ParentId}, {nameof(userId)}:{userId}) was created successfully.");
 
         return mapper.Map<ChildDto>(newChild);
     }
@@ -102,7 +111,8 @@ public class ChildService : IChildService
     {
         filter ??= new ChildSearchFilter();
 
-        logger.LogDebug($"Getting all Children started. Amount of children to take: {filter.Size}, skip first: {filter.From}.");
+        logger.LogDebug(
+            $"Getting all Children started. Amount of children to take: {filter.Size}, skip first: {filter.From}.");
 
         this.ValidateOffsetFilter(filter);
 
@@ -115,7 +125,8 @@ public class ChildService : IChildService
             { x => x.Id, SortDirection.Ascending },
         };
 
-        var children = await childRepository.Get(filter.From, filter.Size, $"{nameof(Child.SocialGroups)}", filterPredicate, sortExpression)
+        var children = await childRepository.Get(filter.From, filter.Size, $"{nameof(Child.SocialGroups)}",
+                filterPredicate, sortExpression)
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -157,12 +168,15 @@ public class ChildService : IChildService
 
         logger.LogDebug($"User:{userId} is trying to get the child with id: {id}.");
 
-        var child = (await childRepository.GetByFilter(child => child.Id == id, $"{nameof(Child.Parent)}").ConfigureAwait(false)).SingleOrDefault()
-                    ?? throw new UnauthorizedAccessException($"User:{userId} is trying to get an unexisting child with id: {id}.");
+        var child = (await childRepository.GetByFilter(child => child.Id == id, $"{nameof(Child.Parent)}")
+                        .ConfigureAwait(false)).SingleOrDefault()
+                    ?? throw new UnauthorizedAccessException(
+                        $"User:{userId} is trying to get an unexisting child with id: {id}.");
 
         if (child.Parent.UserId != userId)
         {
-            throw new UnauthorizedAccessException($"User{userId} is trying to get not his/her own child with id: {id}.");
+            throw new UnauthorizedAccessException(
+                $"User{userId} is trying to get not his/her own child with id: {id}.");
         }
 
         logger.LogDebug($"User:{userId} successfully got the child with id: {id}.");
@@ -175,7 +189,8 @@ public class ChildService : IChildService
     {
         ValidateOffsetFilter(offsetFilter);
 
-        logger.LogDebug($"Getting Children with ParentId: {parentId} started. Amount of children to take: {offsetFilter.Size}, skip first: {offsetFilter.From}.");
+        logger.LogDebug(
+            $"Getting Children with ParentId: {parentId} started. Amount of children to take: {offsetFilter.Size}, skip first: {offsetFilter.From}.");
 
         var totalAmount = await childRepository.Count(x => x.ParentId == parentId).ConfigureAwait(false);
 
@@ -240,9 +255,12 @@ public class ChildService : IChildService
     {
         ValidateOffsetFilter(offsetFilter);
 
-        logger.LogDebug($"Getting Children by WorkshopId: {workshopId} started. Amount of children to take: {offsetFilter.Size}, skip first: {offsetFilter.From}.");
+        logger.LogDebug(
+            $"Getting Children by WorkshopId: {workshopId} started. Amount of children to take: {offsetFilter.Size}, skip first: {offsetFilter.From}.");
 
-        var applications = await applicationRepository.GetByFilter(p => p.WorkshopId == workshopId && p.Status == ApplicationStatus.Approved).ConfigureAwait(false);
+        var applications = await applicationRepository
+            .GetByFilter(p => p.WorkshopId == workshopId && p.Status == ApplicationStatus.Approved)
+            .ConfigureAwait(false);
         var childrenGuids = new HashSet<Guid>(applications.Select(app => app.ChildId));
 
         var totalAmount = childrenGuids.Count;
@@ -278,13 +296,16 @@ public class ChildService : IChildService
 
         logger.LogDebug($"Updating the child with Id: {childDto.Id} and {nameof(userId)}: {userId} started.");
 
-        var child = (await childRepository.GetByFilter(c => c.Id == childDto.Id, $"{nameof(Child.Parent)},{nameof(Child.SocialGroups)}")
+        var child = (await childRepository
+                        .GetByFilter(c => c.Id == childDto.Id, $"{nameof(Child.Parent)},{nameof(Child.SocialGroups)}")
                         .ConfigureAwait(false)).SingleOrDefault()
-                    ?? throw new InvalidOperationException($"User: {userId} is trying to update not existing Child (Id = {childDto.Id}).");
+                    ?? throw new InvalidOperationException(
+                        $"User: {userId} is trying to update not existing Child (Id = {childDto.Id}).");
 
         if (child.Parent.UserId != userId)
         {
-            throw new UnauthorizedAccessException($"User: {userId} is trying to update not his own child. Child Id = {childDto.Id}");
+            throw new UnauthorizedAccessException(
+                $"User: {userId} is trying to update not his own child. Child Id = {childDto.Id}");
         }
 
         if (child.IsParent || childDto.IsParent)
@@ -294,7 +315,8 @@ public class ChildService : IChildService
 
         if (childDto.ParentId != child.ParentId)
         {
-            logger.LogWarning($"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{child.ParentId} was trying to update his child with not his own {nameof(Child.ParentId)}:{childDto.ParentId}.");
+            logger.LogWarning(
+                $"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{child.ParentId} was trying to update his child with not his own {nameof(Child.ParentId)}:{childDto.ParentId}.");
             childDto.ParentId = child.ParentId;
         }
 
@@ -319,11 +341,13 @@ public class ChildService : IChildService
         var child = await childRepository.GetByFilterNoTracking(c => c.Id == id, $"{nameof(Child.Parent)}")
                         .SingleOrDefaultAsync()
                         .ConfigureAwait(false)
-                    ?? throw new UnauthorizedAccessException($"User: {userId} is trying to delete not existing Child (Id = {id}).");
+                    ?? throw new UnauthorizedAccessException(
+                        $"User: {userId} is trying to delete not existing Child (Id = {id}).");
 
         if (child.Parent.UserId != userId)
         {
-            throw new UnauthorizedAccessException($"User: {userId} is not authorized to delete not his own child. Child Id = {id}");
+            throw new UnauthorizedAccessException(
+                $"User: {userId} is not authorized to delete not his own child. Child Id = {id}");
         }
 
         if (child.IsParent)
@@ -343,15 +367,37 @@ public class ChildService : IChildService
         if (!string.IsNullOrWhiteSpace(filter.SearchString))
         {
             var tempPredicate = PredicateBuilder.False<Child>();
-
-            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            if (filter.SearchString.Length >= 3)
             {
-                tempPredicate = tempPredicate.Or(
-                    x => x.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.Parent.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.Parent.User.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
+                filter.SearchString = filter.SearchString.Trim();
+                string phoneNumber = "";
+                if (filter.SearchString[0] == '+')
+                {
+                    for (int i = 0; i < filter.SearchString.Length - 1; i++)
+                    {
+                        phoneNumber += $"{filter.SearchString[i + 1]}";
+                    }
+                }
+
+                if (phoneNumber.All(t => char.IsNumber(t)))
+                {
+                    foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        tempPredicate = tempPredicate.Or(
+                            x => x.Parent.User.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
+                    }
+                }
+                else
+                {
+                    foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        tempPredicate = tempPredicate.Or(
+                            x => x.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                                 || x.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                                 || x.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                                 || x.Parent.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase));
+                    } 
+                }
             }
 
             predicate = predicate.And(tempPredicate);
@@ -374,11 +420,13 @@ public class ChildService : IChildService
 
         if (childDto.DateOfBirth > DateTime.Now)
         {
-            throw new ArgumentException($"{nameof(ChildDto.DateOfBirth)}: {childDto.DateOfBirth} is bigger than current date.");
+            throw new ArgumentException(
+                $"{nameof(ChildDto.DateOfBirth)}: {childDto.DateOfBirth} is bigger than current date.");
         }
     }
 
-    private void ValidateOffsetFilter(OffsetFilter offsetFilter) => ModelValidationHelper.ValidateOffsetFilter(offsetFilter);
+    private void ValidateOffsetFilter(OffsetFilter offsetFilter) =>
+        ModelValidationHelper.ValidateOffsetFilter(offsetFilter);
 
     private void ValidateUserId(string userId)
     {
