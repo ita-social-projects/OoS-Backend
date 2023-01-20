@@ -1,6 +1,8 @@
 ﻿let btn_parent = document.getElementById('btn_parent');
 let btn_provider = document.getElementById('btn_provider');
 let btn_register = document.getElementById('btn_register');
+let li_date_of_birth = document.getElementById('li_date_of_birth');
+let li_gender = document.getElementById('li_gender');
 
 let passwordEye = document.getElementById('password_eye');
 let confirmPasswordEye = document.getElementById('confirm_password_eye');
@@ -47,6 +49,8 @@ btn_parent.addEventListener('click', function () {
     btn_register.setAttribute("name", "Parent");
     sessionStorage.setItem("Role", "Parent");
     sessionStorage.setItem("Button", "btn_parent");
+    li_date_of_birth.className = "registration_item";
+    li_gender.className = "registration_item";
 })
 
 btn_provider.addEventListener('click', function () {
@@ -55,6 +59,8 @@ btn_provider.addEventListener('click', function () {
     btn_register.setAttribute("name", "Provider");
     sessionStorage.setItem("Role", "Provider");
     sessionStorage.setItem("Button", "btn_provider");
+    li_date_of_birth.className = "registration_item hidden";
+    li_gender.className = "registration_item hidden";
 })
 
 passwordEye.addEventListener('click', function () {

@@ -548,6 +548,10 @@ a {
   margin-top: 0;
 }
 
+.hidden {
+    display: none;
+}
+
 @media (max-width: 600px) {
 
   .option-short:after {

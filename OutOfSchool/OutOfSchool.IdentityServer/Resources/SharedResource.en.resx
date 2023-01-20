@@ -162,7 +162,7 @@
   <data name="Register" xml:space="preserve">
     <value>Register</value>
   </data>
-    <data name="Registration goal" xml:space="preserve">
+  <data name="Registration goal" xml:space="preserve">
     <value>To be able to apply activities or become a service provider</value>
   </data>
   <data name="Register as" xml:space="preserve">
@@ -284,7 +284,7 @@
   </data>
   <data name="Email is not valid" xml:space="preserve">
     <value>Email is not valid</value>
-  </data>  
+  </data>
   <data name="LastName is required" xml:space="preserve">
     <value>LastName is required</value>
   </data>
@@ -368,5 +368,11 @@
   </data>
   <data name="Enter your email to send password recovery instructions" xml:space="preserve">
     <value>Enter your email to send password recovery instructions</value>
+  </data>
+  <data name="Date of birth" xml:space="preserve">
+    <value>Date of birth</value>
+  </data>
+  <data name="Date of birth is required" xml:space="preserve">
+    <value>Date of birth is required</value>
   </data>
 </root>
