@@ -69,7 +69,16 @@ public class DirectionService : IDirectionService
     {
         logger.LogInformation($"Deleting Direction with Id = {id} started.");
 
-        var entity = new Direction() { Id = id };
+        var direction = await repository.GetById(id).ConfigureAwait(false);
+
+        if (direction == null)
+        {
+            return Result<DirectionDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = $"Direction with Id = {id} is not exists.",
+            });
+        }
 
         var workShops = await repositoryWorkshop
             .GetByFilter(w => w.InstitutionHierarchy.Directions.Any(d => d.Id == id))
@@ -86,11 +95,11 @@ public class DirectionService : IDirectionService
 
         try
         {
-            await repository.Delete(entity).ConfigureAwait(false);
+            await repository.Delete(direction).ConfigureAwait(false);
 
             logger.LogInformation($"Direction with Id = {id} succesfully deleted.");
 
-            return Result<DirectionDto>.Success(mapper.Map<DirectionDto>(entity));
+            return Result<DirectionDto>.Success(mapper.Map<DirectionDto>(direction));
         }
         catch (DbUpdateConcurrencyException)
         {
