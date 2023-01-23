@@ -369,34 +369,25 @@ public class ChildService : IChildService
             var tempPredicate = PredicateBuilder.False<Child>();
             if (filter.SearchString.Length >= 3)
             {
-                filter.SearchString = filter.SearchString.Trim();
-                string phoneNumber = "";
-                if (filter.SearchString[0] == '+')
+                foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
                 {
-                    for (int i = 0; i < filter.SearchString.Length - 1; i++)
-                    {
-                        phoneNumber += $"{filter.SearchString[i + 1]}";
-                    }
-                }
-
-                if (phoneNumber.All(t => char.IsNumber(t)))
-                {
-                    foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
-                    {
-                        tempPredicate = tempPredicate.Or(
-                            x => x.Parent.User.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
-                    }
-                }
-                else
-                {
-                    foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+                    if (word.Any(c => char.IsLetter(c)))
                     {
                         tempPredicate = tempPredicate.Or(
                             x => x.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
                                  || x.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
                                  || x.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
                                  || x.Parent.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase));
-                    } 
+                    }
+                    else
+                    {
+                        string phoneNumber = word.Where(c => char.IsNumber(c)).ToString();
+                        if (phoneNumber.Length > 0)
+                        {
+                            tempPredicate = tempPredicate.Or(
+                                x => x.Parent.User.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
+                        }
+                    }
                 }
             }
 

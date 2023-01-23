@@ -267,7 +267,7 @@ public class ProviderAdminService : IProviderAdminService
                 user.LastName = providerAdminUpdateDto.LastName;
                 user.MiddleName = providerAdminUpdateDto.MiddleName;
                 user.Email = providerAdminUpdateDto.Email;
-                user.PhoneNumber = providerAdminUpdateDto.PhoneNumber;
+                user.PhoneNumber = $"380{providerAdminUpdateDto.PhoneNumber}";
 
                 var updateResult = await userManager.UpdateAsync(user);
 
