@@ -134,30 +134,16 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         filter ??= new RegionAdminFilter();
         ModelValidationHelper.ValidateOffsetFilter(filter);
 
-        var filterPredicate = PredicateBuild(filter);
-
-        if (currentUserService.IsTechAdmin())
-        {
-            if (filter.InstitutionId != Guid.Empty)
-            {
-                filterPredicate = filterPredicate.And(p => p.InstitutionId == filter.InstitutionId);
-            }
-
-            if (filter.CATOTTGId != 0)
-            {
-                filterPredicate = filterPredicate.And(p => p.CATOTTGId == filter.CATOTTGId);
-            }
-        }
-
         if (currentUserService.IsMinistryAdmin())
         {
-            var ministryAdmin = await GetByUserId(currentUserService.UserId);
+            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
 
-            if (filter.InstitutionId == ministryAdmin.InstitutionId || filter.InstitutionId == Guid.Empty)
+            if (filter.InstitutionId == Guid.Empty)
             {
-                filterPredicate = filterPredicate.And(p => p.InstitutionId == ministryAdmin.InstitutionId);
+                filter.InstitutionId = ministryAdmin.InstitutionId;
             }
-            else
+
+            if (filter.InstitutionId != ministryAdmin.InstitutionId)
             {
                 Logger.LogInformation($"Filter institutionId {filter.InstitutionId} is not equals to logined Ministry admin institutionId {ministryAdmin.InstitutionId}");
 
@@ -167,27 +153,26 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
                     Entities = default,
                 };
             }
-
-            if (filter.CATOTTGId != 0)
-            {
-                filterPredicate = filterPredicate.And(p => p.CATOTTGId == filter.CATOTTGId);
-            }
         }
 
         if (currentUserService.IsRegionAdmin())
         {
             var regionAdmin = await GetByUserId(currentUserService.UserId);
 
-            if ((filter.InstitutionId == regionAdmin.InstitutionId || filter.InstitutionId == Guid.Empty)
-                && (filter.CATOTTGId == regionAdmin.CATOTTGId || filter.CATOTTGId == 0))
+            if (filter.InstitutionId == Guid.Empty)
             {
-                filterPredicate = filterPredicate.And(p => p.InstitutionId == regionAdmin.InstitutionId);
-                filterPredicate = filterPredicate.And(p => p.CATOTTGId == regionAdmin.CATOTTGId);
+                filter.InstitutionId = regionAdmin.InstitutionId;
             }
-            else
+
+            if (filter.CATOTTGId <= 0)
             {
-                Logger.LogInformation($"Filter institutionId {filter.InstitutionId} or CATOTTGId {filter.CATOTTGId} " +
-                        $"is not equals to logined Region admin institutionId {regionAdmin.InstitutionId} or CATOTTGId {regionAdmin.CATOTTGId}");
+                filter.CATOTTGId = regionAdmin.CATOTTGId;
+            }
+
+            if (filter.InstitutionId != regionAdmin.InstitutionId || filter.CATOTTGId != regionAdmin.CATOTTGId)
+            {
+                Logger.LogInformation($"Filter institutionId {filter.InstitutionId} and CATOTTGId {filter.CATOTTGId} " +
+                        $"is not equals to logined Region admin institutionId {regionAdmin.InstitutionId} and CATOTTGId {regionAdmin.CATOTTGId}");
 
                 return new SearchResult<RegionAdminDto>()
                 {
@@ -197,12 +182,15 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             }
         }
 
+        var filterPredicate = PredicateBuild(filter);
+
         int count = await regionAdminRepository.Count(filterPredicate).ConfigureAwait(false);
 
         var sortExpression = new Dictionary<Expression<Func<RegionAdmin, object>>, SortDirection>
         {
             { x => x.User.LastName, SortDirection.Ascending },
         };
+
         var regionAdmins = await regionAdminRepository
             .Get(
                 skip: filter.From,
@@ -214,9 +202,14 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             .ToListAsync()
             .ConfigureAwait(false);
 
-        Logger.LogInformation(!regionAdmins.Any()
-            ? "RegionAdmins table is empty."
-            : $"All {regionAdmins.Count} records were successfully received from the RegionAdmins table");
+        if (regionAdmins.Any())
+        {
+            Logger.LogInformation($"All {regionAdmins.Count} records were successfully received from the RegionAdmins table");
+        }
+        else
+        {
+            Logger.LogInformation("RegionAdmins table is empty.");
+        }
 
         var regionAdminsDto = regionAdmins.Select(admin => mapper.Map<RegionAdminDto>(admin)).ToList();
 

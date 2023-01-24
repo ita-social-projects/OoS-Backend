@@ -101,7 +101,7 @@ public class RegionAdminController : Controller
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HasPermission(Permissions.RegionAdminRead)]
+    [HasPermission(Permissions.RegionAdminEdit)]
     [HttpGet]
     public async Task<IActionResult> GetByFilter([FromQuery] RegionAdminFilter filter)
     {

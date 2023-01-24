@@ -1,7 +1,9 @@
 ﻿using System.Data;
+using System.Linq;
 using System.Linq.Expressions;
 using AutoMapper;
 using AutoMapper.Configuration.Annotations;
+using AutoMapper.Internal;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Options;
 using Nest;
@@ -83,33 +85,30 @@ public class ChangesLogService : IChangesLogService
 
         Expression<Func<Provider, bool>> predicate = PredicateBuilder.True<Provider>();
 
-        if (currentUserService.IsAdmin())
+        if (currentUserService.IsMinistryAdmin())
         {
-            if (currentUserService.IsMinistryAdmin())
+            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+            predicate = predicate.And(p => p.InstitutionId == ministryAdmin.InstitutionId);
+        }
+
+        if (currentUserService.IsRegionAdmin())
+        {
+            var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
+            predicate = predicate.And(p => p.InstitutionId == regionAdmin.InstitutionId);
+
+            var subSettlementsIds = await codeficatorService
+                .GetSubSettlementsIdsAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+
+            if (subSettlementsIds.Any())
             {
-                var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
-                predicate = predicate.And(p => p.InstitutionId == ministryAdmin.InstitutionId);
-            }
+                var tempPredicate = PredicateBuilder.False<Provider>();
 
-            if (currentUserService.IsRegionAdmin())
-            {
-                var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
-                predicate = predicate.And(p => p.InstitutionId == regionAdmin.InstitutionId);
-
-                var subSettlementsIds = await codeficatorService
-                    .GetSubSettlementsIdsAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
-
-                if (subSettlementsIds.Any())
+                foreach (var item in subSettlementsIds)
                 {
-                    var tempPredicate = PredicateBuilder.False<Provider>();
-
-                    foreach (var item in subSettlementsIds)
-                    {
-                        tempPredicate = tempPredicate.Or(x => x.LegalAddress.CATOTTGId == item);
-                    }
-
-                    predicate = predicate.And(tempPredicate);
+                    tempPredicate = tempPredicate.Or(x => x.LegalAddress.CATOTTGId == item);
                 }
+
+                predicate = predicate.And(tempPredicate);
             }
         }
 
@@ -142,9 +141,7 @@ public class ChangesLogService : IChangesLogService
         return new SearchResult<ProviderChangesLogDto>
         {
             Entities = entities,
-            TotalAmount = currentUserService.IsMinistryAdmin() || currentUserService.IsRegionAdmin()
-                ? query.Count()
-                : count,
+            TotalAmount = query.Count(),
         };
     }
 
@@ -154,33 +151,30 @@ public class ChangesLogService : IChangesLogService
 
         Expression<Func<Application, bool>> predicate = PredicateBuilder.True<Application>();
 
-        if (currentUserService.IsAdmin())
+        if (currentUserService.IsMinistryAdmin())
         {
-            if (currentUserService.IsMinistryAdmin())
+            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+            predicate = predicate.And(a => a.Workshop.Provider.InstitutionId == ministryAdmin.InstitutionId);
+        }
+
+        if (currentUserService.IsRegionAdmin())
+        {
+            var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
+            predicate = predicate.And(a => a.Workshop.Provider.InstitutionId == regionAdmin.InstitutionId);
+
+            var subSettlementsIds = await codeficatorService
+                .GetSubSettlementsIdsAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+
+            if (subSettlementsIds.Any())
             {
-                var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
-                predicate = predicate.And(a => a.Workshop.Provider.InstitutionId == ministryAdmin.InstitutionId);
-            }
+                var tempPredicate = PredicateBuilder.False<Application>();
 
-            if (currentUserService.IsRegionAdmin())
-            {
-                var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
-                predicate = predicate.And(a => a.Workshop.Provider.InstitutionId == regionAdmin.InstitutionId);
-
-                var subSettlementsIds = await codeficatorService
-                    .GetSubSettlementsIdsAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
-
-                if (subSettlementsIds.Any())
+                foreach (var item in subSettlementsIds)
                 {
-                    var tempPredicate = PredicateBuilder.False<Application>();
-
-                    foreach (var item in subSettlementsIds)
-                    {
-                        tempPredicate = tempPredicate.Or(a => a.Workshop.Provider.LegalAddress.CATOTTGId == item);
-                    }
-
-                    predicate = predicate.And(tempPredicate);
+                    tempPredicate = tempPredicate.Or(a => a.Workshop.Provider.LegalAddress.CATOTTGId == item);
                 }
+
+                predicate = predicate.And(tempPredicate);
             }
         }
 
@@ -213,9 +207,7 @@ public class ChangesLogService : IChangesLogService
         return new SearchResult<ApplicationChangesLogDto>
         {
             Entities = entities,
-            TotalAmount = currentUserService.IsMinistryAdmin() || currentUserService.IsRegionAdmin()
-                ? query.Count()
-                : count,
+            TotalAmount = query.Count(),
         };
     }
 
@@ -226,33 +218,30 @@ public class ChangesLogService : IChangesLogService
         var where = GetQueryFilter(request);
         var sortExpression = GetProviderAdminChangesOrderParams();
 
-        if (currentUserService.IsAdmin())
+        if (currentUserService.IsMinistryAdmin())
         {
-            if (currentUserService.IsMinistryAdmin())
+            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+            where = where.And(p => p.Provider.InstitutionId == ministryAdmin.InstitutionId);
+        }
+
+        if (currentUserService.IsRegionAdmin())
+        {
+            var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
+            where = where.And(p => p.Provider.InstitutionId == regionAdmin.InstitutionId);
+
+            var subSettlementsIds = await codeficatorService
+                .GetSubSettlementsIdsAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+
+            if (subSettlementsIds.Any())
             {
-                var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
-                where = where.And(p => p.Provider.InstitutionId == ministryAdmin.InstitutionId);
-            }
+                var tempPredicate = PredicateBuilder.False<ProviderAdminChangesLog>();
 
-            if (currentUserService.IsRegionAdmin())
-            {
-                var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
-                where = where.And(p => p.Provider.InstitutionId == regionAdmin.InstitutionId);
-
-                var subSettlementsIds = await codeficatorService
-                    .GetSubSettlementsIdsAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
-
-                if (subSettlementsIds.Any())
+                foreach (var item in subSettlementsIds)
                 {
-                    var tempPredicate = PredicateBuilder.False<ProviderAdminChangesLog>();
-
-                    foreach (var item in subSettlementsIds)
-                    {
-                        tempPredicate = tempPredicate.Or(x => x.Provider.LegalAddress.CATOTTGId == item);
-                    }
-
-                    where = where.And(tempPredicate);
+                    tempPredicate = tempPredicate.Or(x => x.Provider.LegalAddress.CATOTTGId == item);
                 }
+
+                where = where.And(tempPredicate);
             }
         }
 
