@@ -578,6 +578,7 @@ public class MappingProfile : Profile
                 opt =>
                     opt.MapFrom(src => String.Empty));
 
-        CreateMap<WorkshopFilter, WorkshopBySettlementsFilter>();
+        CreateMap<WorkshopFilter, WorkshopBySettlementsFilter>()
+            .ForMember(dest => dest.SettlementsIds, opt => opt.Ignore());
     }
 }
