@@ -79,7 +79,9 @@ public class MappingProfile : Profile
                 opt.MapFrom(src =>
                     src.Applications.Count(x =>
                         x.Status == ApplicationStatus.Approved
-                        || x.Status == ApplicationStatus.StudyingForYears)));
+                        || x.Status == ApplicationStatus.StudyingForYears)))
+            .ForMember(dest => dest.ProviderLicenseStatus, opt =>
+                opt.MapFrom(src => src.Provider.LicenseStatus));
 
         CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>().ReverseMap();
 
@@ -183,7 +185,9 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
             .ForMember(dest => dest.DirectionIds,
                 opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)))
-            .ForMember(dest => dest.Rating, opt => opt.Ignore());
+            .ForMember(dest => dest.Rating, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderLicenseStatus, opt =>
+                opt.MapFrom(src => src.Provider.LicenseStatus));
 
         CreateMap<Workshop, WorkshopProviderViewCard>()
             .IncludeBase<Workshop, WorkshopBaseCard>()
@@ -476,7 +480,9 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.DirectionIds, opt => opt.Ignore())
             .ForMember(dest => dest.WithDisabilityOptions, opt => opt.Ignore())
             .ForMember(dest => dest.AvailableSeats, opt => opt.Ignore())
-            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore());
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderLicenseStatus, opt =>
+                opt.MapFrom(src => src.Workshop.ProviderLicenseStatus));
 
         CreateMap<Rating, RatingDto>()
             .ForMember(dest => dest.FirstName, opt => opt.Ignore())

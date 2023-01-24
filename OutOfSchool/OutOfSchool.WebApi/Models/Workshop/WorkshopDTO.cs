@@ -130,6 +130,9 @@ public class WorkshopDTO : IValidatableObject
 
     public List<long> DirectionIds { get; set; }
 
+    [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
+    public ProviderLicenseStatus ProviderLicenseStatus { get; set; } = ProviderLicenseStatus.NotProvided;
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         // TODO: Validate DateTimeRanges are not empty when frontend is ready
