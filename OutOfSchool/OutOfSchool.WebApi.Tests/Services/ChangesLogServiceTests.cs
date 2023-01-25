@@ -119,7 +119,7 @@ public class ChangesLogServiceTests
         var request = new ProviderChangesLogRequest();
 
         var entitiesCount = 5;
-        var totalAmount = 10;
+        var totalAmount = 5;
         var changesMock = Enumerable.Range(1, entitiesCount)
             .Select(x => new ChangesLog { Id = x, EntityIdGuid = provider.Id, User = user })
             .AsQueryable()
@@ -239,7 +239,7 @@ public class ChangesLogServiceTests
         var request = new ApplicationChangesLogRequest();
 
         var entitiesCount = 5;
-        var totalAmount = 10;
+        var totalAmount = 5;
         var changesMock = Enumerable.Range(1, entitiesCount)
             .Select(x => new ChangesLog { Id = x, EntityIdGuid = application.Id, User = user })
             .AsQueryable()
