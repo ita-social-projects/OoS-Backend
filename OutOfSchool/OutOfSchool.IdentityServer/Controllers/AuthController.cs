@@ -317,8 +317,9 @@ public class AuthController : Controller
     {
         return View(new RegisterViewModel
         {
-            ReturnUrl = returnUrl, ProviderRegistration = providerRegistration
-                                                          ?? GetProviderRegistrationFromUri(returnUrl),
+            ReturnUrl = returnUrl,
+            ProviderRegistration = providerRegistration ?? GetProviderRegistrationFromUri(returnUrl),
+            DateOfBirth = new DateTime(DateTime.Now.Year, 1, 1),
         });
     }
 

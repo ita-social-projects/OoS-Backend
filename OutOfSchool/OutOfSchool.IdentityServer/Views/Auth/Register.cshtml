@@ -85,7 +85,7 @@
                             <span asp-validation-for="MiddleName"></span>
                         </div>
                     </li>
-                    <li class="registration_item">
+                    <li class="registration_item @(Model.ProviderRegistration ? "hidden" : "")" id="li_gender">
                         <label class="registration_label" asp-for="Gender">
                             @SharedLocalizer["Gender"]<span class="registration_star">*</span>
                         </label>
@@ -95,6 +95,18 @@
                         </div>
                         <div>
                             <span asp-validation-for="Gender"></span>
+                        </div>
+                    </li>
+                    <li class="registration_item @(Model.ProviderRegistration ? "hidden" : "")" id="li_date_of_birth">
+                        <label class="registration_label" asp-for="DateOfBirth">
+                            @SharedLocalizer["Date of birth"]<span class="registration_star">*</span>
+                        </label>
+                        <div class="registration_gender">
+                            <input class="registration_input" type="date" asp-for="DateOfBirth"
+                                id="date_of_birth">
+                        </div>
+                        <div>
+                            <span asp-validation-for="DateOfBirth"></span>
                         </div>
                     </li>
                     <li class="registration_item">
