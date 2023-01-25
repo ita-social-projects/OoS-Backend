@@ -227,11 +227,14 @@ public class DirectionServiceTests
     [Test]
     [Order(9)]
     [TestCase(10)]
-    public void Delete_WhenIdIsInvalid_ThrowsDbUpdateConcurrencyException(long id)
+    public async Task Delete_WhenIdIsInvalid_DirectionNotExists(long id)
     {
-        // Act and Assert
-        Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-            async () => await service.Delete(id).ConfigureAwait(false));
+        // Act
+        var result = await service.Delete(id).ConfigureAwait(false);
+
+        // Assert
+        Assert.False(result.Succeeded);
+        Assert.AreEqual(result.OperationResult.Errors.ElementAt(0).Description, $"Direction with Id = {id} is not exists.");
     }
 
     [Test]
