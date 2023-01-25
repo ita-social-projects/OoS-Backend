@@ -134,7 +134,7 @@ public class ProviderService : IProviderService, INotificationReciever
             filterPredicate = filterPredicate.And(p => p.InstitutionId == regionAdmin.InstitutionId);
 
             var subSettlementsIds = await codeficatorService
-                .GetSubSettlementsIdsAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+                .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
 
             var tempPredicate = PredicateBuilder.False<Provider>();
 

@@ -97,9 +97,26 @@ public class CodeficatorService : ICodeficatorService
             .FirstOrDefault();
     }
 
-    public async Task<IEnumerable<long>> GetSubSettlementsIdsAsync(long catottgId)
+    /// <inheritdoc/>
+    public async Task<IEnumerable<long>> GetAllChildrenIdsByParentIdAsync(long catottgId)
     {
-        return await codeficatorRepository.GetSubSettlementsIds(catottgId);
+        var parent = await codeficatorRepository.GetById(catottgId).ConfigureAwait(false);
+        if (parent == null)
+        {
+            return Enumerable.Empty<long>();
+        }
+
+        var result = new List<long> { catottgId };
+
+        var childrenIds = await codeficatorRepository.GetIdsByParentIds(result).ConfigureAwait(false);
+
+        while (childrenIds.Any())
+        {
+            result.AddRange(childrenIds);
+            childrenIds = await codeficatorRepository.GetIdsByParentIds(childrenIds).ConfigureAwait(false);
+        }
+
+        return result;
     }
 
     #region privateMethods

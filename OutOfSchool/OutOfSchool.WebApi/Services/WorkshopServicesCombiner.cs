@@ -181,7 +181,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
                 var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
                 settlementsFilter.InstitutionId = regionAdmin.InstitutionId;
                 settlementsFilter.SettlementsIds = await codeficatorService
-                    .GetSubSettlementsIdsAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+                    .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
             }
 
             workshops = await workshopService.GetByFilter(settlementsFilter).ConfigureAwait(false);

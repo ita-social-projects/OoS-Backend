@@ -26,9 +26,9 @@ public interface ICodeficatorRepository : IEntityRepository<long, CATOTTG>
     public Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(string namePart, string categories = default);
 
     /// <summary>
-    /// Get the subsettlements of current settlements by CATOTTG.
+    /// Get the list of CATOTTGs Ids by list of CATOTTGs parentIds.
     /// </summary>
-    /// <param name="catottgId">CATOTTG id</param>
-    /// <returns>The task result contains a <see cref="List{long}"/> that contains subsettlements ids.</returns>
-    public Task<List<long>> GetSubSettlementsIds(long catottgId);
+    /// <param name="parentIds">list of CATOTTGs parentIds</param>
+    /// <returns>The task result contains a <see cref="List{TResult}"/> that contains the list of CATOTTGs Ids.</returns>
+    public Task<List<long>> GetIdsByParentIds(List<long> parentIds);
 }

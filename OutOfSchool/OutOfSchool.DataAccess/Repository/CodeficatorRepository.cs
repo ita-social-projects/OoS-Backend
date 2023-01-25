@@ -38,26 +38,26 @@ public class CodeficatorRepository : EntityRepository<long, CATOTTG>, ICodeficat
 
         // TODO: Refactor this query, please
         var query = from e in db.CATOTTGs
-                     from p in db.CATOTTGs.Where(x1 => e.ParentId == x1.Id).DefaultIfEmpty()
-                     from pp in db.CATOTTGs.Where(x2 => p.ParentId == x2.Id).DefaultIfEmpty()
-                     from ppp in db.CATOTTGs.Where(x3 => pp.ParentId == x3.Id).DefaultIfEmpty()
-                     from pppp in db.CATOTTGs.Where(x4 => ppp.ParentId == x4.Id).DefaultIfEmpty()
-                     where string.IsNullOrEmpty(namePart)
-                        ? EF.Property<bool>(e, "IsTop")
-                        : ((CodeficatorCategory.Level4.Name.Contains(e.Category) && e.Name.StartsWith(namePart)) || (e.Category == CodeficatorCategory.CityDistrict.Name && p.Name.StartsWith(namePart))) && categories.Contains(e.Category)
+                    from p in db.CATOTTGs.Where(x1 => e.ParentId == x1.Id).DefaultIfEmpty()
+                    from pp in db.CATOTTGs.Where(x2 => p.ParentId == x2.Id).DefaultIfEmpty()
+                    from ppp in db.CATOTTGs.Where(x3 => pp.ParentId == x3.Id).DefaultIfEmpty()
+                    from pppp in db.CATOTTGs.Where(x4 => ppp.ParentId == x4.Id).DefaultIfEmpty()
+                    where string.IsNullOrEmpty(namePart)
+                       ? EF.Property<bool>(e, "IsTop")
+                       : ((CodeficatorCategory.Level4.Name.Contains(e.Category) && e.Name.StartsWith(namePart)) || (e.Category == CodeficatorCategory.CityDistrict.Name && p.Name.StartsWith(namePart))) && categories.Contains(e.Category)
                     select new CodeficatorAddressDto
-                     {
-                         Id = e.Id,
-                         Category = e.Category,
-                         Settlement = e.Category == CodeficatorCategory.CityDistrict.Name ? p.Name : e.Name,
-                         Latitude = e.Latitude,
-                         Longitude = e.Longitude,
-                         Order = e.Order,
-                         TerritorialCommunity = e.Category == CodeficatorCategory.CityDistrict.Name ? pp.Name : p.Name,
-                         District = e.Category == CodeficatorCategory.CityDistrict.Name ? ppp.Name : pp.Name,
-                         Region = e.Category == CodeficatorCategory.CityDistrict.Name ? pppp.Name : ppp.Name,
-                         CityDistrict = e.Category == CodeficatorCategory.CityDistrict.Name ? e.Name : null,
-                     };
+                    {
+                        Id = e.Id,
+                        Category = e.Category,
+                        Settlement = e.Category == CodeficatorCategory.CityDistrict.Name ? p.Name : e.Name,
+                        Latitude = e.Latitude,
+                        Longitude = e.Longitude,
+                        Order = e.Order,
+                        TerritorialCommunity = e.Category == CodeficatorCategory.CityDistrict.Name ? pp.Name : p.Name,
+                        District = e.Category == CodeficatorCategory.CityDistrict.Name ? ppp.Name : pp.Name,
+                        Region = e.Category == CodeficatorCategory.CityDistrict.Name ? pppp.Name : ppp.Name,
+                        CityDistrict = e.Category == CodeficatorCategory.CityDistrict.Name ? e.Name : null,
+                    };
 
         query = query.OrderBy(x => x.Order);
 
@@ -70,50 +70,9 @@ public class CodeficatorRepository : EntityRepository<long, CATOTTG>, ICodeficat
     }
 
     /// <inheritdoc/>
-    public async Task<List<long>> GetSubSettlementsIds(long catottgId)
+    public async Task<List<long>> GetIdsByParentIds(List<long> parentIds)
     {
-        var queryLevel1 = db.CATOTTGs.Where(c => c.Id == catottgId).Select(c => c.Id);
-        var settlementsIdsLevel1 = await queryLevel1.ToListAsync();
-
-        if (!settlementsIdsLevel1.Any())
-        {
-            return settlementsIdsLevel1;
-        }
-
-        var queryLevel2 = db.CATOTTGs.Where(c => settlementsIdsLevel1.Contains(c.ParentId.Value)).Select(c => c.Id);
-        var settlementsIdsLevel2 = await queryLevel2.ToListAsync();
-
-        if (!settlementsIdsLevel2.Any())
-        {
-            return settlementsIdsLevel1;
-        }
-
-        var queryLevel3 = db.CATOTTGs.Where(c => settlementsIdsLevel2.Contains(c.ParentId.Value)).Select(c => c.Id);
-        var settlementsIdsLevel3 = await queryLevel3.ToListAsync();
-
-        if (!settlementsIdsLevel3.Any())
-        {
-            return settlementsIdsLevel1
-                .Union(settlementsIdsLevel2)
-                .ToList();
-        }
-
-        var queryLevel4 = db.CATOTTGs.Where(c => settlementsIdsLevel3.Contains(c.ParentId.Value)).Select(c => c.Id);
-        var settlementsIdsLevel4 = await queryLevel4.ToListAsync();
-
-        if (!settlementsIdsLevel4.Any())
-        {
-            return settlementsIdsLevel1
-                .Union(settlementsIdsLevel2)
-                .Union(settlementsIdsLevel3).ToList();
-        }
-        else
-        {
-            return settlementsIdsLevel1
-                .Union(settlementsIdsLevel2)
-                .Union(settlementsIdsLevel3)
-                .Union(settlementsIdsLevel4)
-                .ToList();
-        }
+        var query = db.CATOTTGs.Where(c => parentIds.Contains(c.ParentId.Value)).Select(c => c.Id);
+        return await query.ToListAsync().ConfigureAwait(false);
     }
 }

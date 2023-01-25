@@ -117,7 +117,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
                 .And(p => p.Workshop.InstitutionHierarchy.InstitutionId == regionAdmin.InstitutionId);
 
             var subSettlementsIds = await codeficatorService
-                .GetSubSettlementsIdsAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+                .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
 
             if (subSettlementsIds.Any())
             {

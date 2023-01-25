@@ -97,7 +97,7 @@ public class ChangesLogService : IChangesLogService
             predicate = predicate.And(p => p.InstitutionId == regionAdmin.InstitutionId);
 
             var subSettlementsIds = await codeficatorService
-                .GetSubSettlementsIdsAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+                .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
 
             if (subSettlementsIds.Any())
             {
@@ -161,7 +161,7 @@ public class ChangesLogService : IChangesLogService
             predicate = predicate.And(a => a.Workshop.Provider.InstitutionId == regionAdmin.InstitutionId);
 
             var subSettlementsIds = await codeficatorService
-                .GetSubSettlementsIdsAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+                .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
 
             if (subSettlementsIds.Any())
             {
@@ -227,7 +227,7 @@ public class ChangesLogService : IChangesLogService
             where = where.And(p => p.Provider.InstitutionId == regionAdmin.InstitutionId);
 
             var subSettlementsIds = await codeficatorService
-                .GetSubSettlementsIdsAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+                .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
 
             if (subSettlementsIds.Any())
             {

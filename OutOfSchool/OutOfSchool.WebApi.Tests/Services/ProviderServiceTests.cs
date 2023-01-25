@@ -345,7 +345,7 @@ public class ProviderServiceTests
             }));
 
         codeficatorServiceMock
-            .Setup(x => x.GetSubSettlementsIdsAsync(It.IsAny<long>()))
+            .Setup(x => x.GetAllChildrenIdsByParentIdAsync(It.IsAny<long>()))
             .Returns(Task.FromResult((IEnumerable<long>)new List<long> { catottgId }));
 
         var fakeRatings = RatingsGenerator.GetAverageRatingForRange(fakeProviders.Select(p => p.Id)); // expected ratings

@@ -51,6 +51,6 @@ public interface ICodeficatorService
     /// Get the subsettlements of current settlement by CATOTTG id.
     /// </summary>
     /// <param name="catottgId">CATOTTG id</param>
-    /// <returns>The task result contains a <see cref="List{long}"/> that contains subsettlements ids.</returns>
-    public Task<IEnumerable<long>> GetSubSettlementsIdsAsync(long catottgId);
+    /// <returns>The task result contains a <see cref="List{TResult}"/> that contains subsettlements ids.</returns>
+    public Task<IEnumerable<long>> GetAllChildrenIdsByParentIdAsync(long catottgId);
 }
