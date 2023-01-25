@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Models.SocialGroup;
 
 namespace OutOfSchool.WebApi.Models;
 

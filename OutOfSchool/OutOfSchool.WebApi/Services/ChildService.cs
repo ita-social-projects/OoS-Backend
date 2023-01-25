@@ -12,6 +12,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.SocialGroup;
 using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services;

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.WebApi.Models;
+namespace OutOfSchool.WebApi.Models.SocialGroup;
 
 public class SocialGroupDto
 {

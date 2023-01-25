@@ -19,26 +19,31 @@ public static class ModelBuilderExtension
             {
                 Id = 1,
                 Name = "Діти із багатодітних сімей",
+                NameEn = "Children from large families",
             },
             new SocialGroup
             {
                 Id = 2,
                 Name = "Діти із малозабезпечених сімей",
+                NameEn = "Children from low-income families",
             },
             new SocialGroup
             {
                 Id = 3,
                 Name = "Діти з інвалідністю",
+                NameEn = "Children with disabilities",
             },
             new SocialGroup
             {
                 Id = 4,
                 Name = "Діти-сироти",
+                NameEn = "Orphans",
             },
             new SocialGroup
             {
                 Id = 5,
                 Name = "Діти, позбавлені батьківського піклування",
+                NameEn = "Children deprived of parental care",
             });
 
         builder.Entity<InstitutionStatus>().HasData(

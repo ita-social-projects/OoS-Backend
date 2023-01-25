@@ -18,7 +18,7 @@ using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
-
+using OutOfSchool.WebApi.Models.SocialGroup;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
