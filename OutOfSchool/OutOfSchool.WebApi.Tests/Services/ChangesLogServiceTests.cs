@@ -232,6 +232,77 @@ public class ChangesLogServiceTests
     }
 
     [Test]
+    public async Task GetProviderChangesLog_WhenRegionAdminCalled_ReturnsSearchResult()
+    {
+        // Arange
+        var institutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4");
+        long catottgId = 31737;
+        var changesLogService = GetChangesLogService();
+        var request = new ProviderChangesLogRequest();
+        provider = provider.WithInstitutionId(institutionId);
+
+        currentUserServiceMock.Setup(x => x.IsRegionAdmin()).Returns(true);
+        regionAdminServiceMock
+            .Setup(m => m.GetByUserId(It.IsAny<string>()))
+            .Returns(Task.FromResult<RegionAdminDto>(new RegionAdminDto()
+            {
+                InstitutionId = institutionId,
+                CATOTTGId = catottgId,
+            }));
+
+        codeficatorServiceMock
+            .Setup(x => x.GetSubSettlementsIdsAsync(It.IsAny<long>()))
+            .Returns(Task.FromResult((IEnumerable<long>)new List<long> { catottgId }));
+
+        var entitiesCount = 5;
+        var totalAmount = 5;
+        var changesMock = Enumerable.Range(1, entitiesCount)
+            .Select(x => new ChangesLog { Id = x, EntityIdGuid = provider.Id, User = user })
+            .AsQueryable()
+            .BuildMock();
+        var providersMock = new List<Provider> { provider }
+            .AsQueryable()
+            .BuildMock();
+
+        mapper.Setup(m => m.Map<ChangesLogFilter>(It.IsAny<ProviderChangesLogRequest>()))
+            .Returns(new ChangesLogFilter());
+        mapper.Setup(m => m.Map<ShortUserDto>(user))
+            .Returns(new ShortUserDto { Id = user.Id });
+
+        changesLogRepository
+            .Setup(repo => repo.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
+            .Returns(Task.FromResult(totalAmount));
+        changesLogRepository
+            .Setup(repo => repo.Get(
+                request.From,
+                request.Size,
+                string.Empty,
+                It.IsAny<Expression<Func<ChangesLog, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(changesMock);
+        providerRepository.Setup(repo => repo.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Provider, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(providersMock);
+
+        // Act
+        var result = await changesLogService.GetProviderChangesLogAsync(request);
+
+        // Assert
+        Assert.AreEqual(totalAmount, result.TotalAmount);
+        Assert.AreEqual(entitiesCount, result.Entities.Count);
+        Assert.True(result.Entities.Any(x => x.ProviderId == provider.Id));
+        Assert.True(result.Entities.Any(x => x.ProviderTitle == provider.FullTitle));
+        Assert.True(result.Entities.Any(x => x.ProviderCity == provider.LegalAddress.CATOTTG.Name));
+        Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+    }
+
+    [Test]
     public async Task GetApplicationChangesLog_WhenCalled_ReturnsSearchResult()
     {
         // Arange

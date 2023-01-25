@@ -128,11 +128,9 @@ public class ChangesLogService : IChangesLogService
                         UpdatedDate = l.UpdatedDate,
                         User = mapper.Map<ShortUserDto>(l.User),
                         ProviderId = l.EntityIdGuid.Value,
-                        ProviderTitle = provider == null ? null : provider.FullTitle,
-                        ProviderCity = provider == null || provider.LegalAddress == null
-                                ? null : provider.LegalAddress.CATOTTG.Name,
-                        InstitutionTitle = provider == null || provider.Institution == null
-                                ? null : provider.Institution.Title,
+                        ProviderTitle = provider.FullTitle,
+                        ProviderCity = provider.LegalAddress.CATOTTG.Name,
+                        InstitutionTitle = provider.Institution.Title,
                     })
                 .IgnoreQueryFilters();
 
@@ -194,11 +192,10 @@ public class ChangesLogService : IChangesLogService
                         UpdatedDate = l.UpdatedDate,
                         User = mapper.Map<ShortUserDto>(l.User),
                         ApplicationId = l.EntityIdGuid.Value,
-                        WorkshopTitle = app == null ? null : app.Workshop.Title,
-                        WorkshopCity = app == null ? null : app.Workshop.Address.CATOTTG.Name,
-                        ProviderTitle = app == null ? null : app.Workshop.ProviderTitle,
-                        InstitutionTitle = app == null || app.Workshop.Provider.Institution == null
-                                    ? null : app.Workshop.Provider.Institution.Title,
+                        WorkshopTitle = app.Workshop.Title,
+                        WorkshopCity = app.Workshop.Address.CATOTTG.Name,
+                        ProviderTitle = app.Workshop.ProviderTitle,
+                        InstitutionTitle = app.Workshop.Provider.Institution.Title,
                     })
                 .IgnoreQueryFilters();
 

@@ -326,6 +326,66 @@ public class ProviderServiceTests
         Assert.AreEqual(fakeProviders.Count, result.TotalAmount);
     }
 
+    [Test]
+    public async Task GetByFilter_WhenRegionAdminCalled_ReturnsEntities()
+    {
+        // Arrange
+        var institutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4");
+        long catottgId = 31737;
+        var filter = new ProviderFilter();
+        var providersMock = fakeProviders.WithInstitutionId(institutionId).AsQueryable().BuildMock();
+
+        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(true);
+        regionAdminServiceMock
+            .Setup(m => m.GetByUserId(It.IsAny<string>()))
+            .Returns(Task.FromResult<RegionAdminDto>(new RegionAdminDto()
+            {
+                InstitutionId = institutionId,
+                CATOTTGId = catottgId,
+            }));
+
+        codeficatorServiceMock
+            .Setup(x => x.GetSubSettlementsIdsAsync(It.IsAny<long>()))
+            .Returns(Task.FromResult((IEnumerable<long>)new List<long> { catottgId }));
+
+        var fakeRatings = RatingsGenerator.GetAverageRatingForRange(fakeProviders.Select(p => p.Id)); // expected ratings
+        var expected = fakeProviders
+            .Select(p => mapper.Map<ProviderDto>(p))
+            .ToList();
+        expected
+            .ForEach(p => p.Rating = fakeRatings
+                .Where(r => r.Key == p.Id)
+                .Select(p => p.Value.Item1)
+                .FirstOrDefault());
+        expected
+            .ForEach(p => p.NumberOfRatings = fakeRatings
+                .Where(r => r.Key == p.Id)
+                .Select(p => p.Value.Item2)
+                .FirstOrDefault());
+        providersRepositoryMock
+            .Setup(repo => repo.Count(It.IsAny<Expression<Func<Provider, bool>>>()))
+            .ReturnsAsync(fakeRatings.Count); // fakeRatings.Count);providersMock.Count
+        providersRepositoryMock
+            .Setup(repo => repo.Get(
+                filter.From,
+                filter.Size,
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Provider, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(providersMock);
+        ratingService.Setup(r => r.GetAverageRatingForProvidersAsync(It.IsAny<IEnumerable<Guid>>()))
+            .ReturnsAsync(fakeRatings);
+
+        // Act
+        var result = await providerService.GetByFilter(filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.True(result.Entities.All(p => p.InstitutionId == institutionId));
+        TestHelper.AssertTwoCollectionsEqualByValues(expected, result.Entities);
+        Assert.AreEqual(fakeProviders.Count, result.TotalAmount);
+    }
+
     #endregion
 
     #region GetById
