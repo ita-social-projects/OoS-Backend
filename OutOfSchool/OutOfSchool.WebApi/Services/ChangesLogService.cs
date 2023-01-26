@@ -112,7 +112,8 @@ public class ChangesLogService : IChangesLogService
             }
         }
 
-        var (changesLog, count) = await GetChangesLogAsync(changeLogFilter).ConfigureAwait(false);
+        var changesLog = await GetChangesLogAsync(changeLogFilter).ConfigureAwait(false);
+
         var providers = providerRepository.Get(where: predicate);
 
         var query = changesLog
@@ -176,7 +177,8 @@ public class ChangesLogService : IChangesLogService
             }
         }
 
-        var (changesLog, count) = await GetChangesLogAsync(changeLogFilter).ConfigureAwait(false);
+        var changesLog = await GetChangesLogAsync(changeLogFilter).ConfigureAwait(false);
+
         var applications = applicationRepository.Get(where: predicate);
 
         var query = changesLog
@@ -269,18 +271,16 @@ public class ChangesLogService : IChangesLogService
         };
     }
 
-    private async Task<(IQueryable<ChangesLog>, int)> GetChangesLogAsync(ChangesLogFilter filter)
+    private async Task<IQueryable<ChangesLog>> GetChangesLogAsync(ChangesLogFilter filter)
     {
         ValidateFilter(filter);
 
         var where = GetQueryFilter(filter);
         var sortExpression = GetOrderParams();
 
-        var count = await changesLogRepository.Count(where).ConfigureAwait(false);
-
         var query = changesLogRepository.Get(filter.From, filter.Size, string.Empty, where, sortExpression, true);
 
-        return (query, count);
+        return query;
     }
 
     private bool IsLoggingAllowed<TEntity>(out string[] trackedProperties)
