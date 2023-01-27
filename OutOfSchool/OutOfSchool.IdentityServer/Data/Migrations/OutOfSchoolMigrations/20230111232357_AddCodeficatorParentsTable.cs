@@ -46,7 +46,7 @@ public partial class AddCodeficatorParentsTable : Migration
         migrationBuilder.Sql(@"
         DROP TRIGGER IF EXISTS catottgs_AFTER_DELETE;
 
-        CREATE DEFINER = CURRENT_USER TRIGGER catottgs_AFTER_DELETE AFTER DELETE ON catottgs FOR EACH ROW
+        CREATE DEFINER = CURRENT_USER TRIGGER catottgs_AFTER_DELETE AFTER DELETE ON CATOTTGs FOR EACH ROW
         BEGIN
 	        DELETE FROM CodeficatorParents WHERE CatottgsId = old.Id;	
 	        DELETE FROM CodeficatorParents WHERE ParentId = old.Id;
@@ -55,7 +55,7 @@ public partial class AddCodeficatorParentsTable : Migration
         migrationBuilder.Sql(@"
 	    DROP TRIGGER IF EXISTS catottgs_AFTER_INSERT;
 
-        CREATE DEFINER = CURRENT_USER TRIGGER catottgs_AFTER_INSERT AFTER INSERT ON catottgs FOR EACH ROW
+        CREATE DEFINER = CURRENT_USER TRIGGER catottgs_AFTER_INSERT AFTER INSERT ON CATOTTGs FOR EACH ROW
         BEGIN
 	        INSERT INTO CodeficatorParents (CatottgsId, ParentId, Level)(
 	        WITH recursive parent_users (Id, Parentid, Level) AS (
@@ -71,7 +71,7 @@ public partial class AddCodeficatorParentsTable : Migration
         migrationBuilder.Sql(@"
 	    DROP TRIGGER IF EXISTS catottgs_AFTER_UPDATE;
 
-        CREATE DEFINER = CURRENT_USER TRIGGER catottgs_AFTER_UPDATE AFTER UPDATE ON catottgs FOR EACH ROW
+        CREATE DEFINER = CURRENT_USER TRIGGER catottgs_AFTER_UPDATE AFTER UPDATE ON CATOTTGs FOR EACH ROW
         BEGIN
 	        IF (new.ParentId <> old.ParentId OR new.Id <> old.Id) THEN
 		        DELETE 
