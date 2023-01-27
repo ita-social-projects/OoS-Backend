@@ -13,8 +13,16 @@ public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopSer
         INotificationService notificationService,
         IEntityRepository<long, Favorite> favoriteRepository,
         IApplicationRepository applicationRepository,
-        IWorkshopStrategy workshopStrategy)
-        : base(workshopService, elasticsearchSynchronizationService, notificationService, favoriteRepository, applicationRepository, workshopStrategy)
+        IWorkshopStrategy workshopStrategy,
+        ICurrentUserService currentUserServicse,
+        IMinistryAdminService ministryAdminService)
+        : base(workshopService,
+            elasticsearchSynchronizationService,
+            notificationService, favoriteRepository,
+            applicationRepository,
+            workshopStrategy,
+            currentUserServicse,
+            ministryAdminService)
     {
     }
 

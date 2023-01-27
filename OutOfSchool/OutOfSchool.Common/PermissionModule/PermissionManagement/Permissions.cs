@@ -128,7 +128,8 @@ public enum Permissions : short
     SystemManagement = 100,
     [Display(GroupName = "SystemManaging", Name = "ReadImpersonalData", Description = "For non-admin users to get specific data as city, class, status etc")]
     ImpersonalDataRead = 101,
-
+    [Display(GroupName = "SystemManaging", Name = "ReadLogData", Description = "Can read log data")]
+    LogDataRead = 102,
     [Display(GroupName = "SystemManaging", Name = "SuperAdmin", Description = "access to all actions covered with [HasPermission] attribute")]
     AccessAll = short.MaxValue,
     #endregion

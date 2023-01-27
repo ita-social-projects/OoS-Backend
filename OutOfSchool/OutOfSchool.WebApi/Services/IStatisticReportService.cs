@@ -19,6 +19,13 @@ public interface IStatisticReportService
     Task<SearchResult<StatisticReportDto>> GetByFilter(StatisticReportFilter filter);
 
     /// <summary>
+    /// Get title by file's key.
+    /// </summary>
+    /// <param name="externalId">Key in the table.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    Task<string> GetNameByExternalId(string externalId);
+
+    /// <summary>
     /// Get entity by it's key.
     /// </summary>
     /// <param name="externalId">Key in the table.</param>

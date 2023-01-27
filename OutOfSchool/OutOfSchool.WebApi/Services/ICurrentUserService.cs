@@ -36,6 +36,12 @@ public interface ICurrentUserService
     public bool IsAdmin();
 
     /// <summary>
+    /// Check if user is an ministryadmin.
+    /// </summary>
+    /// <returns>A <see cref="bool"/> with value true if user is in ministryadmin role, false otherwise.</returns>
+    public bool IsMinistryAdmin();
+
+    /// <summary>
     /// Check if user's role is the same as provided.
     /// </summary>
     /// <param name="userTypes">Any number of <see cref="IUserRights"/> that needs to be checked at the execution point.</param>

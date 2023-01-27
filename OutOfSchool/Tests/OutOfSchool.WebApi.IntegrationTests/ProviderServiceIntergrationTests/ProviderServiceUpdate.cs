@@ -56,6 +56,8 @@ public class ProviderServiceUpdate
         var notificationService = new Mock<INotificationService>();
         var providerAdminService = new Mock<IProviderAdminService>();
         var institutionAdminRepository = new Mock<IInstitutionAdminRepository>();
+        var currentUserServiceMock = new Mock<ICurrentUserService>();
+        var ministryAdminServiceMock = new Mock<IMinistryAdminService>();
 
         this.providerService = new ProviderService(
             providerRepository,
@@ -71,7 +73,10 @@ public class ProviderServiceUpdate
             changesLogService.Object,
             notificationService.Object,
             providerAdminService.Object,
-            institutionAdminRepository.Object);
+            institutionAdminRepository.Object,
+            currentUserServiceMock.Object,
+            ministryAdminServiceMock.Object
+            );
     }
 
     [Test]

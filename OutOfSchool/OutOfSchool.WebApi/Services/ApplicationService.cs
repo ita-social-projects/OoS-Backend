@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.Extensions.Options;
+using Nest;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
@@ -24,6 +25,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
     private readonly ApplicationsConstraintsConfig applicationsConstraintsConfig;
     private readonly IWorkshopServicesCombiner combinedWorkshopService;
     private readonly ICurrentUserService currentUserService;
+    private readonly IMinistryAdminService ministryAdminService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationService"/> class.
@@ -38,6 +40,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
     /// <param name="changesLogService">ChangesLogService.</param>
     /// <param name="combinedWorkshopService">WorkshopServicesCombiner.</param>
     /// <param name="currentUserService">Service for managing current user rights.</param>
+    /// <param name="ministryAdminService">Service for managing ministry admin rigths.</param>
     public ApplicationService(
         IApplicationRepository repository,
         ILogger<ApplicationService> logger,
@@ -48,7 +51,8 @@ public class ApplicationService : IApplicationService, INotificationReciever
         IProviderAdminService providerAdminService,
         IChangesLogService changesLogService,
         IWorkshopServicesCombiner combinedWorkshopService,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        IMinistryAdminService ministryAdminService)
     {
         applicationRepository = repository ?? throw new ArgumentNullException(nameof(repository));
         this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
@@ -63,6 +67,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
         this.combinedWorkshopService =
             combinedWorkshopService ?? throw new ArgumentNullException(nameof(combinedWorkshopService));
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
+        this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
     }
 
     /// <inheritdoc/>
@@ -88,6 +93,13 @@ public class ApplicationService : IApplicationService, INotificationReciever
         filter ??= new ApplicationFilter();
 
         var predicate = PredicateBuild(filter);
+
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId);
+            predicate = predicate
+                .And(p => p.Workshop.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
+        }
 
         var sortPredicate = SortExpressionBuild(filter);
 
@@ -433,6 +445,16 @@ public class ApplicationService : IApplicationService, INotificationReciever
         return await applicationRepository.Any(filter).ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
+    public async Task<int> ChangeApprovedStatusesToStudying()
+    {
+        var result = await applicationRepository.UpdateAllApprovedApplications().ConfigureAwait(false);
+
+        logger.LogInformation("Updated statuses to Studying of {count} applications.", result);
+
+        return result;
+    }
+
     private static void UpdateStatus(ApplicationUpdate applicationDto, Application application, bool isUserProvider)
     {
         if (application.Status is ApplicationStatus.Completed or ApplicationStatus.Rejected or ApplicationStatus.Left && !isUserProvider)
@@ -497,6 +519,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
             var tempPredicate = PredicateBuilder.False<Application>();
             tempPredicate = tempPredicate
                 .Or(a => a.Workshop.Title == filter.SearchString)
+                .Or(a => a.Workshop.ProviderTitle.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase))
                 .Or(a => a.Child.FirstName.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase)
                          || a.Child.MiddleName.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase)
                          || a.Child.LastName.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase));

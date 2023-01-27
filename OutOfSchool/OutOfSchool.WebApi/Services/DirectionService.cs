@@ -17,6 +17,8 @@ public class DirectionService : IDirectionService
     private readonly ILogger<DirectionService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
+    private readonly ICurrentUserService currentUserService;
+    private readonly IMinistryAdminService ministryAdminService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DirectionService"/> class.
@@ -26,18 +28,24 @@ public class DirectionService : IDirectionService
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
+    /// <param name="currentUserService">Service for manage current user.</param>
+    /// <param name="ministryAdminService">Service for manage ministry admin.</param>
     public DirectionService(
         IEntityRepository<long, Direction> repository,
         IWorkshopRepository repositoryWorkshop,
         ILogger<DirectionService> logger,
         IStringLocalizer<SharedResource> localizer,
-        IMapper mapper)
+        IMapper mapper,
+        ICurrentUserService currentUserService,
+        IMinistryAdminService ministryAdminService)
     {
         this.localizer = localizer;
         this.repository = repository;
         this.repositoryWorkshop = repositoryWorkshop;
         this.logger = logger;
         this.mapper = mapper;
+        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
+        this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
     }
 
     /// <inheritdoc/>
@@ -61,7 +69,16 @@ public class DirectionService : IDirectionService
     {
         logger.LogInformation($"Deleting Direction with Id = {id} started.");
 
-        var entity = new Direction() { Id = id };
+        var direction = await repository.GetById(id).ConfigureAwait(false);
+
+        if (direction == null)
+        {
+            return Result<DirectionDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = $"Direction with Id = {id} is not exists.",
+            });
+        }
 
         var workShops = await repositoryWorkshop
             .GetByFilter(w => w.InstitutionHierarchy.Directions.Any(d => d.Id == id))
@@ -78,11 +95,11 @@ public class DirectionService : IDirectionService
 
         try
         {
-            await repository.Delete(entity).ConfigureAwait(false);
+            await repository.Delete(direction).ConfigureAwait(false);
 
             logger.LogInformation($"Direction with Id = {id} succesfully deleted.");
 
-            return Result<DirectionDto>.Success(mapper.Map<DirectionDto>(entity));
+            return Result<DirectionDto>.Success(mapper.Map<DirectionDto>(direction));
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -116,6 +133,18 @@ public class DirectionService : IDirectionService
                 .False<Direction>()
                 .Or(direction => direction.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase)),
         };
+
+        Expression<Func<Workshop, bool>> workshopCountFilter = PredicateBuilder.True<Workshop>();
+
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+            predicate = predicate
+                .And<Direction>(d => d.InstitutionHierarchies.Any(h => h.InstitutionId == ministryAdmin.InstitutionId));
+            workshopCountFilter = workshopCountFilter
+                .And<Workshop>(w => w.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
+        }
+
         var count = await repository.Count(predicate).ConfigureAwait(false);
 
         var sortExpression = new Dictionary<Expression<Func<Direction, object>>, SortDirection>
@@ -128,7 +157,8 @@ public class DirectionService : IDirectionService
             .ToListAsync();
 
         var workshopCount = await repositoryWorkshop
-            .Get(where: w => w.InstitutionHierarchy.Directions.Any(d => directions.Contains(d)))
+            .Get(where: workshopCountFilter
+                .And(w => w.InstitutionHierarchy.Directions.Any(d => directions.Contains(d))))
             .SelectMany(w => w.InstitutionHierarchy.Directions)
             .GroupBy(d => d.Id)
             .Select(g => new

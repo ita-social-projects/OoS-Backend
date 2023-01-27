@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.SocialGroup;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

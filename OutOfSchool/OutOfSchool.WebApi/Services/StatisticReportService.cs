@@ -39,6 +39,7 @@ public class StatisticReportService : IStatisticReportService
         await statisticReportRepository.Create(statisticReport).ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
     public async Task Delete(Guid id)
     {
         logger.LogInformation("Deleting StatisticReport with Id = {Id} started", id);
@@ -58,6 +59,7 @@ public class StatisticReportService : IStatisticReportService
         }
     }
 
+    /// <inheritdoc/>
     public async Task<SearchResult<StatisticReportDto>> GetByFilter(StatisticReportFilter filter)
     {
         logger.LogInformation($"Getting StatisticReports by filter");
@@ -76,7 +78,7 @@ public class StatisticReportService : IStatisticReportService
             skip: filter.From,
             take: filter.Size,
             where: predicate,
-            includeProperties: "Workshop,Child,Parent",
+            includeProperties: string.Empty,
             orderBy: sortExpression).ToListAsync().ConfigureAwait(false);
 
         if (!statisticReports.Any())
@@ -97,6 +99,17 @@ public class StatisticReportService : IStatisticReportService
         return searchResult;
     }
 
+    /// <inheritdoc/>
+    public async Task<string> GetNameByExternalId(string externalId)
+    {
+        var statisticReport = (await statisticReportRepository.GetByFilter(x => x.ExternalStorageId == externalId)).FirstOrDefault();
+
+        return (statisticReport is null)
+            ? string.Empty
+            : statisticReport.Title + statisticReport.ReportDataType.GetFileFormat();
+    }
+
+    /// <inheritdoc/>
     public async Task<FileModel> GetDataById(string externalId)
     {
         try

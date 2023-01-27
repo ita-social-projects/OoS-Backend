@@ -375,4 +375,10 @@ Login: {0}
   <data name="Enter your email to send password recovery instructions" xml:space="preserve">
     <value>Введіть ваш емейл на який буде надіслана інструкція по відновленню паролю</value>
   </data>
+  <data name="Date of birth" xml:space="preserve">
+    <value>Дата народження</value>
+  </data>
+  <data name="Date of birth is required" xml:space="preserve">
+    <value>Дата народження є обов’язковою</value>
+  </data>
 </root>

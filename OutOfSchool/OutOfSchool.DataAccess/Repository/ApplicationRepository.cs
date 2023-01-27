@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
@@ -66,5 +67,20 @@ public class ApplicationRepository : EntityRepositoryBase<Guid, Application>, IA
         var applications = dbSet.Where(a => a.WorkshopId == workshopId);
 
         return applications.CountAsync();
+    }
+
+    /// <summary>
+    /// Changes status to StudyingForYears of all applications where status is Approved.
+    /// </summary>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    public async Task<int> UpdateAllApprovedApplications()
+    {
+        // in latest versions EF multiple update should be implemented
+        return await dbContext.Database
+            .ExecuteSqlRawAsync(
+                "UPDATE `Applications` SET `Status` = {0} WHERE NOT (`IsDeleted`) AND (`Status` = {1})",
+                (int)ApplicationStatus.StudyingForYears,
+                (int)ApplicationStatus.Approved)
+            .ConfigureAwait(false);
     }
 }

@@ -317,8 +317,9 @@ public class AuthController : Controller
     {
         return View(new RegisterViewModel
         {
-            ReturnUrl = returnUrl, ProviderRegistration = providerRegistration
-                                                          ?? GetProviderRegistrationFromUri(returnUrl),
+            ReturnUrl = returnUrl,
+            ProviderRegistration = providerRegistration ?? GetProviderRegistrationFromUri(returnUrl),
+            DateOfBirth = new DateTime(DateTime.Now.Year, 1, 1),
         });
     }
 
@@ -359,7 +360,7 @@ public class AuthController : Controller
             LastName = model.LastName,
             MiddleName = model.MiddleName,
             Email = model.Email,
-            PhoneNumber = model.PhoneNumber,
+            PhoneNumber = $"380{model.PhoneNumber}",
             CreatingTime = DateTimeOffset.UtcNow,
             Role = model.Role,
             IsRegistered = false,

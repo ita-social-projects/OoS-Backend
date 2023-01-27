@@ -55,4 +55,29 @@ public static class ProvidersGenerator
 
     public static List<Provider> WithWorkshops(this List<Provider> providers)
         => providers.Select(x => x.WithWorkshops()).ToList();
+
+    public static Provider WithInstitutionId(this Provider provider, Guid institutionId)
+    {
+        provider.InstitutionId = institutionId;
+        return provider;
+    }
+
+    public static List<Provider> WithInstitutionId(this List<Provider> providers, Guid institutionId, params int[] itemIndexes)
+    {
+        if (itemIndexes.Length == 0)
+        {
+            providers.ForEach(p => p.WithInstitutionId(institutionId));
+        }
+        else
+        {
+            foreach (var index in itemIndexes)
+            {
+                if (index < providers.Count)
+                {
+                    providers[index].WithInstitutionId(institutionId);
+                }
+            }
+        }
+        return providers;
+    }
 }

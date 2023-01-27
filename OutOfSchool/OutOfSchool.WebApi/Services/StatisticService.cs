@@ -17,6 +17,8 @@ public class StatisticService : IStatisticService
     private readonly ILogger<StatisticService> logger;
     private readonly IMapper mapper;
     private readonly ICacheService cache;
+    private readonly ICurrentUserService currentUserService;
+    private readonly IMinistryAdminService ministryAdminService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StatisticService"/> class.
@@ -28,6 +30,8 @@ public class StatisticService : IStatisticService
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Automapper DI service.</param>
     /// <param name="cache">Redis cache service.</param>
+    /// <param name="currentUserService">Service for manage current user.</param>
+    /// <param name="ministryAdminService">Service for manage ministry admin.</param>
     public StatisticService(
         IApplicationRepository applicationRepository,
         IWorkshopRepository workshopRepository,
@@ -35,7 +39,9 @@ public class StatisticService : IStatisticService
         IEntityRepository<long, Direction> directionRepository,
         ILogger<StatisticService> logger,
         IMapper mapper,
-        ICacheService cache)
+        ICacheService cache,
+        ICurrentUserService currentUserService,
+        IMinistryAdminService ministryAdminService)
     {
         this.applicationRepository = applicationRepository;
         this.workshopRepository = workshopRepository;
@@ -44,6 +50,8 @@ public class StatisticService : IStatisticService
         this.logger = logger;
         this.mapper = mapper;
         this.cache = cache;
+        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
+        this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
     }
 
     // Return categories with 1 SQL query
@@ -66,6 +74,15 @@ public class StatisticService : IStatisticService
     {
         var workshops = workshopRepository.Get();
         var applications = applicationRepository.Get();
+
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+            workshops = workshops
+                .Where(w => w.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
+            applications = applications
+                .Where(a => a.Workshop.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
+        }
 
         if (catottgId > 0)
         {
@@ -155,6 +172,13 @@ public class StatisticService : IStatisticService
     {
         var workshops = workshopRepository
             .Get(includeProperties: $"{nameof(Address)},{nameof(InstitutionHierarchy)}");
+
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+            workshops = workshops
+                .Where(w => w.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
+        }
 
         if (catottgId > 0)
         {

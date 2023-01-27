@@ -83,7 +83,12 @@ public class WorkshopControllerTests
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         providerAdminService = new Mock<IProviderAdminService>();
 
-        controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, providerAdminService.Object, localizer.Object, options.Object)
+        controller = new WorkshopController(
+            workshopServiceMoq.Object,
+            providerServiceMoq.Object,
+            providerAdminService.Object,
+            localizer.Object,
+            options.Object)
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
         };

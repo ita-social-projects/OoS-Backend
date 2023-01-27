@@ -30,6 +30,8 @@ public class WorkshopController : ControllerBase
     /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="options">Application default values.</param>
+    /// <param name="currentUserService">Service for manage current user.</param>
+    /// <param name="ministryAdminService">Service for manage ministry admin.</param>
     public WorkshopController(
         IWorkshopServicesCombiner combinedWorkshopService,
         IProviderService providerService,

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using AutoMapper.Internal;
 using Bogus;
+using Nest;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
@@ -31,6 +33,32 @@ public static class AdminGenerator
     {
         institutionAdmin.ForEach(x=>x.User = UserGenerator.Generate());
         institutionAdmin.ForEach(x=>x.Institution = InstitutionsGenerator.Generate());
+        return institutionAdmin;
+    }
+
+    public static InstitutionAdmin WithInstitutionId(this InstitutionAdmin institutionAdmin, Guid institutionId)
+    {
+        institutionAdmin.InstitutionId = institutionId;
+        return institutionAdmin;
+    }
+
+    public static List<InstitutionAdmin> WithInsitutionId(this List<InstitutionAdmin> institutionAdmin, Guid institutionId, params int[] itemIndexes)
+    {
+        if (itemIndexes.Length == 0)
+        {
+            institutionAdmin.ForEach(x => x.WithInstitutionId(institutionId));
+        }
+        else
+        {
+            foreach (var index in itemIndexes)
+            {
+                if (index < institutionAdmin.Count)
+                {
+                    institutionAdmin[index].WithInstitutionId(institutionId);
+                }
+            }
+        }
+        
         return institutionAdmin;
     }
 }

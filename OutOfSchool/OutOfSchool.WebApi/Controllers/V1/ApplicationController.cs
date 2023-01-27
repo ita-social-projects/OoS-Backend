@@ -44,7 +44,7 @@ public class ApplicationController : ControllerBase
     /// <response code="200">All entities were found.</response>
     /// <response code="204">No entity was found.</response>
     /// <response code="500">If any server error occurs.</response>
-    [HasPermission(Permissions.SystemManagement)]
+    [HasPermission(Permissions.ApplicationRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ApplicationDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]

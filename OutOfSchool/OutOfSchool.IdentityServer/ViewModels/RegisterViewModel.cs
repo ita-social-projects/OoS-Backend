@@ -30,6 +30,7 @@ public class RegisterViewModel
     [EnumDataType(typeof(Gender), ErrorMessage = Constants.EnumErrorMessage)]
     public Gender Gender { get; set; }
 
+    [Required(ErrorMessage = "Date of birth is required")]
     [DataType(DataType.Date)]
     public DateTime DateOfBirth { get; set; }
 

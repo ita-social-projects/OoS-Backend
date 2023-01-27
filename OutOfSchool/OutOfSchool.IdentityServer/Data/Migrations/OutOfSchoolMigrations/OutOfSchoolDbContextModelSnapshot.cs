@@ -282,6 +282,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
 
+                    b.Property<string>("TitleEn")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
                     b.HasKey("Id");
 
                     b.ToTable("AchievementTypes", (string)null);
@@ -290,37 +294,44 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         new
                         {
                             Id = 1L,
-                            Title = "Переможці міжнародних та всеукраїнських спортивних змагань (індивідуальних та командних)"
+                            Title = "Переможці міжнародних та всеукраїнських спортивних змагань (індивідуальних та командних)",
+                            TitleEn = "Winners of international and all-Ukrainian sports competitions (individual and team)"
                         },
                         new
                         {
                             Id = 2L,
-                            Title = "Призери та учасники міжнародних, всеукраїнських та призери регіональних конкурсів і виставок наукових, технічних, дослідницьких, інноваційних, ІТ проектів"
+                            Title = "Призери та учасники міжнародних, всеукраїнських та призери регіональних конкурсів і виставок наукових, технічних, дослідницьких, інноваційних, ІТ проектів",
+                            TitleEn = "Winners and participants of international, all-Ukrainian and regional contests and exhibitions of scientific, technical, research, innovation, IT projects"
                         },
                         new
                         {
                             Id = 3L,
-                            Title = "Реципієнти міжнародних грантів"
+                            Title = "Реципієнти міжнародних грантів",
+                            TitleEn = "Recipients of international grants"
                         },
                         new
                         {
                             Id = 4L,
-                            Title = "Призери міжнародних культурних конкурсів та фестивалів"
+                            Title = "Призери міжнародних культурних конкурсів та фестивалів",
+                            TitleEn = "Winners of international cultural competitions and festivals"
                         },
                         new
                         {
                             Id = 5L,
-                            Title = "Соціально активні категорії учнів"
+                            Title = "Соціально активні категорії учнів",
+                            TitleEn = "Socially active categories of students"
                         },
                         new
                         {
                             Id = 6L,
-                            Title = "Цифрові інструменти Google для закладів вищої та фахової передвищої освіти"
+                            Title = "Цифрові інструменти Google для закладів вищої та фахової передвищої освіти",
+                            TitleEn = "Google digital tools for institutions of higher and professional pre-higher education"
                         },
                         new
                         {
                             Id = 7L,
-                            Title = "Переможці та учасники олімпіад міжнародного та всеукраїнського рівнів"
+                            Title = "Переможці та учасники олімпіад міжнародного та всеукраїнського рівнів",
+                            TitleEn = "Winners and participants of olympiads at the international and all-Ukrainian levels"
                         });
                 });
 
@@ -1004,7 +1015,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 1L,
                             Description = "techadmin permissions",
-                            PackedPermissions = "de\n\r !()+43257>=<?HGIFPQ[]\\rpqoT",
+                            PackedPermissions = "def\n\r !()+43257>=<?HGIFPQ[]\\rpqonT",
                             RoleName = "TechAdmin"
                         },
                         new
@@ -1032,7 +1043,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 5L,
                             Description = "ministry admin permissions",
-                            PackedPermissions = "e\n257(PQFT",
+                            PackedPermissions = "ef\n257(PQFTn[",
                             RoleName = "MinistryAdmin"
                         });
                 });
@@ -1388,6 +1399,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("NameEn")
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
@@ -1399,27 +1415,32 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         new
                         {
                             Id = 1L,
-                            Name = "Діти із багатодітних сімей"
+                            Name = "Діти із багатодітних сімей",
+                            NameEn = "Children from large families"
                         },
                         new
                         {
                             Id = 2L,
-                            Name = "Діти із малозабезпечених сімей"
+                            Name = "Діти із малозабезпечених сімей",
+                            NameEn = "Children from low-income families"
                         },
                         new
                         {
                             Id = 3L,
-                            Name = "Діти з інвалідністю"
+                            Name = "Діти з інвалідністю",
+                            NameEn = "Children with disabilities"
                         },
                         new
                         {
                             Id = 4L,
-                            Name = "Діти-сироти"
+                            Name = "Діти-сироти",
+                            NameEn = "Orphans"
                         },
                         new
                         {
                             Id = 5L,
-                            Name = "Діти, позбавлені батьківського піклування"
+                            Name = "Діти, позбавлені батьківського піклування",
+                            NameEn = "Children deprived of parental care"
                         });
                 });
 

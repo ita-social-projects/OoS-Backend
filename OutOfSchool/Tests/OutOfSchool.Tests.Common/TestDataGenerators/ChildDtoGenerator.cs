@@ -5,6 +5,7 @@ using Bogus;
 
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.SocialGroup;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 

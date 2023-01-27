@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -18,6 +19,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
     private readonly IInstitutionAdminRepository institutionAdminRepository;
     private readonly IEntityRepository<string, User> userRepository;
     private readonly IMapper mapper;
+    private readonly ICurrentUserService currentUserService;
 
     public MinistryAdminService(
         IHttpClientFactory httpClientFactory,
@@ -26,13 +28,15 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         IInstitutionAdminRepository institutionAdminRepository,
         ILogger<MinistryAdminService> logger,
         IEntityRepository<string, User> userRepository,
-        IMapper mapper)
+        IMapper mapper,
+        ICurrentUserService currentUserService)
         : base(httpClientFactory, communicationConfig?.Value, logger)
     {
         this.identityServerConfig = (identityServerConfig ?? throw new ArgumentNullException(nameof(identityServerConfig))).Value;
         this.institutionAdminRepository = institutionAdminRepository ?? throw new ArgumentNullException(nameof(institutionAdminRepository));
         this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
     }
 
     public async Task<MinistryAdminDto> GetByIdAsync(string id)
@@ -122,6 +126,26 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         ModelValidationHelper.ValidateOffsetFilter(filter);
 
         var filterPredicate = PredicateBuild(filter);
+
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var ministryAdmin = await GetByUserId(currentUserService.UserId);
+
+            if (filter.InstitutionId == Guid.Empty)
+            {
+                filterPredicate = filterPredicate.And(p => p.InstitutionId == ministryAdmin.InstitutionId);
+            }
+            else if (ministryAdmin.InstitutionId != filter.InstitutionId)
+            {
+                Logger.LogInformation($"Filter institutionId {filter.InstitutionId} is not equals to logined Ministry admin institutionId {ministryAdmin.InstitutionId}");
+
+                return new SearchResult<MinistryAdminDto>()
+                {
+                    TotalAmount = 0,
+                    Entities = default,
+                };
+            }
+        }
 
         int count = await institutionAdminRepository.Count(filterPredicate).ConfigureAwait(false);
 

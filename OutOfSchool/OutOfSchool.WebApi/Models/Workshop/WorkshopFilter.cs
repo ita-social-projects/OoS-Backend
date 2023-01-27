@@ -62,4 +62,6 @@ public class WorkshopFilter : OffsetFilter
 
     [Range(2, 10, ErrorMessage = "Field value should be in a range from 2 to 10")]
     public int RadiusKm { get; set; } = 5;
+
+    public Guid? InstitutionId { get; set; } = Guid.Empty;
 }

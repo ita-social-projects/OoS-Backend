@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models;
 
@@ -60,6 +61,9 @@ public class WorkshopBaseCard
     public bool WithDisabilityOptions { get; set; }
 
     public float Rating { get; set; }
+
+    [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
+    public ProviderLicenseStatus ProviderLicenseStatus { get; set; } = ProviderLicenseStatus.NotProvided;
 }
 
 public class WorkshopProviderViewCard : WorkshopBaseCard

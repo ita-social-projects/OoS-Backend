@@ -172,10 +172,10 @@ public partial class StatisticReports : Migration
 					IFNULL(app.ChildrenStudyingLess18, 0) AS ChildrenStudyingLess18,
 					IFNULL(t.Amount, 0) AS Teachers
 				FROM
-					providers p
-                    INNER JOIN institutions i
+					Providers p
+                    INNER JOIN Institutions i
 						ON i.Id = p.InstitutionId
-					INNER JOIN addresses a
+					INNER JOIN Addresses a
 						ON a.Id = p.LegalAddressId
 					INNER JOIN (SELECT
 							c.Id,
@@ -207,21 +207,21 @@ public partial class StatisticReports : Migration
 								ELSE '' 
 							END AS Settlement
 						FROM
-							catottgs c
-							LEFT JOIN catottgs c2
+							CATOTTGs c
+							LEFT JOIN CATOTTGs c2
 								ON c2.Id = c.ParentId
-							LEFT JOIN catottgs c3
+							LEFT JOIN CATOTTGs c3
 								ON c3.Id = c2.ParentId
-							LEFT JOIN catottgs c4
+							LEFT JOIN CATOTTGs c4
 								ON c4.Id = c3.ParentId
-							LEFT JOIN catottgs c5
+							LEFT JOIN CATOTTGs c5
 								ON c5.Id = c4.ParentId) c
 						ON c.Id = a.CATOTTGId
 					LEFT JOIN (SELECT
 							w.ProviderId,
 							COUNT(*) AS Amount
 						FROM
-							workshops w
+							Workshops w
 						WHERE
 							NOT w.IsDeleted
 						GROUP BY w.ProviderId) wa
@@ -234,10 +234,10 @@ public partial class StatisticReports : Migration
 							SUM(CASE WHEN a.Status IN (2,3,4) AND c.Gender = 1 THEN 1 ELSE 0 END) AS ChildrenStudyingFemale,
 							SUM(CASE WHEN a.Status IN (2,3,4) AND DATE_ADD(CURDATE(), INTERVAL -18 YEAR) < c.DateOfBirth THEN 1 ELSE 0 END) AS ChildrenStudyingLess18
 						FROM
-							applications a
-							INNER JOIN workshops w
+							Applications a
+							INNER JOIN Workshops w
 								ON w.Id = a.WorkshopId
-							INNER JOIN children c
+							INNER JOIN Children c
 								ON c.Id = a.ChildId
 						WHERE
 							NOT a.IsDeleted
@@ -250,9 +250,9 @@ public partial class StatisticReports : Migration
 							COUNT(*) AS Amount
 						FROM
 							Teachers t
-							INNER JOIN workshops w
+							INNER JOIN Workshops w
 								ON w.Id = t.WorkshopId
-							INNER JOIN providers p
+							INNER JOIN Providers p
 								ON p.Id = w.ProviderId
 						WHERE
 							NOT t.IsDeleted
@@ -282,18 +282,18 @@ public partial class StatisticReports : Migration
 							IFNULL(tih.TeachersFrom51To55, 0) AS TeachersFrom51To55InstitutionHierarchy,
 							IFNULL(tih.TeachersFrom55, 0) AS TeachersFrom55InstitutionHierarchy
 						FROM
-							providers p	
+							Providers p	
 							INNER JOIN (SELECT
 									w.ProviderId,
 									w.InstitutionHierarchyId,
 									COUNT(*) AS Amount
 								FROM
-									workshops w
+									Workshops w
 								WHERE
 									NOT w.IsDeleted
 								GROUP BY w.ProviderId, w.InstitutionHierarchyId) wa
 								ON wa.ProviderId = p.Id
-							LEFT JOIN institutionhierarchies ih
+							LEFT JOIN InstitutionHierarchies ih
 								ON wa.InstitutionHierarchyId = ih.Id
 							LEFT JOIN (SELECT
 										w.ProviderId,
@@ -307,23 +307,23 @@ public partial class StatisticReports : Migration
 										SUM(CASE WHEN a.Status IN (2,3,4) AND csgDisability.ChildrenId IS NOT NULL THEN 1 ELSE 0 END) AS ChildrenStudyingDisabilityInstitutionHierarchy,
 										SUM(CASE WHEN a.Status IN (2,3,4) AND csgOrphan.ChildrenId IS NOT NULL THEN 1 ELSE 0 END) AS ChildrenStudyingOrphanInstitutionHierarchy
 									FROM
-										applications a
-										INNER JOIN workshops w
+										Applications a
+										INNER JOIN Workshops w
 											ON w.Id = a.WorkshopId
-										INNER JOIN children c
+										INNER JOIN Children c
 											ON c.Id = a.ChildId
 										LEFT JOIN (SELECT DISTINCT
 												ac.ChildrenId
 											FROM 
-												achievementchild ac) ach
+												AchievementChild ac) ach
 											ON ach.ChildrenId = c.Id
-										LEFT JOIN childsocialgroup csgLargeFamily
+										LEFT JOIN ChildSocialGroup csgLargeFamily
 											ON csgLargeFamily.ChildrenId = c.Id AND csgLargeFamily.SocialGroupsId = 1
-										LEFT JOIN childsocialgroup csgPoorFamily
+										LEFT JOIN ChildSocialGroup csgPoorFamily
 											ON csgPoorFamily.ChildrenId = c.Id AND csgPoorFamily.SocialGroupsId = 2
-										LEFT JOIN childsocialgroup csgDisability
+										LEFT JOIN ChildSocialGroup csgDisability
 											ON csgDisability.ChildrenId = c.Id AND csgDisability.SocialGroupsId = 3
-										LEFT JOIN childsocialgroup csgOrphan
+										LEFT JOIN ChildSocialGroup csgOrphan
 											ON csgOrphan.ChildrenId = c.Id AND csgOrphan.SocialGroupsId IN (4,5)
 									WHERE
 										NOT a.IsDeleted
@@ -342,9 +342,9 @@ public partial class StatisticReports : Migration
 										SUM(CASE WHEN ty.Years >= 55 THEN 1 ELSE 0 END) AS TeachersFrom55
 									FROM
 										Teachers t
-										INNER JOIN workshops w
+										INNER JOIN Workshops w
 											ON w.Id = t.WorkshopId
-										INNER JOIN providers p
+										INNER JOIN Providers p
 											ON p.Id = w.ProviderId
 										INNER JOIN (SELECT t.Id, TIMESTAMPDIFF(YEAR, t.DateOfBirth, CURDATE()) AS Years FROM Teachers t) ty
 											ON ty.Id = t.Id
