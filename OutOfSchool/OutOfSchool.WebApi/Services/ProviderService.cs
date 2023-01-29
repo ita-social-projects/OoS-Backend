@@ -258,6 +258,7 @@ public class ProviderService : IProviderService, INotificationReciever
         return dto;
     }
 
+    /// <inheritdoc/>
     public async Task<ProviderBlockDto> Block(ProviderBlockDto providerBlockDto)
     {
         logger.LogInformation($"Block/Unblock Provider by Id started.");
@@ -277,6 +278,17 @@ public class ProviderService : IProviderService, INotificationReciever
         provider.IsBlocked = providerBlockDto.IsBlocked;
         provider.BlockReason = providerBlockDto.IsBlocked ? providerBlockDto.BlockReason : null;
         await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+
+        // TODO What's happen if previous action will not successfull?
+        var workshops = await workshopServiceCombiner
+                           .BlockByProvider(provider)
+                           .ConfigureAwait(false);
+
+        foreach (var workshop in workshops)
+        {
+            logger.LogInformation($"IsBlocked property with povider Id = {provider?.Id} " +
+                                  $"in workshops with Id = {workshop?.Id} updated successfully.");
+        }
 
         logger.LogInformation($"Provider(id) {providerBlockDto.Id} IsBlocked was changed to {provider.IsBlocked}");
 
