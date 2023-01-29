@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
@@ -10,9 +11,10 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230114192426_AddNameEnColumnToSocialGroupModel")]
+    partial class AddNameEnColumnToSocialGroupModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -671,24 +673,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Children");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.CodeficatorParent", b =>
-                {
-                    b.Property<long>("CatottgsId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("Level")
-                        .HasColumnType("int");
-
-                    b.Property<long>("ParentId")
-                        .HasColumnType("bigint");
-
-                    b.HasIndex("CatottgsId");
-
-                    b.HasIndex("ParentId");
-
-                    b.ToTable("CodeficatorParents");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1033,7 +1017,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 1L,
                             Description = "techadmin permissions",
-                            PackedPermissions = "def\n\r !()+43257>=<?HGIFPQ[]\\rpqon|z{yx}T",
+                            PackedPermissions = "def\n\r !()+43257>=<?HGIFPQ[]\\rpqonT",
                             RoleName = "TechAdmin"
                         },
                         new
@@ -1061,15 +1045,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 5L,
                             Description = "ministry admin permissions",
-                            PackedPermissions = "ef\n257(PQFTn[zxy{}",
+                            PackedPermissions = "ef\n257(PQFTn[",
                             RoleName = "MinistryAdmin"
-                        },
-                        new
-                        {
-                            Id = 6L,
-                            Description = "region admin permissions",
-                            PackedPermissions = "ef\n257(PQFTxy[",
-                            RoleName = "RegionAdmin"
                         });
                 });
 
@@ -1411,30 +1388,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("ParentId");
 
                     b.ToTable("Ratings");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.RegionAdmin", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<long>("CATOTTGId")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid>("InstitutionId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)");
-
-                    b.HasKey("UserId");
-
-                    b.HasIndex("CATOTTGId");
-
-                    b.HasIndex("InstitutionId");
-
-                    b.ToTable("RegionAdmins");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SocialGroup", b =>
@@ -2258,25 +2211,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Parent");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.CodeficatorParent", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.CATOTTG", "CATOTTG")
-                        .WithMany()
-                        .HasForeignKey("CatottgsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.CATOTTG", "Parent")
-                        .WithMany()
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CATOTTG");
-
-                    b.Navigation("Parent");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformationItem", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.CompanyInformation", "CompanyInformation")
@@ -2478,33 +2412,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
 
                     b.Navigation("Parent");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.RegionAdmin", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.CATOTTG", "CATOTTG")
-                        .WithMany()
-                        .HasForeignKey("CATOTTGId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.Institution", "Institution")
-                        .WithMany()
-                        .HasForeignKey("InstitutionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CATOTTG");
-
-                    b.Navigation("Institution");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SubordinationStructure.InstitutionFieldDescription", b =>
