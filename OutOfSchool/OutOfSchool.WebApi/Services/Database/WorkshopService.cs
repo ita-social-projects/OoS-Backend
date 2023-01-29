@@ -391,8 +391,7 @@ public class WorkshopService : IWorkshopService
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
     public async Task<IEnumerable<Workshop>> BlockByProvider(Provider provider)
     {
-        // TODO Rename logs
-        logger.LogInformation($"Partial updating {nameof(Workshop)} with ProviderId = {provider?.Id} was started.");
+        logger.LogInformation($"Block {nameof(Workshop)} with ProviderId = {provider?.Id} was started.");
 
         try
         {
@@ -401,7 +400,7 @@ public class WorkshopService : IWorkshopService
         catch (DbUpdateConcurrencyException exception)
         {
             logger.LogError(exception,
-                $"Partial updating {nameof(Workshop)} with ProviderId = {provider?.Id} was failed. Exception: {exception.Message}");
+                $"Block {nameof(Workshop)} with ProviderId = {provider?.Id} was failed. Exception: {exception.Message}");
             throw;
         }
     }
@@ -574,6 +573,7 @@ public class WorkshopService : IWorkshopService
         var predicate = PredicateBuilder.True<Workshop>();
 
         predicate = predicate.And(x => x.Provider.Status == ProviderStatus.Approved);
+        predicate = predicate.And(x => !x.IsBlocked);
 
         if (filter.Ids.Any())
         {
