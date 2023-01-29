@@ -58,4 +58,17 @@ public class WorkshopRepository : SensitiveEntityRepository<Workshop>, IWorkshop
 
         return await workshops.ToListAsync();
     }
+
+    public async Task<IEnumerable<Workshop>> BlockByProvider(Provider provider)
+    {
+        var workshops = db.Workshops.Where(ws => ws.ProviderId == provider.Id);
+        await workshops.ForEachAsync(ws =>
+        {
+            ws.IsBlocked = provider.IsBlocked;
+        });
+
+        await db.SaveChangesAsync();
+
+        return await workshops.ToListAsync();
+    }
 }

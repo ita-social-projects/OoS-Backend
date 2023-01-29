@@ -389,6 +389,25 @@ public class WorkshopService : IWorkshopService
 
     /// <inheritdoc/>
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
+    public async Task<IEnumerable<Workshop>> BlockByProvider(Provider provider)
+    {
+        // TODO Rename logs
+        logger.LogInformation($"Partial updating {nameof(Workshop)} with ProviderId = {provider?.Id} was started.");
+
+        try
+        {
+            return await workshopRepository.BlockByProvider(provider).ConfigureAwait(false);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            logger.LogError(exception,
+                $"Partial updating {nameof(Workshop)} with ProviderId = {provider?.Id} was failed. Exception: {exception.Message}");
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
     public async Task Delete(Guid id)
     {
         logger.LogInformation($"Deleting Workshop with Id = {id} started.");

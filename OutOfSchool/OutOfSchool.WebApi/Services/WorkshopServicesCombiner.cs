@@ -127,6 +127,23 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
+    public async Task<IEnumerable<Workshop>> BlockByProvider(Provider provider)
+    {
+        var workshops = await workshopService.BlockByProvider(provider).ConfigureAwait(false);
+
+        foreach (var workshop in workshops)
+        {
+            await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
+                    ElasticsearchSyncEntity.Workshop,
+                    workshop.Id,
+                    ElasticsearchSyncOperation.Update)
+                .ConfigureAwait(false);
+        }
+
+        return workshops;
+    }
+
+    /// <inheritdoc/>
     public async Task Delete(Guid id)
     {
         await workshopService.Delete(id).ConfigureAwait(false);
