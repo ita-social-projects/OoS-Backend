@@ -9,5 +9,10 @@ internal class CodeficatorConfiguration : IEntityTypeConfiguration<CATOTTG>
     {
         builder
             .Property<bool>("IsTop");
+
+        builder
+            .ToTable(tb => tb.HasTrigger("catottgs_AFTER_DELETE"))
+            .ToTable(tb => tb.HasTrigger("catottgs_AFTER_INSERT"))
+            .ToTable(tb => tb.HasTrigger("catottgs_AFTER_UPDATE"));
     }
 }
