@@ -38,6 +38,8 @@ public class ProviderService : IProviderService, INotificationReciever
     private readonly IInstitutionAdminRepository institutionAdminRepository;
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
+    private readonly IRegionAdminService regionAdminService;
+    private readonly ICodeficatorService codeficatorService;
 
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
@@ -62,6 +64,8 @@ public class ProviderService : IProviderService, INotificationReciever
     /// <param name="institutionAdminRepository">Repository for getting ministry admins.</param>
     /// <param name="currentUserService">Service for manage current user.</param>
     /// <param name="ministryAdminService">Service for manage ministry admin.</param>
+    /// <param name="regionAdminService">Service for managing region admin rigths.</param>
+    /// <param name="codeficatorService">Codeficator service.</param>
     public ProviderService(
         IProviderRepository providerRepository,
         IEntityRepository<string, User> usersRepository,
@@ -78,7 +82,9 @@ public class ProviderService : IProviderService, INotificationReciever
         IProviderAdminService providerAdminService,
         IInstitutionAdminRepository institutionAdminRepository,
         ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService)
+        IMinistryAdminService ministryAdminService,
+        IRegionAdminService regionAdminService,
+        ICodeficatorService codeficatorService)
     {
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -96,6 +102,8 @@ public class ProviderService : IProviderService, INotificationReciever
         this.providerAdminService = providerAdminService ?? throw new ArgumentNullException(nameof(providerAdminService));
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
+        this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
+        this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
     }
 
     private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
@@ -118,6 +126,24 @@ public class ProviderService : IProviderService, INotificationReciever
         {
             var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
             filterPredicate = filterPredicate.And(p => p.InstitutionId == ministryAdmin.InstitutionId);
+        }
+
+        if (currentUserService.IsRegionAdmin())
+        {
+            var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
+            filterPredicate = filterPredicate.And(p => p.InstitutionId == regionAdmin.InstitutionId);
+
+            var subSettlementsIds = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+
+            var tempPredicate = PredicateBuilder.False<Provider>();
+
+            foreach (var item in subSettlementsIds)
+            {
+                tempPredicate = tempPredicate.Or(x => x.LegalAddress.CATOTTGId == item);
+            }
+
+            filterPredicate = filterPredicate.And(tempPredicate);
         }
 
         int count = await providerRepository.Count(filterPredicate).ConfigureAwait(false);

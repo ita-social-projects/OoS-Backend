@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.Build.Framework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -30,6 +31,7 @@ public class DirectionServiceTests
     private Mock<IMapper> mapper;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock<IRegionAdminService> regionAdminServiceMock;
 
     [SetUp]
     public void SetUp()
@@ -48,6 +50,7 @@ public class DirectionServiceTests
         mapper = new Mock<IMapper>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        regionAdminServiceMock = new Mock<IRegionAdminService>();
 
         service = new DirectionService(
             repo,
@@ -56,7 +59,8 @@ public class DirectionServiceTests
             localizer.Object,
             mapper.Object,
             currentUserServiceMock.Object,
-            ministryAdminServiceMock.Object);
+            ministryAdminServiceMock.Object,
+            regionAdminServiceMock.Object);
 
         SeedDatabase();
     }
@@ -276,6 +280,43 @@ public class DirectionServiceTests
         ministryAdminServiceMock
             .Setup(m => m.GetByUserId(It.IsAny<string>()))
             .Returns(Task.FromResult<MinistryAdminDto>(new MinistryAdminDto()
+            {
+                InstitutionId = institutionId,
+            }));
+
+        // Act
+        var result = await service.GetByFilter(filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.True(result.Entities.All(d => d.Title == expectedDto.Title));
+    }
+
+    [Test]
+    [Order(12)]
+    public async Task GetByFilter_WhenRegionAdminCalled_ReturnDirections()
+    {
+        // Arrange
+        var filter = new DirectionFilter();
+        var institutionId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771");
+
+        var expected = await repo.GetByFilter(
+            d => d.InstitutionHierarchies.Any(
+                i => i.InstitutionId == institutionId),
+            includeProperties: "InstitutionHierarchies");
+
+        var expectedDto = new DirectionDto()
+        {
+            Id = expected.FirstOrDefault().Id,
+            Title = expected.FirstOrDefault().Title,
+            Description = expected.FirstOrDefault().Description,
+        };
+
+        mapper.Setup(m => m.Map<DirectionDto>(It.IsAny<Direction>())).Returns(expectedDto);
+
+        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(true);
+        regionAdminServiceMock
+            .Setup(m => m.GetByUserId(It.IsAny<string>()))
+            .Returns(Task.FromResult<RegionAdminDto>(new RegionAdminDto()
             {
                 InstitutionId = institutionId,
             }));

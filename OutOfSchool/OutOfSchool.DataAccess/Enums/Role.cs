@@ -6,4 +6,5 @@ public enum Role
     Parent,
     TechAdmin,
     MinistryAdmin,
+    RegionAdmin,
 }

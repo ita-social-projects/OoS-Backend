@@ -41,6 +41,8 @@ public class ApplicationServiceTests
     private Mock<IWorkshopServicesCombiner> workshopServiceCombinerMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock<IRegionAdminService> regionAdminServiceMock;
+    private Mock<ICodeficatorService> codeficatorServiceMock;
 
     private Mock<IOptions<ApplicationsConstraintsConfig>> applicationsConstraintsConfig;
 
@@ -55,6 +57,8 @@ public class ApplicationServiceTests
         workshopServiceCombinerMock = new Mock<IWorkshopServicesCombiner>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        regionAdminServiceMock = new Mock<IRegionAdminService>();
+        codeficatorServiceMock = new Mock<ICodeficatorService>();
 
         logger = new Mock<ILogger<ApplicationService>>();
         mapper = new Mock<IMapper>();
@@ -78,7 +82,9 @@ public class ApplicationServiceTests
             changesLogService.Object,
             workshopServiceCombinerMock.Object,
             currentUserServiceMock.Object,
-            ministryAdminServiceMock.Object);
+            ministryAdminServiceMock.Object,
+            regionAdminServiceMock.Object,
+            codeficatorServiceMock.Object);
     }
 
     [Test]
@@ -89,6 +95,7 @@ public class ApplicationServiceTests
         SetupGetAll(application);
         currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
         currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(false);
+        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(false);
 
         // Act
         var result = await service.GetAll(new ApplicationFilter());
@@ -120,12 +127,53 @@ public class ApplicationServiceTests
 
         currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
         currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(true);
+        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(false);
         ministryAdminServiceMock
             .Setup(m => m.GetByIdAsync(It.IsAny<string>()))
             .Returns(Task.FromResult<MinistryAdminDto>(new MinistryAdminDto()
             {
                 InstitutionId = institutionId,
             }));
+
+        // Act
+        var result = await service.GetAll(new ApplicationFilter());
+
+        // Assert
+        Assert.That(result.Entities.Count, Is.EqualTo(1));
+        Assert.That(result.Entities.FirstOrDefault().Workshop.InstitutionId, Is.EqualTo(institutionId));
+    }
+
+    [Test]
+    public async Task GetApplications_WhenRegionAdminCalled_ShouldReturnApplications()
+    {
+        // Arrange
+        var institutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4");
+        long catottgId = 31737;
+        var applications = WithApplicationsList();
+        SetupGetAllByInstitutionId(applications);
+
+        currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
+        currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(false);
+        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(true);
+        regionAdminServiceMock
+            .Setup(m => m.GetByUserId(It.IsAny<string>()))
+            .Returns(Task.FromResult<RegionAdminDto>(new RegionAdminDto()
+            {
+                InstitutionId = institutionId,
+                CATOTTGId = catottgId,
+            }));
+
+        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(true);
+        regionAdminServiceMock
+            .Setup(m => m.GetByUserId(It.IsAny<string>()))
+            .Returns(Task.FromResult<RegionAdminDto>(new RegionAdminDto()
+            {
+                InstitutionId = institutionId,
+            }));
+
+        codeficatorServiceMock
+            .Setup(x => x.GetAllChildrenIdsByParentIdAsync(It.IsAny<long>()))
+            .Returns(Task.FromResult((IEnumerable<long>)new List<long> { catottgId }));
 
         // Act
         var result = await service.GetAll(new ApplicationFilter());

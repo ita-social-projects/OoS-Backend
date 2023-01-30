@@ -24,4 +24,11 @@ public interface ICodeficatorRepository : IEntityRepository<long, CATOTTG>
     /// <param name="categories">Categories for search.</param>
     /// <returns>The task result contains a <see cref="List{CodeficatorAddressDto}"/> that contains elements' full addresses.</returns>
     public Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(string namePart, string categories = default);
+
+    /// <summary>
+    /// Get the list of CATOTTGs Ids by list of CATOTTGs parentIds.
+    /// </summary>
+    /// <param name="parentIds">list of CATOTTGs parentIds</param>
+    /// <returns>The task result contains a <see cref="List{TResult}"/> that contains the list of CATOTTGs Ids.</returns>
+    public Task<List<long>> GetIdsByParentIds(List<long> parentIds);
 }

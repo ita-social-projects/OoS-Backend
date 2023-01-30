@@ -46,4 +46,11 @@ public interface ICodeficatorService
     /// <param name="categories">Categories for search.</param>
     /// <returns>The task result contains a <see cref="CodeficatorAddressDto"/>.</returns>
     public Task<CodeficatorAddressDto> GetNearestByCoordinates(double lat, double lon, string categories = default);
+
+    /// <summary>
+    /// Get the subsettlements of current settlement by CATOTTG id.
+    /// </summary>
+    /// <param name="catottgId">CATOTTG id</param>
+    /// <returns>The task result contains a <see cref="List{TResult}"/> that contains subsettlements ids.</returns>
+    public Task<IEnumerable<long>> GetAllChildrenIdsByParentIdAsync(long catottgId);
 }

@@ -20,6 +20,9 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     private readonly IWorkshopStrategy workshopStrategy;
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
+    private readonly IRegionAdminService regionAdminService;
+    private readonly ICodeficatorService codeficatorService;
+    private readonly IMapper mapper;
 
     public WorkshopServicesCombiner(
         IWorkshopService workshopService,
@@ -29,7 +32,10 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         IApplicationRepository applicationRepository,
         IWorkshopStrategy workshopStrategy,
         ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService)
+        IMinistryAdminService ministryAdminService,
+        IRegionAdminService regionAdminService,
+        ICodeficatorService codeficatorService,
+        IMapper mapper)
     {
         this.workshopService = workshopService;
         this.elasticsearchSynchronizationService = elasticsearchSynchronizationService;
@@ -39,6 +45,9 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         this.workshopStrategy = workshopStrategy;
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
+        this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
+        this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
@@ -154,17 +163,34 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         {
             return new SearchResult<WorkshopCard> { TotalAmount = 0, Entities = new List<WorkshopCard>() };
         }
-        
-        if (currentUserService.IsMinistryAdmin())
+
+        SearchResult<WorkshopCard> workshops;
+
+        if (currentUserService.IsAdmin())
         {
-            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
-            filter.InstitutionId = ministryAdmin.InstitutionId;
+            var settlementsFilter = mapper.Map<WorkshopBySettlementsFilter>(filter);
+
+            if (currentUserService.IsMinistryAdmin())
+            {
+                var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+                settlementsFilter.InstitutionId = ministryAdmin.InstitutionId;
+            }
+
+            if (currentUserService.IsRegionAdmin())
+            {
+                var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
+                settlementsFilter.InstitutionId = regionAdmin.InstitutionId;
+                settlementsFilter.SettlementsIds = await codeficatorService
+                    .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+            }
+
+            workshops = await workshopService.GetByFilter(settlementsFilter).ConfigureAwait(false);
+        }
+        else
+        {
+            workshops = await workshopStrategy.SearchAsync(filter);
         }
 
-        var workshops = await workshopStrategy.SearchAsync(filter);
-
-        
-        
         return workshops;
     }
 

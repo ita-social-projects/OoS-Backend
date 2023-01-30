@@ -58,6 +58,8 @@ public class ProviderServiceUpdate
         var institutionAdminRepository = new Mock<IInstitutionAdminRepository>();
         var currentUserServiceMock = new Mock<ICurrentUserService>();
         var ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        var regionAdminService = new Mock<IRegionAdminService>();
+        var codeficatorService = new Mock<ICodeficatorService>();
 
         this.providerService = new ProviderService(
             providerRepository,
@@ -75,8 +77,9 @@ public class ProviderServiceUpdate
             providerAdminService.Object,
             institutionAdminRepository.Object,
             currentUserServiceMock.Object,
-            ministryAdminServiceMock.Object
-            );
+            ministryAdminServiceMock.Object,
+            regionAdminService.Object,
+            codeficatorService.Object);
     }
 
     [Test]

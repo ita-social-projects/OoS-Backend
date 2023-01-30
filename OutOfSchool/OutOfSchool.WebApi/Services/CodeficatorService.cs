@@ -2,6 +2,7 @@
 using AutoMapper;
 using H3Lib;
 using H3Lib.Extensions;
+using NuGet.Configuration;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Models.Codeficator;
@@ -94,6 +95,28 @@ public class CodeficatorService : ICodeficatorService
             .Select(c => c.city)
             .Select(mapper.Map<CodeficatorAddressDto>)
             .FirstOrDefault();
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<long>> GetAllChildrenIdsByParentIdAsync(long catottgId)
+    {
+        var parent = await codeficatorRepository.GetById(catottgId).ConfigureAwait(false);
+        if (parent == null)
+        {
+            return Enumerable.Empty<long>();
+        }
+
+        var result = new List<long> { catottgId };
+
+        var childrenIds = await codeficatorRepository.GetIdsByParentIds(result).ConfigureAwait(false);
+
+        while (childrenIds.Any())
+        {
+            result.AddRange(childrenIds);
+            childrenIds = await codeficatorRepository.GetIdsByParentIds(childrenIds).ConfigureAwait(false);
+        }
+
+        return result;
     }
 
     #region privateMethods

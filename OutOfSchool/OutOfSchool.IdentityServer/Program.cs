@@ -50,10 +50,7 @@ try
     identityContext.Database.Migrate();
     var manager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-    if (!manager.Roles.Any())
-    {
-        Startup.RolesInit(manager);
-    }
+    Startup.RolesInit(manager);
 
     foreach (var client in StaticConfig.Clients(clientSecret, identityOptions.AdditionalIdentityClients))
     {

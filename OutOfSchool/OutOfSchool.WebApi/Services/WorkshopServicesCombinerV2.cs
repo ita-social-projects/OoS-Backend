@@ -1,4 +1,5 @@
-﻿using OutOfSchool.Services.Enums;
+﻿using AutoMapper;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services.Strategies.Interfaces;
@@ -15,14 +16,20 @@ public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopSer
         IApplicationRepository applicationRepository,
         IWorkshopStrategy workshopStrategy,
         ICurrentUserService currentUserServicse,
-        IMinistryAdminService ministryAdminService)
+        IMinistryAdminService ministryAdminService,
+        IRegionAdminService regionAdminService,
+        ICodeficatorService codeficatorService,
+        IMapper mapper)
         : base(workshopService,
             elasticsearchSynchronizationService,
             notificationService, favoriteRepository,
             applicationRepository,
             workshopStrategy,
             currentUserServicse,
-            ministryAdminService)
+            ministryAdminService,
+            regionAdminService,
+            codeficatorService,
+            mapper)
     {
     }
 

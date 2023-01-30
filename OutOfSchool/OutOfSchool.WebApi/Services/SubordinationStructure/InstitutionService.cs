@@ -20,6 +20,7 @@ public class InstitutionService : IInstitutionService
     private readonly ICacheService cache;
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
+    private readonly IRegionAdminService regionAdminService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InstitutionService"/> class.
@@ -30,13 +31,15 @@ public class InstitutionService : IInstitutionService
     /// <param name="cache">Redis cache service.</param>
     /// <param name="currentUserService">Service for manage current user.</param>
     /// <param name="ministryAdminService">Service for manage ministry admin</param>
+    /// <param name="regionAdminService">Service for managing region admin rigths.</param>
     public InstitutionService(
         ISensitiveEntityRepository<Institution> repository,
         ILogger<InstitutionService> logger,
         IMapper mapper,
         ICacheService cache,
         ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService)
+        IMinistryAdminService ministryAdminService,
+        IRegionAdminService regionAdminService)
     {
         this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -44,6 +47,7 @@ public class InstitutionService : IInstitutionService
         this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
+        this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
     }
 
     /// <inheritdoc/>
@@ -67,6 +71,12 @@ public class InstitutionService : IInstitutionService
         {
             var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
             institutions = institutions.Where(i => i.Id == ministryAdmin.InstitutionId);
+        }
+
+        if (currentUserService.IsRegionAdmin())
+        {
+            var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
+            institutions = institutions.Where(i => i.Id == regionAdmin.InstitutionId);
         }
 
         logger.LogInformation(!institutions.Any()

@@ -18,6 +18,7 @@ public static class PermissionsSeeder
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.WorkshopEdit, Permissions.WorkshopRemove, Permissions.WorkshopAddNew,
         Permissions.MinistryAdmins, Permissions.MinistryAdminAddNew, Permissions.MinistryAdminRemove, Permissions.MinistryAdminEdit, Permissions.MinistryAdminRead,
+        Permissions.RegionAdmins, Permissions.RegionAdminAddNew, Permissions.RegionAdminRemove, Permissions.RegionAdminEdit, Permissions.RegionAdminRead, Permissions.RegionAdminBlock,
         Permissions.PersonalInfo,
     };
 
@@ -59,6 +60,7 @@ public static class PermissionsSeeder
         Permissions.PersonalInfo,
         Permissions.MinistryAdminRead,
         Permissions.WorkshopEdit,
+        Permissions.RegionAdminAddNew, Permissions.RegionAdminRead, Permissions.RegionAdminEdit, Permissions.RegionAdminRemove, Permissions.RegionAdminBlock,
     };
 
     private static readonly IEnumerable<Permissions> SeedParentPermissions = new List<Permissions>
@@ -72,6 +74,21 @@ public static class PermissionsSeeder
         Permissions.RatingAddNew, Permissions.RatingEdit, Permissions.RatingRead,
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.PersonalInfo,
+    };
+
+    private static readonly IEnumerable<Permissions> SeedRegionAdminPermissions = new List<Permissions>
+    {
+        Permissions.ImpersonalDataRead, Permissions.LogDataRead,
+        Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
+        Permissions.ApplicationRead,
+        Permissions.ProviderRead, Permissions.ProviderRemove, Permissions.ProviderApprove,
+        Permissions.ParentRead,
+        Permissions.ChildRead,
+        Permissions.UserRead, Permissions.UserEdit,
+        Permissions.TeacherRead,
+        Permissions.PersonalInfo,
+        Permissions.RegionAdminRead, Permissions.RegionAdminEdit,
+        Permissions.WorkshopEdit,
     };
 
     public static string SeedPermissions(string role)
@@ -92,6 +109,9 @@ public static class PermissionsSeeder
 
             case "parent":
                 return SeedParentPermissions.PackPermissionsIntoString();
+
+            case "regionadmin":
+                return SeedRegionAdminPermissions.PackPermissionsIntoString();
 
             default:
                 break;
