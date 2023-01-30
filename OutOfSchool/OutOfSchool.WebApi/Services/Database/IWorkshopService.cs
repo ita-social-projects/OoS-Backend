@@ -129,4 +129,6 @@ public interface IWorkshopService
     /// <param name="workshopId">WorkshopId for which we need to get provider owner entity.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     Task<Guid> GetWorkshopProviderOwnerIdAsync(Guid workshopId);
+
+    Task<List<ShortEntityDto>> GetWorkshopListByProviderAdminId(Guid providerId);
 }

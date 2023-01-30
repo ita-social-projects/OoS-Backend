@@ -548,6 +548,20 @@ public class WorkshopService : IWorkshopService
             .ConfigureAwait(false)).ProviderId;
     }
 
+    public async Task<List<ShortEntityDto>> GetWorkshopListByProviderAdminId(Guid providerId)
+    {
+        logger.LogDebug($"Getting Workshop (Id, Title) by organization started. Looking ProviderAdminId = {providerId}.");
+
+        var workshops = await workshopRepository.Get(
+                where: x => x.ProviderAdmins.Any(p => p.ProviderId == providerId))
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        var result = mapper.Map<List<ShortEntityDto>>(workshops).OrderBy(entity => entity.Title).ToList();
+
+        return result;
+    }
+
     private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) => ModelValidationHelper.ValidateExcludedIdFilter(filter);
 
     private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)

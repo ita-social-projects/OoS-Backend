@@ -30,6 +30,14 @@ public interface IWorkshopServicesCombiner
     Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId);
 
     /// <summary>
+    /// Get all workshop cards (Id, Title) with the specified provider's Id.
+    /// </summary>
+    /// <param name="providerId">Provider's key.</param>
+    /// <returns>A <see cref="Task{ShortEntityDto}"/> representing the result of the asynchronous operation.
+    /// The task result contains a <see cref="List{ShortEntityDto}"/> that contains elements from the input sequence.</returns>
+    Task<List<ShortEntityDto>> GetWorkshopListByProviderAdminId(Guid providerId);
+    
+    /// <summary>
     /// Get entity by it's key.
     /// </summary>
     /// <param name="id">Key in the table.</param>
