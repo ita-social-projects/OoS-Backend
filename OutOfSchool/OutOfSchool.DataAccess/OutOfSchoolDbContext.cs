@@ -114,7 +114,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         base.OnModelCreating(builder);
 
         builder.Entity<DateTimeRange>()
-            .HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "EndTime >= StartTime");
+            .ToTable(dtr => dtr.HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "EndTime >= StartTime"));
 
         builder.ApplyConfiguration(new TeacherConfiguration());
         builder.ApplyConfiguration(new ApplicationConfiguration());
