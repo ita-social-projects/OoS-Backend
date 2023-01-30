@@ -25,17 +25,11 @@ public class NotificationRepository : SensitiveEntityRepository<Notification>, I
     /// <inheritdoc/>
     public async Task ClearNotifications()
     {
-        // TODO: replace it in EFCore7:
-        // await db.Notifications.Where(x => x.ReadDateTime == null && x.CreatedDateTime < dateNotReaded).ExecuteDeleteAsync();
-        // await db.Notifications.Where(x => x.ReadDateTime != null && x.CreatedDateTime < dateReaded).ExecuteDeleteAsync();
-        var dateNotReaded = DateTimeOffset.UtcNow.AddYears(-1);
-        var dateReaded = DateTimeOffset.UtcNow.AddMonths(-1);
+        var dateWasNotRead = DateTimeOffset.UtcNow.AddYears(-1);
+        var dateWasRead = DateTimeOffset.UtcNow.AddMonths(-1);
 
-        await db.Database.ExecuteSqlRawAsync(
-            @"DELETE FROM Notifications WHERE ReadDateTime IS NULL AND CreatedDateTime < {0};
-            DELETE FROM Notifications WHERE ReadDateTime IS NOT NULL AND CreatedDateTime < {1};",
-            dateNotReaded,
-            dateReaded);
+        await db.Notifications.Where(x => x.ReadDateTime == null && x.CreatedDateTime < dateWasNotRead).ExecuteDeleteAsync();
+        await db.Notifications.Where(x => x.ReadDateTime != null && x.CreatedDateTime < dateWasRead).ExecuteDeleteAsync();
     }
 
     /// <inheritdoc/>
