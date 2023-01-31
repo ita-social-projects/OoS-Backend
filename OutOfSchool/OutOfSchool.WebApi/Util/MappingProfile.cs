@@ -183,7 +183,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Workshop, opt => opt.Ignore());
 
         CreateMap<Teacher, TeacherDTO>()
-            .ForMember(dest => dest.CoverImage, opt => opt.Ignore());
+            .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
         CreateMap<DateTimeRange, DateTimeRangeDto>()
             .ForMember(dtr => dtr.Workdays, cfg => cfg.MapFrom(dtr => dtr.Workdays.ToDaysBitMaskEnumerable().ToList()));
@@ -233,9 +234,12 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Address, opt => opt.Ignore());
 
         CreateMap<SocialGroup, SocialGroupDto>().ReverseMap();
+
         CreateMap<SocialGroup, SocialGroupCreate>().ReverseMap();
 
-        CreateMap<Child, ChildDto>();
+        CreateMap<Child, ChildDto>()
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
+
         CreateMap<ChildDto, Child>()
             .ForMember(c => c.Parent, m => m.Ignore())
             .ForMember(c => c.Achievements, m => m.Ignore())
@@ -260,7 +264,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.EmailConfirmed, opt => opt.MapFrom(s => s.User.EmailConfirmed))
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(s => s.User.PhoneNumber.Right(Constants.PhoneShortLength)))
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(s => s.User.LastName))
-            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(s => s.User.MiddleName))
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(s => s.User.MiddleName ?? string.Empty))
             .ForMember(dest => dest.FirstName, opt => opt.MapFrom(s => s.User.FirstName));
 
         CreateMap<CompanyInformationItem, CompanyInformationItemDto>().ReverseMap();
@@ -354,6 +358,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.AccountStatus, m => m.Ignore())
             .ForMember(dest => dest.WorkshopTitles, opt => opt.Ignore())
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber.Right(Constants.PhoneShortLength)));
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
         CreateMap<DirectionDto, Direction>()
             .ForMember(dest => dest.InstitutionHierarchies, opt => opt.Ignore());
@@ -394,7 +399,8 @@ public class MappingProfile : Profile
 
         CreateMap<User, ShortUserDto>()
             .ForMember(dest => dest.Gender, opt => opt.Ignore())
-            .ForMember(dest => dest.DateOfBirth, opt => opt.Ignore());
+            .ForMember(dest => dest.DateOfBirth, opt => opt.Ignore())
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
         CreateMap<ShortUserDto, User>()
             .ForMember(dest => dest.IsRegistered, opt => opt.Ignore())
@@ -424,7 +430,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.User.Role))
             .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
-            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName))
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName ?? string.Empty))
             .ForMember(dest => dest.IsRegistered, opt => opt.MapFrom(src => src.User.IsRegistered))
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber.Right(Constants.PhoneShortLength)))
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName));
@@ -455,7 +461,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.User.Id))
             .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
-            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName))
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName ?? string.Empty))
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber.Right(Constants.PhoneShortLength)))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
             .ForMember(
@@ -481,8 +487,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.User.Id))
             .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
-            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName))
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber.Right(Constants.PhoneShortLength)))
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName ?? string.Empty))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
             .ForMember(dest => dest.CATOTTGCategory, opt => opt.MapFrom(src => src.CATOTTG.Category))
             .ForMember(dest => dest.CATOTTGName, opt => opt.MapFrom(src => src.CATOTTG.Name))
@@ -546,7 +552,8 @@ public class MappingProfile : Profile
         CreateMap<WorkshopInfoForChatList, WorkshopInfoForChatListDto>();
 
         CreateMap<ParentInfoForChatList, ParentDtoWithContactInfo>()
-            .ForMember(dest => dest.EmailConfirmed, opt => opt.Ignore());
+            .ForMember(dest => dest.EmailConfirmed, opt => opt.Ignore())
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
         CreateMap<ChatMessageInfoForChatList, ChatMessageWorkshopDto>();
 
