@@ -312,8 +312,8 @@ public class ProviderService : IProviderService, INotificationReciever
 
         foreach (var workshop in workshops)
         {
-            logger.LogInformation($"IsBlocked property with povider Id = {provider?.Id} " +
-                                  $"in workshops with Id = {workshop?.Id} updated successfully.");
+            logger.LogInformation($"IsBlocked property with povider Id = {provider.Id} " +
+                                  $"in workshops with Id = {workshop.Id} updated successfully.");
         }
 
         logger.LogInformation($"Provider(id) {providerBlockDto.Id} IsBlocked was changed to {provider.IsBlocked}");

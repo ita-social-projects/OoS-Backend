@@ -383,7 +383,7 @@ public class WorkshopService : IWorkshopService
         {
             logger.LogError(exception,
                 $"Partial updating {nameof(Workshop)} with ProviderId = {provider?.Id} was failed. Exception: {exception.Message}");
-            throw;
+            throw; // TODO Probably should not rethrow this exception to the higher level
         }
     }
 
@@ -391,7 +391,7 @@ public class WorkshopService : IWorkshopService
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
     public async Task<IEnumerable<Workshop>> BlockByProvider(Provider provider)
     {
-        logger.LogInformation($"Block {nameof(Workshop)} with ProviderId = {provider?.Id} was started.");
+        logger.LogInformation($"Block {nameof(Workshop)} with ProviderId = {provider.Id} was started.");
 
         try
         {
@@ -400,8 +400,8 @@ public class WorkshopService : IWorkshopService
         catch (DbUpdateConcurrencyException exception)
         {
             logger.LogError(exception,
-                $"Block {nameof(Workshop)} with ProviderId = {provider?.Id} was failed. Exception: {exception.Message}");
-            throw;
+                $"Block {nameof(Workshop)} with ProviderId = {provider.Id} was failed. Exception: {exception.Message}");
+            throw; // TODO Probably should not rethrow this exception to the higher level
         }
     }
 
