@@ -201,6 +201,12 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
+    public async Task<List<ShortEntityDto>> GetWorkshopListByProviderAdminId(string providerAdminId)
+    {
+        return await workshopService.GetWorkshopListByProviderAdminId(providerAdminId).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
     public async Task<SearchResult<T>> GetByProviderId<T>(Guid id, ExcludeIdFilter filter)
         where T : WorkshopBaseCard
     {
