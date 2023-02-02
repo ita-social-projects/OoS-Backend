@@ -59,7 +59,10 @@ public class MinistryAdminControllerTests
         
         fakeMinistryAdminService.Setup(s => s.BlockMinistryAdminAsync(It.IsAny<string>(),
             It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(fakeResponseDto);
-        
+
+        fakeMinistryAdminService.Setup(s => s.ReinviteMinistryAdminAsync(It.IsAny<string>(),
+            It.IsAny<string>(), It.IsAny<IUrlHelper>(), It.IsAny<string>())).ReturnsAsync(fakeResponseDto);
+
         var fakeHttpContext = new Mock<HttpContext>();
         fakeHttpContext.Setup(s => s.Request.Headers[It.IsAny<string>()]).Returns("Ok");
         
@@ -115,6 +118,20 @@ public class MinistryAdminControllerTests
         
         // Act
         var result = await ministryAdminController.Block("fakeAdminId", It.IsAny<bool>());
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(true, result.IsSuccess);
+        Assert.AreEqual("fakeFirstName", ((MinistryAdminBaseDto)result.Result).FirstName);
+    }
+
+    [Test]
+    public async Task Reinvite_WithValidModel_ReturnsSuccessResponseDto()
+    {
+        // Arrange
+
+        // Act
+        var result = await ministryAdminController.Reinvite("fakeAdminId");
 
         // Assert
         Assert.That(result, Is.Not.Null);

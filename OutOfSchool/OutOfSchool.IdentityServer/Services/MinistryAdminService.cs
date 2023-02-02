@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Common.Models;
+using OutOfSchool.IdentityServer.Services.Interfaces;
 using OutOfSchool.IdentityServer.Services.Password;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.Services.Enums;
@@ -127,31 +128,10 @@ public class MinistryAdminService : IMinistryAdminService
                     $"MinistryAdmin(id):{ministryAdminBaseDto.UserId} was successfully created by " +
                     $"User(id): {userId}. Request(id): {requestId}");
 
-                // TODO:
-                // Endpoint with sending new password
-
-                // TODO:
-                // Use template instead
-                var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-                var confirmationLink = url.Action(
-                    "EmailConfirmation",
-                    "Account",
-                    new { userId = user.Id, token },
-                    "https");
-                var subject = localizer["Confirm email"];
-                var adminInvitationViewModel = new AdminInvitationViewModel
-                {
-                    ConfirmationUrl = confirmationLink,
-                    Email = user.Email,
-                    Password = password,
-                };
-                var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.NewAdminInvitation, adminInvitationViewModel);
-
-                await emailSender.SendAsync(user.Email, subject, content);
+                await SendInvitationEmail(user, url, password);
 
                 // No sense to commit if the email was not sent, as user will not be able to login
                 // and needs to be re-created
-                // TODO: +1 need Endpoint with sending new password
                 await transaction.CommitAsync();
                 response.IsSuccess = true;
                 response.HttpStatusCode = HttpStatusCode.OK;
@@ -476,6 +456,99 @@ public class MinistryAdminService : IMinistryAdminService
                 return response;
             }
         }
+    }
+
+    public async Task<ResponseDto> ReinviteMinistryAdminAsync(
+        string ministryAdminId,
+        string userId,
+        IUrlHelper url,
+        string requestId)
+    {
+        var executionStrategy = context.Database.CreateExecutionStrategy();
+        var result = await executionStrategy.Execute(async () =>
+        {
+            var response = new ResponseDto();
+            await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+            try
+            {
+                var ministryAdmin = GetMinistryAdmin(ministryAdminId);
+
+                if (ministryAdmin is null)
+                {
+                    response.IsSuccess = false;
+                    response.HttpStatusCode = HttpStatusCode.NotFound;
+
+                    logger.LogError($"MinistryAdmin(id) {ministryAdminId} not found. " +
+                                    $"Request(id): {requestId}" +
+                                    $"User(id): {userId}");
+
+                    return response;
+                }
+
+                var user = await userManager.FindByIdAsync(ministryAdminId);
+                var password = PasswordGenerator.GenerateRandomPassword(userManager.Options.Password);
+                await userManager.RemovePasswordAsync(user);
+                var result = await userManager.AddPasswordAsync(user, password);
+
+                if (!result.Succeeded)
+                {
+                    await transaction.RollbackAsync();
+
+                    logger.LogError($"Error happened while reinviting MinistryAdmin. Request(id): {requestId}" +
+                                    $"User(id): {userId}" +
+                                    $"{string.Join(Environment.NewLine, result.Errors.Select(e => e.Description))}");
+
+                    response.IsSuccess = false;
+                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                    return response;
+                }
+
+                await SendInvitationEmail(user, url, password);
+
+                await transaction.CommitAsync();
+                response.IsSuccess = true;
+                response.HttpStatusCode = HttpStatusCode.OK;
+
+                logger.LogInformation($"MinistryAdmin(id):{ministryAdminId} was successfully reinvited by " +
+                                      $"User(id): {userId}. Request(id): {requestId}");
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+
+                logger.LogError($"Error happened while reinviting MinistryAdmin. Request(id): {requestId}" +
+                                $"User(id): {userId} {ex.Message}");
+
+                response.IsSuccess = false;
+                response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                return response;
+            }
+        });
+        return result;
+    }
+
+    private async Task SendInvitationEmail(User user, IUrlHelper url, string password)
+    {
+        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        var confirmationLink = url.Action(
+            "EmailConfirmation",
+            "Account",
+            new { userId = user.Id, token },
+            "https");
+        var subject = localizer["Confirm email"];
+        var adminInvitationViewModel = new AdminInvitationViewModel
+        {
+            ConfirmationUrl = confirmationLink,
+            Email = user.Email,
+            Password = password,
+        };
+        var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.NewAdminInvitation, adminInvitationViewModel);
+
+        await emailSender.SendAsync(user.Email, subject, content);
     }
 
     private InstitutionAdmin GetMinistryAdmin(string ministryAdminId)

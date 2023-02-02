@@ -74,4 +74,16 @@ public interface IMinistryAdminService
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains the <see cref="SearchResult{MinistryAdminDto}"/> that contains found elements.</returns>
     Task<SearchResult<MinistryAdminDto>> GetByFilter(MinistryAdminFilter filter);
+
+    /// <summary>
+    /// Reinvite Ministry Admin.
+    /// </summary>
+    /// <param name="ministryAdminId">Id of ministry admin.</param>
+    /// <param name="userId">Id of current user.</param>
+    /// <param name="token">Valid token with MinistryAdminEdit permissions.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    Task<Either<ErrorResponse, ActionResult>> ReinviteMinistryAdminAsync(
+        string ministryAdminId,
+        string userId,
+        string token);
 }

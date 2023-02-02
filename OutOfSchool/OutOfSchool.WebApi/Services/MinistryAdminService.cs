@@ -338,6 +338,73 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
     }
 
     /// <inheritdoc/>
+    public async Task<Either<ErrorResponse, ActionResult>> ReinviteMinistryAdminAsync(
+        string ministryAdminId,
+        string userId,
+        string token)
+    {
+        Logger.LogDebug(
+            "MinistryAdmin(id): {MinistryAdminId} reinvite was started. User(id): {UserId}",
+            ministryAdminId,
+            userId);
+
+        var ministryAdmin = await institutionAdminRepository.GetByIdAsync(ministryAdminId).ConfigureAwait(false);
+        if (ministryAdmin == null)
+        {
+            return null;
+        }
+
+        var user = (await userRepository.GetByFilter(u => u.Id == ministryAdmin.UserId).ConfigureAwait(false))
+            .SingleOrDefault();
+        if (user == null)
+        {
+            return null;
+        }
+        else if (user.LastLogin != DateTimeOffset.MinValue)
+        {
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Message = "Only neverlogged users can be reinvited.",
+            };
+        }
+
+        var request = new Request()
+        {
+            HttpMethodType = HttpMethodType.Put,
+            Url = new Uri(identityServerConfig.Authority, string.Concat(
+                CommunicationConstants.ReinviteMinistryAdmin,
+                ministryAdminId,
+                new PathString("/"))),
+            Token = token,
+            RequestId = Guid.NewGuid(),
+        };
+
+        Logger.LogDebug(
+            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            request.HttpMethodType,
+            request.RequestId,
+            userId,
+            request.Url);
+
+        var response = await SendRequest<ResponseDto>(request)
+            .ConfigureAwait(false);
+
+        return response
+            .FlatMap<ResponseDto>(r => r.IsSuccess
+                ? r
+                : new ErrorResponse
+                {
+                    HttpStatusCode = r.HttpStatusCode,
+                    Message = r.Message,
+                })
+            .Map(result => result.Result is not null
+                ? JsonConvert
+                    .DeserializeObject<ActionResult>(result.Result.ToString())
+                : null);
+    }
+
+    /// <inheritdoc/>
     public async Task<bool> IsProviderSubordinateAsync(string ministryAdminUserId, Guid providerId)
     {
         ArgumentNullException.ThrowIfNull(ministryAdminUserId);

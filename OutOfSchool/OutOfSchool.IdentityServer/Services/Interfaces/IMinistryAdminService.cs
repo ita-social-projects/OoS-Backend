@@ -26,4 +26,10 @@ public interface IMinistryAdminService
         string userId,
         string requestId,
         bool isBlocked);
+
+    Task<ResponseDto> ReinviteMinistryAdminAsync(
+        string ministryAdminId,
+        string userId,
+        IUrlHelper url,
+        string requestId);
 }

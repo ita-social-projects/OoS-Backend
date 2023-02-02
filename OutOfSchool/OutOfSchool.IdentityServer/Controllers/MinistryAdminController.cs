@@ -94,4 +94,15 @@ public class MinistryAdminController : Controller
         return await ministryAdminService
             .BlockMinistryAdminAsync(ministryAdminId, userId, Request.Headers["X-Request-ID"], isBlocked);
     }
+
+    [HttpPut("{ministryAdminId}")]
+    [HasPermission(Permissions.MinistryAdminEdit)]
+    public async Task<ResponseDto> Reinvite(string ministryAdminId)
+    {
+        logger.LogDebug($"Received request " +
+                        $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
+
+        return await ministryAdminService
+            .ReinviteMinistryAdminAsync(ministryAdminId, userId, Url, Request.Headers["X-Request-ID"]);
+    }
 }
