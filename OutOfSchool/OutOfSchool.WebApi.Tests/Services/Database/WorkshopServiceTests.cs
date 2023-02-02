@@ -35,6 +35,7 @@ public class WorkshopServiceTests
     private Mock<IMapper> mapperMock;
     private IMapper mapper;
     private Mock<IImageDependentEntityImagesInteractionService<Workshop>> workshopImagesMediator;
+    private Mock<IProviderAdminRepository> providerAdminRepository;
 
     [SetUp]
     public void SetUp()
@@ -47,6 +48,8 @@ public class WorkshopServiceTests
         mapperMock = new Mock<IMapper>();
         workshopImagesMediator = new Mock<IImageDependentEntityImagesInteractionService<Workshop>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        providerAdminRepository = new Mock<IProviderAdminRepository>();
+
         workshopService =
             new WorkshopService(
                 workshopRepository.Object,
@@ -55,7 +58,8 @@ public class WorkshopServiceTests
                 teacherService.Object,
                 logger.Object,
                 mapperMock.Object,
-                workshopImagesMediator.Object);
+                workshopImagesMediator.Object,
+                providerAdminRepository.Object);
     }
 
     #region Create
