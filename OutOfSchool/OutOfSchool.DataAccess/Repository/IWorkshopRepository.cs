@@ -17,4 +17,11 @@ public interface IWorkshopRepository : IEntityRepositoryBase<Guid, Workshop>
     /// <param name="provider">Provider to be searched by.</param>
     /// <returns>List of Workshops for the specified provider.</returns>
     Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider);
+
+    /// <summary>
+    /// Update IsBlocked property in all workshops with specified provider.
+    /// </summary>
+    /// <param name="provider">Provider to be searched by.</param>
+    /// <returns>List of Workshops for the specified provider.</returns>
+    Task<IEnumerable<Workshop>> BlockByProvider(Provider provider);
 }

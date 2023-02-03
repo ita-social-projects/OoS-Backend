@@ -100,6 +100,12 @@ public interface IWorkshopServicesCombiner
     /// <returns><see cref="IEnumerable{T}"/> of Workshops for the specified provider.</returns>
     Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider);
 
+    /// <summary>
+    /// Update IsBlocked property in all workshops with specified provider.
+    /// </summary>
+    /// <param name="provider">Provider to be searched by.</param>
+    /// <returns><see cref="IEnumerable{T}"/> of Workshops for the specified provider.</returns>
+    Task<IEnumerable<Workshop>> BlockByProvider(Provider provider);
 
     /// <summary>
     /// Get id of provider, who owns Workshop with specefied id
