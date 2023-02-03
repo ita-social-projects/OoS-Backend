@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json;
 using OutOfSchool.Common;
@@ -112,4 +113,6 @@ public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>
     public virtual ICollection<ChatRoomWorkshop> ChatRooms { get; set; }
 
     public virtual List<Image<Workshop>> Images { get; set; }
+
+    public bool IsBlocked { get; set; } = false;
 }
