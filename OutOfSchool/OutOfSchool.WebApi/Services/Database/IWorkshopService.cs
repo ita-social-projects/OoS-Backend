@@ -88,6 +88,14 @@ public interface IWorkshopService
     Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId);
 
     /// <summary>
+    /// Get all workshops (Id, Title) by provider admin Id.
+    /// </summary>
+    /// <param name="providerAdminId">Provider admin's key.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+    /// The task result contains a <see cref="List{ShortEntityDto}"/> that contains elements from the input sequence.</returns>
+    Task<List<ShortEntityDto>> GetWorkshopListByProviderAdminId(string providerAdminId);
+
+    /// <summary>
     /// Get all workshops by provider Id.
     /// </summary>
     /// <param name="id">Provider's key.</param>

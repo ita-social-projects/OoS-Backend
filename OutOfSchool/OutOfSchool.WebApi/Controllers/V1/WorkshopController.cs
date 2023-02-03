@@ -100,6 +100,36 @@ public class WorkshopController : ControllerBase
     }
 
     /// <summary>
+    /// Get all workshops (Id, Title) from the database by provider admin's id sorted by Title.
+    /// </summary>
+    /// <param name="providerAdminId">Id of the provider admin.</param>
+    /// <returns>The result is a <see cref="List{ShortEntityDto}"/> that contains a sorted by Title list of workshops that were received.</returns>
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ShortEntityDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("{providerAdminId}")]
+    public async Task<IActionResult> GetWorkshopListByProviderAdminId(string providerAdminId)
+    {
+        if (providerAdminId == string.Empty)
+        {
+            return BadRequest("Provider admin id is empty.");
+        }
+
+        var workshops = await combinedWorkshopService.GetWorkshopListByProviderAdminId(providerAdminId);
+
+        if (!workshops.Any())
+        {
+            return NoContent();
+        }
+
+        return Ok(workshops);
+    }
+
+    /// <summary>
     /// Get workshop cards by Provider's Id.
     /// </summary>
     /// <param name="id">Provider's id.</param>

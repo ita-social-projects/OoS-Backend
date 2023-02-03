@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Collections.Generic;
+using System.Linq.Expressions;
 using AutoMapper;
 using Castle.Core.Internal;
 using H3Lib;
@@ -33,6 +34,7 @@ public class WorkshopService : IWorkshopService
     private readonly ILogger<WorkshopService> logger;
     private readonly IMapper mapper;
     private readonly IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService;
+    private readonly IProviderAdminRepository providerAdminRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -51,7 +53,8 @@ public class WorkshopService : IWorkshopService
         ITeacherService teacherService,
         ILogger<WorkshopService> logger,
         IMapper mapper,
-        IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService)
+        IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService,
+        IProviderAdminRepository providerAdminRepository)
     {
         this.workshopRepository = workshopRepository;
         this.dateTimeRangeRepository = dateTimeRangeRepository;
@@ -60,6 +63,7 @@ public class WorkshopService : IWorkshopService
         this.logger = logger;
         this.mapper = mapper;
         this.workshopImagesService = workshopImagesService;
+        this.providerAdminRepository = providerAdminRepository;
     }
 
     /// <inheritdoc/>
@@ -209,6 +213,21 @@ public class WorkshopService : IWorkshopService
             predicate: x => x.ProviderId == providerId);
 
         var result = mapper.Map<List<ShortEntityDto>>(workshops).OrderBy(entity => entity.Title).ToList();
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<List<ShortEntityDto>> GetWorkshopListByProviderAdminId(string providerAdminId)
+    {
+        logger.LogDebug("Getting Workshop (Id, Title) by organization started. Looking ProviderAdminId = {ProviderAdminId}", providerAdminId);
+
+        var result = (await providerAdminRepository
+            .GetByFilter(pa => pa.UserId == providerAdminId))
+            .SelectMany(pa => pa.ManagedWorkshops, (pa, workshops) => new { workshops })
+            .Select(x => mapper.Map<ShortEntityDto>(x.workshops))
+            .OrderBy(w => w.Title)
+            .ToList();
 
         return result;
     }
