@@ -402,7 +402,7 @@ public class WorkshopService : IWorkshopService
         {
             logger.LogError(exception,
                 $"Partial updating {nameof(Workshop)} with ProviderId = {provider?.Id} was failed. Exception: {exception.Message}");
-            throw; // TODO Probably should not rethrow this exception to the higher level
+            throw; // TODO Probably should not rethrow this exception to the higher level. See pull request [Provicevk/unified responses #843] as future decision
         }
     }
 
@@ -420,7 +420,7 @@ public class WorkshopService : IWorkshopService
         {
             logger.LogError(exception,
                 $"Block {nameof(Workshop)} with ProviderId = {provider.Id} was failed. Exception: {exception.Message}");
-            throw; // TODO Probably should not rethrow this exception to the higher level
+            throw; // TODO Probably should not rethrow this exception to the higher level. See pull request [Provicevk/unified responses #843] as future decision
         }
     }
 
