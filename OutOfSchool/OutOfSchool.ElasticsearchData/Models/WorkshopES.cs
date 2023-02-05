@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Nest;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.ElasticsearchData.Models;
 
@@ -23,6 +24,8 @@ public class WorkshopES
     public Guid ProviderId { get; set; }
 
     public string ProviderTitle { get; set; }
+
+    public ProviderStatus ProviderStatus { get; set; }
 
     public OwnershipType ProviderOwnership { get; set; }
 
