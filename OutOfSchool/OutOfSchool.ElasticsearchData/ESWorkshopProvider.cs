@@ -7,6 +7,7 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData.Enums;
 using OutOfSchool.ElasticsearchData.Models;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.ElasticsearchData;
 
@@ -42,6 +43,12 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
     private QueryContainer CreateQueryFromFilter(WorkshopFilterES filter)
     {
         var queryContainer = new QueryContainer();
+
+        queryContainer &= new TermQuery()
+        {
+            Field = Infer.Field<WorkshopES>(w => w.ProviderStatus),
+            Value = ProviderStatus.Approved,
+        };
 
         if (filter.Ids.Any())
         {
