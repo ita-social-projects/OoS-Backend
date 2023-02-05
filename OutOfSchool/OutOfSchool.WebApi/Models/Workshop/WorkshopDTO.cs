@@ -101,6 +101,8 @@ public class WorkshopDTO : IValidatableObject
     [Required]
     public Guid ProviderId { get; set; }
 
+    public ProviderStatus ProviderStatus { get; set; }
+
     [Required]
     public long AddressId { get; set; }
 
