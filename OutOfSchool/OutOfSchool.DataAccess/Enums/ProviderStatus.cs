@@ -9,4 +9,5 @@ public enum ProviderStatus
     Pending,
     Editing,
     Approved,
+    Recheck,
 }
