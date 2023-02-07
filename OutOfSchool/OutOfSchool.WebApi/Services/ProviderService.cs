@@ -40,6 +40,7 @@ public class ProviderService : IProviderService, INotificationReciever
     private readonly IMinistryAdminService ministryAdminService;
     private readonly IRegionAdminService regionAdminService;
     private readonly ICodeficatorService codeficatorService;
+    private readonly IRegionAdminRepository regionAdminRepository;
 
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
@@ -84,7 +85,8 @@ public class ProviderService : IProviderService, INotificationReciever
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService,
-        ICodeficatorService codeficatorService)
+        ICodeficatorService codeficatorService,
+        IRegionAdminRepository regionAdminRepository)
     {
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -104,6 +106,7 @@ public class ProviderService : IProviderService, INotificationReciever
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
         this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
         this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
+        this.regionAdminRepository = regionAdminRepository;
     }
 
     private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
@@ -374,6 +377,7 @@ public class ProviderService : IProviderService, INotificationReciever
             // there should be District admin
             recipientIds.AddRange(await GetTechAdminsIds().ConfigureAwait(false));
             recipientIds.AddRange(await GetMinistryAdminsIds(provider.InstitutionId).ConfigureAwait(false));
+            recipientIds.AddRange(await GetRegionAdminsIds(provider.UserId).ConfigureAwait(false));
         }
         else if (action == NotificationAction.Update)
         {
@@ -381,11 +385,12 @@ public class ProviderService : IProviderService, INotificationReciever
                 && additionalData.TryGetValue("Status", out var statusValue)
                 && Enum.TryParse(statusValue, out ProviderStatus status))
             {
-                if (status == ProviderStatus.Pending)
+                if (status == ProviderStatus.Recheck)
                 {
                     // there should be District admin
                     recipientIds.AddRange(await GetTechAdminsIds().ConfigureAwait(false));
                     recipientIds.AddRange(await GetMinistryAdminsIds(provider.InstitutionId).ConfigureAwait(false));
+                    recipientIds.AddRange(await GetRegionAdminsIds(provider.UserId).ConfigureAwait(false));
                 }
                 else if (status == ProviderStatus.Editing
                          || status == ProviderStatus.Approved)
@@ -571,7 +576,7 @@ public class ProviderService : IProviderService, INotificationReciever
         if (!(checkProvider.FullTitle == providerDto.FullTitle
               && checkProvider.EdrpouIpn == providerDto.EdrpouIpn))
         {
-            checkProvider.Status = ProviderStatus.Pending;
+            checkProvider.Status = ProviderStatus.Recheck;
             statusChanged = true;
         }
 
@@ -741,5 +746,16 @@ public class ProviderService : IProviderService, INotificationReciever
                         .ToListAsync()
                         .ConfigureAwait(false);
         return ministryAdminsIds;
+    }
+
+    private async Task<IEnumerable<string>> GetRegionAdminsIds(string userId)
+    {
+        var regionAdminsIds = await regionAdminRepository
+            .GetByFilterNoTracking(a => a.UserId == userId)
+            .Select(a => a.UserId)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        return regionAdminsIds;
     }
 }
