@@ -223,21 +223,21 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
     }
 
     /// <inheritdoc/>
-    public async Task<Either<ErrorResponse, RegionAdminBaseDto>> UpdateRegionAdminAsync(
+    public async Task<Either<ErrorResponse, RegionAdminDto>> UpdateRegionAdminAsync(
         string userId,
-        RegionAdminBaseDto updateRegionAdminDto,
+        RegionAdminDto updateRegionAdminDto,
         string token)
     {
         _ = updateRegionAdminDto ?? throw new ArgumentNullException(nameof(updateRegionAdminDto));
 
-        Logger.LogDebug("RegionAdmin(id): {RegionAdminId} updating was started. User(id): {UserId}", updateRegionAdminDto.UserId, userId);
+        Logger.LogDebug("RegionAdmin(id): {RegionAdminId} updating was started. User(id): {UserId}", updateRegionAdminDto.Id, userId);
 
-        var regionAdmin = await regionAdminRepository.GetByIdAsync(updateRegionAdminDto.UserId)
+        var regionAdmin = await regionAdminRepository.GetByIdAsync(updateRegionAdminDto.Id)
             .ConfigureAwait(false);
 
         if (regionAdmin is null)
         {
-            Logger.LogError("RegionAdmin(id) {RegionAdminId} not found. User(id): {UserId}", updateRegionAdminDto.UserId, userId);
+            Logger.LogError("RegionAdmin(id) {RegionAdminId} not found. User(id): {UserId}", updateRegionAdminDto.Id, userId);
 
             return new ErrorResponse
             {
@@ -248,9 +248,9 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.UpdateRegionAdmin + updateRegionAdminDto.UserId),
+            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.UpdateRegionAdmin + updateRegionAdminDto.Id),
             Token = token,
-            Data = updateRegionAdminDto,
+            Data = mapper.Map<RegionAdminBaseDto>(updateRegionAdminDto),
             RequestId = Guid.NewGuid(),
         };
 
@@ -273,8 +273,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert
-                    .DeserializeObject<RegionAdminBaseDto>(result.Result.ToString())
+                ? mapper.Map<RegionAdminDto>(JsonConvert.DeserializeObject<RegionAdminBaseDto>(result.Result.ToString()))
                 : null);
     }
 

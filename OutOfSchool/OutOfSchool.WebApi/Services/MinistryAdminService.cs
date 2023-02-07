@@ -180,22 +180,22 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
     }
 
     /// <inheritdoc/>
-    public async Task<Either<ErrorResponse, MinistryAdminBaseDto>> UpdateMinistryAdminAsync(
+    public async Task<Either<ErrorResponse, MinistryAdminDto>> UpdateMinistryAdminAsync(
         string userId,
-        MinistryAdminBaseDto updateMinistryAdminDto,
+        MinistryAdminDto updateMinistryAdminDto,
         string token)
     {
         _ = updateMinistryAdminDto ?? throw new ArgumentNullException(nameof(updateMinistryAdminDto));
 
-        Logger.LogDebug("ProviderAdmin(id): {MinistryAdminId} updating was started. User(id): {UserId}", updateMinistryAdminDto.UserId, userId);
+        Logger.LogDebug("ProviderAdmin(id): {MinistryAdminId} updating was started. User(id): {UserId}", updateMinistryAdminDto.Id, userId);
 
         // TODO Add checking if ministry Admin belongs to Institution and is exist MinistryAdmin with such UserId
-        var ministryAdmin = await institutionAdminRepository.GetByIdAsync(updateMinistryAdminDto.UserId)
+        var ministryAdmin = await institutionAdminRepository.GetByIdAsync(updateMinistryAdminDto.Id)
             .ConfigureAwait(false);
 
         if (ministryAdmin is null)
         {
-            Logger.LogError("MinistryAdmin(id) {MinistryAdminId} not found. User(id): {UserId}", updateMinistryAdminDto.UserId, userId);
+            Logger.LogError("MinistryAdmin(id) {MinistryAdminId} not found. User(id): {UserId}", updateMinistryAdminDto.Id, userId);
 
             return new ErrorResponse
             {
@@ -206,9 +206,9 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.UpdateMinistryAdmin + updateMinistryAdminDto.UserId),
+            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.UpdateMinistryAdmin + updateMinistryAdminDto.Id),
             Token = token,
-            Data = updateMinistryAdminDto,
+            Data = mapper.Map<MinistryAdminBaseDto>(updateMinistryAdminDto),
             RequestId = Guid.NewGuid(),
         };
 
@@ -231,8 +231,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert
-                    .DeserializeObject<MinistryAdminBaseDto>(result.Result.ToString())
+                ? mapper.Map<MinistryAdminDto>(JsonConvert.DeserializeObject<MinistryAdminBaseDto>(result.Result.ToString()))
                 : null);
     }
 
