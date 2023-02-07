@@ -60,4 +60,5 @@ public class WorkshopES
     public List<DateTimeRangeES> DateTimeRanges { get; set; }
 
     public WorkshopStatus Status { get; set; }
+    public bool IsBlocked { get; set; }
 }

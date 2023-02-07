@@ -133,6 +133,9 @@ public class WorkshopDTO : IValidatableObject
     [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus ProviderLicenseStatus { get; set; } = ProviderLicenseStatus.NotProvided;
 
+    [JsonIgnore]
+    public bool IsBlocked { get; set; }
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         // TODO: Validate DateTimeRanges are not empty when frontend is ready

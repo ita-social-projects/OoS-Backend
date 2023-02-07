@@ -141,6 +141,12 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
             };
         }
 
+        queryContainer &= new TermQuery()
+        {
+            Field = Infer.Field<WorkshopES>(w => w.IsBlocked),
+            Value = false,
+        };
+
         if (filter.Statuses.Any())
         {
             queryContainer &= new TermsQuery()

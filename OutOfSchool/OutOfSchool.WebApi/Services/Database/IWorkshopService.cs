@@ -132,6 +132,13 @@ public interface IWorkshopService
     Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider);
 
     /// <summary>
+    /// Update IsBloked property in all workshops with specified provider.
+    /// </summary>
+    /// <param name="provider">Provider to be searched by.</param>
+    /// <returns>List of Workshops for the specified provider.</returns>
+    Task<IEnumerable<Workshop>> BlockByProvider(Provider provider);
+
+    /// <summary>
     ///  Returns ProviderDto by Id of its own workshop entity.
     /// </summary>
     /// <param name="workshopId">WorkshopId for which we need to get provider owner entity.</param>
