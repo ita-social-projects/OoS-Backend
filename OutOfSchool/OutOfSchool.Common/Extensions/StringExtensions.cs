@@ -27,4 +27,12 @@ public static class StringExtensions
 
     public static bool ContainsInvariant(this string s, string stringForComparison)
         => s.Contains(stringForComparison, StringComparison.InvariantCulture);
+
+    public static string Right(this string value, int length)
+    {
+        value ??= string.Empty;
+        return (value.Length > length)
+            ? value[^length..]
+            : value;
+    }
 }

@@ -392,7 +392,7 @@ public class RegionAdminService : IRegionAdminService
 
                 // TODO Email is changed but UserName, NormalizedUserName - no
                 user.Email = regionAdminUpdateDto.Email;
-                user.PhoneNumber = $"380{regionAdminUpdateDto.PhoneNumber}";
+                user.PhoneNumber = Constants.PhonePrefix + regionAdminUpdateDto.PhoneNumber;
 
                 var updateResult = await userManager.UpdateAsync(user);
 

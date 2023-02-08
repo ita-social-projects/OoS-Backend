@@ -396,7 +396,7 @@ public class MinistryAdminService : IMinistryAdminService
 
                 // TODO Email is changed but UserName, NormalizedUserName - no
                 user.Email = ministryAdminUpdateDto.Email;
-                user.PhoneNumber = $"380{ministryAdminUpdateDto.PhoneNumber}";
+                user.PhoneNumber = Constants.PhonePrefix + ministryAdminUpdateDto.PhoneNumber;
 
                 var updateResult = await userManager.UpdateAsync(user);
 
