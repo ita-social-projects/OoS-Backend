@@ -165,7 +165,7 @@ public class RegionAdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HasPermission(Permissions.RegionAdminEdit)]
     [HttpPut]
-    public async Task<ActionResult> Update(RegionAdminBaseDto updateRegionAdminDto)
+    public async Task<ActionResult> Update(RegionAdminDto updateRegionAdminDto)
     {
         if (updateRegionAdminDto == null)
         {
@@ -177,7 +177,7 @@ public class RegionAdminController : Controller
             return BadRequest(ModelState);
         }
 
-        if (currentUserId != updateRegionAdminDto.UserId)
+        if (currentUserId != updateRegionAdminDto.Id)
         {
             if (!(currentUserRole == nameof(Role.TechAdmin).ToLower() || currentUserRole == nameof(Role.MinistryAdmin).ToLower()))
             {
@@ -186,13 +186,13 @@ public class RegionAdminController : Controller
             }
 
             if (currentUserRole == nameof(Role.MinistryAdmin).ToLower()
-                && !await regionAdminService.IsRegionAdminSubordinateAsync(currentUserId, updateRegionAdminDto.UserId))
+                && !await regionAdminService.IsRegionAdminSubordinateAsync(currentUserId, updateRegionAdminDto.Id))
             {
                 logger.LogDebug("Forbidden to update RegionAdmin. RegionAdmin doesn't subordinate to MinistryAdmin.");
                 return StatusCode(403, "Forbidden to update RegionAdmin. RegionAdmin doesn't subordinate to MinistryAdmin.");
             }
 
-            var updatedRegionAdmin = await regionAdminService.GetByIdAsync(updateRegionAdminDto.UserId);
+            var updatedRegionAdmin = await regionAdminService.GetByIdAsync(updateRegionAdminDto.Id);
             if (updatedRegionAdmin.AccountStatus == AccountStatus.Accepted)
             {
                 logger.LogDebug("Forbidden to update accepted user.");

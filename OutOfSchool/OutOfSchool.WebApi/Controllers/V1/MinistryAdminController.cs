@@ -162,7 +162,7 @@ public class MinistryAdminController : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Update(MinistryAdminBaseDto updateMinistryAdminDto)
+    public async Task<ActionResult> Update(MinistryAdminDto updateMinistryAdminDto)
     {
         if (updateMinistryAdminDto == null)
         {
@@ -174,12 +174,12 @@ public class MinistryAdminController : Controller
             return BadRequest(ModelState);
         }
 
-        if (userId != updateMinistryAdminDto.UserId)
+        if (userId != updateMinistryAdminDto.Id)
         {
             var currentUserRole = GettingUserProperties.GetUserRole(User);
             if (currentUserRole == nameof(Role.TechAdmin).ToLower())
             {
-                var updatedMinistryAdmin = await ministryAdminService.GetByIdAsync(updateMinistryAdminDto.UserId);
+                var updatedMinistryAdmin = await ministryAdminService.GetByIdAsync(updateMinistryAdminDto.Id);
                 if (updatedMinistryAdmin.AccountStatus == AccountStatus.Accepted)
                 {
                     return StatusCode(403, "Forbidden to update accepted user.");

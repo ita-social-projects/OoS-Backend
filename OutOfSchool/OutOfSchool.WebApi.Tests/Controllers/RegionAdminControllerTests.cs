@@ -199,11 +199,11 @@ public class RegionAdminControllerTests
     public async Task Update_WithInvalidModel_ReturnsRequestObjectResult()
     {
         // Arrange
-        var updateRegionAdminBaseDto = new RegionAdminBaseDto();
+        var updateRegionAdminDto = new RegionAdminDto();
         regionAdminController.ModelState.AddModelError("fakeKey", "Model is invalid");
 
         // Act
-        var result = await regionAdminController.Update(updateRegionAdminBaseDto);
+        var result = await regionAdminController.Update(updateRegionAdminDto);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -214,18 +214,18 @@ public class RegionAdminControllerTests
     public async Task Update_WithValidModel_ReturnsOkResult()
     {
         // Arrange
-        var updateRegionAdminBaseDto = new RegionAdminBaseDto();
+        var updateRegionAdminDto = new RegionAdminDto();
 
         var token = await fakeHttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
 
         regionAdminServiceMock
-            .Setup(x => x.UpdateRegionAdminAsync(It.IsAny<string>(), updateRegionAdminBaseDto, token))
-            .ReturnsAsync(updateRegionAdminBaseDto);
+            .Setup(x => x.UpdateRegionAdminAsync(It.IsAny<string>(), updateRegionAdminDto, token))
+            .ReturnsAsync(updateRegionAdminDto);
 
         regionAdminController.ModelState.Clear();
 
         // Act
-        var result = await regionAdminController.Update(updateRegionAdminBaseDto);
+        var result = await regionAdminController.Update(updateRegionAdminDto);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -236,19 +236,19 @@ public class RegionAdminControllerTests
     public async Task Update_WithErrorResponse_ReturnsStatusCodeResult()
     {
         // Arrange
-        var updateRegionAdminBaseDto = new RegionAdminBaseDto();
+        var updateRegionAdminDto = new RegionAdminDto();
         var errorResponse = new ErrorResponse();
 
         var token = await fakeHttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
 
         regionAdminServiceMock
-            .Setup(x => x.UpdateRegionAdminAsync(It.IsAny<string>(), updateRegionAdminBaseDto, token))
+            .Setup(x => x.UpdateRegionAdminAsync(It.IsAny<string>(), updateRegionAdminDto, token))
             .ReturnsAsync(errorResponse);
 
         regionAdminController.ModelState.Clear();
 
         // Act
-        var result = await regionAdminController.Update(updateRegionAdminBaseDto);
+        var result = await regionAdminController.Update(updateRegionAdminDto);
 
         // Assert
         Assert.That(result, Is.Not.Null);

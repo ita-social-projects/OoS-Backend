@@ -37,7 +37,7 @@ public interface IRegionAdminService
     /// <param name="updateRegionAdminDto">Entity to update.</param>
     /// <param name="token">Valid token with RegionAdminUpdate permissions.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<Either<ErrorResponse, RegionAdminBaseDto>> UpdateRegionAdminAsync(string userId, RegionAdminBaseDto updateRegionAdminDto, string token);
+    Task<Either<ErrorResponse, RegionAdminDto>> UpdateRegionAdminAsync(string userId, RegionAdminDto updateRegionAdminDto, string token);
 
     /// <summary>
     /// Delete Region Admin.

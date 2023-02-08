@@ -418,6 +418,15 @@ public class MappingProfile : Profile
                             ? AccountStatus.NeverLogged
                             : AccountStatus.Accepted));
 
+        CreateMap<MinistryAdminDto, MinistryAdminBaseDto>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore());
+
+        CreateMap<MinistryAdminBaseDto, MinistryAdminDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId))
+            .ForMember(dest => dest.AccountStatus, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionTitle, opt => opt.Ignore());
+
         CreateMap<RegionAdmin, RegionAdminDto>()
             .ForMember(dest => dest.InstitutionTitle, opt => opt.MapFrom(src => src.Institution.Title))
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.User.Id))
@@ -436,6 +445,17 @@ public class MappingProfile : Profile
                         : src.User.LastLogin == DateTimeOffset.MinValue
                             ? AccountStatus.NeverLogged
                             : AccountStatus.Accepted));
+
+        CreateMap<RegionAdminDto, RegionAdminBaseDto>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore());
+
+        CreateMap<RegionAdminBaseDto, RegionAdminDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId))
+            .ForMember(dest => dest.AccountStatus, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionTitle, opt => opt.Ignore())
+            .ForMember(dest => dest.CATOTTGCategory, opt => opt.Ignore())
+            .ForMember(dest => dest.CATOTTGName, opt => opt.Ignore());
 
         CreateMap<ProviderChangesLogRequest, ChangesLogFilter>()
             .ForMember(dest => dest.EntityType, opt => opt.Ignore())

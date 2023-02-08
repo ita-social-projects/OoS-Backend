@@ -197,7 +197,7 @@ public class RegionAdminServiceTests
         // Act
         regionAdminService
             .Invoking(x => x
-                .UpdateRegionAdminAsync(It.IsAny<string>(), It.IsAny<RegionAdminBaseDto>(), It.IsAny<string>()))
+                .UpdateRegionAdminAsync(It.IsAny<string>(), It.IsAny<RegionAdminDto>(), It.IsAny<string>()))
             .Should()
             .ThrowAsync<ArgumentNullException>();
     }
