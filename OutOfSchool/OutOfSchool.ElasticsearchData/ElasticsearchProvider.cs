@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Elasticsearch.Net;
 using Nest;
 using OutOfSchool.ElasticsearchData.Models;
 
@@ -150,5 +151,15 @@ public class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchProvider<TE
         var resp = await ElasticClient.PingAsync();
 
         return resp.IsValid;
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result> PartialUpdateEntityAsync<TKey>(TKey entityId, IPartial<TEntity> partial)
+    {
+        var request = new UpdateDescriptor<TEntity, object>(new Id(entityId))
+            .Doc(partial);
+        var result = await ElasticClient.UpdateAsync(request);
+
+        return result.Result;
     }
 }

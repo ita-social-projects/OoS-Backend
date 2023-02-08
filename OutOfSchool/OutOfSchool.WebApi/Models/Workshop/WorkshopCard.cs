@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.WebApi.Models;
 
@@ -27,7 +28,7 @@ public class WorkshopBaseCard
     [MaxLength(120)]
     public string ProviderTitle { get; set; } = string.Empty;
 
-    public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;
+    public OwnershipTypeDto ProviderOwnership { get; set; } = OwnershipTypeDto.State;
 
     [Required(ErrorMessage = "Workshop title is required")]
     [MinLength(1)]

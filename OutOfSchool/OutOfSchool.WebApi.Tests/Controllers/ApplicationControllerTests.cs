@@ -753,14 +753,29 @@ public class ApplicationControllerTests
 
     private List<WorkshopCard> FakeWorkshopCards()
     {
-        var list = FakeWorkshops();
-        var eSlist = new List<WorkshopCard>();
-        foreach (var item in list)
+        return FakeWorkshops().Select(w => new WorkshopCard
         {
-            eSlist.Add(item.ToESModel().ToCardDto());
-        }
-
-        return eSlist;
+            WorkshopId = w.Id,
+            ProviderTitle = w.ProviderTitle,
+            ProviderOwnership = w.ProviderOwnership,
+            Title = w.Title,
+            PayRate = w.PayRate,
+            CoverImageId = w.CoverImageId,
+            MinAge = w.MinAge,
+            MaxAge = w.MaxAge,
+            Price = w.Price,
+            DirectionIds = w.DirectionIds,
+            ProviderId = w.ProviderId,
+            Address = w.Address,
+            WithDisabilityOptions = w.WithDisabilityOptions,
+            Rating = w.Rating,
+            ProviderLicenseStatus = w.ProviderLicenseStatus,
+            InstitutionHierarchyId = w.InstitutionHierarchyId,
+            InstitutionId = w.InstitutionId,
+            Institution = w.Institution,
+            AvailableSeats = w.AvailableSeats,
+            TakenSeats = w.TakenSeats,
+        }).ToList();
     }
 
     private WorkshopDescriptionItemDto FakeWorkshopDescriptionItem()

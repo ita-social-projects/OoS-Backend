@@ -7,6 +7,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -144,6 +145,9 @@ public class ProviderService : IProviderService, INotificationReciever
             }
 
             filterPredicate = filterPredicate.And(tempPredicate);
+
+            // TODO: For release 1 we filter all private even if in DB
+            filterPredicate = filterPredicate.And(p => p.Ownership != OwnershipType.Private);
         }
 
         int count = await providerRepository.Count(filterPredicate).ConfigureAwait(false);
@@ -183,7 +187,7 @@ public class ProviderService : IProviderService, INotificationReciever
     /// <inheritdoc/>
     public async Task<ProviderDto> GetById(Guid id)
     {
-        logger.LogInformation($"Getting Provider by Id started. Looking Id = {id}.");
+        logger.LogInformation("Getting Provider by Id started. Looking Id = {Id}", id);
         var provider = await providerRepository.GetById(id).ConfigureAwait(false);
 
         if (provider == null)
@@ -191,7 +195,14 @@ public class ProviderService : IProviderService, INotificationReciever
             return null;
         }
 
-        logger.LogInformation($"Successfully got a Provider with Id = {id}.");
+        // TODO: For release 1 we filter all private even if in DB
+        if (provider.Ownership == OwnershipType.Private)
+        {
+            logger.LogInformation("Attempt to get a private provider, Id = {Id}", id);
+            return null;
+        }
+
+        logger.LogInformation("Successfully got a Provider with Id = {Id}", id);
 
         var providerDTO = mapper.Map<ProviderDto>(provider);
 
@@ -210,6 +221,13 @@ public class ProviderService : IProviderService, INotificationReciever
 
         if (provider == null)
         {
+            return null;
+        }
+
+        // TODO: For release 1 we filter all private even if in DB
+        if (provider.Ownership == OwnershipType.Private)
+        {
+            logger.LogInformation("Attempt to get a private provider, Id = {Id}", id);
             return null;
         }
 
@@ -242,6 +260,13 @@ public class ProviderService : IProviderService, INotificationReciever
 
         if (provider != null)
         {
+            // TODO: For release 1 we filter all private even if in DB
+            if (provider.Ownership == OwnershipType.Private)
+            {
+                logger.LogInformation("Attempt to get a private provider, Id = {Id}", id);
+                return null;
+            }
+
             logger.LogInformation("Successfully got a Provider with UserId = {Id}", id);
         }
 
@@ -272,6 +297,13 @@ public class ProviderService : IProviderService, INotificationReciever
             return null;
         }
 
+        // TODO: For release 1 we filter all private even if in DB
+        if (provider.Ownership == OwnershipType.Private)
+        {
+            logger.LogInformation("Attempt to get a private provider, Id = {Id}", provider.Id);
+            return null;
+        }
+
         // TODO: validate if current user has permission to update the provider status
         provider.Status = dto.Status;
         provider.StatusReason = dto.StatusReason;
@@ -299,6 +331,13 @@ public class ProviderService : IProviderService, INotificationReciever
             return null;
         }
 
+        // TODO: For release 1 we filter all private even if in DB
+        if (provider.Ownership == OwnershipType.Private)
+        {
+            logger.LogInformation("Attempt to get a private provider, Id = {Id}", provider.Id);
+            return null;
+        }
+
         // TODO: validate if current user has permission to block/unblock the provider
         provider.IsBlocked = providerBlockDto.IsBlocked;
         provider.BlockReason = providerBlockDto.IsBlocked ? providerBlockDto.BlockReason : null;
@@ -319,6 +358,13 @@ public class ProviderService : IProviderService, INotificationReciever
         {
             logger.LogInformation($"Provider(id) {dto.ProviderId} not found. User(id): {userId}");
 
+            return null;
+        }
+
+        // TODO: For release 1 we filter all private even if in DB
+        if (provider.Ownership == OwnershipType.Private)
+        {
+            logger.LogInformation("Attempt to get a private provider, Id = {Id}", provider.Id);
             return null;
         }
 
@@ -603,10 +649,11 @@ public class ProviderService : IProviderService, INotificationReciever
         }
     }
 
-    private static bool IsNeedInRelatedWorkshopsUpdating(ProviderDto providerDto, Provider checkProvider)
+    private bool IsNeedInRelatedWorkshopsUpdating(ProviderDto providerDto, Provider checkProvider)
     {
+        var ownership = mapper.Map<OwnershipType>(providerDto.Ownership);
         return checkProvider.FullTitle != providerDto.FullTitle
-               || checkProvider.Ownership != providerDto.Ownership;
+               || checkProvider.Ownership != ownership;
     }
 
     private async Task UpdateProvider()
@@ -724,10 +771,10 @@ public class ProviderService : IProviderService, INotificationReciever
         }
 
         var ministryAdminsIds = await institutionAdminRepository
-                        .GetByFilterNoTracking(a => a.InstitutionId == ministryId)
-                        .Select(a => a.UserId)
-                        .ToListAsync()
-                        .ConfigureAwait(false);
+            .GetByFilterNoTracking(a => a.InstitutionId == ministryId)
+            .Select(a => a.UserId)
+            .ToListAsync()
+            .ConfigureAwait(false);
         return ministryAdminsIds;
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Util.CustomValidation;
 using OutOfSchool.WebApi.Util.JsonTools;
@@ -77,8 +78,8 @@ public class WorkshopDTO : IValidatableObject
     [MaxLength(120)]
     public string ProviderTitle { get; set; } = string.Empty;
 
-    [EnumDataType(typeof(OwnershipType), ErrorMessage = Constants.EnumErrorMessage)]
-    public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;
+    [EnumDataType(typeof(OwnershipTypeDto), ErrorMessage = Constants.EnumErrorMessage)]
+    public OwnershipTypeDto ProviderOwnership { get; set; } = OwnershipTypeDto.State;
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IEnumerable<string> Keywords { get; set; } = default;

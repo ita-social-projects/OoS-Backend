@@ -14,6 +14,7 @@ using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Extensions;
 
@@ -26,6 +27,19 @@ public class MappingExtensionsTests
     {
         // arrange
         var profile = new MappingProfile();
+
+        // act
+        var configuration = new MapperConfiguration(cfg => cfg.AddProfile(profile));
+
+        // assert
+        configuration.AssertConfigurationIsValid();
+    }
+
+    [Test]
+    public void Mapping_ElasticProfile_ConfigurationIsCorrect()
+    {
+        // arrange
+        var profile = new ElasticProfile();
 
         // act
         var configuration = new MapperConfiguration(cfg => cfg.AddProfile(profile));

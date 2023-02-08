@@ -16,6 +16,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Images;
@@ -473,7 +474,7 @@ public class WorkshopServiceTests
             {
                 Id = new Guid("b94f1989-c4e7-4878-ac86-21c4a402fb43"),
                 ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-                ProviderOwnership = OwnershipType.Private,
+                ProviderOwnership = OwnershipType.State,
                 Status = WorkshopStatus.Open,
                 AvailableSeats = 30,
                 Title = "10",
@@ -566,7 +567,7 @@ public class WorkshopServiceTests
             Email = "email1@gmail.com",
             MaxAge = 10,
             MinAge = 4,
-            ProviderOwnership = OwnershipType.Private,
+            ProviderOwnership = OwnershipType.State,
             Status = WorkshopStatus.Open,
             CoverImageId = "image1",
             ProviderId = new Guid("65eb933f-6502-4e89-a7cb-65901e51d119"),

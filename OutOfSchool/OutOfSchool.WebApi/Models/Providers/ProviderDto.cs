@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using OutOfSchool.Common;
-using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Util.JsonTools;
@@ -75,9 +70,11 @@ public class ProviderDto
     public string Founder { get; set; } = string.Empty;
 
     [Required]
-    [EnumDataType(typeof(OwnershipType), ErrorMessage = Constants.EnumErrorMessage)]
-    public OwnershipType Ownership { get; set; }
+    [EnumDataType(typeof(OwnershipTypeDto), ErrorMessage = Constants.EnumErrorMessage)]
+    public OwnershipTypeDto Ownership { get; set; }
+
     public long TypeId { get; set; }
+
     public ProviderTypeDto Type { get; set; }
 
     [Required]

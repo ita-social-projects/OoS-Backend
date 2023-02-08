@@ -559,6 +559,9 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         predicate = predicate.And(a => a.IsBlocked == filter.ShowBlocked);
 
+        // TODO: For release 1 we filter all private even if in DB
+        predicate = predicate.And(a => a.Workshop.ProviderOwnership != OwnershipType.Private);
+
         return predicate;
     }
 
@@ -721,6 +724,13 @@ public class ApplicationService : IApplicationService, INotificationReciever
     {
         await currentUserService.UserHasRights(new ParentRights(applicationDto.ParentId, applicationDto.ChildId));
 
+        // TODO: For release 1 we filter all private even if in DB
+        var ws = await workshopRepository.GetById(applicationDto.WorkshopId);
+        if (ws.ProviderOwnership == OwnershipType.Private)
+        {
+            throw new ArgumentException("Can't create application to private workshop");
+        }
+
         var isNewApplicationAllowed = await IsNewApplicationAllowed(applicationDto.WorkshopId).ConfigureAwait(false);
 
         if (!isNewApplicationAllowed)
@@ -805,6 +815,12 @@ public class ApplicationService : IApplicationService, INotificationReciever
         if (currentApplication is null)
         {
             return null;
+        }
+
+        // TODO: For release 1 we filter all private even if in DB
+        if (currentApplication.Workshop.ProviderOwnership == OwnershipType.Private)
+        {
+            throw new ArgumentException("Can't update application to private workshop");
         }
 
         var previewAppStatus = currentApplication.Status;

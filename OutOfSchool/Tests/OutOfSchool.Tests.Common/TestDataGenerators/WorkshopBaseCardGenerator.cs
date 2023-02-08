@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Bogus;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -16,7 +17,7 @@ public static class WorkshopBaseCardGenerator
         .RuleFor(x => x.WithDisabilityOptions, f => f.Random.Bool())
         .RuleFor(x => x.CoverImageId, f => f.Image.LoremFlickrUrl())
         .RuleFor(x => x.ProviderTitle, f => f.Company.CompanyName())
-        .RuleFor(x => x.ProviderOwnership, f => f.PickRandom<OwnershipType>())
+        .RuleFor(x => x.ProviderOwnership, f => f.PickRandom<OwnershipTypeDto>())
         .RuleFor(x => x.PayRate, f => f.PickRandom<PayRateType>())
         .RuleFor(x => x.ProviderId, _ => Guid.NewGuid())
         .RuleFor(x => x.WorkshopId, _=> Guid.NewGuid());

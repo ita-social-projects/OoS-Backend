@@ -43,6 +43,13 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
     {
         var queryContainer = new QueryContainer();
 
+        // TODO: For release 1 we filter all private even if in DB
+        queryContainer &= !new TermQuery
+        {
+            Field = Infer.Field<WorkshopES>(w => w.ProviderOwnership),
+            Value = OwnershipType.Private,
+        };
+
         if (filter.Ids.Any())
         {
             queryContainer &= new TermsQuery()

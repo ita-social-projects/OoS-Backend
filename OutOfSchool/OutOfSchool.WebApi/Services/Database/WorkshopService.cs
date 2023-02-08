@@ -187,6 +187,13 @@ public class WorkshopService : IWorkshopService
             return null;
         }
 
+        // TODO: For release 1 we filter all private even if in DB
+        if (workshop.ProviderOwnership == OwnershipType.Private)
+        {
+            logger.LogInformation("Attempt to get a private provider, WorkshopId = {Id}", id);
+            return null;
+        }
+
         logger.LogInformation($"Successfully got a Workshop with Id = {id}.");
 
         var workshopDTO = mapper.Map<WorkshopDTO>(workshop);
@@ -205,8 +212,9 @@ public class WorkshopService : IWorkshopService
     {
         logger.LogDebug("Getting Workshop (Id, Title) by organization started. Looking ProviderId = {ProviderId}", providerId);
 
+        // TODO: For release 1 we filter all private even if in DB
         var workshops = await workshopRepository.GetByFilter(
-            predicate: x => x.ProviderId == providerId);
+            predicate: x => x.ProviderId == providerId && x.ProviderOwnership != OwnershipType.Private);
 
         var result = mapper.Map<List<ShortEntityDto>>(workshops).OrderBy(entity => entity.Title).ToList();
 
@@ -222,15 +230,16 @@ public class WorkshopService : IWorkshopService
         filter ??= new ExcludeIdFilter();
         ValidateExcludedIdFilter(filter);
 
+        // TODO: For release 1 we filter all private even if in DB
         var workshopBaseCardsCount = await workshopRepository.Count(where: x =>
-                                                filter.ExcludedId == null ? (x.ProviderId == id)
-                                                : (x.ProviderId == id && x.Id != filter.ExcludedId)).ConfigureAwait(false);
+                                                filter.ExcludedId == null ? (x.ProviderId == id && x.ProviderOwnership != OwnershipType.Private)
+                                                : (x.ProviderId == id && x.Id != filter.ExcludedId && x.ProviderOwnership != OwnershipType.Private)).ConfigureAwait(false);
         var workshops = await workshopRepository.Get(
             skip: filter.From,
             take: filter.Size,
             includeProperties: includingPropertiesForMappingDtoModel,
-            where: x => filter.ExcludedId == null ? (x.ProviderId == id)
-                                  : (x.ProviderId == id && x.Id != filter.ExcludedId))
+            where: x => filter.ExcludedId == null ? (x.ProviderId == id && x.ProviderOwnership != OwnershipType.Private)
+                                  : (x.ProviderId == id && x.Id != filter.ExcludedId && x.ProviderOwnership != OwnershipType.Private))
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -289,6 +298,13 @@ public class WorkshopService : IWorkshopService
         {
             logger.LogInformation($"Workshop(id) {dto.WorkshopId} not found.");
 
+            return null;
+        }
+
+        // TODO: For release 1 we filter all private even if in DB
+        if (currentWorkshop.ProviderOwnership == OwnershipType.Private)
+        {
+            logger.LogInformation("Attempt to get a private provider, WorkshopId = {Id}", currentWorkshop.Id);
             return null;
         }
 
@@ -661,6 +677,9 @@ public class WorkshopService : IWorkshopService
         {
             predicate = predicate.And(x => x.Provider.InstitutionId == filter.InstitutionId);
         }
+        
+        // TODO: For release 1 we filter all private even if in DB
+        predicate = predicate.And(x => x.ProviderOwnership != OwnershipType.Private);
 
         return predicate;
     }

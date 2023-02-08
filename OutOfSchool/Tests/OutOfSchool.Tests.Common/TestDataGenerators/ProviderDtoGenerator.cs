@@ -23,7 +23,7 @@ public static class ProviderDtoGenerator
         .RuleFor(x => x.EdrpouIpn, _ => TestDataHelper.EdrpouIpnString)
         .RuleFor(x => x.PhoneNumber, f => f.Person.Phone)
         .RuleFor(x => x.Founder, f => f.Person.FullName)
-        .RuleFor(x => x.Ownership, f => f.Random.ArrayElement((OwnershipType[])Enum.GetValues(typeof(OwnershipType))))
+        .RuleFor(x => x.Ownership, f => f.Random.ArrayElement((OwnershipTypeDto[])Enum.GetValues(typeof(OwnershipTypeDto))))
         .RuleFor(x => x.Type, _ => new ProviderTypeDto{Id=1, Name = "pro"})
         .RuleFor(x => x.Status, f => f.Random.ArrayElement((ProviderStatus[])Enum.GetValues(typeof(ProviderStatus))))
         .RuleFor(x => x.License, f => f.Random.AlphaNumeric(15))
