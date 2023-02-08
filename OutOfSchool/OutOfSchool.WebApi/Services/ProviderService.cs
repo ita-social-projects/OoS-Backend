@@ -374,7 +374,6 @@ public class ProviderService : IProviderService, INotificationReciever
 
         if (action == NotificationAction.Create)
         {
-            // there should be District admin
             recipientIds.AddRange(await GetTechAdminsIds().ConfigureAwait(false));
             recipientIds.AddRange(await GetMinistryAdminsIds(provider.InstitutionId).ConfigureAwait(false));
             recipientIds.AddRange(await GetRegionAdminsIds(provider.UserId).ConfigureAwait(false));
@@ -387,7 +386,6 @@ public class ProviderService : IProviderService, INotificationReciever
             {
                 if (status == ProviderStatus.Recheck)
                 {
-                    // there should be District admin
                     recipientIds.AddRange(await GetTechAdminsIds().ConfigureAwait(false));
                     recipientIds.AddRange(await GetMinistryAdminsIds(provider.InstitutionId).ConfigureAwait(false));
                     recipientIds.AddRange(await GetRegionAdminsIds(provider.UserId).ConfigureAwait(false));
