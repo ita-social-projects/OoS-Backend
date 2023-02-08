@@ -130,8 +130,7 @@ public class ProviderServiceUpdate
     }
 
     [Test]
-    public async Task
-        UpdateWhenProviderHasSameAdresses_WithNewLegalAddressAndActualIsPreviousLegal_UpdatesOneAddress()
+    public async Task UpdateWhenProviderHasSameAdresses_WithNewLegalAddressAndActualIsPreviousLegal_UpdatesOneAddress()
     {
         // Arrange
         await using var context = this.GetContext();
