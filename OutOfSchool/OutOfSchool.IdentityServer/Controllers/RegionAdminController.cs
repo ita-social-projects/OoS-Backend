@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.IdentityServer.Controllers;
 
@@ -10,14 +11,14 @@ namespace OutOfSchool.IdentityServer.Controllers;
 public class RegionAdminController : Controller
 {
     private readonly ILogger<RegionAdminController> logger;
-    private readonly IRegionAdminService regionAdminService;
+    private readonly ICommonMinistryAdminService<RegionAdminBaseDto> regionAdminService;
 
     private string path;
     private string currentUserId;
 
     public RegionAdminController(
         ILogger<RegionAdminController> logger,
-        IRegionAdminService regionAdminService)
+        ICommonMinistryAdminService<RegionAdminBaseDto> regionAdminService)
     {
         this.logger = logger;
         this.regionAdminService = regionAdminService;
@@ -53,7 +54,7 @@ public class RegionAdminController : Controller
         }
 
         return await regionAdminService
-            .CreateRegionAdminAsync(regionAdminBaseDto, Url, currentUserId, Request.Headers["X-Request-ID"]);
+            .CreateMinistryAdminAsync(regionAdminBaseDto, Role.RegionAdmin, Url, currentUserId, Request.Headers["X-Request-ID"]);
     }
 
     [HttpPut("{regionAdminId}")]
@@ -67,7 +68,7 @@ public class RegionAdminController : Controller
             currentUserId);
 
         return await regionAdminService
-            .UpdateRegionAdminAsync(updateRegionAdminDto, currentUserId, Request.Headers["X-Request-ID"]);
+            .UpdateMinistryAdminAsync(updateRegionAdminDto, currentUserId, Request.Headers["X-Request-ID"]);
     }
 
     [HttpDelete("{regionAdminId}")]
@@ -83,7 +84,7 @@ public class RegionAdminController : Controller
             currentUserId);
 
         return await regionAdminService
-            .DeleteRegionAdminAsync(regionAdminId, currentUserId, Request.Headers["X-Request-ID"]);
+            .DeleteMinistryAdminAsync(regionAdminId, currentUserId, Request.Headers["X-Request-ID"]);
     }
 
     [HttpPut("{regionAdminId}/{isBlocked}")]
@@ -97,6 +98,6 @@ public class RegionAdminController : Controller
             currentUserId);
 
         return await regionAdminService
-            .BlockRegionAdminAsync(regionAdminId, currentUserId, Request.Headers["X-Request-ID"], isBlocked);
+            .BlockMinistryAdminAsync(regionAdminId, currentUserId, Request.Headers["X-Request-ID"], isBlocked);
     }
 }

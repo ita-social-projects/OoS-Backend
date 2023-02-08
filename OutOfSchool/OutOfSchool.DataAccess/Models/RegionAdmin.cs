@@ -5,19 +5,8 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models;
 
-public class RegionAdmin : IKeyedEntity<(string, long)>
+public class RegionAdmin : InstitutionAdminBase, IKeyedEntity<(string, long)>
 {
-    [Key]
-    public string UserId { get; set; }
-
-    [Required(ErrorMessage = "InstitutionId is required")]
-    public Guid InstitutionId { get; set; }
-
-    public virtual Institution Institution { get; set; }
-
-    [ForeignKey("UserId")]
-    public virtual User User { get; set; }
-
     [Required(ErrorMessage = "CATOTTGId is required")]
     public long CATOTTGId { get; set; }
 

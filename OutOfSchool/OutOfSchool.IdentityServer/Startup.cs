@@ -1,4 +1,6 @@
+using OutOfSchool.Common.Models;
 using OutOfSchool.IdentityServer.Config.ExternalUriModels;
+using OutOfSchool.IdentityServer.Services.Interfaces;
 
 namespace OutOfSchool.IdentityServer;
 
@@ -130,10 +132,11 @@ public static class Startup
         services.AddTransient<IProviderAdminService, ProviderAdminService>();
         services.AddTransient<IUserManagerAdditionalService, UserManagerAdditionalService>();
         services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
-        services.AddTransient<IMinistryAdminService, MinistryAdminService>();
         services.AddTransient<IRegionAdminRepository, RegionAdminRepository>();
-        services.AddTransient<IRegionAdminService, RegionAdminService>();
-
+        services.AddTransient<ICommonMinistryAdminService<MinistryAdminBaseDto>,
+            CommonMinistryAdminService<Guid, InstitutionAdmin, MinistryAdminBaseDto, IInstitutionAdminRepository>>();
+        services.AddTransient<ICommonMinistryAdminService<RegionAdminBaseDto>,
+            CommonMinistryAdminService<long, RegionAdmin, RegionAdminBaseDto, IRegionAdminRepository>>();
 
         services.AddTransient<IEntityRepository<long, ProviderAdminChangesLog>, EntityRepository<long, ProviderAdminChangesLog>>();
         services.AddTransient<IProviderAdminChangesLogService, ProviderAdminChangesLogService>();

@@ -5,7 +5,6 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public interface IRegionAdminRepository : IEntityRepository<(string, long), RegionAdmin>
+public interface IRegionAdminRepository : IInstitutionAdminRepositoryBase<long, RegionAdmin>
 {
-    Task<RegionAdmin> GetByIdAsync(string userId);
 }

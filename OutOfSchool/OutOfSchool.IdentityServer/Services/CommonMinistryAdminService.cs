@@ -6,24 +6,28 @@ using OutOfSchool.IdentityServer.Services.Interfaces;
 using OutOfSchool.IdentityServer.Services.Password;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Repository;
 
 namespace OutOfSchool.IdentityServer.Services;
 
-public class MinistryAdminService : IMinistryAdminService
+public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : ICommonMinistryAdminService<TDto>
+    where TEntity : InstitutionAdminBase, IKeyedEntity<(string, TId)>, new()
+    where TDto : MinistryAdminBaseDto
+    where TRepositoty : IInstitutionAdminRepositoryBase<TId, TEntity>
 {
     private readonly IEmailSender emailSender;
     private readonly IMapper mapper;
-    private readonly ILogger<MinistryAdminService> logger;
-    private readonly IInstitutionAdminRepository institutionAdminRepository;
+    private readonly ILogger<CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty>> logger;
+    private readonly TRepositoty institutionAdminRepository;
     private readonly UserManager<User> userManager;
     private readonly OutOfSchoolDbContext context;
     private readonly IRazorViewToStringRenderer renderer;
     private readonly IStringLocalizer<SharedResource> localizer;
 
-    public MinistryAdminService(
+    public CommonMinistryAdminService(
         IMapper mapper,
-        IInstitutionAdminRepository institutionAdminRepository,
-        ILogger<MinistryAdminService> logger,
+        TRepositoty institutionAdminRepository,
+        ILogger<CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty>> logger,
         IEmailSender emailSender,
         UserManager<User> userManager,
         OutOfSchoolDbContext context,
@@ -50,7 +54,8 @@ public class MinistryAdminService : IMinistryAdminService
     }
 
     public async Task<ResponseDto> CreateMinistryAdminAsync(
-        MinistryAdminBaseDto ministryAdminBaseDto,
+        TDto ministryAdminBaseDto,
+        Role role,
         IUrlHelper url,
         string userId,
         string requestId)
@@ -77,7 +82,8 @@ public class MinistryAdminService : IMinistryAdminService
                 user.IsDerived = true;
                 user.IsRegistered = true;
                 user.IsBlocked = false;
-                user.Role = nameof(Role.MinistryAdmin).ToLower();
+                user.CreatingTime = DateTime.UtcNow;
+                user.Role = role.ToString().ToLower();
 
                 var result = await userManager.CreateAsync(user, password);
 
@@ -120,7 +126,7 @@ public class MinistryAdminService : IMinistryAdminService
 
                 ministryAdminBaseDto.UserId = user.Id;
 
-                var ministryAdmin = mapper.Map<InstitutionAdmin>(ministryAdminBaseDto);
+                var ministryAdmin = mapper.Map<TEntity>(ministryAdminBaseDto);
                 await institutionAdminRepository.Create(ministryAdmin)
                     .ConfigureAwait(false);
 
@@ -171,7 +177,7 @@ public class MinistryAdminService : IMinistryAdminService
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
             try
             {
-                var ministryAdmin = GetMinistryAdmin(ministryAdminId);
+                var ministryAdmin = await GetMinistryAdmin(ministryAdminId);
 
                 if (ministryAdmin is null)
                 {
@@ -185,7 +191,7 @@ public class MinistryAdminService : IMinistryAdminService
                     return response;
                 }
 
-                context.InstitutionAdmins.Remove(ministryAdmin);
+                await institutionAdminRepository.Delete(ministryAdmin);
 
                 var user = await userManager.FindByIdAsync(ministryAdminId);
                 var result = await userManager.DeleteAsync(user);
@@ -240,7 +246,7 @@ public class MinistryAdminService : IMinistryAdminService
 
         var response = new ResponseDto();
 
-        var providerAdmin = GetMinistryAdmin(ministryAdminId);
+        var providerAdmin = await GetMinistryAdmin(ministryAdminId).ConfigureAwait(false);
 
         if (providerAdmin is null)
         {
@@ -323,7 +329,7 @@ public class MinistryAdminService : IMinistryAdminService
     }
 
     public async Task<ResponseDto> UpdateMinistryAdminAsync(
-        MinistryAdminBaseDto updateMinistryAdminDto,
+        TDto updateMinistryAdminDto,
         string userId,
         string requestId)
     {
@@ -342,7 +348,7 @@ public class MinistryAdminService : IMinistryAdminService
             return response;
         }
 
-        var ministryAdmin = GetMinistryAdmin(updateMinistryAdminDto.UserId);
+        var ministryAdmin = await GetMinistryAdmin(updateMinistryAdminDto.UserId).ConfigureAwait(false);
 
         if (ministryAdmin is null)
         {
@@ -350,7 +356,7 @@ public class MinistryAdminService : IMinistryAdminService
             response.HttpStatusCode = HttpStatusCode.NotFound;
 
             logger.LogError(
-                "ProviderAdmin(id) {providerAdminUpdateDto.Id} not found. " +
+                "MinistryAdmin(id) {ministryAdminUpdateDto.Id} not found. " +
                 "Request(id): {requestId}" +
                 "User(id): {userId}",
                 updateMinistryAdminDto.UserId,
@@ -444,7 +450,7 @@ public class MinistryAdminService : IMinistryAdminService
                 await transaction.RollbackAsync().ConfigureAwait(false);
 
                 logger.LogError(
-                    "Error happened while updating ProviderAdmin. Request(id): {requestId}" +
+                    "Error happened while updating MinistryAdmin. Request(id): {requestId}" +
                     "User(id): {userId} {ex.Message}",
                     requestId,
                     userId,
@@ -471,7 +477,7 @@ public class MinistryAdminService : IMinistryAdminService
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
             try
             {
-                var ministryAdmin = GetMinistryAdmin(ministryAdminId);
+                var ministryAdmin = await GetMinistryAdmin(ministryAdminId).ConfigureAwait(false);
 
                 if (ministryAdmin is null)
                 {
@@ -551,6 +557,6 @@ public class MinistryAdminService : IMinistryAdminService
         await emailSender.SendAsync(user.Email, subject, content);
     }
 
-    private InstitutionAdmin GetMinistryAdmin(string ministryAdminId)
-        => context.InstitutionAdmins.SingleOrDefault(pa => pa.UserId == ministryAdminId);
+    private async Task<TEntity> GetMinistryAdmin(string ministryAdminId)
+        => await institutionAdminRepository.GetByIdAsync(ministryAdminId);
 }

@@ -8,6 +8,7 @@ using OutOfSchool.IdentityServer.Controllers;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
 using OutOfSchool.IdentityServer.Services.Interfaces;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.IdentityServer.Tests.Controllers;
 
@@ -16,13 +17,13 @@ public class MinistryAdminControllerTests
 {
     private readonly MinistryAdminController ministryAdminController;
     private readonly Mock<ILogger<MinistryAdminController>> fakeLogger;
-    private readonly Mock<IMinistryAdminService> fakeMinistryAdminService;
+    private readonly Mock<ICommonMinistryAdminService<MinistryAdminBaseDto>> fakeMinistryAdminService;
     private readonly Mock<HttpContext> fakehttpContext;
 
     public MinistryAdminControllerTests()
     {
         fakeLogger = new Mock<ILogger<MinistryAdminController>>();
-        fakeMinistryAdminService = new Mock<IMinistryAdminService>();
+        fakeMinistryAdminService = new Mock<ICommonMinistryAdminService<MinistryAdminBaseDto>>();
     
         fakehttpContext = new Mock<HttpContext>();
         
@@ -51,7 +52,7 @@ public class MinistryAdminControllerTests
         };
 
         fakeMinistryAdminService.Setup(s => s.CreateMinistryAdminAsync(It.IsAny<MinistryAdminBaseDto>(),
-            It.IsAny<IUrlHelper>(), It.IsAny<string>(),
+            It.IsAny<Role>(), It.IsAny<IUrlHelper>(), It.IsAny<string>(),
             It.IsAny<string>())).ReturnsAsync(fakeResponseDto);
 
         fakeMinistryAdminService.Setup(s => s.DeleteMinistryAdminAsync(It.IsAny<string>(),

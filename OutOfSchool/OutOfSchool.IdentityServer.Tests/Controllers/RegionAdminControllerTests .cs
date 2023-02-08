@@ -9,6 +9,7 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
 using OutOfSchool.IdentityServer.Services.Interfaces;
 using System;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.IdentityServer.Tests.Controllers;
 
@@ -17,13 +18,13 @@ public class RegionAdminControllerTests
 {
     private readonly RegionAdminController regionAdminController;
     private readonly Mock<ILogger<RegionAdminController>> fakeLogger;
-    private readonly Mock<IRegionAdminService> fakeRegionAdminService;
+    private readonly Mock<ICommonMinistryAdminService<RegionAdminBaseDto>> fakeRegionAdminService;
     private readonly Mock<HttpContext> fakeHttpContext;
 
     public RegionAdminControllerTests()
     {
         fakeLogger = new Mock<ILogger<RegionAdminController>>();
-        fakeRegionAdminService = new Mock<IRegionAdminService>();
+        fakeRegionAdminService = new Mock<ICommonMinistryAdminService<RegionAdminBaseDto>>();
     
         fakeHttpContext = new Mock<HttpContext>();
         
@@ -52,29 +53,30 @@ public class RegionAdminControllerTests
         };
 
         fakeRegionAdminService.Setup(s => s
-            .CreateRegionAdminAsync(
+            .CreateMinistryAdminAsync(
                 It.IsAny<RegionAdminBaseDto>(),
+                It.IsAny<Role>(),
                 It.IsAny<IUrlHelper>(),
                 It.IsAny<string>(),
                 It.IsAny<string>()))
             .ReturnsAsync(fakeResponseDto);
 
         fakeRegionAdminService.Setup(s => s
-            .UpdateRegionAdminAsync(
+            .UpdateMinistryAdminAsync(
                 It.IsAny<RegionAdminBaseDto>(),
                 It.IsAny<string>(),
                 It.IsAny<string>()))
             .ReturnsAsync(fakeResponseDto);
 
         fakeRegionAdminService.Setup(s => s
-            .DeleteRegionAdminAsync(
+            .DeleteMinistryAdminAsync(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<string>()))
             .ReturnsAsync(fakeResponseDto);
         
         fakeRegionAdminService.Setup(s => s
-            .BlockRegionAdminAsync(
+            .BlockMinistryAdminAsync(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),

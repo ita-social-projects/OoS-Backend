@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.IdentityServer.Controllers;
 
@@ -10,14 +11,14 @@ namespace OutOfSchool.IdentityServer.Controllers;
 public class MinistryAdminController : Controller
 {
     private readonly ILogger<MinistryAdminController> logger;
-    private readonly IMinistryAdminService ministryAdminService;
+    private readonly ICommonMinistryAdminService<MinistryAdminBaseDto> ministryAdminService;
 
     private string path;
     private string userId;
 
     public MinistryAdminController(
         ILogger<MinistryAdminController> logger,
-        IMinistryAdminService ministryAdminService)
+        ICommonMinistryAdminService<MinistryAdminBaseDto> ministryAdminService)
     {
         this.logger = logger;
         this.ministryAdminService = ministryAdminService;
@@ -51,7 +52,7 @@ public class MinistryAdminController : Controller
         }
 
         return await ministryAdminService
-            .CreateMinistryAdminAsync(ministryAdminBaseDto, Url, userId, Request.Headers["X-Request-ID"]);
+            .CreateMinistryAdminAsync(ministryAdminBaseDto, Role.MinistryAdmin, Url, userId, Request.Headers["X-Request-ID"]);
     }
 
     [HttpPut("{ministryAdminId}")]
