@@ -591,9 +591,6 @@ public class WorkshopService : IWorkshopService
     {
         var predicate = PredicateBuilder.True<Workshop>();
 
-        predicate = predicate.And(x => x.Provider.Status == ProviderStatus.Approved)
-                .Or(x => x.Provider.Status == ProviderStatus.Recheck);
-
         if (filter is WorkshopBySettlementsFilter settlementsFilter && settlementsFilter.SettlementsIds.Any())
         {
             var tempPredicate = PredicateBuilder.False<Workshop>();
@@ -607,7 +604,9 @@ public class WorkshopService : IWorkshopService
         }
         else
         {
-            predicate = predicate.And(x => x.Provider.Status == ProviderStatus.Approved);
+            predicate = predicate.And(x => x.Provider.Status == ProviderStatus.Approved)
+                .Or(x => x.Provider.Status == ProviderStatus.Recheck);
+
             predicate = predicate.And(x => !x.IsBlocked);
         }
 
