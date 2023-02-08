@@ -360,7 +360,7 @@ public class AuthController : Controller
             LastName = model.LastName,
             MiddleName = model.MiddleName,
             Email = model.Email,
-            PhoneNumber = $"380{model.PhoneNumber}",
+            PhoneNumber = Constants.PhonePrefix + model.PhoneNumber,
             CreatingTime = DateTimeOffset.UtcNow,
             Role = model.Role,
             IsRegistered = false,

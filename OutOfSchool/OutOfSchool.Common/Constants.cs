@@ -8,6 +8,10 @@ public static class Constants
 
     public const string BearerScheme = "Bearer";
 
+    public const string PhonePrefix = "380";
+
+    public const int PhoneShortLength = 9;
+
     public const string PhoneNumberFormat = "{0:+380 XX-XXX-XX-XX}";
 
     public const string PhoneNumberRegexViewModel = @"([0-9]{2})([-]?)([0-9]{3})([-]?)([0-9]{2})([-]?)([0-9]{2})";
