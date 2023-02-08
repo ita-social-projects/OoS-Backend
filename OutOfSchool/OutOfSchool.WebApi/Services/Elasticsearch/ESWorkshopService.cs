@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using AutoMapper;
 using Elasticsearch.Net;
 using Nest;
-using OutOfSchool.ElasticsearchData;
-using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -18,6 +13,7 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
     private readonly IRatingService ratingService;
     private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
     private readonly ElasticPinger esPinger;
+    private readonly IMapper mapper;
 
     /// <inheritdoc/>
     public bool IsElasticAlive => esPinger.IsHealthy;
@@ -29,12 +25,18 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
     /// <param name="ratingService">Service that provides access to Ratings in the database.</param>
     /// <param name="esProvider">Provider to the Elasticsearch workshops index.</param>
     /// <param name="elasticPinger">Background worker pings the Elasticsearch.</param>
-    public ESWorkshopService(IWorkshopService workshopService, IRatingService ratingService, IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider, ElasticPinger elasticPinger)
+    public ESWorkshopService(
+        IWorkshopService workshopService,
+        IRatingService ratingService,
+        IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
+        ElasticPinger elasticPinger,
+        IMapper mapper)
     {
         this.workshopService = workshopService;
         this.ratingService = ratingService;
         this.esProvider = esProvider;
         this.esPinger = elasticPinger;
+        this.mapper = mapper;
     }
 
     /// <inheritdoc/>
@@ -117,7 +119,7 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
                 foreach (var entity in data.Entities)
                 {
                     entity.Rating = (await ratingService.GetAverageRatingAsync(entity.Id, RatingType.Workshop).ConfigureAwait(false)).Item1;
-                    source.Add(entity.ToESModel());
+                    source.Add(mapper.Map<WorkshopES>(entity));
                 }
 
                 filter.From += filter.Size;

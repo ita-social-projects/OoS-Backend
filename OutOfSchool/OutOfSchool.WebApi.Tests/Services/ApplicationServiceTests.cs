@@ -23,6 +23,7 @@ using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
+using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -610,12 +611,15 @@ public class ApplicationServiceTests
         var workshopMock = new WorkshopDTO
         {
             Status = WorkshopStatus.Open,
+            ProviderOwnership = OwnershipTypeDto.State,
         };
 
         applicationRepositoryMock.Setup(a => a.GetByFilter(
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<string>()))
             .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> {application}));
+        workshopRepositoryMock.Setup(w => w.GetById(It.IsAny<Guid>()))
+            .ReturnsAsync(new Workshop());
         workshopServiceCombinerMock.Setup(x => x.GetById(application.WorkshopId)).ReturnsAsync(workshopMock);
 
         applicationRepositoryMock.Setup(
@@ -932,17 +936,20 @@ public class ApplicationServiceTests
                 Id = new Guid("b94f1989-c4e7-4878-ac86-21c4a402fb43"),
                 ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
                 Status = WorkshopStatus.Closed,
+                ProviderOwnership = OwnershipType.State,
             },
             new Workshop()
             {
                 Id = new Guid("8c14044b-e30d-4b14-a18b-5b3b859ad676"),
                 ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
                 Status = WorkshopStatus.Open,
+                ProviderOwnership = OwnershipType.State,
             },
             new Workshop()
             {
                 Id = new Guid("3e8845a8-1359-4676-b6d6-5a6b29c122ea"),
                 ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                ProviderOwnership = OwnershipType.State,
             },
         };
     }

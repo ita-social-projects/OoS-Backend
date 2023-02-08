@@ -183,8 +183,9 @@ public class StatisticService : IStatisticService
     /// <inheritdoc/>
     public async Task<IEnumerable<WorkshopCard>> GetPopularWorkshopsFromDatabase(int limit, long catottgId)
     {
+        // TODO: For release 1 we filter all private even if in DB
         var workshops = workshopRepository
-            .Get(includeProperties: $"{nameof(Address)},{nameof(InstitutionHierarchy)}");
+            .Get(where: x => x.ProviderOwnership != OwnershipType.Private, includeProperties: $"{nameof(Address)},{nameof(InstitutionHierarchy)}");
 
         if (currentUserService.IsMinistryAdmin())
         {

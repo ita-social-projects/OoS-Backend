@@ -259,7 +259,32 @@ public class ChildControllerTests
 
         ProviderDto existingProvider = ProviderDtoGenerator.Generate().WithUserId(existingWorkshop.ProviderId.ToString());
 
-        ApplicationDto existingApplication = ApplicationDTOsGenerator.Generate().WithWorkshopCard(existingWorkshop.ToESModel().ToCardDto()).WithChild(child);
+        ApplicationDto existingApplication = ApplicationDTOsGenerator
+            .Generate()
+            .WithWorkshopCard(new WorkshopCard
+            {
+                WorkshopId = existingWorkshop.Id,
+                ProviderTitle = existingWorkshop.ProviderTitle,
+                ProviderOwnership = existingWorkshop.ProviderOwnership,
+                Title = existingWorkshop.Title,
+                PayRate = existingWorkshop.PayRate,
+                CoverImageId = existingWorkshop.CoverImageId,
+                MinAge = existingWorkshop.MinAge,
+                MaxAge = existingWorkshop.MaxAge,
+                Price = existingWorkshop.Price,
+                DirectionIds = existingWorkshop.DirectionIds,
+                ProviderId = existingWorkshop.ProviderId,
+                Address = existingWorkshop.Address,
+                WithDisabilityOptions = existingWorkshop.WithDisabilityOptions,
+                Rating = existingWorkshop.Rating,
+                ProviderLicenseStatus = existingWorkshop.ProviderLicenseStatus,
+                InstitutionHierarchyId = existingWorkshop.InstitutionHierarchyId,
+                InstitutionId = existingWorkshop.InstitutionId,
+                Institution = existingWorkshop.Institution,
+                AvailableSeats = existingWorkshop.AvailableSeats,
+                TakenSeats = existingWorkshop.TakenSeats,
+            })
+            .WithChild(child);
 
         providerService.Setup(s => s.GetProviderIdForWorkshopById(existingWorkshop.Id)).ReturnsAsync(existingProvider.Id);
         providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), false)).ReturnsAsync(existingProvider);

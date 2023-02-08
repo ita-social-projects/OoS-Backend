@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -76,7 +77,8 @@ public class FavoriteService : IFavoriteService
     {
         logger.LogInformation($"Getting Favorites by User started. Looking UserId = {userId}.");
 
-        var favorites = await favoriteRepository.GetByFilter(x => x.UserId == userId).ConfigureAwait(false);
+        // TODO: For release 1 we filter all private even if in DB
+        var favorites = await favoriteRepository.GetByFilter(x => x.UserId == userId && x.Workshop.ProviderOwnership != OwnershipType.Private).ConfigureAwait(false);
 
         logger.LogInformation(!favorites.Any()
             ? $"There aren't Favorites for User with Id = {userId}."
@@ -90,7 +92,8 @@ public class FavoriteService : IFavoriteService
     {
         logger.LogInformation($"Getting Favorites by User started. Looking UserId = {userId}.");
 
-        var favorites = await favoriteRepository.Get(where: x => x.UserId == userId).Select(x => x.WorkshopId).ToListAsync().ConfigureAwait(false);
+        // TODO: For release 1 we filter all private even if in DB
+        var favorites = await favoriteRepository.Get(where: x => x.UserId == userId && x.Workshop.ProviderOwnership != OwnershipType.Private).Select(x => x.WorkshopId).ToListAsync().ConfigureAwait(false);
 
         if (!favorites.Any())
         {
