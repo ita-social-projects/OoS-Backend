@@ -200,6 +200,11 @@ public class StatisticService : IStatisticService
                 .Where(w => w.InstitutionHierarchy.InstitutionId == regionAdmin.InstitutionId);
         }
 
+        if (!currentUserService.IsAdmin())
+        {
+            workshops = workshops.Where(w => !w.IsBlocked);
+        }
+
         if (catottgId > 0)
         {
             workshops = workshops

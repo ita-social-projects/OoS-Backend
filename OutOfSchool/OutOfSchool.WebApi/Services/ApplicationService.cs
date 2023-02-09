@@ -598,6 +598,19 @@ public class ApplicationService : IApplicationService, INotificationReciever
         throw new ArgumentException(@"Workshop in Application dto is null.", nameof(workshopId));
     }
 
+    private async Task<bool> IsBlokedWorkshop(Guid workshopId)
+    {
+        var workshop = await combinedWorkshopService.GetById(workshopId).ConfigureAwait(false);
+
+        if (workshop is not null)
+        {
+            return workshop.IsBlocked;
+        }
+
+        logger.LogInformation("Operation failed. Workshop in Application dto is null");
+        throw new ArgumentException(@"Workshop in Application dto is null.", nameof(workshopId));
+    }
+
     private Application CheckApplicationExists(Guid id)
     {
         var application = applicationRepository.GetById(id).Result;
@@ -720,6 +733,14 @@ public class ApplicationService : IApplicationService, INotificationReciever
     private async Task<ModelWithAdditionalData<ApplicationDto, int>> ExecuteCreateAsync(ApplicationCreate applicationDto)
     {
         await currentUserService.UserHasRights(new ParentRights(applicationDto.ParentId, applicationDto.ChildId));
+
+        if (await IsBlokedWorkshop(applicationDto.WorkshopId))
+        {
+            logger.LogInformation(
+                "Unable to create a new application for a workshop because workshop is blocked");
+            throw new ArgumentException(
+                "Unable to create a new application for a workshop because workshop is blocked.");
+        }
 
         var isNewApplicationAllowed = await IsNewApplicationAllowed(applicationDto.WorkshopId).ConfigureAwait(false);
 
