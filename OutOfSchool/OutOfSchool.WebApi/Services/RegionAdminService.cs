@@ -1,15 +1,12 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
-using AutoMapper;
+﻿using AutoMapper;
 using Castle.Core.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
+using System.Linq.Expressions;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -369,6 +366,70 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             .FlatMap<ResponseDto>(r => r.IsSuccess
                 ? r
                 : new ErrorResponse
+                {
+                    HttpStatusCode = r.HttpStatusCode,
+                    Message = r.Message,
+                })
+            .Map(result => result.Result is not null
+                ? JsonConvert
+                    .DeserializeObject<ActionResult>(result.Result.ToString())
+                : null);
+    }
+
+    /// <inheritdoc/>
+    public async Task<Either<ErrorResponse, ActionResult>> ReinviteRegionAdminAsync(
+        string regionAdminId,
+        string userId,
+        string token)
+    {
+        Logger.LogDebug(
+            "RegionAdmin(id): {RegionAdminId} reinvite was started. User(id): {UserId}",
+            regionAdminId,
+            userId);
+
+        var regionAdmin = await regionAdminRepository.GetByIdAsync(regionAdminId).ConfigureAwait(false);
+        if (regionAdmin == null)
+        {
+            return null;
+        }
+
+        var user = (await userRepository.GetByFilter(u => u.Id == regionAdmin.UserId).ConfigureAwait(false))
+            .SingleOrDefault();
+        if (user == null)
+        {
+            return null;
+        }
+        else if (user.LastLogin != DateTimeOffset.MinValue)
+        {
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Message = "Only neverlogged users can be reinvited.",
+            };
+        }
+
+        var request = new Request()
+        {
+            HttpMethodType = HttpMethodType.Put,
+            Url = new Uri(identityServerConfig.Authority, string.Concat(
+                CommunicationConstants.ReinviteRegionAdmin,
+                regionAdminId,
+                new PathString("/"))),
+            Token = token,
+            RequestId = Guid.NewGuid(),
+        };
+
+        Logger.LogDebug(
+            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            request.HttpMethodType,
+            request.RequestId,
+            userId,
+            request.Url);
+
+        var response = await SendRequest<ResponseDto>(request).ConfigureAwait(false);
+
+        return response
+            .FlatMap<ResponseDto>(r => r.IsSuccess ? r : new ErrorResponse
                 {
                     HttpStatusCode = r.HttpStatusCode,
                     Message = r.Message,

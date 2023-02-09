@@ -291,6 +291,7 @@ public class MinistryAdminController : Controller
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HasPermission(Permissions.MinistryAdminEdit)]
     [HttpPut("{ministryAdminId}")]
     public async Task<IActionResult> Reinvite(string ministryAdminId)
     {

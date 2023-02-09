@@ -74,4 +74,16 @@ public interface IRegionAdminService
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains the <see cref="SearchResult{MinistryAdminDto}"/> that contains found elements.</returns>
     Task<SearchResult<RegionAdminDto>> GetByFilter(RegionAdminFilter filter);
+
+    /// <summary>
+    /// Reinvite Region Admin.
+    /// </summary>
+    /// <param name="regionAdminId">Id of region admin.</param>
+    /// <param name="userId">Id of current user.</param>
+    /// <param name="token">Valid token with RegionAdminEdit permissions.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    Task<Either<ErrorResponse, ActionResult>> ReinviteRegionAdminAsync(
+        string regionAdminId,
+        string userId,
+        string token);
 }

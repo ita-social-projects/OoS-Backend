@@ -82,7 +82,15 @@ public class RegionAdminControllerTests
                 It.IsAny<string>(),
                 It.IsAny<bool>()))
             .ReturnsAsync(fakeResponseDto);
-        
+
+        fakeRegionAdminService.Setup(s => s
+            .ReinviteMinistryAdminAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<IUrlHelper>(),
+                It.IsAny<string>()))
+            .ReturnsAsync(fakeResponseDto);
+
         var fakeHttpContext = new Mock<HttpContext>();
         fakeHttpContext.Setup(s => s.Request.Headers[It.IsAny<string>()]).Returns("Ok");
         
@@ -170,5 +178,19 @@ public class RegionAdminControllerTests
     public async Task OnActionExecuting_WithNullContext_ReturnsException()
     {
         Assert.That(() => regionAdminController.OnActionExecuting(null), Throws.ArgumentNullException);
+    }
+
+    [Test]
+    public async Task Reinvite_WithValidModel_ReturnsSuccessResponseDto()
+    {
+        // Arrange
+
+        // Act
+        var result = await regionAdminController.Reinvite("fakeAdminId");
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(true, result.IsSuccess);
+        Assert.AreEqual("fakeFirstName", ((RegionAdminBaseDto)result.Result).FirstName);
     }
 }

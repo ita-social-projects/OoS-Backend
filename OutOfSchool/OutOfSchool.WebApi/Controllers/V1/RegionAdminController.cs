@@ -302,4 +302,42 @@ public class RegionAdminController : Controller
                 return Ok();
             });
     }
+
+    /// <summary>
+    /// Send new invitation to RegionAdmin.
+    /// </summary>
+    /// <param name="regionAdminId">RegionAdmin's id.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HasPermission(Permissions.RegionAdminEdit)]
+    [HttpPut("{regionAdminId}")]
+    public async Task<IActionResult> Reinvite(string regionAdminId)
+    {
+        logger.LogDebug($"{path} started. User(id): {currentUserId}.");
+
+        var response = await regionAdminService.ReinviteRegionAdminAsync(
+                regionAdminId,
+                currentUserId,
+                await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
+            .ConfigureAwait(false);
+
+        if (response == null)
+        {
+            return NoContent();
+        }
+
+        return response.Match(
+            error => StatusCode((int)error.HttpStatusCode),
+            _ =>
+            {
+                logger.LogInformation($"Succesfully reinvited RegionAdmin(id): {regionAdminId} by User(id): {currentUserId}.");
+
+                return Ok();
+            });
+    }
 }

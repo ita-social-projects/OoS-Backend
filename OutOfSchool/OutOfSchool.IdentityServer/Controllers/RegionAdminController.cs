@@ -100,4 +100,14 @@ public class RegionAdminController : Controller
         return await regionAdminService
             .BlockMinistryAdminAsync(regionAdminId, currentUserId, Request.Headers["X-Request-ID"], isBlocked);
     }
+
+    [HttpPut("{regionAdminId}")]
+    [HasPermission(Permissions.RegionAdminEdit)]
+    public async Task<ResponseDto> Reinvite(string regionAdminId)
+    {
+        logger.LogDebug($"Received request " +
+                        $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {currentUserId}");
+        return await regionAdminService
+            .ReinviteMinistryAdminAsync(regionAdminId, currentUserId, Url, Request.Headers["X-Request-ID"]);
+    }
 }
