@@ -47,7 +47,7 @@ try
     configService.GetSection(identityOptions.Name).Bind(identityOptions);
 
     context.Database.Migrate();
-    identityContext.Database.Migrate();
+    //identityContext.Database.Migrate();
     var manager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
     Startup.RolesInit(manager);
