@@ -377,7 +377,7 @@ public class ProviderService : IProviderService, INotificationReciever
         {
             recipientIds.AddRange(await GetTechAdminsIds().ConfigureAwait(false));
             recipientIds.AddRange(await GetMinistryAdminsIds(provider.InstitutionId).ConfigureAwait(false));
-            recipientIds.AddRange(await GetRegionAdminsIds(provider.UserId).ConfigureAwait(false));
+            recipientIds.AddRange(await GetRegionAdminsIds(provider.LegalAddress).ConfigureAwait(false));
         }
         else if (action == NotificationAction.Update)
         {
@@ -389,7 +389,7 @@ public class ProviderService : IProviderService, INotificationReciever
                 {
                     recipientIds.AddRange(await GetTechAdminsIds().ConfigureAwait(false));
                     recipientIds.AddRange(await GetMinistryAdminsIds(provider.InstitutionId).ConfigureAwait(false));
-                    recipientIds.AddRange(await GetRegionAdminsIds(provider.UserId).ConfigureAwait(false));
+                    recipientIds.AddRange(await GetRegionAdminsIds(provider.LegalAddress).ConfigureAwait(false));
                 }
                 else if (status == ProviderStatus.Editing
                          || status == ProviderStatus.Approved)
@@ -747,10 +747,10 @@ public class ProviderService : IProviderService, INotificationReciever
         return ministryAdminsIds;
     }
 
-    private async Task<IEnumerable<string>> GetRegionAdminsIds(string userId)
+    private async Task<IEnumerable<string>> GetRegionAdminsIds(Address address)
     {
         var regionAdminsIds = await regionAdminRepository
-            .GetByFilterNoTracking(a => a.UserId == userId)
+            .GetByFilterNoTracking(a => a.CATOTTGId == address.CATOTTGId)
             .Select(a => a.UserId)
             .ToListAsync()
             .ConfigureAwait(false);
