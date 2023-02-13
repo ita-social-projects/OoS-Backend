@@ -7,7 +7,6 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData.Enums;
 using OutOfSchool.ElasticsearchData.Models;
-using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.ElasticsearchData;
 

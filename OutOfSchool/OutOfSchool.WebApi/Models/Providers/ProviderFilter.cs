@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models.Providers;

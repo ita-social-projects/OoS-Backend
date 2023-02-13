@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models.Configurations;

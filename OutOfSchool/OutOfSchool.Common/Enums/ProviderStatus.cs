@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace OutOfSchool.Services.Enums;
+namespace OutOfSchool.Common.Enums;
 
 [JsonConverter(typeof(StringEnumConverter))]
 public enum ProviderStatus
