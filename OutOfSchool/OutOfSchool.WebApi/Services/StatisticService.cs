@@ -184,7 +184,7 @@ public class StatisticService : IStatisticService
     public async Task<IEnumerable<WorkshopCard>> GetPopularWorkshopsFromDatabase(int limit, long catottgId)
     {
         var workshops = workshopRepository
-            .Get(includeProperties: $"{nameof(Address)},{nameof(InstitutionHierarchy)}");
+            .Get(includeProperties: $"{nameof(Address)},{nameof(InstitutionHierarchy)}", where: w => !w.IsBlocked);
 
         if (currentUserService.IsMinistryAdmin())
         {
