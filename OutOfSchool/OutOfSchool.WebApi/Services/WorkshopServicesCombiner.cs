@@ -110,9 +110,9 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider)
+    public async Task<IEnumerable<Workshop>> PartialUpdateByProvider(Guid providerId, string providerTitle)
     {
-        var workshops = await workshopService.PartialUpdateByProvider(provider).ConfigureAwait(false);
+        var workshops = await workshopService.PartialUpdateByProvider(providerId, providerTitle).ConfigureAwait(false);
 
         foreach (var workshop in workshops)
         {

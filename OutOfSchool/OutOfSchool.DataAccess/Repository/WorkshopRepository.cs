@@ -45,13 +45,12 @@ public class WorkshopRepository : SensitiveEntityRepository<Workshop>, IWorkshop
         return await dbSet.Where(w => ids.Contains(w.Id)).ToListAsync();
     }
 
-    public async Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider)
+    public async Task<IEnumerable<Workshop>> PartialUpdateByProvider(Guid providerId, string providerTitle)
     {
-        var workshops = db.Workshops.Where(ws => ws.ProviderId == provider.Id);
+        var workshops = db.Workshops.Where(ws => ws.ProviderId == providerId);
         await workshops.ForEachAsync(ws =>
         {
-            ws.ProviderTitle = provider.FullTitle;
-            ws.ProviderOwnership = provider.Ownership;
+            ws.ProviderTitle = providerTitle;
         });
 
         await db.SaveChangesAsync();

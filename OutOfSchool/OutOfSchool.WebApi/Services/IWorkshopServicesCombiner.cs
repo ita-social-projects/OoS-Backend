@@ -96,9 +96,10 @@ public interface IWorkshopServicesCombiner
     /// <summary>
     /// Update provider's properties in all workshops with specified provider.
     /// </summary>
-    /// <param name="provider">Provider to be searched by.</param>
+    /// <param name="providerId">Id of Provider to be searched by.</param>
+    /// <param name="providerTitle">FullTitle of Provider to be changed.</param>
     /// <returns><see cref="IEnumerable{T}"/> of Workshops for the specified provider.</returns>
-    Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider);
+    Task<IEnumerable<Workshop>> PartialUpdateByProvider(Guid providerId, string providerTitle);
 
     /// <summary>
     /// Update IsBlocked property in all workshops with specified provider.

@@ -98,7 +98,7 @@ public class ProviderServiceUpdate
 
         // Act
         var result = await this.providerService
-            .Update(this.mapper.Map<ProviderDto>(provider), provider.UserId)
+            .Update(this.mapper.Map<ProviderUpdateDto>(provider), provider.UserId)
             .ConfigureAwait(false);
 
         // Assert
@@ -117,7 +117,7 @@ public class ProviderServiceUpdate
 
         await context.SaveChangesAsync().ConfigureAwait(false);
 
-        var providerDto = this.mapper.Map<ProviderDto>(provider);
+        var providerDto = this.mapper.Map<ProviderUpdateDto>(provider);
         providerDto.ActualAddress = null;
 
         // Act
@@ -141,7 +141,7 @@ public class ProviderServiceUpdate
         var randomAddressToAdd = GenerateAddressToAdd();
 
         provider.LegalAddress = randomAddressToAdd;
-        var providerDto = this.mapper.Map<ProviderDto>(provider);
+        var providerDto = this.mapper.Map<ProviderUpdateDto>(provider);
 
         // Act
         var result = await this.providerService.Update(providerDto, provider.UserId)
@@ -164,7 +164,7 @@ public class ProviderServiceUpdate
         var randomAddressToAdd = GenerateAddressToAdd();
 
         provider.ActualAddress = randomAddressToAdd;
-        var providerDto = this.mapper.Map<ProviderDto>(provider);
+        var providerDto = this.mapper.Map<ProviderUpdateDto>(provider);
 
         // Act
         var result = await this.providerService.Update(providerDto, provider.UserId)
@@ -182,7 +182,7 @@ public class ProviderServiceUpdate
         await using var context = this.GetContext();
         var provider = context.Providers.First();
         provider.ActualAddress = provider.LegalAddress;
-        var providerDto = this.mapper.Map<ProviderDto>(provider);
+        var providerDto = this.mapper.Map<ProviderUpdateDto>(provider);
 
         // Act
         var result = await this.providerService.Update(providerDto, provider.UserId)

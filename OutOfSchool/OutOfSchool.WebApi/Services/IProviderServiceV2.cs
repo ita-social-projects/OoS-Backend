@@ -19,7 +19,7 @@ public interface IProviderServiceV2 : IProviderService
     /// <param name="dto">Entity that will be to updated.</param>
     /// <param name="userId">User id.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="ProviderDto"/>.</returns>
-    new Task<ProviderDto> Update(ProviderDto dto, string userId);
+    new Task<ProviderDto> Update(ProviderUpdateDto dto, string userId);
 
     /// <summary>
     ///  Delete entity.
