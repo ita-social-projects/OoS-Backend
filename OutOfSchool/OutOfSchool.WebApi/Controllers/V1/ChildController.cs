@@ -199,6 +199,31 @@ public class ChildController : ControllerBase
     }
 
     /// <summary>
+    /// Method for creating the list of the new user's children.
+    /// </summary>
+    /// <param name="childrenDtos">The list of the children entities to add.</param>
+    /// <returns>The list of the children that were created.</returns>
+    [HasPermission(Permissions.ChildAddNew)]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChildDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPost]
+    public async Task<IActionResult> CreateChildren(List<ChildDto> childrenDtos)
+    {
+        string userId = GettingUserProperties.GetUserId(User);
+
+        var children = await service.CreateChildrenForUser(childrenDtos, userId).ConfigureAwait(false);
+
+        return Ok(new ChildrenCreationResponse()
+        {
+            Parent = children.Parent,
+            ChildrenCreationResults = children.ChildrenCreationResults,
+        });
+    }
+
+    /// <summary>
     /// Update info about the user's child in the database.
     /// </summary>
     /// <param name="dto">Child entity to update.</param>

@@ -11,6 +11,7 @@ using Nest;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.SocialGroup;
@@ -105,6 +106,55 @@ public class ChildService : IChildService
             $"Child with Id:{newChild.Id} ({nameof(Child.ParentId)}:{newChild.ParentId}, {nameof(userId)}:{userId}) was created successfully.");
 
         return mapper.Map<ChildDto>(newChild);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ChildrenCreationResultDto> CreateChildrenForUser(List<ChildDto> childrenDtos, string userId)
+    {
+        var parent = (await parentRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false))
+            .SingleOrDefault()
+            ?? throw new UnauthorizedAccessException($"Trying to create a new children the Parent with {nameof(userId)}:{userId} was not found.");
+
+        var children = new ChildrenCreationResultDto()
+        {
+            Parent = mapper.Map<ParentDTO>(parent),
+        };
+
+        foreach (var childDto in childrenDtos)
+        {
+            try
+            {
+                var child = await CreateChildForUser(childDto, userId).ConfigureAwait(false);
+                children.ChildrenCreationResults.Add(CreateChildResult(child));
+            }
+            catch (Exception ex) when (ex is ArgumentNullException
+                || ex is ArgumentException
+                || ex is UnauthorizedAccessException
+                || ex is DbUpdateException)
+            {
+                children.ChildrenCreationResults.Add(CreateChildResult(childDto, false, ex.Message));
+                logger.LogDebug(
+                    $"There is an error while creating a new child with {nameof(Child.ParentId)}:{childDto.ParentId}, {nameof(userId)}:{userId}: {ex.Message}.");
+            }
+            catch (Exception ex)
+            {
+                children.ChildrenCreationResults.Add(CreateChildResult(childDto, false));
+                logger.LogDebug(
+                    $"There is an error while creating a new child with {nameof(Child.ParentId)}:{childDto.ParentId}, {nameof(userId)}:{userId}: {ex.Message}.");
+            }
+        }
+
+        ChildCreationResult CreateChildResult(ChildDto childDto, bool isSuccess = true, string message = null)
+        {
+            return new ChildCreationResult()
+            {
+                Child = childDto,
+                IsSuccess = isSuccess,
+                Message = message,
+            };
+        }
+
+        return children;
     }
 
     /// <inheritdoc/>

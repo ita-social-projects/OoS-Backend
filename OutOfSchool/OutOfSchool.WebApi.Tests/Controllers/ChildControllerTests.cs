@@ -182,6 +182,20 @@ public class ChildControllerTests
     }
 
     [Test]
+    public async Task CreateChildren_WhenModelIsValid_ShouldReturnOkObjectResult()
+    {
+        // Arrange
+        service.Setup(x => x.CreateChildrenForUser(children, currentUserId))
+            .ReturnsAsync(new ChildrenCreationResultDto());
+
+        // Act
+        var result = await controller.CreateChildren(children).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<OkObjectResult>(result);
+    }
+
+    [Test]
     public async Task UpdateChild_WhenModelIsValid_ShouldReturnOkObjectResult()
     {
         // Arrange
