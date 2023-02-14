@@ -492,6 +492,7 @@ public class ProviderService : IProviderService, INotificationReciever
         try
         {
             var checkProvider = await providerRepository.GetById(providerDto.Id).ConfigureAwait(false);
+            var dataSynchronized = false;
 
             if (checkProvider?.UserId != userId)
             {
@@ -540,6 +541,8 @@ public class ProviderService : IProviderService, INotificationReciever
                                                   $"in workshops with Id = {workshop?.Id} updated successfully.");
                         }
 
+                        dataSynchronized = true;
+
                         return checkProvider;
                     }).ConfigureAwait(false);
                 }
@@ -561,6 +564,20 @@ public class ProviderService : IProviderService, INotificationReciever
 
             if (statusChanged || licenseChanged)
             {
+                // TODO: Improve logic with duplicating the code below
+                if (!dataSynchronized)
+                {
+                    var workshops = await workshopServiceCombiner
+                            .PartialUpdateByProvider(mapper.Map<Provider>(providerDto))
+                            .ConfigureAwait(false);
+
+                    foreach (var workshop in workshops)
+                    {
+                        logger.LogInformation($"Provider's properties with Id = {checkProvider?.Id} " +
+                                              $"in workshops with Id = {workshop?.Id} updated successfully.");
+                    }
+                }
+
                 await SendNotification(checkProvider, NotificationAction.Update, statusChanged, licenseChanged)
                     .ConfigureAwait(false);
             }
