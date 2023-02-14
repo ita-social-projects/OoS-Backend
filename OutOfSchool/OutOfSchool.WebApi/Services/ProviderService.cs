@@ -281,6 +281,16 @@ public class ProviderService : IProviderService, INotificationReciever
         provider.StatusReason = dto.StatusReason;
         await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
 
+        var workshops = await workshopServiceCombiner
+            .PartialUpdateByProvider(provider)
+            .ConfigureAwait(false);
+
+        foreach (var workshop in workshops)
+        {
+            logger.LogInformation($"Provider's properties with Id = {provider?.Id} " +
+                                  $"in workshops with Id = {workshop?.Id} updated successfully.");
+        }
+
         logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.Status}");
 
         await SendNotification(provider, NotificationAction.Update, true, false).ConfigureAwait(false);
