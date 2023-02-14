@@ -197,7 +197,7 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(ProviderDto providerModel)
+    public async Task<IActionResult> Update(ProviderUpdateDto providerModel)
     {
         if (!ModelState.IsValid)
         {

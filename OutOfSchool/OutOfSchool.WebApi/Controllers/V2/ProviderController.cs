@@ -164,7 +164,7 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Update([FromForm] ProviderDto providerModel)
+    public async Task<IActionResult> Update([FromForm] ProviderUpdateDto providerModel)
     {
         try
         {

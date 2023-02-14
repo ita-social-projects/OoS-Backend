@@ -80,7 +80,7 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
         return await CreateProviderWithActionAfterAsync(providerDto, AfterCreationAction).ConfigureAwait(false);
     }
 
-    public new async Task<ProviderDto> Update(ProviderDto providerDto, string userId)
+    public new async Task<ProviderDto> Update(ProviderUpdateDto providerDto, string userId)
     {
         async Task BeforeUpdateAction(Provider provider)
         {

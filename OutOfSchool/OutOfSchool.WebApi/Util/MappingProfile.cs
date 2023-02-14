@@ -150,6 +150,30 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.LicenseStatus, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore());
 
+        CreateMap<ProviderUpdateDto, Provider>()
+            .ForMember(dest => dest.Ownership, opt => opt.Ignore())
+            .ForMember(dest => dest.Workshops, opt => opt.Ignore())
+            .ForMember(dest => dest.User, opt => opt.Ignore())
+            .ForMember(dest => dest.Institution, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore())
+            .ForMember(dest => dest.Images, opt => opt.Ignore())
+            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+            .ForMember(dest => dest.Status, opt => opt.Ignore())
+            .ForMember(dest => dest.LicenseStatus, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore());
+
+        CreateMap<Provider, ProviderUpdateDto>()
+            .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
+            .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
+            .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.Institution))
+            .ForMember(dest => dest.Rating, opt => opt.Ignore())
+            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
+            .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
+            .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
+            .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)));
+
+        CreateMap<ProviderDto, ProviderUpdateDto>();
+
         CreateMap<TeacherDTO, Teacher>()
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.WorkshopId, opt => opt.Ignore())

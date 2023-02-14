@@ -390,18 +390,18 @@ public class WorkshopService : IWorkshopService
 
     /// <inheritdoc/>
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-    public async Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider)
+    public async Task<IEnumerable<Workshop>> PartialUpdateByProvider(Guid providerId, string providerTitle)
     {
-        logger.LogInformation($"Partial updating {nameof(Workshop)} with ProviderId = {provider?.Id} was started.");
+        logger.LogInformation($"Partial updating {nameof(Workshop)} with ProviderId = {providerId} was started.");
 
         try
         {
-            return await workshopRepository.PartialUpdateByProvider(provider).ConfigureAwait(false);
+            return await workshopRepository.PartialUpdateByProvider(providerId, providerTitle).ConfigureAwait(false);
         }
         catch (DbUpdateConcurrencyException exception)
         {
             logger.LogError(exception,
-                $"Partial updating {nameof(Workshop)} with ProviderId = {provider?.Id} was failed. Exception: {exception.Message}");
+                $"Partial updating {nameof(Workshop)} with ProviderId = {providerId} was failed. Exception: {exception.Message}");
             throw; // TODO Probably should not rethrow this exception to the higher level. See pull request [Provicevk/unified responses #843] as future decision
         }
     }
