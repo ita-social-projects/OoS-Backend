@@ -94,6 +94,7 @@ public class ChildController : ControllerBase
     /// <summary>
     /// Get all user's children from the database.
     /// </summary>
+    /// <param name="isGetParent">Retrieve the parents along with the children.</param>
     /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>
     /// <returns>The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
     [HasPermission(Permissions.ChildRead)]
@@ -103,11 +104,11 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
-    public async Task<IActionResult> GetUsersChildren([FromQuery] OffsetFilter offsetFilter)
+    public async Task<IActionResult> GetUsersChildren([FromQuery] bool? isGetParent, [FromQuery] OffsetFilter offsetFilter)
     {
         string userId = GettingUserProperties.GetUserId(User);
 
-        return Ok(await service.GetByUserId(userId, offsetFilter).ConfigureAwait(false));
+        return Ok(await service.GetByUserId(userId, isGetParent, offsetFilter).ConfigureAwait(false));
     }
 
     /// <summary>

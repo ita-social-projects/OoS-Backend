@@ -219,14 +219,16 @@ public class ChildService : IChildService
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<ChildDto>> GetByUserId(string userId, OffsetFilter offsetFilter)
+    public async Task<SearchResult<ChildDto>> GetByUserId(string userId, bool? isGetParent, OffsetFilter offsetFilter)
     {
         this.ValidateUserId(userId);
         this.ValidateOffsetFilter(offsetFilter);
 
         logger.LogDebug($"Getting Child's for User started. Looking UserId = {userId}.");
 
-        var totalAmount = await childRepository.Count(x => x.Parent.UserId == userId).ConfigureAwait(false);
+        Expression<Func<Child, bool>> predicate = x => x.Parent.UserId == userId && x.IsParent == (isGetParent ?? false);
+
+        var totalAmount = await childRepository.Count(predicate).ConfigureAwait(false);
 
         var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
         {
@@ -234,7 +236,7 @@ public class ChildService : IChildService
         };
 
         var children = await childRepository
-            .Get(offsetFilter.From, offsetFilter.Size, string.Empty, x => x.Parent.UserId == userId, sortExpression)
+            .Get(offsetFilter.From, offsetFilter.Size, string.Empty, predicate, sortExpression)
             .ToListAsync()
             .ConfigureAwait(false);
 
