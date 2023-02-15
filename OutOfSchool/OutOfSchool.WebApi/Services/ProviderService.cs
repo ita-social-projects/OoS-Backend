@@ -303,22 +303,24 @@ public class ProviderService : IProviderService, INotificationReciever
         // TODO: validate if current user has permission to block/unblock the provider
         provider.IsBlocked = providerBlockDto.IsBlocked;
         provider.BlockReason = providerBlockDto.IsBlocked ? providerBlockDto.BlockReason : null;
-        await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
 
-        // TODO What's happen if previous action will not successfull?
-        var workshops = await workshopServiceCombiner
-                           .BlockByProvider(provider)
-                           .ConfigureAwait(false);
-
-        foreach (var workshop in workshops)
+        return await providerRepository.RunInTransaction(async () =>
         {
-            logger.LogInformation($"IsBlocked property with povider Id = {provider.Id} " +
-                                  $"in workshops with Id = {workshop.Id} updated successfully.");
-        }
+            await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
 
-        logger.LogInformation($"Provider(id) {providerBlockDto.Id} IsBlocked was changed to {provider.IsBlocked}");
+            var workshops = await workshopServiceCombiner
+                               .BlockByProvider(provider)
+                               .ConfigureAwait(false);
 
-        return providerBlockDto;
+            foreach (var workshop in workshops)
+            {
+                logger.LogInformation($"IsBlocked property with povider Id = {provider.Id} " +
+                                      $"in workshops with Id = {workshop.Id} updated successfully.");
+            }
+
+            logger.LogInformation($"Provider(id) {providerBlockDto.Id} IsBlocked was changed to {provider.IsBlocked}");
+            return providerBlockDto;
+        });
     }
 
     public async Task<ProviderLicenseStatusDto> UpdateLicenseStatus(ProviderLicenseStatusDto dto, string userId)
