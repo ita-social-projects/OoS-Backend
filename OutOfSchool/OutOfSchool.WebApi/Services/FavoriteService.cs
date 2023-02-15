@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -76,7 +77,7 @@ public class FavoriteService : IFavoriteService
     {
         logger.LogInformation($"Getting Favorites by User started. Looking UserId = {userId}.");
 
-        var favorites = await favoriteRepository.GetByFilter(x => x.UserId == userId).ConfigureAwait(false);
+        var favorites = await favoriteRepository.GetByFilter(x => x.UserId == userId && x.Workshop.Provider.Status == ProviderStatus.Approved).ConfigureAwait(false);
 
         logger.LogInformation(!favorites.Any()
             ? $"There aren't Favorites for User with Id = {userId}."
