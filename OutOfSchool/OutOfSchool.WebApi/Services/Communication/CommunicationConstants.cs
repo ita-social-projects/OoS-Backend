@@ -20,6 +20,8 @@ public static class CommunicationConstants
 
     public const string BlockMinistryAdmin = "ministryadmin/block/";
 
+    public const string ReinviteMinistryAdmin = "ministryadmin/reinvite/";
+
     public const string CreateRegionAdmin = "regionadmin/create";
 
     public const string UpdateRegionAdmin = "regionadmin/update/";
@@ -27,6 +29,8 @@ public static class CommunicationConstants
     public const string DeleteRegionAdmin = "regionadmin/delete/";
 
     public const string BlockRegionAdmin = "regionadmin/block/";
+
+    public const string ReinviteRegionAdmin = "regionadmin/reinvite/";
 
     public const int BufferSize = 1024;
 }

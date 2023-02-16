@@ -2,27 +2,32 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Common.Models;
+using OutOfSchool.IdentityServer.Services.Interfaces;
 using OutOfSchool.IdentityServer.Services.Password;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Repository;
 
 namespace OutOfSchool.IdentityServer.Services;
 
-public class MinistryAdminService : IMinistryAdminService
+public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : ICommonMinistryAdminService<TDto>
+    where TEntity : InstitutionAdminBase, IKeyedEntity<(string, TId)>, new()
+    where TDto : MinistryAdminBaseDto
+    where TRepositoty : IInstitutionAdminRepositoryBase<TId, TEntity>
 {
     private readonly IEmailSender emailSender;
     private readonly IMapper mapper;
-    private readonly ILogger<MinistryAdminService> logger;
-    private readonly IInstitutionAdminRepository institutionAdminRepository;
+    private readonly ILogger<CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty>> logger;
+    private readonly TRepositoty institutionAdminRepository;
     private readonly UserManager<User> userManager;
     private readonly OutOfSchoolDbContext context;
     private readonly IRazorViewToStringRenderer renderer;
     private readonly IStringLocalizer<SharedResource> localizer;
 
-    public MinistryAdminService(
+    public CommonMinistryAdminService(
         IMapper mapper,
-        IInstitutionAdminRepository institutionAdminRepository,
-        ILogger<MinistryAdminService> logger,
+        TRepositoty institutionAdminRepository,
+        ILogger<CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty>> logger,
         IEmailSender emailSender,
         UserManager<User> userManager,
         OutOfSchoolDbContext context,
@@ -49,7 +54,8 @@ public class MinistryAdminService : IMinistryAdminService
     }
 
     public async Task<ResponseDto> CreateMinistryAdminAsync(
-        MinistryAdminBaseDto ministryAdminBaseDto,
+        TDto ministryAdminBaseDto,
+        Role role,
         IUrlHelper url,
         string userId,
         string requestId)
@@ -76,7 +82,8 @@ public class MinistryAdminService : IMinistryAdminService
                 user.IsDerived = true;
                 user.IsRegistered = true;
                 user.IsBlocked = false;
-                user.Role = nameof(Role.MinistryAdmin).ToLower();
+                user.CreatingTime = DateTime.UtcNow;
+                user.Role = role.ToString().ToLower();
 
                 var result = await userManager.CreateAsync(user, password);
 
@@ -119,7 +126,7 @@ public class MinistryAdminService : IMinistryAdminService
 
                 ministryAdminBaseDto.UserId = user.Id;
 
-                var ministryAdmin = mapper.Map<InstitutionAdmin>(ministryAdminBaseDto);
+                var ministryAdmin = mapper.Map<TEntity>(ministryAdminBaseDto);
                 await institutionAdminRepository.Create(ministryAdmin)
                     .ConfigureAwait(false);
 
@@ -127,31 +134,10 @@ public class MinistryAdminService : IMinistryAdminService
                     $"MinistryAdmin(id):{ministryAdminBaseDto.UserId} was successfully created by " +
                     $"User(id): {userId}. Request(id): {requestId}");
 
-                // TODO:
-                // Endpoint with sending new password
-
-                // TODO:
-                // Use template instead
-                var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-                var confirmationLink = url.Action(
-                    "EmailConfirmation",
-                    "Account",
-                    new { userId = user.Id, token },
-                    "https");
-                var subject = localizer["Confirm email"];
-                var adminInvitationViewModel = new AdminInvitationViewModel
-                {
-                    ConfirmationUrl = confirmationLink,
-                    Email = user.Email,
-                    Password = password,
-                };
-                var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.NewAdminInvitation, adminInvitationViewModel);
-
-                await emailSender.SendAsync(user.Email, subject, content);
+                await SendInvitationEmail(user, url, password);
 
                 // No sense to commit if the email was not sent, as user will not be able to login
                 // and needs to be re-created
-                // TODO: +1 need Endpoint with sending new password
                 await transaction.CommitAsync();
                 response.IsSuccess = true;
                 response.HttpStatusCode = HttpStatusCode.OK;
@@ -191,7 +177,7 @@ public class MinistryAdminService : IMinistryAdminService
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
             try
             {
-                var ministryAdmin = GetMinistryAdmin(ministryAdminId);
+                var ministryAdmin = await GetMinistryAdmin(ministryAdminId);
 
                 if (ministryAdmin is null)
                 {
@@ -205,7 +191,7 @@ public class MinistryAdminService : IMinistryAdminService
                     return response;
                 }
 
-                context.InstitutionAdmins.Remove(ministryAdmin);
+                await institutionAdminRepository.Delete(ministryAdmin);
 
                 var user = await userManager.FindByIdAsync(ministryAdminId);
                 var result = await userManager.DeleteAsync(user);
@@ -260,7 +246,7 @@ public class MinistryAdminService : IMinistryAdminService
 
         var response = new ResponseDto();
 
-        var providerAdmin = GetMinistryAdmin(ministryAdminId);
+        var providerAdmin = await GetMinistryAdmin(ministryAdminId).ConfigureAwait(false);
 
         if (providerAdmin is null)
         {
@@ -343,7 +329,7 @@ public class MinistryAdminService : IMinistryAdminService
     }
 
     public async Task<ResponseDto> UpdateMinistryAdminAsync(
-        MinistryAdminBaseDto updateMinistryAdminDto,
+        TDto updateMinistryAdminDto,
         string userId,
         string requestId)
     {
@@ -362,7 +348,7 @@ public class MinistryAdminService : IMinistryAdminService
             return response;
         }
 
-        var ministryAdmin = GetMinistryAdmin(updateMinistryAdminDto.UserId);
+        var ministryAdmin = await GetMinistryAdmin(updateMinistryAdminDto.UserId).ConfigureAwait(false);
 
         if (ministryAdmin is null)
         {
@@ -370,7 +356,7 @@ public class MinistryAdminService : IMinistryAdminService
             response.HttpStatusCode = HttpStatusCode.NotFound;
 
             logger.LogError(
-                "ProviderAdmin(id) {providerAdminUpdateDto.Id} not found. " +
+                "MinistryAdmin(id) {ministryAdminUpdateDto.Id} not found. " +
                 "Request(id): {requestId}" +
                 "User(id): {userId}",
                 updateMinistryAdminDto.UserId,
@@ -464,7 +450,7 @@ public class MinistryAdminService : IMinistryAdminService
                 await transaction.RollbackAsync().ConfigureAwait(false);
 
                 logger.LogError(
-                    "Error happened while updating ProviderAdmin. Request(id): {requestId}" +
+                    "Error happened while updating MinistryAdmin. Request(id): {requestId}" +
                     "User(id): {userId} {ex.Message}",
                     requestId,
                     userId,
@@ -478,6 +464,99 @@ public class MinistryAdminService : IMinistryAdminService
         }
     }
 
-    private InstitutionAdmin GetMinistryAdmin(string ministryAdminId)
-        => context.InstitutionAdmins.SingleOrDefault(pa => pa.UserId == ministryAdminId);
+    public async Task<ResponseDto> ReinviteMinistryAdminAsync(
+        string ministryAdminId,
+        string userId,
+        IUrlHelper url,
+        string requestId)
+    {
+        var executionStrategy = context.Database.CreateExecutionStrategy();
+        var result = await executionStrategy.Execute(async () =>
+        {
+            var response = new ResponseDto();
+            await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+            try
+            {
+                var ministryAdmin = await GetMinistryAdmin(ministryAdminId).ConfigureAwait(false);
+
+                if (ministryAdmin is null)
+                {
+                    response.IsSuccess = false;
+                    response.HttpStatusCode = HttpStatusCode.NotFound;
+
+                    logger.LogError($"MinistryAdmin(id) {ministryAdminId} not found. " +
+                                    $"Request(id): {requestId}" +
+                                    $"User(id): {userId}");
+
+                    return response;
+                }
+
+                var user = await userManager.FindByIdAsync(ministryAdminId);
+                var password = PasswordGenerator.GenerateRandomPassword(userManager.Options.Password);
+                await userManager.RemovePasswordAsync(user);
+                var result = await userManager.AddPasswordAsync(user, password);
+
+                if (!result.Succeeded)
+                {
+                    await transaction.RollbackAsync();
+
+                    logger.LogError($"Error happened while reinviting MinistryAdmin. Request(id): {requestId}" +
+                                    $"User(id): {userId}" +
+                                    $"{string.Join(Environment.NewLine, result.Errors.Select(e => e.Description))}");
+
+                    response.IsSuccess = false;
+                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                    return response;
+                }
+
+                await SendInvitationEmail(user, url, password);
+
+                await transaction.CommitAsync();
+                response.IsSuccess = true;
+                response.HttpStatusCode = HttpStatusCode.OK;
+
+                logger.LogInformation($"MinistryAdmin(id):{ministryAdminId} was successfully reinvited by " +
+                                      $"User(id): {userId}. Request(id): {requestId}");
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+
+                logger.LogError($"Error happened while reinviting MinistryAdmin. Request(id): {requestId}" +
+                                $"User(id): {userId} {ex.Message}");
+
+                response.IsSuccess = false;
+                response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                return response;
+            }
+        });
+        return result;
+    }
+
+    private async Task SendInvitationEmail(User user, IUrlHelper url, string password)
+    {
+        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        var confirmationLink = url.Action(
+            "EmailConfirmation",
+            "Account",
+            new { userId = user.Id, token },
+            "https");
+        var subject = localizer["Confirm email"];
+        var adminInvitationViewModel = new AdminInvitationViewModel
+        {
+            ConfirmationUrl = confirmationLink,
+            Email = user.Email,
+            Password = password,
+        };
+        var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.NewAdminInvitation, adminInvitationViewModel);
+
+        await emailSender.SendAsync(user.Email, subject, content);
+    }
+
+    private async Task<TEntity> GetMinistryAdmin(string ministryAdminId)
+        => await institutionAdminRepository.GetByIdAsync(ministryAdminId);
 }

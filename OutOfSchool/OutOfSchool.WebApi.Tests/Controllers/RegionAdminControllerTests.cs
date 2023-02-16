@@ -345,6 +345,24 @@ public class RegionAdminControllerTests
         Assert.That(result, Is.InstanceOf<ObjectResult>());
     }
 
+    [Test]
+    public async Task Reinvite_WithValidId_ReturnsOkResult()
+    {
+        // Arrange
+        var token = await fakeHttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
+
+        regionAdminServiceMock
+            .Setup(x => x.ReinviteRegionAdminAsync(It.IsAny<string>(), It.IsAny<string>(), token))
+            .ReturnsAsync(It.IsAny<ActionResult>());
+
+        // Act
+        var result = await regionAdminController.Reinvite(It.IsAny<string>());
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Is.InstanceOf<OkResult>());
+    }
+
     private HttpContext GetFakeHttpContext()
     {
         var authProps = new AuthenticationProperties();

@@ -5,18 +5,8 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models;
 
-public class InstitutionAdmin : IKeyedEntity<(string, Guid)>
+public class InstitutionAdmin : InstitutionAdminBase, IKeyedEntity<(string, Guid)>
 {
-    [Key]
-    public string UserId { get; set; }
-
-    public Guid InstitutionId { get; set; }
-
-    public virtual Institution Institution { get; set; }
-
-    [ForeignKey("UserId")]
-    public virtual User User { get; set; }
-
     [NotMapped]
     public (string, Guid) Id
     {

@@ -9,6 +9,7 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
 using OutOfSchool.IdentityServer.Services.Interfaces;
 using System;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.IdentityServer.Tests.Controllers;
 
@@ -17,13 +18,13 @@ public class RegionAdminControllerTests
 {
     private readonly RegionAdminController regionAdminController;
     private readonly Mock<ILogger<RegionAdminController>> fakeLogger;
-    private readonly Mock<IRegionAdminService> fakeRegionAdminService;
+    private readonly Mock<ICommonMinistryAdminService<RegionAdminBaseDto>> fakeRegionAdminService;
     private readonly Mock<HttpContext> fakeHttpContext;
 
     public RegionAdminControllerTests()
     {
         fakeLogger = new Mock<ILogger<RegionAdminController>>();
-        fakeRegionAdminService = new Mock<IRegionAdminService>();
+        fakeRegionAdminService = new Mock<ICommonMinistryAdminService<RegionAdminBaseDto>>();
     
         fakeHttpContext = new Mock<HttpContext>();
         
@@ -52,35 +53,44 @@ public class RegionAdminControllerTests
         };
 
         fakeRegionAdminService.Setup(s => s
-            .CreateRegionAdminAsync(
+            .CreateMinistryAdminAsync(
                 It.IsAny<RegionAdminBaseDto>(),
+                It.IsAny<Role>(),
                 It.IsAny<IUrlHelper>(),
                 It.IsAny<string>(),
                 It.IsAny<string>()))
             .ReturnsAsync(fakeResponseDto);
 
         fakeRegionAdminService.Setup(s => s
-            .UpdateRegionAdminAsync(
+            .UpdateMinistryAdminAsync(
                 It.IsAny<RegionAdminBaseDto>(),
                 It.IsAny<string>(),
                 It.IsAny<string>()))
             .ReturnsAsync(fakeResponseDto);
 
         fakeRegionAdminService.Setup(s => s
-            .DeleteRegionAdminAsync(
+            .DeleteMinistryAdminAsync(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<string>()))
             .ReturnsAsync(fakeResponseDto);
         
         fakeRegionAdminService.Setup(s => s
-            .BlockRegionAdminAsync(
+            .BlockMinistryAdminAsync(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<bool>()))
             .ReturnsAsync(fakeResponseDto);
-        
+
+        fakeRegionAdminService.Setup(s => s
+            .ReinviteMinistryAdminAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<IUrlHelper>(),
+                It.IsAny<string>()))
+            .ReturnsAsync(fakeResponseDto);
+
         var fakeHttpContext = new Mock<HttpContext>();
         fakeHttpContext.Setup(s => s.Request.Headers[It.IsAny<string>()]).Returns("Ok");
         
@@ -168,5 +178,19 @@ public class RegionAdminControllerTests
     public async Task OnActionExecuting_WithNullContext_ReturnsException()
     {
         Assert.That(() => regionAdminController.OnActionExecuting(null), Throws.ArgumentNullException);
+    }
+
+    [Test]
+    public async Task Reinvite_WithValidModel_ReturnsSuccessResponseDto()
+    {
+        // Arrange
+
+        // Act
+        var result = await regionAdminController.Reinvite("fakeAdminId");
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(true, result.IsSuccess);
+        Assert.AreEqual("fakeFirstName", ((RegionAdminBaseDto)result.Result).FirstName);
     }
 }

@@ -1,18 +1,21 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.IdentityServer.Services.Interfaces;
 
-public interface IMinistryAdminService
+public interface ICommonMinistryAdminService<TDto>
+    where TDto : MinistryAdminBaseDto
 {
     Task<ResponseDto> CreateMinistryAdminAsync(
-        MinistryAdminBaseDto ministryAdminBaseDto,
+        TDto ministryAdminBaseDto,
+        Role role,
         IUrlHelper url,
         string userId,
         string requestId);
 
     Task<ResponseDto> UpdateMinistryAdminAsync(
-        MinistryAdminBaseDto updateMinistryAdminDto,
+        TDto updateMinistryAdminDto,
         string userId,
         string requestId);
 
@@ -26,4 +29,10 @@ public interface IMinistryAdminService
         string userId,
         string requestId,
         bool isBlocked);
+
+    Task<ResponseDto> ReinviteMinistryAdminAsync(
+        string ministryAdminId,
+        string userId,
+        IUrlHelper url,
+        string requestId);
 }
