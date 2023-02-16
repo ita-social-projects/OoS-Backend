@@ -230,7 +230,7 @@ public class ChildService : IChildService
 
         if (!isGetParent)
         {
-            predicate = predicate.And(x => x.IsParent == isGetParent);
+            predicate = predicate.And(x => !x.IsParent);
         }
 
         var totalAmount = await childRepository.Count(predicate).ConfigureAwait(false);
