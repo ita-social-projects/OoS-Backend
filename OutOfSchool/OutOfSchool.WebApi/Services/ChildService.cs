@@ -219,14 +219,19 @@ public class ChildService : IChildService
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<ChildDto>> GetByUserId(string userId, bool? isGetParent, OffsetFilter offsetFilter)
+    public async Task<SearchResult<ChildDto>> GetByUserId(string userId, bool isGetParent, OffsetFilter offsetFilter)
     {
         this.ValidateUserId(userId);
         this.ValidateOffsetFilter(offsetFilter);
 
         logger.LogDebug($"Getting Child's for User started. Looking UserId = {userId}.");
 
-        Expression<Func<Child, bool>> predicate = x => x.Parent.UserId == userId && x.IsParent == (isGetParent ?? false);
+        Expression<Func<Child, bool>> predicate = x => x.Parent.UserId == userId;
+
+        if (!isGetParent)
+        {
+            predicate = predicate.And(x => x.IsParent == isGetParent);
+        }
 
         var totalAmount = await childRepository.Count(predicate).ConfigureAwait(false);
 

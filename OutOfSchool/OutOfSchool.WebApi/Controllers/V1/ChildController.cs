@@ -104,7 +104,7 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
-    public async Task<IActionResult> GetUsersChildren([FromQuery] bool? isGetParent, [FromQuery] OffsetFilter offsetFilter)
+    public async Task<IActionResult> GetUsersChildren([FromQuery] OffsetFilter offsetFilter, [FromQuery] bool isGetParent = false)
     {
         string userId = GettingUserProperties.GetUserId(User);
 

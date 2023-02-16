@@ -83,7 +83,7 @@ public interface IChildService
     /// <exception cref="ArgumentNullException">If one of the parameters was null.</exception>
     /// <exception cref="ArgumentException">If one of the parameters was not valid.</exception>
     /// <exception cref="SqlException">If the database cannot execute the query.</exception>
-    Task<SearchResult<ChildDto>> GetByUserId(string userId, bool? isGetParent, OffsetFilter offsetFilter);
+    Task<SearchResult<ChildDto>> GetByUserId(string userId, bool isGetParent, OffsetFilter offsetFilter);
 
     /// <summary>
     /// Get children by WorkshopId.
