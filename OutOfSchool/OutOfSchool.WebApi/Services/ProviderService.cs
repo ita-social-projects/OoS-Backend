@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -304,7 +305,7 @@ public class ProviderService : IProviderService, INotificationReciever
         provider.IsBlocked = providerBlockDto.IsBlocked;
         provider.BlockReason = providerBlockDto.IsBlocked ? providerBlockDto.BlockReason : null;
 
-        return await providerRepository.RunInTransaction(async () =>
+        await providerRepository.RunInTransaction(async () =>
         {
             await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
 
@@ -319,8 +320,9 @@ public class ProviderService : IProviderService, INotificationReciever
             }
 
             logger.LogInformation($"Provider(id) {providerBlockDto.Id} IsBlocked was changed to {provider.IsBlocked}");
-            return providerBlockDto;
         });
+
+        return providerBlockDto;
     }
 
     public async Task<ProviderLicenseStatusDto> UpdateLicenseStatus(ProviderLicenseStatusDto dto, string userId)
