@@ -1,7 +1,6 @@
 project="your_project"
 region="europe-west1"
 zone="europe-west1-b"
-credentials="/path/to/admin/creds.json"
 access_group_email="you_users@googlegroups.com"
 
 admin_ips = ["127.0.0.1"]
@@ -21,5 +20,8 @@ redis_hostname="redis.example.com"
 redis_port="6379"
 sender_email="my@mail.com"
 sendgrid_key="secret"
-github_deploy_base64="secret"
+github_front_deploy_base64="secret"
+github_back_deploy_base64="secret"
 github_access_token="secret"
+geo_apikey="secret"
+enable_ingress_http=false

@@ -5,7 +5,7 @@ resource "google_cloudbuild_trigger" "backend_tag" {
   }
 
   substitutions = {
-    _GITHUB_DEPLOY    = var.github_secret
+    _GITHUB_DEPLOY    = var.github_back_secret
     _BUILD_STATUS     = "$(body.message.data.status)"
     _BUILD_TRIGGER_ID = "$(body.message.data.buildTriggerId)"
   }
@@ -32,7 +32,7 @@ resource "google_cloudbuild_trigger" "frontend_tag" {
   }
 
   substitutions = {
-    _GITHUB_DEPLOY    = var.github_secret
+    _GITHUB_DEPLOY    = var.github_front_secret
     _BUILD_STATUS     = "$(body.message.data.status)"
     _BUILD_TRIGGER_ID = "$(body.message.data.buildTriggerId)"
   }

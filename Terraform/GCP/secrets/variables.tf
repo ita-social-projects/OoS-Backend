@@ -27,10 +27,18 @@ variable "sendgrid_key" {
   type = string
 }
 
-variable "github_deploy_base64" {
+variable "github_front_deploy_base64" {
+  type = string
+}
+
+variable "github_back_deploy_base64" {
   type = string
 }
 
 variable "github_access_token" {
+  type = string
+}
+
+variable "geo_apikey" {
   type = string
 }

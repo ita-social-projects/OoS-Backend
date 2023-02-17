@@ -76,3 +76,7 @@ variable "sql_port" {
 variable "redis_port" {
   type = number
 }
+
+variable "enable_ingress_http" {
+  type = bool
+}

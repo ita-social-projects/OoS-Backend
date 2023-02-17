@@ -1,10 +1,3 @@
-provider "google" {
-  project     = var.project
-  region      = var.region
-  zone        = var.zone
-  credentials = file(var.credentials)
-}
-
 resource "random_integer" "ri" {
   min = 10000
   max = 99999
@@ -77,9 +70,11 @@ module "cloud_router" {
 }
 
 module "ops" {
-  source        = "./ops"
-  random_number = random_integer.ri.result
-  network_id    = module.vpc.network_id
+  source             = "./ops"
+  project            = var.project
+  random_number      = random_integer.ri.result
+  network_id         = module.vpc.network_id
+  notification_email = var.letsencrypt_email
 }
 
 module "storage" {
@@ -169,22 +164,25 @@ module "k8s" {
   elastic_hostname    = var.elastic_hostname
   sql_port            = var.sql_port
   redis_port          = var.redis_port
+  enable_ingress_http = var.enable_ingress_http
   depends_on = [
     time_sleep.wait_30_seconds
   ]
 }
 
 module "secrets" {
-  source               = "./secrets"
-  sql_api_pass         = module.passwords.sql_api_pass
-  sql_auth_pass        = module.passwords.sql_auth_pass
-  es_api_pass          = module.passwords.es_api_pass
-  redis_pass           = module.passwords.redis_pass
-  labels               = var.labels
-  sql_hostname         = var.sql_hostname
-  sendgrid_key         = var.sendgrid_key
-  github_deploy_base64 = var.github_deploy_base64
-  github_access_token  = var.github_access_token
+  source                     = "./secrets"
+  sql_api_pass               = module.passwords.sql_api_pass
+  sql_auth_pass              = module.passwords.sql_auth_pass
+  es_api_pass                = module.passwords.es_api_pass
+  redis_pass                 = module.passwords.redis_pass
+  labels                     = var.labels
+  sql_hostname               = var.sql_hostname
+  sendgrid_key               = var.sendgrid_key
+  github_front_deploy_base64 = var.github_front_deploy_base64
+  github_back_deploy_base64  = var.github_back_deploy_base64
+  github_access_token        = var.github_access_token
+  geo_apikey                 = var.geo_apikey
 }
 
 module "build" {
@@ -203,10 +201,12 @@ module "build" {
   sender_email        = var.sender_email
   sendgrid_key_secret = module.secrets.sendgrid_key_secret
   bucket              = module.storage.image_bucket
-  github_secret       = module.secrets.github_secret
+  github_front_secret = module.secrets.github_front_secret
+  github_back_secret  = module.secrets.github_back_secret
   github_token_secret = module.secrets.github_token_secret
   sql_port            = var.sql_port
   redis_port          = var.redis_port
+  geo_key_secret      = module.secrets.geo_key_secret
 }
 
 module "extralb" {

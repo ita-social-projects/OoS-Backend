@@ -8,7 +8,7 @@ resource "google_cloudbuild_trigger" "backend_api" {
     owner = "ita-social-projects"
     name  = "OoS-Backend"
     push {
-      tag = "gcp-[0-9]\\.[0-9]\\.[0-9]"
+      branch = "develop"
     }
   }
   substitutions = {
@@ -23,6 +23,7 @@ resource "google_cloudbuild_trigger" "backend_api" {
     _REDIS_PASS             = var.redis_secret
     _REDIS_PORT             = var.redis_port
     _SQL_PORT               = var.sql_port
+    _GEO_KEY                = var.geo_key_secret
   }
 
   filename = "cloudbuild-app.yml"
@@ -34,7 +35,7 @@ resource "google_cloudbuild_trigger" "backend_auth" {
     owner = "ita-social-projects"
     name  = "OoS-Backend"
     push {
-      tag = "gcp-[0-9]\\.[0-9]\\.[0-9]"
+      branch = "develop"
     }
   }
 

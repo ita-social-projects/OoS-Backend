@@ -103,7 +103,12 @@ variable "sendgrid_key" {
   description = "Outgoing mail api key"
 }
 
-variable "github_deploy_base64" {
+variable "github_front_deploy_base64" {
+  type        = string
+  description = "Github Deploy key"
+}
+
+variable "github_back_deploy_base64" {
   type        = string
   description = "Github Deploy key"
 }
@@ -119,4 +124,12 @@ variable "sql_port" {
 
 variable "redis_port" {
   type = number
+}
+
+variable "geo_apikey" {
+  type = string
+}
+
+variable "enable_ingress_http" {
+  type = bool
 }

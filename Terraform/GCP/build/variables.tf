@@ -57,7 +57,11 @@ variable "bucket" {
   type = string
 }
 
-variable "github_secret" {
+variable "github_front_secret" {
+  type = string
+}
+
+variable "github_back_secret" {
   type = string
 }
 
@@ -71,4 +75,8 @@ variable "sql_port" {
 
 variable "redis_port" {
   type = number
+}
+
+variable "geo_key_secret" {
+  type = string
 }

@@ -1,3 +1,8 @@
+locals {
+    # Or replace with get_env("GOOGLE_APPLICATION_CREDENTIALS")
+    credentials = find_in_parent_folders("oos-credentials.json")
+}
+
 remote_state {
     backend = "gcs"
     generate = {
@@ -7,7 +12,7 @@ remote_state {
     config = {
         bucket       = get_env("TERRAGRUNT_BUCKET", "moetfstate")
         project      = get_env("TERRAGRUNT_PROJECT")
-        credentials  = get_env("GOOGLE_APPLICATION_CREDENTIALS")
+        credentials  = local.credentials
         location     = "europe-west1"
         prefix       = "${path_relative_to_include()}/terraform.tfstate"
     }
@@ -21,4 +26,8 @@ terraform {
             "-var-file=./gcp.tfvars"
         ]
     }
+}
+
+inputs = {
+    credentials = local.credentials
 }
