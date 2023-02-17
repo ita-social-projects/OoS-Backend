@@ -11,6 +11,8 @@ internal class NotificationConfiguration : IEntityTypeConfiguration<Notification
     {
         builder.HasKey(x => x.Id);
 
+        builder.HasIndex(x => x.UserId);
+
         builder
             .Property(b => b.Data)
             .HasConversion(
