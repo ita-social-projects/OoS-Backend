@@ -76,13 +76,14 @@ public interface IChildService
     /// Get children with some UserId.
     /// </summary>
     /// <param name="userId">Key in the User table.</param>
+    /// <param name="isGetParent">Retrieve the parents along with the children.</param>
     /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
     /// <exception cref="ArgumentNullException">If one of the parameters was null.</exception>
     /// <exception cref="ArgumentException">If one of the parameters was not valid.</exception>
     /// <exception cref="SqlException">If the database cannot execute the query.</exception>
-    Task<SearchResult<ChildDto>> GetByUserId(string userId, OffsetFilter offsetFilter);
+    Task<SearchResult<ChildDto>> GetByUserId(string userId, bool isGetParent, OffsetFilter offsetFilter);
 
     /// <summary>
     /// Get children by WorkshopId.
