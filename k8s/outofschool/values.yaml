@@ -3,7 +3,8 @@
 # Declare variables to be passed into your templates.
 
 global:
-  extraEnvironment: {}
+  extraEnvironment:
+    ASPNETCORE_ENVIRONMENT: Release
 
 
 # TODO: Configure global pull secrets
@@ -28,7 +29,6 @@ serviceAccount:
 
 webapi:
   enabled: true
-  aspNetCoreEnvironment: Release
   image:
     repository: gcr.io/gcp101292-pozashkillya/oos-api
     pullPolicy: IfNotPresent
@@ -41,8 +41,7 @@ webapi:
       name: mysql-api-auth
       key: API_PASSWORD
 identity:
-  enabled: true
-  aspNetCoreEnvironment: Release
+  enabled: false
   image:
     repository: gcr.io/gcp101292-pozashkillya/oos-auth
     pullPolicy: IfNotPresent

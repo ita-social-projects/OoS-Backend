@@ -6,13 +6,13 @@ metadata:
   labels:
     {{- include "webapp.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.deploy.replicaCount }}
   selector:
     matchLabels:
       {{- include "webapp.selectorLabels" . | nindent 6 }}
   strategy:
-    type: {{ .Values.strategyType }}
-    {{- if (eq "Recreate" .Values.strategyType) }}
+    type: {{ .Values.deploy.strategyType }}
+    {{- if (eq "Recreate" .Values.deploy.strategyType) }}
     rollingUpdate: null
     {{- end }}
   template:
@@ -67,34 +67,38 @@ spec:
           env:
             - name: PORT
               value: {{ .Values.containerPort | quote }}
-            {{- if .Values.aspNetCoreEnvironment }}
-            - name: ASPNETCORE_ENVIRONMENT
-              value: {{ .Values.aspNetCoreEnvironment }}
-            {{- end }}
-          {{- $env := merge (.Values.extraEnvironment | default dict) (.Values.global.extraEnvironment | default dict) -}}
+          {{- $env := merge (.Values.configuration.extraEnvironment | default dict) (.Values.global.extraEnvironment | default dict) -}}
           {{- range $k, $v := $env }}
             - name: {{ $k | quote }}
               value: {{ $v | quote }}
           {{- end }}
-          {{- if or .Values.connectionString (or .Values.extraEnvVarsCM .Values.extraEnvVarsSecret) }}
+          {{- range $secret := .Values.configuration.secrets }}
+          {{- if eq $secret.type "env" }}
+          {{- range $key := $secret.keys }}
+            {{- $envPrefix := $secret.prefix | default "" | upper }}
+            {{- $envKey := (index $key "envKey") | default (index $key "key") | upper | replace "." "_" | replace "-" "_" }}
+            - name: {{ $envPrefix }}{{ $envKey }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret.name }}
+                  key: {{ index $key "key" }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          {{- if or .Values.configuration.extraEnvVarsCM .Values.configuration.extraEnvVarsSecret }}
           envFrom:
-            {{- if .Values.extraEnvVarsCM }}
+            {{- if .Values.configuration.extraEnvVarsCM }}
             - configMapRef:
-                name: {{ tpl .Values.extraEnvVarsCM . | quote }}
+                name: {{ tpl .Values.configuration.extraEnvVarsCM . | quote }}
             {{- end }}
-            {{- if .Values.extraEnvVarsSecret }}
+            {{- if .Values.configuration.extraEnvVarsSecret }}
             - secretRef:
-                name: {{ tpl .Values.extraEnvVarsSecret . | quote }}
-            {{- end }}
-            {{- if .Values.connectionString }}
-            {{- $fullName := include "webapp.fullname" . }}
-            - secretRef:
-                name: {{ (printf "%s-connection-string" $fullName) | quote }}
+                name: {{ tpl .Values.configuration.extraEnvVarsSecret . | quote }}
             {{- end }}
           {{- end }}
           ports:
             - name: http
-              containerPort: {{ .Values.containerPort }}
+              containerPort: {{ .Values.deploy.containerPort }}
           {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
             httpGet:

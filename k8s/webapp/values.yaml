@@ -2,9 +2,32 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
+nameOverride: ""
+fullnameOverride: ""
 
-strategyType: Recreate
+deploy:
+  replicaCount: 1
+  strategyType: Recreate
+  containerPort: 8080
+
+configuration:
+  extraEnvironment: {}
+
+  extraEnvVarsCM: ""
+
+  extraEnvVarsSecret: ""
+
+  ## TODO: file type secret handling
+  ## List of secrets from which to take variables
+  ## - type: env                
+  ##   name: my-secret     # secret name
+  ##   prefix: MY_         # optional prefix
+  ##   keys:               # secret key ref list
+  ##   - key: foo          # my-secret.foo => MY_FOO
+  ##   - key: x.y.z        # my-secret.x.y.z => MY_X_Y_Z
+  ##   - key: old-val
+  ##     envKey: new-val   # my-secret.old-val => MY_NEW_VAL
+  secrets: []
 
 image:
   repository: nginx
@@ -13,8 +36,6 @@ image:
   tag: ""
 
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -67,6 +88,7 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+
 resources: {}
   # limits:
   #   cpu: 100m
@@ -122,6 +144,7 @@ containerSecurity:
 ##         containerPort: 1234
 ##
 sidecars: []
+
 ## Add additional init containers to the pods
 ## initContainers:
 ##  - name: your-image-name
@@ -137,7 +160,7 @@ initContainers: []
 ##
 lifecycleHooks: {}
 
-## Configure extra options for ASP.NET Core containers' liveness and readiness probes
+## Configure extra options for liveness and readiness probes
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
 ## @param livenessProbe.enabled Enable livenessProbe
 ## @param livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
@@ -154,6 +177,7 @@ livenessProbe:
   periodSeconds: 20
   failureThreshold: 6
   successThreshold: 1
+
 ## @param readinessProbe.enabled Enable readinessProbe
 ## @param readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
 ## @param readinessProbe.periodSeconds Period seconds for readinessProbe
@@ -175,21 +199,3 @@ customLivenessProbe: {}
 ## @param customReadinessProbe Custom readinessProbe that overrides the default one
 ##
 customReadinessProbe: {}
-
-aspNetCoreEnvironment: ""
-
-extraEnvironment: {}
-
-extraEnvVarsCM: ""
-
-extraEnvVarsSecret: ""
-
-## Connection string object
-## connectionString:
-##   username: oos
-##   secret:
-##     name: mysql-auth
-##     key: mysql-password
-connectionString: {}
-
-containerPort: 8080

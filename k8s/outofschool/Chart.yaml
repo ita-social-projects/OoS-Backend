@@ -26,13 +26,16 @@ appVersion: "fa5778e"
 dependencies:
   - name: webapp
     version: 0.1.0
+    repository: "file://../webapp"
     condition: identity.enabled
     alias: identity
   - name: webapp
     version: 0.1.0
+    repository: "file://../webapp"
     condition: webapi.enabled
     alias: webapi
   - name: webapp
     version: 0.1.0
+    repository: "file://../webapp"
     condition: frontend.enabled
     alias: frontend
