@@ -5,6 +5,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Nest;
+using OutOfSchool.ElasticsearchData.Enums;
 using OutOfSchool.ElasticsearchData.Models;
 
 namespace OutOfSchool.ElasticsearchData;
@@ -150,5 +151,17 @@ public class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchProvider<TE
         var resp = await ElasticClient.PingAsync();
 
         return resp.IsValid;
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result> PartialUpdateEntityAsync<TKey>(TKey entityId, IPartial<TEntity> partial)
+    {
+        // It's important to convert id to string because in other case it recognises as object type
+        // and thows exception
+        var request = new UpdateDescriptor<TEntity, object>(new Id(entityId.ToString()))
+            .Doc(partial);
+        var result = await ElasticClient.UpdateAsync(request);
+
+        return result.Result;
     }
 }

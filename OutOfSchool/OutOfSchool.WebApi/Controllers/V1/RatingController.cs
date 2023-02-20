@@ -25,6 +25,7 @@ public class RatingController : ControllerBase
     private readonly IRatingService ratingService;
     private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> esWorkshopService;
     private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly ILogger<RatingController> logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RatingController"/> class.
@@ -32,11 +33,18 @@ public class RatingController : ControllerBase
     /// <param name="service">Service for Rating model.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="esWorkshopService">Service for operations with workshop documents of Elasticsearch data.</param>
-    public RatingController(IRatingService service, IStringLocalizer<SharedResource> localizer, IElasticsearchService<WorkshopES, WorkshopFilterES> esWorkshopService)
+    /// <param name="logger">Logger.</param>
+    public RatingController(
+        IRatingService service,
+        IStringLocalizer<SharedResource> localizer,
+        IElasticsearchService<WorkshopES,
+        WorkshopFilterES> esWorkshopService,
+        ILogger<RatingController> logger)
     {
         this.ratingService = service;
         this.localizer = localizer;
         this.esWorkshopService = esWorkshopService;
+        this.logger = logger;
     }
 
     /// <summary>
@@ -287,14 +295,15 @@ public class RatingController : ControllerBase
     {
         try
         {
-            var entitis = await esWorkshopService.Search(new WorkshopFilterES() { Ids = new List<Guid>() { id } }).ConfigureAwait(false);
+            var rating = (await ratingService.GetAverageRatingAsync(id, RatingType.Workshop)
+                .ConfigureAwait(false)).Item1;
 
-            var res = await esWorkshopService.Update(entitis.Entities.Single()).ConfigureAwait(false);
-
-            return res;
+            return await esWorkshopService.PartialUpdate(id, new WorkshopRatingES { Rating = rating })
+                .ConfigureAwait(false);
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogError(ex, $"An error occurred while updating rating in ElasticSearch: {ex.Message}");
             return false;
         }
     }

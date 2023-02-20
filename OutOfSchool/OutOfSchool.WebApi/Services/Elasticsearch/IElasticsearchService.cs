@@ -54,4 +54,12 @@ public interface IElasticsearchService<TEntity, TSearch>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     /// The task result contains the entities that were found.</returns>
     Task<SearchResultES<TEntity>> Search(TSearch filter);
+
+    /// <summary>
+    /// Use this method to update a part of entity in the index.
+    /// </summary>
+    /// <param name="id">Id of entity that will be updated.</param>
+    /// <param name="partialEntity">The part of entity that will be updated.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+    Task<bool> PartialUpdate(Guid id, IPartial<TEntity> partialEntity);
 }
