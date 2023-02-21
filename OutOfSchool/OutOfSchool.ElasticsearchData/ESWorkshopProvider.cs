@@ -43,6 +43,17 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
     {
         var queryContainer = new QueryContainer();
 
+        queryContainer &= new TermsQuery()
+        {
+            Field = Infer.Field<WorkshopES>(w => w.ProviderStatus),
+            Terms = new List<ProviderStatus>()
+            {
+                ProviderStatus.Approved,
+                ProviderStatus.Recheck,
+            }
+            .Cast<object>(),
+        };
+
         if (filter.Ids.Any())
         {
             queryContainer &= new TermsQuery()

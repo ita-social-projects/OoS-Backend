@@ -604,7 +604,9 @@ public class WorkshopService : IWorkshopService
         }
         else
         {
-            predicate = predicate.And(x => x.Provider.Status == ProviderStatus.Approved);
+            predicate = predicate.And(x => x.Provider.Status == ProviderStatus.Approved)
+                .Or(x => x.Provider.Status == ProviderStatus.Recheck);
+
             predicate = predicate.And(x => !x.IsBlocked);
         }
 

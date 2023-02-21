@@ -101,6 +101,9 @@ public class WorkshopDTO : IValidatableObject
     [Required]
     public Guid ProviderId { get; set; }
 
+    [EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]
+    public ProviderStatus ProviderStatus { get; set; }
+
     [Required]
     public long AddressId { get; set; }
 

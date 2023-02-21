@@ -7,6 +7,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -40,6 +41,7 @@ public class ProviderService : IProviderService, INotificationReciever
     private readonly IMinistryAdminService ministryAdminService;
     private readonly IRegionAdminService regionAdminService;
     private readonly ICodeficatorService codeficatorService;
+    private readonly IRegionAdminRepository regionAdminRepository;
 
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
@@ -84,7 +86,8 @@ public class ProviderService : IProviderService, INotificationReciever
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService,
-        ICodeficatorService codeficatorService)
+        ICodeficatorService codeficatorService,
+        IRegionAdminRepository regionAdminRepository)
     {
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -104,6 +107,7 @@ public class ProviderService : IProviderService, INotificationReciever
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
         this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
         this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
+        this.regionAdminRepository = regionAdminRepository;
     }
 
     private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
@@ -277,6 +281,16 @@ public class ProviderService : IProviderService, INotificationReciever
         provider.StatusReason = dto.StatusReason;
         await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
 
+        var workshops = await workshopServiceCombiner
+            .PartialUpdateByProvider(provider)
+            .ConfigureAwait(false);
+
+        foreach (var workshop in workshops)
+        {
+            logger.LogInformation($"Provider's properties with Id = {provider?.Id} " +
+                                  $"in workshops with Id = {workshop?.Id} updated successfully.");
+        }
+
         logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.Status}");
 
         await SendNotification(provider, NotificationAction.Update, true, false).ConfigureAwait(false);
@@ -371,9 +385,9 @@ public class ProviderService : IProviderService, INotificationReciever
 
         if (action == NotificationAction.Create)
         {
-            // there should be District admin
             recipientIds.AddRange(await GetTechAdminsIds().ConfigureAwait(false));
             recipientIds.AddRange(await GetMinistryAdminsIds(provider.InstitutionId).ConfigureAwait(false));
+            recipientIds.AddRange(await GetRegionAdminsIds(provider.LegalAddress).ConfigureAwait(false));
         }
         else if (action == NotificationAction.Update)
         {
@@ -381,11 +395,11 @@ public class ProviderService : IProviderService, INotificationReciever
                 && additionalData.TryGetValue("Status", out var statusValue)
                 && Enum.TryParse(statusValue, out ProviderStatus status))
             {
-                if (status == ProviderStatus.Pending)
+                if (status == ProviderStatus.Recheck)
                 {
-                    // there should be District admin
                     recipientIds.AddRange(await GetTechAdminsIds().ConfigureAwait(false));
                     recipientIds.AddRange(await GetMinistryAdminsIds(provider.InstitutionId).ConfigureAwait(false));
+                    recipientIds.AddRange(await GetRegionAdminsIds(provider.LegalAddress).ConfigureAwait(false));
                 }
                 else if (status == ProviderStatus.Editing
                          || status == ProviderStatus.Approved)
@@ -478,6 +492,7 @@ public class ProviderService : IProviderService, INotificationReciever
         try
         {
             var checkProvider = await providerRepository.GetById(providerDto.Id).ConfigureAwait(false);
+            var dataSynchronized = false;
 
             if (checkProvider?.UserId != userId)
             {
@@ -526,6 +541,8 @@ public class ProviderService : IProviderService, INotificationReciever
                                                   $"in workshops with Id = {workshop?.Id} updated successfully.");
                         }
 
+                        dataSynchronized = true;
+
                         return checkProvider;
                     }).ConfigureAwait(false);
                 }
@@ -547,6 +564,20 @@ public class ProviderService : IProviderService, INotificationReciever
 
             if (statusChanged || licenseChanged)
             {
+                // TODO: Improve logic with duplicating the code below
+                if (!dataSynchronized)
+                {
+                    var workshops = await workshopServiceCombiner
+                            .PartialUpdateByProvider(mapper.Map<Provider>(providerDto))
+                            .ConfigureAwait(false);
+
+                    foreach (var workshop in workshops)
+                    {
+                        logger.LogInformation($"Provider's properties with Id = {checkProvider?.Id} " +
+                                              $"in workshops with Id = {workshop?.Id} updated successfully.");
+                    }
+                }
+
                 await SendNotification(checkProvider, NotificationAction.Update, statusChanged, licenseChanged)
                     .ConfigureAwait(false);
             }
@@ -571,7 +602,7 @@ public class ProviderService : IProviderService, INotificationReciever
         if (!(checkProvider.FullTitle == providerDto.FullTitle
               && checkProvider.EdrpouIpn == providerDto.EdrpouIpn))
         {
-            checkProvider.Status = ProviderStatus.Pending;
+            checkProvider.Status = ProviderStatus.Recheck;
             statusChanged = true;
         }
 
@@ -741,5 +772,16 @@ public class ProviderService : IProviderService, INotificationReciever
                         .ToListAsync()
                         .ConfigureAwait(false);
         return ministryAdminsIds;
+    }
+
+    private async Task<IEnumerable<string>> GetRegionAdminsIds(Address address)
+    {
+        var regionAdminsIds = await regionAdminRepository
+            .GetByFilterNoTracking(a => a.CATOTTGId == address.CATOTTGId)
+            .Select(a => a.UserId)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        return regionAdminsIds;
     }
 }

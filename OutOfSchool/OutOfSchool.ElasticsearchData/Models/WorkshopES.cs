@@ -24,6 +24,8 @@ public class WorkshopES
 
     public string ProviderTitle { get; set; }
 
+    public ProviderStatus ProviderStatus { get; set; }
+
     public OwnershipType ProviderOwnership { get; set; }
 
     public string Description { get; set; } // Sum of all WorkshopDescriptionItems (SectionName + Description)

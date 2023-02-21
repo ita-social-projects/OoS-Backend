@@ -35,7 +35,8 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService,
-        ICodeficatorService codeficatorService)
+        ICodeficatorService codeficatorService,
+        IRegionAdminRepository regionAdminRepository)
         : base(
               providerRepository,
               usersRepository,
@@ -54,7 +55,8 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
               currentUserService,
               ministryAdminService,
               regionAdminService,
-              codeficatorService)
+              codeficatorService,
+              regionAdminRepository)
     {
     }
 

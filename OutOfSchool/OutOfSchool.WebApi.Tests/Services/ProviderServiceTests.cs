@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -40,6 +41,7 @@ public class ProviderServiceTests
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
+    private Mock<IRegionAdminRepository> regionAdminRepositoryMock;
 
     private List<Provider> fakeProviders;
     private User fakeUser;
@@ -69,6 +71,7 @@ public class ProviderServiceTests
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
+        regionAdminRepositoryMock = new Mock<IRegionAdminRepository>();
 
 
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
@@ -91,7 +94,8 @@ public class ProviderServiceTests
             currentUserServiceMock.Object,
             ministryAdminServiceMock.Object,
             regionAdminServiceMock.Object,
-            codeficatorServiceMock.Object);
+            codeficatorServiceMock.Object,
+            regionAdminRepositoryMock.Object);
     }
 
     #region Create
@@ -427,7 +431,7 @@ public class ProviderServiceTests
     {
         // Arrange
         var provider = fakeProviders.RandomItem();
-        provider.Status = ProviderStatus.Pending;
+        provider.Status = ProviderStatus.Recheck;
 
         var updatedTitle = Guid.NewGuid().ToString();
         var providerToUpdateDto = mapper.Map<ProviderDto>(provider);
@@ -455,7 +459,7 @@ public class ProviderServiceTests
         TestHelper.AssertDtosAreEqual(providerToUpdateDto, result);
     }
 
-    [TestCase(ProviderStatus.Pending)]
+    [TestCase(ProviderStatus.Recheck)]
     [TestCase(ProviderStatus.Editing)]
     [TestCase(ProviderStatus.Approved)]
     public async Task Update_UserTriesToChangeStatus_StatusIsNotChanged(ProviderStatus initialStatus)
@@ -485,10 +489,10 @@ public class ProviderServiceTests
         TestHelper.AssertDtosAreEqual(expected, result);
     }
 
-    [TestCase(ProviderStatus.Pending)]
+    [TestCase(ProviderStatus.Recheck)]
     [TestCase(ProviderStatus.Editing)]
     [TestCase(ProviderStatus.Approved)]
-    public async Task Update_UserChangesFullTitle_StatusIsChangedToPending(ProviderStatus initialStatus)
+    public async Task Update_UserChangesFullTitle_StatusIsChangedToRecheck(ProviderStatus initialStatus)
     {
         // Arrange
         var provider = fakeProviders.RandomItem();
@@ -499,7 +503,7 @@ public class ProviderServiceTests
         providerToUpdateDto.FullTitle = updatedTitle;
 
         var expected = mapper.Map<ProviderDto>(provider);
-        expected.Status = ProviderStatus.Pending;
+        expected.Status = ProviderStatus.Recheck;
         expected.FullTitle = updatedTitle;
 
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
@@ -524,10 +528,10 @@ public class ProviderServiceTests
         TestHelper.AssertDtosAreEqual(expected, result);
     }
 
-    [TestCase(ProviderStatus.Pending)]
+    [TestCase(ProviderStatus.Recheck)]
     [TestCase(ProviderStatus.Editing)]
     [TestCase(ProviderStatus.Approved)]
-    public async Task Update_UserChangesEdrpouIpn_StatusIsChangedToPending(ProviderStatus initialStatus)
+    public async Task Update_UserChangesEdrpouIpn_StatusIsChangedToRecheck(ProviderStatus initialStatus)
     {
         // Arrange
         var provider = fakeProviders.RandomItem();
@@ -539,7 +543,7 @@ public class ProviderServiceTests
         providerToUpdateDto.EdrpouIpn = updatedEdrpouIpn;
 
         var expected = mapper.Map<ProviderDto>(provider);
-        expected.Status = ProviderStatus.Pending;
+        expected.Status = ProviderStatus.Recheck;
         expected.EdrpouIpn = updatedEdrpouIpn;
 
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))

@@ -87,7 +87,9 @@ public class MappingProfile : Profile
                         x.Status == ApplicationStatus.Approved
                         || x.Status == ApplicationStatus.StudyingForYears)))
             .ForMember(dest => dest.ProviderLicenseStatus, opt =>
-                opt.MapFrom(src => src.Provider.LicenseStatus));
+                opt.MapFrom(src => src.Provider.LicenseStatus))
+            .ForMember(dest => dest.ProviderStatus, opt =>
+                opt.MapFrom(src => src.Provider.Status));
 
         CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>().ReverseMap();
 

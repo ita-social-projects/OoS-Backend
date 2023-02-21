@@ -60,6 +60,7 @@ public class ProviderServiceUpdate
         var ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         var regionAdminService = new Mock<IRegionAdminService>();
         var codeficatorService = new Mock<ICodeficatorService>();
+        var regionAdminRepository = new Mock<IRegionAdminRepository>();
 
         this.providerService = new ProviderService(
             providerRepository,
@@ -79,7 +80,8 @@ public class ProviderServiceUpdate
             currentUserServiceMock.Object,
             ministryAdminServiceMock.Object,
             regionAdminService.Object,
-            codeficatorService.Object);
+            codeficatorService.Object,
+            regionAdminRepository.Object);
     }
 
     [Test]
@@ -128,8 +130,7 @@ public class ProviderServiceUpdate
     }
 
     [Test]
-    public async Task
-        UpdateWhenProviderHasSameAdresses_WithNewLegalAddressAndActualIsPreviousLegal_UpdatesOneAddress()
+    public async Task UpdateWhenProviderHasSameAdresses_WithNewLegalAddressAndActualIsPreviousLegal_UpdatesOneAddress()
     {
         // Arrange
         await using var context = this.GetContext();
