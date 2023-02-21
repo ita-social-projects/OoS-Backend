@@ -78,6 +78,28 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     }
 
     /// <inheritdoc/>
+    public virtual async Task RunInTransaction(Func<Task> operation)
+    {
+        var executionStrategy = dbContext.Database.CreateExecutionStrategy();
+
+        await executionStrategy.ExecuteAsync(
+            async () =>
+            {
+                await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync();
+                try
+                {
+                    await operation().ConfigureAwait(false);
+                    await transaction.CommitAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync().ConfigureAwait(false);
+                    throw;
+                }
+            });
+    }
+
+    /// <inheritdoc/>
     public virtual async Task Delete(TEntity entity)
     {
         dbContext.Entry(entity).State = EntityState.Deleted;

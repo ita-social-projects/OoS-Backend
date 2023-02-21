@@ -943,6 +943,8 @@ public class ProviderServiceTests
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
             .ReturnsAsync(It.IsAny<int>());
+        providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<ProviderBlockDto>>>()))
+            .ReturnsAsync(providerBlockDto);
 
         // Act
         var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);

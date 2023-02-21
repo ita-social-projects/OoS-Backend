@@ -44,6 +44,13 @@ public interface IEntityRepositoryBase<TKey, TEntity>
     Task<T> RunInTransaction<T>(Func<Task<T>> operation);
 
     /// <summary>
+    /// Runs operation in transaction without result.
+    /// </summary>
+    /// <param name="operation">Method that represents the operation.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+    Task RunInTransaction(Func<Task> operation);
+
+    /// <summary>
     /// Update information about element.
     /// </summary>
     /// <param name="entity">Entity to update.</param>
