@@ -18,6 +18,7 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
     private readonly IRatingService ratingService;
     private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
     private readonly ElasticPinger esPinger;
+    private readonly ILogger<ESWorkshopService> logger;
 
     /// <inheritdoc/>
     public bool IsElasticAlive => esPinger.IsHealthy;
@@ -29,12 +30,19 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
     /// <param name="ratingService">Service that provides access to Ratings in the database.</param>
     /// <param name="esProvider">Provider to the Elasticsearch workshops index.</param>
     /// <param name="elasticPinger">Background worker pings the Elasticsearch.</param>
-    public ESWorkshopService(IWorkshopService workshopService, IRatingService ratingService, IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider, ElasticPinger elasticPinger)
+    /// <param name="logger">Logger.</param>
+    public ESWorkshopService(
+        IWorkshopService workshopService,
+        IRatingService ratingService,
+        IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
+        ElasticPinger elasticPinger,
+        ILogger<ESWorkshopService> logger)
     {
         this.workshopService = workshopService;
         this.ratingService = ratingService;
         this.esProvider = esProvider;
         this.esPinger = elasticPinger;
+        this.logger = logger;
     }
 
     /// <inheritdoc/>
@@ -152,6 +160,29 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
         {
             return new SearchResultES<WorkshopES>();
         }
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> PartialUpdate(Guid id, IPartial<WorkshopES> partialWorkshop)
+    {
+        ArgumentNullException.ThrowIfNull(id);
+
+        try
+        {
+            var responce = await esProvider.PartialUpdateEntityAsync(id, partialWorkshop).ConfigureAwait(false);
+
+            if (responce == Result.Error)
+            {
+                return false;
+            }
+        }
+        catch (ElasticsearchClientException ex)
+        {
+            logger.LogError(ex, $"Partial update in ElasticSearch failed: {ex.Message}");
+            return false;
+        }
+
+        return true;
     }
 
     private void NullCheck(WorkshopES entity)

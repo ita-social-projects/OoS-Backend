@@ -90,4 +90,13 @@ public interface IElasticsearchProvider<TEntity, TSearch>
     Task<bool> PingServerAsync();
 
     Task<Result> DeleteRangeOfEntitiesByIdsAsync(IEnumerable<Guid> ids);
+
+    /// <summary>
+    /// Use this method to update some field of an entity in the index.
+    /// </summary>
+    /// <typeparam name="TKey">Type of the entity's key.</typeparam>
+    /// <param name="entityId">The id of the entity that will be updated.</param>
+    /// <param name="partial">Object representing the fields to update.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+    Task<Result> PartialUpdateEntityAsync<TKey>(TKey entityId, IPartial<TEntity> partial);
 }
