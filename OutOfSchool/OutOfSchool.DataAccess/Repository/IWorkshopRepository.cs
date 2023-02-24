@@ -12,12 +12,12 @@ public interface IWorkshopRepository : IEntityRepositoryBase<Guid, Workshop>
     Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids);
 
     /// <summary>
-    /// Update prodider's properies in all workshops with specified provider.
+    /// Update ProviderTitle property in all workshops with specified provider.
     /// </summary>
     /// <param name="providerId">Id of Provider to be searched by.</param>
     /// <param name="providerTitle">FullTitle of Provider to be changed.</param>
     /// <returns>List of Workshops for the specified provider.</returns>
-    Task<IEnumerable<Workshop>> PartialUpdateByProvider(Guid providerId, string providerTitle);
+    Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle);
 
     /// <summary>
     /// Update IsBlocked property in all workshops with specified provider.

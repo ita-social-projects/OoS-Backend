@@ -94,12 +94,12 @@ public interface IWorkshopServicesCombiner
     Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilter filter);
 
     /// <summary>
-    /// Update provider's properties in all workshops with specified provider.
+    /// Update ProviderTitle property in all workshops with specified provider.
     /// </summary>
     /// <param name="providerId">Id of Provider to be searched by.</param>
     /// <param name="providerTitle">FullTitle of Provider to be changed.</param>
     /// <returns><see cref="IEnumerable{T}"/> of Workshops for the specified provider.</returns>
-    Task<IEnumerable<Workshop>> PartialUpdateByProvider(Guid providerId, string providerTitle);
+    Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle);
 
     /// <summary>
     /// Update IsBlocked property in all workshops with specified provider.

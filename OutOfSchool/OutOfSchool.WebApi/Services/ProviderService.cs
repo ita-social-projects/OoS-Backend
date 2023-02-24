@@ -282,16 +282,17 @@ public class ProviderService : IProviderService, INotificationReciever
         provider.StatusReason = dto.StatusReason;
         await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
 
-        var workshops = await workshopServiceCombiner
-            .PartialUpdateByProvider(provider)
-            .ConfigureAwait(false);
+        // TODO: Implement updating status or license of provider's workshops
+        // same in UpdateProviderWithActionBeforeSavingChanges method
 
-        foreach (var workshop in workshops)
-        {
-            logger.LogInformation($"Provider's properties with Id = {provider?.Id} " +
-                                  $"in workshops with Id = {workshop?.Id} updated successfully.");
-        }
-
+        // var workshops = await workshopServiceCombiner
+        //    .PartialUpdateByProvider(provider)
+        //    .ConfigureAwait(false);
+        // foreach (var workshop in workshops)
+        // {
+        //    logger.LogInformation($"Provider's properties with Id = {provider?.Id} " +
+        //                          $"in workshops with Id = {workshop?.Id} updated successfully.");
+        // }
         logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.Status}");
 
         await SendNotification(provider, NotificationAction.Update, true, false).ConfigureAwait(false);
@@ -532,7 +533,7 @@ public class ProviderService : IProviderService, INotificationReciever
                     checkProvider = await providerRepository.RunInTransaction(async () =>
                     {
                         var workshops = await workshopServiceCombiner
-                            .PartialUpdateByProvider(providerUpdateDto.Id, providerUpdateDto.FullTitle)
+                            .UpdateProviderTitle(providerUpdateDto.Id, providerUpdateDto.FullTitle)
                             .ConfigureAwait(false);
 
                         mapper.Map(providerUpdateDto, checkProvider);
@@ -571,15 +572,19 @@ public class ProviderService : IProviderService, INotificationReciever
                 // TODO: Improve logic with duplicating the code below
                 if (!dataSynchronized)
                 {
-                    var workshops = await workshopServiceCombiner
-                            .PartialUpdateByProvider(mapper.Map<Provider>(providerDto))
-                            .ConfigureAwait(false);
+                    // TODO: Implement updating status or license of provider's workshops
+                    // and remove "dataSynchronized"
+                    // same in UpdateStatus method
 
-                    foreach (var workshop in workshops)
-                    {
-                        logger.LogInformation($"Provider's properties with Id = {checkProvider?.Id} " +
-                                              $"in workshops with Id = {workshop?.Id} updated successfully.");
-                    }
+                    // var workshops = await workshopServiceCombiner
+                    //        .UpdateProviderTitle(providerUpdateDto.Id, providerUpdateDto.FullTitle)
+                    //        .ConfigureAwait(false);
+
+                    // foreach (var workshop in workshops)
+                    // {
+                    //    logger.LogInformation($"Provider's properties with Id = {checkProvider?.Id} " +
+                    //                          $"in workshops with Id = {workshop?.Id} updated successfully.");
+                    // }
                 }
 
                 await SendNotification(checkProvider, NotificationAction.Update, statusChanged, licenseChanged)

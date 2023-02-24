@@ -125,12 +125,12 @@ public interface IWorkshopService
     Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids);
 
     /// <summary>
-    /// Update provider's properties in all workshops with specified provider.
+    /// Update ProviderTitle property in all workshops with specified provider.
     /// </summary>
     /// <param name="providerId">Id of Provider to be searched by.</param>
     /// <param name="providerTitle">FullTitle of Provider to be changed.</param>
     /// <returns>List of Workshops for the specified provider.</returns>
-    Task<IEnumerable<Workshop>> PartialUpdateByProvider(Guid providerId, string providerTitle);
+    Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle);
 
     /// <summary>
     /// Update IsBloked property in all workshops with specified provider.
