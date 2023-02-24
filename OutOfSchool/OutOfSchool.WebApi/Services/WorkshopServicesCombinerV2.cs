@@ -19,6 +19,7 @@ public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopSer
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService,
         ICodeficatorService codeficatorService,
+        IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
         IMapper mapper)
         : base(workshopService,
             elasticsearchSynchronizationService,
@@ -29,6 +30,7 @@ public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopSer
             ministryAdminService,
             regionAdminService,
             codeficatorService,
+            esProvider,
             mapper)
     {
     }
