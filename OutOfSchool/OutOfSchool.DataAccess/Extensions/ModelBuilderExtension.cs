@@ -264,6 +264,9 @@ public static class ModelBuilderExtension
     {
         builder.Entity<T>().Property<bool>("IsDeleted")
             .ValueGeneratedOnAdd();
+
+        builder.Entity<T>().HasIndex("IsDeleted");
+
         builder.Entity<T>().HasQueryFilter(m => EF.Property<bool>(m, "IsDeleted") == false);
 
         return builder;
