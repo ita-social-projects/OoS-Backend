@@ -174,6 +174,7 @@ public static class Startup
         services.AddTransient<IProviderTypeService, ProviderTypeService>();
         services.AddTransient<IProviderServiceV2, ProviderServiceV2>();
         services.AddTransient<IRatingService, RatingService>();
+        services.AddTransient<IAverageRatingService, AverageRatingService>();
         services.AddTransient<ISocialGroupService, SocialGroupService>();
         services.AddTransient<IStatusService, StatusService>();
         services.AddTransient<IStatisticService, StatisticService>();
@@ -204,7 +205,7 @@ public static class Startup
         services.AddTransient<IStatisticReportService, StatisticReportService>();
         services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();
         services.AddTransient<ICodeficatorService, CodeficatorService>();
-        services.AddTransient<IAverageRatingService, AverageRatingService>();
+
         services.AddTransient<IGRPCCommonService, GRPCCommonService>();
         services.AddTransient<IWorkshopStrategy>(sp =>
         {
@@ -229,6 +230,7 @@ public static class Startup
         services.AddTransient<IParentRepository, ParentRepository>();
         services.AddTransient<IProviderRepository, ProviderRepository>();
         services.AddTransient<IRatingRepository, RatingRepository>();
+        services.AddTransient<IAverageRatingRepository, AverageRatingRepository>();
         services.AddTransient<IWorkshopRepository, WorkshopRepository>();
         //services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
         services.AddImagesStorage(turnOnFakeStorage: configuration.GetValue<bool>("TurnOnFakeImagesStorage"));
@@ -240,7 +242,7 @@ public static class Startup
         services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
         services.AddTransient<IChangesLogRepository, ChangesLogRepository>();
         services.AddTransient<IGeocodingService, GeocodingService>();
-        services.AddTransient<IAverageRatingRepository, AverageRatingRepository>();
+
 
         services.AddTransient<IAchievementTypeService, AchievementTypeService>();
         services.AddTransient<IAchievementRepository, AchievementRepository>();

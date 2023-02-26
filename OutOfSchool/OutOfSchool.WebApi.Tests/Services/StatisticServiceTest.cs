@@ -16,6 +16,7 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.AverageRatings;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -27,12 +28,12 @@ public class StatisticServiceTest
     private Mock<IApplicationRepository> applicationRepository;
     private Mock<IWorkshopRepository> workshopRepository;
     private Mock<IEntityRepository<long, Direction>> directionRepository;
-
     private Mock<IMapper> mapper;
     private Mock<ICacheService> cache;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
+    private Mock<IAverageRatingService> averageRatingServiceMock;
 
     [SetUp]
     public void SetUp()
@@ -40,25 +41,25 @@ public class StatisticServiceTest
         applicationRepository = new Mock<IApplicationRepository>();
         workshopRepository = new Mock<IWorkshopRepository>();
         directionRepository = new Mock<IEntityRepository<long, Direction>>();
-        var ratingService = new Mock<IRatingService>();
         var logger = new Mock<ILogger<StatisticService>>();
         mapper = new Mock<IMapper>();
         cache = new Mock<ICacheService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
+        averageRatingServiceMock = new Mock<IAverageRatingService>();
 
         service = new StatisticService(
             applicationRepository.Object,
             workshopRepository.Object,
-            ratingService.Object,
             directionRepository.Object,
             logger.Object,
             mapper.Object,
             cache.Object,
             currentUserServiceMock.Object,
             ministryAdminServiceMock.Object,
-            regionAdminServiceMock.Object);
+            regionAdminServiceMock.Object,
+            averageRatingServiceMock.Object);
     }
 
     [Test]

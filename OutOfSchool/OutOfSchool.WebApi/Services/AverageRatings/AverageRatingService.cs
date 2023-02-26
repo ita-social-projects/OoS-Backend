@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using Nest;
 using NuGet.Packaging;
+using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -18,7 +19,7 @@ public class AverageRatingService : IAverageRatingService
     private readonly IMapper mapper;
     private readonly IAverageRatingRepository averageRatingRepository;
     private readonly IRatingService ratingService;
-    private readonly IWorkshopService workshopService;
+    private readonly IWorkshopRepository workshopRepository;
 
     public AverageRatingService(
         OutOfSchoolDbContext db,
@@ -26,14 +27,14 @@ public class AverageRatingService : IAverageRatingService
         IMapper mapper,
         IAverageRatingRepository averageRatingRepository,
         IRatingService ratingService,
-        IWorkshopService workshopService)
+        IWorkshopRepository workshopRepository)
     {
         this.db = db;
         this.logger = logger;
         this.mapper = mapper;
         this.averageRatingRepository = averageRatingRepository;
         this.ratingService = ratingService;
-        this.workshopService = workshopService;
+        this.workshopRepository = workshopRepository;
     }
 
     /// <inheritdoc/>
@@ -140,7 +141,12 @@ public class AverageRatingService : IAverageRatingService
         {
             // TODO Maybe it needs to check if the workshop exists because the below method can raise the exception
             // during the first execution when the workshop was deleted, but the Ratings table contains this workshop's rating.
-            providersIds.Add(await workshopService.GetWorkshopProviderOwnerIdAsync(workshopId).ConfigureAwait(false));
+            var workshop = await workshopRepository.GetByFilterNoTracking(w => w.Id == workshopId).SingleOrDefaultAsync().ConfigureAwait(false);
+
+            if (workshop != null)
+            {
+                providersIds.Add(workshop.ProviderId);
+            }
         }
 
         return providersIds.Distinct();

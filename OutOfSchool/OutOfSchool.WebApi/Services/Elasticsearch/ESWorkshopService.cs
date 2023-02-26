@@ -8,6 +8,7 @@ using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Services.AverageRatings;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -16,6 +17,7 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
 {
     private readonly IWorkshopService workshopService;
     private readonly IRatingService ratingService;
+    private readonly IAverageRatingService averageRatingService;
     private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
     private readonly ElasticPinger esPinger;
     private readonly ILogger<ESWorkshopService> logger;
@@ -26,23 +28,23 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
     /// <summary>
     /// Initializes a new instance of the <see cref="ESWorkshopService"/> class.
     /// </summary>
-    /// <param name="workshopService">Service that provides access to Workshops in the database.</param>
-    /// <param name="ratingService">Service that provides access to Ratings in the database.</param>
+    /// <param name="workshopService">Service that provides access to Workshops in the database.</param>    
     /// <param name="esProvider">Provider to the Elasticsearch workshops index.</param>
     /// <param name="elasticPinger">Background worker pings the Elasticsearch.</param>
     /// <param name="logger">Logger.</param>
+    /// /// <param name="averageRatingService">Service that provides access to average ratings in the database.</param>
     public ESWorkshopService(
         IWorkshopService workshopService,
-        IRatingService ratingService,
         IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
         ElasticPinger elasticPinger,
-        ILogger<ESWorkshopService> logger)
+        ILogger<ESWorkshopService> logger,
+        IAverageRatingService averageRatingService)
     {
-        this.workshopService = workshopService;
-        this.ratingService = ratingService;
+        this.workshopService = workshopService;        
         this.esProvider = esProvider;
         this.esPinger = elasticPinger;
         this.logger = logger;
+        this.averageRatingService = averageRatingService;
     }
 
     /// <inheritdoc/>
@@ -74,7 +76,7 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
 
         try
         {
-            entity.Rating = (await ratingService.GetAverageRatingAsync(entity.Id, RatingType.Workshop).ConfigureAwait(false)).Item1;
+            entity.Rating = (await averageRatingService.GetByEntityIdAsync(entity.Id).ConfigureAwait(false)).Rate;
 
             var resp = await esProvider.UpdateEntityAsync(entity).ConfigureAwait(false);
 
@@ -124,7 +126,7 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
             {
                 foreach (var entity in data.Entities)
                 {
-                    entity.Rating = (await ratingService.GetAverageRatingAsync(entity.Id, RatingType.Workshop).ConfigureAwait(false)).Item1;
+                    entity.Rating = (await averageRatingService.GetByEntityIdAsync(entity.Id).ConfigureAwait(false)).Rate;
                     source.Add(entity.ToESModel());
                 }
 

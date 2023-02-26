@@ -18,6 +18,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
 using Quartz.Impl.AdoJobStore.Common;
@@ -32,7 +33,6 @@ public class ProviderServiceTests
     private Mock<IProviderRepository> providersRepositoryMock;
     private Mock<IProviderAdminRepository> providerAdminRepositoryMock;
     private Mock<IEntityRepository<string, User>> usersRepositoryMock;
-    private Mock<IRatingService> ratingService;
     private IMapper mapper;
     private Mock<INotificationService> notificationService;
     private Mock<IProviderAdminService> providerAdminService;
@@ -42,6 +42,7 @@ public class ProviderServiceTests
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<IRegionAdminRepository> regionAdminRepositoryMock;
+    private Mock<IAverageRatingService> averageRatingServiceMock;
 
     private List<Provider> fakeProviders;
     private User fakeUser;
@@ -58,7 +59,6 @@ public class ProviderServiceTests
         providerAdminRepositoryMock = new Mock<IProviderAdminRepository>();
         usersRepositoryMock = CreateUsersRepositoryMock(fakeUser);
         var addressRepo = new Mock<IEntityRepository<long, Address>>();
-        ratingService = new Mock<IRatingService>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderService>>();
         var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
@@ -72,6 +72,7 @@ public class ProviderServiceTests
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
         regionAdminRepositoryMock = new Mock<IRegionAdminRepository>();
+        averageRatingServiceMock = new Mock<IAverageRatingService>();
 
 
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
@@ -79,7 +80,6 @@ public class ProviderServiceTests
         providerService = new ProviderService(
             providersRepositoryMock.Object,
             usersRepositoryMock.Object,
-            ratingService.Object,
             logger.Object,
             localizer.Object,
             mapper,
@@ -95,7 +95,8 @@ public class ProviderServiceTests
             ministryAdminServiceMock.Object,
             regionAdminServiceMock.Object,
             codeficatorServiceMock.Object,
-            regionAdminRepositoryMock.Object);
+            regionAdminRepositoryMock.Object,
+            averageRatingServiceMock.Object);
     }
 
     #region Create
@@ -239,19 +240,19 @@ public class ProviderServiceTests
         var filter = new ProviderFilter();
         var providersMock = fakeProviders.AsQueryable().BuildMock();
 
-        var fakeRatings = RatingsGenerator.GetAverageRatingForRange(fakeProviders.Select(p => p.Id)); // expected ratings
+        var fakeRatings = RatingsGenerator.GetAverageRatings(fakeProviders.Select(p => p.Id)); // expected ratings
         var expected = fakeProviders
             .Select(p => mapper.Map<ProviderDto>(p))
             .ToList();
         expected
             .ForEach(p => p.Rating = fakeRatings
-                .Where(r => r.Key == p.Id)
-                .Select(p => p.Value.Item1)
+                .Where(r => r.EntityId == p.Id)
+                .Select(p => p.Rate)
                 .FirstOrDefault());
         expected
             .ForEach(p => p.NumberOfRatings = fakeRatings
-                .Where(r => r.Key == p.Id)
-                .Select(p => p.Value.Item2)
+                .Where(r => r.EntityId == p.Id)
+                .Select(p => p.RateQuantity)
                 .FirstOrDefault());
         providersRepositoryMock
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<Provider, bool>>>()))
@@ -265,7 +266,7 @@ public class ProviderServiceTests
                 It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
             .Returns(providersMock);
-        ratingService.Setup(r => r.GetAverageRatingForRangeAsync(It.IsAny<IEnumerable<Guid>>(), RatingType.Workshop))
+        averageRatingServiceMock.Setup(r => r.GetByEntityIdsAsync(It.IsAny<IEnumerable<Guid>>()))
             .ReturnsAsync(fakeRatings);
 
         // Act
@@ -292,19 +293,19 @@ public class ProviderServiceTests
                 InstitutionId = institutionId,
             }));
 
-        var fakeRatings = RatingsGenerator.GetAverageRatingForRange(fakeProviders.Select(p => p.Id)); // expected ratings
+        var fakeRatings = RatingsGenerator.GetAverageRatings(fakeProviders.Select(p => p.Id)); // expected ratings
         var expected = fakeProviders
             .Select(p => mapper.Map<ProviderDto>(p))
             .ToList();
         expected
             .ForEach(p => p.Rating = fakeRatings
-                .Where(r => r.Key == p.Id)
-                .Select(p => p.Value.Item1)
+                .Where(r => r.EntityId == p.Id)
+                .Select(p => p.Rate)
                 .FirstOrDefault());
         expected
             .ForEach(p => p.NumberOfRatings = fakeRatings
-                .Where(r => r.Key == p.Id)
-                .Select(p => p.Value.Item2)
+                .Where(r => r.EntityId == p.Id)
+                .Select(p => p.RateQuantity)
                 .FirstOrDefault());
         providersRepositoryMock
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<Provider, bool>>>()))
@@ -318,7 +319,7 @@ public class ProviderServiceTests
                 It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
             .Returns(providersMock);
-        ratingService.Setup(r => r.GetAverageRatingForProvidersAsync(It.IsAny<IEnumerable<Guid>>()))
+        averageRatingServiceMock.Setup(r => r.GetByEntityIdsAsync(It.IsAny<IEnumerable<Guid>>()))
             .ReturnsAsync(fakeRatings);
 
         // Act
@@ -352,19 +353,19 @@ public class ProviderServiceTests
             .Setup(x => x.GetAllChildrenIdsByParentIdAsync(It.IsAny<long>()))
             .Returns(Task.FromResult((IEnumerable<long>)new List<long> { catottgId }));
 
-        var fakeRatings = RatingsGenerator.GetAverageRatingForRange(fakeProviders.Select(p => p.Id)); // expected ratings
+        var fakeRatings = RatingsGenerator.GetAverageRatings(fakeProviders.Select(p => p.Id)); // expected ratings
         var expected = fakeProviders
             .Select(p => mapper.Map<ProviderDto>(p))
             .ToList();
         expected
             .ForEach(p => p.Rating = fakeRatings
-                .Where(r => r.Key == p.Id)
-                .Select(p => p.Value.Item1)
+                .Where(r => r.EntityId == p.Id)
+                .Select(p => p.Rate)
                 .FirstOrDefault());
         expected
             .ForEach(p => p.NumberOfRatings = fakeRatings
-                .Where(r => r.Key == p.Id)
-                .Select(p => p.Value.Item2)
+                .Where(r => r.EntityId == p.Id)
+                .Select(p => p.RateQuantity)
                 .FirstOrDefault());
         providersRepositoryMock
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<Provider, bool>>>()))
@@ -378,7 +379,7 @@ public class ProviderServiceTests
                 It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
             .Returns(providersMock);
-        ratingService.Setup(r => r.GetAverageRatingForProvidersAsync(It.IsAny<IEnumerable<Guid>>()))
+        averageRatingServiceMock.Setup(r => r.GetByEntityIdsAsync(It.IsAny<IEnumerable<Guid>>()))
             .ReturnsAsync(fakeRatings);
 
         // Act
@@ -401,6 +402,7 @@ public class ProviderServiceTests
         var existingProvider = fakeProviders.RandomItem();
 
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>())).ReturnsAsync(existingProvider);
+        averageRatingServiceMock.Setup(r => r.GetByEntityIdAsync(It.IsAny<Guid>())).ReturnsAsync(new AverageRatingDto());
 
         // Act
         var actualProviderDto = await providerService.GetById(existingProvider.Id).ConfigureAwait(false);

@@ -28,7 +28,6 @@ public class RatingService : IRatingService
     private readonly ILogger<RatingService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
-    private readonly int roundToDigits = 2;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RatingService"/> class.
@@ -61,9 +60,9 @@ public class RatingService : IRatingService
     /// <inheritdoc/>
     public async Task<bool> IsReviewed(Guid parentId, Guid workshopId)
     {
-        return await ratingRepository.Any(rating => rating.ParentId == parentId
-            && rating.Type == RatingType.Workshop
-            && rating.EntityId == workshopId).ConfigureAwait(false);
+        return await ratingRepository
+                .Any(rating => rating.ParentId == parentId && rating.EntityId == workshopId)
+                .ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -118,7 +117,7 @@ public class RatingService : IRatingService
         logger.LogInformation($"Getting all Ratings with EntityId = {entityId} and RatingType = {type} started.");
 
         filter ??= new OffsetFilter();
-        var filterPredicate = PredicateBuilder.True<Rating>().And(r => r.EntityId == entityId && r.Type == type);
+        var filterPredicate = PredicateBuilder.True<Rating>().And(r => r.EntityId == entityId);
 
         var totalAmount = await ratingRepository.Count(filterPredicate).ConfigureAwait(false);
 
@@ -155,8 +154,7 @@ public class RatingService : IRatingService
 
         foreach (var workshop in worshops)
         {
-            worshopsRating.AddRange(await ratingRepository.GetByFilter(r => r.EntityId == workshop.Id
-                                                                            && r.Type == RatingType.Workshop).ConfigureAwait(false));
+            worshopsRating.AddRange(await ratingRepository.GetByFilter(r => r.EntityId == workshop.Id).ConfigureAwait(false));
         }
 
         logger.LogInformation(!worshopsRating.Any()
@@ -176,62 +174,12 @@ public class RatingService : IRatingService
 
         var rating = (await ratingRepository
             .GetByFilter(r => r.ParentId == parentId
-                              && r.EntityId == entityId
-                              && r.Type == type)
+                              && r.EntityId == entityId)
             .ConfigureAwait(false)).FirstOrDefault();
 
         logger.LogInformation($"Successfully got a Rating for Parent with Id = {parentId}");
 
         return rating is null ? null : mapper.Map<RatingDto>(rating);
-    }
-
-    /// <inheritdoc/>
-    public async Task<Tuple<float, int>> GetAverageRatingAsync(Guid entityId, RatingType type)
-    {
-        var ratingTuple = await ratingRepository.GetAverageRatingAsync(entityId, type).ConfigureAwait(false);
-        return new Tuple<float, int>((float)Math.Round(ratingTuple?.Item1 ?? default, roundToDigits), ratingTuple?.Item2 ?? default);
-    }
-
-    /// <inheritdoc/>
-    public async Task<Dictionary<Guid, Tuple<float, int>>> GetAverageRatingForRangeAsync(IEnumerable<Guid> entities, RatingType type)
-    {
-        var entitiesRating = await ratingRepository.GetAverageRatingForEntitiesAsync(entities, type).ConfigureAwait(false);
-
-        var formattedEntities = new Dictionary<Guid, Tuple<float, int>>(entitiesRating.Count);
-
-        foreach (var entity in entitiesRating)
-        {
-            formattedEntities.Add(entity.Key, new Tuple<float, int>((float)Math.Round(entity.Value.Item1, roundToDigits), entity.Value.Item2));
-        }
-
-        return formattedEntities;
-    }
-
-    /// <inheritdoc/>
-    public async Task<Tuple<float, int>> GetAverageRatingForProviderAsync(Guid providerId)
-    {
-        var workshops = await workshopRepository.GetByFilter(workshop => workshop.ProviderId == providerId).ConfigureAwait(false);
-        var workshopIds = workshops.Select(w => w.Id);
-        var workshopAverageRatings = await GetAverageRatingForRangeAsync(workshopIds, RatingType.Workshop);
-
-        if (workshopAverageRatings.Count() < 1)
-        {
-            return Tuple.Create<float, int>(0, 0);
-        }
-
-        return Tuple.Create<float, int>((float)Math.Round(workshopAverageRatings.Values.Average(r => r.Item1), roundToDigits), workshopAverageRatings.Values.Sum(r => r.Item2));
-    }
-
-    /// <inheritdoc/>
-    public async Task<Dictionary<Guid, Tuple<float, int>>> GetAverageRatingForProvidersAsync(IEnumerable<Guid> providerIds)
-    {
-        var providers = new Dictionary<Guid, Tuple<float, int>>();
-        foreach (var providerId in providerIds)
-        {
-            providers.Add(providerId, await GetAverageRatingForProviderAsync(providerId).ConfigureAwait(false));
-        }
-
-        return providers;
     }
 
     /// <inheritdoc/>
@@ -367,8 +315,7 @@ public class RatingService : IRatingService
     {
         var rating = await ratingRepository
             .GetByFilter(r => r.EntityId == dto.EntityId
-                              && r.ParentId == dto.ParentId
-                              && r.Type == dto.Type)
+                              && r.ParentId == dto.ParentId)
             .ConfigureAwait(false);
 
         return rating.Any();
@@ -384,7 +331,6 @@ public class RatingService : IRatingService
         var result = ratingRepository
             .GetByFilterNoTracking(r => r.EntityId == dto.EntityId
                                         && r.ParentId == dto.ParentId
-                                        && r.Type == dto.Type
                                         && r.Id == dto.Id);
 
         return result.Any();

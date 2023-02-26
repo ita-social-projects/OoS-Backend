@@ -11,6 +11,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
+using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services;
@@ -20,7 +21,6 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
     public ProviderServiceV2(
         IProviderRepository providerRepository,
         IEntityRepository<string, User> usersRepository,
-        IRatingService ratingService,
         ILogger<ProviderServiceV2> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper,
@@ -36,11 +36,11 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService,
         ICodeficatorService codeficatorService,
-        IRegionAdminRepository regionAdminRepository)
+        IRegionAdminRepository regionAdminRepository,
+        IAverageRatingService averageRatingService)
         : base(
               providerRepository,
               usersRepository,
-              ratingService,
               logger,
               localizer,
               mapper,
@@ -56,7 +56,8 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
               ministryAdminService,
               regionAdminService,
               codeficatorService,
-              regionAdminRepository)
+              regionAdminRepository,
+              averageRatingService)
     {
     }
 

@@ -14,7 +14,7 @@ public class AverageRating : IKeyedEntity<long>
 
     public float Rate { get; set; }
 
-    public long RateQuantity { get; set; }
+    public int RateQuantity { get; set; }
 
     [Required]
     [Range(1, long.MaxValue, ErrorMessage = "The EntityId field should be bigger than 0")]
