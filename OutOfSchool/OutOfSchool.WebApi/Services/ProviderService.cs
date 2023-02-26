@@ -695,12 +695,9 @@ public class ProviderService : IProviderService, INotificationReciever
 
         foreach (var provider in providersDTO)
         {
-            var averageRatingsForProvider = averageRatings.FirstOrDefault(r => r.EntityId == provider.Id);
-            if (averageRatingsForProvider.EntityId != Guid.Empty)
-            {
-                provider.Rating = averageRatingsForProvider.Rate;
-                provider.NumberOfRatings = averageRatingsForProvider.RateQuantity;
-            }
+            var averageRatingsForProvider = averageRatings.Single(r => r.EntityId == provider.Id);
+            provider.Rating = averageRatingsForProvider.Rate;
+            provider.NumberOfRatings = averageRatingsForProvider.RateQuantity;
         }
     }
 

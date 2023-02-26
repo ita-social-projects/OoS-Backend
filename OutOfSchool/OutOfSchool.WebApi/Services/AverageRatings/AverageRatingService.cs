@@ -71,7 +71,7 @@ public class AverageRatingService : IAverageRatingService
 
         var newAddedRatings = await ratingService.GetAllAsync(r => r.CreationTime > lastSuccessRatingsCalculationDate).ConfigureAwait(false);
 
-        if (newAddedRatings.Count() > 0)
+        if (newAddedRatings.Any())
         {
             var averageRatings = await RecalculateAverageRatingsAsync(newAddedRatings).ConfigureAwait(false);
 
@@ -107,7 +107,7 @@ public class AverageRatingService : IAverageRatingService
 
         logger.LogInformation("Getting the date of the last success rating calculation finished.");
 
-        return ratings.Count() != 0 ? ratings.Max(r => r.CreationTime) : DateTimeOffset.MinValue;
+        return ratings.Any() ? ratings.Max(r => r.CreationTime) : DateTimeOffset.MinValue;
     }
 
     private async Task<Dictionary<Guid, Tuple<float, int>>> RecalculateAverageRatingsAsync(IEnumerable<RatingDto> ratings)

@@ -11,11 +11,8 @@ using System.Threading.Tasks;
 namespace OutOfSchool.Services.Repository;
 public class AverageRatingRepository : EntityRepository<long, AverageRating>, IAverageRatingRepository
 {
-    private readonly OutOfSchoolDbContext db;
-
     public AverageRatingRepository(OutOfSchoolDbContext dbContext)
         : base(dbContext)
     {
-        db = dbContext;
     }
 }

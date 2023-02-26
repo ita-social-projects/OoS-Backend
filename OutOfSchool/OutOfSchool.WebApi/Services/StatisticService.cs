@@ -242,7 +242,7 @@ public class StatisticService : IStatisticService
         {
             foreach (var workshop in workshopsCards)
             {
-                workshop.Rating = averageRatings.FirstOrDefault(r => r.EntityId == workshop.WorkshopId).Rate;
+                workshop.Rating = averageRatings.Single(r => r.EntityId == workshop.WorkshopId).Rate;
             }
         }
 

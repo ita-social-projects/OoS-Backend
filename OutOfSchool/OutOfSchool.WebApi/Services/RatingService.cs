@@ -124,7 +124,7 @@ public class RatingService : IRatingService
 
         logger.LogInformation(ratings.IsNullOrEmpty()
             ? "Rating table is empty."
-            : $"All {ratings.Count()} records with EntityId = {entityId} " +
+            : $"All {ratings.Count} records with EntityId = {entityId} " +
               $"were successfully received from the Rating table");
 
         var ratingsDto = ratings.Select(r => mapper.Map<RatingDto>(r));

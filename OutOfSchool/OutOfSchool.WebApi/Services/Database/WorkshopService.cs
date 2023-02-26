@@ -731,7 +731,8 @@ public class WorkshopService : IWorkshopService
         return sortExpression;
     }
 
-    private async Task<List<T>> GetWorkshopsWithAverageRating<T>(List<T> workshops) where T: WorkshopBaseCard
+    private async Task<List<T>> GetWorkshopsWithAverageRating<T>(List<T> workshops)
+        where T : WorkshopBaseCard
     {
         var averageRatings = await averageRatingService.GetByEntityIdsAsync(workshops.Select(p => p.WorkshopId)).ConfigureAwait(false);
 
@@ -739,7 +740,7 @@ public class WorkshopService : IWorkshopService
         {
             foreach (var workshop in workshops)
             {
-                workshop.Rating = averageRatings.FirstOrDefault(r => r.EntityId == workshop.WorkshopId).Rate;
+                workshop.Rating = averageRatings.Single(r => r.EntityId == workshop.WorkshopId).Rate;
             }
         }
 
@@ -754,7 +755,7 @@ public class WorkshopService : IWorkshopService
         {
             foreach (var workshop in workshops)
             {
-                var rating = averageRatings.FirstOrDefault(r => r.EntityId == workshop.Id);
+                var rating = averageRatings.Single(r => r.EntityId == workshop.Id);
                 workshop.Rating = rating.Rate;
                 workshop.NumberOfRatings = rating.RateQuantity;
             }

@@ -10,11 +10,8 @@ namespace OutOfSchool.Services.Repository;
 
 public class RatingRepository : EntityRepository<long, Rating>, IRatingRepository
 {
-    private readonly OutOfSchoolDbContext db;
-
     public RatingRepository(OutOfSchoolDbContext dbContext)
         : base(dbContext)
     {
-        db = dbContext;
     }
 }
