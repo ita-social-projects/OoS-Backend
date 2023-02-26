@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
@@ -10,9 +11,10 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230226212114_AddDefaultValueToIsDeletedColumnInAverageRatingsTable")]
+    partial class AddDefaultValueToIsDeletedColumnInAverageRatingsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -237,8 +239,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("AchievementTypeId");
 
-                    b.HasIndex("IsDeleted");
-
                     b.HasIndex("WorkshopId");
 
                     b.ToTable("Achievements");
@@ -266,8 +266,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("AchievementId");
 
-                    b.HasIndex("IsDeleted");
-
                     b.ToTable("AchievementTeachers");
                 });
 
@@ -291,8 +289,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("varchar(200)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted");
 
                     b.ToTable("AchievementTypes");
 
@@ -377,8 +373,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("CATOTTGId");
 
-                    b.HasIndex("IsDeleted");
-
                     b.ToTable("Addresses");
                 });
 
@@ -422,8 +416,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasKey("Id");
 
                     b.HasIndex("ChildId");
-
-                    b.HasIndex("IsDeleted");
 
                     b.HasIndex("ParentId");
 
@@ -498,8 +490,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IsDeleted");
-
                     b.HasIndex("ParentId");
 
                     b.HasIndex("ProviderId");
@@ -551,8 +541,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted");
 
                     b.HasIndex("ParentId");
 
@@ -633,8 +621,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ChatRoomId");
 
-                    b.HasIndex("IsDeleted");
-
                     b.ToTable("ChatMessageWorkshops");
                 });
 
@@ -658,8 +644,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("binary(16)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted");
 
                     b.HasIndex("ParentId");
 
@@ -714,8 +698,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IsDeleted");
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("Children");
@@ -758,8 +740,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IsDeleted");
-
                     b.ToTable("CompanyInformation");
                 });
 
@@ -788,8 +768,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("CompanyInformationId");
 
-                    b.HasIndex("IsDeleted");
-
                     b.ToTable("CompanyInformationItems");
                 });
 
@@ -816,8 +794,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("binary(16)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted");
 
                     b.HasIndex("WorkshopId");
 
@@ -846,8 +822,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("varchar(100)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted");
 
                     b.ToTable("Directions");
                 });
@@ -893,8 +867,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("binary(16)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted");
 
                     b.HasIndex("UserId");
 
@@ -975,8 +947,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("varchar(100)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted");
 
                     b.ToTable("InstitutionStatuses");
 
@@ -1063,8 +1033,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("varchar(255)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted");
 
                     b.HasIndex("UserId");
 
@@ -1266,8 +1234,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("InstitutionStatusId");
 
-                    b.HasIndex("IsDeleted");
-
                     b.HasIndex("LegalAddressId")
                         .IsUnique();
 
@@ -1294,8 +1260,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("binary(16)");
 
                     b.HasKey("UserId");
-
-                    b.HasIndex("IsDeleted");
 
                     b.HasIndex("ProviderId");
 
@@ -1363,8 +1327,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("binary(16)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted");
 
                     b.HasIndex("ProviderId");
 
@@ -1479,8 +1441,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("EntityId");
 
-                    b.HasIndex("IsDeleted");
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("Ratings");
@@ -1507,8 +1467,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("InstitutionId");
 
-                    b.HasIndex("IsDeleted");
-
                     b.ToTable("RegionAdmins");
                 });
 
@@ -1532,8 +1490,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("varchar(100)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted");
 
                     b.ToTable("SocialGroups");
 
@@ -1725,8 +1681,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IsDeleted");
-
                     b.ToTable("Institutions");
                 });
 
@@ -1753,8 +1707,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasKey("Id");
 
                     b.HasIndex("InstitutionId");
-
-                    b.HasIndex("IsDeleted");
 
                     b.ToTable("InstitutionFieldDescriptions");
                 });
@@ -1785,8 +1737,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasKey("Id");
 
                     b.HasIndex("InstitutionId");
-
-                    b.HasIndex("IsDeleted");
 
                     b.HasIndex("ParentId");
 
@@ -1836,8 +1786,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("binary(16)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted");
 
                     b.HasIndex("WorkshopId");
 
@@ -1948,8 +1896,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IsDeleted");
-
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -2056,8 +2002,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("InstitutionHierarchyId");
 
-                    b.HasIndex("IsDeleted");
-
                     b.HasIndex("ProviderId");
 
                     b.ToTable("Workshops");
@@ -2087,8 +2031,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("binary(16)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted");
 
                     b.HasIndex("WorkshopId");
 

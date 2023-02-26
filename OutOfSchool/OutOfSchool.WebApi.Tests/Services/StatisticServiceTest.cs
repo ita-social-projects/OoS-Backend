@@ -14,6 +14,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.AverageRatings;
@@ -68,7 +69,7 @@ public class StatisticServiceTest
         // Arrange
         List<WorkshopCard> expectedWorkshopCards = ExpectedWorkshopCardsNoCityFilter();
 
-        SetupGetPopularWorkshops();
+        SetupGetPopularWorkshops(expectedWorkshopCards);
 
         mapper.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>()))
             .Returns(expectedWorkshopCards);
@@ -91,7 +92,7 @@ public class StatisticServiceTest
         // Arrange
         List<WorkshopCard> expectedWorkshopCards = ExpectedWorkshopCardsInstitutionId();
 
-        SetupGetPopularWorkshops();
+        SetupGetPopularWorkshops(expectedWorkshopCards);
 
         currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(true);
         ministryAdminServiceMock
@@ -122,7 +123,7 @@ public class StatisticServiceTest
         // Arrange
         List<WorkshopCard> expectedWorkshopCards = ExpectedWorkshopCardsInstitutionId();
 
-        SetupGetPopularWorkshops();
+        SetupGetPopularWorkshops(expectedWorkshopCards);
 
         currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(true);
         regionAdminServiceMock
@@ -301,7 +302,7 @@ public class StatisticServiceTest
 
     #region Setup
 
-    private void SetupGetPopularWorkshops()
+    private void SetupGetPopularWorkshops(List<WorkshopCard> expectedWorkshopCards)
     {
         var workshopsMock = WithWorkshops().AsQueryable().BuildMock();
 
@@ -315,6 +316,13 @@ public class StatisticServiceTest
                 It.IsAny<bool>()))
             .Returns(workshopsMock)
             .Verifiable();
+
+        var expectedWorkshopCardsIds = expectedWorkshopCards.Select(wc => wc.WorkshopId).ToList();
+        var ratings = RatingsGenerator.GetAverageRatings(expectedWorkshopCardsIds);
+
+        averageRatingServiceMock
+            .Setup(r => r.GetByEntityIdsAsync(expectedWorkshopCardsIds))
+            .ReturnsAsync(ratings);
     }
 
     private void SetupGetPopularWorkshopsIncludingCATOTTG()

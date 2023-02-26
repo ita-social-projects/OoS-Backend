@@ -23,7 +23,6 @@ public class RatingService : IRatingService
 {
     private readonly IRatingRepository ratingRepository;
     private readonly IWorkshopRepository workshopRepository;
-    private readonly IProviderRepository providerRepository;
     private readonly IParentRepository parentRepository;
     private readonly ILogger<RatingService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
@@ -34,7 +33,6 @@ public class RatingService : IRatingService
     /// </summary>
     /// <param name="ratingRepository">Repository for Rating entity.</param>
     /// <param name="workshopRepository">Repository for Workshop entity.</param>
-    /// <param name="providerRepository">Repository for Provider entity.</param>
     /// <param name="parentRepository">Repository for Parent entity.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
@@ -42,7 +40,6 @@ public class RatingService : IRatingService
     public RatingService(
         IRatingRepository ratingRepository,
         IWorkshopRepository workshopRepository,
-        IProviderRepository providerRepository,
         IParentRepository parentRepository,
         ILogger<RatingService> logger,
         IStringLocalizer<SharedResource> localizer,
@@ -50,7 +47,6 @@ public class RatingService : IRatingService
     {
         this.ratingRepository = ratingRepository ?? throw new ArgumentNullException(nameof(ratingRepository));
         this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
-        this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
         this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
@@ -112,9 +108,9 @@ public class RatingService : IRatingService
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<RatingDto>> GetAllByEntityId(Guid entityId, RatingType type, OffsetFilter filter)
+    public async Task<SearchResult<RatingDto>> GetAllByEntityId(Guid entityId, OffsetFilter filter)
     {
-        logger.LogInformation($"Getting all Ratings with EntityId = {entityId} and RatingType = {type} started.");
+        logger.LogInformation($"Getting all Ratings with EntityId = {entityId} started.");
 
         filter ??= new OffsetFilter();
         var filterPredicate = PredicateBuilder.True<Rating>().And(r => r.EntityId == entityId);
@@ -128,7 +124,7 @@ public class RatingService : IRatingService
 
         logger.LogInformation(ratings.IsNullOrEmpty()
             ? "Rating table is empty."
-            : $"All {ratings.Count()} records with EntityId = {entityId} and RatingType = {type} " +
+            : $"All {ratings.Count()} records with EntityId = {entityId} " +
               $"were successfully received from the Rating table");
 
         var ratingsDto = ratings.Select(r => mapper.Map<RatingDto>(r));
@@ -168,9 +164,9 @@ public class RatingService : IRatingService
     }
 
     /// <inheritdoc/>
-    public async Task<RatingDto> GetParentRating(Guid parentId, Guid entityId, RatingType type)
+    public async Task<RatingDto> GetParentRating(Guid parentId, Guid entityId)
     {
-        logger.LogInformation($"Getting Rating for Parent started. Looking parentId = {parentId}, entityId = {entityId} and type = {type}.");
+        logger.LogInformation($"Getting Rating for Parent started. Looking parentId = {parentId}, entityId = {entityId}.");
 
         var rating = (await ratingRepository
             .GetByFilter(r => r.ParentId == parentId
@@ -268,10 +264,9 @@ public class RatingService : IRatingService
             return false;
         }
 
-        if (!await EntityExists(dto.EntityId, dto.Type).ConfigureAwait(false))
+        if (!await EntityExists(dto.EntityId).ConfigureAwait(false))
         {
-            logger.LogInformation($"Record with entityId { dto.EntityId } " +
-                                  $"and Type { dto.Type } don't exist in the system.");
+            logger.LogInformation($"Record with entityId { dto.EntityId } don't exist in the system.");
 
             return false;
         }
@@ -288,10 +283,9 @@ public class RatingService : IRatingService
     {
         ValidateDto(dto);
 
-        if (!await EntityExists(dto.EntityId, dto.Type).ConfigureAwait(false))
+        if (!await EntityExists(dto.EntityId).ConfigureAwait(false))
         {
-            logger.LogInformation($"Record with entityId { dto.EntityId } " +
-                                  $"and Type { dto.Type } don't exist in the system.");
+            logger.LogInformation($"Record with entityId { dto.EntityId } don't exist in the system.");
 
             return false;
         }
@@ -340,23 +334,11 @@ public class RatingService : IRatingService
     /// Checks if Entity with such parameters already exists in the system.
     /// </summary>
     /// <param name="id">Entity Id.</param>
-    /// <param name="type">Entity type.</param>
     /// <returns>True if Entity with such parameters already exists in the system and false otherwise.</returns>
-    private async Task<bool> EntityExists(Guid id, RatingType type)
+    private async Task<bool> EntityExists(Guid id)
     {
-        switch (type)
-        {
-            case RatingType.Provider:
-                Provider provider = providerRepository.GetByFilterNoTracking(x => x.Id == id).FirstOrDefault();
-                return provider != null;
-
-            case RatingType.Workshop:
-                Workshop workshop = workshopRepository.GetByFilterNoTracking(x => x.Id == id).FirstOrDefault();
-                return workshop != null;
-
-            default:
-                return false;
-        }
+        Workshop workshop = workshopRepository.GetByFilterNoTracking(x => x.Id == id).FirstOrDefault();
+        return workshop != null;
     }
 
     private async Task<IEnumerable<RatingDto>> AddParentInfoAsync(IEnumerable<RatingDto> ratingDtos)

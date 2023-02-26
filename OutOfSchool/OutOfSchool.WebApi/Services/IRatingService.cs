@@ -48,11 +48,10 @@ public interface IRatingService
     /// <summary>
     /// Get all rating entities with specified Id and type.
     /// </summary>
-    /// <param name="entityId">Entity key.</param>
     /// <param name="type">Entity type.</param>
     /// <param name="filter">Skip & Take number.</param>
     /// <returns>The result is a <see cref="SearchResult{RatingDto}"/> that contains the count of all found ratings and a list of ratings that were received.</returns>
-    Task<SearchResult<RatingDto>> GetAllByEntityId(Guid entityId, RatingType type, OffsetFilter filter);
+    Task<SearchResult<RatingDto>> GetAllByEntityId(Guid entityId, OffsetFilter filter);
 
     /// <summary>
     /// Get all workshop rating by provider.
@@ -66,9 +65,8 @@ public interface IRatingService
     /// </summary>
     /// <param name="parentId">Parent key.</param>
     /// <param name="entityId">Entity key.</param>
-    /// <param name="type">Entity type.</param>
     /// <returns>Parent rating for the specified entity.</returns>
-    Task<RatingDto> GetParentRating(Guid parentId, Guid entityId, RatingType type);
+    Task<RatingDto> GetParentRating(Guid parentId, Guid entityId);
 
     /// <summary>
     /// Update rating entity.
