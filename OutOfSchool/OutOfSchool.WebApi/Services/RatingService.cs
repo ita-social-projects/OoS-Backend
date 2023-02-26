@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using Castle.Core.Internal;
@@ -79,6 +80,17 @@ public class RatingService : IRatingService
         var ratingsDto = ratings.Select(r => mapper.Map<RatingDto>(r));
 
         return await AddParentInfoAsync(ratingsDto).ConfigureAwait(false);
+    }
+
+    public async Task<IEnumerable<RatingDto>> GetAllAsync(Expression<Func<Rating, bool>> filter)
+    {
+        logger.LogInformation("Getting all ratings by filter started.");
+
+        var ratings = await ratingRepository.GetByFilter(predicate: filter).ConfigureAwait(false);
+
+        logger.LogInformation("Getting all ratings by filter finished.");
+
+        return mapper.Map<IEnumerable<RatingDto>>(ratings);
     }
 
     /// <inheritdoc/>

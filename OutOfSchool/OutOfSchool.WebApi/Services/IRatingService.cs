@@ -1,5 +1,6 @@
 ﻿using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
+using System.Linq.Expressions;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -29,6 +30,13 @@ public interface IRatingService
     /// <param name="filter">Filter's key.</param>
     /// <returns>List of all rating records.</returns>
     Task<IEnumerable<RatingDto>> GetAsync(OffsetFilter filter);
+
+    /// <summary>
+    /// Get all rating entities by filter expression.
+    /// </summary>
+    /// <param name="filter">Filter expression.</param>
+    /// <returns>List of all rating records.</returns>
+    Task<IEnumerable<RatingDto>> GetAllAsync(Expression<Func<Rating, bool>> filter);
 
     /// <summary>
     /// Get rating entity by it's key.

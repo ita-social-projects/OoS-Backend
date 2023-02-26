@@ -105,6 +105,8 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<RegionAdmin> RegionAdmins { get; set; }
 
+    public DbSet<AverageRating> AverageRatings { get; set; }
+
     public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
     public int Complete() => this.SaveChanges();
