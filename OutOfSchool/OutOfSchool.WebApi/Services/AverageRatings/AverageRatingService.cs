@@ -139,9 +139,10 @@ public class AverageRatingService : IAverageRatingService
 
         foreach (var workshopId in workshopsIds)
         {
-            // TODO Maybe it needs to check if the workshop exists because the below method can raise the exception
-            // during the first execution when the workshop was deleted, but the Ratings table contains this workshop's rating.
-            var workshop = await workshopRepository.GetByFilterNoTracking(w => w.Id == workshopId).SingleOrDefaultAsync().ConfigureAwait(false);
+            var workshop = await workshopRepository
+                .GetByFilterNoTracking(w => w.Id == workshopId)
+                .SingleOrDefaultAsync()
+                .ConfigureAwait(false);
 
             if (workshop != null)
             {

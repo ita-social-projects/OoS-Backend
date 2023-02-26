@@ -17,6 +17,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Services.AverageRatings;
 
 [TestFixture]
 public class ProviderServiceUpdate
@@ -43,7 +44,6 @@ public class ProviderServiceUpdate
 
         this.mapper = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile(typeof(MappingProfile))));
 
-        var ratingService = new Mock<IRatingService>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderService>>();
         var addressRepository = new Mock<IEntityRepository<long, Address>>();
@@ -61,11 +61,11 @@ public class ProviderServiceUpdate
         var regionAdminService = new Mock<IRegionAdminService>();
         var codeficatorService = new Mock<ICodeficatorService>();
         var regionAdminRepository = new Mock<IRegionAdminRepository>();
+        var averageRatingService = new Mock<IAverageRatingService>();
 
         this.providerService = new ProviderService(
             providerRepository,
             userRepository.Object,
-            ratingService.Object,
             logger.Object,
             localizer.Object,
             this.mapper,
@@ -81,7 +81,8 @@ public class ProviderServiceUpdate
             ministryAdminServiceMock.Object,
             regionAdminService.Object,
             codeficatorService.Object,
-            regionAdminRepository.Object);
+            regionAdminRepository.Object,
+            averageRatingService.Object);
     }
 
     [Test]
