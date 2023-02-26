@@ -72,6 +72,7 @@ public partial class OutOfSchoolDbContext
             .ApplySoftDelete<SocialGroup>()
             .ApplySoftDelete<Teacher>()
             .ApplySoftDelete<Workshop>()
-            .ApplySoftDelete<WorkshopDescriptionItem>();
+            .ApplySoftDelete<WorkshopDescriptionItem>()
+            .ApplySoftDelete<AverageRating>();
     }
 }

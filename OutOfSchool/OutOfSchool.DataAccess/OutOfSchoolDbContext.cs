@@ -133,6 +133,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new AddressConfiguration());
         builder.ApplyConfiguration(new CodeficatorConfiguration());
         builder.ApplyConfiguration(new RatingConfiguration());
+        builder.ApplyConfiguration(new AverageRatingConfiguration());
 
         ApplySoftDelete(builder);
 
