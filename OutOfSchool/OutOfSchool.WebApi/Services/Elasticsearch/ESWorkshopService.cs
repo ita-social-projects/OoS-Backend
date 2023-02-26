@@ -16,7 +16,6 @@ namespace OutOfSchool.WebApi.Services;
 public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilterES>
 {
     private readonly IWorkshopService workshopService;
-    private readonly IRatingService ratingService;
     private readonly IAverageRatingService averageRatingService;
     private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
     private readonly ElasticPinger esPinger;
@@ -32,7 +31,7 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
     /// <param name="esProvider">Provider to the Elasticsearch workshops index.</param>
     /// <param name="elasticPinger">Background worker pings the Elasticsearch.</param>
     /// <param name="logger">Logger.</param>
-    /// /// <param name="averageRatingService">Service that provides access to average ratings in the database.</param>
+    /// <param name="averageRatingService">Service that provides access to average ratings in the database.</param>
     public ESWorkshopService(
         IWorkshopService workshopService,
         IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
