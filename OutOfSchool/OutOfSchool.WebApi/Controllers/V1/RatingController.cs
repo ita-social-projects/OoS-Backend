@@ -14,6 +14,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.AverageRatings;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -26,6 +27,7 @@ public class RatingController : ControllerBase
     private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> esWorkshopService;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly ILogger<RatingController> logger;
+    private readonly IAverageRatingService averageRatingService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RatingController"/> class.
@@ -34,17 +36,20 @@ public class RatingController : ControllerBase
     /// <param name="localizer">Localizer.</param>
     /// <param name="esWorkshopService">Service for operations with workshop documents of Elasticsearch data.</param>
     /// <param name="logger">Logger.</param>
+    /// <param name="averageRatingService">Service for AverageRating model.</param>
     public RatingController(
         IRatingService service,
         IStringLocalizer<SharedResource> localizer,
         IElasticsearchService<WorkshopES,
         WorkshopFilterES> esWorkshopService,
-        ILogger<RatingController> logger)
+        ILogger<RatingController> logger,
+        IAverageRatingService averageRatingService)
     {
         this.ratingService = service;
         this.localizer = localizer;
         this.esWorkshopService = esWorkshopService;
         this.logger = logger;
+        this.averageRatingService = averageRatingService;
     }
 
     /// <summary>
@@ -295,8 +300,8 @@ public class RatingController : ControllerBase
     {
         try
         {
-            var rating = (await ratingService.GetAverageRatingAsync(id, RatingType.Workshop)
-                .ConfigureAwait(false)).Item1;
+            var rating = (await averageRatingService.GetByEntityIdAsync(id)
+                .ConfigureAwait(false)).Rate;
 
             return await esWorkshopService.PartialUpdate(id, new WorkshopRatingES { Rating = rating })
                 .ConfigureAwait(false);
