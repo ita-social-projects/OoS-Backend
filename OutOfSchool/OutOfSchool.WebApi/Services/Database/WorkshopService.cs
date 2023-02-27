@@ -198,8 +198,8 @@ public class WorkshopService : IWorkshopService
 
         var rating = await averageRatingService.GetByEntityIdAsync(workshopDTO.Id).ConfigureAwait(false);
 
-        workshopDTO.Rating = rating.Rate;
-        workshopDTO.NumberOfRatings = rating.RateQuantity;
+        workshopDTO.Rating = rating?.Rate ?? default;
+        workshopDTO.NumberOfRatings = rating?.RateQuantity ?? default;
 
         return workshopDTO;
     }
@@ -736,12 +736,9 @@ public class WorkshopService : IWorkshopService
     {
         var averageRatings = await averageRatingService.GetByEntityIdsAsync(workshops.Select(p => p.WorkshopId)).ConfigureAwait(false);
 
-        if (averageRatings != null)
+        foreach (var workshop in workshops)
         {
-            foreach (var workshop in workshops)
-            {
-                workshop.Rating = averageRatings.Single(r => r.EntityId == workshop.WorkshopId).Rate;
-            }
+            workshop.Rating = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.WorkshopId)?.Rate ?? default;
         }
 
         return workshops;
@@ -751,14 +748,11 @@ public class WorkshopService : IWorkshopService
     {
         var averageRatings = await averageRatingService.GetByEntityIdsAsync(workshops.Select(p => p.Id)).ConfigureAwait(false);
 
-        if (averageRatings != null)
+        foreach (var workshop in workshops)
         {
-            foreach (var workshop in workshops)
-            {
-                var rating = averageRatings.Single(r => r.EntityId == workshop.Id);
-                workshop.Rating = rating.Rate;
-                workshop.NumberOfRatings = rating.RateQuantity;
-            }
+            var rating = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.Id);
+            workshop.Rating = rating?.Rate ?? default;
+            workshop.NumberOfRatings = rating?.RateQuantity ?? default;
         }
 
         return workshops;

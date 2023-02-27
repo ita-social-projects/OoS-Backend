@@ -261,8 +261,10 @@ public class RatingController : ControllerBase
     {
         try
         {
-            var rating = (await averageRatingService.GetByEntityIdAsync(id)
-                .ConfigureAwait(false)).Rate;
+            var ratingDto = await averageRatingService.GetByEntityIdAsync(id)
+                .ConfigureAwait(false);
+
+            var rating = ratingDto?.Rate ?? default;
 
             return await esWorkshopService.PartialUpdate(id, new WorkshopRatingES { Rating = rating })
                 .ConfigureAwait(false);

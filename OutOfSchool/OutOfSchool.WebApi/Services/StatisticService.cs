@@ -238,12 +238,9 @@ public class StatisticService : IStatisticService
     {
         var averageRatings = await averageRatingService.GetByEntityIdsAsync(workshopsCards.Select(p => p.WorkshopId)).ConfigureAwait(false);
 
-        if (averageRatings != null)
+        foreach (var workshop in workshopsCards)
         {
-            foreach (var workshop in workshopsCards)
-            {
-                workshop.Rating = averageRatings.Single(r => r.EntityId == workshop.WorkshopId).Rate;
-            }
+            workshop.Rating = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.WorkshopId)?.Rate ?? default;
         }
 
         return workshopsCards;

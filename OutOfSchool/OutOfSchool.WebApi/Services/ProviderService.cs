@@ -203,8 +203,8 @@ public class ProviderService : IProviderService, INotificationReciever
 
         var rating = await averageRatingService.GetByEntityIdAsync(providerDTO.Id).ConfigureAwait(false);
 
-        providerDTO.Rating = rating.Rate;
-        providerDTO.NumberOfRatings = rating.RateQuantity;
+        providerDTO.Rating = rating?.Rate ?? default;
+        providerDTO.NumberOfRatings = rating?.RateQuantity ?? default;
 
         return providerDTO;
     }
@@ -695,9 +695,9 @@ public class ProviderService : IProviderService, INotificationReciever
 
         foreach (var provider in providersDTO)
         {
-            var averageRatingsForProvider = averageRatings.Single(r => r.EntityId == provider.Id);
-            provider.Rating = averageRatingsForProvider.Rate;
-            provider.NumberOfRatings = averageRatingsForProvider.RateQuantity;
+            var averageRatingsForProvider = averageRatings?.SingleOrDefault(r => r.EntityId == provider.Id);
+            provider.Rating = averageRatingsForProvider?.Rate ?? default;
+            provider.NumberOfRatings = averageRatingsForProvider?.RateQuantity ?? default;
         }
     }
 

@@ -75,7 +75,9 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
 
         try
         {
-            entity.Rating = (await averageRatingService.GetByEntityIdAsync(entity.Id).ConfigureAwait(false)).Rate;
+            var rating = await averageRatingService.GetByEntityIdAsync(entity.Id).ConfigureAwait(false);
+
+            entity.Rating = rating?.Rate ?? default;
 
             var resp = await esProvider.UpdateEntityAsync(entity).ConfigureAwait(false);
 
@@ -125,7 +127,8 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
             {
                 foreach (var entity in data.Entities)
                 {
-                    entity.Rating = (await averageRatingService.GetByEntityIdAsync(entity.Id).ConfigureAwait(false)).Rate;
+                    var rating = await averageRatingService.GetByEntityIdAsync(entity.Id).ConfigureAwait(false);
+                    entity.Rating = rating?.Rate ?? default;
                     source.Add(entity.ToESModel());
                 }
 
