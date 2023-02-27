@@ -50,10 +50,10 @@ public interface IProviderService
     /// <summary>
     /// Update entity.
     /// </summary>
-    /// <param name="providerDto">Provider entity to add.</param>
+    /// <param name="providerUpdateDto">Provider entity to add.</param>
     /// <param name="userId">Id of user that requests update.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<ProviderDto> Update(ProviderDto providerDto, string userId);
+    Task<ProviderDto> Update(ProviderUpdateDto providerUpdateDto, string userId);
 
     /// <summary>
     ///  Delete entity.

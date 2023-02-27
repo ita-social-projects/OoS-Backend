@@ -194,7 +194,7 @@ public class ProviderControllerTests
         // Arrange
         var providerToUpdate = providers.FirstOrDefault();
         providerToUpdate.FullTitle = TestDataHelper.GetRandomWords();
-        var providerDto = mapper.Map<ProviderDto>(providerToUpdate);
+        var providerDto = mapper.Map<ProviderUpdateDto>(providerToUpdate);
         providerService.Setup(x => x.Update(providerDto, It.IsAny<string>()))
             .ReturnsAsync(mapper.Map<ProviderDto>(providerToUpdate));
 
@@ -203,14 +203,14 @@ public class ProviderControllerTests
         var value = (result as ObjectResult).Value as ProviderDto;
 
         // Assert
-        result.AssertResponseOkResultAndValidateValue(providerDto);
+        result.AssertResponseOkResultAndValidateValue(mapper.Map<ProviderDto>(providerToUpdate));
     }
 
     [Test]
     public async Task UpdateProvider_WhenModelWithErrorsReceived_BadRequest_And_ModelsIsValid_False()
     {
         // Arrange
-        var providerToUpdateDto = mapper.Map<ProviderDto>(provider);
+        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
         var dictionary = new ModelStateDictionary();
         dictionary.AddModelError("UpdateError", "bad model state");
         var expected = new BadRequestObjectResult(new ModelStateDictionary(dictionary));
@@ -231,7 +231,7 @@ public class ProviderControllerTests
     public async Task UpdateProvider_WhenCorrectData_AND_WrongUserId_ModelIsValid_But_BadRequest()
     {
         // Arrange
-        var providerToUpdateDto = mapper.Map<ProviderDto>(providers.FirstOrDefault());
+        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(providers.FirstOrDefault());
         providerToUpdateDto.FullTitle = TestDataHelper.GetRandomWords();
         var expected = new BadRequestObjectResult("Can't change Provider with such parameters.\n" +
                                                   "Please check that information are valid.");
@@ -249,7 +249,7 @@ public class ProviderControllerTests
     public async Task UpdateProvider_ServiceCantGetRequestedProvider_BadRequest_WithExceptionAsValue()
     {
         // Arrange
-        var providerToUpdateDto = ProviderDtoGenerator.Generate();
+        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(ProviderDtoGenerator.Generate());
         providerToUpdateDto.FullTitle = TestDataHelper.GetRandomWords();
         var expected = new BadRequestObjectResult(new DbUpdateConcurrencyException());
         providerService.Setup(x => x.Update(providerToUpdateDto, It.IsAny<string>())).ThrowsAsync(new DbUpdateConcurrencyException());

@@ -254,8 +254,8 @@ public class ProviderService : IProviderService, INotificationReciever
     }
 
     /// <inheritdoc/>
-    public async Task<ProviderDto> Update(ProviderDto providerDto, string userId)
-        => await UpdateProviderWithActionBeforeSavingChanges(providerDto, userId).ConfigureAwait(false);
+    public async Task<ProviderDto> Update(ProviderUpdateDto providerUpdateDto, string userId)
+        => await UpdateProviderWithActionBeforeSavingChanges(providerUpdateDto, userId).ConfigureAwait(false);
 
     /// <inheritdoc/>
     public async Task Delete(Guid id) => await DeleteProviderWithActionBefore(id).ConfigureAwait(false);
@@ -282,16 +282,17 @@ public class ProviderService : IProviderService, INotificationReciever
         provider.StatusReason = dto.StatusReason;
         await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
 
-        var workshops = await workshopServiceCombiner
-            .PartialUpdateByProvider(provider)
-            .ConfigureAwait(false);
+        // TODO: Implement updating status or license of provider's workshops
+        // same in UpdateProviderWithActionBeforeSavingChanges method
 
-        foreach (var workshop in workshops)
-        {
-            logger.LogInformation($"Provider's properties with Id = {provider?.Id} " +
-                                  $"in workshops with Id = {workshop?.Id} updated successfully.");
-        }
-
+        // var workshops = await workshopServiceCombiner
+        //    .PartialUpdateByProvider(provider)
+        //    .ConfigureAwait(false);
+        // foreach (var workshop in workshops)
+        // {
+        //    logger.LogInformation($"Provider's properties with Id = {provider?.Id} " +
+        //                          $"in workshops with Id = {workshop?.Id} updated successfully.");
+        // }
         logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.Status}");
 
         await SendNotification(provider, NotificationAction.Update, true, false).ConfigureAwait(false);
@@ -483,59 +484,59 @@ public class ProviderService : IProviderService, INotificationReciever
         return mapper.Map<ProviderDto>(newProvider);
     }
 
-    private protected async Task<ProviderDto> UpdateProviderWithActionBeforeSavingChanges(ProviderDto providerDto, string userId, Func<Provider, Task> actionBeforeUpdating = null)
+    private protected async Task<ProviderDto> UpdateProviderWithActionBeforeSavingChanges(ProviderUpdateDto providerUpdateDto, string userId, Func<Provider, Task> actionBeforeUpdating = null)
     {
-        _ = providerDto ?? throw new ArgumentNullException(nameof(providerDto));
+        _ = providerUpdateDto ?? throw new ArgumentNullException(nameof(providerUpdateDto));
         if (string.IsNullOrEmpty(userId))
         {
             throw new ArgumentNullException(nameof(userId));
         }
 
-        logger.LogDebug("Updating Provider with Id = {Id} was started", providerDto.Id);
+        logger.LogDebug("Updating Provider with Id = {Id} was started", providerUpdateDto.Id);
 
         try
         {
-            var checkProvider = await providerRepository.GetById(providerDto.Id).ConfigureAwait(false);
             var dataSynchronized = false;
+            var checkProvider = await providerRepository.GetById(providerUpdateDto.Id).ConfigureAwait(false);
 
             if (checkProvider?.UserId != userId)
             {
                 return null;
             }
 
-            ChangeProviderStatusIfNeeded(providerDto, checkProvider, out var statusChanged, out var licenseChanged);
+            ChangeProviderStatusIfNeeded(providerUpdateDto, checkProvider, out var statusChanged, out var licenseChanged);
 
-            providerDto.LegalAddress.Id = checkProvider.LegalAddress.Id;
+            providerUpdateDto.LegalAddress.Id = checkProvider.LegalAddress.Id;
 
-            if (providerDto.LegalAddress.Equals(providerDto.ActualAddress))
+            if (providerUpdateDto.LegalAddress.Equals(providerUpdateDto.ActualAddress))
             {
-                providerDto.ActualAddress = null;
+                providerUpdateDto.ActualAddress = null;
             }
 
-            if (providerDto.ActualAddress is null && checkProvider.ActualAddress is { })
+            if (providerUpdateDto.ActualAddress is null && checkProvider.ActualAddress is { })
             {
                 var checkProviderActualAddress = checkProvider.ActualAddress;
                 checkProvider.ActualAddressId = null;
                 checkProvider.ActualAddress = null;
-                mapper.Map(providerDto, checkProvider);
+                mapper.Map(providerUpdateDto, checkProvider);
                 await addressRepository.Delete(checkProviderActualAddress).ConfigureAwait(false);
             }
             else
             {
-                if (providerDto.ActualAddress != null)
+                if (providerUpdateDto.ActualAddress != null)
                 {
-                    providerDto.ActualAddress.Id = checkProvider.ActualAddress?.Id ?? 0;
+                    providerUpdateDto.ActualAddress.Id = checkProvider.ActualAddress?.Id ?? 0;
                 }
 
-                if (IsNeedInRelatedWorkshopsUpdating(providerDto, checkProvider))
+                if (IsNeedInRelatedWorkshopsUpdating(providerUpdateDto, checkProvider))
                 {
                     checkProvider = await providerRepository.RunInTransaction(async () =>
                     {
                         var workshops = await workshopServiceCombiner
-                            .PartialUpdateByProvider(mapper.Map<Provider>(providerDto))
+                            .UpdateProviderTitle(providerUpdateDto.Id, providerUpdateDto.FullTitle)
                             .ConfigureAwait(false);
 
-                        mapper.Map(providerDto, checkProvider);
+                        mapper.Map(providerUpdateDto, checkProvider);
                         LogProviderChanges(checkProvider, userId);
                         await UpdateProvider().ConfigureAwait(false);
 
@@ -552,7 +553,7 @@ public class ProviderService : IProviderService, INotificationReciever
                 }
                 else
                 {
-                    mapper.Map(providerDto, checkProvider);
+                    mapper.Map(providerUpdateDto, checkProvider);
                 }
 
                 if (actionBeforeUpdating != null)
@@ -571,15 +572,19 @@ public class ProviderService : IProviderService, INotificationReciever
                 // TODO: Improve logic with duplicating the code below
                 if (!dataSynchronized)
                 {
-                    var workshops = await workshopServiceCombiner
-                            .PartialUpdateByProvider(mapper.Map<Provider>(providerDto))
-                            .ConfigureAwait(false);
+                    // TODO: Implement updating status or license of provider's workshops
+                    // and remove "dataSynchronized"
+                    // same in UpdateStatus method
 
-                    foreach (var workshop in workshops)
-                    {
-                        logger.LogInformation($"Provider's properties with Id = {checkProvider?.Id} " +
-                                              $"in workshops with Id = {workshop?.Id} updated successfully.");
-                    }
+                    // var workshops = await workshopServiceCombiner
+                    //        .UpdateProviderTitle(providerUpdateDto.Id, providerUpdateDto.FullTitle)
+                    //        .ConfigureAwait(false);
+
+                    // foreach (var workshop in workshops)
+                    // {
+                    //    logger.LogInformation($"Provider's properties with Id = {checkProvider?.Id} " +
+                    //                          $"in workshops with Id = {workshop?.Id} updated successfully.");
+                    // }
                 }
 
                 await SendNotification(checkProvider, NotificationAction.Update, statusChanged, licenseChanged)
@@ -590,12 +595,12 @@ public class ProviderService : IProviderService, INotificationReciever
         }
         finally
         {
-            logger.LogTrace("Updating Provider with Id = {Id} was finished", providerDto.Id);
+            logger.LogTrace("Updating Provider with Id = {Id} was finished", providerUpdateDto.Id);
         }
     }
 
     private void ChangeProviderStatusIfNeeded(
-        ProviderDto providerDto,
+        ProviderUpdateDto providerDto,
         Provider checkProvider,
         out bool statusChanged,
         out bool licenseChanged)
@@ -650,10 +655,9 @@ public class ProviderService : IProviderService, INotificationReciever
         }
     }
 
-    private static bool IsNeedInRelatedWorkshopsUpdating(ProviderDto providerDto, Provider checkProvider)
+    private static bool IsNeedInRelatedWorkshopsUpdating(ProviderUpdateDto providerDto, Provider checkProvider)
     {
-        return checkProvider.FullTitle != providerDto.FullTitle
-               || checkProvider.Ownership != providerDto.Ownership;
+        return checkProvider.FullTitle != providerDto.FullTitle;
     }
 
     private async Task UpdateProvider()

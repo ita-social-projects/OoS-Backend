@@ -434,8 +434,10 @@ public class ProviderServiceTests
         provider.Status = ProviderStatus.Recheck;
 
         var updatedTitle = Guid.NewGuid().ToString();
-        var providerToUpdateDto = mapper.Map<ProviderDto>(provider);
+        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
+        var expectedProviderDto = mapper.Map<ProviderDto>(provider);
         providerToUpdateDto.FullTitle = updatedTitle;
+        expectedProviderDto.FullTitle = updatedTitle;
 
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
@@ -456,7 +458,7 @@ public class ProviderServiceTests
         var result = await providerService.Update(providerToUpdateDto, providerToUpdateDto.UserId).ConfigureAwait(false);
 
         // Assert
-        TestHelper.AssertDtosAreEqual(providerToUpdateDto, result);
+        TestHelper.AssertDtosAreEqual(expectedProviderDto, result);
     }
 
     [TestCase(ProviderStatus.Recheck)]
@@ -469,7 +471,7 @@ public class ProviderServiceTests
         var updatedTitle = Guid.NewGuid().ToString();
         provider.Status = initialStatus;
 
-        var providerToUpdateDto = mapper.Map<ProviderDto>(provider);
+        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
         providerToUpdateDto.Status = ProviderStatus.Approved;
         providerToUpdateDto.ShortTitle = updatedTitle;
 
@@ -499,7 +501,7 @@ public class ProviderServiceTests
         var updatedTitle = Guid.NewGuid().ToString();
         provider.Status = initialStatus;
 
-        var providerToUpdateDto = mapper.Map<ProviderDto>(provider);
+        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
         providerToUpdateDto.FullTitle = updatedTitle;
 
         var expected = mapper.Map<ProviderDto>(provider);
@@ -539,7 +541,7 @@ public class ProviderServiceTests
         var updatedEdrpouIpn = "1234567890";
         provider.Status = initialStatus;
 
-        var providerToUpdateDto = mapper.Map<ProviderDto>(provider);
+        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
         providerToUpdateDto.EdrpouIpn = updatedEdrpouIpn;
 
         var expected = mapper.Map<ProviderDto>(provider);
@@ -580,7 +582,7 @@ public class ProviderServiceTests
         var updatedLicense = "1234567890";
         provider.LicenseStatus = initialStatus;
 
-        var providerToUpdateDto = mapper.Map<ProviderDto>(provider);
+        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
         providerToUpdateDto.License = updatedLicense;
 
         var expected = mapper.Map<ProviderDto>(provider);
@@ -618,7 +620,7 @@ public class ProviderServiceTests
         string updatedLicense = null;
         provider.LicenseStatus = initialStatus;
 
-        var providerToUpdateDto = mapper.Map<ProviderDto>(provider);
+        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
         providerToUpdateDto.License = updatedLicense;
 
         var expected = mapper.Map<ProviderDto>(provider);
@@ -641,7 +643,7 @@ public class ProviderServiceTests
     public async Task Update_WhenUsersIdAndProvidersIdDoesntMatch_ReturnsNull()
     {
         // Arrange
-        var changedEntity = ProviderDtoGenerator.Generate();
+        var changedEntity = mapper.Map<ProviderUpdateDto>(ProviderDtoGenerator.Generate());
         var noneExistingUserId = Guid.NewGuid().ToString();
 
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
@@ -652,6 +654,30 @@ public class ProviderServiceTests
 
         // Assert
         Assert.Null(result);
+    }
+
+    [TestCase(OwnershipType.State)]
+    [TestCase(OwnershipType.Common)]
+    [TestCase(OwnershipType.Private)]
+    public async Task Update_Always_KeepsOwnershipTypeNotChanged(OwnershipType ownershipType)
+    {
+        // Arrange
+        var provider = fakeProviders.RandomItem();
+        provider.Ownership = ownershipType;
+
+        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
+        var expectedProviderDto = mapper.Map<ProviderDto>(provider);
+
+        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+            .ReturnsAsync(provider);
+        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+            .ReturnsAsync(1);
+
+        // Act
+        var result = await providerService.Update(providerToUpdateDto, providerToUpdateDto.UserId).ConfigureAwait(false);
+
+        // Assert
+        TestHelper.AssertDtosAreEqual(expectedProviderDto, result);
     }
 
     #endregion

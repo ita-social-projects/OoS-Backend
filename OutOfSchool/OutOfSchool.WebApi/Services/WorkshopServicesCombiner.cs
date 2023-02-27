@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
+using Elasticsearch.Net;
 using Nest;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository;
@@ -22,6 +23,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     private readonly IMinistryAdminService ministryAdminService;
     private readonly IRegionAdminService regionAdminService;
     private readonly ICodeficatorService codeficatorService;
+    private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
     private readonly IMapper mapper;
 
     public WorkshopServicesCombiner(
@@ -35,6 +37,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService,
         ICodeficatorService codeficatorService,
+        IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
         IMapper mapper)
     {
         this.workshopService = workshopService;
@@ -47,6 +50,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
         this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
         this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
+        this.esProvider = esProvider ?? throw new ArgumentNullException(nameof(esProvider));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
@@ -110,16 +114,14 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider)
+    public async Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle)
     {
-        var workshops = await workshopService.PartialUpdateByProvider(provider).ConfigureAwait(false);
+        var workshops = await workshopService.UpdateProviderTitle(providerId, providerTitle).ConfigureAwait(false);
 
         foreach (var workshop in workshops)
         {
-            await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
-                    ElasticsearchSyncEntity.Workshop,
-                    workshop.Id,
-                    ElasticsearchSyncOperation.Update)
+            await esProvider
+                .PartialUpdateEntityAsync(workshop.Id, new WorkshopProviderTitleES { ProviderTitle = providerTitle })
                 .ConfigureAwait(false);
         }
 
