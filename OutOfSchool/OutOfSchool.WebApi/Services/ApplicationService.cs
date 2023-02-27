@@ -30,6 +30,11 @@ public class ApplicationService : IApplicationService, INotificationReciever
     private readonly IRegionAdminService regionAdminService;
     private readonly ICodeficatorService codeficatorService;
 
+    private readonly string errorNullWorkshopMessage = "Operation failed. Workshop in Application dto is null";
+    private readonly string errorBlockedWorkshopMessage = "Unable to create a new application for a workshop because workshop is blocked";
+    private readonly string errorClosedWorkshopMessage = "Unable to create a new application for a workshop because workshop status is closed";
+    private readonly string errorNoAllowedNewApplicationMessage = "Unable to create a new application for a child because there's already appropriate status were found in this workshop";
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationService"/> class.
     /// </summary>
@@ -594,7 +599,20 @@ public class ApplicationService : IApplicationService, INotificationReciever
             return workshop.Status == WorkshopStatus.Open;
         }
 
-        logger.LogInformation("Operation failed. Workshop in Application dto is null");
+        logger.LogError(this.errorNullWorkshopMessage);
+        throw new ArgumentException(@"Workshop in Application dto is null.", nameof(workshopId));
+    }
+
+    private async Task<bool> IsBlokedWorkshop(Guid workshopId)
+    {
+        var workshop = await combinedWorkshopService.GetById(workshopId).ConfigureAwait(false);
+
+        if (workshop is not null)
+        {
+            return workshop.IsBlocked;
+        }
+
+        logger.LogError(this.errorNullWorkshopMessage);
         throw new ArgumentException(@"Workshop in Application dto is null.", nameof(workshopId));
     }
 
@@ -650,7 +668,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         if (providerAdmin == null)
         {
-            logger.LogInformation("ProviderAdmin with userId = {UserId} not exists", userId);
+            logger.LogError("ProviderAdmin with userId = {UserId} not exists", userId);
 
             throw new ArgumentException($"There is no providerAdmin with userId = {userId}");
         }
@@ -721,14 +739,18 @@ public class ApplicationService : IApplicationService, INotificationReciever
     {
         await currentUserService.UserHasRights(new ParentRights(applicationDto.ParentId, applicationDto.ChildId));
 
+        if (await IsBlokedWorkshop(applicationDto.WorkshopId))
+        {
+            logger.LogError(this.errorBlockedWorkshopMessage);
+            throw new ArgumentException(this.errorBlockedWorkshopMessage);
+        }
+
         var isNewApplicationAllowed = await IsNewApplicationAllowed(applicationDto.WorkshopId).ConfigureAwait(false);
 
         if (!isNewApplicationAllowed)
         {
-            logger.LogInformation(
-                "Unable to create a new application for a workshop because workshop status is closed");
-            throw new ArgumentException(
-                "Unable to create a new application for a workshop because workshop status is closed.");
+            logger.LogError(this.errorClosedWorkshopMessage);
+            throw new ArgumentException(this.errorClosedWorkshopMessage);
         }
 
         var allowedNewApplicationForChild =
@@ -737,10 +759,8 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         if (!allowedNewApplicationForChild)
         {
-            logger.LogInformation(
-                "Unable to create a new application for a child because there's already appropriate status were found in this workshop");
-            throw new ArgumentException(
-                "Unable to create a new application for a child because there's already appropriate status were found in this workshop.");
+            logger.LogError(this.errorNoAllowedNewApplicationMessage);
+            throw new ArgumentException(this.errorNoAllowedNewApplicationMessage);
         }
 
         (bool IsCorrect, int SecondsRetryAfter) resultOfCheck =
