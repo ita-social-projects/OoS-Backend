@@ -46,21 +46,21 @@ public static class GettingUserProperties
         return user?.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role);
     }
 
-    public static Subrole GetUserSubrole(HttpContext httpContext)
+    public static ProviderSubRole GetUserProviderSubRole(HttpContext httpContext)
     {
-        var userSubroleName = GetUserSubrole(httpContext?.User);
+        var userProviderSubRole = GetUserProviderSubRole(httpContext?.User);
 
-        if (userSubroleName is null)
+        if (userProviderSubRole is null)
         {
             ThrowAuthenticationException(nameof(IdentityResourceClaimsTypes.Subrole));
         }
 
-        Subrole userSubrole = (Subrole)Enum.Parse(typeof(Subrole), userSubroleName, true);
+        var userSubRole = (ProviderSubRole)Enum.Parse(typeof(ProviderSubRole), userProviderSubRole, true);
 
-        return userSubrole;
+        return userSubRole;
     }
 
-    public static string GetUserSubrole(ClaimsPrincipal user)
+    public static string GetUserProviderSubRole(ClaimsPrincipal user)
     {
         return user?.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Subrole);
     }

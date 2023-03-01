@@ -112,7 +112,7 @@ public class ValidationServiceTests
             .ReturnsAsync(new List<Workshop>() { workshopWithProviderWithValidUserId });
 
         // Act
-        var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, workshopWithProviderWithValidUserId.Id, Subrole.None).ConfigureAwait(false);
+        var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, workshopWithProviderWithValidUserId.Id, ProviderSubRole.Provider).ConfigureAwait(false);
 
         // Assert
         Assert.IsTrue(result);
@@ -136,7 +136,7 @@ public class ValidationServiceTests
             .ReturnsAsync(new List<Workshop>() { workshopWithProviderWithAnotherUserId });
 
         // Act
-        var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, workshopWithProviderWithAnotherUserId.Id, Subrole.None).ConfigureAwait(false);
+        var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, workshopWithProviderWithAnotherUserId.Id, ProviderSubRole.Provider).ConfigureAwait(false);
 
         // Assert
         Assert.IsFalse(result);
@@ -151,7 +151,7 @@ public class ValidationServiceTests
             .ReturnsAsync(new List<Workshop>());
 
         // Act
-        var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, Guid.NewGuid(), Subrole.None).ConfigureAwait(false);
+        var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, Guid.NewGuid(), ProviderSubRole.Provider).ConfigureAwait(false);
 
         // Assert
         Assert.IsFalse(result);

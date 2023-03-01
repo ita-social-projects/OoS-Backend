@@ -58,7 +58,7 @@ public class CurrentUserService : ICurrentUserService
 
     public bool IsDeputyOrProviderAdmin() =>
         IsInRole(Role.Provider) &&
-        (IsInSubRole(Subrole.ProviderDeputy) || IsInSubRole(Subrole.ProviderAdmin));
+        (IsInSubRole(ProviderSubRole.Deputy) || IsInSubRole(ProviderSubRole.Manager));
 
     public bool IsAdmin() => IsInRole(Role.TechAdmin) || IsInRole(Role.MinistryAdmin) || IsInRole(Role.RegionAdmin);
 
@@ -246,7 +246,7 @@ public class CurrentUserService : ICurrentUserService
 
     private async Task<bool> ProviderDeputyHasRights(Guid providerId)
     {
-        if (!IsInSubRole(Subrole.ProviderDeputy))
+        if (!IsInSubRole(ProviderSubRole.Deputy))
         {
             return false;
         }
@@ -313,7 +313,7 @@ public class CurrentUserService : ICurrentUserService
         return isUserRelatedAdmin;
     }
 
-    private bool IsInSubRole(Subrole subRole) =>
+    private bool IsInSubRole(ProviderSubRole subRole) =>
         user?.Identities
             .Any(identity =>
                 identity.HasClaim(claim =>
@@ -321,5 +321,5 @@ public class CurrentUserService : ICurrentUserService
                         claim.Type,
                         IdentityResourceClaimsTypes.Subrole,
                         StringComparison.OrdinalIgnoreCase) &&
-                    claim.Value.ToEnum(Subrole.None).Equals(subRole))) ?? false;
+                    claim.Value.ToEnum(ProviderSubRole.Provider).Equals(subRole))) ?? false;
 }

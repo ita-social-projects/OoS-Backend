@@ -13,7 +13,7 @@ public class GettingUserPropertiesTest
 {
     private readonly Claim userIdClaim = new Claim(IdentityResourceClaimsTypes.Sub, "38776161-734b-4aec-96eb-4a1f87a2e5f3");
     private readonly Claim userRoleClaim = new Claim(IdentityResourceClaimsTypes.Role, "Parent");
-    private readonly Claim userSubroleClaim = new Claim(IdentityResourceClaimsTypes.Subrole, "None");
+    private readonly Claim userSubroleClaim = new Claim(IdentityResourceClaimsTypes.Subrole, "Provider");
     private Mock<HttpContext> httpContextMoq;
 
     [SetUp]
@@ -73,7 +73,7 @@ public class GettingUserPropertiesTest
     public void GetUserSubrole_ByHttpContext_ReturnsClaim()
     {
         // Assert
-        Assert.AreEqual(userSubroleClaim.Value, GettingUserProperties.GetUserSubrole(httpContextMoq.Object).ToString());
+        Assert.AreEqual(userSubroleClaim.Value, GettingUserProperties.GetUserProviderSubRole(httpContextMoq.Object).ToString());
     }
 
     [Test]
@@ -81,13 +81,13 @@ public class GettingUserPropertiesTest
     {
         // Assert
         Assert.Throws<AuthenticationException>(
-            () => GettingUserProperties.GetUserSubrole((HttpContext)null));
+            () => GettingUserProperties.GetUserProviderSubRole((HttpContext)null));
     }
 
     [Test]
     public void GetUserSubrole_ByClaimsPrincipal_ReturnNull()
     {
         // Assert
-        Assert.IsNull(GettingUserProperties.GetUserSubrole((ClaimsPrincipal)null));
+        Assert.IsNull(GettingUserProperties.GetUserProviderSubRole((ClaimsPrincipal)null));
     }
 }

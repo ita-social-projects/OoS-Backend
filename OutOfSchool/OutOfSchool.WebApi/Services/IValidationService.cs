@@ -26,7 +26,7 @@ public interface IValidationService
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="bool"/>: true if the User is owner of the specified workshopId, false if not or Workshop with specified workshopId was not found.</returns>
     /// <exception cref="InvalidOperationException">If the logic of creating providers was compromised.</exception>
-    Task<bool> UserIsWorkshopOwnerAsync(string userId, Guid workshopId, Subrole userSubrole = Subrole.None);
+    Task<bool> UserIsWorkshopOwnerAsync(string userId, Guid workshopId, ProviderSubRole userSubrole = ProviderSubRole.Provider);
 
     /// <summary>
     /// Check if Parent with specified parentId has the same userId.

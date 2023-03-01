@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.PermissionsModule;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
@@ -118,8 +119,8 @@ public class ProviderController : ControllerBase
     {
         // TODO: localize messages from the conrollers.
         var userId = GettingUserProperties.GetUserId(User);
-        var isDeputyOrAdmin = !string.IsNullOrEmpty(GettingUserProperties.GetUserSubrole(User)) &&
-                              GettingUserProperties.GetUserSubrole(User) != "None";
+        var isDeputyOrAdmin = !string.IsNullOrEmpty(GettingUserProperties.GetUserProviderSubRole(User)) &&
+                              GettingUserProperties.GetUserProviderSubRole(User) != Enum.GetName(ProviderSubRole.Provider);
         if (userId == null)
         {
             BadRequest("Invalid user information.");

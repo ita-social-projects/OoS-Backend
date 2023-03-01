@@ -76,11 +76,11 @@ public class ChatWorkshopHub : Hub
         var userRoleName = GettingUserProperties.GetUserRole(Context.User);
         LogErrorThrowExceptionIfPropertyIsNull(userRoleName, nameof(userRoleName));
 
-        var userSubroleName = GettingUserProperties.GetUserSubrole(Context.User);
+        var userSubroleName = GettingUserProperties.GetUserProviderSubRole(Context.User);
         LogErrorThrowExceptionIfPropertyIsNull(userSubroleName, nameof(userSubroleName));
 
         Role userRole = (Role)Enum.Parse(typeof(Role), userRoleName, true);
-        Subrole userSubrole = (Subrole)Enum.Parse(typeof(Subrole), userSubroleName, true);
+        var userSubrole = (ProviderSubRole)Enum.Parse(typeof(ProviderSubRole), userSubroleName, true);
 
         logger.LogDebug($"New Hub-connection established. {nameof(userId)}: {userId}, {nameof(userRoleName)}: {userRoleName}");
 
@@ -96,7 +96,7 @@ public class ChatWorkshopHub : Hub
         }
         else
         {
-            if (userSubrole == Subrole.ProviderAdmin)
+            if (userSubrole == ProviderSubRole.Manager)
             {
                 var providersAdmins = await providerAdminRepository.GetByFilter(p => p.UserId == userId && !p.IsDeputy).ConfigureAwait(false);
                 var workshopsIds = providersAdmins.SelectMany(admin => admin.ManagedWorkshops, (admin, workshops) => new { workshops }).Select(x => x.workshops.Id);
@@ -250,9 +250,9 @@ public class ChatWorkshopHub : Hub
 
         if (userRoleIsProvider)
         {
-            var userSubroleName = GettingUserProperties.GetUserSubrole(Context.User);
+            var userSubroleName = GettingUserProperties.GetUserProviderSubRole(Context.User);
             LogErrorThrowExceptionIfPropertyIsNull(userSubroleName, nameof(userSubroleName));
-            Subrole userSubrole = (Subrole)Enum.Parse(typeof(Subrole), userSubroleName, true);
+            var userSubrole = (ProviderSubRole)Enum.Parse(typeof(ProviderSubRole), userSubroleName, true);
 
             return validationService.UserIsWorkshopOwnerAsync(userId, workshopId, userSubrole);
         }

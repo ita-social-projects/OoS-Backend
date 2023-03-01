@@ -4,9 +4,9 @@ using Newtonsoft.Json.Converters;
 namespace OutOfSchool.Services.Enums;
 
 [JsonConverter(typeof(StringEnumConverter))]
-public enum Subrole
+public enum ProviderSubRole
 {
-    None,
-    ProviderDeputy,
-    ProviderAdmin,
+    Provider,
+    Deputy,
+    Manager,
 }
