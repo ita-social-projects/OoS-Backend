@@ -1,20 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.Common.PermissionsModule;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Extensions;
+using Microsoft.FeatureManagement.Mvc;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Teachers;
-using OutOfSchool.WebApi.Models.Workshop;
-using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util.ControllersResultsHelpers;
 
 namespace OutOfSchool.WebApi.Controllers.V2;
@@ -23,6 +12,7 @@ namespace OutOfSchool.WebApi.Controllers.V2;
 /// Controller with CRUD operations for a Teacher entity.
 /// </summary>
 [ApiController]
+[FeatureGate(nameof(Feature.Images))]
 [ApiVersion("2.0")]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 [HasPermission(Permissions.SystemManagement)]

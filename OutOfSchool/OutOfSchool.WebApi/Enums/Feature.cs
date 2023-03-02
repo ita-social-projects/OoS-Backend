@@ -13,4 +13,5 @@ public enum Feature
     Release1,
     Release2,
     Release3,
+    Images,
 }
