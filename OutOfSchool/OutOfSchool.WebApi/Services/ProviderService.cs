@@ -282,18 +282,9 @@ public class ProviderService : IProviderService, INotificationReciever
         provider.StatusReason = dto.StatusReason;
         await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
 
-        // TODO: Implement updating status or license of provider's workshops
-        // same in UpdateProviderWithActionBeforeSavingChanges method
-
-        // var workshops = await workshopServiceCombiner
-        //    .PartialUpdateByProvider(provider)
-        //    .ConfigureAwait(false);
-        // foreach (var workshop in workshops)
-        // {
-        //    logger.LogInformation($"Provider's properties with Id = {provider?.Id} " +
-        //                          $"in workshops with Id = {workshop?.Id} updated successfully.");
-        // }
         logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.Status}");
+
+        await UpdateWorkshopsProviderStatus(dto.ProviderId, dto.Status).ConfigureAwait(false);
 
         await SendNotification(provider, NotificationAction.Update, true, false).ConfigureAwait(false);
 
@@ -496,7 +487,6 @@ public class ProviderService : IProviderService, INotificationReciever
 
         try
         {
-            var dataSynchronized = false;
             var checkProvider = await providerRepository.GetById(providerUpdateDto.Id).ConfigureAwait(false);
 
             if (checkProvider?.UserId != userId)
@@ -546,8 +536,6 @@ public class ProviderService : IProviderService, INotificationReciever
                                                   $"in workshops with Id = {workshop?.Id} updated successfully.");
                         }
 
-                        dataSynchronized = true;
-
                         return checkProvider;
                     }).ConfigureAwait(false);
                 }
@@ -567,26 +555,14 @@ public class ProviderService : IProviderService, INotificationReciever
 
             logger.LogInformation("Provider with Id = {CheckProviderId} was updated successfully", checkProvider?.Id);
 
+            if (statusChanged)
+            {
+                await UpdateWorkshopsProviderStatus(providerUpdateDto.Id, providerUpdateDto.Status)
+                    .ConfigureAwait(false);
+            }
+
             if (statusChanged || licenseChanged)
             {
-                // TODO: Improve logic with duplicating the code below
-                if (!dataSynchronized)
-                {
-                    // TODO: Implement updating status or license of provider's workshops
-                    // and remove "dataSynchronized"
-                    // same in UpdateStatus method
-
-                    // var workshops = await workshopServiceCombiner
-                    //        .UpdateProviderTitle(providerUpdateDto.Id, providerUpdateDto.FullTitle)
-                    //        .ConfigureAwait(false);
-
-                    // foreach (var workshop in workshops)
-                    // {
-                    //    logger.LogInformation($"Provider's properties with Id = {checkProvider?.Id} " +
-                    //                          $"in workshops with Id = {workshop?.Id} updated successfully.");
-                    // }
-                }
-
                 await SendNotification(checkProvider, NotificationAction.Update, statusChanged, licenseChanged)
                     .ConfigureAwait(false);
             }
@@ -791,5 +767,17 @@ public class ProviderService : IProviderService, INotificationReciever
             .ConfigureAwait(false);
 
         return regionAdminsIds;
+    }
+
+    private async Task UpdateWorkshopsProviderStatus(Guid providerId, ProviderStatus providerStatus)
+    {
+        var workshops = await workshopServiceCombiner.UpdateProviderStatus(providerId, providerStatus)
+           .ConfigureAwait(false);
+
+        foreach (var workshop in workshops)
+        {
+            logger.LogInformation($"Provider's status with Id = {providerId} " +
+                                  $"in workshops with Id = {workshop.Id} updated successfully.");
+        }
     }
 }
