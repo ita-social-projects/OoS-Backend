@@ -76,14 +76,15 @@ public class FavoriteService : IFavoriteService
     public async Task<IEnumerable<FavoriteDto>> GetAllByUser(string userId)
     {
         logger.LogInformation($"Getting Favorites by User started. Looking UserId = {userId}.");
-
-        var favorites = await favoriteRepository.GetByFilter(x => x.UserId == userId && x.Workshop.Provider.Status == ProviderStatus.Approved).ConfigureAwait(false);
-
+        
+        var favoritesQuery = await favoriteRepository.GetByFilter(x => x.UserId == userId && Provider.IsValidProviderStatus.Contains(x.Workshop.Provider.Status)).ConfigureAwait(false);
+        var favorites = favoritesQuery?.ToList();
+        
         logger.LogInformation(!favorites.Any()
             ? $"There aren't Favorites for User with Id = {userId}."
-            : $"All {favorites.Count()} records were successfully received from the Favorites table");
+            : $"Records were successfully received from the Favorites table");
 
-        return favorites.Select(x => mapper.Map<FavoriteDto>(x)).ToList();
+        return favorites.Select(x => mapper.Map<FavoriteDto>(x));
     }
 
     /// <inheritdoc/>

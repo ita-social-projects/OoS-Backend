@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
@@ -69,36 +70,27 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
     [Required(ErrorMessage = "PhoneNumber is required")]
     public string PhoneNumber { get; set; } = string.Empty;
 
-    [Required]
-    [MaxLength(180)]
-    public string Founder { get; set; } = string.Empty;
+    [Required] [MaxLength(180)] public string Founder { get; set; } = string.Empty;
 
-    [Required]
-    public OwnershipType Ownership { get; set; }
+    [Required] public OwnershipType Ownership { get; set; }
 
     public virtual ProviderType Type { get; set; }
 
-    [Required]
-    public long TypeId { get; set; }
+    [Required] public long TypeId { get; set; }
 
-    [Required]
-    public ProviderStatus Status { get; set; }
+    [Required] public ProviderStatus Status { get; set; }
 
-    [MaxLength(500)]
-    public string StatusReason { get; set; }
+    [MaxLength(500)] public string StatusReason { get; set; }
 
-    [MaxLength(30)]
-    public string License { get; set; }
+    [MaxLength(30)] public string License { get; set; }
 
     public ProviderLicenseStatus LicenseStatus { get; set; }
 
     public bool IsBlocked { get; set; } = false;
 
-    [MaxLength(500)]
-    public string BlockReason { get; set; }
+    [MaxLength(500)] public string BlockReason { get; set; }
 
-    [Required]
-    public string UserId { get; set; }
+    [Required] public string UserId { get; set; }
 
     public virtual List<Workshop> Workshops { get; set; }
 
@@ -108,11 +100,9 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
 
     public virtual Address ActualAddress { get; set; }
 
-    [Required]
-    public long LegalAddressId { get; set; }
+    [Required] public long LegalAddressId { get; set; }
 
-    [Required]
-    public virtual Address LegalAddress { get; set; }
+    [Required] public virtual Address LegalAddress { get; set; }
 
     public long? InstitutionStatusId { get; set; }
 
@@ -124,12 +114,13 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
 
     public virtual ICollection<ProviderAdmin> ProviderAdmins { get; set; }
 
-    [Required]
-    public InstitutionType InstitutionType { get; set; }
+    [Required] public InstitutionType InstitutionType { get; set; }
 
     public string CoverImageId { get; set; }
 
     public virtual List<Image<Provider>> Images { get; set; }
 
     public virtual ICollection<ProviderSectionItem> ProviderSectionItems { get; set; }
+
+    public static readonly ProviderStatus[] IsValidProviderStatus = { ProviderStatus.Approved, ProviderStatus.Recheck };
 }
