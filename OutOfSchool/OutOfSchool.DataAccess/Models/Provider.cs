@@ -122,5 +122,5 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
 
     public virtual ICollection<ProviderSectionItem> ProviderSectionItems { get; set; }
 
-    public static readonly ProviderStatus[] IsValidProviderStatus = { ProviderStatus.Approved, ProviderStatus.Recheck };
+    public static readonly ProviderStatus[] ValidProviderStatuses = { ProviderStatus.Approved, ProviderStatus.Recheck };
 }

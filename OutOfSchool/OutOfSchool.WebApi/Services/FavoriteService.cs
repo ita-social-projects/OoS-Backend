@@ -77,10 +77,10 @@ public class FavoriteService : IFavoriteService
     {
         logger.LogInformation($"Getting Favorites by User started. Looking UserId = {userId}.");
         
-        var favoritesQuery = await favoriteRepository.GetByFilter(x => x.UserId == userId && Provider.IsValidProviderStatus.Contains(x.Workshop.Provider.Status)).ConfigureAwait(false);
-        var favorites = favoritesQuery?.ToList();
+        var favoritesQuery = await favoriteRepository.GetByFilter(x => x.UserId == userId && Provider.ValidProviderStatuses.Contains(x.Workshop.Provider.Status)).ConfigureAwait(false);
+        var favorites = favoritesQuery.ToList();
         
-        logger.LogInformation(!favorites.Any()
+        logger.LogInformation(favorites.Count == 0
             ? $"There aren't Favorites for User with Id = {userId}."
             : $"Records were successfully received from the Favorites table");
 
