@@ -16,35 +16,29 @@ namespace OutOfSchool.WebApi.Services.AverageRatings;
 
 public class AverageRatingService : IAverageRatingService
 {
-    private readonly OutOfSchoolDbContext db;
     private readonly ILogger<AverageRatingService> logger;
     private readonly IMapper mapper;
     private readonly IAverageRatingRepository averageRatingRepository;
     private readonly IRatingService ratingService;
     private readonly IWorkshopRepository workshopRepository;
     private readonly IRatingRepository ratingRepository;
-    private readonly IProviderRepository providerRepository;
     private readonly IQuartzJobRepository quartzJobRepository;
 
     public AverageRatingService(
-        OutOfSchoolDbContext db,
         ILogger<AverageRatingService> logger,
         IMapper mapper,
         IAverageRatingRepository averageRatingRepository,
         IRatingService ratingService,
         IWorkshopRepository workshopRepository,
         IRatingRepository ratingRepository,
-        IProviderRepository providerRepository,
         IQuartzJobRepository quartzJobRepository)
     {
-        this.db = db;
         this.logger = logger;
         this.mapper = mapper;
         this.averageRatingRepository = averageRatingRepository;
         this.ratingService = ratingService;
         this.workshopRepository = workshopRepository;
         this.ratingRepository = ratingRepository;
-        this.providerRepository = providerRepository;
         this.quartzJobRepository = quartzJobRepository;
     }
 
