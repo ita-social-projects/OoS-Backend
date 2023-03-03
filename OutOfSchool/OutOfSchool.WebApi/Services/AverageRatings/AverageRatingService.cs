@@ -6,9 +6,11 @@ using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Common.QuartzConstants;
 using OutOfSchool.WebApi.Models;
 using System.Collections.Generic;
 using System.Drawing.Text;
+using System.Net.WebSockets;
 
 namespace OutOfSchool.WebApi.Services.AverageRatings;
 
@@ -20,6 +22,9 @@ public class AverageRatingService : IAverageRatingService
     private readonly IAverageRatingRepository averageRatingRepository;
     private readonly IRatingService ratingService;
     private readonly IWorkshopRepository workshopRepository;
+    private readonly IRatingRepository ratingRepository;
+    private readonly IProviderRepository providerRepository;
+    private readonly IQuartzJobRepository quartzJobRepository;
 
     public AverageRatingService(
         OutOfSchoolDbContext db,
@@ -27,7 +32,10 @@ public class AverageRatingService : IAverageRatingService
         IMapper mapper,
         IAverageRatingRepository averageRatingRepository,
         IRatingService ratingService,
-        IWorkshopRepository workshopRepository)
+        IWorkshopRepository workshopRepository,
+        IRatingRepository ratingRepository,
+        IProviderRepository providerRepository,
+        IQuartzJobRepository quartzJobRepository)
     {
         this.db = db;
         this.logger = logger;
@@ -35,6 +43,9 @@ public class AverageRatingService : IAverageRatingService
         this.averageRatingRepository = averageRatingRepository;
         this.ratingService = ratingService;
         this.workshopRepository = workshopRepository;
+        this.ratingRepository = ratingRepository;
+        this.providerRepository = providerRepository;
+        this.quartzJobRepository = quartzJobRepository;
     }
 
     /// <inheritdoc/>
@@ -66,48 +77,63 @@ public class AverageRatingService : IAverageRatingService
     {
         logger.LogInformation("The average ratings calculation was started.");
 
-        var lastSuccessRatingsCalculationDate = await GetLastSuccessRatingCalculationDateAsync().ConfigureAwait(false);
+        var lastSuccessQuartzJobLaunchDate = await GetLastSuccessQuartzJobLaunch().ConfigureAwait(false);
+
         var currentRatingsCalculationDate = DateTimeOffset.UtcNow;
 
-        var newAddedRatings = await ratingService.GetAllAsync(r => r.CreationTime > lastSuccessRatingsCalculationDate).ConfigureAwait(false);
+        var newAddedRatings = await GetNewRatings(lastSuccessQuartzJobLaunchDate).ConfigureAwait(false);
 
         if (newAddedRatings.Any())
         {
             var averageRatings = await RecalculateAverageRatingsAsync(newAddedRatings).ConfigureAwait(false);
 
-            var executionStrategy = db.Database.CreateExecutionStrategy();
-            await executionStrategy.Execute(SaveAverageRatings).ConfigureAwait(false);
+            try
+            {
+                await averageRatingRepository.RunInTransaction(SaveAverageRatings).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("The average ratings calculation error. The average ratings weren't saved.");
+                throw;
+            }
 
             async Task SaveAverageRatings()
             {
-                await using IDbContextTransaction transaction = await db.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
-
-                try
-                {
-                    await SaveAverageRatinsgAsync(averageRatings, currentRatingsCalculationDate).ConfigureAwait(false);
-                    await transaction.CommitAsync(cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync(cancellationToken);
-                    logger.LogError("The average ratings calculation error. The average ratings weren't saved.");
-                    throw;
-                }
+                await SaveAverageRatinsgAsync(averageRatings).ConfigureAwait(false);
             }
+
+            await SaveLastSuccessQuartzJobLaunch(currentRatingsCalculationDate).ConfigureAwait(false);
         }
 
         logger.LogInformation("The average ratings calculation was finished.");
     }
 
-    private async Task<DateTimeOffset> GetLastSuccessRatingCalculationDateAsync()
+    private async Task<DateTimeOffset> GetLastSuccessQuartzJobLaunch()
     {
-        logger.LogInformation("Getting the date of the last success rating calculation started.");
+        var job = quartzJobRepository.Get(where: x => x.Name == JobConstants.AverageRatingCalculating).SingleOrDefault();
 
-        var ratings = await averageRatingRepository.GetAll().ConfigureAwait(false);
+        return job?.LastSuccessLaunch ?? DateTimeOffset.MinValue;
+    }
 
-        logger.LogInformation("Getting the date of the last success rating calculation finished.");
+    private async Task SaveLastSuccessQuartzJobLaunch(DateTimeOffset date)
+    {
+        var job = quartzJobRepository.Get(where: x => x.Name == JobConstants.AverageRatingCalculating).SingleOrDefault();
 
-        return ratings.Any() ? ratings.Max(r => r.CreationTime) : DateTimeOffset.MinValue;
+        if (job is not null)
+        {
+            job.LastSuccessLaunch = date;
+            _ = await quartzJobRepository.Update(job).ConfigureAwait(false);
+        }
+        else
+        {
+            job = new QuartzJob() { Name = JobConstants.AverageRatingCalculating, LastSuccessLaunch = date };
+            _ = await quartzJobRepository.Create(job).ConfigureAwait(false);
+        }
+    }
+
+    private async Task<IEnumerable<RatingDto>> GetNewRatings(DateTimeOffset lastLaunchDate)
+    {
+        return await ratingService.GetAllAsync(r => r.CreationTime > lastLaunchDate).ConfigureAwait(false);
     }
 
     private async Task<Dictionary<Guid, Tuple<float, int>>> RecalculateAverageRatingsAsync(IEnumerable<RatingDto> ratings)
@@ -115,12 +141,12 @@ public class AverageRatingService : IAverageRatingService
         logger.LogInformation("The average ratings calculation started.");
 
         var workshopsIds = GetUniqueWorkshopIds(ratings);
-        var providersIds = await GetUniqueProviderIdsByWorkshopIdsAsync(workshopsIds).ConfigureAwait(false);
+        var providersIds = GetUniqueProviderIdsByWorkshopIdsAsync(workshopsIds);
 
         Dictionary<Guid, Tuple<float, int>> averageRatings = new Dictionary<Guid, Tuple<float, int>>();
 
-        averageRatings.AddRange(await CalculateWorkshopsRatingsByEntityIdsAsync(workshopsIds).ConfigureAwait(false));
-        averageRatings.AddRange(await CalculateProvidersRatingsByProvidersIdsAsync(providersIds).ConfigureAwait(false));
+        averageRatings.AddRange(CalculateWorkshopsRatingsByEntityIdsAsync(workshopsIds));
+        averageRatings.AddRange(CalculateProvidersRatingsByProvidersIdsAsync(providersIds));
 
         logger.LogInformation("The average ratings calculation finished.");
 
@@ -130,71 +156,46 @@ public class AverageRatingService : IAverageRatingService
     private IEnumerable<Guid> GetUniqueWorkshopIds(IEnumerable<RatingDto> ratings)
     {
         return ratings.Select(x => x.EntityId).Distinct();
-
     }
 
-    private async Task<IEnumerable<Guid>> GetUniqueProviderIdsByWorkshopIdsAsync(IEnumerable<Guid> workshopsIds)
+    private IEnumerable<Guid> GetUniqueProviderIdsByWorkshopIdsAsync(IEnumerable<Guid> workshopsIds)
     {
-        List<Guid> providersIds = new List<Guid>();
-
-        foreach (var workshopId in workshopsIds)
-        {
-            var workshop = await workshopRepository
-                .GetByFilterNoTracking(w => w.Id == workshopId)
-                .SingleOrDefaultAsync()
-                .ConfigureAwait(false);
-
-            if (workshop != null)
-            {
-                providersIds.Add(workshop.ProviderId);
-            }
-        }
-
-        return providersIds.Distinct();
+        return workshopRepository
+            .GetByFilterNoTracking(w => workshopsIds.Contains(w.Id))
+            .Select(w => w.ProviderId)
+            .Distinct();
     }
 
-    private async Task<Tuple<float, int>> CalculateWorkshopRatingByEntityIdAsync(Guid workshopId)
+    private Dictionary<Guid, Tuple<float, int>> CalculateWorkshopsRatingsByEntityIdsAsync(IEnumerable<Guid> workshopIds)
     {
-        var ratings = await ratingService.GetAllAsync(r => r.EntityId == workshopId).ConfigureAwait(false);
-
-        return ratings
+        return ratingRepository.GetByFilterNoTracking(r => workshopIds.Contains(r.EntityId))
+            .AsEnumerable()
             .GroupBy(r => r.EntityId)
-            .Select(g => Tuple.Create((float)g.Average(e => e.Rate), g.Count()))
-            .FirstOrDefault();
+            .ToDictionary(g => g.Key, g => Tuple.Create((float)g.Average(r => r.Rate), g.Count()));
     }
 
-    private async Task<Dictionary<Guid, Tuple<float, int>>> CalculateWorkshopsRatingsByEntityIdsAsync(IEnumerable<Guid> workshopIds)
+    private Dictionary<Guid, Tuple<float, int>> CalculateProvidersRatingsByProvidersIdsAsync(IEnumerable<Guid> providerIds)
     {
-        var ratings = new Dictionary<Guid, Tuple<float, int>>();
+        var workshops = workshopRepository.GetByFilterNoTracking(x => providerIds.Contains(x.Provider.Id));
 
-        foreach (var entityId in workshopIds)
-        {
-            ratings.Add(entityId, await CalculateWorkshopRatingByEntityIdAsync(entityId).ConfigureAwait(false));
-        }
+        var workshopsIds = workshops.Select(x => x.Id);
 
-        return ratings;
+        var providersWorkshops = workshops.Select(w => new { w.ProviderId, WorkshopId = w.Id, }).AsEnumerable();
+
+        var workshopsRatings = ratingRepository
+            .GetByFilterNoTracking(x => workshopsIds.Contains(x.EntityId))
+            .Select(r => new { WorkshopId = r.EntityId, r.Rate, })
+            .AsEnumerable();
+
+        var providersRatings = providersWorkshops
+            .Join(workshopsRatings, w => w.WorkshopId, r => r.WorkshopId, (w, r) => new { w.ProviderId, r.Rate })
+            .GroupBy(x => x.ProviderId)
+            .ToDictionary(g => g.Key, g => new Tuple<float, int>((float)g.Average(x => x.Rate), g.Count()));
+
+        return providersRatings;
     }
 
-    private async Task<Tuple<float, int>> CalculateProviderRatingByEntityIdAsync(Guid providerId)
-    {
-        var workshopsRatings = await ratingService.GetAllWorshopsRatingByProvider(providerId).ConfigureAwait(false);
-
-        return new Tuple<float, int>((float)workshopsRatings.Average(w => w.Rate), workshopsRatings.Count());
-    }
-
-    public async Task<Dictionary<Guid, Tuple<float, int>>> CalculateProvidersRatingsByProvidersIdsAsync(IEnumerable<Guid> providerIds)
-    {
-        var providers = new Dictionary<Guid, Tuple<float, int>>();
-
-        foreach (var providerId in providerIds)
-        {
-            providers.Add(providerId, await CalculateProviderRatingByEntityIdAsync(providerId).ConfigureAwait(false));
-        }
-
-        return providers;
-    }
-
-    private async Task SaveAverageRatinsgAsync(Dictionary<Guid, Tuple<float, int>> ratings, DateTimeOffset date)
+    private async Task SaveAverageRatinsgAsync(Dictionary<Guid, Tuple<float, int>> ratings)
     {
         logger.LogInformation("Saving the average ratings was started.");
 
@@ -206,7 +207,6 @@ public class AverageRatingService : IAverageRatingService
             {
                 entity.Rate = rating.Value.Item1;
                 entity.RateQuantity = rating.Value.Item2;
-                entity.CreationTime = date;
                 await averageRatingRepository.Update(entity).ConfigureAwait(false);
             }
             else
@@ -218,7 +218,6 @@ public class AverageRatingService : IAverageRatingService
                             Rate = rating.Value.Item1,
                             RateQuantity = rating.Value.Item2,
                             EntityId = rating.Key,
-                            CreationTime = date,
                         })
                     .ConfigureAwait(false);
             }

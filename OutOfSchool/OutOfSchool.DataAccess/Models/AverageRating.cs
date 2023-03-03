@@ -19,7 +19,4 @@ public class AverageRating : IKeyedEntity<long>
     [Required]
     [Range(1, long.MaxValue, ErrorMessage = "The EntityId field should be bigger than 0")]
     public Guid EntityId { get; set; }
-
-    [Required]
-    public DateTimeOffset CreationTime { get; set; }
 }
