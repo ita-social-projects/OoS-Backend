@@ -1,11 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.Common.PermissionsModule;
+﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
-using OutOfSchool.WebApi.Services.SubordinationStructure;
 
 namespace OutOfSchool.WebApi.Controllers.V1.SubordinationStructure;
 

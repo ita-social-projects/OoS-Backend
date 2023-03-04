@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
+using Nest;
 using OutOfSchool.Redis;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
 
 namespace OutOfSchool.WebApi.Services.SubordinationStructure;
@@ -59,30 +62,50 @@ public class InstitutionService : IInstitutionService
 
         var institutions = await cache.GetOrAddAsync(cacheKey, GetAllFromDatabase);
 
-        return !filterNonGovernment ? institutions : institutions.Where(i => !i.Title.Equals("Інше", StringComparison.OrdinalIgnoreCase)).ToList();
+        var filterPredicate = await PredicateBuild(filterNonGovernment);
+        institutions = institutions.Where(filterPredicate).ToList();
+
+        logger.LogInformation(institutions.Count == 0
+            ? "Institution table is empty."
+            : $"All {institutions.Count} records were successfully received from the Institution table");
+
+        return institutions;
     }
 
     /// <inheritdoc/>
     public async Task<List<InstitutionDto>> GetAllFromDatabase()
     {
         var institutions = await repository.GetAll().ConfigureAwait(false);
+        return institutions.Select(institution => mapper.Map<InstitutionDto>(institution)).ToList();
+    }
+
+    private async Task<Func<InstitutionDto, bool>> PredicateBuild(bool filterNonGovernment)
+    {
+        var predicate = PredicateBuilder.True<InstitutionDto>();
+
+        if (filterNonGovernment)
+        {
+            predicate = predicate.And(x => x.IsGovernment);
+        }
+
+        Guid filteredInstitutionId = Guid.Empty;
 
         if (currentUserService.IsMinistryAdmin())
         {
             var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
-            institutions = institutions.Where(i => i.Id == ministryAdmin.InstitutionId);
+            filteredInstitutionId = ministryAdmin.InstitutionId;
         }
-
-        if (currentUserService.IsRegionAdmin())
+        else if (currentUserService.IsRegionAdmin())
         {
             var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
-            institutions = institutions.Where(i => i.Id == regionAdmin.InstitutionId);
+            filteredInstitutionId = regionAdmin.InstitutionId;
         }
 
-        logger.LogInformation(!institutions.Any()
-            ? "Institution table is empty."
-            : $"All {institutions.Count()} records were successfully received from the Institution table");
+        if (filteredInstitutionId != Guid.Empty)
+        {
+            predicate = predicate.And(i => i.Id == filteredInstitutionId);
+        }
 
-        return institutions.Select(institution => mapper.Map<InstitutionDto>(institution)).ToList();
+        return predicate.Compile();
     }
 }

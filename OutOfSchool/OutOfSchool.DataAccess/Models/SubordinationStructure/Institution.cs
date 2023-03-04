@@ -15,5 +15,7 @@ public class Institution : IKeyedEntity<Guid>
     [Range(1, int.MaxValue)]
     public int NumberOfHierarchyLevels { get; set; }
 
+    public bool IsGovernment { get; set; }
+
     public virtual List<Provider> RelatedProviders { get; set; }
 }
