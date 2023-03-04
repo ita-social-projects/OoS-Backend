@@ -83,10 +83,7 @@ public class InstitutionService : IInstitutionService
     {
         var predicate = PredicateBuilder.True<InstitutionDto>();
 
-        if (filterNonGovernment)
-        {
-            predicate = predicate.And(x => x.IsGovernment);
-        }
+        predicate = filterNonGovernment ? predicate.And(x => x.IsGovernment) : predicate;
 
         Guid filteredInstitutionId = Guid.Empty;
 
@@ -101,10 +98,7 @@ public class InstitutionService : IInstitutionService
             filteredInstitutionId = regionAdmin.InstitutionId;
         }
 
-        if (filteredInstitutionId != Guid.Empty)
-        {
-            predicate = predicate.And(i => i.Id == filteredInstitutionId);
-        }
+        predicate = filteredInstitutionId.Equals(Guid.Empty) ? predicate : predicate.And(i => i.Id == filteredInstitutionId);
 
         return predicate.Compile();
     }
