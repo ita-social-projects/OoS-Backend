@@ -1,9 +1,7 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
-using Elasticsearch.Net;
-using Nest;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
@@ -263,6 +261,21 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         recipientIds.AddRange(appliedUsersIds);
 
         return recipientIds.Distinct();
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<ShortEntityDto>> UpdateProviderStatus(Guid providerId, ProviderStatus providerStatus)
+    {
+        var shortWorkshops = await workshopService.GetWorkshopListByProviderId(providerId).ConfigureAwait(false);
+
+        foreach (var workshop in shortWorkshops)
+        {
+            await esProvider
+                .PartialUpdateEntityAsync(workshop.Id, new WorkshopProviderStatusES { ProviderStatus = providerStatus })
+                .ConfigureAwait(false);
+        }
+
+        return shortWorkshops;
     }
 
     private bool IsFilterValid(WorkshopFilter filter)
