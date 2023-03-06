@@ -114,4 +114,12 @@ public interface IWorkshopServicesCombiner
     /// <param name="workshopId">WorkshopId to be searched by.</param>
     /// <returns>Guid id for the specified provider.</returns>
     Task<Guid> GetWorkshopProviderId(Guid workshopId);
+
+    /// <summary>
+    /// Update ProviderStatus property in all workshops with specified provider.
+    /// </summary>
+    /// <param name="providerId">Id of Provider to be searched by.</param>
+    /// <param name="providerStatus">ProviderStatus of Provider to be changed.</param>
+    /// <returns><see cref="IEnumerable{T}"/> of Workshops for the specified provider.</returns>
+    Task<IEnumerable<ShortEntityDto>> UpdateProviderStatus(Guid providerId, ProviderStatus providerStatus);
 }

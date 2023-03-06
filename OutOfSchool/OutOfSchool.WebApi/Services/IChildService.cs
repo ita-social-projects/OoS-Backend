@@ -27,6 +27,17 @@ public interface IChildService
     Task<ChildDto> CreateChildForUser(ChildDto childDto, string userId);
 
     /// <summary>
+    /// Create the list of the children for specified user.
+    /// If child's property ParentId is not equal to the parent's Id that was found by specified userId,
+    /// the child's property will be changed to the proper value: parent's Id that was found.
+    /// </summary>
+    /// <param name="childrenDtos">The list of the children to add.</param>
+    /// <param name="userId">The key in the User table.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The result contains a <see cref="ChildrenCreationResponse"/> that was created.</returns>
+    Task<ChildrenCreationResultDto> CreateChildrenForUser(List<ChildDto> childrenDtos, string userId);
+
+    /// <summary>
     /// Get all children from the database.
     /// </summary>
     /// <param name="filter">Filter to get a part of all children that were found.</param>

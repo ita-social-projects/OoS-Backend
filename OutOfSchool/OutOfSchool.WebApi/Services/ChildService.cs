@@ -7,10 +7,12 @@ using AutoMapper;
 using Google.Type;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Nest;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.SocialGroup;
@@ -30,6 +32,7 @@ public class ChildService : IChildService
     private readonly IEntityRepository<long, SocialGroup> socialGroupRepository;
     private readonly ILogger<ChildService> logger;
     private readonly IMapper mapper;
+    private readonly IOptions<ParentConfig> parentConfig;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChildService"/> class.
@@ -39,13 +42,15 @@ public class ChildService : IChildService
     /// <param name="socialGroupRepository">Repository for the social groups.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Automapper DI service.</param>
+    /// <param name="parentConfig">Parent configuration.</param>
     public ChildService(
         IEntityRepository<Guid, Child> childRepository,
         IParentRepository parentRepository,
         IEntityRepository<long, SocialGroup> socialGroupRepository,
         ILogger<ChildService> logger,
         IMapper mapper,
-        IApplicationRepository applicationRepository)
+        IApplicationRepository applicationRepository,
+        IOptions<ParentConfig> parentConfig)
     {
         this.childRepository = childRepository ?? throw new ArgumentNullException(nameof(childRepository));
         this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
@@ -55,6 +60,7 @@ public class ChildService : IChildService
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.applicationRepository =
             applicationRepository ?? throw new ArgumentNullException(nameof(applicationRepository));
+        this.parentConfig = parentConfig ?? throw new ArgumentNullException(nameof(parentConfig));
     }
 
     /// <inheritdoc/>
@@ -105,6 +111,72 @@ public class ChildService : IChildService
             $"Child with Id:{newChild.Id} ({nameof(Child.ParentId)}:{newChild.ParentId}, {nameof(userId)}:{userId}) was created successfully.");
 
         return mapper.Map<ChildDto>(newChild);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ChildrenCreationResultDto> CreateChildrenForUser(List<ChildDto> childrenDtos, string userId)
+    {
+        var parent = (await parentRepository
+            .GetByFilter(p => p.UserId == userId)
+            .ConfigureAwait(false))
+            .SingleOrDefault()
+            ?? throw new UnauthorizedAccessException($"Trying to create a new children the Parent with {nameof(userId)}:{userId} was not found.");
+
+        var parentChildrenCount = (await GetChildrenListByParentId(parent.Id, false).ConfigureAwait(false))?.Count;
+
+        var children = new ChildrenCreationResultDto()
+        {
+            Parent = mapper.Map<ParentDTO>(parent),
+        };
+
+        foreach (var childDto in childrenDtos)
+        {
+            try
+            {
+                if (parentChildrenCount < parentConfig.Value.ChildrenMaxNumber)
+                {
+                    var child = await CreateChildForUser(childDto, userId).ConfigureAwait(false);
+                    children.ChildrenCreationResults.Add(CreateChildResult(child));
+                    parentChildrenCount++;
+                }
+                else
+                {
+                    children.ChildrenCreationResults
+                        .Add(CreateChildResult(
+                            childDto,
+                            false,
+                            $"Refused to create a new child with {nameof(Child.ParentId)}:{childDto.ParentId}, {nameof(userId)}:{userId}: " +
+                            $"the limit ({parentConfig.Value.ChildrenMaxNumber}) of the children for parents was reached."));
+                }
+            }
+            catch (Exception ex) when (ex is ArgumentNullException
+                || ex is ArgumentException
+                || ex is UnauthorizedAccessException
+                || ex is DbUpdateException)
+            {
+                children.ChildrenCreationResults.Add(CreateChildResult(childDto, false, ex.Message));
+                logger.LogDebug(
+                    $"There is an error while creating a new child with {nameof(Child.ParentId)}:{childDto.ParentId}, {nameof(userId)}:{userId}: {ex.Message}.");
+            }
+            catch (Exception ex)
+            {
+                children.ChildrenCreationResults.Add(CreateChildResult(childDto, false));
+                logger.LogDebug(
+                    $"There is an error while creating a new child with {nameof(Child.ParentId)}:{childDto.ParentId}, {nameof(userId)}:{userId}: {ex.Message}.");
+            }
+        }
+
+        ChildCreationResult CreateChildResult(ChildDto childDto, bool isSuccess = true, string message = null)
+        {
+            return new ChildCreationResult()
+            {
+                Child = childDto,
+                IsSuccess = isSuccess,
+                Message = message,
+            };
+        }
+
+        return children;
     }
 
     /// <inheritdoc/>
