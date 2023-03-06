@@ -14,4 +14,6 @@ public class FeatureManagementConfig
     public bool Release2 { get; set; }
 
     public bool Release3 { get; set; }
+
+    public bool Images { get; set; }
 }

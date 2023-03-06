@@ -1,26 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
-using OutOfSchool.Common.PermissionsModule;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.Images;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Config.Images;
-using OutOfSchool.WebApi.Extensions;
+using Microsoft.FeatureManagement.Mvc;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Services.Images;
-using OutOfSchool.WebApi.Util;
 using OutOfSchool.WebApi.Util.ControllersResultsHelpers;
 
 namespace OutOfSchool.WebApi.Controllers.V2;
@@ -29,6 +13,7 @@ namespace OutOfSchool.WebApi.Controllers.V2;
 /// Controller with CRUD operations for Workshop entity.
 /// </summary>
 [ApiController]
+[FeatureGate(nameof(Feature.Images))]
 [ApiVersion("2.0")]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class WorkshopController : ControllerBase

@@ -34,6 +34,7 @@ public static class SwaggerExtensions
                 // Set the comments path for the Swagger JSON and UI.
                 c.IncludeXmlComments(XmlCommentsFilePath);
 
+                c.DocumentFilter<SwaggerFeatureGateFilter>();
                 c.OperationFilter<AuthorizeCheckOperationFilter>();
                 c.AddSecurityDefinition(config.SecurityDefinitions.Title, new OpenApiSecurityScheme
                 {
