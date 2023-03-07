@@ -14,7 +14,7 @@ INSERT INTO Institutions (Id, Title, NumberOfHierarchyLevels, IsGovernment)
 VALUES (UUID_TO_BIN("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"), "МОН", 2, 1)
 , (UUID_TO_BIN("55bef501-0838-493c-b5f2-7fead48fd8de"), "МКІП", 4, 1)
 , (UUID_TO_BIN("b67a4f29-728e-4bb0-bb42-4a9d7e0bd90a"), "Мінспорт", 2, 1)
-, (UUID_TO_BIN("c301afc9-585d-4a4b-b2d3-a1e05d18aeb5"), "Інше", 1, 0);
+, (UUID_TO_BIN("c301afc9-585d-4a4b-b2d3-a1e05d18aeb5"), "Не підпорядкований міністерству", 1, 0);
 
 #InstitutionFieldDescriptions
 
