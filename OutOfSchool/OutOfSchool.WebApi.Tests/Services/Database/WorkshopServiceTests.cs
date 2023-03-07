@@ -8,8 +8,10 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
+//using Nest;
 using NUnit.Framework;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -18,6 +20,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
 
@@ -29,37 +32,37 @@ public class WorkshopServiceTests
     private IWorkshopService workshopService;
     private Mock<IWorkshopRepository> workshopRepository;
     private Mock<IEntityRepository<long, DateTimeRange>> dateTimeRangeRepository;
-    private Mock<IRatingService> ratingService;
     private Mock<ITeacherService> teacherService;
     private Mock<ILogger<WorkshopService>> logger;
     private Mock<IMapper> mapperMock;
     private IMapper mapper;
     private Mock<IImageDependentEntityImagesInteractionService<Workshop>> workshopImagesMediator;
     private Mock<IProviderAdminRepository> providerAdminRepository;
+    private Mock<IAverageRatingService> averageRatingServiceMock;
 
     [SetUp]
     public void SetUp()
     {
         workshopRepository = new Mock<IWorkshopRepository>();
         dateTimeRangeRepository = new Mock<IEntityRepository<long, DateTimeRange>>();
-        ratingService = new Mock<IRatingService>();
         teacherService = new Mock<ITeacherService>();
         logger = new Mock<ILogger<WorkshopService>>();
         mapperMock = new Mock<IMapper>();
         workshopImagesMediator = new Mock<IImageDependentEntityImagesInteractionService<Workshop>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         providerAdminRepository = new Mock<IProviderAdminRepository>();
+        averageRatingServiceMock = new Mock<IAverageRatingService>();
 
         workshopService =
             new WorkshopService(
                 workshopRepository.Object,
                 dateTimeRangeRepository.Object,
-                ratingService.Object,
                 teacherService.Object,
                 logger.Object,
                 mapperMock.Object,
                 workshopImagesMediator.Object,
-                providerAdminRepository.Object);
+                providerAdminRepository.Object,
+                averageRatingServiceMock.Object);
     }
 
     #region Create
@@ -184,7 +187,7 @@ public class WorkshopServiceTests
     {
         // Arrange
         var workshops = WithWorkshopsList().ToList();
-        var expectedWorkshopBaseCards = workshops.Select(w => new WorkshopBaseCard() { ProviderId = w.ProviderId }).ToList();
+        var expectedWorkshopBaseCards = workshops.Select(w => new WorkshopBaseCard() { ProviderId = w.ProviderId, WorkshopId = w.Id, }).ToList();
 
         SetupGetRepositoryCount(10);
         SetupGetByProviderById(workshops);
@@ -499,58 +502,52 @@ public class WorkshopServiceTests
             },
             new Workshop()
             {
-                Id = Guid.NewGuid(),
+                Id = new Guid("7a8b0f29-28a5-48f8-bb7f-94dd9fec28c1"),
                 ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
                 Title = "2",
             },
             new Workshop()
             {
-                Id = Guid.NewGuid(),
+                Id = new Guid("d17c1234-be9f-427d-a35b-59481becabd1"),
                 ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
                 Title = "3",
             },
             new Workshop()
             {
-                Id = Guid.NewGuid(),
+                Id = new Guid("89a987a7-f2b4-4271-99d9-0ed532b0f18b"),
                 ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
                 Title = "4",
             },
             new Workshop()
             {
-                Id = Guid.NewGuid(),
+                Id = new Guid("bbe56f28-321d-4bc9-84f9-4d8766aee70b"),
                 ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
                 Title = "5",
             },
             new Workshop()
             {
-                Id = Guid.NewGuid(),
+                Id = new Guid("c0082ac7-9ea7-4acc-b6c5-9f1dddf395b9"),
                 ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
                 Title = "6",
             },
             new Workshop()
             {
-                Id = Guid.NewGuid(),
+                Id = new Guid("6bf96311-ce4f-4a8a-aa7a-33dad46df4a6"),
                 ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
                 Title = "7",
             },
             new Workshop()
             {
-                Id = Guid.NewGuid(),
+                Id = new Guid("9c8f8932-6eb9-4dd9-8661-cb2c0f9234e4"),
                 ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
                 Title = "8",
             },
         };
     }
 
-    private static Dictionary<Guid, Tuple<float, int>> WithAvarageRatings(IEnumerable<Guid> workshopGuids)
+    private static IEnumerable<AverageRatingDto> WithAvarageRatings(IEnumerable<Guid> workshopGuids)
     {
-        var dictionary = new Dictionary<Guid, Tuple<float, int>>();
-        foreach (var guid in workshopGuids)
-        {
-            dictionary.Add(guid, new Tuple<float, int>(4.2f, 5));
-        }
-
-        return dictionary;
+        return RatingsGenerator.GetAverageRatings(workshopGuids);
     }
 
     private static Workshop WithWorkshop(Guid id)
@@ -620,7 +617,7 @@ public class WorkshopServiceTests
             .Returns(new Workshop() { Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e") });
     }
 
-    private void SetupGetAll(IEnumerable<Workshop> workshops, Dictionary<Guid, Tuple<float, int>> ratings)
+    private void SetupGetAll(IEnumerable<Workshop> workshops, IEnumerable<AverageRatingDto> ratings)
     {
         var mockWorkshops = workshops.AsQueryable().BuildMock();
         var workshopGuids = workshops.Select(w => w.Id);
@@ -637,7 +634,7 @@ public class WorkshopServiceTests
             w => w
                 .Count(It.IsAny<Expression<Func<Workshop, bool>>>())).ReturnsAsync(workshops.Count());
         mapperMock.Setup(m => m.Map<List<WorkshopDTO>>(It.IsAny<List<Workshop>>())).Returns(mappedDtos);
-        ratingService.Setup(r => r.GetAverageRatingForRangeAsync(workshopGuids, RatingType.Workshop))
+        averageRatingServiceMock.Setup(r => r.GetByEntityIdsAsync(workshopGuids))
             .ReturnsAsync(ratings);
     }
 
@@ -653,10 +650,13 @@ public class WorkshopServiceTests
                 w => w.GetWithNavigations(workshopId))
             .ReturnsAsync(workshop);
         mapperMock.Setup(m => m.Map<WorkshopDTO>(workshop)).Returns(new WorkshopDTO() { Id = workshop.Id });
+        averageRatingServiceMock.Setup(r => r.GetByEntityIdAsync(workshopId)).ReturnsAsync(new AverageRatingDto() { EntityId = workshop.Id });
     }
 
     private void SetupGetByProviderById(List<Workshop> workshopBaseCardsList)
     {
+        var workshopGuids = workshopBaseCardsList.Select(w => w.Id);
+
         workshopRepository
             .Setup(
                 w => w.Get(
@@ -667,6 +667,8 @@ public class WorkshopServiceTests
                     It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                     false))
             .Returns(workshopBaseCardsList.AsTestAsyncEnumerableQuery);
+
+        averageRatingServiceMock.Setup(r => r.GetByEntityIdsAsync(workshopGuids)).ReturnsAsync(WithAvarageRatings(workshopGuids));
     }
 
     private void SetupGetWorkshopsByProviderById(List<Workshop> workshopBaseCardsList)
@@ -701,7 +703,7 @@ public class WorkshopServiceTests
         workshopRepository.Setup(w => w.Delete(It.IsAny<Workshop>())).Returns(Task.CompletedTask);
     }
 
-    private void SetupGetByFilter(IEnumerable<Workshop> workshops, Dictionary<Guid, Tuple<float, int>> ratings)
+    private void SetupGetByFilter(IEnumerable<Workshop> workshops, IEnumerable<AverageRatingDto> ratings)
     {
         var queryableWorkshops = workshops.AsQueryable();
         workshopRepository.Setup(w => w
@@ -715,13 +717,13 @@ public class WorkshopServiceTests
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                 It.IsAny<bool>())).Returns(queryableWorkshops).Verifiable();
-        ratingService.Setup(r => r
-                .GetAverageRatingForRangeAsync(It.IsAny<IEnumerable<Guid>>(), RatingType.Workshop))
+        averageRatingServiceMock.Setup(r => r
+                .GetByEntityIdsAsync(It.IsAny<IEnumerable<Guid>>()))
             .ReturnsAsync(ratings).Verifiable();
         mapperMock
             .Setup(m => m.Map<List<WorkshopCard>>(workshops))
             .Returns(workshops
-                .Select(w => new WorkshopCard() { ProviderId = w.ProviderId }).ToList());
+                .Select(w => new WorkshopCard() { ProviderId = w.ProviderId, WorkshopId = w.Id, }).ToList());
     }
 
     #endregion
@@ -739,8 +741,6 @@ public class WorkshopServiceTests
             .Select(w => new WorkshopDTO()
             {
                 Id = w.Id,
-                Rating = 4.2f,
-                NumberOfRatings = 5,
             });
 
         return new SearchResult<WorkshopDTO>() { Entities = mappeddtos.ToList().AsReadOnly(), TotalAmount = workshops.Count() };
@@ -776,7 +776,9 @@ public class WorkshopServiceTests
             .Select(w => new WorkshopCard()
             {
                 ProviderId = w.ProviderId,
+                WorkshopId = w.Id,
             });
+
         return new SearchResult<WorkshopCard>()
         { Entities = mappeddtos.ToList().AsReadOnly(), TotalAmount = workshops.Count() };
     }

@@ -105,6 +105,10 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<RegionAdmin> RegionAdmins { get; set; }
 
+    public DbSet<AverageRating> AverageRatings { get; set; }
+
+    public DbSet<QuartzJob> QuartzJobs { get; set; }
+
     public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
     public int Complete() => this.SaveChanges();
@@ -131,6 +135,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new AddressConfiguration());
         builder.ApplyConfiguration(new CodeficatorConfiguration());
         builder.ApplyConfiguration(new RatingConfiguration());
+        builder.ApplyConfiguration(new AverageRatingConfiguration());
 
         ApplySoftDelete(builder);
 

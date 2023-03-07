@@ -7,4 +7,5 @@ public static class JobConstants
     public const string StatisticReportsMaking = "statisticReportsMakingJob";
     public const string NotificationsClearing = "notificationsClearingJob";
     public const string ApplicationStatusChanging = "applicationStatusChangingJob";
+    public const string AverageRatingCalculating = "averageRatingCalculatingJob";
 }

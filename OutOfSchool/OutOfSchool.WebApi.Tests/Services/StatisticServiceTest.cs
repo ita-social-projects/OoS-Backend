@@ -14,8 +14,10 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.AverageRatings;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -27,12 +29,12 @@ public class StatisticServiceTest
     private Mock<IApplicationRepository> applicationRepository;
     private Mock<IWorkshopRepository> workshopRepository;
     private Mock<IEntityRepository<long, Direction>> directionRepository;
-
     private Mock<IMapper> mapper;
     private Mock<ICacheService> cache;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
+    private Mock<IAverageRatingService> averageRatingServiceMock;
 
     [SetUp]
     public void SetUp()
@@ -40,25 +42,25 @@ public class StatisticServiceTest
         applicationRepository = new Mock<IApplicationRepository>();
         workshopRepository = new Mock<IWorkshopRepository>();
         directionRepository = new Mock<IEntityRepository<long, Direction>>();
-        var ratingService = new Mock<IRatingService>();
         var logger = new Mock<ILogger<StatisticService>>();
         mapper = new Mock<IMapper>();
         cache = new Mock<ICacheService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
+        averageRatingServiceMock = new Mock<IAverageRatingService>();
 
         service = new StatisticService(
             applicationRepository.Object,
             workshopRepository.Object,
-            ratingService.Object,
             directionRepository.Object,
             logger.Object,
             mapper.Object,
             cache.Object,
             currentUserServiceMock.Object,
             ministryAdminServiceMock.Object,
-            regionAdminServiceMock.Object);
+            regionAdminServiceMock.Object,
+            averageRatingServiceMock.Object);
     }
 
     [Test]
@@ -67,7 +69,7 @@ public class StatisticServiceTest
         // Arrange
         List<WorkshopCard> expectedWorkshopCards = ExpectedWorkshopCardsNoCityFilter();
 
-        SetupGetPopularWorkshops();
+        SetupGetPopularWorkshops(expectedWorkshopCards);
 
         mapper.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>()))
             .Returns(expectedWorkshopCards);
@@ -90,7 +92,7 @@ public class StatisticServiceTest
         // Arrange
         List<WorkshopCard> expectedWorkshopCards = ExpectedWorkshopCardsInstitutionId();
 
-        SetupGetPopularWorkshops();
+        SetupGetPopularWorkshops(expectedWorkshopCards);
 
         currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(true);
         ministryAdminServiceMock
@@ -121,7 +123,7 @@ public class StatisticServiceTest
         // Arrange
         List<WorkshopCard> expectedWorkshopCards = ExpectedWorkshopCardsInstitutionId();
 
-        SetupGetPopularWorkshops();
+        SetupGetPopularWorkshops(expectedWorkshopCards);
 
         currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(true);
         regionAdminServiceMock
@@ -300,7 +302,7 @@ public class StatisticServiceTest
 
     #region Setup
 
-    private void SetupGetPopularWorkshops()
+    private void SetupGetPopularWorkshops(List<WorkshopCard> expectedWorkshopCards)
     {
         var workshopsMock = WithWorkshops().AsQueryable().BuildMock();
 
@@ -314,6 +316,13 @@ public class StatisticServiceTest
                 It.IsAny<bool>()))
             .Returns(workshopsMock)
             .Verifiable();
+
+        var expectedWorkshopCardsIds = expectedWorkshopCards.Select(wc => wc.WorkshopId).ToList();
+        var ratings = RatingsGenerator.GetAverageRatings(expectedWorkshopCardsIds);
+
+        averageRatingServiceMock
+            .Setup(r => r.GetByEntityIdsAsync(expectedWorkshopCardsIds))
+            .ReturnsAsync(ratings);
     }
 
     private void SetupGetPopularWorkshopsIncludingCATOTTG()
