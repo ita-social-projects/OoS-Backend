@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class RatingService : IRatingService
 {
-    private readonly IRatingRepository ratingRepository;
+    private readonly IEntityRepository<long, Rating> ratingRepository;
     private readonly IWorkshopRepository workshopRepository;
     private readonly IParentRepository parentRepository;
     private readonly ILogger<RatingService> logger;
@@ -38,7 +38,7 @@ public class RatingService : IRatingService
     /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
     public RatingService(
-        IRatingRepository ratingRepository,
+        IEntityRepository<long, Rating> ratingRepository,
         IWorkshopRepository workshopRepository,
         IParentRepository parentRepository,
         ILogger<RatingService> logger,

@@ -229,10 +229,7 @@ public static class Startup
             >();
         services.AddTransient<IParentRepository, ParentRepository>();
         services.AddTransient<IProviderRepository, ProviderRepository>();
-        services.AddTransient<IRatingRepository, RatingRepository>();
-        services.AddTransient<IAverageRatingRepository, AverageRatingRepository>();
         services.AddTransient<IWorkshopRepository, WorkshopRepository>();
-        services.AddTransient<IQuartzJobRepository, QuartzJobRepository>();
         //services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
         services.AddImagesStorage(turnOnFakeStorage: configuration.GetValue<bool>("TurnOnFakeImagesStorage"));
 

@@ -18,20 +18,20 @@ public class AverageRatingService : IAverageRatingService
 {
     private readonly ILogger<AverageRatingService> logger;
     private readonly IMapper mapper;
-    private readonly IAverageRatingRepository averageRatingRepository;
+    private readonly IEntityRepository<long, AverageRating> averageRatingRepository;
     private readonly IRatingService ratingService;
     private readonly IWorkshopRepository workshopRepository;
-    private readonly IRatingRepository ratingRepository;
-    private readonly IQuartzJobRepository quartzJobRepository;
+    private readonly IEntityRepository<long, Rating> ratingRepository;
+    private readonly IEntityRepository<long, QuartzJob> quartzJobRepository;
 
     public AverageRatingService(
         ILogger<AverageRatingService> logger,
         IMapper mapper,
-        IAverageRatingRepository averageRatingRepository,
+        IEntityRepository<long, AverageRating> averageRatingRepository,
         IRatingService ratingService,
         IWorkshopRepository workshopRepository,
-        IRatingRepository ratingRepository,
-        IQuartzJobRepository quartzJobRepository)
+        IEntityRepository<long, Rating> ratingRepository,
+        IEntityRepository<long, QuartzJob> quartzJobRepository)
     {
         this.logger = logger;
         this.mapper = mapper;
