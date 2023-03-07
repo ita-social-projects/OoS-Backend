@@ -117,7 +117,7 @@ public class RatingController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{entityType:regex(^provider$|^workshop$)}/{entityId}")]
+    [HttpGet("workshop/{entityId}")]
     public async Task<IActionResult> GetByEntityId(Guid entityId, [FromQuery] OffsetFilter filter)
     {
         var ratings = await ratingService.GetAllByEntityId(entityId, filter).ConfigureAwait(false);
@@ -164,7 +164,7 @@ public class RatingController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{entityType:regex(^provider$|^workshop$)}/{entityId}/parent/{parentId}")]
+    [HttpGet("workshop/{entityId}/parent/{parentId}")]
     public async Task<IActionResult> GetParentRating(Guid parentId, Guid entityId)
     {
         var rating = await ratingService.GetParentRating(parentId, entityId).ConfigureAwait(false);
