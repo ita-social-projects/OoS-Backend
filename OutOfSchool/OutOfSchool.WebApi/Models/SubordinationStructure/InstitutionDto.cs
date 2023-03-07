@@ -13,4 +13,6 @@ public class InstitutionDto
 
     [Range(1, int.MaxValue)]
     public int NumberOfHierarchyLevels { get; set; }
+
+    public bool IsGovernment { get; set; }
 }
