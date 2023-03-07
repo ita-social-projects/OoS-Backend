@@ -2,6 +2,7 @@
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Services.AverageRatings;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -12,7 +13,6 @@ public class StatisticService : IStatisticService
 {
     private readonly IApplicationRepository applicationRepository;
     private readonly IWorkshopRepository workshopRepository;
-    private readonly IRatingService ratingService;
     private readonly IEntityRepository<long, Direction> directionRepository;
     private readonly ILogger<StatisticService> logger;
     private readonly IMapper mapper;
@@ -20,13 +20,13 @@ public class StatisticService : IStatisticService
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
     private readonly IRegionAdminService regionAdminService;
+    private readonly IAverageRatingService averageRatingService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StatisticService"/> class.
     /// </summary>
     /// <param name="applicationRepository">Application repository.</param>
     /// <param name="workshopRepository">Workshop repository.</param>
-    /// <param name="ratingService">Rating service.</param>
     /// <param name="directionRepository">Direction repository.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Automapper DI service.</param>
@@ -34,21 +34,21 @@ public class StatisticService : IStatisticService
     /// <param name="currentUserService">Service for manage current user.</param>
     /// <param name="ministryAdminService">Service for manage ministry admin.</param>
     /// <param name="regionAdminService">Service for managing region admin rigths.</param>
+    /// /// <param name="averageRatingService">Average rating service.</param>
     public StatisticService(
         IApplicationRepository applicationRepository,
         IWorkshopRepository workshopRepository,
-        IRatingService ratingService,
         IEntityRepository<long, Direction> directionRepository,
         ILogger<StatisticService> logger,
         IMapper mapper,
         ICacheService cache,
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,
-        IRegionAdminService regionAdminService)
+        IRegionAdminService regionAdminService,
+        IAverageRatingService averageRatingService)
     {
         this.applicationRepository = applicationRepository;
         this.workshopRepository = workshopRepository;
-        this.ratingService = ratingService;
         this.directionRepository = directionRepository;
         this.logger = logger;
         this.mapper = mapper;
@@ -56,6 +56,7 @@ public class StatisticService : IStatisticService
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
         this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
+        this.averageRatingService = averageRatingService;
     }
 
     // Return categories with 1 SQL query
@@ -235,16 +236,11 @@ public class StatisticService : IStatisticService
 
     private async Task<List<WorkshopCard>> GetWorkshopsWithAverageRating(List<WorkshopCard> workshopsCards)
     {
-        var averageRatings =
-            await ratingService.GetAverageRatingForRangeAsync(workshopsCards.Select(p => p.WorkshopId), RatingType.Workshop).ConfigureAwait(false);
+        var averageRatings = await averageRatingService.GetByEntityIdsAsync(workshopsCards.Select(p => p.WorkshopId)).ConfigureAwait(false);
 
-        if (averageRatings != null)
+        foreach (var workshop in workshopsCards)
         {
-            foreach (var workshop in workshopsCards)
-            {
-                var ratingTuple = averageRatings.FirstOrDefault(r => r.Key == workshop.WorkshopId);
-                workshop.Rating = ratingTuple.Value?.Item1 ?? default;
-            }
+            workshop.Rating = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.WorkshopId)?.Rate ?? default;
         }
 
         return workshopsCards;

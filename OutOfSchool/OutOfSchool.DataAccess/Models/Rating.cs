@@ -13,10 +13,6 @@ public class Rating : IKeyedEntity<long>
     public int Rate { get; set; }
 
     [Required]
-    [Range(1, 2, ErrorMessage = "The type field should be 1 or 2")]
-    public RatingType Type { get; set; }
-
-    [Required]
     [Range(1, long.MaxValue, ErrorMessage = "The EntityId field should be bigger than 0")]
     public Guid EntityId { get; set; }
 

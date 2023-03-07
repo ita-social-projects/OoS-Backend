@@ -561,6 +561,8 @@ public class MappingProfile : Profile
         CreateMap<RatingDto, Rating>()
             .ForMember(dest => dest.Parent, opt => opt.Ignore());
 
+        CreateMap<AverageRating, AverageRatingDto>();
+
         CreateMap<InstitutionStatus, InstitutionStatusDTO>().ReverseMap();
 
         CreateMap<PermissionsForRole, PermissionsForRoleDTO>()

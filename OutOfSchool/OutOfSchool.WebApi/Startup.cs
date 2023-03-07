@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using OutOfSchool.Services.Contexts;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Config;
+using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 using OutOfSchool.WebApi.Services.Strategies.WorkshopStrategies;
 
@@ -71,6 +72,7 @@ public static class Startup
         services.Configure<ProviderAdminConfig>(configuration.GetSection(ProviderAdminConfig.Name));
         services.Configure<CommunicationConfig>(configuration.GetSection(CommunicationConfig.Name));
         services.Configure<GeocodingConfig>(configuration.GetSection(GeocodingConfig.Name));
+        services.Configure<ParentConfig>(configuration.GetSection(ParentConfig.Name));
 
         services.AddLocalization(options => options.ResourcesPath = "Resources");
         services.AddAuthentication("Bearer")
@@ -172,6 +174,7 @@ public static class Startup
         services.AddTransient<IProviderTypeService, ProviderTypeService>();
         services.AddTransient<IProviderServiceV2, ProviderServiceV2>();
         services.AddTransient<IRatingService, RatingService>();
+        services.AddTransient<IAverageRatingService, AverageRatingService>();
         services.AddTransient<ISocialGroupService, SocialGroupService>();
         services.AddTransient<IStatusService, StatusService>();
         services.AddTransient<IStatisticService, StatisticService>();
@@ -202,6 +205,7 @@ public static class Startup
         services.AddTransient<IStatisticReportService, StatisticReportService>();
         services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();
         services.AddTransient<ICodeficatorService, CodeficatorService>();
+
         services.AddTransient<IGRPCCommonService, GRPCCommonService>();
         services.AddTransient<IWorkshopStrategy>(sp =>
         {
@@ -225,7 +229,6 @@ public static class Startup
             >();
         services.AddTransient<IParentRepository, ParentRepository>();
         services.AddTransient<IProviderRepository, ProviderRepository>();
-        services.AddTransient<IRatingRepository, RatingRepository>();
         services.AddTransient<IWorkshopRepository, WorkshopRepository>();
         //services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
         services.AddImagesStorage(turnOnFakeStorage: configuration.GetValue<bool>("TurnOnFakeImagesStorage"));
@@ -237,6 +240,7 @@ public static class Startup
         services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
         services.AddTransient<IChangesLogRepository, ChangesLogRepository>();
         services.AddTransient<IGeocodingService, GeocodingService>();
+
 
         services.AddTransient<IAchievementTypeService, AchievementTypeService>();
         services.AddTransient<IAchievementRepository, AchievementRepository>();
@@ -322,6 +326,7 @@ public static class Startup
             q.AddStatisticReportsCreating(services, quartzConfig);
             q.AddOldNotificationsClearing(services, quartzConfig);
             q.AddApplicationStatusChanging(services, quartzConfig);
+            q.AddAverageRatingCalculating(services, quartzConfig);
         });
 
         var isRedisEnabled = configuration.GetValue<bool>("Redis:Enabled");

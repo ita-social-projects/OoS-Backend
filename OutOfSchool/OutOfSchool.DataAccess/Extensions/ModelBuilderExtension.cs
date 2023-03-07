@@ -262,8 +262,7 @@ public static class ModelBuilderExtension
     public static ModelBuilder ApplySoftDelete<T>(this ModelBuilder builder)
         where T : class, IKeyedEntity, new()
     {
-        builder.Entity<T>().Property<bool>("IsDeleted")
-            .ValueGeneratedOnAdd();
+        builder.Entity<T>().Property<bool>("IsDeleted").ValueGeneratedOnAdd().HasDefaultValue(false);
 
         builder.Entity<T>().HasIndex("IsDeleted");
 

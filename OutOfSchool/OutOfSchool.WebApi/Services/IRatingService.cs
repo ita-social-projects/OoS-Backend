@@ -1,5 +1,6 @@
 ﻿using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
+using System.Linq.Expressions;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -31,6 +32,13 @@ public interface IRatingService
     Task<IEnumerable<RatingDto>> GetAsync(OffsetFilter filter);
 
     /// <summary>
+    /// Get all rating entities by filter expression.
+    /// </summary>
+    /// <param name="filter">Filter expression.</param>
+    /// <returns>List of all rating records.</returns>
+    Task<IEnumerable<RatingDto>> GetAllAsync(Expression<Func<Rating, bool>> filter);
+
+    /// <summary>
     /// Get rating entity by it's key.
     /// </summary>
     /// <param name="id">Key in the table.</param>
@@ -40,11 +48,10 @@ public interface IRatingService
     /// <summary>
     /// Get all rating entities with specified Id and type.
     /// </summary>
-    /// <param name="entityId">Entity key.</param>
     /// <param name="type">Entity type.</param>
     /// <param name="filter">Skip & Take number.</param>
     /// <returns>The result is a <see cref="SearchResult{RatingDto}"/> that contains the count of all found ratings and a list of ratings that were received.</returns>
-    Task<SearchResult<RatingDto>> GetAllByEntityId(Guid entityId, RatingType type, OffsetFilter filter);
+    Task<SearchResult<RatingDto>> GetAllByEntityId(Guid entityId, OffsetFilter filter);
 
     /// <summary>
     /// Get all workshop rating by provider.
@@ -58,39 +65,8 @@ public interface IRatingService
     /// </summary>
     /// <param name="parentId">Parent key.</param>
     /// <param name="entityId">Entity key.</param>
-    /// <param name="type">Entity type.</param>
     /// <returns>Parent rating for the specified entity.</returns>
-    Task<RatingDto> GetParentRating(Guid parentId, Guid entityId, RatingType type);
-
-    /// <summary>
-    /// Get average entity rating.
-    /// </summary>
-    /// <param name="entityId">Entity key.</param>
-    /// <param name="type">Entity type.</param>
-    /// <returns>Average rating of entity.</returns>
-    Task<Tuple<float, int>> GetAverageRatingAsync(Guid entityId, RatingType type);
-
-    /// <summary>
-    /// Get average rating for entities range.
-    /// </summary>
-    /// <param name="entities">Entities keys.</param>
-    /// <param name="type">Entity type.</param>
-    /// <returns>Average rating of entities range.</returns>
-    Task<Dictionary<Guid, Tuple<float, int>>> GetAverageRatingForRangeAsync(IEnumerable<Guid> entities, RatingType type);
-
-    /// <summary>
-    /// Get average rating for provider.
-    /// </summary>
-    /// <param name="providerId">Provider's key.</param>
-    /// <returns>Average rating for provider.</returns>
-    Task<Tuple<float, int>> GetAverageRatingForProviderAsync(Guid providerId);
-
-    /// <summary>
-    /// Get average rating for each provider in the range.
-    /// </summary>
-    /// <param name="providerIds">Providers' keys.</param>
-    /// <returns>Average rating for each provider in the range.</returns>
-    Task<Dictionary<Guid, Tuple<float, int>>> GetAverageRatingForProvidersAsync(IEnumerable<Guid> providerIds);
+    Task<RatingDto> GetParentRating(Guid parentId, Guid entityId);
 
     /// <summary>
     /// Update rating entity.

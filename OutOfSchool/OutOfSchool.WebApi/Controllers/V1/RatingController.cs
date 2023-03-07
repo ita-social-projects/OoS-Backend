@@ -14,6 +14,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.AverageRatings;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -26,6 +27,7 @@ public class RatingController : ControllerBase
     private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> esWorkshopService;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly ILogger<RatingController> logger;
+    private readonly IAverageRatingService averageRatingService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RatingController"/> class.
@@ -34,17 +36,20 @@ public class RatingController : ControllerBase
     /// <param name="localizer">Localizer.</param>
     /// <param name="esWorkshopService">Service for operations with workshop documents of Elasticsearch data.</param>
     /// <param name="logger">Logger.</param>
+    /// <param name="averageRatingService">Service for AverageRating model.</param>
     public RatingController(
         IRatingService service,
         IStringLocalizer<SharedResource> localizer,
         IElasticsearchService<WorkshopES,
         WorkshopFilterES> esWorkshopService,
-        ILogger<RatingController> logger)
+        ILogger<RatingController> logger,
+        IAverageRatingService averageRatingService)
     {
         this.ratingService = service;
         this.localizer = localizer;
         this.esWorkshopService = esWorkshopService;
         this.logger = logger;
+        this.averageRatingService = averageRatingService;
     }
 
     /// <summary>
@@ -104,7 +109,6 @@ public class RatingController : ControllerBase
     /// <summary>
     /// Get all ratings from the database.
     /// </summary>
-    /// <param name="entityType">Entity type (provider or workshop).</param>
     /// <param name="entityId">Id of Entity.</param>
     /// <param name="filter">Skip & Take number.</param>
     /// <returns>The result is a <see cref="SearchResult{RatingDto}"/> that contains the count of all found ratings and a list of ratings that were received.</returns>
@@ -113,12 +117,10 @@ public class RatingController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{entityType:regex(^provider$|^workshop$)}/{entityId}")]
-    public async Task<IActionResult> GetByEntityId(string entityType, Guid entityId, [FromQuery] OffsetFilter filter)
+    [HttpGet("workshop/{entityId}")]
+    public async Task<IActionResult> GetByEntityId(Guid entityId, [FromQuery] OffsetFilter filter)
     {
-        RatingType type = ToRatingType(entityType);
-
-        var ratings = await ratingService.GetAllByEntityId(entityId, type, filter).ConfigureAwait(false);
+        var ratings = await ratingService.GetAllByEntityId(entityId, filter).ConfigureAwait(false);
 
         if (ratings.TotalAmount == 0)
         {
@@ -154,7 +156,6 @@ public class RatingController : ControllerBase
     /// <summary>
     /// Get parent rating for the specified entity.
     /// </summary>
-    /// <param name="entityType">Entity type (provider or workshop).</param>
     /// <param name="parentId">Id of Parent.</param>
     /// <param name="entityId">Id of Entity.</param>
     /// <returns>Parent rating for the specified entity.</returns>
@@ -163,12 +164,10 @@ public class RatingController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{entityType:regex(^provider$|^workshop$)}/{entityId}/parent/{parentId}")]
-    public async Task<IActionResult> GetParentRating(string entityType, Guid parentId, Guid entityId)
+    [HttpGet("workshop/{entityId}/parent/{parentId}")]
+    public async Task<IActionResult> GetParentRating(Guid parentId, Guid entityId)
     {
-        RatingType type = ToRatingType(entityType);
-
-        var rating = await ratingService.GetParentRating(parentId, entityId, type).ConfigureAwait(false);
+        var rating = await ratingService.GetParentRating(parentId, entityId).ConfigureAwait(false);
 
         if (rating == null)
         {
@@ -199,10 +198,7 @@ public class RatingController : ControllerBase
                               "Please check that entity, parent, type information are valid and don't exist in the system yet.");
         }
 
-        if (dto.Type == RatingType.Workshop)
-        {
-            await this.UpdateWorkshopInElasticSearch(dto.EntityId).ConfigureAwait(false);
-        }
+        await this.UpdateWorkshopInElasticSearch(dto.EntityId).ConfigureAwait(false);
 
         return CreatedAtAction(
             nameof(GetById),
@@ -231,10 +227,7 @@ public class RatingController : ControllerBase
                               "Please check that id, entity, parent, type information are valid and exist in the system.");
         }
 
-        if (dto.Type == RatingType.Workshop)
-        {
-            await this.UpdateWorkshopInElasticSearch(dto.EntityId).ConfigureAwait(false);
-        }
+        await this.UpdateWorkshopInElasticSearch(dto.EntityId).ConfigureAwait(false);
 
         return Ok(rating);
     }
@@ -259,44 +252,19 @@ public class RatingController : ControllerBase
 
         await ratingService.Delete(id).ConfigureAwait(false);
 
-        if (ratingDto.Type == RatingType.Workshop)
-        {
-            await UpdateWorkshopInElasticSearch(ratingDto.EntityId).ConfigureAwait(false);
-        }
+        await UpdateWorkshopInElasticSearch(ratingDto.EntityId).ConfigureAwait(false);
 
         return NoContent();
-    }
-
-    private static RatingType ToRatingType(string entityType)
-    {
-        if (entityType == null)
-        {
-            throw new ArgumentNullException(nameof(entityType), "entityType could not be null");
-        }
-
-        RatingType type;
-
-        switch (entityType.ToLower(CultureInfo.CurrentCulture))
-        {
-            case "provider":
-                type = RatingType.Provider;
-                break;
-            case "workshop":
-                type = RatingType.Workshop;
-                break;
-            default:
-                throw new ArgumentException("entityType should be provider or workshop", nameof(entityType));
-        }
-
-        return type;
     }
 
     private async Task<bool> UpdateWorkshopInElasticSearch(Guid id)
     {
         try
         {
-            var rating = (await ratingService.GetAverageRatingAsync(id, RatingType.Workshop)
-                .ConfigureAwait(false)).Item1;
+            var ratingDto = await averageRatingService.GetByEntityIdAsync(id)
+                .ConfigureAwait(false);
+
+            var rating = ratingDto?.Rate ?? default;
 
             return await esWorkshopService.PartialUpdate(id, new WorkshopRatingES { Rating = rating })
                 .ConfigureAwait(false);

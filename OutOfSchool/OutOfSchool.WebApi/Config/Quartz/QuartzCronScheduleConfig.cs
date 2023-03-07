@@ -11,4 +11,6 @@ public class QuartzCronScheduleConfig
     public string NotificationsClearingCronScheduleString { get; set; }
 
     public string ApplicationStatusChangingCronScheduleString { get; set; }
+
+    public string AverageRatingCalculatingCronScheduleString { get; set; }
 }

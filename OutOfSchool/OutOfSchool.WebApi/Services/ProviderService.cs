@@ -16,6 +16,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
+using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
 
@@ -28,7 +29,6 @@ public class ProviderService : IProviderService, INotificationReciever
 {
     private readonly IProviderRepository providerRepository;
     private readonly IProviderAdminRepository providerAdminRepository;
-    private readonly IRatingService ratingService;
     private readonly ILogger<ProviderService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
@@ -43,6 +43,7 @@ public class ProviderService : IProviderService, INotificationReciever
     private readonly IRegionAdminService regionAdminService;
     private readonly ICodeficatorService codeficatorService;
     private readonly IRegionAdminRepository regionAdminRepository;
+    private readonly IAverageRatingService averageRatingService;
 
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
@@ -53,7 +54,6 @@ public class ProviderService : IProviderService, INotificationReciever
     /// </summary>
     /// <param name="providerRepository">Provider repository.</param>
     /// <param name="usersRepository">UsersRepository.</param>
-    /// <param name="ratingService">Rating service.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
@@ -69,10 +69,10 @@ public class ProviderService : IProviderService, INotificationReciever
     /// <param name="ministryAdminService">Service for manage ministry admin.</param>
     /// <param name="regionAdminService">Service for managing region admin rigths.</param>
     /// <param name="codeficatorService">Codeficator service.</param>
+    /// <param name="averageRatingService">Average rating service.</param>
     public ProviderService(
         IProviderRepository providerRepository,
         IEntityRepository<string, User> usersRepository,
-        IRatingService ratingService,
         ILogger<ProviderService> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper,
@@ -88,14 +88,14 @@ public class ProviderService : IProviderService, INotificationReciever
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService,
         ICodeficatorService codeficatorService,
-        IRegionAdminRepository regionAdminRepository)
+        IRegionAdminRepository regionAdminRepository,
+        IAverageRatingService averageRatingService)
     {
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.addressRepository = addressRepository ?? throw new ArgumentNullException(nameof(addressRepository));
         this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
         this.usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
-        this.ratingService = ratingService ?? throw new ArgumentNullException(nameof(ratingService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.workshopServiceCombiner = workshopServiceCombiner ?? throw new ArgumentNullException(nameof(workshopServiceCombiner));
         this.providerAdminRepository = providerAdminRepository ?? throw new ArgumentNullException(nameof(providerAdminRepository));
@@ -109,6 +109,7 @@ public class ProviderService : IProviderService, INotificationReciever
         this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
         this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
         this.regionAdminRepository = regionAdminRepository;
+        this.averageRatingService = averageRatingService ?? throw new ArgumentNullException(nameof(averageRatingService));
     }
 
     private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
@@ -200,10 +201,10 @@ public class ProviderService : IProviderService, INotificationReciever
 
         var providerDTO = mapper.Map<ProviderDto>(provider);
 
-        var rating = await ratingService.GetAverageRatingForProviderAsync(providerDTO.Id).ConfigureAwait(false);
+        var rating = await averageRatingService.GetByEntityIdAsync(providerDTO.Id).ConfigureAwait(false);
 
-        providerDTO.Rating = rating?.Item1 ?? default;
-        providerDTO.NumberOfRatings = rating?.Item2 ?? default;
+        providerDTO.Rating = rating?.Rate ?? default;
+        providerDTO.NumberOfRatings = rating?.RateQuantity ?? default;
 
         return providerDTO;
     }
@@ -282,18 +283,9 @@ public class ProviderService : IProviderService, INotificationReciever
         provider.StatusReason = dto.StatusReason;
         await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
 
-        // TODO: Implement updating status or license of provider's workshops
-        // same in UpdateProviderWithActionBeforeSavingChanges method
-
-        // var workshops = await workshopServiceCombiner
-        //    .PartialUpdateByProvider(provider)
-        //    .ConfigureAwait(false);
-        // foreach (var workshop in workshops)
-        // {
-        //    logger.LogInformation($"Provider's properties with Id = {provider?.Id} " +
-        //                          $"in workshops with Id = {workshop?.Id} updated successfully.");
-        // }
         logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.Status}");
+
+        await UpdateWorkshopsProviderStatus(dto.ProviderId, dto.Status).ConfigureAwait(false);
 
         await SendNotification(provider, NotificationAction.Update, true, false).ConfigureAwait(false);
 
@@ -496,7 +488,6 @@ public class ProviderService : IProviderService, INotificationReciever
 
         try
         {
-            var dataSynchronized = false;
             var checkProvider = await providerRepository.GetById(providerUpdateDto.Id).ConfigureAwait(false);
 
             if (checkProvider?.UserId != userId)
@@ -546,8 +537,6 @@ public class ProviderService : IProviderService, INotificationReciever
                                                   $"in workshops with Id = {workshop?.Id} updated successfully.");
                         }
 
-                        dataSynchronized = true;
-
                         return checkProvider;
                     }).ConfigureAwait(false);
                 }
@@ -567,26 +556,14 @@ public class ProviderService : IProviderService, INotificationReciever
 
             logger.LogInformation("Provider with Id = {CheckProviderId} was updated successfully", checkProvider?.Id);
 
+            if (statusChanged)
+            {
+                await UpdateWorkshopsProviderStatus(providerUpdateDto.Id, providerUpdateDto.Status)
+                    .ConfigureAwait(false);
+            }
+
             if (statusChanged || licenseChanged)
             {
-                // TODO: Improve logic with duplicating the code below
-                if (!dataSynchronized)
-                {
-                    // TODO: Implement updating status or license of provider's workshops
-                    // and remove "dataSynchronized"
-                    // same in UpdateStatus method
-
-                    // var workshops = await workshopServiceCombiner
-                    //        .UpdateProviderTitle(providerUpdateDto.Id, providerUpdateDto.FullTitle)
-                    //        .ConfigureAwait(false);
-
-                    // foreach (var workshop in workshops)
-                    // {
-                    //    logger.LogInformation($"Provider's properties with Id = {checkProvider?.Id} " +
-                    //                          $"in workshops with Id = {workshop?.Id} updated successfully.");
-                    // }
-                }
-
                 await SendNotification(checkProvider, NotificationAction.Update, statusChanged, licenseChanged)
                     .ConfigureAwait(false);
             }
@@ -714,17 +691,13 @@ public class ProviderService : IProviderService, INotificationReciever
 
     private async Task FillRatingsForProviders(List<ProviderDto> providersDTO)
     {
-        var averageRatings = await ratingService.GetAverageRatingForProvidersAsync(providersDTO.Select(p => p.Id)).ConfigureAwait(false);
+        var averageRatings = await averageRatingService.GetByEntityIdsAsync(providersDTO.Select(p => p.Id)).ConfigureAwait(false);
 
         foreach (var provider in providersDTO)
         {
-            var averageRatingsForProvider = averageRatings.FirstOrDefault(r => r.Key == provider.Id);
-            if (averageRatingsForProvider.Key != Guid.Empty)
-            {
-                var (_, (rating, numberOfVotes)) = averageRatingsForProvider;
-                provider.Rating = rating;
-                provider.NumberOfRatings = numberOfVotes;
-            }
+            var averageRatingsForProvider = averageRatings?.SingleOrDefault(r => r.EntityId == provider.Id);
+            provider.Rating = averageRatingsForProvider?.Rate ?? default;
+            provider.NumberOfRatings = averageRatingsForProvider?.RateQuantity ?? default;
         }
     }
 
@@ -791,5 +764,17 @@ public class ProviderService : IProviderService, INotificationReciever
             .ConfigureAwait(false);
 
         return regionAdminsIds;
+    }
+
+    private async Task UpdateWorkshopsProviderStatus(Guid providerId, ProviderStatus providerStatus)
+    {
+        var workshops = await workshopServiceCombiner.UpdateProviderStatus(providerId, providerStatus)
+           .ConfigureAwait(false);
+
+        foreach (var workshop in workshops)
+        {
+            logger.LogInformation($"Provider's status with Id = {providerId} " +
+                                  $"in workshops with Id = {workshop.Id} updated successfully.");
+        }
     }
 }

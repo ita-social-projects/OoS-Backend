@@ -14,6 +14,7 @@ using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Services.AverageRatings;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -29,41 +30,41 @@ public class WorkshopService : IWorkshopService
 
     private readonly IWorkshopRepository workshopRepository;
     private readonly IEntityRepository<long, DateTimeRange> dateTimeRangeRepository;
-    private readonly IRatingService ratingService;
     private readonly ITeacherService teacherService;
     private readonly ILogger<WorkshopService> logger;
     private readonly IMapper mapper;
     private readonly IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService;
     private readonly IProviderAdminRepository providerAdminRepository;
+    private readonly IAverageRatingService averageRatingService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
     /// </summary>
     /// <param name="workshopRepository">Repository for Workshop entity.</param>
     /// <param name="dateTimeRangeRepository">Repository for DateTimeRange entity.</param>
-    /// <param name="ratingService">Rating service.</param>
     /// <param name="teacherService">Teacher service.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Automapper DI service.</param>
     /// <param name="workshopImagesService">Workshop images mediator.</param>
+    /// <param name="averageRatingService">Average rating service.</param>
     public WorkshopService(
         IWorkshopRepository workshopRepository,
         IEntityRepository<long, DateTimeRange> dateTimeRangeRepository,
-        IRatingService ratingService,
         ITeacherService teacherService,
         ILogger<WorkshopService> logger,
         IMapper mapper,
         IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService,
-        IProviderAdminRepository providerAdminRepository)
+        IProviderAdminRepository providerAdminRepository,
+        IAverageRatingService averageRating)
     {
         this.workshopRepository = workshopRepository;
         this.dateTimeRangeRepository = dateTimeRangeRepository;
-        this.ratingService = ratingService;
         this.teacherService = teacherService;
         this.logger = logger;
         this.mapper = mapper;
         this.workshopImagesService = workshopImagesService;
         this.providerAdminRepository = providerAdminRepository;
+        this.averageRatingService = averageRating;
     }
 
     /// <inheritdoc/>
@@ -195,11 +196,10 @@ public class WorkshopService : IWorkshopService
 
         var workshopDTO = mapper.Map<WorkshopDTO>(workshop);
 
-        var rating = await ratingService.GetAverageRatingAsync(workshopDTO.Id, RatingType.Workshop)
-            .ConfigureAwait(false);
+        var rating = await averageRatingService.GetByEntityIdAsync(workshopDTO.Id).ConfigureAwait(false);
 
-        workshopDTO.Rating = rating?.Item1 ?? default;
-        workshopDTO.NumberOfRatings = rating?.Item2 ?? default;
+        workshopDTO.Rating = rating?.Rate ?? default;
+        workshopDTO.NumberOfRatings = rating?.RateQuantity ?? default;
 
         return workshopDTO;
     }
@@ -731,19 +731,14 @@ public class WorkshopService : IWorkshopService
         return sortExpression;
     }
 
-    private async Task<List<T>> GetWorkshopsWithAverageRating<T>(List<T> workshops) where T: WorkshopBaseCard
+    private async Task<List<T>> GetWorkshopsWithAverageRating<T>(List<T> workshops)
+        where T : WorkshopBaseCard
     {
-        var averageRatings =
-            await ratingService.GetAverageRatingForRangeAsync(workshops.Select(p => p.WorkshopId), RatingType.Workshop)
-                .ConfigureAwait(false);
+        var averageRatings = await averageRatingService.GetByEntityIdsAsync(workshops.Select(p => p.WorkshopId)).ConfigureAwait(false);
 
-        if (averageRatings != null)
+        foreach (var workshop in workshops)
         {
-            foreach (var workshop in workshops)
-            {
-                var ratingTuple = averageRatings.FirstOrDefault(r => r.Key == workshop.WorkshopId);
-                workshop.Rating = ratingTuple.Value?.Item1 ?? default;
-            }
+            workshop.Rating = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.WorkshopId)?.Rate ?? default;
         }
 
         return workshops;
@@ -751,18 +746,13 @@ public class WorkshopService : IWorkshopService
 
     private async Task<List<WorkshopDTO>> GetWorkshopsWithAverageRating(List<WorkshopDTO> workshops)
     {
-        var averageRatings =
-            await ratingService.GetAverageRatingForRangeAsync(workshops.Select(p => p.Id), RatingType.Workshop)
-                .ConfigureAwait(false);
+        var averageRatings = await averageRatingService.GetByEntityIdsAsync(workshops.Select(p => p.Id)).ConfigureAwait(false);
 
-        if (averageRatings != null)
+        foreach (var workshop in workshops)
         {
-            foreach (var workshop in workshops)
-            {
-                var ratingTuple = averageRatings.FirstOrDefault(r => r.Key == workshop.Id);
-                workshop.Rating = ratingTuple.Value?.Item1 ?? default;
-                workshop.NumberOfRatings = ratingTuple.Value?.Item2 ?? default;
-            }
+            var rating = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.Id);
+            workshop.Rating = rating?.Rate ?? default;
+            workshop.NumberOfRatings = rating?.RateQuantity ?? default;
         }
 
         return workshops;
