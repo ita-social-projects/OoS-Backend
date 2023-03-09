@@ -230,7 +230,9 @@ public class WorkshopService : IWorkshopService
         {
             return (await workshopRepository
                     .GetByFilter(w => providerAdmin.Provider.Workshops.Contains(w)))
-                .Select(workshop => mapper.Map<ShortEntityDto>(workshop)).ToList();
+                .Select(workshop => mapper.Map<ShortEntityDto>(workshop))
+                .OrderBy(workshop => workshop.Title)
+                .ToList();
         }
 
         return (await providerAdminRepository
