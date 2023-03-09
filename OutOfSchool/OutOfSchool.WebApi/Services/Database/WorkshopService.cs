@@ -743,7 +743,8 @@ public class WorkshopService : IWorkshopService
         return sortExpression;
     }
 
-    private async Task<List<T>> GetWorkshopsWithAverageRating<T>(List<T> workshops) where T : WorkshopBaseCard
+    private async Task<List<T>> GetWorkshopsWithAverageRating<T>(List<T> workshops)
+        where T : WorkshopBaseCard
     {
         var averageRatings =
             await ratingService.GetAverageRatingForRangeAsync(workshops.Select(p => p.WorkshopId), RatingType.Workshop)
@@ -830,6 +831,5 @@ public class WorkshopService : IWorkshopService
         }
     }
 
-    private void ValidateOffsetFilter(OffsetFilter offsetFilter) =>
-        ModelValidationHelper.ValidateOffsetFilter(offsetFilter);
+    private void ValidateOffsetFilter(OffsetFilter offsetFilter) => ModelValidationHelper.ValidateOffsetFilter(offsetFilter);
 }
