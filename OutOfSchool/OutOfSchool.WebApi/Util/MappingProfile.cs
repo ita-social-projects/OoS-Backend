@@ -335,6 +335,12 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.AccountStatus, m => m.Ignore())
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber.Right(Constants.PhoneShortLength)));
 
+        CreateMap<User, FullProviderAdminDto>()
+            .ForMember(dest => dest.IsDeputy, opt => opt.Ignore())
+            .ForMember(dest => dest.AccountStatus, m => m.Ignore())
+            .ForMember(dest => dest.WorkshopTitles, opt => opt.Ignore())
+            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber.Right(Constants.PhoneShortLength)));
+
         CreateMap<DirectionDto, Direction>()
             .ForMember(dest => dest.InstitutionHierarchies, opt => opt.Ignore());
 

@@ -73,7 +73,7 @@ public interface IProviderAdminService
     /// </summary>
     /// <param name="providerAdminId">ProviderAdmin's Id.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<ProviderAdminDto> GetFullProviderAdmin(string providerAdminId);
+    Task<FullProviderAdminDto> GetFullProviderAdmin(string providerAdminId);
 
     /// <summary>
     /// Send invitation to ProviderAdmin by Id.
