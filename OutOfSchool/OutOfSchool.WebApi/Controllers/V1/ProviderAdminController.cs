@@ -259,7 +259,7 @@ public class ProviderAdminController : Controller
     /// </summary>
     /// <param name="providerAdminId">ProviderAdmin's id.</param>
     /// <returns>Info about ProviderAdmin.</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderAdminDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FullProviderAdminDto))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

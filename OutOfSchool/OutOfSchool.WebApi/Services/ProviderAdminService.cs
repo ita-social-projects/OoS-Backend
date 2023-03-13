@@ -503,7 +503,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     }
 
     /// <inheritdoc/>
-    public async Task<ProviderAdminDto> GetFullProviderAdmin(string providerAdminId)
+    public async Task<FullProviderAdminDto> GetFullProviderAdmin(string providerAdminId)
     {
         var providerAdmin = await GetById(providerAdminId).ConfigureAwait(false);
         if (providerAdmin == null)
@@ -516,7 +516,9 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         var user = (await userRepository.GetByFilter(u => u.Id == providerAdmin.UserId).ConfigureAwait(false))
             .SingleOrDefault();
 
-        var result = mapper.Map<ProviderAdminDto>(user);
+        var result = mapper.Map<FullProviderAdminDto>(user);
+
+        result.WorkshopTitles = await workshopService.GetWorkshopListByProviderAdminId(providerAdminId).ConfigureAwait(false);
 
         result.IsDeputy = providerAdmin.IsDeputy;
         if (user.IsBlocked)
