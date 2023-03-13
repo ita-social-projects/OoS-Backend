@@ -207,7 +207,8 @@ public class WorkshopService : IWorkshopService
     /// <inheritdoc/>
     public async Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId)
     {
-        logger.LogDebug("Getting Workshop (Id, Title) by organization started. Looking ProviderId = {ProviderId}", providerId);
+        logger.LogDebug("Getting Workshop (Id, Title) by organization started. Looking ProviderId = {ProviderId}",
+            providerId);
 
         var workshops = await workshopRepository.GetByFilter(
             predicate: x => x.ProviderId == providerId);
@@ -220,16 +221,26 @@ public class WorkshopService : IWorkshopService
     /// <inheritdoc/>
     public async Task<List<ShortEntityDto>> GetWorkshopListByProviderAdminId(string providerAdminId)
     {
-        logger.LogDebug("Getting Workshop (Id, Title) by organization started. Looking ProviderAdminId = {ProviderAdminId}", providerAdminId);
+        logger.LogDebug(
+            "Getting Workshop (Id, Title) by organization started. Looking ProviderAdminId = {ProviderAdminId}",
+            providerAdminId);
 
-        var result = (await providerAdminRepository
-            .GetByFilter(pa => pa.UserId == providerAdminId))
+        var providerAdmin = (await providerAdminRepository.GetByFilter(pa => pa.UserId == providerAdminId)).FirstOrDefault();
+        if (providerAdmin.IsDeputy)
+        {
+            return (await workshopRepository
+                    .GetByFilter(w => providerAdmin.Provider.Workshops.Contains(w)))
+                .Select(workshop => mapper.Map<ShortEntityDto>(workshop))
+                .OrderBy(workshop => workshop.Title)
+                .ToList();
+        }
+
+        return (await providerAdminRepository
+                .GetByFilter(pa => pa.UserId == providerAdminId))
             .SelectMany(pa => pa.ManagedWorkshops, (pa, workshops) => new { workshops })
             .Select(x => mapper.Map<ShortEntityDto>(x.workshops))
             .OrderBy(w => w.Title)
             .ToList();
-
-        return result;
     }
 
     /// <inheritdoc/>
@@ -242,14 +253,16 @@ public class WorkshopService : IWorkshopService
         ValidateExcludedIdFilter(filter);
 
         var workshopBaseCardsCount = await workshopRepository.Count(where: x =>
-                                                filter.ExcludedId == null ? (x.ProviderId == id)
-                                                : (x.ProviderId == id && x.Id != filter.ExcludedId)).ConfigureAwait(false);
+            filter.ExcludedId == null
+                ? (x.ProviderId == id)
+                : (x.ProviderId == id && x.Id != filter.ExcludedId)).ConfigureAwait(false);
         var workshops = await workshopRepository.Get(
-            skip: filter.From,
-            take: filter.Size,
-            includeProperties: includingPropertiesForMappingDtoModel,
-            where: x => filter.ExcludedId == null ? (x.ProviderId == id)
-                                  : (x.ProviderId == id && x.Id != filter.ExcludedId))
+                skip: filter.From,
+                take: filter.Size,
+                includeProperties: includingPropertiesForMappingDtoModel,
+                where: x => filter.ExcludedId == null
+                    ? (x.ProviderId == id)
+                    : (x.ProviderId == id && x.Id != filter.ExcludedId))
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -585,7 +598,8 @@ public class WorkshopService : IWorkshopService
             .ConfigureAwait(false)).ProviderId;
     }
 
-    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) => ModelValidationHelper.ValidateExcludedIdFilter(filter);
+    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) =>
+        ModelValidationHelper.ValidateExcludedIdFilter(filter);
 
     private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
     {
