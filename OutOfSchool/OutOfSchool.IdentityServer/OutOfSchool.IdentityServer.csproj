@@ -22,8 +22,8 @@
     <PackageReference Include="IdentityServer4.AspNetIdentity" Version="4.1.1" />
     <PackageReference Include="IdentityServer4.EntityFramework" Version="4.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.6">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -31,7 +31,7 @@
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="6.0.6" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.8.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.1" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="7.0.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="6.0.1" />
     <PackageReference Include="Serilog.Enrichers.GlobalLogContext" Version="1.1.0" />
     <PackageReference Include="Serilog.Exceptions" Version="8.3.0" />

@@ -28,12 +28,12 @@
       <PackageReference Include="H3Lib" Version="3.7.2" />
       <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="6.0.6" />
       <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.6" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.6" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.6">
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.2" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.2">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="6.0.6" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="7.0.2" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
       <PackageReference Include="MongoDB.Driver.GridFS" Version="2.13.2" />
       <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
