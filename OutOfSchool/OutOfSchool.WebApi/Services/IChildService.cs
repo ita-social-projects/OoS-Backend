@@ -16,7 +16,7 @@ public interface IChildService
     /// If child's property ParentId is not equal to the parent's Id that was found by specified userId,
     /// the child's property will be changed to the proper value: parent's Id that was found.
     /// </summary>
-    /// <param name="childDto">Child to add.</param>
+    /// <param name="childCreateDto">Child to add.</param>
     /// <param name="userId">Key in the User table.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The result contains a <see cref="ChildDto"/> that was created.</returns>
@@ -24,7 +24,7 @@ public interface IChildService
     /// <exception cref="ArgumentException">If required child's properties are not set.</exception>
     /// <exception cref="UnauthorizedAccessException">If parent with userId was not found.</exception>
     /// <exception cref="DbUpdateException">If something wrong occurred while saving to the database.</exception>
-    Task<ChildDto> CreateChildForUser(ChildCreateDto childDto, string userId);
+    Task<ChildDto> CreateChildForUser(ChildCreateDto childCreateDto, string userId);
 
     /// <summary>
     /// Create the list of the children for specified user.
