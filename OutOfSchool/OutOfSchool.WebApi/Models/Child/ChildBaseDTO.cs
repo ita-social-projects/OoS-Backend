@@ -1,16 +1,11 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models.SocialGroup;
 
 namespace OutOfSchool.WebApi.Models;
 
-public class ChildDto
+public class ChildBaseDto
 {
-    public Guid Id { get; set; }
-
     [Required(ErrorMessage = "First name is required")]
     [StringLength(60, MinimumLength = 1)]
     [RegularExpression(@"^(?i)[А-ЯҐЄІЇ](([\'\-][А-ЯҐЄІЇ])?[А-ЯҐЄІЇ]*)*$", ErrorMessage = "First name contains invalid characters")]
@@ -41,6 +36,4 @@ public class ChildDto
     public bool IsParent { get; set; }
 
     public List<SocialGroupDto> SocialGroups { get; set; }
-
-    public ParentDtoWithContactInfo Parent{ get; set; }
 }

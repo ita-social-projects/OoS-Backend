@@ -24,18 +24,18 @@ public interface IChildService
     /// <exception cref="ArgumentException">If required child's properties are not set.</exception>
     /// <exception cref="UnauthorizedAccessException">If parent with userId was not found.</exception>
     /// <exception cref="DbUpdateException">If something wrong occurred while saving to the database.</exception>
-    Task<ChildDto> CreateChildForUser(ChildDto childDto, string userId);
+    Task<ChildDto> CreateChildForUser(ChildCreateDto childDto, string userId);
 
     /// <summary>
     /// Create the list of the children for specified user.
     /// If child's property ParentId is not equal to the parent's Id that was found by specified userId,
     /// the child's property will be changed to the proper value: parent's Id that was found.
     /// </summary>
-    /// <param name="childrenDtos">The list of the children to add.</param>
+    /// <param name="childrenCreateDtos">The list of the children to add.</param>
     /// <param name="userId">The key in the User table.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The result contains a <see cref="ChildrenCreationResponse"/> that was created.</returns>
-    Task<ChildrenCreationResultDto> CreateChildrenForUser(List<ChildDto> childrenDtos, string userId);
+    Task<ChildrenCreationResultDto> CreateChildrenForUser(List<ChildCreateDto> childrenCreateDtos, string userId);
 
     /// <summary>
     /// Get all children from the database.
@@ -112,7 +112,7 @@ public interface IChildService
     /// Update a child of the specified user.
     /// Child's property ParentId cannot be changed and uatomatically will be set to the old value.
     /// </summary>
-    /// <param name="childDto">Child entity to update.</param>
+    /// <param name="childUpdateDto">Child entity to update.</param>
     /// <param name="userId">Key in the User table.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The result contains a <see cref="ChildDto"/> that was updated.</returns>
@@ -120,7 +120,7 @@ public interface IChildService
     /// <exception cref="ArgumentException">If required child's properties are not set.</exception>
     /// <exception cref="UnauthorizedAccessException">If user is trying to update not his own child.</exception>
     /// <exception cref="DbUpdateException">If something wrong occurred while saving to the database.</exception>
-    Task<ChildDto> UpdateChildCheckingItsUserIdProperty(ChildDto childDto, string userId);
+    Task<ChildDto> UpdateChildCheckingItsUserIdProperty(ChildUpdateDto childUpdateDto, string userId);
 
     /// <summary>
     /// Delete a child of the specified user.

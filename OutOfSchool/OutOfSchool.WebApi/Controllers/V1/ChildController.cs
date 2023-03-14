@@ -177,7 +177,7 @@ public class ChildController : ControllerBase
     /// <summary>
     /// Method for creating a new user's child.
     /// </summary>
-    /// <param name="childDto">Child entity to add.</param>
+    /// <param name="childCreateDto">Child entity to add.</param>
     /// <returns>The child that was created.</returns>
     [HasPermission(Permissions.ChildAddNew)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChildDto))]
@@ -186,11 +186,11 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(ChildDto childDto)
+    public async Task<IActionResult> Create(ChildCreateDto childCreateDto)
     {
         string userId = GettingUserProperties.GetUserId(User);
 
-        var child = await service.CreateChildForUser(childDto, userId).ConfigureAwait(false);
+        var child = await service.CreateChildForUser(childCreateDto, userId).ConfigureAwait(false);
 
         return CreatedAtAction(
             nameof(GetUsersChildById),
@@ -201,7 +201,7 @@ public class ChildController : ControllerBase
     /// <summary>
     /// Method for creating the list of the new user's children.
     /// </summary>
-    /// <param name="childrenDtos">The list of the children entities to add.</param>
+    /// <param name="childrenCreateDtos">The list of the children entities to add.</param>
     /// <returns>The list of the children that were created.</returns>
     [HasPermission(Permissions.ChildAddNew)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChildDto))]
@@ -210,11 +210,11 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> CreateChildren(List<ChildDto> childrenDtos)
+    public async Task<IActionResult> CreateChildren(List<ChildCreateDto> childrenCreateDtos)
     {
         string userId = GettingUserProperties.GetUserId(User);
 
-        var children = await service.CreateChildrenForUser(childrenDtos, userId).ConfigureAwait(false);
+        var children = await service.CreateChildrenForUser(childrenCreateDtos, userId).ConfigureAwait(false);
 
         return Ok(new ChildrenCreationResponse()
         {
@@ -235,7 +235,7 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(ChildDto dto)
+    public async Task<IActionResult> Update(ChildUpdateDto dto)
     {
         string userId = GettingUserProperties.GetUserId(User);
 

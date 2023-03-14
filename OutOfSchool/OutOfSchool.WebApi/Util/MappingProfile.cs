@@ -241,6 +241,17 @@ public class MappingProfile : Profile
             .ForMember(c => c.Achievements, m => m.Ignore())
             .ForMember(c => c.SocialGroups, m => m.Ignore());
 
+        CreateMap<ChildCreateDto, Child>()
+            .ForMember(c => c.Id, m => m.Ignore())
+            .ForMember(c => c.Parent, m => m.Ignore())
+            .ForMember(c => c.Achievements, m => m.Ignore())
+            .ForMember(c => c.SocialGroups, m => m.Ignore());
+
+        CreateMap<ChildUpdateDto, Child>()
+            .ForMember(c => c.Parent, m => m.Ignore())
+            .ForMember(c => c.Achievements, m => m.Ignore())
+            .ForMember(c => c.SocialGroups, m => m.Ignore());
+
         CreateMap<Parent, ParentDTO>().ReverseMap();
 
         CreateMap<Parent, ParentDtoWithContactInfo>()
