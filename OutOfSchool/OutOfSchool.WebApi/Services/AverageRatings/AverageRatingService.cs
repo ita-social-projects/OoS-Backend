@@ -10,6 +10,7 @@ using OutOfSchool.WebApi.Common.QuartzConstants;
 using OutOfSchool.WebApi.Models;
 using System.Collections.Generic;
 using System.Drawing.Text;
+using System.Linq;
 using System.Net.WebSockets;
 
 namespace OutOfSchool.WebApi.Services.AverageRatings;
@@ -23,6 +24,7 @@ public class AverageRatingService : IAverageRatingService
     private readonly IWorkshopRepository workshopRepository;
     private readonly IEntityRepository<long, Rating> ratingRepository;
     private readonly IEntityRepository<long, QuartzJob> quartzJobRepository;
+    private readonly IOperationWithObjectService operationWithObjectService;
 
     public AverageRatingService(
         ILogger<AverageRatingService> logger,
@@ -31,7 +33,8 @@ public class AverageRatingService : IAverageRatingService
         IRatingService ratingService,
         IWorkshopRepository workshopRepository,
         IEntityRepository<long, Rating> ratingRepository,
-        IEntityRepository<long, QuartzJob> quartzJobRepository)
+        IEntityRepository<long, QuartzJob> quartzJobRepository,
+        IOperationWithObjectService operationWithObjectService)
     {
         this.logger = logger;
         this.mapper = mapper;
@@ -40,6 +43,7 @@ public class AverageRatingService : IAverageRatingService
         this.workshopRepository = workshopRepository;
         this.ratingRepository = ratingRepository;
         this.quartzJobRepository = quartzJobRepository;
+        this.operationWithObjectService = operationWithObjectService;
     }
 
     /// <inheritdoc/>
@@ -77,7 +81,10 @@ public class AverageRatingService : IAverageRatingService
 
         var newAddedRatings = await GetNewRatings(lastSuccessQuartzJobLaunchDate).ConfigureAwait(false);
 
-        if (newAddedRatings.Any())
+        var filter = new OperationWithObjectFilter() { OperationType = OperationWithObjectOperationType.RecalculateAverageRating };
+        bool existsOperations = await operationWithObjectService.IsExists(filter);
+
+        if (newAddedRatings.Any() || existsOperations)
         {
             var averageRatings = await RecalculateAverageRatingsAsync(newAddedRatings).ConfigureAwait(false);
 
@@ -134,13 +141,24 @@ public class AverageRatingService : IAverageRatingService
     {
         logger.LogInformation("The average ratings calculation started.");
 
+        var filter = new OperationWithObjectFilter() { OperationType = OperationWithObjectOperationType.RecalculateAverageRating };
+        var operations = await operationWithObjectService.GetAll(filter);
+        var workshopsIdsFromOperations = operations.Select(x => (Guid)x.EntityId);
+
         var workshopsIds = GetUniqueWorkshopIds(ratings);
+        workshopsIds = workshopsIds.Union(workshopsIdsFromOperations);
+
         var providersIds = GetUniqueProviderIdsByWorkshopIdsAsync(workshopsIds);
 
         Dictionary<Guid, Tuple<float, int>> averageRatings = new Dictionary<Guid, Tuple<float, int>>();
 
         averageRatings.AddRange(CalculateWorkshopsRatingsByEntityIdsAsync(workshopsIds));
         averageRatings.AddRange(CalculateProvidersRatingsByProvidersIdsAsync(providersIds));
+
+        foreach (var operation in operations)
+        {
+            await operationWithObjectService.Delete(operation.Id);
+        }
 
         logger.LogInformation("The average ratings calculation finished.");
 

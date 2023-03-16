@@ -7,6 +7,7 @@ using AutoMapper;
 using Castle.Core.Internal;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using Nest;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -27,6 +28,7 @@ public class RatingService : IRatingService
     private readonly ILogger<RatingService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
+    private readonly IOperationWithObjectService operationWithObjectService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RatingService"/> class.
@@ -37,13 +39,15 @@ public class RatingService : IRatingService
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
+    /// <param name="operationWithObjectService">Service operation with rating.</param>
     public RatingService(
         IEntityRepository<long, Rating> ratingRepository,
         IWorkshopRepository workshopRepository,
         IParentRepository parentRepository,
         ILogger<RatingService> logger,
         IStringLocalizer<SharedResource> localizer,
-        IMapper mapper)
+        IMapper mapper,
+        IOperationWithObjectService operationWithObjectService)
     {
         this.ratingRepository = ratingRepository ?? throw new ArgumentNullException(nameof(ratingRepository));
         this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
@@ -51,6 +55,7 @@ public class RatingService : IRatingService
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        this.operationWithObjectService = operationWithObjectService ?? throw new ArgumentNullException(nameof(operationWithObjectService));
     }
 
     /// <inheritdoc/>
@@ -219,7 +224,7 @@ public class RatingService : IRatingService
     /// <inheritdoc/>
     public async Task Delete(long id)
     {
-        logger.LogInformation($"Deleting Rating with Id = {id} started.");
+        logger.LogInformation("Deleting Rating with Id = {id} started.", id);
 
         var rating = await ratingRepository.GetById(id).ConfigureAwait(false);
 
@@ -230,9 +235,23 @@ public class RatingService : IRatingService
                 localizer[$"Rating with Id = {id} doesn't exist in the system"]);
         }
 
-        await ratingRepository.Delete(rating).ConfigureAwait(false);
+        await ratingRepository.RunInTransaction(async () => {
+            await ratingRepository.Delete(rating).ConfigureAwait(false);
 
-        logger.LogInformation($"Rating with Id = {id} succesfully deleted.");
+            var filter = new OperationWithObjectFilter() {
+                OperationType = OperationWithObjectOperationType.RecalculateAverageRating,
+                EntityId = rating.EntityId,
+            };
+
+            if (!await operationWithObjectService.IsExists(filter)) {
+                await operationWithObjectService.Create(
+                    OperationWithObjectOperationType.RecalculateAverageRating,
+                    rating.EntityId,
+                    OperationWithObjectEntityType.Workshop);
+            }
+
+            logger.LogInformation("Rating with Id = {id} succesfully deleted.", id);
+        });
     }
 
     /// <summary>

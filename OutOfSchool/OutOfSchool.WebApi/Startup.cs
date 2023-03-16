@@ -205,6 +205,7 @@ public static class Startup
         services.AddTransient<IStatisticReportService, StatisticReportService>();
         services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();
         services.AddTransient<ICodeficatorService, CodeficatorService>();
+        services.AddTransient<IOperationWithObjectService, OperationWithObjectService>();
 
         services.AddTransient<IGRPCCommonService, GRPCCommonService>();
         services.AddTransient<IWorkshopStrategy>(sp =>
