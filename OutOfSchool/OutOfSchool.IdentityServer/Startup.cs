@@ -151,44 +151,7 @@ public static class Startup
 
     public static void Configure(this WebApplication app)
     {
-        var policiesHeaders = new HeaderPolicyCollection();
-        policiesHeaders
-            .AddDefaultSecurityHeaders()
-            .AddStrictTransportSecurityMaxAgeIncludeSubDomains(maxAgeInSeconds: 31449600)
-            .AddReferrerPolicyStrictOrigin()
-            .AddPermissionsPolicy(builder =>
-            {
-                builder.AddMicrophone();
-                builder.AddGeolocation()
-                    .Self();
-                builder.AddCamera();
-            })
-            .AddContentSecurityPolicyReportOnly(builder =>
-            {
-                builder.AddDefaultSrc()
-                    .Self();
-                builder.AddObjectSrc()
-                    .None();
-                builder.AddStyleSrc()
-                    .Self()
-                    .UnsafeInline()
-                    .From("fonts.googleapis.com");
-                builder.AddFontSrc()
-                    .From("fonts.gstatic.com");
-                builder.AddScriptSrc()
-                    .Self();
-                builder.AddBaseUri()
-                    .Self();
-                builder.AddImgSrc()
-                    .From("https://*")
-                    .Self()
-                    .Data();
-                builder.AddCustomDirective("script-src-elem", "self");
-                builder.AddCustomDirective("trusted-types", "angular");
-                builder.AddCustomDirective("require-trusted-types-for", "script");
-            });
-
-        app.UseSecurityHeaders(policiesHeaders);
+        app.UseSecurityHttpHeaders();
 
         var proxyOptions = app.Configuration.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
         app.UseProxy(proxyOptions);
