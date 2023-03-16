@@ -34,7 +34,7 @@ public class OperationWithObjectService : IOperationWithObjectService
         OperationWithObjectOperationType operationType,
         Guid? entityId,
         OperationWithObjectEntityType? entityType,
-        DateTimeOffset? eventDateTime,
+        DateTimeOffset? eventDateTime = null,
         string rowSeparator = null,
         string comment = null)
     {
