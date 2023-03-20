@@ -111,7 +111,7 @@ public class NotificationService : INotificationService
     {
         logger.LogInformation("Deleting Notification with Id = {Id} started", id);
 
-        var entity = new Notification { Id = id };
+        var entity = await notificationRepository.GetById(id);
 
         try
         {

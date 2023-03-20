@@ -263,6 +263,8 @@ public class MappingProfile : Profile
         CreateMap<Notification, NotificationDto>().ReverseMap()
             .ForMember(n => n.Id, n => n.Ignore());
 
+        CreateMap<OperationWithObject, OperationWithObjectDto>();
+
         CreateMap<StatisticReport, StatisticReportDto>().ReverseMap();
 
         CreateMap<ElasticsearchSyncRecord, ElasticsearchSyncRecordDto>().ReverseMap();
