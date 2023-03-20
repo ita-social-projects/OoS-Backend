@@ -91,7 +91,7 @@ public class OperationWithObjectService : IOperationWithObjectService
         return operationsWithObjects.Select(operation => mapper.Map<OperationWithObjectDto>(operation)).ToList();
     }
 
-    public async Task<bool> IsExists(OperationWithObjectFilter filter)
+    public async Task<bool> Exists(OperationWithObjectFilter filter)
     {
         logger.LogInformation("Checking for existing entities with filter");
 

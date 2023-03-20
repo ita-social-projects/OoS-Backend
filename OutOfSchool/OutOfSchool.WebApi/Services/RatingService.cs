@@ -243,7 +243,7 @@ public class RatingService : IRatingService
                 EntityId = rating.EntityId,
             };
 
-            if (!await operationWithObjectService.IsExists(filter)) {
+            if (!await operationWithObjectService.Exists(filter)) {
                 await operationWithObjectService.Create(
                     OperationWithObjectOperationType.RecalculateAverageRating,
                     rating.EntityId,

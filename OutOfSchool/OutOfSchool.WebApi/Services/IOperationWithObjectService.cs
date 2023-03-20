@@ -47,5 +47,5 @@ public interface IOperationWithObjectService
     /// </summary>
     /// <param name="filter">Filter.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<bool> IsExists(OperationWithObjectFilter filter);
+    Task<bool> Exists(OperationWithObjectFilter filter);
 }

@@ -82,7 +82,7 @@ public class AverageRatingService : IAverageRatingService
         var newAddedRatings = await GetNewRatings(lastSuccessQuartzJobLaunchDate).ConfigureAwait(false);
 
         var filter = new OperationWithObjectFilter() { OperationType = OperationWithObjectOperationType.RecalculateAverageRating };
-        bool existsOperations = await operationWithObjectService.IsExists(filter);
+        bool existsOperations = await operationWithObjectService.Exists(filter);
 
         if (newAddedRatings.Any() || existsOperations)
         {
