@@ -18,11 +18,23 @@ variable "auth_secret" {
   type = string
 }
 
-variable "mongo_secret" {
+variable "es_api_pass_secret" {
   type = string
 }
 
-variable "es_api_pass_secret" {
+variable "redis_hostname" {
+  type = string
+}
+
+variable "redis_secret" {
+  type = string
+}
+
+variable "sender_email" {
+  type = string
+}
+
+variable "sendgrid_key_secret" {
   type = string
 }
 
@@ -39,4 +51,32 @@ variable "zone" {
 variable "region" {
   type        = string
   description = "Region to create the resources in"
+}
+
+variable "bucket" {
+  type = string
+}
+
+variable "github_front_secret" {
+  type = string
+}
+
+variable "github_back_secret" {
+  type = string
+}
+
+variable "github_token_secret" {
+  type = string
+}
+
+variable "sql_port" {
+  type = number
+}
+
+variable "redis_port" {
+  type = number
+}
+
+variable "geo_key_secret" {
+  type = string
 }

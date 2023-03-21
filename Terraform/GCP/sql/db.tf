@@ -1,19 +1,15 @@
-data "google_compute_network" "default" {
-  name = "default"
-}
-
 resource "google_compute_global_address" "private_ip" {
   name          = "sql-private-ip-${var.random_number}"
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
   prefix_length = 16
-  network       = data.google_compute_network.default.id
+  network       = var.network_id
 }
 
 resource "google_service_networking_connection" "private_vpc_connection" {
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.private_ip.name]
-  network                 = data.google_compute_network.default.id
+  network                 = var.network_id
 }
 
 resource "google_sql_database_instance" "storage" {
@@ -32,7 +28,7 @@ resource "google_sql_database_instance" "storage" {
 
     ip_configuration {
       ipv4_enabled    = "false"
-      private_network = data.google_compute_network.default.id
+      private_network = var.network_id
     }
 
     backup_configuration {

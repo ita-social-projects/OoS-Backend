@@ -8,6 +8,7 @@ resource "google_compute_instance_template" "k3s" {
 
   instance_description = "${var.node_role} instance"
   machine_type         = var.machine_type.e2medium
+  can_ip_forward       = true
 
   scheduling {
     automatic_restart   = true
@@ -23,15 +24,14 @@ resource "google_compute_instance_template" "k3s" {
   }
 
   network_interface {
-    network = "default"
-    access_config {
-      // Ephemeral IP
-    }
+    network    = var.network_name
+    subnetwork = "outofschool"
   }
 
   metadata = {
-    shutdown-script = var.shutdown
-    ssh-keys        = "${var.ssh_user}:${file(var.ssh_key)}"
+    shutdown-script        = var.shutdown
+    block-project-ssh-keys = true
+    enable-oslogin         = "TRUE"
   }
 
   metadata_startup_script = var.startup

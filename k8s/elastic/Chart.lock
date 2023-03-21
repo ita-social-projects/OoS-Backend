@@ -1,0 +1,9 @@
+dependencies:
+- name: elasticsearch
+  repository: https://helm.elastic.co
+  version: 7.16.1
+- name: kibana
+  repository: https://helm.elastic.co
+  version: 7.16.1
+digest: sha256:77afddff3cfeba657e2990e42fb94d410a7cb9b54b4b617f64652186300c303f
+generated: "2022-05-20T14:23:18.009834+03:00"

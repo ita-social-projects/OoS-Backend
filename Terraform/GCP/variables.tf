@@ -68,11 +68,6 @@ variable "sql_hostname" {
   description = "Hostname for application database"
 }
 
-variable "mongo_hostname" {
-  type        = string
-  description = "Hostname for application MongoDB"
-}
-
 variable "k8s_api_hostname" {
   type        = string
   description = "Hostname for K8S API"
@@ -91,4 +86,50 @@ variable "kibana_hostname" {
 variable "elastic_hostname" {
   type        = string
   description = "Hostname for Elastic"
+}
+
+variable "redis_hostname" {
+  type        = string
+  description = "Hostname for Redis"
+}
+
+variable "sender_email" {
+  type        = string
+  description = "Outgoing mail"
+}
+
+variable "sendgrid_key" {
+  type        = string
+  description = "Outgoing mail api key"
+}
+
+variable "github_front_deploy_base64" {
+  type        = string
+  description = "Github Deploy key"
+}
+
+variable "github_back_deploy_base64" {
+  type        = string
+  description = "Github Deploy key"
+}
+
+variable "github_access_token" {
+  type        = string
+  description = "Github Access Token to create releases"
+}
+
+variable "sql_port" {
+  type = number
+}
+
+variable "redis_port" {
+  type = number
+}
+
+variable "geo_apikey" {
+  type = string
+}
+
+variable "enable_ingress_http" {
+  type = bool
 }

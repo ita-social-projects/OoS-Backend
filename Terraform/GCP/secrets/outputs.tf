@@ -10,6 +10,26 @@ output "sql_auth_secret" {
   value = "${element(local.auth_list, length(local.auth_list) - 3)}:${element(local.auth_list, length(local.auth_list) - 1)}"
 }
 
-output "mongo_secret" {
-  value = "${element(local.mongo_list, length(local.mongo_list) - 3)}:${element(local.mongo_list, length(local.mongo_list) - 1)}"
+output "redis_secret" {
+  value = "${element(local.redis_list, length(local.redis_list) - 3)}:${element(local.redis_list, length(local.redis_list) - 1)}"
+}
+
+output "sendgrid_key_secret" {
+  value = "${element(local.sendgrid_key_list, length(local.sendgrid_key_list) - 3)}:${element(local.sendgrid_key_list, length(local.sendgrid_key_list) - 1)}"
+}
+
+output "geo_key_secret" {
+  value = "${element(local.geo_key_list, length(local.geo_key_list) - 3)}:${element(local.geo_key_list, length(local.geo_key_list) - 1)}"
+}
+
+output "github_front_secret" {
+  value = google_secret_manager_secret_version.github_front_secret.name
+}
+
+output "github_back_secret" {
+  value = google_secret_manager_secret_version.github_back_secret.name
+}
+
+output "github_token_secret" {
+  value = google_secret_manager_secret_version.github_token_secret.name
 }

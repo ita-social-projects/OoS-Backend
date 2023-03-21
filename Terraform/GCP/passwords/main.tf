@@ -28,13 +28,7 @@ resource "random_password" "es_api_pass" {
   override_special = "_%@"
 }
 
-resource "random_password" "mongo_root_pass" {
-  length           = 16
-  special          = true
-  override_special = "_%@"
-}
-
-resource "random_password" "mongo_pass" {
+resource "random_password" "redis_pass" {
   length           = 16
   special          = true
   override_special = "_%@"

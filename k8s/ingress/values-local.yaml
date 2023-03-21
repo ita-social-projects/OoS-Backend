@@ -1,0 +1,9 @@
+# Local values override
+
+ingress-nginx:
+  enabled: true
+  controller:
+    config:
+      proxy-body-size: 50m
+  defaultBackend:
+    enabled: false

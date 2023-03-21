@@ -1,6 +1,6 @@
-resource "kubectl_manifest" "cluster-issuer" {
+resource "kubectl_manifest" "cluster_issuer" {
   depends_on = [
-    helm_release.cert-manager,
+    helm_release.cert_manager,
   ]
   yaml_body = <<-EOF
   apiVersion: cert-manager.io/v1
@@ -12,23 +12,23 @@ resource "kubectl_manifest" "cluster-issuer" {
   EOF
 }
 
-resource "kubectl_manifest" "ca-certificate" {
+resource "kubectl_manifest" "ca_certificate" {
   depends_on = [
-    helm_release.cert-manager,
+    helm_release.cert_manager,
   ]
   yaml_body = <<-EOF
   apiVersion: cert-manager.io/v1
   kind: Certificate
   metadata:
     name: selfsigned-ca
-    namespace: ${kubernetes_namespace.oos.metadata[0].name}
+    namespace: ${data.kubernetes_namespace.oos.metadata[0].name}
   spec:
     commonName: selfsigned-ca
     isCA: true
     issuerRef:
       group: cert-manager.io
       kind: ClusterIssuer
-      name: ${kubectl_manifest.cluster-issuer.name}
+      name: ${kubectl_manifest.cluster_issuer.name}
     privateKey:
       algorithm: ECDSA
       size: 256
@@ -36,33 +36,33 @@ resource "kubectl_manifest" "ca-certificate" {
   EOF
 }
 
-resource "kubectl_manifest" "oos-issuer" {
+resource "kubectl_manifest" "oos_issuer" {
   depends_on = [
-    kubectl_manifest.ca-certificate,
-    helm_release.cert-manager
+    kubectl_manifest.ca_certificate,
+    helm_release.cert_manager
   ]
   yaml_body = <<-EOF
   apiVersion: cert-manager.io/v1
   kind: Issuer
   metadata:
     name: oos-issuer
-    namespace: ${kubernetes_namespace.oos.metadata[0].name}
+    namespace: ${data.kubernetes_namespace.oos.metadata[0].name}
   spec:
     ca:
       secretName: root-secret
   EOF
 }
 
-resource "kubectl_manifest" "letsencrypt-issuer" {
+resource "kubectl_manifest" "letsencrypt_issuer" {
   depends_on = [
-    helm_release.cert-manager
+    helm_release.cert_manager
   ]
   yaml_body = <<-EOF
   apiVersion: cert-manager.io/v1
   kind: Issuer
   metadata:
     name: letsencrypt
-    namespace: ${kubernetes_namespace.oos.metadata[0].name}
+    namespace: ${data.kubernetes_namespace.oos.metadata[0].name}
   spec:
     acme:
       email: ${var.letsencrypt_email}

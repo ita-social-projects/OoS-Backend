@@ -1,7 +1,7 @@
-resource "kubernetes_secret" "sql-credentials" {
+resource "kubernetes_secret" "sql_credentials" {
   metadata {
     name      = "mysql-auth"
-    namespace = kubernetes_namespace.oos.metadata[0].name
+    namespace = data.kubernetes_namespace.oos.metadata[0].name
   }
 
   data = {
@@ -11,10 +11,10 @@ resource "kubernetes_secret" "sql-credentials" {
   }
 }
 
-resource "kubernetes_secret" "sql-api-credentials" {
+resource "kubernetes_secret" "sql_api_credentials" {
   metadata {
     name      = "mysql-api-auth"
-    namespace = kubernetes_namespace.oos.metadata[0].name
+    namespace = data.kubernetes_namespace.oos.metadata[0].name
   }
 
   data = {
@@ -22,10 +22,10 @@ resource "kubernetes_secret" "sql-api-credentials" {
   }
 }
 
-resource "kubernetes_secret" "elastic-credentials" {
+resource "kubernetes_secret" "elastic_credentials" {
   metadata {
     name      = "elasticsearch-credentials"
-    namespace = kubernetes_namespace.oos.metadata[0].name
+    namespace = data.kubernetes_namespace.oos.metadata[0].name
   }
 
   data = {
@@ -35,14 +35,13 @@ resource "kubernetes_secret" "elastic-credentials" {
   }
 }
 
-resource "kubernetes_secret" "mongodb-credentials" {
+resource "kubernetes_secret" "redis_credentials" {
   metadata {
-    name      = "mongodb-credentials"
-    namespace = kubernetes_namespace.oos.metadata[0].name
+    name      = "redis-auth"
+    namespace = data.kubernetes_namespace.oos.metadata[0].name
   }
 
   data = {
-    mongodb-passwords     = var.mongo_pass
-    mongodb-root-password = var.mongo_root_pass
+    password = var.redis_pass
   }
 }

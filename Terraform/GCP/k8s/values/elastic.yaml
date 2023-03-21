@@ -25,23 +25,11 @@ elasticConfigJob:
         version: 2
   secret: elasticsearch-credentials
 
+generateCertificate: false
+
 elasticsearch:
-  enabled: true
   replicas: 1
   protocol: http
-  esConfig:
-    elasticsearch.yml: |
-      xpack.license.self_generated.type: basic
-      xpack.security.enabled: true
-      xpack.security.transport.ssl.enabled: true
-      xpack.security.transport.ssl.verification_mode: certificate
-      xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/certs/tls.key
-      xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/certs/tls.crt
-      xpack.security.transport.ssl.certificate_authorities: /usr/share/elasticsearch/config/certs/ca.crt
-      xpack.security.http.ssl.enabled: false
-      xpack.security.http.ssl.key: /usr/share/elasticsearch/config/certs/tls.key
-      xpack.security.http.ssl.certificate: /usr/share/elasticsearch/config/certs/tls.crt
-      xpack.security.http.ssl.certificate_authorities: /usr/share/elasticsearch/config/certs/ca.crt
   secretMounts:
     - name: elastic-certificates
       secretName: elastic-certificates
@@ -104,7 +92,6 @@ elasticsearch:
   ingress:
     enabled: true
     annotations:
-      kubernetes.io/ingress.class: nginx
       cert-manager.io/issuer: "letsencrypt"
       cert-manager.io/duration: 2160h0m0s
       cert-manager.io/renew-before: 168h0m0s
@@ -139,7 +126,6 @@ kibana:
   ingress:
     enabled: true
     annotations:
-      kubernetes.io/ingress.class: nginx
       cert-manager.io/issuer: "letsencrypt"
       cert-manager.io/duration: 2160h0m0s
       cert-manager.io/renew-before: 168h0m0s
@@ -150,20 +136,3 @@ kibana:
     tls:
     - secretName: kibana-tls
       hosts: []
-
-ingress-nginx:
-  enabled: false
-webapi:
-  enabled: false
-identity:
-  enabled: false
-frontend:
-  enabled: false
-mysql:
-  enabled: false
-phpmyadmin:
-  enabled: false
-cert-manager:
-  enabled: false
-mongodb:
-  enabled: false

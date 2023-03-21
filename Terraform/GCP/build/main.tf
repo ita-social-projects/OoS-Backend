@@ -1,57 +1,53 @@
-resource "google_cloudbuild_trigger" "backend-api" {
+resource "google_pubsub_topic" "cloud_build" {
+  name = "cloud-builds"
+}
+
+resource "google_cloudbuild_trigger" "backend_api" {
   name = "backend-api"
   github {
     owner = "ita-social-projects"
     name  = "OoS-Backend"
     push {
-      tag = "gcp-[0-9]\\.[0-9]\\.[0-9]"
+      branch = "develop"
     }
   }
   substitutions = {
-    _ZONE               = var.zone
-    _REGION             = var.region
-    _SERVICE_ACCOUNT    = var.app_sa_email
-    _CONN_STRING_SECRET = var.api_secret
-    _MONGO_SECRET       = var.mongo_secret
-    _ES_PASSWORD        = var.es_api_pass_secret
+    _ASPNETCORE_ENVIRONMENT = "Google"
+    _ZONE                   = var.zone
+    _REGION                 = var.region
+    _SERVICE_ACCOUNT        = var.app_sa_email
+    _DB_PASS                = var.api_secret
+    _ES_PASSWORD            = var.es_api_pass_secret
+    _BUCKET                 = var.bucket
+    _REDIS_HOST             = var.redis_hostname
+    _REDIS_PASS             = var.redis_secret
+    _REDIS_PORT             = var.redis_port
+    _SQL_PORT               = var.sql_port
+    _GEO_KEY                = var.geo_key_secret
   }
 
-  filename = "app-cloudbuild.yml"
+  filename = "cloudbuild-app.yml"
 }
 
-resource "google_cloudbuild_trigger" "backend-auth" {
+resource "google_cloudbuild_trigger" "backend_auth" {
   name = "backend-auth"
   github {
     owner = "ita-social-projects"
     name  = "OoS-Backend"
     push {
-      tag = "gcp-[0-9]\\.[0-9]\\.[0-9]"
+      branch = "develop"
     }
   }
 
   substitutions = {
-    _REGION             = var.region
-    _SERVICE_ACCOUNT    = var.auth_sa_email
-    _CONN_STRING_SECRET = var.auth_secret
+    _ASPNETCORE_ENVIRONMENT = "Google"
+    _REGION                 = var.region
+    _SERVICE_ACCOUNT        = var.auth_sa_email
+    _DB_PASS                = var.auth_secret
+    _SENDER_EMAIL           = var.sender_email
+    _SENDGRID_KEY           = var.sendgrid_key_secret
+    _SQL_PORT               = var.sql_port
   }
 
-  filename = "auth-cloudbuild.yml"
-}
-
-resource "google_cloudbuild_trigger" "frontend" {
-  name = "frontend"
-  github {
-    owner = "ita-social-projects"
-    name  = "OoS-Frontend"
-    push {
-      tag = "gcp-[0-9]\\.[0-9]\\.[0-9]"
-    }
-  }
-
-  substitutions = {
-    _REGION          = var.region
-    _SERVICE_ACCOUNT = var.front_sa_email
-  }
-
-  filename = "cloudbuild.yaml"
+  filename = "cloudbuild-auth.yml"
 }

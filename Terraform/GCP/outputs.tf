@@ -23,17 +23,16 @@ output "es_api_pass" {
   sensitive = true
 }
 
+output "redis_pass" {
+  value     = module.passwords.redis_pass
+  sensitive = true
+}
+
 output "clusterstore_pass" {
   value     = module.sql.db_password
   sensitive = true
 }
 
-output "mongo_pass" {
-  value     = module.passwords.mongo_pass
-  sensitive = true
-}
-
-output "mongo_root_pass" {
-  value     = module.passwords.mongo_root_pass
-  sensitive = true
+output "image_bucket" {
+  value = module.storage.image_bucket
 }

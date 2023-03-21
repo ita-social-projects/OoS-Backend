@@ -33,6 +33,10 @@ variable "es_api_pass" {
   type = string
 }
 
+variable "redis_pass" {
+  type = string
+}
+
 variable "csi_sa_email" {
   type = string
 }
@@ -45,22 +49,9 @@ variable "letsencrypt_email" {
   description = "E-mail of letsencrypt user"
 }
 
-variable "mongo_root_pass" {
-  type = string
-}
-
-variable "mongo_pass" {
-  type = string
-}
-
 variable "sql_hostname" {
   type        = string
   description = "Hostname for application database"
-}
-
-variable "mongo_hostname" {
-  type        = string
-  description = "Hostname for application MongoDB"
 }
 
 variable "phpmyadmin_hostname" {
@@ -76,4 +67,16 @@ variable "kibana_hostname" {
 variable "elastic_hostname" {
   type        = string
   description = "Hostname for Elastic"
+}
+
+variable "sql_port" {
+  type = number
+}
+
+variable "redis_port" {
+  type = number
+}
+
+variable "enable_ingress_http" {
+  type = bool
 }

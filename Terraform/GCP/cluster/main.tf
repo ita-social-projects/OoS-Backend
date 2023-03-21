@@ -11,6 +11,7 @@ module "masters" {
     random_number          = var.random_number
     external_hostname      = var.k8s_api_hostname
     external_lb_ip_address = google_compute_address.lb.address
+    cluster_cidr           = var.subnet_cidr
   })
   random_number = var.random_number
   labels        = var.labels
@@ -18,8 +19,7 @@ module "masters" {
   zone          = var.zone
   sa_email      = var.sa_email
   admin_ips     = var.admin_ips
-  ssh_user      = var.ssh_user
-  ssh_key       = var.ssh_key
+  network_name  = var.network_name
 }
 
 locals {

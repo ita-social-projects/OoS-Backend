@@ -1,0 +1,18 @@
+apiVersion: v2
+name: elastic
+description: A Helm chart for Elastic & optional Kibana
+
+type: application
+
+version: 0.2.1
+
+appVersion: "7.16.1"
+
+dependencies:
+  - name: elasticsearch
+    version: 7.16.1
+    repository: https://helm.elastic.co
+  - name: kibana
+    version: 7.16.1
+    condition: kibana.enabled
+    repository: https://helm.elastic.co

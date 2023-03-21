@@ -1,7 +1,7 @@
 resource "helm_release" "mysql" {
   name          = "mysql"
-  chart         = "../../k8s/outofschool"
-  namespace     = kubernetes_namespace.oos.metadata[0].name
+  chart         = "../../k8s/database"
+  namespace     = data.kubernetes_namespace.oos.metadata[0].name
   wait          = true
   wait_for_jobs = true
   values = [
@@ -16,8 +16,9 @@ resource "helm_release" "mysql" {
     value = var.phpmyadmin_hostname
   }
   depends_on = [
-    kubernetes_secret.sql-credentials,
-    kubernetes_secret.sql-api-credentials,
+    kubernetes_secret.sql_credentials,
+    kubernetes_secret.sql_api_credentials,
+    kubernetes_secret.redis_credentials,
     helm_release.ingress
   ]
 }

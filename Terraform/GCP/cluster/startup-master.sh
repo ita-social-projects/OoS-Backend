@@ -7,7 +7,7 @@ set -uo pipefail
 # sudo bash add-monitoring-agent-repo.sh --also-install
 # sudo service stackdriver-agent start
 
-export INSTALL_K3S_VERSION=v1.21.8+k3s2
+export INSTALL_K3S_VERSION=v1.21.12+k3s1
 export K3S_DATASTORE_ENDPOINT="mysql://${db_username}:${db_password}@tcp(${db_host}:3306)/k3s"
 export K3S_TOKEN=${token}
 
@@ -282,7 +282,7 @@ spec:
       serviceAccountName: cloud-controller-manager
       containers:
         - name: cloud-controller-manager
-          image: quay.io/openshift/origin-gcp-cloud-controller-manager:4.10.0
+          image: quay.io/openshift/origin-gcp-cloud-controller-manager:4.12.0
           imagePullPolicy: Always
           resources:
             requests:
@@ -293,8 +293,11 @@ spec:
             - --bind-address=127.0.0.1
             - --cloud-provider=gce
             - --use-service-account-credentials
-            - --configure-cloud-routes=false
+            - --leader-elect=true
+            - --configure-cloud-routes=true
             - --allocate-node-cidrs=false
+            - --cluster-cidr=10.42.0.0/16
+            # - --cluster-cidr=${cluster_cidr}
             - --controllers=*,-nodeipam
           livenessProbe:
             httpGet:

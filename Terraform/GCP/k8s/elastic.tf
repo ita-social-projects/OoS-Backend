@@ -1,10 +1,10 @@
-resource "kubectl_manifest" "elastic-ssl" {
+resource "kubectl_manifest" "elastic_ssl" {
   yaml_body = <<-EOF
   apiVersion: cert-manager.io/v1
   kind: Certificate
   metadata:
     name: elastic-certificates
-    namespace: ${kubernetes_namespace.oos.metadata[0].name}
+    namespace: ${data.kubernetes_namespace.oos.metadata[0].name}
   spec:
     dnsNames:
       - elasticsearch-master
@@ -13,7 +13,7 @@ resource "kubectl_manifest" "elastic-ssl" {
     duration: 2160h0m0s
     issuerRef:
       kind: Issuer
-      name: ${kubectl_manifest.oos-issuer.name}
+      name: ${kubectl_manifest.oos_issuer.name}
     renewBefore: 168h0m0s
     secretName: elastic-certificates
   EOF
@@ -21,10 +21,11 @@ resource "kubectl_manifest" "elastic-ssl" {
 
 resource "helm_release" "elastic" {
   name          = "elastic"
-  chart         = "../../k8s/outofschool"
-  namespace     = kubernetes_namespace.oos.metadata[0].name
+  chart         = "../../k8s/elastic"
+  namespace     = data.kubernetes_namespace.oos.metadata[0].name
   wait          = true
   wait_for_jobs = true
+  timeout       = 600
   values = [
     "${file("${path.module}/values/elastic.yaml")}"
   ]
@@ -33,11 +34,11 @@ resource "helm_release" "elastic" {
     value = join("\\,", var.admin_ips)
   }
   set {
-    name  = "elastic.ingress.tls[0].hosts[0]"
+    name  = "elasticsearch.ingress.tls[0].hosts[0]"
     value = var.elastic_hostname
   }
   set {
-    name  = "elastic.ingress.hosts[0].host"
+    name  = "elasticsearch.ingress.hosts[0].host"
     value = var.elastic_hostname
   }
   set {
@@ -49,8 +50,8 @@ resource "helm_release" "elastic" {
     value = var.kibana_hostname
   }
   depends_on = [
-    kubernetes_secret.elastic-credentials,
-    kubectl_manifest.elastic-ssl,
+    kubernetes_secret.elastic_credentials,
+    kubectl_manifest.elastic_ssl,
     helm_release.ingress
   ]
 }
