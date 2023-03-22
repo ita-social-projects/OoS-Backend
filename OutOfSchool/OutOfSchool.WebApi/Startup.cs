@@ -15,10 +15,10 @@ public static class Startup
     {
         var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
 
-        app.UseSecurityHttpHeaders();
-
         var proxyOptions = app.Configuration.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
         app.UseProxy(proxyOptions);
+
+        app.UseSecurityHttpHeaders(app.Environment.IsDevelopment());
 
         if (app.Environment.IsDevelopment())
         {

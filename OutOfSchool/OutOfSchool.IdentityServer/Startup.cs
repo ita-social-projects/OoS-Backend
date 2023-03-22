@@ -151,10 +151,10 @@ public static class Startup
 
     public static void Configure(this WebApplication app)
     {
-        app.UseSecurityHttpHeaders();
-
         var proxyOptions = app.Configuration.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
         app.UseProxy(proxyOptions);
+
+        app.UseSecurityHttpHeaders(app.Environment.IsDevelopment());
 
         if (app.Environment.IsDevelopment())
         {
