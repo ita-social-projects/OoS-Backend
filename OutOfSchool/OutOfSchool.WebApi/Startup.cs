@@ -18,6 +18,8 @@ public static class Startup
         var proxyOptions = app.Configuration.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
         app.UseProxy(proxyOptions);
 
+        app.UseSecurityHttpHeaders(app.Environment.IsDevelopment());
+
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
