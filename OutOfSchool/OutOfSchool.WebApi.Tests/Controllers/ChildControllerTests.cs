@@ -205,13 +205,13 @@ public class ChildControllerTests
         // Arrange
         var childToUpdate = ChildUpdateDtoGenerator.Generate();
         var updatedChild = ChildDtoGenerator.Generate();
-        childToUpdate.Id = children.RandomItem().Id;
-        updatedChild.Id = childToUpdate.Id;
+        var childId = children.RandomItem().Id;
+        updatedChild.Id = childId;
 
-        service.Setup(x => x.UpdateChildCheckingItsUserIdProperty(childToUpdate, It.IsAny<string>())).ReturnsAsync(updatedChild);
+        service.Setup(x => x.UpdateChildCheckingItsUserIdProperty(childToUpdate, childId, It.IsAny<string>())).ReturnsAsync(updatedChild);
 
         // Act
-        var result = await controller.Update(childToUpdate).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.Update(childToUpdate, childId).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         Assert.IsInstanceOf<OkObjectResult>(result);

@@ -2,5 +2,5 @@
 
 public class ChildUpdateDto : ChildBaseDto
 {
-    public Guid Id { get; set; }
+    public List<long> SocialGroupIds { get; set; }
 }

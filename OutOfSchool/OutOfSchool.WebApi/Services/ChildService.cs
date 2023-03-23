@@ -97,7 +97,7 @@ public class ChildService : IChildService
 
             var newChild = await childRepository.Create(child).ConfigureAwait(false);
 
-            await UpdateSocialGroups(newChild, childCreateDto.SocialGroups).ConfigureAwait(false);
+            await UpdateSocialGroups(newChild, childCreateDto.SocialGroupIds).ConfigureAwait(false);
 
             await CompleteChildChangesAsync().ConfigureAwait(false);
 
@@ -369,23 +369,23 @@ public class ChildService : IChildService
     }
 
     /// <inheritdoc/>
-    public async Task<ChildDto> UpdateChildCheckingItsUserIdProperty(ChildUpdateDto childUpdateDto, string userId)
+    public async Task<ChildDto> UpdateChildCheckingItsUserIdProperty(ChildUpdateDto childUpdateDto, Guid childId, string userId)
     {
         this.ValidateChildDto(childUpdateDto);
         this.ValidateUserId(userId);
 
-        logger.LogDebug($"Updating the child with Id: {childUpdateDto.Id} and {nameof(userId)}: {userId} started.");
+        logger.LogDebug($"Updating the child with Id: {childId} and {nameof(userId)}: {userId} started.");
 
         var child = (await childRepository
-                        .GetByFilter(c => c.Id == childUpdateDto.Id, $"{nameof(Child.Parent)},{nameof(Child.SocialGroups)}")
+                        .GetByFilter(c => c.Id == childId, $"{nameof(Child.Parent)},{nameof(Child.SocialGroups)}")
                         .ConfigureAwait(false)).SingleOrDefault()
                     ?? throw new InvalidOperationException(
-                        $"User: {userId} is trying to update not existing Child (Id = {childUpdateDto.Id}).");
+                        $"User: {userId} is trying to update not existing Child (Id = {childId}).");
 
         if (child.Parent.UserId != userId)
         {
             throw new UnauthorizedAccessException(
-                $"User: {userId} is trying to update not his own child. Child Id = {childUpdateDto.Id}");
+                $"User: {userId} is trying to update not his own child. Child Id = {childId}");
         }
 
         if (child.IsParent || childUpdateDto.IsParent)
@@ -402,7 +402,7 @@ public class ChildService : IChildService
 
         mapper.Map(childUpdateDto, child);
 
-        await UpdateSocialGroups(child, childUpdateDto.SocialGroups).ConfigureAwait(false);
+        await UpdateSocialGroups(child, childUpdateDto.SocialGroupIds).ConfigureAwait(false);
 
         await CompleteChildChangesAsync().ConfigureAwait(false);
 
@@ -515,16 +515,15 @@ public class ChildService : IChildService
         }
     }
 
-    private async Task UpdateSocialGroups(Child child, ICollection<SocialGroupDto> socialGroupDtos)
+    private async Task UpdateSocialGroups(Child child, List<long> socialGroupIds)
     {
-        if (socialGroupDtos.Any())
+        if (socialGroupIds.Any())
         {
-            var socialGroupIds = socialGroupDtos.Select(x => x.Id).Distinct().ToArray();
             if (!new HashSet<long>(child.SocialGroups.Select(x => x.Id)).SetEquals(socialGroupIds))
             {
                 var socialGroups = (await socialGroupRepository
                     .GetByFilter(x => socialGroupIds.Contains(x.Id))).ToList();
-                if (socialGroupIds.Length != socialGroups.Count)
+                if (socialGroupIds.Count != socialGroups.Count)
                 {
                     throw new ArgumentException(@"Social groups contains some incorrect values", nameof(socialGroups));
                 }

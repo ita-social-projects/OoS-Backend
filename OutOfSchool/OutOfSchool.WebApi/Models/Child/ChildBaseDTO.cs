@@ -34,6 +34,4 @@ public class ChildBaseDto
     public Guid ParentId { get; set; } = default;
 
     public bool IsParent { get; set; }
-
-    public List<SocialGroupDto> SocialGroups { get; set; }
 }

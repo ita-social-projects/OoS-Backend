@@ -12,7 +12,6 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators;
 public static class ChildUpdateDtoGenerator
 {
     private static readonly Faker<ChildUpdateDto> faker = new Faker<ChildUpdateDto>()
-        .RuleFor(x => x.Id, _ => Guid.NewGuid())
         .RuleFor(x => x.FirstName, f => f.Person.FirstName)
         .RuleFor(x => x.MiddleName, f => f.Name.FirstName())
         .RuleFor(x => x.LastName, f => f.Person.LastName)
