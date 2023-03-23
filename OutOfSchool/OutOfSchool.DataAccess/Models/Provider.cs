@@ -132,4 +132,7 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
     public virtual List<Image<Provider>> Images { get; set; }
 
     public virtual ICollection<ProviderSectionItem> ProviderSectionItems { get; set; }
+
+    [NotMapped]
+    public static readonly ProviderStatus[] ValidProviderStatuses = { ProviderStatus.Approved, ProviderStatus.Recheck };
 }
