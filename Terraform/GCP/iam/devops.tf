@@ -5,9 +5,11 @@ locals {
     "roles/compute.loadBalancerServiceUser",
     "roles/compute.networkUser",
     "roles/compute.instanceAdmin",
-    "roles/storage.objectAdmin",
+    "roles/storage.admin",
     "roles/cloudbuild.builds.editor",
-    "roles/run.developer"
+    "roles/run.developer",
+    "roles/secretmanager.secretAccessor",
+    "roles/cloudsql.editor"
   ]
 
   devops_roles = distinct(
