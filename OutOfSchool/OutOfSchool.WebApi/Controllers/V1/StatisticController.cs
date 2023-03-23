@@ -14,7 +14,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// Controller with operations to get popular workshops and categories.
 /// </summary>
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/[controller]/[action]")]
+[Route("api/v{version:apiVersion}/popular")]
 [ApiController]
 public class StatisticController : ControllerBase
 {
@@ -35,7 +35,7 @@ public class StatisticController : ControllerBase
     /// <param name="limit">The number of entries.</param>
     /// <param name="catottgId">Codeficator's id.</param>
     /// <returns>List of popular directions.</returns>
-    [HttpGet]
+    [HttpGet("directions")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DirectionDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -62,7 +62,7 @@ public class StatisticController : ControllerBase
     /// <param name="limit">The number of entries.</param>
     /// <param name="catottgId">Codeficator's id.</param>
     /// <returns>List of popular workshops.</returns>
-    [HttpGet]
+    [HttpGet("workshops")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopCard>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
