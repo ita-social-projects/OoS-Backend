@@ -90,8 +90,7 @@ module "iam" {
   project            = var.project
   bucket             = module.storage.image_bucket
   logs_bucket        = module.storage.logs_bucket
-  ssh_user           = var.ssh_user
-  ssh_key            = var.ssh_key
+  devops             = var.devops
 }
 
 module "passwords" {
