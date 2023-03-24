@@ -3,6 +3,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.AverageRatings;
+using System.Linq;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -185,26 +186,9 @@ public class StatisticService : IStatisticService
     public async Task<IEnumerable<WorkshopCard>> GetPopularWorkshopsFromDatabase(int limit, long catottgId)
     {
         var workshops = workshopRepository
-            .Get(includeProperties: $"{nameof(Address)},{nameof(InstitutionHierarchy)}", where: w => !w.IsBlocked);
-
-        if (currentUserService.IsMinistryAdmin())
-        {
-            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
-            workshops = workshops
-                .Where(w => w.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
-        }
-
-        if (currentUserService.IsRegionAdmin())
-        {
-            var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
-            workshops = workshops
-                .Where(w => w.InstitutionHierarchy.InstitutionId == regionAdmin.InstitutionId);
-        }
-
-        if (!currentUserService.IsAdmin())
-        {
-            workshops = workshops.Where(w => !w.IsBlocked);
-        }
+            .Get(
+                includeProperties: $"{nameof(Address)},{nameof(InstitutionHierarchy)}",
+                where: w => !w.IsBlocked && Provider.ValidProviderStatuses.Contains(w.Provider.Status));
 
         if (catottgId > 0)
         {
