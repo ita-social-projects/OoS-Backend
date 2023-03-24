@@ -9,7 +9,8 @@ locals {
     "roles/cloudbuild.builds.editor",
     "roles/run.developer",
     "roles/secretmanager.secretAccessor",
-    "roles/cloudsql.editor"
+    "roles/cloudsql.editor",
+    "roles/iap.tunnelResourceAccessor"
   ]
 
   devops_roles = distinct(

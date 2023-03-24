@@ -1,6 +1,12 @@
 locals {
-    # Or replace with get_env("GOOGLE_APPLICATION_CREDENTIALS")
-    credentials = find_in_parent_folders("oos-credentials.json")
+    # get_env("GOOGLE_APPLICATION_CREDENTIALS")
+    google_env_var = get_env("GOOGLE_APPLICATION_CREDENTIALS", "")
+        
+    # get file path, second value is fallback parameter
+    # command gcloud auth application-default login will save application_default_credentials.json
+    home_dir = get_env("HOME")
+    credentials = find_in_parent_folders("oos-credentials.json", "${local.home_dir}/.config/gcloud/application_default_credentials.json")
+
 }
 
 remote_state {
@@ -12,7 +18,7 @@ remote_state {
     config = {
         bucket       = get_env("TERRAGRUNT_BUCKET", "moetfstate")
         project      = get_env("TERRAGRUNT_PROJECT")
-        credentials  = local.credentials
+        credentials  = local.google_env_var == "" ? local.credentials : local.google_env_var
         location     = "europe-west1"
         prefix       = "${path_relative_to_include()}/terraform.tfstate"
     }
@@ -29,5 +35,5 @@ terraform {
 }
 
 inputs = {
-    credentials = local.credentials
+    credentials = local.google_env_var == "" ? local.credentials : local.google_env_var
 }
