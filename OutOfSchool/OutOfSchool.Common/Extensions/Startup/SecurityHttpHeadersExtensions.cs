@@ -49,7 +49,7 @@ public static class SecurityHttpHeadersExtensions
     {
         if (!isDevelopment)
         {
-            policy.AddContentSecurityPolicy(builder =>
+            policy.AddContentSecurityPolicyReportOnly(builder =>
             {
                 builder.AddObjectSrc().None();
                 builder.AddImgSrc().None();
@@ -67,7 +67,7 @@ public static class SecurityHttpHeadersExtensions
         else
         {
             // allow swagger UI for dev
-            policy.AddContentSecurityPolicy(builder =>
+            policy.AddContentSecurityPolicyReportOnly(builder =>
             {
                 builder.AddObjectSrc().None();
                 builder.AddImgSrc().Self().From("data:");
