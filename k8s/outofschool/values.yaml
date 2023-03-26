@@ -2,10 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-global:
-  extraEnvironment:
-    ASPNETCORE_ENVIRONMENT: Release
-
+global: {}
 
 # TODO: Configure global pull secrets
 imagePullSecrets: []
@@ -32,14 +29,42 @@ webapi:
   image:
     repository: gcr.io/gcp101292-pozashkillya/oos-api
     pullPolicy: IfNotPresent
-    tag: 1.0.0-RC1
-  extraEnvironment: {}
-    # ReverseProxy__BasePath: /webapi
-  connectionString:
-    username: webapi
-    secret:
+    tag: testing
+  containerPort: 8080
+  configuration:
+    extraEnvironment:
+      # ReverseProxy__BasePath: /webapi
+      ASPNETCORE_ENVIRONMENT: Kubernetes
+      AppDefaults__Version: testing
+    secrets:
+    - type: env
       name: mysql-api-auth
-      key: API_PASSWORD
+      keys:
+      - key: API_PASSWORD
+        envKey: ConnectionStringsOverride__DefaultConnection__Password
+        upper: false
+    - type: env
+      name: elasticsearch-credentials
+      keys:
+      - key: apipass
+        envKey: Elasticsearch__Password
+        upper: false
+    - type: env
+      name: redis-auth
+      keys:
+      - key: password
+        envKey: Redis__Password
+        upper: false
+    # TODO: add geo api key to secrets
+    # - type: env
+    #   name: mysql-api-auth
+    #   keys:
+    #   - key: API_PASSWORD
+    #     envKey: GeoCoding__ApiKey
+    #     upper: false
+  resources:
+    limits:
+      memory: 512Mi
 identity:
   enabled: false
   image:

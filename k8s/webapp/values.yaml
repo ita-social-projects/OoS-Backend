@@ -27,6 +27,8 @@ configuration:
   ##   - key: x.y.z        # my-secret.x.y.z => MY_X_Y_Z
   ##   - key: old-val
   ##     envKey: new-val   # my-secret.old-val => MY_NEW_VAL
+  ##   - key: x.y.z
+  ##     upper: false      # my-secret.x.y.z => MY_x_y_z
   secrets: []
 
 image:
