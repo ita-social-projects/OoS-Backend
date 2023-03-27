@@ -142,7 +142,7 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("/api/v{version:apiVersion}/workshop/{id}/children/approved/")]
+    [HttpGet("/api/v{version:apiVersion}/workshops/{id}/children/approved")]
     public async Task<IActionResult> GetApprovedByWorkshopId(Guid workshopId, [FromQuery] OffsetFilter offsetFilter)
     {
         var userHasRights = await this.IsUserProvidersOwnerOrAdmin(workshopId).ConfigureAwait(false);
