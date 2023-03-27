@@ -51,7 +51,10 @@ secrets:
   # secrets.generic -- Each Key/Value will be added to the Secret's data key, each value should be raw and NOT base64
   # encoded. Any secrets can be provided here. It's commonly used for credentials and other access related values.
   # **NOTE: Don't commit unencrypted secrets to git!**
-  generic: {}
+  generic: 
+    es_user: ""
+    es_password: ""
+    es_endpoint: ""
     # my_variable: "my-secret-value"
     # datadog_api_key: "api-key"
     # awsAccessKeyId: "access-key"
@@ -146,22 +149,27 @@ args:
   - "/etc/vector/"
 
 # env -- Set environment variables for Vector containers.
-env: []
-  # - name: MY_VARIABLE
-  #   valueFrom:
-  #     secretKeyRef:
-  #       name: vector
-  #       key: my_variable
-  # - name: AWS_ACCESS_KEY_ID
-  #   valueFrom:
-  #     secretKeyRef:
-  #       name: vector
-  #       key: awsAccessKeyId
+env:
+  - name: ES_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: vector
+        key: es_user
+  - name: ES_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: vector
+        key: es_password
+  - name: ES_ENDPOINT
+    valueFrom:
+      secretKeyRef:
+        name: vector
+        key: es_endpoint      
 
 # envFrom -- Define environment variables from Secrets or ConfigMaps.
-envFrom: []
-  # - secretRef:
-  #     name: vector
+envFrom: 
+  - secretRef:
+      name: vector
 
 # containerPorts -- Manually define Vector's containerPorts, overriding automated generation of containerPorts.
 containerPorts: []
@@ -229,7 +237,8 @@ service:
   #   - "topology.kubernetes.io/region"
   #   - "*"
   # service.ports -- Manually set the Service ports, overriding automated generation of Service ports.
-  ports: []
+  ports:
+    - port: 8686
   # service.externalTrafficPolicy -- Specify the [externalTrafficPolicy](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip).
   externalTrafficPolicy: ""
   # service.loadBalancerIP -- Specify the [loadBalancerIP](https://kubernetes.io/docs/concepts/services-networking/service/#loadbalancer).
@@ -283,42 +292,34 @@ dataDir: ""
 # customConfig -- Override Vector's default configs, if used **all** options need to be specified. This section supports
 # using helm templates to populate dynamic values. See Vector's [configuration documentation](https://vector.dev/docs/reference/configuration/)
 # for all options.
-customConfig: {
-# custom config  
-data_dir: /vector-data-dir
-api:
-  enabled: true
-  address: 127.0.0.1:8686
-  playground: false
-sources:
-  kubernetes_logs:
-    type: kubernetes_logs
-  host_metrics:
-    filesystem:
-      devices:
-        excludes: [binfmt_misc]
-      filesystems:
-        excludes: [binfmt_misc]
-      mountPoints:
-        excludes: ["*/proc/sys/fs/binfmt_misc"]
-    type: host_metrics
-  internal_metrics:
-    type: internal_metrics
-sinks:
-  my_sink_id:
-    type: elasticsearch
-    inputs:
-      - vector-logs
-    api_version: auto
-    compression: none
-    endpoints:
-      - http://elasticsearch-master.default.svc.cluster.local:9200
-    id_key: id
-    mode: bulk
-    pipeline: pipeline-name
-    query:
-      X-Powered-By: Vector
-}
+customConfig: 
+  # custom config  
+  data_dir: /vector-data-dir
+  api:
+    enabled: false
+    address: 127.0.0.1:8686
+    playground: false
+  sources:
+    k8s_all:
+      type: kubernetes_logs
+  sinks:
+    vector_logs:
+      type: elasticsearch
+      inputs:
+        - k8s_all
+      api_version: v7
+      compression: none
+      endpoints:
+        - "${ES_ENDPOINT}"
+      id_key: id
+      mode: bulk
+      bulk:
+        action: create
+        index: vector-logs-k8s-namespace-{{`{{ kubernetes.pod_namespace }}`}}-%Y-%m-%d
+      auth:
+        strategy: basic
+        user: "${ES_USERNAME}"
+        password: "${ES_PASSWORD}"
 
 # extraVolumes -- Additional Volumes to use with Vector Pods.
 extraVolumes: []
