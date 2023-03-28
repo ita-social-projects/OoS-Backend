@@ -692,7 +692,7 @@ public class ProviderServiceTests
         // Arrange
         var providerToDeleteDto = mapper.Map<ProviderDto>(fakeProviders.RandomItem());//fakeProviders.RandomItem().ToModel();
         var deleteMethodArguments = new List<Provider>();
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(fakeProviders.Single(p => p.Id == providerToDeleteDto.Id));
         providersRepositoryMock.Setup(r => r.Delete(Capture.In(deleteMethodArguments)));
 
@@ -716,7 +716,7 @@ public class ProviderServiceTests
             Id = fakeProviderInvalidId,
         };
         providersRepositoryMock.Setup(p => p.Delete(provider)).Returns(Task.CompletedTask);
-        providersRepositoryMock.Setup(p => p.GetById(provider.Id)).ThrowsAsync(new ArgumentNullException());
+        providersRepositoryMock.Setup(p => p.GetWithNavigations(provider.Id)).ThrowsAsync(new ArgumentNullException());
 
         // Act and Assert
         Assert.ThrowsAsync<ArgumentNullException>(

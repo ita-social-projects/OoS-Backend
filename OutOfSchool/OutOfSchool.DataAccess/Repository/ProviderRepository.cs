@@ -71,4 +71,13 @@ public class ProviderRepository : SensitiveEntityRepository<Provider>, IProvider
 
         await db.SaveChangesAsync();
     }
+
+    public async Task<Provider> GetWithNavigations(Guid id)
+    {
+        return await db.Providers
+         .Include(x => x.LegalAddress) // TODO: Doesn't work softDelete using Include, only using loop below in Delete() method
+         .Include(x => x.Workshops)
+         .ThenInclude(w => w.Applications)
+         .SingleOrDefaultAsync(provider => provider.Id == id);
+    }
 }
