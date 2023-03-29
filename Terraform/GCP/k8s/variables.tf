@@ -80,3 +80,31 @@ variable "redis_port" {
 variable "enable_ingress_http" {
   type = bool
 }
+
+variable "vector_logs_name" {
+  type    = string
+  default = "vector"
+}
+
+variable "vector_logs_chart_path" {
+  type    = string
+  default = "../../k8s/vector"
+}
+
+variable "vector_logs_namespace" {
+  type    = string
+  default = "vector"
+}
+
+variable "es_admin_user" {
+  type    = string
+  default = "elastic"
+}
+
+variable "elastic_url" {
+  type    = string
+  default = "http://elasticsearch-master.default.svc.cluster.local:9200"
+}
+
+
+

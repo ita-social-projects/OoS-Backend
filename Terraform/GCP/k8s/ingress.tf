@@ -17,7 +17,7 @@ resource "helm_release" "ingress" {
     value = "default/mysql-redis-master:6379"
   }
   set {
-    name = "ingress-nginx.controller.service.enableHttp"
+    name  = "ingress-nginx.controller.service.enableHttp"
     value = var.enable_ingress_http
   }
   depends_on = [
