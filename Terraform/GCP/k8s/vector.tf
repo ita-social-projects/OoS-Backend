@@ -1,3 +1,7 @@
+## Install Vector logging agent to k8S using Helm
+## helm repo vector https://helm.vector.dev
+## https://vector.dev/docs/setup/installation/package-managers/helm/
+
 resource "helm_release" "vector_logs" {
   name          = var.vector_logs_name
   chart         = var.vector_logs_chart_path
