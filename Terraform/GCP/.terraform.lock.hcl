@@ -23,6 +23,22 @@ provider "registry.terraform.io/hashicorp/google" {
   version     = "4.53.1"
   constraints = ">= 2.12.0, >= 3.45.0, >= 3.53.0, >= 3.83.0, >= 4.13.0, < 5.0.0"
   hashes = [
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    "h1:/Vz7xZfuNh2XR/tihF41QVbDPfvXimm3LQ9fFy/CB/s=",
+    "zh:05d6243b08fae8ea31c8ed01602e8803608761c89741814b5d78ecd90f0be83a",
+    "zh:1e377d9f4a27f10293fcfbf72250af410aee907de6a7ae82e6fa6b2ae7818d39",
+    "zh:3475fb54070337163faba1cdfb5c9e594e3e422df1e46b42cadbd478681f54c8",
+    "zh:55c3a1190ce1871768365577fdd2a518080f48d0fbd2da314438d9f9a36e518b",
+    "zh:890ff82e890850a32102075e0dc58a3e63f41b2021479209dd53ec82f67b479e",
+    "zh:91cb96cc1b4fc0ca86eb9eb529c4b11d70f7b468a83f40882b0efdb621f867a1",
+    "zh:b827b6ab8764f4aa410006dd5d078726303fe62c7b8847f9ca5d0f3e213070b6",
+    "zh:c3eac5ce6ec42eed310423348817f226030f3eac2dac7e799f303141ee411c81",
+    "zh:d0426bd21fda9754a279d1da1da40f7774fc321e34b3d73a320d11b73f649a5b",
+    "zh:f14137894838eb34f5d6f8a411b00f64f92a79de8fdb349bc26610e8bbc73077",
+=======
+>>>>>>> b0df1196 (terraform lock hcl)
     "h1:2I17Y3hcJ0TQ/yiUB8fRhB5FE3Ula+vGZecjGmq+NdU=",
     "h1:5AbYt4R3RwEP2AJERz9wjwAQ5RC0IpZ0pAnNtTx0+Wg=",
     "zh:29e289c3026d369e8b06b0dbe7f35db4aaa08439e801ddfc3349bd28fbf93635",
@@ -35,6 +51,10 @@ provider "registry.terraform.io/hashicorp/google" {
     "zh:cbdd1415abd7034ff8e4a5173e1d0e13d2364185752df277bbfd34cc8242ba23",
     "zh:d42ed1eaa3019d23af86f253ee38204d3b5d020c1daee50be0d8bbe4d9170eaf",
     "zh:ee8b3371858b083f10dfb6c31db7933d7dfb3a8b6e6de6669f1fe07f9c407a1e",
+<<<<<<< HEAD
+=======
+>>>>>>> 893eb34a (terraform lock hcl)
+>>>>>>> b0df1196 (terraform lock hcl)
     "zh:f569b65999264a9416862bca5cd2a6177d94ccb0424f3a4ef424428912b9cb3c",
     "zh:f745d0071e8acdc13995c8f9ecb34d2309303134ae361b17f3ed31399d20a165",
   ]
@@ -44,6 +64,23 @@ provider "registry.terraform.io/hashicorp/google-beta" {
   version     = "4.53.1"
   constraints = ">= 3.45.0, >= 3.53.0, < 5.0.0"
   hashes = [
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    "h1:gz9VLnasi+95wJkwfkKP4Oq8VwMrivheC6xVhvEed7s=",
+    "zh:3ece408da23d173e474548d7af233c2e99ee465ee5f058359407abd05d2535f6",
+    "zh:497623d61df9dbb84a8ed660001716035b3f8baef74ae6d9e43124111a817992",
+    "zh:4a8cf3220bb224472292944a37f6ceaa137c249d4bc49497bece0cc474cc0c18",
+    "zh:5e68b80a767353a7ff6627bbda571d9ab468c33c73fe9c69083218b5dffa0e12",
+    "zh:6957342f0b5197155892c344a2106006ff5379a3f709cb36fb0c0ce3a7a88849",
+    "zh:6b2eaeca26d9d8cbbc0d9a66292d39284689183780479f37872a7b1a7c81e706",
+    "zh:6d0a0a19b29e48e1bc3838d67e34f99feff317d7d54a59243e79937975954f6b",
+    "zh:8deeff93672ca14da083199264b4c168188e9ecd8829c4d571d07c12a82ced69",
+    "zh:939dd102fe0dc81f8a7b0632419a53a3dbb989d820e523dad10e173b12926676",
+    "zh:b763e6d2c5d3715238c779a66f67779f6ee3991a526be3856cc78889f487e663",
+    "zh:e249b18b1eabca225932f71abbcedce1cb8f8e7e97bcca425fb62dbf9ea2dfea",
+=======
+>>>>>>> b0df1196 (terraform lock hcl)
     "h1:7QGkQjAlZMktK72GqcAbqHva+8LoRbYEJUf2lygxi0s=",
     "h1:aEyJWuso74SXvmC8Zj4C9pvIgwOEQLztCEaST183FIk=",
     "zh:0cbf950e5317dcc0ea69a3697eb57d61791d071fcba32552e73db015e00b546f",
@@ -57,6 +94,10 @@ provider "registry.terraform.io/hashicorp/google-beta" {
     "zh:da76a05cc2a311cdafc47b6d97285924cb6a7fb127d6251902914e439fad62e3",
     "zh:daa5b22cf3b99a4b0389f05a3bf8c93effed652f634e52c47dabab8fdd71862a",
     "zh:f03a18591f45cac2031af7f6be109c7f5135fc6aba3dce160391482c5e22642f",
+<<<<<<< HEAD
+=======
+>>>>>>> 893eb34a (terraform lock hcl)
+>>>>>>> b0df1196 (terraform lock hcl)
     "zh:f569b65999264a9416862bca5cd2a6177d94ccb0424f3a4ef424428912b9cb3c",
   ]
 }
@@ -84,6 +125,23 @@ provider "registry.terraform.io/hashicorp/helm" {
 provider "registry.terraform.io/hashicorp/kubernetes" {
   version = "2.18.0"
   hashes = [
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    "h1:ID/u9YOv00w+Z8iG+592oyuV7HcqRmPiZpEC9hnyTMY=",
+    "zh:028d346460de2d1d19b4c863dfc36be51c7bcd97d372b54a3a946bcb19f3f613",
+    "zh:391d0b38c455437d0a2ab1beb6ce6e1230aa4160bbae11c58b2810b258b44280",
+    "zh:40ea742f91b67f66e71d7091cfd40cc604528c4947651924bd6d8bd8d9793708",
+    "zh:48a99d341c8ba3cadaafa7cb99c0f11999f5e23f5cfb0f8469b4e352d9116e74",
+    "zh:4a5ade940eff267cbf7dcd52c1a7ac3999e7cc24996a409bd8b37bdb48a97f02",
+    "zh:5063742016a8249a4be057b9cc0ef24a684ec76d0ae5463d4b07e9b2d21e047e",
+    "zh:5d36b3a5662f840a6788f5e2a19d02139e87318feb3c5d82c7d076be1366fec4",
+    "zh:75edd9960cb30e54ef7de1b7df2761a274f17d4d41f54e72f86b43f41af3eb6d",
+    "zh:b85cadef3e6f25f1a10a617472bf5e8449decd61626733a1bc723de5edc08f64",
+    "zh:dc565b17b4ea6dde6bd1b92bc37e5e850fcbf9400540eec00ad3d9552a76ac2e",
+    "zh:deb665cc2123f2701aa3d653987b2ca35fb035a08a76a2382efb215c209f19a5",
+=======
+>>>>>>> b0df1196 (terraform lock hcl)
     "h1:H81uBnhN5NDpFrZ39Q9mEIY2bcjZv9oyT4+BlQgeFzM=",
     "h1:c2jabnZjZzHyh3nS3FFqMqNLeuy0hxEM32aEQFNEFLA=",
     "zh:38f24011d5ee8479ed4758c66cad336509ec02b55c1188ce0ec4b826943aaf0a",
@@ -97,6 +155,10 @@ provider "registry.terraform.io/hashicorp/kubernetes" {
     "zh:ddbbb7d16d3eff671c2251d6777fcb6fb92843e2b74441c2d4ad43a82a4291c6",
     "zh:e50185efe88499bfbb22fc421315f658c9a7ccfee68e6b66cf0f8eb19b879028",
     "zh:ed8e76ccb2b0266ee94ab90d76d311509b2cc90e5d9f5aa294dd92e1f676adf0",
+<<<<<<< HEAD
+=======
+>>>>>>> 893eb34a (terraform lock hcl)
+>>>>>>> b0df1196 (terraform lock hcl)
     "zh:f569b65999264a9416862bca5cd2a6177d94ccb0424f3a4ef424428912b9cb3c",
   ]
 }
@@ -124,11 +186,27 @@ provider "registry.terraform.io/hashicorp/null" {
 provider "registry.terraform.io/hashicorp/random" {
   version = "3.4.3"
   hashes = [
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    "h1:/sx2aDsQhfFuTvjMqiVs0u84ncBpDxdGTz+AbVn4Fpw=",
+    "zh:0d95ed87398d5592e9c699f658eeef04e945945c996174222071c217e46f3c76",
+    "zh:57df331c814e3d7fa5b60807e9c742a62084a8330496b3ec00db94760f6411e1",
+    "zh:5c14b04b9b430383ac819bda73ce4291c8a677a894662adc71e409e8a0bf7ce7",
+    "zh:61958056bd163fa0dcb4af562df9974506ce1b2c95473b8fd48714ce599bb143",
+    "zh:6c5d33b170de17c0e045c30b973f265af02c8ad15d694d5337501592244c936c",
+    "zh:78687a24d88cc067fd81227e8f3dc6b3c7f13d9808e9c1da336e29722464e45b",
+=======
+>>>>>>> b0df1196 (terraform lock hcl)
     "h1:saZR+mhthL0OZl4SyHXZraxyaBNVMxiZzks78nWcZ2o=",
     "h1:tL3katm68lX+4lAncjQA9AXL4GR/VM+RPwqYf4D2X8Q=",
     "zh:41c53ba47085d8261590990f8633c8906696fa0a3c4b384ff6a7ecbf84339752",
     "zh:59d98081c4475f2ad77d881c4412c5129c56214892f490adf11c7e7a5a47de9b",
     "zh:686ad1ee40b812b9e016317e7f34c0d63ef837e084dea4a1f578f64a6314ad53",
+<<<<<<< HEAD
+=======
+>>>>>>> 893eb34a (terraform lock hcl)
+>>>>>>> b0df1196 (terraform lock hcl)
     "zh:78d5eefdd9e494defcb3c68d282b8f96630502cac21d1ea161f53cfe9bb483b3",
     "zh:84103eae7251384c0d995f5a257c72b0096605048f757b749b7b62107a5dccb3",
     "zh:8ee974b110adb78c7cd18aae82b2729e5124d8f115d484215fd5199451053de5",
