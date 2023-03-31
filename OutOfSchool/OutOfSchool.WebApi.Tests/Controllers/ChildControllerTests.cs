@@ -32,6 +32,8 @@ public class ChildControllerTests
     private Mock<IProviderAdminService> providerAdminService;
     private List<ChildDto> children;
     private ChildDto child;
+    private ChildCreateDto childCreateDto;
+    private List<ChildCreateDto> childrenCreateDto;
     private string currentUserId;
 
     private ParentDtoWithContactInfo existingParent;
@@ -66,6 +68,8 @@ public class ChildControllerTests
                     .WithSocial(new SocialGroupDto { Id = 2 }))
                 .ToList();
         child = ChildDtoGenerator.Generate();
+        childCreateDto = ChildCreateDtoGenerator.Generate();
+        childrenCreateDto = ChildCreateDtoGenerator.Generate(2);
     }
 
     [Test]
@@ -172,10 +176,10 @@ public class ChildControllerTests
     public async Task CreateChild_WhenModelIsValid_ShouldReturnCreatedAtActionResult()
     {
         // Arrange
-        service.Setup(x => x.CreateChildForUser(child, currentUserId)).ReturnsAsync(child);
+        service.Setup(x => x.CreateChildForUser(childCreateDto, currentUserId)).ReturnsAsync(child);
 
         // Act
-        var result = await controller.Create(child).ConfigureAwait(false);
+        var result = await controller.Create(childCreateDto).ConfigureAwait(false);
 
         // Assert
         Assert.IsInstanceOf<CreatedAtActionResult>(result);
@@ -185,11 +189,11 @@ public class ChildControllerTests
     public async Task CreateChildren_WhenModelIsValid_ShouldReturnOkObjectResult()
     {
         // Arrange
-        service.Setup(x => x.CreateChildrenForUser(children, currentUserId))
+        service.Setup(x => x.CreateChildrenForUser(childrenCreateDto, currentUserId))
             .ReturnsAsync(new ChildrenCreationResultDto());
 
         // Act
-        var result = await controller.CreateChildren(children).ConfigureAwait(false);
+        var result = await controller.CreateChildren(childrenCreateDto).ConfigureAwait(false);
 
         // Assert
         Assert.IsInstanceOf<OkObjectResult>(result);
@@ -199,13 +203,15 @@ public class ChildControllerTests
     public async Task UpdateChild_WhenModelIsValid_ShouldReturnOkObjectResult()
     {
         // Arrange
-        var childToUpdate = ChildDtoGenerator.Generate();
-        childToUpdate.Id = children.RandomItem().Id;
+        var childToUpdate = ChildUpdateDtoGenerator.Generate();
+        var updatedChild = ChildDtoGenerator.Generate();
+        var childId = children.RandomItem().Id;
+        updatedChild.Id = childId;
 
-        service.Setup(x => x.UpdateChildCheckingItsUserIdProperty(childToUpdate, It.IsAny<string>())).ReturnsAsync(childToUpdate);
+        service.Setup(x => x.UpdateChildCheckingItsUserIdProperty(childToUpdate, childId, It.IsAny<string>())).ReturnsAsync(updatedChild);
 
         // Act
-        var result = await controller.Update(childToUpdate).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.Update(childToUpdate, childId).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         Assert.IsInstanceOf<OkObjectResult>(result);

@@ -10,7 +10,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// </summary>
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/[controller]/[action]")]
+[Route("api/v{version:apiVersion}/children")]
 public class ChildController : ControllerBase
 {
     private readonly IChildService service;
@@ -50,7 +50,7 @@ public class ChildController : ControllerBase
     /// <summary>
     /// Get all children (Id, FullName) from the database by parent's id.
     /// </summary>
-    /// <param name="parentId">Id of the parent.</param>
+    /// <param name="id">Id of the parent.</param>
     /// <param name="isParent">Do we need a parent.</param>
     /// <returns>The result is a <see cref="List{ShortEntityDto}"/> that contains a list of children that were received.</returns>
     [HasPermission(Permissions.ChildRead)]
@@ -60,10 +60,10 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{parentId}/{isParent?}")]
-    public async Task<IActionResult> GetChildrenListByParentId([FromRoute] Guid parentId, [FromRoute]bool? isParent = null)
+    [HttpGet("/api/v{version:apiVersion}/parents/{id}/children")]
+    public async Task<IActionResult> GetChildrenListByParentId([FromRoute] Guid id, [FromQuery] bool? isParent = null)
     {
-        var children = await service.GetChildrenListByParentId(parentId, isParent).ConfigureAwait(false);
+        var children = await service.GetChildrenListByParentId(id, isParent).ConfigureAwait(false);
 
         if (!children.Any())
         {
@@ -76,7 +76,7 @@ public class ChildController : ControllerBase
     /// <summary>
     /// Get all children from the database by parent's id.
     /// </summary>
-    /// <param name="parentId">Id of the parent.</param>
+    /// <param name="id">Id of the parent.</param>
     /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>
     /// <returns>The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
     [HasPermission(Permissions.SystemManagement)]
@@ -85,10 +85,10 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{parentId}")]
-    public async Task<IActionResult> GetByParentIdForAdmin(Guid parentId, [FromQuery] OffsetFilter offsetFilter)
+    [HttpGet("/api/v{version:apiVersion}/parents/{id}/children/admin")]
+    public async Task<IActionResult> GetByParentIdForAdmin(Guid id, [FromQuery] OffsetFilter offsetFilter)
     {
-        return Ok(await service.GetByParentIdOrderedByFirstName(parentId, offsetFilter).ConfigureAwait(false));
+        return Ok(await service.GetByParentIdOrderedByFirstName(id, offsetFilter).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -103,7 +103,7 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet]
+    [HttpGet("my")]
     public async Task<IActionResult> GetUsersChildren([FromQuery] OffsetFilter offsetFilter, [FromQuery] bool isGetParent = false)
     {
         string userId = GettingUserProperties.GetUserId(User);
@@ -122,7 +122,7 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{id}")]
+    [HttpGet("my/{id}")]
     public async Task<IActionResult> GetUsersChildById(Guid id)
     {
         string userId = GettingUserProperties.GetUserId(User);
@@ -142,7 +142,7 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{workshopId}")]
+    [HttpGet("/api/v{version:apiVersion}/workshops/{id}/children/approved")]
     public async Task<IActionResult> GetApprovedByWorkshopId(Guid workshopId, [FromQuery] OffsetFilter offsetFilter)
     {
         var userHasRights = await this.IsUserProvidersOwnerOrAdmin(workshopId).ConfigureAwait(false);
@@ -177,7 +177,7 @@ public class ChildController : ControllerBase
     /// <summary>
     /// Method for creating a new user's child.
     /// </summary>
-    /// <param name="childDto">Child entity to add.</param>
+    /// <param name="childCreateDto">Child entity to add.</param>
     /// <returns>The child that was created.</returns>
     [HasPermission(Permissions.ChildAddNew)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChildDto))]
@@ -186,11 +186,11 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(ChildDto childDto)
+    public async Task<IActionResult> Create(ChildCreateDto childCreateDto)
     {
         string userId = GettingUserProperties.GetUserId(User);
 
-        var child = await service.CreateChildForUser(childDto, userId).ConfigureAwait(false);
+        var child = await service.CreateChildForUser(childCreateDto, userId).ConfigureAwait(false);
 
         return CreatedAtAction(
             nameof(GetUsersChildById),
@@ -201,7 +201,7 @@ public class ChildController : ControllerBase
     /// <summary>
     /// Method for creating the list of the new user's children.
     /// </summary>
-    /// <param name="childrenDtos">The list of the children entities to add.</param>
+    /// <param name="childrenCreateDtos">The list of the children entities to add.</param>
     /// <returns>The list of the children that were created.</returns>
     [HasPermission(Permissions.ChildAddNew)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChildDto))]
@@ -209,12 +209,12 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpPost]
-    public async Task<IActionResult> CreateChildren(List<ChildDto> childrenDtos)
+    [HttpPost("batch")]
+    public async Task<IActionResult> CreateChildren(List<ChildCreateDto> childrenCreateDtos)
     {
         string userId = GettingUserProperties.GetUserId(User);
 
-        var children = await service.CreateChildrenForUser(childrenDtos, userId).ConfigureAwait(false);
+        var children = await service.CreateChildrenForUser(childrenCreateDtos, userId).ConfigureAwait(false);
 
         return Ok(new ChildrenCreationResponse()
         {
@@ -227,6 +227,7 @@ public class ChildController : ControllerBase
     /// Update info about the user's child in the database.
     /// </summary>
     /// <param name="dto">Child entity to update.</param>
+    /// <param name="id">Child's Id.</param>
     /// <returns>The child that was updated.</returns>
     [HasPermission(Permissions.ChildEdit)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChildDto))]
@@ -234,12 +235,12 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpPut]
-    public async Task<IActionResult> Update(ChildDto dto)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(ChildUpdateDto dto, Guid id)
     {
         string userId = GettingUserProperties.GetUserId(User);
 
-        return Ok(await service.UpdateChildCheckingItsUserIdProperty(dto, userId).ConfigureAwait(false));
+        return Ok(await service.UpdateChildCheckingItsUserIdProperty(dto, id, userId).ConfigureAwait(false));
     }
 
     /// <summary>

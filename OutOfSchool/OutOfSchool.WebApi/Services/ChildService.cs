@@ -64,40 +64,40 @@ public class ChildService : IChildService
     }
 
     /// <inheritdoc/>
-    public async Task<ChildDto> CreateChildForUser(ChildDto childDto, string userId)
+    public async Task<ChildDto> CreateChildForUser(ChildCreateDto childCreateDto, string userId)
     {
-        ValidateChildDto(childDto);
+        ValidateChildDto(childCreateDto);
         ValidateUserId(userId);
 
         logger.LogDebug(
-            $"Started creation of a new child with {nameof(Child.ParentId)}:{childDto.ParentId}, {nameof(userId)}:{userId}.");
+            $"Started creation of a new child with {nameof(Child.ParentId)}:{childCreateDto.ParentId}, {nameof(userId)}:{userId}.");
 
         var parent =
             (await parentRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false)).SingleOrDefault()
             ?? throw new UnauthorizedAccessException(
                 $"Trying to create a new child the Parent with {nameof(userId)}:{userId} was not found.");
 
-        if (childDto.ParentId != parent.Id)
+        if (childCreateDto.ParentId != parent.Id)
         {
             logger.LogWarning(
-                $"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{parent.Id} was trying to create a new child with not his own {nameof(Child.ParentId)}:{childDto.ParentId}.");
-            childDto.ParentId = parent.Id;
+                $"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{parent.Id} was trying to create a new child with not his own {nameof(Child.ParentId)}:{childCreateDto.ParentId}.");
+            childCreateDto.ParentId = parent.Id;
         }
 
-        if (childDto.IsParent)
+        if (childCreateDto.IsParent)
         {
             throw new ArgumentException($"Forbidden to create child which related to the parent.");
         }
 
         async Task<Child> CreateChild()
         {
-            var child = mapper.Map<Child>(childDto);
+            var child = mapper.Map<Child>(childCreateDto);
             child.Id = default;
             child.SocialGroups = new List<SocialGroup>();
 
             var newChild = await childRepository.Create(child).ConfigureAwait(false);
 
-            await UpdateSocialGroups(newChild, childDto.SocialGroups).ConfigureAwait(false);
+            await UpdateSocialGroups(newChild, childCreateDto.SocialGroupIds).ConfigureAwait(false);
 
             await CompleteChildChangesAsync().ConfigureAwait(false);
 
@@ -114,7 +114,7 @@ public class ChildService : IChildService
     }
 
     /// <inheritdoc/>
-    public async Task<ChildrenCreationResultDto> CreateChildrenForUser(List<ChildDto> childrenDtos, string userId)
+    public async Task<ChildrenCreationResultDto> CreateChildrenForUser(List<ChildCreateDto> childrenCreateDtos, string userId)
     {
         var parent = (await parentRepository
             .GetByFilter(p => p.UserId == userId)
@@ -129,13 +129,13 @@ public class ChildService : IChildService
             Parent = mapper.Map<ParentDTO>(parent),
         };
 
-        foreach (var childDto in childrenDtos)
+        foreach (var childCreateDto in childrenCreateDtos)
         {
             try
             {
                 if (parentChildrenCount < parentConfig.Value.ChildrenMaxNumber)
                 {
-                    var child = await CreateChildForUser(childDto, userId).ConfigureAwait(false);
+                    var child = await CreateChildForUser(childCreateDto, userId).ConfigureAwait(false);
                     children.ChildrenCreationResults.Add(CreateChildResult(child));
                     parentChildrenCount++;
                 }
@@ -143,9 +143,9 @@ public class ChildService : IChildService
                 {
                     children.ChildrenCreationResults
                         .Add(CreateChildResult(
-                            childDto,
+                            childCreateDto,
                             false,
-                            $"Refused to create a new child with {nameof(Child.ParentId)}:{childDto.ParentId}, {nameof(userId)}:{userId}: " +
+                            $"Refused to create a new child with {nameof(Child.ParentId)}:{childCreateDto.ParentId}, {nameof(userId)}:{userId}: " +
                             $"the limit ({parentConfig.Value.ChildrenMaxNumber}) of the children for parents was reached."));
                 }
             }
@@ -154,19 +154,19 @@ public class ChildService : IChildService
                 || ex is UnauthorizedAccessException
                 || ex is DbUpdateException)
             {
-                children.ChildrenCreationResults.Add(CreateChildResult(childDto, false, ex.Message));
+                children.ChildrenCreationResults.Add(CreateChildResult(childCreateDto, false, ex.Message));
                 logger.LogDebug(
-                    $"There is an error while creating a new child with {nameof(Child.ParentId)}:{childDto.ParentId}, {nameof(userId)}:{userId}: {ex.Message}.");
+                    $"There is an error while creating a new child with {nameof(Child.ParentId)}:{childCreateDto.ParentId}, {nameof(userId)}:{userId}: {ex.Message}.");
             }
             catch (Exception ex)
             {
-                children.ChildrenCreationResults.Add(CreateChildResult(childDto, false));
+                children.ChildrenCreationResults.Add(CreateChildResult(childCreateDto, false));
                 logger.LogDebug(
-                    $"There is an error while creating a new child with {nameof(Child.ParentId)}:{childDto.ParentId}, {nameof(userId)}:{userId}: {ex.Message}.");
+                    $"There is an error while creating a new child with {nameof(Child.ParentId)}:{childCreateDto.ParentId}, {nameof(userId)}:{userId}: {ex.Message}.");
             }
         }
 
-        ChildCreationResult CreateChildResult(ChildDto childDto, bool isSuccess = true, string message = null)
+        ChildCreationResult CreateChildResult(ChildBaseDto childDto, bool isSuccess = true, string message = null)
         {
             return new ChildCreationResult()
             {
@@ -369,40 +369,40 @@ public class ChildService : IChildService
     }
 
     /// <inheritdoc/>
-    public async Task<ChildDto> UpdateChildCheckingItsUserIdProperty(ChildDto childDto, string userId)
+    public async Task<ChildDto> UpdateChildCheckingItsUserIdProperty(ChildUpdateDto childUpdateDto, Guid childId, string userId)
     {
-        this.ValidateChildDto(childDto);
+        this.ValidateChildDto(childUpdateDto);
         this.ValidateUserId(userId);
 
-        logger.LogDebug($"Updating the child with Id: {childDto.Id} and {nameof(userId)}: {userId} started.");
+        logger.LogDebug($"Updating the child with Id: {childId} and {nameof(userId)}: {userId} started.");
 
         var child = (await childRepository
-                        .GetByFilter(c => c.Id == childDto.Id, $"{nameof(Child.Parent)},{nameof(Child.SocialGroups)}")
+                        .GetByFilter(c => c.Id == childId, $"{nameof(Child.Parent)},{nameof(Child.SocialGroups)}")
                         .ConfigureAwait(false)).SingleOrDefault()
                     ?? throw new InvalidOperationException(
-                        $"User: {userId} is trying to update not existing Child (Id = {childDto.Id}).");
+                        $"User: {userId} is trying to update not existing Child (Id = {childId}).");
 
         if (child.Parent.UserId != userId)
         {
             throw new UnauthorizedAccessException(
-                $"User: {userId} is trying to update not his own child. Child Id = {childDto.Id}");
+                $"User: {userId} is trying to update not his own child. Child Id = {childId}");
         }
 
-        if (child.IsParent || childDto.IsParent)
+        if (child.IsParent || childUpdateDto.IsParent)
         {
             throw new ArgumentException($"Forbidden to update child which related to the parent.");
         }
 
-        if (childDto.ParentId != child.ParentId)
+        if (childUpdateDto.ParentId != child.ParentId)
         {
             logger.LogWarning(
-                $"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{child.ParentId} was trying to update his child with not his own {nameof(Child.ParentId)}:{childDto.ParentId}.");
-            childDto.ParentId = child.ParentId;
+                $"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{child.ParentId} was trying to update his child with not his own {nameof(Child.ParentId)}:{childUpdateDto.ParentId}.");
+            childUpdateDto.ParentId = child.ParentId;
         }
 
-        mapper.Map(childDto, child);
+        mapper.Map(childUpdateDto, child);
 
-        await UpdateSocialGroups(child, childDto.SocialGroups).ConfigureAwait(false);
+        await UpdateSocialGroups(child, childUpdateDto.SocialGroupIds).ConfigureAwait(false);
 
         await CompleteChildChangesAsync().ConfigureAwait(false);
 
@@ -482,7 +482,7 @@ public class ChildService : IChildService
         return predicate;
     }
 
-    private void ValidateChildDto(ChildDto childDto)
+    private void ValidateChildDto(ChildBaseDto childDto)
     {
         if (childDto == null)
         {
@@ -515,16 +515,15 @@ public class ChildService : IChildService
         }
     }
 
-    private async Task UpdateSocialGroups(Child child, ICollection<SocialGroupDto> socialGroupDtos)
+    private async Task UpdateSocialGroups(Child child, List<long> socialGroupIds)
     {
-        if (socialGroupDtos.Any())
+        if (socialGroupIds.Any())
         {
-            var socialGroupIds = socialGroupDtos.Select(x => x.Id).Distinct().ToArray();
             if (!new HashSet<long>(child.SocialGroups.Select(x => x.Id)).SetEquals(socialGroupIds))
             {
                 var socialGroups = (await socialGroupRepository
                     .GetByFilter(x => socialGroupIds.Contains(x.Id))).ToList();
-                if (socialGroupIds.Length != socialGroups.Count)
+                if (socialGroupIds.Count != socialGroups.Count)
                 {
                     throw new ArgumentException(@"Social groups contains some incorrect values", nameof(socialGroups));
                 }

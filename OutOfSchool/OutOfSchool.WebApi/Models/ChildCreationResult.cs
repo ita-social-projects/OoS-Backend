@@ -4,7 +4,7 @@ namespace OutOfSchool.WebApi.Models;
 
 public class ChildCreationResult
 {
-    public ChildDto Child { get; set; }
+    public ChildBaseDto Child { get; set; }
 
     public bool IsSuccess { get; set; }
 
