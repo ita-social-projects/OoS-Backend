@@ -81,28 +81,12 @@ public class StatisticService : IStatisticService
         var workshops = workshopRepository.Get();
         var applications = applicationRepository.Get();
 
-        if (currentUserService.IsMinistryAdmin())
-        {
-            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
-            workshops = workshops
-                .Where(w => w.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
-            applications = applications
-                .Where(a => a.Workshop.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
-        }
-
-        if (currentUserService.IsRegionAdmin())
-        {
-            var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
-            workshops = workshops
-                .Where(w => w.InstitutionHierarchy.InstitutionId == regionAdmin.InstitutionId);
-            applications = applications
-                .Where(a => a.Workshop.InstitutionHierarchy.InstitutionId == regionAdmin.InstitutionId);
-        }
-
         if (catottgId > 0)
         {
             workshops = workshops
-                .Where(w => w.Address.CATOTTGId == catottgId || (w.Address.CATOTTG.Category == CodeficatorCategory.CityDistrict.Name && w.Address.CATOTTG.ParentId == catottgId));
+                .Where(w =>
+                    w.Address.CATOTTGId == catottgId
+                    || (w.Address.CATOTTG.Category == CodeficatorCategory.CityDistrict.Name && w.Address.CATOTTG.ParentId == catottgId));
         }
 
         var directionsWithWorkshops = workshops

@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System;
+using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Enums;
@@ -126,37 +127,11 @@ public class DirectionService : IDirectionService
         return directions.OrderBy(x => x.Title).Select(entity => mapper.Map<DirectionDto>(entity)).ToList();
     }
 
-    public async Task<SearchResult<DirectionDto>> GetByFilter(DirectionFilter filter)
+    public async Task<SearchResult<DirectionDto>> GetByFilter(DirectionFilter filter, bool isAdmins)
     {
         logger.LogInformation("Getting Directions by filter started.");
 
-        var predicate = filter.Name switch
-        {
-            var name when string.IsNullOrWhiteSpace(name) => PredicateBuilder.True<Direction>(),
-            _ => PredicateBuilder
-                .False<Direction>()
-                .Or(direction => direction.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase)),
-        };
-
-        Expression<Func<Workshop, bool>> workshopCountFilter = PredicateBuilder.True<Workshop>();
-
-        if (currentUserService.IsMinistryAdmin())
-        {
-            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
-            predicate = predicate
-                .And<Direction>(d => d.InstitutionHierarchies.Any(h => h.InstitutionId == ministryAdmin.InstitutionId));
-            workshopCountFilter = workshopCountFilter
-                .And<Workshop>(w => w.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
-        }
-
-        if (currentUserService.IsRegionAdmin())
-        {
-            var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
-            predicate = predicate
-                .And<Direction>(d => d.InstitutionHierarchies.Any(h => h.InstitutionId == regionAdmin.InstitutionId));
-            workshopCountFilter = workshopCountFilter
-                .And<Workshop>(w => w.InstitutionHierarchy.InstitutionId == regionAdmin.InstitutionId);
-        }
+        var (predicate, workshopCountFilter) = await BuildPredicate(filter, isAdmins).ConfigureAwait(false);
 
         var count = await repository.Count(predicate).ConfigureAwait(false);
 
@@ -182,10 +157,10 @@ public class DirectionService : IDirectionService
             .ToListAsync();
 
         var directionsWorkshops = (from d in directions
-            join wc in workshopCount
-                on d.Id equals wc.DirectionId into dwc
-            from res in dwc.DefaultIfEmpty()
-            select mapper.Map<DirectionDto>(d).WithCount(res?.WorkshopsCount ?? 0))
+                                   join wc in workshopCount
+                                       on d.Id equals wc.DirectionId into dwc
+                                   from res in dwc.DefaultIfEmpty()
+                                   select mapper.Map<DirectionDto>(d).WithCount(res?.WorkshopsCount ?? 0))
             .ToList();
 
         logger.LogInformation($"All {directionsWorkshops.Count()} records were successfully received from the Direction table.");
@@ -244,5 +219,40 @@ public class DirectionService : IDirectionService
         {
             throw new ArgumentException(localizer["There is already a Direction with such a data."]);
         }
+    }
+
+    private async Task<(Expression<Func<Direction, bool>>, Expression<Func<Workshop, bool>>)> BuildPredicate(DirectionFilter filter, bool isAdmins)
+    {
+        Expression<Func<Direction, bool>> predicate = filter.Name switch
+        {
+            var name when string.IsNullOrWhiteSpace(name) => PredicateBuilder.True<Direction>(),
+            _ => PredicateBuilder
+                .False<Direction>()
+                .Or(direction => direction.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase)),
+        };
+
+        Expression<Func<Workshop, bool>> workshopCountFilter = PredicateBuilder.True<Workshop>();
+
+        if (isAdmins)
+        {
+            if (currentUserService.IsMinistryAdmin())
+            {
+                var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+                predicate = predicate
+                    .And<Direction>(d => d.InstitutionHierarchies.Any(h => h.InstitutionId == ministryAdmin.InstitutionId));
+                workshopCountFilter = workshopCountFilter
+                    .And<Workshop>(w => w.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
+            }
+            else if (currentUserService.IsRegionAdmin())
+            {
+                var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
+                predicate = predicate
+                    .And<Direction>(d => d.InstitutionHierarchies.Any(h => h.InstitutionId == regionAdmin.InstitutionId));
+                workshopCountFilter = workshopCountFilter
+                    .And<Workshop>(w => w.InstitutionHierarchy.InstitutionId == regionAdmin.InstitutionId);
+            }
+        }
+
+        return (predicate, workshopCountFilter);
     }
 }

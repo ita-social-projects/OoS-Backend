@@ -97,6 +97,7 @@ public class WorkshopController : ControllerBase
     /// Get workshops that matches filter's parameters.
     /// </summary>
     /// <param name="filter">Entity that represents searching parameters.</param>
+    /// <param name="isAdmins">True, if needs to retrieve information from admin panel.</param>
     /// <returns><see cref="SearchResult{WorkshopCard}"/>, or no content.</returns>
     /// <response code="200">The list of found entities by given filter.</response>
     /// <response code="204">No entity with given filter was found.</response>
@@ -106,14 +107,23 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopCard>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByFilter([FromQuery] WorkshopFilter filter)
+    public async Task<IActionResult> GetByFilter([FromQuery] WorkshopFilter filter, bool isAdmins = false)
     {
         if (string.IsNullOrWhiteSpace(filter.City))
         {
             filter.City = options.City;
         }
 
-        var result = await combinedWorkshopService.GetByFilter(filter).ConfigureAwait(false);
+        SearchResult<WorkshopCard> result;
+
+        if (!isAdmins)
+        {
+            result = await combinedWorkshopService.GetByFilter(filter).ConfigureAwait(false);
+        }
+        else
+        {
+            result = await combinedWorkshopService.GetByFilterForAdmins(filter).ConfigureAwait(false);
+        }
 
         if (result.TotalAmount < 1)
         {
