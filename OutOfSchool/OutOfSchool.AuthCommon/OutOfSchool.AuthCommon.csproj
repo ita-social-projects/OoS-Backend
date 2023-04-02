@@ -1,0 +1,70 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <CodeAnalysisRuleSet>..\StyleCopAnalyzersRules.ruleset</CodeAnalysisRuleSet>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Protobuf Include="..\OutOfSchool.GRPC\Protos\ProviderAdmin.proto" GrpcServices="Server" />
+        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
+        <PackageReference Include="IdentityModel" Version="6.0.0" />
+        <PackageReference Include="Grpc.AspNetCore" Version="2.46.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.1" />
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="6.0.12" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.12"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
+        <ProjectReference Include="..\OutOfSchool.EmailSender\OutOfSchool.EmailSender.csproj" />
+        <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
+        <ProjectReference Include="..\OutOfSchool.RazorTemplatesData\OutOfSchool.RazorTemplatesData.csproj" />
+        <ProjectReference Include="..\OutOfSchool.GRPC\OutOfSchool.GRPC.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.321">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <Content Remove="stylecop.json" />
+        <AdditionalFiles Include="stylecop.json">
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </AdditionalFiles>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Watch Include="wwwroot\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Views\**" />
+        <EmbeddedResource Include="wwwroot\**\*" />
+        <EmbeddedResource Include="Resources/SharedResource.en.resx">
+            <LogicalName>Resources/SharedResource.en.resx</LogicalName>
+<!--            <ExcludeFromManifest>true</ExcludeFromManifest>-->
+        </EmbeddedResource>
+        <EmbeddedResource Include="Resources/SharedResource.uk.resx">
+            <LogicalName>Resources/SharedResource.uk.resx</LogicalName>
+<!--            <ExcludeFromManifest>true</ExcludeFromManifest>-->
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <Target Name="PostClean" AfterTargets="Clean">
+        <RemoveDir Directories="$(BaseIntermediateOutputPath)" /><!-- obj -->
+        <RemoveDir Directories="$(BaseOutputPath)" /><!-- bin -->
+    </Target>
+
+</Project>

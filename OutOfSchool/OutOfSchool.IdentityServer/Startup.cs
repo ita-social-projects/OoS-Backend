@@ -1,11 +1,16 @@
+using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
+using Microsoft.Extensions.FileProviders;
+using OutOfSchool.AuthCommon;
+using OutOfSchool.AuthCommon.Config;
+using OutOfSchool.AuthCommon.Config.ExternalUriModels;
+using OutOfSchool.AuthCommon.Controllers;
+using OutOfSchool.AuthCommon.Extensions;
+using OutOfSchool.AuthCommon.Services;
+using OutOfSchool.AuthCommon.Services.Interfaces;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using OutOfSchool.Common.Models;
-using OutOfSchool.IdentityServer.Config.ExternalUriModels;
-using OutOfSchool.IdentityServer.Extensions;
-using OutOfSchool.IdentityServer.Validators;
-using OutOfSchool.IdentityServer.ViewModels;
 
 namespace OutOfSchool.IdentityServer;
 
@@ -16,7 +21,6 @@ public static class Startup
         var services = builder.Services;
         var config = builder.Configuration;
 
-        services.Configure<IdentityServerConfig>(config.GetSection(IdentityServerConfig.Name));
         var migrationsAssembly = config["MigrationsAssembly"];
 
         // TODO: Move version check into an extension to reuse code across apps
@@ -27,7 +31,7 @@ public static class Startup
             throw new Exception("MySQL Server version should be 8 or higher.");
         }
 
-        var connectionString = config.GetMySqlConnectionString<IdentityConnectionOptions>(
+        var connectionString = config.GetMySqlConnectionString<AuthorizationConnectionOptions>(
             "DefaultConnection",
             options => new MySqlConnectionStringBuilder
             {
@@ -50,8 +54,6 @@ public static class Startup
 
         services.AddCustomDataProtection("IdentityServer");
 
-        services.AddLocalization(options => options.ResourcesPath = "Resources");
-
         services.AddAuthentication("Bearer")
             .AddIdentityServerAuthentication("Bearer", options =>
             {
@@ -63,12 +65,6 @@ public static class Startup
 
         var issuerSection = config.GetSection(IssuerConfig.Name);
         services.Configure<IssuerConfig>(issuerSection);
-
-        // GRPC options
-        services.Configure<GRPCConfig>(config.GetSection(GRPCConfig.Name));
-
-        // ExternalUris options
-        services.Configure<AngularClientScopeExternalUrisConfig>(config.GetSection(AngularClientScopeExternalUrisConfig.Name));
 
         services.ConfigureIdentity(
             connectionString,
@@ -91,60 +87,9 @@ public static class Startup
             c.LoginPath = "/Auth/Login";
             c.LogoutPath = "/Auth/Logout";
         });
-
-        var mailConfig = config
-            .GetSection(EmailOptions.SectionName)
-            .Get<EmailOptions>();
-        services.AddEmailSender(
-            builder.Environment.IsDevelopment(),
-            mailConfig.SendGridKey,
-            emailOptions => emailOptions.Bind(config.GetSection(EmailOptions.SectionName)));
-
-        services.AddControllersWithViews()
-            .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
-            .AddDataAnnotationsLocalization(options =>
-            {
-                options.DataAnnotationLocalizerProvider = (type, factory) =>
-                    factory.Create(typeof(SharedResource));
-            });
-
         services.AddProxy();
-        services.AddAutoMapper(typeof(MappingProfile));
-        services.AddTransient(typeof(IEntityRepository<,>), typeof(EntityRepository<,>));
-        services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
-        services.AddTransient<IParentRepository, ParentRepository>();
-        services.AddTransient<IProviderAdminService, ProviderAdminService>();
-        services.AddTransient<IUserManagerAdditionalService, UserManagerAdditionalService>();
-        services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
-        services.AddTransient<IRegionAdminRepository, RegionAdminRepository>();
-        services.AddTransient<IAreaAdminRepository, AreaAdminRepository>();
-        services.AddTransient<ICommonMinistryAdminService<MinistryAdminBaseDto>,
-            CommonMinistryAdminService<Guid, InstitutionAdmin, MinistryAdminBaseDto, IInstitutionAdminRepository>>();
-        services.AddTransient<ICommonMinistryAdminService<RegionAdminBaseDto>,
-            CommonMinistryAdminService<long, RegionAdmin, RegionAdminBaseDto, IRegionAdminRepository>>();
-        services.AddTransient<ICommonMinistryAdminService<AreaAdminBaseDto>,
-            CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, IAreaAdminRepository>>();
-
-        services.AddTransient<IProviderAdminChangesLogService, ProviderAdminChangesLogService>();
-
-        // Register the Permission policy handlers
-        services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
-        services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
-
-        services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
-
-        services.AddFluentValidationAutoValidation();
-
-        services.AddScoped<IValidator<RegisterViewModel>, RegisterViewModelValidator>();
-
-        services.AddGrpc();
-
-        services.AddHostedService<AdditionalClientsHostedService>();
-
-        services.AddHealthChecks()
-            .AddDbContextCheck<OutOfSchoolDbContext>(
-                "Database",
-                tags: new[] { "readiness" });
+        services.AddAuthCommon(config, builder.Environment.IsDevelopment());
+        services.AddTransient<IInteractionService, InteractionService>();
     }
 
     public static void Configure(this WebApplication app)
@@ -204,7 +149,12 @@ public static class Startup
 
         app.UseCookiePolicy(new CookiePolicyOptions { MinimumSameSitePolicy = SameSiteMode.Lax });
 
-        app.UseStaticFiles();
+        var commonAssembly = typeof(AuthController).Assembly;
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = new ManifestEmbeddedFileProvider(commonAssembly, "wwwroot"),
+            RequestPath = string.Empty,
+        });
 
         app.UseSerilogRequestLogging();
 

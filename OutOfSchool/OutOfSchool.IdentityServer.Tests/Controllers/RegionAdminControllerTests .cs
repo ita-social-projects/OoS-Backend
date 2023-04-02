@@ -7,8 +7,8 @@ using NUnit.Framework;
 using OutOfSchool.IdentityServer.Controllers;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
-using OutOfSchool.IdentityServer.Services.Interfaces;
 using System;
+using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.IdentityServer.Tests.Controllers;
