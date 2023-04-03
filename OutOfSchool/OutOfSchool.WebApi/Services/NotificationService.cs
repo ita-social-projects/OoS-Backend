@@ -190,7 +190,7 @@ public class NotificationService : INotificationService
 
         var result = new NotificationGroupedAndSingle()
         {
-            NotificationsGrouped = new List<NotificationGrouped>(),
+            NotificationsGroupedByType = new List<NotificationGroupedByType>(),
             Notifications = new List<NotificationDto>(),
         };
 
@@ -211,7 +211,7 @@ public class NotificationService : INotificationService
             }
         }
 
-        result.NotificationsGrouped = allNotifications
+        var notificationsGroupedByAdditionalData = allNotifications
             .Where(n => grouped.Contains(n.Type))
             .GroupBy(n => new { n.Type, n.Action, n.GroupedData })
             .Select(n => new NotificationGrouped
@@ -220,6 +220,16 @@ public class NotificationService : INotificationService
                 Action = n.Key.Action,
                 GroupedData = n.Key.GroupedData,
                 Amount = n.Count(),
+            })
+            .ToList();
+
+        result.NotificationsGroupedByType = notificationsGroupedByAdditionalData
+            .GroupBy(n => n.Type)
+            .Select(n => new NotificationGroupedByType()
+            {
+                Type = n.Key,
+                Amount = n.Count(),
+                GroupedByAdditionalData = n.ToList(),
             })
             .ToList();
 
