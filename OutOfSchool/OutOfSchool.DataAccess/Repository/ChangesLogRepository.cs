@@ -32,15 +32,31 @@ public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChanges
         var entityType = typeof(TEntity).Name;
         var (entityIdGuid, entityIdLong) = GetEntityId(entry);
         var changedValues = GetChangedValues(entry, trackedProperties, valueProjector);
+
+        string propertyNameTmp = string.Empty;
+        string oldValueTmp = string.Empty;
+        string newValueTmp = string.Empty;
+
         foreach (var (propertyName, oldValue, newValue) in changedValues)
         {
+            propertyNameTmp = propertyName;
+            oldValueTmp = oldValue;
+            newValueTmp = newValue;
+
+            if (propertyName == "InstitutionId")
+            {
+                propertyNameTmp = "Institution";
+                oldValueTmp = dbContext.Institutions.Where(x => x.Id == Guid.Parse(oldValue)).SingleOrDefault().Title;
+                newValueTmp = dbContext.Institutions.Where(x => x.Id == Guid.Parse(newValue)).SingleOrDefault().Title;
+            }
+
             result.Add(CreateChangesLogRecord(
                 entityType,
-                propertyName,
+                propertyNameTmp,
                 entityIdGuid,
                 entityIdLong,
-                oldValue,
-                newValue,
+                oldValueTmp,
+                newValueTmp,
                 userId));
         }
 
