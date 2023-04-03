@@ -116,13 +116,13 @@ public class WorkshopController : ControllerBase
 
         SearchResult<WorkshopCard> result;
 
-        if (!isAdmins)
+        if (isAdmins)
         {
-            result = await combinedWorkshopService.GetByFilter(filter).ConfigureAwait(false);
+            result = await combinedWorkshopService.GetByFilterForAdmins(filter).ConfigureAwait(false);
         }
         else
         {
-            result = await combinedWorkshopService.GetByFilterForAdmins(filter).ConfigureAwait(false);
+            result = await combinedWorkshopService.GetByFilter(filter).ConfigureAwait(false);
         }
 
         if (result.TotalAmount < 1)

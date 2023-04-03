@@ -2,9 +2,11 @@
 using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.Extensions.Localization;
+using Nest;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -223,13 +225,13 @@ public class DirectionService : IDirectionService
 
     private async Task<(Expression<Func<Direction, bool>>, Expression<Func<Workshop, bool>>)> BuildPredicate(DirectionFilter filter, bool isAdmins)
     {
-        Expression<Func<Direction, bool>> predicate = filter.Name switch
+        Expression<Func<Direction, bool>> predicate = PredicateBuilder.True<Direction>();
+
+        if (!string.IsNullOrWhiteSpace(filter.Name))
         {
-            var name when string.IsNullOrWhiteSpace(name) => PredicateBuilder.True<Direction>(),
-            _ => PredicateBuilder
-                .False<Direction>()
-                .Or(direction => direction.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase)),
-        };
+            predicate = predicate
+                .And(direction => direction.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase));
+        }
 
         Expression<Func<Workshop, bool>> workshopCountFilter = PredicateBuilder.True<Workshop>();
 
