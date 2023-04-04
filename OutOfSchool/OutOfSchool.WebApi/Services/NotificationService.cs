@@ -228,7 +228,7 @@ public class NotificationService : INotificationService
             .Select(n => new NotificationGroupedByType()
             {
                 Type = n.Key,
-                Amount = n.Count(),
+                Amount = n.Sum(n => n.Amount),
                 GroupedByAdditionalData = n.ToList(),
             })
             .ToList();
