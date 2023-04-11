@@ -67,9 +67,9 @@ public class DirectionController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DirectionDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByFilter([FromQuery] DirectionFilter filter)
+    public async Task<IActionResult> GetByFilter([FromQuery] DirectionFilter filter, bool isAdmins = false)
     {
-        var directions = await service.GetByFilter(filter).ConfigureAwait(false);
+        var directions = await service.GetByFilter(filter, isAdmins).ConfigureAwait(false);
 
         if (directions.TotalAmount < 1)
         {

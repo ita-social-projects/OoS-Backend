@@ -285,7 +285,7 @@ public class DirectionServiceTests
             }));
 
         // Act
-        var result = await service.GetByFilter(filter).ConfigureAwait(false);
+        var result = await service.GetByFilter(filter, true).ConfigureAwait(false);
 
         // Assert
         Assert.True(result.Entities.All(d => d.Title == expectedDto.Title));
@@ -322,7 +322,7 @@ public class DirectionServiceTests
             }));
 
         // Act
-        var result = await service.GetByFilter(filter).ConfigureAwait(false);
+        var result = await service.GetByFilter(filter, true).ConfigureAwait(false);
 
         // Assert
         Assert.True(result.Entities.All(d => d.Title == expectedDto.Title));

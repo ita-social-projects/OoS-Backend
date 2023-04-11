@@ -30,9 +30,10 @@ public interface IDirectionService
     /// Get Direction objects from DB by filter.
     /// </summary>
     /// <param name="filter">Filter for DirectionDto.</param>
+    /// <param name="isAdmins">True, if needs to retrieve information from admin panel.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains a List of <see cref="DirectionDto"/> that were found.</returns>
-    Task<SearchResult<DirectionDto>> GetByFilter(DirectionFilter filter);
+    Task<SearchResult<DirectionDto>> GetByFilter(DirectionFilter filter, bool isAdmins);
 
     /// <summary>
     /// To recieve the Direction object with define id.

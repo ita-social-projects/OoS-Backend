@@ -31,9 +31,6 @@ public class StatisticServiceTest
     private Mock<IEntityRepository<long, Direction>> directionRepository;
     private Mock<IMapper> mapper;
     private Mock<ICacheService> cache;
-    private Mock<ICurrentUserService> currentUserServiceMock;
-    private Mock<IMinistryAdminService> ministryAdminServiceMock;
-    private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<IAverageRatingService> averageRatingServiceMock;
 
     [SetUp]
@@ -45,9 +42,6 @@ public class StatisticServiceTest
         var logger = new Mock<ILogger<StatisticService>>();
         mapper = new Mock<IMapper>();
         cache = new Mock<ICacheService>();
-        currentUserServiceMock = new Mock<ICurrentUserService>();
-        ministryAdminServiceMock = new Mock<IMinistryAdminService>();
-        regionAdminServiceMock = new Mock<IRegionAdminService>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
 
         service = new StatisticService(
@@ -57,9 +51,6 @@ public class StatisticServiceTest
             logger.Object,
             mapper.Object,
             cache.Object,
-            currentUserServiceMock.Object,
-            ministryAdminServiceMock.Object,
-            regionAdminServiceMock.Object,
             averageRatingServiceMock.Object);
     }
 
@@ -70,68 +61,6 @@ public class StatisticServiceTest
         List<WorkshopCard> expectedWorkshopCards = ExpectedWorkshopCardsNoCityFilter();
 
         SetupGetPopularWorkshops(expectedWorkshopCards);
-
-        mapper.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>()))
-            .Returns(expectedWorkshopCards);
-
-        // Act
-        var result = await service
-            .GetPopularWorkshopsFromDatabase(2, 0)
-            .ConfigureAwait(false);
-
-        // Assert
-        result
-            .Should()
-            .BeEquivalentTo(
-                expectedWorkshopCards, options => options.WithStrictOrdering());
-    }
-
-    [Test]
-    public async Task GetPopularWorkshops_WhenMinistryAdminLogged_ShouldReturnCertainWorkshops()
-    {
-        // Arrange
-        List<WorkshopCard> expectedWorkshopCards = ExpectedWorkshopCardsInstitutionId();
-
-        SetupGetPopularWorkshops(expectedWorkshopCards);
-
-        currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(true);
-        ministryAdminServiceMock
-            .Setup(m => m.GetByUserId(It.IsAny<string>()))
-            .Returns(Task.FromResult<MinistryAdminDto>(new MinistryAdminDto()
-            {
-                InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
-            }));
-
-        mapper.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>()))
-            .Returns(expectedWorkshopCards);
-
-        // Act
-        var result = await service
-            .GetPopularWorkshopsFromDatabase(2, 0)
-            .ConfigureAwait(false);
-
-        // Assert
-        result
-            .Should()
-            .BeEquivalentTo(
-                expectedWorkshopCards, options => options.WithStrictOrdering());
-    }
-
-    [Test]
-    public async Task GetPopularWorkshops_WhenRegionAdminLogged_ShouldReturnCertainWorkshops()
-    {
-        // Arrange
-        List<WorkshopCard> expectedWorkshopCards = ExpectedWorkshopCardsInstitutionId();
-
-        SetupGetPopularWorkshops(expectedWorkshopCards);
-
-        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(true);
-        regionAdminServiceMock
-            .Setup(m => m.GetByUserId(It.IsAny<string>()))
-            .Returns(Task.FromResult<RegionAdminDto>(new RegionAdminDto()
-            {
-                InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
-            }));
 
         mapper.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>()))
             .Returns(expectedWorkshopCards);
@@ -179,74 +108,6 @@ public class StatisticServiceTest
         List<DirectionDto> expectedDirectionStatistic = ExpectedDirectionStatisticsNoCityFilter();
 
         SetupGetPopularDirections();
-
-        foreach (var stat in expectedDirectionStatistic)
-        {
-            mapper.Setup(m => m.Map<DirectionDto>(It.IsAny<Direction>()))
-                .Returns(stat);
-        }
-
-        // Act
-        var result = await service
-            .GetPopularDirectionsFromDatabase(1, 0)
-            .ConfigureAwait(false);
-
-        // Assert
-        result
-            .Should()
-            .BeEquivalentTo(
-                expectedDirectionStatistic, options => options.WithStrictOrdering());
-    }
-
-    [Test]
-    public async Task GetPopularDirections_WhenMinistryAdminLogged_ShouldReturnCertainDirections()
-    {
-        // Arrange
-        List<DirectionDto> expectedDirectionStatistic = ExpectedDirectionStatisticsNoCityFilter();
-
-        SetupGetPopularDirections();
-
-        currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(true);
-        ministryAdminServiceMock
-            .Setup(m => m.GetByUserId(It.IsAny<string>()))
-            .Returns(Task.FromResult<MinistryAdminDto>(new MinistryAdminDto()
-            {
-                InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
-            }));
-
-        foreach (var stat in expectedDirectionStatistic)
-        {
-            mapper.Setup(m => m.Map<DirectionDto>(It.IsAny<Direction>()))
-                .Returns(stat);
-        }
-
-        // Act
-        var result = await service
-            .GetPopularDirectionsFromDatabase(1, 0)
-            .ConfigureAwait(false);
-
-        // Assert
-        result
-            .Should()
-            .BeEquivalentTo(
-                expectedDirectionStatistic, options => options.WithStrictOrdering());
-    }
-
-    [Test]
-    public async Task GetPopularDirections_WhenRegionAdminLogged_ShouldReturnCertainDirections()
-    {
-        // Arrange
-        List<DirectionDto> expectedDirectionStatistic = ExpectedDirectionStatisticsNoCityFilter();
-
-        SetupGetPopularDirections();
-
-        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(true);
-        regionAdminServiceMock
-            .Setup(m => m.GetByUserId(It.IsAny<string>()))
-            .Returns(Task.FromResult<RegionAdminDto>(new RegionAdminDto()
-            {
-                InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
-            }));
 
         foreach (var stat in expectedDirectionStatistic)
         {

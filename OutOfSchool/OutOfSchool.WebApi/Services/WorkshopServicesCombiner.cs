@@ -181,34 +181,33 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
             return new SearchResult<WorkshopCard> { TotalAmount = 0, Entities = new List<WorkshopCard>() };
         }
 
-        SearchResult<WorkshopCard> workshops;
+        return await workshopStrategy.SearchAsync(filter);
+    }
 
-        if (currentUserService.IsAdmin())
+    /// <inheritdoc/>
+    public async Task<SearchResult<WorkshopCard>> GetByFilterForAdmins(WorkshopFilter filter)
+    {
+        if (!IsFilterValid(filter))
         {
-            var settlementsFilter = mapper.Map<WorkshopBySettlementsFilter>(filter);
-
-            if (currentUserService.IsMinistryAdmin())
-            {
-                var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
-                settlementsFilter.InstitutionId = ministryAdmin.InstitutionId;
-            }
-
-            if (currentUserService.IsRegionAdmin())
-            {
-                var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
-                settlementsFilter.InstitutionId = regionAdmin.InstitutionId;
-                settlementsFilter.SettlementsIds = await codeficatorService
-                    .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
-            }
-
-            workshops = await workshopService.GetByFilter(settlementsFilter).ConfigureAwait(false);
-        }
-        else
-        {
-            workshops = await workshopStrategy.SearchAsync(filter);
+            return new SearchResult<WorkshopCard> { TotalAmount = 0, Entities = new List<WorkshopCard>() };
         }
 
-        return workshops;
+        var settlementsFilter = mapper.Map<WorkshopBySettlementsFilter>(filter);
+
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+            settlementsFilter.InstitutionId = ministryAdmin.InstitutionId;
+        }
+        else if (currentUserService.IsRegionAdmin())
+        {
+            var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
+            settlementsFilter.InstitutionId = regionAdmin.InstitutionId;
+            settlementsFilter.SettlementsIds = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+        }
+
+        return await workshopService.GetByFilter(settlementsFilter).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

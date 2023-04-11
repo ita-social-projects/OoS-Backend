@@ -605,23 +605,34 @@ public class WorkshopService : IWorkshopService
     {
         var predicate = PredicateBuilder.True<Workshop>();
 
-        if (filter is WorkshopBySettlementsFilter settlementsFilter && settlementsFilter.SettlementsIds.Any())
+        if (filter is WorkshopBySettlementsFilter settlementsFilter)
         {
-            var tempPredicate = PredicateBuilder.False<Workshop>();
-
-            foreach (var item in settlementsFilter.SettlementsIds)
+            if (settlementsFilter.InstitutionId != Guid.Empty)
             {
-                tempPredicate = tempPredicate.Or(x => x.Provider.LegalAddress.CATOTTGId == item);
+                predicate = predicate.And(x => x.InstitutionHierarchy.InstitutionId == filter.InstitutionId);
             }
 
-            predicate = predicate.And(tempPredicate);
+            if (settlementsFilter.SettlementsIds.Any())
+            {
+                var tempPredicate = PredicateBuilder.False<Workshop>();
+
+                foreach (var item in settlementsFilter.SettlementsIds)
+                {
+                    tempPredicate = tempPredicate.Or(x => x.Provider.LegalAddress.CATOTTGId == item);
+                }
+
+                predicate = predicate.And(tempPredicate);
+            }
         }
         else
         {
-            predicate = predicate.And(x => x.Provider.Status == ProviderStatus.Approved)
-                .Or(x => x.Provider.Status == ProviderStatus.Recheck);
-
+            predicate = predicate.And(x => Provider.ValidProviderStatuses.Contains(x.Provider.Status));
             predicate = predicate.And(x => !x.IsBlocked);
+
+            if (filter.CATOTTGId > 0)
+            {
+                predicate = predicate.And(x => x.Address.CATOTTGId == filter.CATOTTGId);
+            }
         }
 
         if (filter.Ids.Any())
@@ -709,11 +720,6 @@ public class WorkshopService : IWorkshopService
         if (filter.Statuses.Any())
         {
             predicate = predicate.And(x => filter.Statuses.Contains(x.Status));
-        }
-
-        if (filter.InstitutionId != Guid.Empty)
-        {
-            predicate = predicate.And(x => x.Provider.InstitutionId == filter.InstitutionId);
         }
 
         return predicate;
