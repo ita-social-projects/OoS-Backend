@@ -7,7 +7,7 @@ set -uo pipefail
 # sudo bash add-monitoring-agent-repo.sh --also-install
 # sudo service stackdriver-agent start
 
-export INSTALL_K3S_VERSION=v1.21.12+k3s1
+export INSTALL_K3S_VERSION=v1.22.7+k3s1
 export K3S_DATASTORE_ENDPOINT="mysql://${db_username}:${db_password}@tcp(${db_host}:3306)/k3s"
 export K3S_TOKEN=${token}
 
@@ -15,14 +15,11 @@ curl -sfL https://get.k3s.io | sh -s - server \
   --disable-cloud-controller \
   --write-kubeconfig-mode 644 \
   --kubelet-arg="cloud-provider=external" \
-  --tls-san "${external_lb_ip_address}" \
-  --tls-san "${external_hostname}" \
+  --tls-san "34.77.193.10" \
+  --tls-san "k8s.oos.dmytrominochkin.cloud" \
   --disable traefik \
-  --no-deploy traefik \
   --disable servicelb \
-  --no-deploy servicelb \
-  --disable local-storage \
-  --no-deploy local-storage
+  --disable local-storage
 
 sleep 10
 

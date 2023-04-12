@@ -686,7 +686,7 @@ spec:
           type: Directory
         name: sys
 ---
-apiVersion: storage.k8s.io/v1beta1
+apiVersion: storage.k8s.io/v1
 kind: CSIDriver
 metadata:
   name: pd.csi.storage.gke.io

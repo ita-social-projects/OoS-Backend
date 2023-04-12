@@ -1,9 +1,12 @@
 dependencies:
 - name: elasticsearch
   repository: https://helm.elastic.co
-  version: 7.16.1
+  version: 7.17.3
 - name: kibana
   repository: https://helm.elastic.co
-  version: 7.16.1
-digest: sha256:77afddff3cfeba657e2990e42fb94d410a7cb9b54b4b617f64652186300c303f
-generated: "2022-05-20T14:23:18.009834+03:00"
+  version: 7.17.3
+- name: vector
+  repository: https://helm.vector.dev
+  version: 0.20.1
+digest: sha256:a95605eb0d4a778c9694b82e63da09f98aa221c11a06d0656d15944378a3316e
+generated: "2023-04-12T16:46:49.587702+03:00"
