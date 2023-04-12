@@ -29,8 +29,6 @@ public class AdditionalClientsHostedService : IHostedService
             await Task.Delay(configService.GetValue<int>("CheckConnectivityDelay"));
         }
 
-        var identityContext = scope.ServiceProvider.GetRequiredService<OutOfSchoolDbContext>();
-
         var apiSecret = configService["outofschoolapi:ApiSecret"];
         var clientSecret = configService["m2m.client:ClientSecret"];
         var identityOptions = new IdentityAccessOptions();
@@ -39,7 +37,7 @@ public class AdditionalClientsHostedService : IHostedService
 
         var manager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-        Startup.RolesInit(manager);
+        IdentityRolesCreator.Create(manager);
 
         foreach (var client in StaticConfig.Clients(clientSecret, identityOptions.AdditionalIdentityClients))
         {
