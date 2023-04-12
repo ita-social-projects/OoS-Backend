@@ -147,6 +147,8 @@ public static class Startup
 
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
         services.AddGrpc();
+
+        services.AddHostedService<AdditionalClientsHostedService>();
     }
 
     public static void Configure(this WebApplication app)
