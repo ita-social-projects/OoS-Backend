@@ -1,12 +1,12 @@
 dependencies:
-- name: dotnetapp
-  repository: file://../dotnetapp
+- name: webapp
+  repository: file://../webapp
   version: 0.1.0
-- name: dotnetapp
-  repository: file://../dotnetapp
+- name: webapp
+  repository: file://../webapp
   version: 0.1.0
-- name: dotnetapp
-  repository: file://../dotnetapp
+- name: webapp
+  repository: file://../webapp
   version: 0.1.0
-digest: sha256:e68d2e0ad76e04e62b9052055fcae05b889156af51cc730ef5322ab71ccf73d1
-generated: "2022-06-09T12:31:32.644893+03:00"
+digest: sha256:d379fea11d030b2540f33bfc17dd089940d531381ffc887c2d0f67d863062685
+generated: "2023-03-26T19:30:59.530932+03:00"

@@ -76,8 +76,10 @@ spec:
           {{- if eq $secret.type "env" }}
           {{- range $key := $secret.keys }}
             {{- $envPrefix := $secret.prefix | default "" | upper }}
-            {{- $envKey := (index $key "envKey") | default (index $key "key") | upper | replace "." "_" | replace "-" "_" }}
-            - name: {{ $envPrefix }}{{ $envKey }}
+            {{- $envKey := (index $key "envKey") | default (index $key "key") | replace "." "_" | replace "-" "_" }}
+            {{/* TODO: can't belive helm has not fixed booleans in 5 years ;) */}}
+            {{- $uppedKey := ternary (upper $envKey) $envKey (list nil true "true" | has (index $key "upper")) }}
+            - name: {{ $envPrefix }}{{ $uppedKey }}
               valueFrom:
                 secretKeyRef:
                   name: {{ $secret.name }}
