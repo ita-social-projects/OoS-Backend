@@ -1,12 +1,12 @@
 dependencies:
 - name: mysql
   repository: https://charts.bitnami.com/bitnami
-  version: 8.8.35
+  version: 9.7.1
 - name: phpmyadmin
   repository: https://charts.bitnami.com/bitnami
-  version: 8.2.19
+  version: 10.4.6
 - name: redis
   repository: https://charts.bitnami.com/bitnami
-  version: 16.9.10
-digest: sha256:f530c96d14961f3a7384ef9227728ede2414f915382e948a763e19575fefddcf
-generated: "2022-05-23T17:58:21.106281+03:00"
+  version: 17.9.3
+digest: sha256:03791b46c47e1b472213bab10f6e2b1a17752a851b5dd7fe0a45edc04723ca2a
+generated: "2023-04-12T13:14:22.75101+03:00"
