@@ -2,7 +2,7 @@ apiVersion: v2
 name: all-infrastructure
 description: A support Helm library chart to track all dependencies
 
-type: application
+type: library
 
 version: 1.0.0
 
