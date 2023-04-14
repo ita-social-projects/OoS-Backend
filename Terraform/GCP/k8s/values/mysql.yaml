@@ -2,6 +2,7 @@ pvc:
   mysql:
     storageClass: standard
   redis:
+    enabled: true
     storageClass: standard
     size: 1Gi
 
@@ -34,9 +35,6 @@ mysql:
       # storageClass: standard
       # size: 10Gi 
     extraEnvVarsSecret: mysql-api-auth
-
-redis:
-  enabled: true
 
 phpmyadmin:
   enabled: true
