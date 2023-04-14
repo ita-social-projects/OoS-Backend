@@ -147,6 +147,8 @@ public static class Startup
 
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
         services.AddGrpc();
+
+        services.AddHostedService<AdditionalClientsHostedService>();
     }
 
     public static void Configure(this WebApplication app)
@@ -225,24 +227,6 @@ public static class Startup
             {
                 endpoints.MapGrpcService<ProviderAdminServiceGRPC>().RequireHost($"*:{gRPCConfig.Port}");
             });
-        }
-    }
-
-    public static void RolesInit(RoleManager<IdentityRole> manager)
-    {
-        var roles = new IdentityRole[]
-        {
-                new IdentityRole {Name = "parent"},
-                new IdentityRole {Name = "provider"},
-                new IdentityRole {Name = "techadmin"},
-                new IdentityRole {Name = "ministryadmin"},
-                new IdentityRole {Name = "regionadmin"},
-        };
-        var newRoles = roles.ExceptBy(manager.Roles.Select(r => r.Name), role => role.Name);
-
-        foreach (var role in newRoles)
-        {
-            manager.CreateAsync(role).Wait();
         }
     }
 }
