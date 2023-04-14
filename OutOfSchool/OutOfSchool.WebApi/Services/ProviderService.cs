@@ -609,7 +609,7 @@ public class ProviderService : IProviderService, INotificationReciever
 
         try
         {
-            var entity = await providerRepository.GetById(id).ConfigureAwait(false);
+            var entity = await providerRepository.GetWithNavigations(id).ConfigureAwait(false);
 
             if (entity is null)
             {
