@@ -36,7 +36,7 @@ public class StatisticReportsMakingService : IStatisticReportsMakingService
 
         using (var stream = new MemoryStream())
         {
-            using (var writer = new StreamWriter(stream))
+            using (var writer = new StreamWriter(stream, Encoding.UTF8))
                 using (var csv = new CsvWriter(writer, config))
                 {
                     await csv.WriteRecordsAsync(reportData, cancellationToken);
