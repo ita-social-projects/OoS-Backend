@@ -16,7 +16,3 @@ dependencies:
     version: ~10.4.6
     condition: phpmyadmin.enabled
     repository: https://charts.bitnami.com/bitnami
-  - name: redis
-    version: ~17.9.3
-    condition: redis.enabled
-    repository: https://charts.bitnami.com/bitnami

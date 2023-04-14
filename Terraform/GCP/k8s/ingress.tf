@@ -1,6 +1,6 @@
 resource "helm_release" "ingress" {
   name             = "ingress"
-  chart            = "../../k8s/ingress"
+  chart            = "../../k8s/infrastructure/charts/ingress-nginx-4.3.0.tgz"
   namespace        = "ingress-nginx"
   create_namespace = true
   wait             = true
@@ -9,15 +9,15 @@ resource "helm_release" "ingress" {
     "${file("${path.module}/values/ingress.yaml")}"
   ]
   set {
-    name  = "ingress-nginx.tcp.${var.sql_port}"
+    name  = "tcp.${var.sql_port}"
     value = "default/mysql:3306"
   }
   set {
-    name  = "ingress-nginx.tcp.${var.redis_port}"
-    value = "default/mysql-redis-master:6379"
+    name  = "tcp.${var.redis_port}"
+    value = "default/redis-master:6379"
   }
   set {
-    name = "ingress-nginx.controller.service.enableHttp"
+    name  = "controller.service.enableHttp"
     value = var.enable_ingress_http
   }
   depends_on = [

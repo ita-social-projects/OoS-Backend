@@ -18,4 +18,5 @@ dependencies:
     repository: https://helm.elastic.co
   - name: vector
     version: 0.20.1
+    condition: vector.enabled
     repository: https://helm.vector.dev

@@ -9,6 +9,7 @@ pvc:
     size: 30Gi
     storageClass: openebs-hostpath
   redis:
+    enabled: true
     name: redis-master
     accessModes:
       - ReadWriteOnce
@@ -47,25 +48,6 @@ mysql:
       # storageClass: openebs-hostpath
       # size: 30Gi
     extraEnvVarsSecret: mysql-api-auth
-
-redis:
-  enabled: false
-  architecture: standalone
-  auth:
-    enabled: true
-    sentinel: true
-    existingSecret: redis-auth
-    existingSecretPasswordKey: password
-    usePasswordFiles: false
-  master:
-    persistence:
-      enabled: true
-      existingClaim: redis-master
-  # commonConfiguration: |-
-  #   # Enable AOF https://redis.io/topics/persistence#append-only-file
-  #   appendonly yes
-  #   # Disable RDB persistence, AOF persistence already enabled.
-  #   save ""
 
 phpmyadmin:
   enabled: true

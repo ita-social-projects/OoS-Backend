@@ -165,3 +165,6 @@ kibana:
         secretKeyRef:
           name: elasticsearch-credentials
           key: password
+
+vector:
+  enabled: true
