@@ -158,32 +158,19 @@ vector:
     ports:
       - port: 8686
   
-  # Create a Secret resource for Vector to use.
-  secrets:
-    # secrets.generic -- Each Key/Value will be added to the Secret's data key, each value should be raw and NOT base64
-    # encoded. Any secrets can be provided here. It's commonly used for credentials and other access related values.
-    # **NOTE: Don't commit unencrypted secrets to git!**
-    generic: 
-      es_user: ""
-      es_password: ""
-      es_endpoint: ""
-
   env:
-    - name: ES_USERNAME
+    - name: "ES_USERNAME"
       valueFrom:
         secretKeyRef:
-          name: vector
-          key: es_user
-    - name: ES_PASSWORD
+          name: elasticsearch-credentials
+          key: username
+    - name: "ES_PASSWORD"
       valueFrom:
         secretKeyRef:
-          name: vector
-          key: es_password
-    - name: ES_ENDPOINT
-      valueFrom:
-        secretKeyRef:
-          name: vector
-          key: es_endpoint
+          name: elasticsearch-credentials
+          key: password
+    - name: "ES_ENDPOINT"
+      value: "http://elasticsearch-master.default.svc.cluster.local:9200"
 
   # customConfig -- Override Vector's default configs, if used **all** options need to be specified. This section supports
   # using helm templates to populate dynamic values. See Vector's [configuration documentation](https://vector.dev/docs/reference/configuration/)
@@ -199,14 +186,14 @@ vector:
         type: file
         include:
           - /var/log/syslog
-      k8s_all:
+      kubernetes_logs:
         type: kubernetes_logs
     # captures pod name logs
     transforms:
       pod_name:
         condition: starts_with(string!(.kubernetes.pod_name),"outofschool-webapi-")
         inputs:
-        - k8s_all
+        - kubernetes_logs
         type: filter
     sinks:
       system_logs:
@@ -217,11 +204,10 @@ vector:
         compression: none
         endpoints:
           - "${ES_ENDPOINT}"
-        id_key: id
         mode: bulk
         bulk:
-          action: create
-          index: vector-logs-syslog-%Y-%m-%d
+          action: index
+          index: vector-logs-syslog-%Y.%m.%d
         auth:
           strategy: basic
           user: "${ES_USERNAME}"
@@ -229,17 +215,243 @@ vector:
       k3s_logs:
         type: elasticsearch
         inputs:
-          - k8s_all
+          - kubernetes_logs
         api_version: v7
         compression: none
         endpoints:
           - "${ES_ENDPOINT}"
-        id_key: id
         mode: bulk
         bulk:
-          action: create
-          index: vector-logs-k3s-{{`{{ kubernetes.pod_name }}`}}-%Y-%m-%d
+          action: index
+          index: vector-logs-kubernetes-%Y.%m.%d
         auth:
           strategy: basic
           user: "${ES_USERNAME}"
           password: "${ES_PASSWORD}"
+
+metricbeat:
+  daemonset:
+    # Include the daemonset
+    enabled: true
+    
+    extraEnvs:
+      - name: "ES_ENDPOINT"
+        value: "http://elasticsearch-master.default.svc.cluster.local:9200"        
+      - name: "ES_USERNAME"
+        valueFrom:
+          secretKeyRef:
+            name: elasticsearch-credentials
+            key: username
+      - name: "ES_PASSWORD"
+        valueFrom:
+          secretKeyRef:
+            name: elasticsearch-credentials
+            key: password
+    
+    hostNetworking: true
+
+    extraVolumeMounts: 
+      - name: mtab
+        mountPath: /etc/mtab
+        readOnly: true
+    
+    extraVolumes: 
+      - name: mtab
+        hostPath:
+          path: /etc/mtab
+          type: File 
+    
+    metricbeatConfig:
+      metricbeat.yml: |
+        metricbeat.modules:
+        - module: kubernetes
+          metricsets:
+            - container
+            - node
+            - pod
+            - system
+            - volume
+          period: 15s
+          host: "${NODE_NAME}"
+          hosts: ["https://${NODE_NAME}:10250"]
+          bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+          ssl.verification_mode: "none"
+          processors:
+          - add_kubernetes_metadata: ~
+        - module: kubernetes
+          enabled: true
+          metricsets:
+            - event
+        - module: system
+          period: 15s
+          metricsets:
+            - cpu
+            - core
+            - load
+            - memory
+            - network
+            - process
+          ticks: False
+          enabled: True
+          process.cgroups.enabled: True
+          processes: ['.*']
+          process.include_top_n:
+            by_cpu: 5
+            by_memory: 5
+        - module: system
+          metricsets:
+            - diskio
+            - uptime
+          enabled: True
+          period: 60s
+        - module: system
+          period: 1m
+          metricsets:
+            - filesystem
+            - fsstat
+          filesystem.ignore_types: []  
+          processors:
+          - drop_event.when.regexp:
+              system.filesystem.mount_point: '^/(sys|cgroup|proc|dev|etc|host|lib)($|/)'
+        output.elasticsearch:
+          hosts: "${ES_ENDPOINT}"
+          username: '${ES_USERNAME}'
+          password: '${ES_PASSWORD}'
+          enabled: true
+          allow_older_versions: true
+    secretMounts:
+      - name: elasticsearch-master-certs
+        secretName: elastic-certificates
+        path: /usr/share/metricbeat/certs/
+    securityContext:
+      runAsUser: 0
+      privileged: false
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "100Mi"
+      limits:
+        cpu: "1000m"
+        memory: "200Mi"
+    tolerations: []
+
+  deployment:
+    extraEnvs:
+      - name: "ES_ENDPOINT"
+        value: "http://elasticsearch-master.default.svc.cluster.local:9200"
+      - name: "ES_USERNAME"
+        valueFrom:
+          secretKeyRef:
+            name: elasticsearch-credentials
+            key: username
+      - name: "ES_PASSWORD"
+        valueFrom:
+          secretKeyRef:
+            name: elasticsearch-credentials
+            key: password
+
+    metricbeatConfig:
+      metricbeat.yml: |
+        metricbeat.modules:
+        - module: kubernetes
+          enabled: true
+          metricsets:
+            - state_node
+            - state_deployment
+            - state_replicaset
+            - state_pod
+            - state_container
+          period: 10s
+          hosts: ["${KUBE_STATE_METRICS_HOSTS}"]
+        output.elasticsearch:
+          hosts: "${ES_ENDPOINT}"
+          username: "${ES_USERNAME}"
+          password: "${ES_PASSWORD}"
+          allow_older_versions: true
+    secretMounts:
+      - name: elasticsearch-master-certs
+        secretName: elastic-certificates
+        path: /usr/share/metricbeat/certs/
+    securityContext:
+      runAsUser: 0
+      privileged: false
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "100Mi"
+      limits:
+        cpu: "1000m"
+        memory: "200Mi"
+    tolerations: []
+
+  # Replicas being used for the kube-state-metrics metricbeat deployment
+  replicas: 1
+
+  # Root directory where metricbeat will write data to in order to persist registry data across pod restarts (file position and other metadata).
+  hostPathRoot: /var/lib
+
+  image: "docker.elastic.co/beats/metricbeat"
+  imageTag: "7.17.3"
+  imagePullPolicy: "IfNotPresent"
+  imagePullSecrets: []
+
+  livenessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          curl --fail 127.0.0.1:5066
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  readinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          metricbeat test output
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  clusterRoleRules:
+    - apiGroups: [""]
+      resources:
+        - nodes
+        - namespaces
+        - events
+        - pods
+        - services
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["extensions"]
+      resources:
+        - replicasets
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["apps"]
+      resources:
+        - statefulsets
+        - deployments
+        - replicasets
+      verbs: ["get", "list", "watch"]
+    - apiGroups: [""]
+      resources:
+        - nodes/stats
+      verbs: ["get"]
+    - apiGroups:
+        - ""
+      resources:
+        - nodes/stats
+      verbs:
+        - get
+    - nonResourceURLs:
+        - "/metrics"
+      verbs:
+        - get
+

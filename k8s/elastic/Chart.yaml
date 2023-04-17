@@ -20,3 +20,8 @@ dependencies:
     version: 0.20.1
     condition: vector.enabled
     repository: https://helm.vector.dev
+  - name: metricbeat
+    version: 8.5.1
+    condition: metricbeat.enabled
+    repository: https://helm.elastic.co
+
