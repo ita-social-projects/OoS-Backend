@@ -223,7 +223,7 @@ vector:
         mode: bulk
         bulk:
           action: index
-          index: vector-logs-"{{ kubernetes.pod_namespace }}-%Y-%m-%d"
+          index: vector-logs-{{`{{ kubernetes.pod_namespace }}`}}-%Y.%m.%d"
         auth:
           strategy: basic
           user: "${ES_USERNAME}"
