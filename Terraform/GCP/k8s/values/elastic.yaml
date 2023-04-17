@@ -223,7 +223,7 @@ vector:
         mode: bulk
         bulk:
           action: index
-          index: vector-logs-kubernetes-%Y.%m.%d
+          index: vector-logs-kubernetes-%F
         auth:
           strategy: basic
           user: "${ES_USERNAME}"
