@@ -1,12 +1,16 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using CsvHelper.Configuration.Attributes;
 using Microsoft.EntityFrameworkCore;
 
 namespace OutOfSchool.Services.Models;
 
-[Keyless]
-public class StatisticReportCSV
+public class StatisticReportCSV : IKeyedEntity<int>
 {
+    [Required]
+    [Ignore]
+    public int Id { get; set; }
+
     [Name("Рік звітності")]
     public int Year { get; set; }
 
