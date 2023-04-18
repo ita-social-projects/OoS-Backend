@@ -3,13 +3,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations;
+
+public partial class AddOperationsWithObjects : Migration
 {
-    public partial class AddOperationsWithObjects : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "OperationsWithObjects",
                 columns: table => new
                 {
@@ -27,33 +27,32 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_OperationsWithObjects", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_OperationsWithObjects_EntityId",
-                table: "OperationsWithObjects",
-                column: "EntityId");
+        migrationBuilder.CreateIndex(
+            name: "IX_OperationsWithObjects_EntityId",
+            table: "OperationsWithObjects",
+            column: "EntityId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_OperationsWithObjects_EntityType",
-                table: "OperationsWithObjects",
-                column: "EntityType");
+        migrationBuilder.CreateIndex(
+            name: "IX_OperationsWithObjects_EntityType",
+            table: "OperationsWithObjects",
+            column: "EntityType");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_OperationsWithObjects_OperationType",
-                table: "OperationsWithObjects",
-                column: "OperationType");
+        migrationBuilder.CreateIndex(
+            name: "IX_OperationsWithObjects_OperationType",
+            table: "OperationsWithObjects",
+            column: "OperationType");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_OperationsWithObjects_RowSeparator",
-                table: "OperationsWithObjects",
-                column: "RowSeparator");
-        }
+        migrationBuilder.CreateIndex(
+            name: "IX_OperationsWithObjects_RowSeparator",
+            table: "OperationsWithObjects",
+            column: "RowSeparator");
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "OperationsWithObjects");
-        }
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropTable(
+            name: "OperationsWithObjects");
     }
 }
