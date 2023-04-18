@@ -1,12 +1,12 @@
 dependencies:
 - name: webapp
   repository: file://../webapp
-  version: 0.1.0
+  version: 0.2.1
 - name: webapp
   repository: file://../webapp
-  version: 0.1.0
+  version: 0.2.1
 - name: webapp
   repository: file://../webapp
-  version: 0.1.0
-digest: sha256:d379fea11d030b2540f33bfc17dd089940d531381ffc887c2d0f67d863062685
-generated: "2023-03-26T19:30:59.530932+03:00"
+  version: 0.2.1
+digest: sha256:db251c2b96dddd61828e77e7c7cc1b7f66415475d1ba8859bb8a41454918991b
+generated: "2023-04-18T16:47:28.080993+03:00"

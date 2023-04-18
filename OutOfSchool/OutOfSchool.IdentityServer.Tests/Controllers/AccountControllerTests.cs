@@ -1,4 +1,5 @@
-﻿using IdentityServer4.Models;
+﻿using System.Security.Claims;
+using IdentityServer4.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -10,7 +11,9 @@ using OutOfSchool.IdentityServer.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using OutOfSchool.Services.Models;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using OutOfSchool.Common;
 using OutOfSchool.IdentityServer.Config;
 using OutOfSchool.RazorTemplatesData.Services;
 
@@ -54,6 +57,16 @@ public class AccountControllerTests
             fakeLocalizer.Object,
             fakeIdentityServerConfig.Object
         );
+        
+        var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(IdentityResourceClaimsTypes.Sub, "example"),
+        }, "mock"));
+        
+        accountController.ControllerContext = new ControllerContext()
+        {
+            HttpContext = new DefaultHttpContext { User = user }
+        };
     }
 
     [Test]
