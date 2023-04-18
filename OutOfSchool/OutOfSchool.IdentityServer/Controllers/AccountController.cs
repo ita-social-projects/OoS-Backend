@@ -28,8 +28,6 @@ public class AccountController : Controller
     private readonly IRazorViewToStringRenderer renderer;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IdentityServerConfig identityServerConfig;
-    private string userId;
-    private string path;
 
     public AccountController(
         SignInManager<User> signInManager,
@@ -50,12 +48,6 @@ public class AccountController : Controller
         this.identityServerConfig = identityServerConfig.Value;
     }
 
-    public override void OnActionExecuting(ActionExecutingContext context)
-    {
-        userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
-        path = $"{context.HttpContext.Request.Path.Value}[{context.HttpContext.Request.Method}]";
-    }
-
     [HttpGet]
     [Authorize]
     public IActionResult ChangeEmail(string returnUrl = "Login")
@@ -67,19 +59,21 @@ public class AccountController : Controller
     [Authorize]
     public async Task<IActionResult> ChangeEmail(ChangeEmailViewModel model)
     {
-        logger.LogDebug($"{path} started. User(id): {userId}.");
+        var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
+        var path = $"{HttpContext.Request.Path.Value}[{HttpContext.Request.Method}]";
+        logger.LogDebug("{Path} started. User(id): {UserId}", path, userId);
 
         if (model.Submit == localizer["Cancel"])
         {
             if (!string.IsNullOrWhiteSpace(model.Email))
             {
-                logger.LogInformation($"{path} Cancel click, but user enter the new email, show confirmation.");
+                logger.LogInformation("{Path} Cancel click, but user enter the new email, show confirmation", path);
 
                 return View("Email/CancelChangeEmail");
             }
             else
             {
-                logger.LogInformation($"{path} Cancel click, close window.");
+                logger.LogInformation("{Path} Cancel click, close window", path);
 
                 return new ContentResult()
                 {
@@ -91,15 +85,18 @@ public class AccountController : Controller
 
         if (!ModelState.IsValid)
         {
-            logger.LogError($"{path} Input data was not valid for User(id): {userId}. " +
-                            $"Entered new Email: {model.Email}");
+            logger.LogError(
+                "{Path} Input data was not valid for User(id): {UserId}. Entered new Email: {Email}",
+                path,
+                userId,
+                model.Email);
 
             return View("Email/ChangeEmail", new ChangeEmailViewModel());
         }
 
         if (model.CurrentEmail != User.Identity.Name.ToLower())
         {
-            logger.LogError($"{path} Current Email mismatch. Entered current Email: {model.CurrentEmail}");
+            logger.LogError("{Path} Current Email mismatch. Entered current Email: {CurrentEmail}", path, model.CurrentEmail);
 
             model.Submit = "emailMismatch";
             return View("Email/ChangeEmail", model);
@@ -108,7 +105,7 @@ public class AccountController : Controller
         var userNewEmail = await userManager.FindByEmailAsync(model.Email);
         if (userNewEmail != null)
         {
-            logger.LogError($"{path} Email already used. Entered new Email: {model.Email}");
+            logger.LogError("{Path} Email already used. Entered new Email: {Email}", path, model.Email);
 
             model.Submit = "emailUsed";
             return View("Email/ChangeEmail", model);
@@ -122,11 +119,12 @@ public class AccountController : Controller
     [HttpGet]
     public async Task<IActionResult> ConfirmChangeEmail(string userId, string email, string token)
     {
-        logger.LogDebug($"{path} started. User(id): {userId}.");
+        var path = $"{HttpContext.Request.Path.Value}[{HttpContext.Request.Method}]";
+        logger.LogDebug("{Path} started. User(id): {UserId}", path, userId);
 
         if (userId == null || email == null || token == null)
         {
-            logger.LogError($"{path} Parameters were not valid. User(id): {userId}.");
+            logger.LogError("{Path} Parameters were not valid. User(id): {UserId}", path, userId);
 
             return BadRequest("One or more parameters are null.");
         }
@@ -134,7 +132,7 @@ public class AccountController : Controller
         var user = await userManager.FindByIdAsync(userId);
         if (user == null)
         {
-            logger.LogError($"{path} User(id): {userId} was not found.");
+            logger.LogError("{Path} User(id): {UserId} was not found", path, userId);
 
             return NotFound($"Changing email for user with ID: '{userId}' was not allowed.");
         }
@@ -142,8 +140,11 @@ public class AccountController : Controller
         var result = await userManager.ChangeEmailAsync(user, email, token);
         if (!result.Succeeded)
         {
-            logger.LogError($"{path} Changing email was failed for User(id): {user.Id}. " +
-                            $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
+            logger.LogError(
+                "{Path} Changing email was failed for User(id): {UserId}. {Errors}",
+                path,
+                user.Id,
+                string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
 
             return BadRequest();
         }
@@ -151,13 +152,16 @@ public class AccountController : Controller
         var setUserNameResult = await userManager.SetUserNameAsync(user, email);
         if (!setUserNameResult.Succeeded)
         {
-            logger.LogError($"{path} Setting username was failed for User(id): {userId}. " +
-                            $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
+            logger.LogError(
+                "{Path} Setting username was failed for User(id): {UserId}. {Errors}",
+                path,
+                userId,
+                string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
 
             return BadRequest();
         }
 
-        logger.LogInformation($"{path} Successfully logged. User(id): {userId}");
+        logger.LogInformation("{Path} Successfully logged. User(id): {UserId}", path, userId);
 
         await signInManager.RefreshSignInAsync(user);
         return View("Email/ConfirmChangeEmail");
@@ -167,7 +171,9 @@ public class AccountController : Controller
     [Authorize]
     public async Task<IActionResult> SendConfirmEmail()
     {
-        logger.LogDebug($"{path} started. User(id): {userId}.");
+        var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
+        var path = $"{HttpContext.Request.Path.Value}[{HttpContext.Request.Method}]";
+        logger.LogDebug("{Path} started. User(id): {UserId}", path, userId);
 
         var user = await userManager.FindByEmailAsync(User.Identity.Name);
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -185,36 +191,39 @@ public class AccountController : Controller
         var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ResetPassword, userActionViewModel);
         await emailSender.SendAsync(email, subject, content);
 
-        logger.LogInformation($"Confirmation message was sent. User(id): {userId}.");
+        logger.LogInformation("Confirmation message was sent. User(id): {UserId}", userId);
 
         return Ok();
     }
 
     [HttpGet]
-    public async Task<IActionResult> EmailConfirmation(string token)
+    public async Task<IActionResult> EmailConfirmation(string email, string token)
     {
-        logger.LogDebug($"{path} started. User(id): {userId}.");
+        var path = $"{HttpContext.Request.Path.Value}[{HttpContext.Request.Method}]";
+        logger.LogDebug("{Path} started. User(email): {Email}", path, email);
 
-        if (userId == null || token == null)
+        if (email == null || token == null)
         {
-            logger.LogError($"{path} Parameters were not valid. User(id): {userId}.");
+            logger.LogError("{Path} Parameters were not valid. User(email): {Email}", path, email);
 
             return BadRequest("One or more parameters are null.");
         }
 
-        var user = await userManager.FindByIdAsync(userId);
+        var user = await userManager.FindByEmailAsync(email);
         if (user == null)
         {
-            logger.LogError($"{path} User with UserId: {userId} was not found.");
+            logger.LogError("{Path} User with Email: {Email} was not found", path, email);
 
-            return NotFound($"Unable to load user with ID: '{userId}'.");
+            // TODO: add nice page with redirect to register
+            // TODO: saying you need to register first :)
+            return NotFound("Wrong email");
         }
 
         var purpose = UserManager<User>.ConfirmEmailTokenPurpose;
         var checkToken = await userManager.VerifyUserTokenAsync(user, userManager.Options.Tokens.EmailConfirmationTokenProvider, purpose, token);
         if (!checkToken)
         {
-            logger.LogError($"{path} Token is not valid for user: {user.Id}");
+            logger.LogError("{Path} Token is not valid for user: {UserId}", path, user.Id);
 
             return View("Email/ConfirmEmailFailed", localizer["Invalid email confirmation token"]);
         }
@@ -222,17 +231,20 @@ public class AccountController : Controller
         var result = await userManager.ConfirmEmailAsync(user, token);
         if (!result.Succeeded)
         {
-            logger.LogError($"{path} Email сonfirmation was failed for User(id): {userId} " +
-                            $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
+            logger.LogError(
+                "{Path} Email сonfirmation was failed for User(id): {UserId}. {Errors}",
+                path,
+                user.Id,
+                string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
 
             return BadRequest();
         }
 
-        logger.LogInformation($"{path} Email was confirmed. User(id): {userId}.");
+        logger.LogInformation("{Path} Email was confirmed. User(id): {UserId}", path, user.Id);
 
         var redirectUrl = identityServerConfig.RedirectFromEmailConfirmationUrl;
 
-        return string.IsNullOrEmpty(redirectUrl) ? Ok() : Redirect(redirectUrl);
+        return string.IsNullOrEmpty(redirectUrl) ? Ok("Email confirmed.") : Redirect(redirectUrl);
     }
 
     [HttpGet]
@@ -244,11 +256,13 @@ public class AccountController : Controller
     [HttpPost]
     public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
     {
-        logger.LogDebug($"{path} started. User(id): {userId}");
+        var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
+        var path = $"{HttpContext.Request.Path.Value}[{HttpContext.Request.Method}]";
+        logger.LogDebug("{Path} started. User(id): {UserId}", path, userId);
 
         if (!ModelState.IsValid)
         {
-            logger.LogError($"{path} Input data was not valid.");
+            logger.LogError("{Path} Input data was not valid", path);
 
             return View("Password/ForgotPassword", new ForgotPasswordViewModel());
         }
@@ -257,14 +271,20 @@ public class AccountController : Controller
 
         if (user == null)
         {
-            logger.LogError($"{path} User with Email: {model.Email} was not found or Email was not confirmed.");
+            logger.LogError(
+                "{Path} User with Email: {Email} was not found or Email was not confirmed",
+                path,
+                model.Email);
             ModelState.AddModelError(string.Empty, "Користувача з такою адресою не знайдено.");
             return View("Password/ForgotPassword", model);
         }
 
         if (!await userManager.IsEmailConfirmedAsync(user))
         {
-            logger.LogError($"{path} User with Email: {model.Email} was not found or Email was not confirmed.");
+            logger.LogError(
+                "{Path} User with Email: {Email} was not found or Email was not confirmed",
+                path,
+                model.Email);
             ModelState.AddModelError(string.Empty, "Ця електронна адреса не підтверджена");
             return View("Password/ForgotPassword", model);
         }
@@ -284,7 +304,7 @@ public class AccountController : Controller
         var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ResetPassword, userActionViewModel);
         await emailSender.SendAsync(email, subject, content);
 
-        logger.LogInformation($"{path} Message to change password was sent. User(id): {user.Id}.");
+        logger.LogInformation("{Path} Message to change password was sent. User(id): {UserId}", path, user.Id);
 
         return View("Password/ForgotPasswordConfirmation");
     }
@@ -292,18 +312,23 @@ public class AccountController : Controller
     [HttpGet]
     public async Task<IActionResult> ResetPassword(string token = null, string email = null)
     {
-        logger.LogDebug($"{path} started. User(id): {userId}");
+        var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
+        var path = $"{HttpContext.Request.Path.Value}[{HttpContext.Request.Method}]";
+        logger.LogDebug("{Path} started. User(id): {UserId}", path, userId);
 
         if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(email))
         {
-            logger.LogError($"{path} Token or email was not supplied for reset password. User(id): {userId}");
+            logger.LogError(
+                "{Path} Token or email was not supplied for reset password. User(id): {UserId}",
+                path,
+                userId);
             return BadRequest("A token and email must be supplied for password reset.");
         }
 
         var user = await userManager.FindByEmailAsync(email);
         if (user == null)
         {
-            logger.LogError($"{path} User not found. Email: {email}");
+            logger.LogError("{Path} User not found. Email: {Email}", path, email);
 
             // If message will be "user not found", someone can use this url to check registered emails. I decide to show "invalid token"
             return View("Password/ResetPasswordFailed", localizer["Change password invalid token"]);
@@ -313,7 +338,7 @@ public class AccountController : Controller
         var checkToken = await userManager.VerifyUserTokenAsync(user, userManager.Options.Tokens.PasswordResetTokenProvider, purpose, token);
         if (!checkToken)
         {
-            logger.LogError($"{path} Token is not valid for user: {user.Id}");
+            logger.LogError("{Path} Token is not valid for user: {UserId}", path, user.Id);
 
             return View("Password/ResetPasswordFailed", localizer["Change password invalid token"]);
         }
@@ -324,11 +349,13 @@ public class AccountController : Controller
     [HttpPost]
     public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
     {
-        logger.LogDebug($"{path} started. User(id): {userId}");
+        var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
+        var path = $"{HttpContext.Request.Path.Value}[{HttpContext.Request.Method}]";
+        logger.LogDebug("{Path} started. User(id): {UserId}", path, userId);
 
         if (!ModelState.IsValid)
         {
-            logger.LogError($"{path} Input data was not valid. User(id): {userId}");
+            logger.LogError("{Path} Input data was not valid. User(id): {UserId}", path, userId);
 
             return View("Password/ResetPassword", new ResetPasswordViewModel());
         }
@@ -336,7 +363,11 @@ public class AccountController : Controller
         var user = await userManager.FindByEmailAsync(model.Email);
         if (user == null)
         {
-            logger.LogError($"{path} User with Email:{model.Email} was not found. User(id): {userId}");
+            logger.LogError(
+                "{Path} User with Email:{Email} was not found. User(id): {UserId}",
+                path,
+                model.Email,
+                userId);
 
             return View("Password/ResetPasswordFailed", localizer["Change password failed"]);
         }
@@ -344,13 +375,16 @@ public class AccountController : Controller
         var result = await userManager.ResetPasswordAsync(user, model.Token, model.Password);
         if (result.Succeeded)
         {
-            logger.LogInformation($"{path} Password was successfully reseted. User(id): {user.Id}");
+            logger.LogInformation("{Path} Password was successfully reset. User(id): {UserId}", path, user.Id);
 
             return View("Password/ResetPasswordConfirmation");
         }
 
-        logger.LogError($"{path} Reset password was failed. User(id): {userId}. " +
-                        $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
+        logger.LogError(
+            "{Path} Reset password was failed. User(id): {UserId}. {Errors}",
+            path,
+            userId,
+            string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
 
         return View("Password/ResetPasswordFailed", localizer["Change password failed"]);
     }
@@ -366,11 +400,13 @@ public class AccountController : Controller
     [Authorize]
     public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
     {
-        logger.LogDebug($"{path} started. User(id): {userId}.");
+        var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
+        var path = $"{HttpContext.Request.Path.Value}[{HttpContext.Request.Method}]";
+        logger.LogDebug("{Path} started. User(id): {UserId}", path, userId);
 
         if (!ModelState.IsValid)
         {
-            logger.LogError($"{path} Input data was not valid. User(id): {userId}.");
+            logger.LogError("{Path} Input data was not valid. User(id): {UserId}", path, userId);
 
             return View("Password/ChangePassword");
         }
@@ -379,13 +415,16 @@ public class AccountController : Controller
         var result = await userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
         if (result.Succeeded)
         {
-            logger.LogInformation($"{path} Password was changed. User(id): {userId}.");
+            logger.LogInformation("{Path} Password was changed. User(id): {UserId}", path, userId);
 
             return View("Password/ChangePasswordConfirmation");
         }
 
-        logger.LogError($"{path} Changing password was failed for User(id): {userId}." +
-                        $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
+        logger.LogError(
+            "{Path} Changing password was failed for User(id): {UserId}. {Errors}",
+            path,
+            userId,
+            string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
 
         ModelState.AddModelError(string.Empty, localizer["Change password failed"]);
         return View("Password/ChangePassword");
