@@ -11,4 +11,5 @@ public enum NotificationAction
     Update,
     Delete,
     Message,
+    LicenseApproval,
 }
