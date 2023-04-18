@@ -265,55 +265,55 @@ metricbeat:
     metricbeatConfig:
       metricbeat.yml: |
         metricbeat.modules:
-        - module: kubernetes
-          metricsets:
-            - container
-            - node
-            - pod
-            - system
-            - volume
-          period: 15s
-          host: "${NODE_NAME}"
-          hosts: ["https://${NODE_NAME}:10250"]
-          bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-          ssl.verification_mode: "none"
-          processors:
-          - add_kubernetes_metadata: ~
-        - module: kubernetes
-          enabled: true
-          metricsets:
-            - event
-        - module: system
-          period: 15s
-          metricsets:
-            - cpu
-            - core
-            - load
-            - memory
-            - network
-            - process
-          ticks: False
-          enabled: True
-          process.cgroups.enabled: True
-          processes: ['.*']
-          process.include_top_n:
-            by_cpu: 5
-            by_memory: 5
-        - module: system
-          metricsets:
-            - diskio
-            - uptime
-          enabled: True
-          period: 60s
-        - module: system
-          period: 1m
-          metricsets:
-            - filesystem
-            - fsstat
-          filesystem.ignore_types: []  
-          processors:
-          - drop_event.when.regexp:
-              system.filesystem.mount_point: '^/(sys|cgroup|proc|dev|etc|host|lib)($|/)'
+          - module: kubernetes
+            metricsets:
+              - container
+              - node
+              - pod
+              - system
+              - volume
+            period: 15s
+            host: "${NODE_NAME}"
+            hosts: ["https://${NODE_NAME}:10250"]
+            bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+            ssl.verification_mode: "none"
+            processors:
+            - add_kubernetes_metadata: ~
+          - module: kubernetes
+            enabled: true
+            metricsets:
+              - event
+          - module: system
+            period: 15s
+            metricsets:
+              - cpu
+              - core
+              - load
+              - memory
+              - network
+              - process
+            ticks: False
+            enabled: True
+            process.cgroups.enabled: True
+            processes: ['.*']
+            process.include_top_n:
+              by_cpu: 5
+              by_memory: 5
+          - module: system
+            metricsets:
+              - diskio
+              - uptime
+            enabled: True
+            period: 60s
+          - module: system
+            period: 1m
+            metricsets:
+              - filesystem
+              - fsstat
+            filesystem.ignore_types: []  
+            processors:
+            - drop_event.when.regexp:
+                system.filesystem.mount_point: '^/(sys|cgroup|proc|dev|etc|host|lib)($|/)'
         output.elasticsearch:
           hosts: "${ES_ENDPOINT}"
           username: '${ES_USERNAME}'
@@ -354,20 +354,21 @@ metricbeat:
     metricbeatConfig:
       metricbeat.yml: |
         metricbeat.modules:
-        - module: kubernetes
-          enabled: true
-          metricsets:
-            - state_node
-            - state_deployment
-            - state_replicaset
-            - state_pod
-            - state_container
-          period: 10s
-          hosts: ["${KUBE_STATE_METRICS_HOSTS}"]
+          - module: kubernetes
+            enabled: true
+            metricsets:
+              - state_node
+              - state_deployment
+              - state_replicaset
+              - state_pod
+              - state_container
+            period: 15s
+            hosts: ["${KUBE_STATE_METRICS_HOSTS}"]
         output.elasticsearch:
           hosts: "${ES_ENDPOINT}"
           username: "${ES_USERNAME}"
           password: "${ES_PASSWORD}"
+          enabled: true
           allow_older_versions: true
     secretMounts:
       - name: elasticsearch-master-certs
