@@ -99,8 +99,6 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<StatisticReportCSV> StatisticReportsCSV { get; set; }
 
-    public DbSet<CodeficatorParent> CodeficatorParents { get; set; }
-
     public DbSet<FileInDb> FilesInDb { get; set; }
 
     public DbSet<RegionAdmin> RegionAdmins { get; set; }
