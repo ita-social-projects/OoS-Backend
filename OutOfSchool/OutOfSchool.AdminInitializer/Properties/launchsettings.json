@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "AdminInitializer": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

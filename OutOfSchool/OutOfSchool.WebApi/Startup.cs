@@ -324,7 +324,12 @@ public static class Startup
             quartzConfig.ConnectionStringKey,
             q =>
         {
-            q.AddGcpSynchronization(services, quartzConfig);
+            if (!builder.Environment.IsEnvironment("Release"))
+            {
+                // TODO: for now this is not used in release
+                q.AddGcpSynchronization(services, quartzConfig);
+            }
+
             q.AddElasticsearchSynchronization(services, configuration);
             q.AddStatisticReportsCreating(services, quartzConfig);
             q.AddOldNotificationsClearing(services, quartzConfig);
