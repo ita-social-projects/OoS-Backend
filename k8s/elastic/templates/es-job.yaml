@@ -1,0 +1,46 @@
+# TODO: Think how to make it simpler so it can be moved to Elastic PostStart
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "elastic.fullname" . }}-{{- (randAlphaNum 8) | lower }}
+  annotations:
+    checksum/script: {{ include (print $.Template.BasePath "/es-script.yaml") . | sha256sum }}
+    checksum/roles: {{ include (print $.Template.BasePath "/es-roles.yaml") . | sha256sum }}
+spec:
+  template:
+    spec:
+      containers:
+      - name: curl
+        image: ellerbrock/alpine-bash-curl-ssl
+        command:
+        - /bin/bash
+        - /etc/script/setup.sh
+        env:
+          - name: ES_URL
+            value: {{ .Values.elasticsearch.protocol }}://{{ template "elasticsearch.uname" .Subcharts.elasticsearch }}:9200
+          - name: API_PASS
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.elasticConfigJob.secret }}
+                key: apipass
+          - name: ADMIN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.elasticConfigJob.secret }}
+                key: password
+        volumeMounts:
+        - name: script-vol
+          mountPath: /etc/script
+        - name: roles-vol
+          mountPath: /etc/roles
+      restartPolicy: OnFailure
+      volumes:
+      - name: roles-vol
+        configMap:
+          name: {{ include "elastic.fullname" . }}-es-roles
+      - name: script-vol
+        configMap:
+          name: {{ include "elastic.fullname" . }}-es-script
+  backoffLimit: 4
+  ttlSecondsAfterFinished: 3600
+  activeDeadlineSeconds: 600

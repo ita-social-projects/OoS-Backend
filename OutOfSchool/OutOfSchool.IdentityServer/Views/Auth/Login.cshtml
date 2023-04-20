@@ -1,0 +1,62 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using OutOfSchool.IdentityServer
+
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@model OutOfSchool.IdentityServer.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = SharedLocalizer["Entrance to Extracurricular activities"];
+    Layout = "_Layout";
+}
+<div class="wrapper_body">    
+    <div class="wrapper"> 
+        <h1 class="icon_title">@SharedLocalizer["Sign In"].Value.ToUpper()</h1>       
+        <div class="icon_wrapper">
+            @* <form asp-controller="Auth" asp-action="ExternalLogin" *@
+            @*       asp-route-returnUrl="@Model.ReturnUrl" method="post"> *@
+            @*     @foreach (var provider in Model.ExternalProviders) *@
+            @*     { *@
+            @*         <button name="provider" *@
+            @*                 type="submit" *@
+            @*                 value="@provider.Name"> *@
+            @*             @provider.Name *@
+            @*         </button> *@
+            @*     } *@
+            @* </form> *@
+
+            <form asp-controller="Auth" asp-action="Login" method="post" asp-route-returnUrl="@Model.ReturnUrl">
+                <input type="hidden" asp-for="ReturnUrl"/>
+                <div asp-validation-summary="ModelOnly"></div>
+                <label class="registration_label">@SharedLocalizer["Email"]</label>
+                <input class="registration_input" asp-for="Username" placeholder="email@companyname.com"/>
+                <div class="login_privacy_username_box">
+                    <span asp-validation-for="Username"></span>
+                </div>
+                <div id="login_registration_item">
+                    <label class="registration_label">@SharedLocalizer["Password"]</label>
+                    <input class="registration_input registration_input-password" asp-for="Password" id="login_password" />
+                    <div class="login_privacy_password">
+                        <img src="~/icons/ic_eye.svg" alt="eye" class="registration_eye" id="login_password_eye">
+                    </div>
+                </div>
+                <div class="login_privacy_password_box">
+                    <div class="login_privacy_password_warning">
+                        <span asp-validation-for="Password"></span>
+                    </div>
+                    <div class="password_link">
+                        <a class="link" asp-controller="Account" asp-action="ForgotPassword"
+                            asp-route-returnUrl="@Model.ReturnUrl">@SharedLocalizer["Forgot password?"]</a>
+                    </div>
+                </div>
+                <div class="title">
+                    <button class="registration_submit registration_button" type="submit" >@SharedLocalizer["Sign In"].Value.ToUpper()</button>
+                </div>
+                <div class="title registered_question">
+                    <span>@SharedLocalizer["Not registered yet?"]&nbsp;</span>
+                    <a class="link" asp-controller="Auth" asp-action="Register" asp-route-returnUrl="@Model.ReturnUrl">@SharedLocalizer["Register"]</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="~/js/login.js"></script>

@@ -1,0 +1,14 @@
+@using OutOfSchool.RazorTemplatesData.Models.Emails
+@using OutOfSchool.RazorTemplatesData.Models.Shared
+@model UserActionViewModel
+
+@{
+    ViewData["EmailTitle"] = "Welcome!";
+}
+<main class="container">
+    <div class="content">
+        <h1 class="title">Вітаємо, @Model.FirstName @Model.LastName</h1>
+        <p class="text">Будь ласка, підтвердьте свою адресу електронної пошти.</p>
+            @await Html.PartialAsync("EmailButton", new EmailButtonViewModel("Перейдіть за посиланням", Model.ActionUrl))
+    </div>
+</main>

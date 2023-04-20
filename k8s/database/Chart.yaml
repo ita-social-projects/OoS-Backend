@@ -1,0 +1,18 @@
+apiVersion: v2
+name: database
+description: A Helm chart for MySQL and optional PhpMyAdmin & Cache
+
+type: application
+
+version: 9.7.1
+
+appVersion: ""
+
+dependencies:
+  - name: mysql
+    version: ~9.7.1
+    repository: https://charts.bitnami.com/bitnami
+  - name: phpmyadmin
+    version: ~10.4.6
+    condition: phpmyadmin.enabled
+    repository: https://charts.bitnami.com/bitnami

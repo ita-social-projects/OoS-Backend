@@ -1,0 +1,378 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Already registered?" xml:space="preserve">
+    <value>Already registered?</value>
+  </data>
+  <data name="and consent to the processing of personal data" xml:space="preserve">
+    <value>and consent to the processing of personal data</value>
+  </data>
+  <data name="By registering I agree with" xml:space="preserve">
+    <value>By registering I agree with</value>
+  </data>
+  <data name="Confirm password" xml:space="preserve">
+    <value>Confirm password</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Entrance to Extracurricular activities" xml:space="preserve">
+    <value>Entrance to Extracurricular activities</value>
+  </data>
+  <data name="First name" xml:space="preserve">
+    <value>First name</value>
+  </data>
+  <data name="I am 18 years old" xml:space="preserve">
+    <value>I am 18 years old</value>
+  </data>
+  <data name="Last name" xml:space="preserve">
+    <value>Last name</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="Middle name" xml:space="preserve">
+    <value>Middle name</value>
+  </data>
+  <data name="or fill out the form" xml:space="preserve">
+    <value>or fill out the form</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="Register" xml:space="preserve">
+    <value>Register</value>
+  </data>
+  <data name="Registration goal" xml:space="preserve">
+    <value>To be able to apply activities or become a service provider</value>
+  </data>
+  <data name="Register as" xml:space="preserve">
+    <value>Register as</value>
+  </data>
+  <data name="Registration for Extracurricular activities" xml:space="preserve">
+    <value>Registration for Extracurricular activities</value>
+  </data>
+  <data name="Service provider" xml:space="preserve">
+    <value>Service provider</value>
+  </data>
+  <data name="Sign In" xml:space="preserve">
+    <value>Sign In</value>
+  </data>
+  <data name="Sign In With" xml:space="preserve">
+    <value>Sign In With</value>
+  </data>
+  <data name="Terms of use" xml:space="preserve">
+    <value>Terms of use</value>
+  </data>
+  <data name="The password must be at least 8 characters long" xml:space="preserve">
+    <value>The password must be at least 8 characters long</value>
+  </data>
+  <data name="To be able to apply to clubs or become a service provider" xml:space="preserve">
+    <value>To be able to apply to clubs or become a service provider</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>User</value>
+  </data>
+  <data name="You must be over 18 to register!" xml:space="preserve">
+    <value>You must be over 18 to register!</value>
+  </data>
+  <data name="Reset password" xml:space="preserve">
+    <value>Reset password</value>
+  </data>
+  <data name="Change password alert" xml:space="preserve">
+    <value>Note that after changing the password, you will not be able to log in with the old password</value>
+  </data>
+  <data name="Old email" xml:space="preserve">
+    <value>Old email</value>
+  </data>
+  <data name="New email" xml:space="preserve">
+    <value>New email</value>
+  </data>
+  <data name="Change email" xml:space="preserve">
+    <value>Change email</value>
+  </data>
+  <data name="Enter new email message" xml:space="preserve">
+    <value>Enter your new email to which change email instructions will be sent</value>
+  </data>
+  <data name="Change email alert" xml:space="preserve">
+    <value>Note that after changing your email, you will not be able to log in with your old email</value>
+  </data>
+  <data name="Confirm email change" xml:space="preserve">
+    <value>Confirm email change</value>
+    <comment>Confirm email change</comment>
+  </data>
+  <data name="Change password" xml:space="preserve">
+    <value>Change password</value>
+    <comment>Change password</comment>
+  </data>
+  <data name="Old password" xml:space="preserve">
+    <value>Old password</value>
+  </data>
+  <data name="New password" xml:space="preserve">
+    <value>New password</value>
+  </data>
+  <data name="Repeat new password" xml:space="preserve">
+    <value>Repeat new password</value>
+  </data>
+  <data name="Change password confirmation" xml:space="preserve">
+    <value>Change password confirmation</value>
+    <comment>Change password confirmation</comment>
+  </data>
+  <data name="Your password was changed" xml:space="preserve">
+    <value>Your password was changed</value>
+  </data>
+  <data name="Enter email to change password" xml:space="preserve">
+    <value>Enter your email to which the password reset instructions will be sent</value>
+  </data>
+  <data name="Check your email for instructions" xml:space="preserve">
+    <value>Check your email for instructions</value>
+  </data>
+  <data name="Reset password confirmation" xml:space="preserve">
+    <value>Reset password confirmation</value>
+  </data>
+  <data name="Your password has been reset" xml:space="preserve">
+    <value>Your password has been reset</value>
+  </data>
+  <data name="Forgot password?" xml:space="preserve">
+    <value>Forgot password?</value>
+  </data>
+  <data name="Forgot password confirmation" xml:space="preserve">
+    <value>Forgot password confirmation</value>
+  </data>
+  <data name="Confirm email" xml:space="preserve">
+    <value>Підтвердження емейлу</value>
+  </data>
+  <data name="Error! Something happened on the server!" xml:space="preserve">
+    <value>Error! Something happened on the server!</value>
+  </data>
+  <data name="is already taken" xml:space="preserve">
+    <value>is already taken</value>
+  </data>
+  <data name="Your account is blocked" xml:space="preserve">
+    <value>Your account is blocked. Please, contact administrator</value>
+  </data>
+  <data name="Login or password is wrong" xml:space="preserve">
+    <value>Login or password is wrong</value>
+  </data>
+  <data name="Password is required" xml:space="preserve">
+    <value>Password is required</value>
+  </data>
+  <data name="Email is required" xml:space="preserve">
+    <value>Email is required</value>
+  </data>
+  <data name="FirstName is required" xml:space="preserve">
+    <value>FirstName is required</value>
+  </data>
+  <data name="Email is not valid" xml:space="preserve">
+    <value>Email is not valid</value>
+  </data>
+  <data name="LastName is required" xml:space="preserve">
+    <value>LastName is required</value>
+  </data>
+  <data name="Password confirmation is required" xml:space="preserve">
+    <value>Password confirmation is required</value>
+  </data>
+  <data name="Password must contain at least one capital, number and symbol(@$!%*?&amp;)." xml:space="preserve">
+    <value>Error! The password must be at least 8 characters long, including one uppercase letter, number, and special characters (@$!%*?&amp;).</value>
+  </data>
+  <data name="Check the entered data. Please use only cyrillic and symbols( ' - )" xml:space="preserve">
+    <value>Check the entered data. Please use only Cyrillic and special characters( ' - ).</value>
+  </data>
+  <data name="Passwords doesn't match" xml:space="preserve">
+    <value>Passwords doesn't match</value>
+  </data>
+  <data name="Error! Please check the number is correct" xml:space="preserve">
+    <value>Error! Please check the number is correct</value>
+  </data>
+  <data name="Phone number is required" xml:space="preserve">
+    <value>Phone number is required</value>
+  </data>
+  <data name="Email is already taken" xml:space="preserve">
+    <value>Email is already taken</value>
+  </data>
+  <data name="Not registered yet?" xml:space="preserve">
+    <value>Not registered yet?</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Change email {0} sent" xml:space="preserve">
+    <value>Instruction to change email have been sent to {0}. Please check the email and follow the steps in the letter.</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Change email cancel" xml:space="preserve">
+    <value>Are you sure you want to cancel the email change?</value>
+  </data>
+  <data name="Change email done" xml:space="preserve">
+    <value>Your email was changed</value>
+  </data>
+  <data name="Change email message" xml:space="preserve">
+    <value>Your email was changed. To confirm please follow the link and use the new login. Login: {0} {1}</value>
+  </data>
+  <data name="Change email new email already used {0}" xml:space="preserve">
+    <value>Email {0} already used by another user, please enter another email.</value>
+  </data>
+  <data name="Change email mismatch current email {0}" xml:space="preserve">
+    <value>Email {0} dont match with current email</value>
+  </data>
+  <data name="Change password email message" xml:space="preserve">
+    <value>Confirm password change</value>
+  </data>
+  <data name="Change password invalid token" xml:space="preserve">
+    <value>Token is not valid</value>
+  </data>
+  <data name="Change password failed" xml:space="preserve">
+    <value>Change password failed. Please contact administrator.</value>
+  </data>
+  <data name="User is not allowed to change password login action" xml:space="preserve">
+    <value>User is not allowed to change password login action</value>
+  </data>
+  <data name="Login with changing password" xml:space="preserve">
+    <value>Login with changing password</value>
+  </data>
+  <data name="Gender Male" xml:space="preserve">
+    <value>Male</value>
+  </data>
+  <data name="Gender Female" xml:space="preserve">
+    <value>Female</value>
+  </data>
+  <data name="Gender" xml:space="preserve">
+    <value>Gender</value>
+  </data>
+  <data name="Invalid email confirmation token" xml:space="preserve">
+    <value>Invalid mail confirmation token</value>
+  </data>
+  <data name="Confirm email {0} sent" xml:space="preserve">
+    <value>Confirm email {} sent</value>
+  </data>
+  <data name="Enter your email to send password recovery instructions" xml:space="preserve">
+    <value>Enter your email to send password recovery instructions</value>
+  </data>
+  <data name="Date of birth" xml:space="preserve">
+    <value>Date of birth</value>
+  </data>
+  <data name="Date of birth is required" xml:space="preserve">
+    <value>Date of birth is required</value>
+  </data>
+</root>

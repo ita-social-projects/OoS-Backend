@@ -1,0 +1,170 @@
+# Default values for elastic.
+# This is a YAML-formatted file.
+
+# TODO: Think how to make it simpler so it can be moved to Elastic PostStart
+elasticConfigJob:
+  roles:
+    outofschool:
+      cluster:
+        - monitor
+      indices:
+        - names:
+            - workshop
+          privileges:
+            - read
+            - write
+            - delete
+            - create_index
+            - view_index_metadata
+            - manage
+          allow_restricted_indices: false
+      applications:
+        - application: kibana-.kibana
+          privileges:
+            - space_read
+          resources:
+            - space:default
+      metadata:
+        version: 2
+  secret: elasticsearch-credentials
+
+generateCertificate: true
+
+elasticsearch:
+  replicas: 1
+  protocol: http
+  clusterHealthCheckParams: "wait_for_status=yellow&timeout=1s"
+  esConfig:
+    elasticsearch.yml: |
+      xpack.license.self_generated.type: basic
+      xpack.security.enabled: true
+      xpack.security.transport.ssl.enabled: true
+      xpack.security.transport.ssl.verification_mode: certificate
+      xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/certs/tls.key
+      xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/certs/tls.crt
+      xpack.security.transport.ssl.certificate_authorities: /usr/share/elasticsearch/config/certs/ca.crt
+      xpack.security.http.ssl.enabled: false
+      xpack.security.http.ssl.key: /usr/share/elasticsearch/config/certs/tls.key
+      xpack.security.http.ssl.certificate: /usr/share/elasticsearch/config/certs/tls.crt
+      xpack.security.http.ssl.certificate_authorities: /usr/share/elasticsearch/config/certs/ca.crt
+    elasticsearch-plugins.yml: |
+      plugins:
+        - id: analysis-icu
+        - id: analysis-ukrainian
+        - id: mapper-murmur3
+        - id: mapper-size
+  #  log4j2.properties: |
+  #    key = value
+  secretMounts:
+    - name: elastic-certificates
+      secretName: elastic-certificates
+      path: /usr/share/elasticsearch/config/certs
+  extraEnvs:
+    - name: ELASTIC_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: elasticsearch-credentials
+          key: password
+    - name: ELASTIC_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: elasticsearch-credentials
+          key: username
+
+  # Allows you to load environment variables from kubernetes secret or config map
+  envFrom: []
+  # - secretRef:
+  #     name: env-secret
+  # - configMapRef:
+  #     name: config-map
+  hostAliases: []
+  #- ip: "127.0.0.1"
+  #  hostnames:
+  #  - "foo.local"
+  #  - "bar.local"
+  esJavaOpts: "-Xms512m -Xmx512m" # example: "-Xmx1g -Xms1g"
+  volumeClaimTemplate:
+    accessModes: [ "ReadWriteOnce" ]
+    storageClassName: "openebs-hostpath"
+    resources:
+      requests:
+        storage: 100M
+  # extraVolumes:
+  # - name: plugins
+  #   emptyDir: {}
+  # extraVolumeMounts:
+  # - name: plugins
+  #   mountPath: /plugins
+  # extraInitContainers:
+  # - name: plugins
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
+  #   command:
+  #   - /bin/sh
+  #   - '-c'
+  #   - |
+  #     ./bin/elasticsearch-plugin list | grep -q analysis-ukrainian || ./bin/elasticsearch-plugin install --batch analysis-icu analysis-ukrainian mapper-murmur3 mapper-size
+  #   volumeMounts:
+  #   - name: plugins
+  #     mountPath: /plugins
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+  rbac:
+    create: true
+  lifecycle: {}
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+  # postStart:
+  #   exec:
+  #     command:
+  #       - bash
+  #       - -c
+  #       - |
+  #         #!/bin/bash
+  #         # Add a template to adjust number of shards/replicas
+  #         TEMPLATE_NAME=my_template
+  #         INDEX_PATTERN="logstash-*"
+  #         SHARD_COUNT=8
+  #         REPLICA_COUNT=1
+  #         ES_URL=http://localhost:9200
+  #         while [[ "$(curl -s -o /dev/null -w '%{http_code}\n' $ES_URL)" != "200" ]]; do sleep 1; done
+  #         curl -XPUT "$ES_URL/_template/$TEMPLATE_NAME" -H 'Content-Type: application/json' -d'{"index_patterns":['\""$INDEX_PATTERN"\"'],"settings":{"number_of_shards":'$SHARD_COUNT',"number_of_replicas":'$REPLICA_COUNT'}}'
+  # TODO: check if need this
+  # Disable privileged init Container creation.
+  # sysctlInitContainer:
+  #   enabled: false
+  # TODO: check if need this
+  # Restrict the use of the memory-mapping when sysctlInitContainer is disabled.
+  # esConfig:
+  #   elasticsearch.yml: |
+  #     node.store.allow_mmap: false
+
+kibana:
+  enabled: false
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+  extraEnvs:
+    - name: 'ELASTICSEARCH_USERNAME'
+      valueFrom:
+        secretKeyRef:
+          name: elasticsearch-credentials
+          key: username
+    - name: 'ELASTICSEARCH_PASSWORD'
+      valueFrom:
+        secretKeyRef:
+          name: elasticsearch-credentials
+          key: password
+
+vector:
+  enabled: true

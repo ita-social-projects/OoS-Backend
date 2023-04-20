@@ -1,0 +1,19 @@
+﻿dotnet ef migrations add InitialIdentityServerPersistedGrantDbMigration -c PersistedGrantDbContext -o Data/Migrations/IdentityServer/PersistedGrantDb
+dotnet ef migrations add InitialIdentityServerConfigurationDbMigration -c ConfigurationDbContext -o Data/Migrations/IdentityServer/ConfigurationDb
+
+dotnet ef migrations add AddressH3Add -c OutOfSchoolDbContext -o Data/Migrations/OutOfSchoolMigrations
+dotnet ef database update -c OutOfSchoolDbContext
+
+dotnet ef database update -c PersistedGrantDbContext
+dotnet ef database update -c ConfigurationDbContext
+
+// Update DB to the specified migration
+dotnet ef database update 20220130210817_AddNotifications -c OutOfSchoolDbContext
+
+dotnet ef migrations remove -c OutOfSchoolDbContext
+
+// Install EF Core tools
+dotnet tool install --global dotnet-ef
+
+// Return list of migrations with theirs status
+dotnet ef migrations list -c OutOfSchoolDbContext

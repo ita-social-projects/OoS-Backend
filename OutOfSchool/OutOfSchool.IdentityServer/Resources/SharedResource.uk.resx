@@ -1,0 +1,384 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Already registered?" xml:space="preserve">
+    <value>Уже зареєстровані?</value>
+  </data>
+  <data name="and consent to the processing of personal data" xml:space="preserve">
+    <value>та надаю згоду на обробку персональних даних</value>
+  </data>
+  <data name="By registering I agree with" xml:space="preserve">
+    <value>Реєструючись я погоджуюсь з</value>
+  </data>
+  <data name="You must be agreed with 'Terms of use' to register!" xml:space="preserve">
+    <value>Для реєстрації Ви повинні погодитись з Правилами користування.</value>
+  </data>
+  <data name="Confirm password" xml:space="preserve">
+    <value>Повторити пароль</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Емейл</value>
+  </data>
+  <data name="Entrance to Extracurricular activities" xml:space="preserve">
+    <value>Вхід в Позашкілля</value>
+  </data>
+  <data name="First name" xml:space="preserve">
+    <value>Ім’я</value>
+  </data>
+  <data name="I am 18 years old" xml:space="preserve">
+    <value>Мені виповнилося 18 років</value>
+  </data>
+  <data name="Last name" xml:space="preserve">
+    <value>Прізвище</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Логін</value>
+  </data>
+  <data name="Middle name" xml:space="preserve">
+    <value>По-батькові</value>
+  </data>
+  <data name="or fill out the form" xml:space="preserve">
+    <value>або заповніть форму</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Пароль</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>Телефон</value>
+  </data>
+  <data name="Register" xml:space="preserve">
+    <value>Зареєструватися</value>
+  </data>
+  <data name="Registration goal" xml:space="preserve">
+    <value>Щоб мати змогу подавати заявки у гуртки або стати надавачем послуг</value>
+  </data>
+  <data name="Register as" xml:space="preserve">
+    <value>Зареєструватися як</value>
+  </data>
+  <data name="Registration for Extracurricular activities" xml:space="preserve">
+    <value>Реєстрація в Позашкілля</value>
+  </data>
+  <data name="Service provider" xml:space="preserve">
+    <value>Надавач послуг</value>
+  </data>
+  <data name="Sign In" xml:space="preserve">
+    <value>Увійти</value>
+  </data>
+  <data name="Sign In With" xml:space="preserve">
+    <value>Увійти за допомогою</value>
+  </data>
+  <data name="Terms of use" xml:space="preserve">
+    <value>Правилами користування</value>
+  </data>
+  <data name="The password must be at least 8 characters long" xml:space="preserve">
+    <value>Пароль має містити мінімум 8 символів</value>
+  </data>
+  <data name="To be able to apply to clubs or become a service provider" xml:space="preserve">
+    <value>Щоб мати змогу подавати заявки у гуртки або стати надавачем послуг</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>Користувач</value>
+  </data>
+  <data name="You must be over 18 to register!" xml:space="preserve">
+    <value>Для реєстрації Вам має бути більше 18 років!</value>
+  </data>
+  <data name="Reset password" xml:space="preserve">
+    <value>Відновити пароль</value>
+  </data>
+  <data name="Change password alert" xml:space="preserve">
+    <value>Зверніть увагу, що після зміни паролю ви не матимете змоги увійти у систему зі старим паролем</value>
+  </data>
+  <data name="Old email" xml:space="preserve">
+    <value>Старий емейл</value>
+  </data>
+  <data name="New email" xml:space="preserve">
+    <value>Новий емейл</value>
+  </data>
+  <data name="Change email" xml:space="preserve">
+    <value>Змінити емейл</value>
+  </data>
+  <data name="Enter new email message" xml:space="preserve">
+    <value>Введіть ваш новий емейл на який буде надіслана інструкція по зміні емейлу</value>
+  </data>
+  <data name="Change email alert" xml:space="preserve">
+    <value>Зверніть увагу, що після зміни емейлу ви не матимете змоги увійти у систему зі старим емейлом</value>
+  </data>
+  <data name="Confirm email change" xml:space="preserve">
+    <value>Підтвердіть зміну емейлу</value>
+    <comment>Confirm email change</comment>
+  </data>
+  <data name="Change password" xml:space="preserve">
+    <value>Змінити пароль</value>
+  </data>
+  <data name="Old password" xml:space="preserve">
+    <value>Старий пароль</value>
+  </data>
+  <data name="New password" xml:space="preserve">
+    <value>Новий пароль</value>
+  </data>
+  <data name="Repeat new password" xml:space="preserve">
+    <value>Повторіть новий пароль</value>
+  </data>
+  <data name="Change password confirmation" xml:space="preserve">
+    <value>Підтвердження зміни паролю</value>
+  </data>
+  <data name="Your password was changed" xml:space="preserve">
+    <value>Ваш пароль було змінено</value>
+  </data>
+  <data name="Enter email to change password" xml:space="preserve">
+    <value>Введіть ваш емейл на який буде надіслано інструкцію для скидання пароля</value>
+  </data>
+  <data name="Check your email for instructions" xml:space="preserve">
+    <value>Інструкція з відновлення паролю була надіслана на ваш емейл.
+Зайдіть на емейл і виконайте дії вказані в листі.</value>
+  </data>
+  <data name="Reset password confirmation" xml:space="preserve">
+    <value>Підтвердження зміни паролю</value>
+  </data>
+  <data name="Your password has been reset" xml:space="preserve">
+    <value>Ваш пароль було відновлено</value>
+  </data>
+  <data name="Forgot password?" xml:space="preserve">
+    <value>Забули пароль?</value>
+  </data>
+  <data name="Forgot password confirmation" xml:space="preserve">
+    <value>Забули пароль?</value>
+  </data>
+  <data name="Confirm email" xml:space="preserve">
+    <value>Підтвердження емейлу</value>
+  </data>
+  <data name="Error! Something happened on the server!" xml:space="preserve">
+    <value>Помилка! Щось сталося на сервері!</value>
+  </data>
+  <data name="is already taken" xml:space="preserve">
+    <value>вже зайнятий</value>
+  </data>
+  <data name="Your account is blocked" xml:space="preserve">
+    <value>Ваш акаунт заблокований. Звʼяжіться з адміністратором.</value>
+  </data>
+  <data name="Login or password is wrong" xml:space="preserve">
+    <value>Логін або пароль неправильні</value>
+  </data>
+  <data name="Password is required" xml:space="preserve">
+    <value>Необхідний пароль</value>
+  </data>
+  <data name="Email is required" xml:space="preserve">
+    <value>Потрібна електронна адреса</value>
+  </data>
+  <data name="Email is not valid" xml:space="preserve">
+    <value>Будь ласка, введіть правильну електронну адресу</value>
+  </data>
+  <data name="FirstName is required" xml:space="preserve">
+    <value>Обов'язкове ім'я</value>
+  </data>
+  <data name="LastName is required" xml:space="preserve">
+    <value>Потрібно прізвище</value>
+  </data>
+  <data name="Password confirmation is required" xml:space="preserve">
+    <value>Потрібно підтвердження пароля</value>
+  </data>
+  <data name="Password must contain at least one capital, number and symbol(@$!%*?&amp;)." xml:space="preserve">
+    <value>Помилка! Пароль має складатися мінімум з 8-ми символів, із них одна головна літера, цифри та спецсимволи (@$!%*? &amp;).</value>
+  </data>
+  <data name="Check the entered data. Please use only cyrillic and symbols( ' - )" xml:space="preserve">
+    <value>Перевірте введені дані. Використовуйте, будь ласка, тільки кирилицю та символи( ' - ).</value>
+  </data>
+  <data name="Passwords doesn't match" xml:space="preserve">
+    <value>Паролі не збігаються</value>
+  </data>
+  <data name="Error! Please check the number is correct" xml:space="preserve">
+    <value>Помилка! Перевірте будь ласка правильність номеру</value>
+  </data>
+  <data name="Phone number is required" xml:space="preserve">
+    <value>Номер телефону обов’язковий</value>
+  </data>
+  <data name="Email is already taken" xml:space="preserve">
+    <value>Ця електронна адреса вже використовується</value>
+  </data>
+  <data name="Not registered yet?" xml:space="preserve">
+    <value>Ще не зареєстровані?</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Зберегти</value>
+  </data>
+  <data name="Change email {0} sent" xml:space="preserve">
+    <value>Інструкція по зміні емейлу була надіслана на {0}. Зайдіть на емейл і виконайте дії вказані в листі.</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Скасувати</value>
+  </data>
+  <data name="Change email cancel" xml:space="preserve">
+    <value>Ви впевнені, що хочете скасувати зміну електронної адреси?</value>
+  </data>
+  <data name="Change email done" xml:space="preserve">
+    <value>Ваш email успішно змінений</value>
+  </data>
+  <data name="Change email message" xml:space="preserve">
+    <value>Ваші дані було змінено.
+Щоб підтвердити зміну імейлу, перейдіть за цим посиланням та введіть новий логін
+
+Login: {0}
+{1}</value>
+  </data>
+  <data name="Change email new email already used {0}" xml:space="preserve">
+    <value>Вказаний email {0} вже зареєстровано за іншим користувачем, введіть інший email</value>
+  </data>
+  <data name="Change email mismatch current email {0}" xml:space="preserve">
+    <value>Вказаний email {0} не співпадеє з поточним</value>
+  </data>
+  <data name="Change password email message" xml:space="preserve">
+    <value>Підтвердіть зміну паролю </value>
+  </data>
+  <data name="Change password invalid token" xml:space="preserve">
+    <value>Token не пройшов перевірку</value>
+  </data>
+  <data name="Change password failed" xml:space="preserve">
+    <value>Помилка при зміні паролю. Зверниться до адміністратора.</value>
+  </data>
+  <data name="User is not allowed to change password login action" xml:space="preserve">
+    <value>Користувач не має доступу до логіну зі зміною паролю</value>
+  </data>
+  <data name="Login with changing password" xml:space="preserve">
+    <value>Увійти зі зміною паролю</value>
+  </data>
+  <data name="Gender Male" xml:space="preserve">
+    <value>Чоловіча</value>
+  </data>
+  <data name="Gender Female" xml:space="preserve">
+    <value>Жіноча</value>
+  </data>
+  <data name="Gender" xml:space="preserve">
+    <value>Стать</value>
+  </data>
+  <data name="Invalid email confirmation token" xml:space="preserve">
+    <value>Token не пройшов перевірку</value>
+  </data>
+  <data name="Confirm email {0} sent" xml:space="preserve">
+    <value>Інструкція підтвердження емейлу була надіслана на {0}. Зайдіть на емейл і виконайте дії вказані в листі.</value>
+  </data>
+  <data name="Enter your email to send password recovery instructions" xml:space="preserve">
+    <value>Введіть ваш емейл на який буде надіслана інструкція по відновленню паролю</value>
+  </data>
+  <data name="Date of birth" xml:space="preserve">
+    <value>Дата народження</value>
+  </data>
+  <data name="Date of birth is required" xml:space="preserve">
+    <value>Дата народження є обов’язковою</value>
+  </data>
+</root>

@@ -1,0 +1,28 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using OutOfSchool.IdentityServer
+
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@model OutOfSchool.IdentityServer.ViewModels.ChangeEmailViewModel
+
+@{
+    ViewData["Title"] = SharedLocalizer["Confirm email change"];
+    Layout = "_Layout";
+}
+<div class="wrapper_body">
+    <div class="wrapper">
+        <h2 class="title">@SharedLocalizer["Change email"]</h2>
+        <h3 class="instruction">@SharedLocalizer[@"Change email cancel"]</h3>
+
+        <form asp-action="ChangeEmail">
+
+            <input type="hidden" name="CurrentEmail" asp-for="CurrentEmail"/>
+            <input type="hidden" name="Email" asp-for="@Model.Email" />
+            
+            <span>
+                <input type="submit" name="submit" value=@SharedLocalizer["Cancel"] class="registration_button" onclick="window.close();"/>
+                <input type="submit" name="submit" value=@SharedLocalizer["Save"] class="registration_submit registration_button"/>
+            </span>
+        </form>
+    </div>
+</div>

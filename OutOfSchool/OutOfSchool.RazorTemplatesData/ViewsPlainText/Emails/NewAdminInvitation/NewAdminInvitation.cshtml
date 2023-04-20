@@ -1,0 +1,14 @@
+﻿@using OutOfSchool.RazorTemplatesData.Models.Emails
+@model AdminInvitationViewModel
+
+@{
+    ViewData["EmailTitle"] = "Welcome!";
+}
+
+Для реєстрації на платформі перейдіть за посиланням та заповніть ваші дані в особистому кабінеті.
+
+@Model.ConfirmationUrl
+
+Логін: @Model.Email
+
+Пароль:  @Model.Password

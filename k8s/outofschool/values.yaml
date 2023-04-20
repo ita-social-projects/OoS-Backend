@@ -1,0 +1,33 @@
+# Default values for outofschool.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global: {}
+
+nameOverride: ""
+fullnameOverride: ""
+
+webapi:
+  enabled: false
+  image:
+    registry: gcr.io
+    repository: gcp101292-pozashkillya
+    name: oos-api
+    pullPolicy: IfNotPresent
+  containerPort: 8080
+identity:
+  enabled: false
+  image:
+    registry: gcr.io
+    repository: gcp101292-pozashkillya
+    name: oos-auth
+    pullPolicy: IfNotPresent
+  containerPort: 8080
+frontend:
+  enabled: false
+  image:
+    registry: gcr.io
+    repository: gcp101292-pozashkillya
+    name: oos-frontend
+    pullPolicy: IfNotPresent
+  containerPort: 8080
