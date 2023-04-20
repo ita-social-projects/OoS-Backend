@@ -8,4 +8,5 @@ public static class JobTriggerConstants
     public const string NotificationsClearing = "notificationsClearingJobTrigger";
     public const string ApplicationStatusChanging = "applicationStatusChangingJobTrigger";
     public const string AverageRatingCalculating = "averageRatingCalculatingJobTrigger";
+    public const string LicenseApprovalNotification = "licenseApprovalNotificationJobTrigger";
 }
