@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.SignalR;
 using OutOfSchool.Services.Contexts;
 using OutOfSchool.Services.Repository.Files;
@@ -58,6 +59,13 @@ public static class Startup
 
         app.UseAuthentication();
         app.UseAuthorization();
+
+        app.MapHealthChecks("/healthz/ready", new HealthCheckOptions
+            {
+                Predicate = healthCheck => healthCheck.Tags.Contains("readiness"),
+                AllowCachingResponses = false,
+            })
+            .WithMetadata(new AllowAnonymousAttribute());
 
         app.MapControllers();
         app.MapHub<ChatWorkshopHub>("/chathub/workshop");
@@ -353,5 +361,10 @@ public static class Startup
         });
 
         services.AddSingleton<ICacheService, CacheService>();
+
+        services.AddHealthChecks()
+            .AddDbContextCheck<OutOfSchoolDbContext>(
+                "Database",
+                tags: new[] { "readiness" });
     }
 }

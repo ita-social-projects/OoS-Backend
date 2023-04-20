@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using OutOfSchool.Common.Models;
 using OutOfSchool.IdentityServer.Config.ExternalUriModels;
 using OutOfSchool.IdentityServer.Services.Interfaces;
@@ -149,6 +150,11 @@ public static class Startup
         services.AddGrpc();
 
         services.AddHostedService<AdditionalClientsHostedService>();
+
+        services.AddHealthChecks()
+            .AddDbContextCheck<OutOfSchoolDbContext>(
+                "Database",
+                tags: new[] { "readiness" });
     }
 
     public static void Configure(this WebApplication app)
@@ -216,6 +222,13 @@ public static class Startup
 
         app.UseAuthentication();
         app.UseAuthorization();
+
+        app.MapHealthChecks("/healthz/ready", new HealthCheckOptions
+            {
+                Predicate = healthCheck => healthCheck.Tags.Contains("readiness"),
+                AllowCachingResponses = false,
+            })
+            .WithMetadata(new AllowAnonymousAttribute());
 
         app.UseEndpoints(endpoints => { endpoints.MapDefaultControllerRoute(); });
 
