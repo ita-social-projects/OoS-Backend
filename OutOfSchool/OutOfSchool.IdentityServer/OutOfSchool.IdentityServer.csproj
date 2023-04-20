@@ -39,7 +39,7 @@
         <PackageReference Include="Serilog.Settings.Configuration"/>
         <PackageReference Include="Serilog.Sinks.File"/>
         <PackageReference Include="Serilog.Sinks.GoogleCloudLogging"/>
-        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="6.0.6" />
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore"/>
         <PackageReference Include="StyleCop.Analyzers">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

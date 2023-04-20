@@ -14,6 +14,7 @@
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(BaseVersion)"/>
         <PackageVersion Include="Microsoft.Extensions.Options" Version="$(BaseVersion)"/>
         <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1"/>
+        <PackageVersion Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
         <!--MVC-->
         <!-- TODO: Isn't AspNetCore.Mvc.Core included by default for a Web project?-->
         <PackageVersion Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5"/>
@@ -78,6 +79,8 @@
         <!--JSON-->
         <PackageVersion Include="JsonSubTypes" Version="1.9.0"/>
         <PackageVersion Include="Newtonsoft.Json" Version="13.0.1"/>
+        <!--Health Checks-->
+        <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="$(EFCoreVersion)" />
         <!--Helper libs-->
         <PackageVersion Include="LazyCache.AspNetCore" Version="2.4.0"/>
         <PackageVersion Include="SendGrid.Extensions.DependencyInjection" Version="1.0.1"/>

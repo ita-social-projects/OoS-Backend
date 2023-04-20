@@ -8,7 +8,7 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
-    <CodeAnalysisRuleSet>..\StyleCopAnalyzersRules .ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\StyleCopAnalyzersRules.ruleset</CodeAnalysisRuleSet>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
@@ -74,7 +74,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" />
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="6.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
