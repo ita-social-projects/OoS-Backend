@@ -242,7 +242,10 @@ public static class Startup
         services.AddTransient<IProviderRepository, ProviderRepository>();
         services.AddTransient<IWorkshopRepository, WorkshopRepository>();
         //services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
-        services.AddImagesStorage(turnOnFakeStorage: configuration.GetValue<bool>("TurnOnFakeImagesStorage"));
+        var featuresConfig = configuration.GetSection(FeatureManagementConfig.Name).Get<FeatureManagementConfig>();
+        var isImagesEnabled = featuresConfig.Images;
+        var turnOnFakeStorage = configuration.GetValue<bool>("Images:TurnOnFakeImagesStorage") || !isImagesEnabled;
+        services.AddImagesStorage(turnOnFakeStorage: turnOnFakeStorage);
 
         services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
         services.AddTransient<INotificationRepository, NotificationRepository>();
@@ -332,7 +335,7 @@ public static class Startup
             quartzConfig.ConnectionStringKey,
             q =>
         {
-            if (!builder.Environment.IsEnvironment("Release"))
+            if (!turnOnFakeStorage)
             {
                 // TODO: for now this is not used in release
                 q.AddGcpSynchronization(services, quartzConfig);
