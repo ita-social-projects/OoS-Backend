@@ -1,9 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-  </PropertyGroup>
-
   <PropertyGroup>
     <CodeAnalysisRuleSet>..\StyleCopAnalyzersRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
@@ -14,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NEST" Version="7.13.2" />
+    <PackageReference Include="NEST" />
     <PackageReference Include="StyleCop.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -29,8 +24,4 @@
   <ItemGroup>
     <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
   </ItemGroup>
-  <Target Name="PostClean" AfterTargets="Clean">
-    <RemoveDir Directories="$(BaseIntermediateOutputPath)" /><!-- obj -->
-    <RemoveDir Directories="$(BaseOutputPath)" /><!-- bin -->
-  </Target>
 </Project>
