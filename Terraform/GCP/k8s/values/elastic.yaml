@@ -161,6 +161,7 @@ vector:
       - port: 8686
   
   env:
+    - name: "ES_ENDPOINT" # helm set
     - name: "ES_USERNAME"
       valueFrom:
         secretKeyRef:
@@ -171,8 +172,6 @@ vector:
         secretKeyRef:
           name: elasticsearch-credentials
           key: password
-    - name: "ES_ENDPOINT"
-      value: "http://elasticsearch-master.default.svc.cluster.local:9200"
 
   # customConfig -- Override Vector's default configs, if used **all** options need to be specified. This section supports
   # using helm templates to populate dynamic values. See Vector's [configuration documentation](https://vector.dev/docs/reference/configuration/)
@@ -198,9 +197,10 @@ vector:
         - k3s_logs
         type: filter
     sinks:
-      system_logs:
+      es_logs:
         type: elasticsearch
         inputs:
+          - k3s_logs
           - file-syslog
         api_version: v7
         compression: none
@@ -209,24 +209,7 @@ vector:
         mode: bulk
         bulk:
           action: index
-          index: vector-logs-syslog-%F
-        auth:
-          strategy: basic
-          user: "${ES_USERNAME}"
-          password: "${ES_PASSWORD}"
-      es_logs:
-        type: elasticsearch
-        inputs:
-          - k3s_logs
-        api_version: v7
-        compression: none
-        endpoints:
-          - "${ES_ENDPOINT}"
-        mode: bulk
-        id_key: _id
-        bulk:
-          action: index
-          index: vector-logs-kubernetes-%F
+          index: vector-logs-%F
         auth:
           strategy: basic
           user: "${ES_USERNAME}"
@@ -240,8 +223,7 @@ metricbeat:
     enabled: true
     
     extraEnvs:
-      - name: "ES_ENDPOINT"
-        value: "http://elasticsearch-master.default.svc.cluster.local:9200"        
+      - name: "ES_ENDPOINT" # helm set   
       - name: "ES_USERNAME"
         valueFrom:
           secretKeyRef:
@@ -368,6 +350,16 @@ metricbeat:
               - state_container
             period: 15s
             hosts: ["${KUBE_STATE_METRICS_HOSTS}"]
+          - module: elasticsearch
+            metricsets:
+              - node
+              - node_stats
+            period: 60s
+            hosts: ["${ES_ENDPOINT}"]
+            username: "${ES_USERNAME}"
+            password: "${ES_PASSWORD}"
+            xpack.enabled: true
+            #scope: node           
         output.elasticsearch:
           hosts: "${ES_ENDPOINT}"
           username: "${ES_USERNAME}"
