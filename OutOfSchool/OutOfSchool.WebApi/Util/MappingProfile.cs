@@ -357,7 +357,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.IsDeputy, opt => opt.Ignore())
             .ForMember(dest => dest.AccountStatus, m => m.Ignore())
             .ForMember(dest => dest.WorkshopTitles, opt => opt.Ignore())
-            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber.Right(Constants.PhoneShortLength)));
+            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber.Right(Constants.PhoneShortLength)))
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
         CreateMap<DirectionDto, Direction>()
