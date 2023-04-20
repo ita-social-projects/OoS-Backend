@@ -34,9 +34,7 @@ public static class FileStorageExtensions
     {
         _ = services ?? throw new ArgumentNullException(nameof(services));
 
-        var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == Environments.Development;
-
-        if (turnOnFakeStorage && isDevelopment)
+        if (turnOnFakeStorage)
         {
             return services.AddTransient<IImageFilesStorage, FakeImagesStorage>();
         }
