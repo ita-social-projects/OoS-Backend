@@ -26,12 +26,13 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "DevContainer": {
+    "OutOfSchool (Mac)": {
       "commandName": "Project",
-      "applicationUrl": "http://localhost:5000",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "http://localhost:8080",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "http://+:5000"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }
