@@ -8,64 +8,26 @@ nameOverride: ""
 fullnameOverride: ""
 
 webapi:
-  enabled: true
+  enabled: false
   image:
-    registry: gcr.io/gcp101292-pozashkillya
-    repository: oos-api
+    registry: gcr.io
+    repository: gcp101292-pozashkillya
+    name: oos-api
     pullPolicy: IfNotPresent
-    tag: testing
   containerPort: 8080
-  configuration:
-    extraEnvironment:
-      ASPNETCORE_ENVIRONMENT: Kubernetes
-      AppDefaults__Version: testing
-    secrets:
-    - type: env
-      name: mysql-api-auth
-      keys:
-      - key: API_PASSWORD
-        envKey: ConnectionStringsOverride__DefaultConnection__Password
-        upper: false
-    - type: env
-      name: elasticsearch-credentials
-      keys:
-      - key: apipass
-        envKey: Elasticsearch__Password
-        upper: false
-    - type: env
-      name: redis-auth
-      keys:
-      - key: password
-        envKey: Redis__Password
-        upper: false
-    # TODO: add geo api key to secrets
-    # - type: env
-    #   name: mysql-api-auth
-    #   keys:
-    #   - key: API_PASSWORD
-    #     envKey: GeoCoding__ApiKey
-    #     upper: false
-  resources:
-    limits:
-      memory: 512Mi
 identity:
   enabled: false
   image:
-    registry: gcr.io/gcp101292-pozashkillya
-    repository: oos-auth
+    registry: gcr.io
+    repository: gcp101292-pozashkillya
+    name: oos-auth
     pullPolicy: IfNotPresent
-    tag: 1.0.0-RC1
-  extraEnvironment: {}
-    # ReverseProxy__BasePath: /identity
-  connectionString:
-    username: oos
-    secret:
-      name: mysql-auth
-      key: mysql-password
+  containerPort: 8080
 frontend:
   enabled: false
   image:
-    registry: gcr.io/gcp101292-pozashkillya
-    repository: oos-frontend
+    registry: gcr.io
+    repository: gcp101292-pozashkillya
+    name: oos-frontend
     pullPolicy: IfNotPresent
-    tag: 1.0.0-RC1
+  containerPort: 8080
