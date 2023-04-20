@@ -64,7 +64,7 @@ internal class AdminInitializer
                 return 0;
             }
 
-            IdentityResult result = IdentityResult.Failed();
+            IdentityResult result;
             if (existingUser != null && adminConfiguration.Reset)
             {
                 existingUser.UserName = user.UserName;
@@ -91,9 +91,7 @@ internal class AdminInitializer
             result = await userManager.CreateAsync(user, adminConfiguration.Password);
             if (result.Succeeded)
             {
-                IdentityResult roleAssignResult = IdentityResult.Failed();
-
-                roleAssignResult = await userManager.AddToRoleAsync(user, adminConfiguration.Role);
+                var roleAssignResult = await userManager.AddToRoleAsync(user, adminConfiguration.Role);
 
                 if (roleAssignResult.Succeeded)
                 {
