@@ -161,7 +161,8 @@ vector:
       - port: 8686
   
   env:
-    - name: "ES_ENDPOINT" # helm set
+    - name: "ES_ENDPOINT"
+      value: "http://elasticsearch-master.default.svc:9200"
     - name: "ES_USERNAME"
       valueFrom:
         secretKeyRef:
@@ -217,13 +218,12 @@ vector:
 
 metricbeat:
   enabled: true
-  
+
   daemonset:
-    # Include the daemonset
     enabled: true
-    
     extraEnvs:
-      - name: "ES_ENDPOINT" # helm set   
+      - name: "ES_ENDPOINT"
+        value: "http://elasticsearch-master.default.svc:9200"
       - name: "ES_USERNAME"
         valueFrom:
           secretKeyRef:
@@ -234,7 +234,7 @@ metricbeat:
           secretKeyRef:
             name: elasticsearch-credentials
             key: password
-    
+  
     hostNetworking: true
 
     extraVolumeMounts: 
@@ -249,7 +249,7 @@ metricbeat:
           type: File 
     
     metricbeatConfig:
-      metricbeat.yml: |
+      metricbeat.yml: |-
         metricbeat.modules:
           - module: kubernetes
             metricsets:
@@ -265,10 +265,6 @@ metricbeat:
             ssl.verification_mode: "none"
             processors:
             - add_kubernetes_metadata: ~
-          - module: kubernetes
-            enabled: true
-            metricsets:
-              - event
           - module: system
             period: 15s
             metricsets:
@@ -300,6 +296,10 @@ metricbeat:
             processors:
             - drop_event.when.regexp:
                 system.filesystem.mount_point: '^/(sys|cgroup|proc|dev|etc|host|lib)($|/)'
+          - module: kubernetes
+            enabled: true
+            metricsets:
+              - event
         output.elasticsearch:
           hosts: "${ES_ENDPOINT}"
           username: '${ES_USERNAME}'
@@ -319,13 +319,14 @@ metricbeat:
         memory: "100Mi"
       limits:
         cpu: "1000m"
-        memory: "200Mi"
-    tolerations: []
+        memory: "250Mi"
 
   deployment:
     extraEnvs:
       - name: "ES_ENDPOINT"
-        value: "http://elasticsearch-master.default.svc.cluster.local:9200"
+        value: "http://elasticsearch-master.default.svc:9200"
+      - name: "KIBANA_URL"
+        value: "http://elastic-kibana.default.svc:5601"
       - name: "ES_USERNAME"
         valueFrom:
           secretKeyRef:
@@ -336,19 +337,47 @@ metricbeat:
           secretKeyRef:
             name: elasticsearch-credentials
             key: password
-
+      - name: "MYSQL_HOST"
+        value: "tcp(mysql.default.svc:3306)/"
+      - name: "REDIS_HOST"
+        value: "redis-master.default.svc:6379"
+      - name: "MYSQL_USER"
+        valueFrom:
+          secretKeyRef:
+            name: elastic-metricbeat-mysql
+            key: user       
+      - name: "REDIS_PASSWORD"
+        valueFrom:
+          secretKeyRef:
+            name: redis-auth
+            key: password
+      - name: "MYSQL_PASSWORD"
+        valueFrom:
+          secretKeyRef:
+            name: mysql-auth
+            key: mysql-password            
     metricbeatConfig:
-      metricbeat.yml: |
+      metricbeat.yml: |-
         metricbeat.modules:
           - module: kubernetes
             enabled: true
             metricsets:
               - state_node
               - state_deployment
+              - state_daemonset
               - state_replicaset
               - state_pod
               - state_container
+              - state_job
+              - state_cronjob
+              - state_resourcequota
+              - state_statefulset
+              - state_service
+              - state_persistentvolume
+              - state_persistentvolumeclaim
+              - state_storageclass
             period: 15s
+            add_metadata: true
             hosts: ["${KUBE_STATE_METRICS_HOSTS}"]
           - module: elasticsearch
             metricsets:
@@ -359,13 +388,39 @@ metricbeat:
             username: "${ES_USERNAME}"
             password: "${ES_PASSWORD}"
             xpack.enabled: true
-            #scope: node           
+          - module: kibana
+            period: 60s
+            hosts: 
+              - "${KIBANA_URL}"
+            username: "${ES_USERNAME}"
+            password: "${ES_PASSWORD}" 
+            ssl:
+              enable: false
+            enabled: true
+            xpack.enabled: true 
+          - module: mysql
+            enabled: true
+            metricsets: ["status"]
+            hosts: ["${MYSQL_HOST}"]
+            username: "${MYSQL_USER}"
+            password: "${MYSQL_PASSWORD}"
+          - module: redis
+            metricsets: ["info", "keyspace"]
+            enabled: true
+            period: 15s
+            processors:
+              - include_fields:
+                  fields: ["beat", "metricset", "redis.info.stats"]
+            # Redis hosts
+            hosts: ["${REDIS_HOST}"]
+            password: "${REDIS_PASSWORD}"
         output.elasticsearch:
           hosts: "${ES_ENDPOINT}"
-          username: "${ES_USERNAME}"
-          password: "${ES_PASSWORD}"
+          username: '${ES_USERNAME}'
+          password: '${ES_PASSWORD}'
           enabled: true
-          allow_older_versions: true
+          allow_older_versions: true    
+
     secretMounts:
       - name: elasticsearch-master-certs
         secretName: elastic-certificates
@@ -381,6 +436,12 @@ metricbeat:
         cpu: "1000m"
         memory: "200Mi"
     tolerations: []
+
+  #Secrets
+  secrets:
+    - name: "mysql"
+      value:
+        user: 
 
   # Replicas being used for the kube-state-metrics metricbeat deployment
   replicas: 1
@@ -452,4 +513,5 @@ metricbeat:
         - "/metrics"
       verbs:
         - get
+
 
