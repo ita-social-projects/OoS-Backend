@@ -197,6 +197,33 @@ public class AccountController : Controller
     }
 
     [HttpGet]
+    public async Task<IActionResult> ReSendEmailConfirmation()
+    {
+        var user = await userManager.FindByEmailAsync(User.Identity.Name);
+
+        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        var returnUrl = "Login";
+        var callBackUrl = Url.Action("EmailConfirmation", "Account", new { token, user.Email, returnUrl }, Request.Scheme);
+
+        var email = user.Email;
+        var subject = localizer["Confirm email"];
+        var userActionViewModel = new UserActionViewModel
+        {
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            ActionUrl = callBackUrl,
+        };
+        var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ConfirmEmail, userActionViewModel);
+        await emailSender.SendAsync(email, subject, content);
+
+        var path = $"{HttpContext.Request.Path.Value}[{HttpContext.Request.Method}]";
+
+        logger.LogInformation($"{path} Message to confirm email was sent. User(id): {user.Id}.");
+
+        return View("Email/ConfirmEmail", new RegisterViewModel { Email = email, });
+    }
+
+    [HttpGet]
     public async Task<IActionResult> EmailConfirmation(string email, string token)
     {
         var path = $"{HttpContext.Request.Path.Value}[{HttpContext.Request.Method}]";
