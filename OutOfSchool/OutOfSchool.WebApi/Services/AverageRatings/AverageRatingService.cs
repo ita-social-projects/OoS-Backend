@@ -81,10 +81,7 @@ public class AverageRatingService : IAverageRatingService
 
         var newAddedRatings = await GetNewRatings(lastSuccessQuartzJobLaunchDate).ConfigureAwait(false);
 
-        var filter = new OperationWithObjectFilter() { OperationType = OperationWithObjectOperationType.RecalculateAverageRating };
-        bool existsOperations = await operationWithObjectService.Exists(filter);
-
-        if (newAddedRatings.Any() || existsOperations)
+        if (newAddedRatings.Any() || await RatingsWereDeleted())
         {
             var averageRatings = await RecalculateAverageRatingsAsync(newAddedRatings).ConfigureAwait(false);
 
@@ -152,12 +149,23 @@ public class AverageRatingService : IAverageRatingService
 
         Dictionary<Guid, Tuple<float, int>> averageRatings = new Dictionary<Guid, Tuple<float, int>>();
 
-        averageRatings.AddRange(CalculateWorkshopsRatingsByEntityIdsAsync(workshopsIds));
-        averageRatings.AddRange(CalculateProvidersRatingsByProvidersIdsAsync(providersIds));
+        var averageWorkshopsRatings = CalculateWorkshopsRatingsByEntityIdsAsync(workshopsIds);
+        averageRatings.AddRange(averageWorkshopsRatings);
+
+        var averageProvidersRatings = CalculateProvidersRatingsByProvidersIdsAsync(providersIds);
+        averageRatings.AddRange(averageProvidersRatings);
+
+        await averageRatingRepository.RunInTransaction(DeleteAverageRatings).ConfigureAwait(false);
 
         foreach (var operation in operations)
         {
             await operationWithObjectService.Delete(operation.Id);
+        }
+
+        async Task DeleteAverageRatings()
+        {
+            await DeleteAverageRatingsForWorkshopsWithoutRatings(workshopsIdsFromOperations, averageWorkshopsRatings.Keys).ConfigureAwait(false);
+            await DeleteAverageRatingsForProvidersWithoutRatings(workshopsIdsFromOperations, averageProvidersRatings.Keys).ConfigureAwait(false);
         }
 
         logger.LogInformation("The average ratings calculation finished.");
@@ -236,5 +244,45 @@ public class AverageRatingService : IAverageRatingService
         }
 
         logger.LogInformation("Saving the average ratings was finished.");
+    }
+
+    private async Task<bool> RatingsWereDeleted()
+    {
+        var filter = new OperationWithObjectFilter()
+        {
+            OperationType = OperationWithObjectOperationType.RecalculateAverageRating
+        };
+
+        return await operationWithObjectService.Exists(filter);
+    }
+
+    private async Task DeleteAverageRatingsForWorkshopsWithoutRatings(IEnumerable<Guid> workshopsIdsFromOperations, IEnumerable<Guid> workshopsIdsWithAverageRatings)
+    {
+        var workshopsIdsWithoutRatings = workshopsIdsFromOperations.Except(workshopsIdsWithAverageRatings);
+
+        var averageRatingsToDelete = await averageRatingRepository
+            .GetByFilter(ar => workshopsIdsWithoutRatings.Contains(ar.EntityId))
+            .ConfigureAwait(false);
+
+        foreach (var rating in averageRatingsToDelete)
+        {
+            await averageRatingRepository.Delete(rating);
+        }
+    }
+
+    private async Task DeleteAverageRatingsForProvidersWithoutRatings(IEnumerable<Guid> workshopsIdsFromOperations, IEnumerable<Guid> providersIdsWithAverageRatings)
+    {
+        var providersIds = GetUniqueProviderIdsByWorkshopIdsAsync(workshopsIdsFromOperations);
+
+        var providersIdsWithoutRatings = providersIds.Except(providersIdsWithAverageRatings);
+
+        var averageRatingsToDelete = await averageRatingRepository
+            .GetByFilter(ar => providersIdsWithoutRatings.Contains(ar.EntityId))
+            .ConfigureAwait(false);
+
+        foreach (var rating in averageRatingsToDelete)
+        {
+            await averageRatingRepository.Delete(rating);
+        }
     }
 }
