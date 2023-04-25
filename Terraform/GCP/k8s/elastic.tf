@@ -49,22 +49,15 @@ resource "helm_release" "elastic" {
     name  = "kibana.ingress.hosts[0].host"
     value = var.kibana_hostname
   }
-  
   set {
-    name  = "vector.secrets.generic.es_user"
-    value = var.es_admin_user
-  }
-  
-  set {
-    name  = "vector.secrets.generic.es_password"
-    value = var.es_admin_pass
-  }
-  
-  set {
-    name  = "vector.secrets.generic.es_endpoint"
+    name = "vector.env[0].value"
     value = var.elastic_url
   }
-  
+  set {
+    name = "metricbeat.daemonset.extraEnvs[0].value"
+    value = var.elastic_url
+  }
+
   depends_on = [
     kubernetes_secret.elastic_credentials,
     kubectl_manifest.elastic_ssl,

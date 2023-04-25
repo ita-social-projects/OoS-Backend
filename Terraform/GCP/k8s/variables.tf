@@ -81,11 +81,6 @@ variable "enable_ingress_http" {
   type = bool
 }
 
-variable "es_admin_user" {
-  type    = string
-  default = "elastic"
-}
-
 variable "elastic_url" {
   type    = string
   default = "http://elasticsearch-master.default.svc.cluster.local:9200"
