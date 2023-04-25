@@ -90,6 +90,13 @@ public static class Startup
         services.AddProxy();
         services.AddAuthCommon(config, builder.Environment.IsDevelopment());
         services.AddTransient<IInteractionService, InteractionService>();
+
+        services.AddHostedService<AdditionalClientsHostedService>();
+
+        services.AddHealthChecks()
+            .AddDbContextCheck<OutOfSchoolDbContext>(
+                "Database",
+                tags: new[] { "readiness" });
     }
 
     public static void Configure(this WebApplication app)

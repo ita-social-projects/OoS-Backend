@@ -1,7 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
-
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
         <CodeAnalysisRuleSet>..\StyleCopAnalyzersRules.ruleset</CodeAnalysisRuleSet>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -15,13 +13,13 @@
 
     <ItemGroup>
         <Protobuf Include="..\OutOfSchool.GRPC\Protos\ProviderAdmin.proto" GrpcServices="Server" />
-        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
-        <PackageReference Include="IdentityModel" Version="6.0.0" />
-        <PackageReference Include="Grpc.AspNetCore" Version="2.46.0" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.1" />
-        <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="6.0.12" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.12"/>
+        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
+        <PackageReference Include="IdentityModel" />
+        <PackageReference Include="Grpc.AspNetCore" />
+        <PackageReference Include="Newtonsoft.Json" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded"/>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -33,7 +31,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.321">
+        <PackageReference Include="StyleCop.Analyzers">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -61,10 +59,4 @@
 <!--            <ExcludeFromManifest>true</ExcludeFromManifest>-->
         </EmbeddedResource>
     </ItemGroup>
-
-    <Target Name="PostClean" AfterTargets="Clean">
-        <RemoveDir Directories="$(BaseIntermediateOutputPath)" /><!-- obj -->
-        <RemoveDir Directories="$(BaseOutputPath)" /><!-- bin -->
-    </Target>
-
 </Project>

@@ -1,10 +1,4 @@
-﻿using Google.Api;
-using Google.Cloud.Logging.V2;
-using IdentityServer4.EntityFramework.Entities;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Identity;
-
-namespace OutOfSchool.IdentityServer.Services;
+﻿namespace OutOfSchool.IdentityServer.Services;
 
 public class AdditionalClientsHostedService : IHostedService
 {
