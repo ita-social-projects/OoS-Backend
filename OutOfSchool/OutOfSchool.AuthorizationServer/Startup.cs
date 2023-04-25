@@ -256,12 +256,7 @@ public static class Startup
 
         app.UseCookiePolicy(new CookiePolicyOptions {MinimumSameSitePolicy = SameSiteMode.Lax});
 
-        var commonAssembly = typeof(AuthController).Assembly;
-        app.UseStaticFiles(new StaticFileOptions
-        {
-            FileProvider = new ManifestEmbeddedFileProvider(commonAssembly, "wwwroot"),
-            RequestPath = string.Empty,
-        });
+        app.UseStaticFiles();
 
         app.UseSerilogRequestLogging();
 
@@ -273,6 +268,8 @@ public static class Startup
             endpoints.MapDefaultControllerRoute();
         });
 
+        app.MapRazorPages();
+
         var gRPCConfig = app.Configuration.GetSection(GRPCConfig.Name).Get<GRPCConfig>();
 
         if (gRPCConfig.Enabled)
@@ -281,21 +278,6 @@ public static class Startup
             {
                 endpoints.MapGrpcService<ProviderAdminServiceGRPC>().RequireHost($"*:{gRPCConfig.Port}");
             });
-        }
-    }
-
-    public static void RolesInit(RoleManager<IdentityRole> manager)
-    {
-        var roles = new IdentityRole[]
-        {
-            new IdentityRole {Name = "parent"},
-            new IdentityRole {Name = "provider"},
-            new IdentityRole {Name = "techadmin"},
-            new IdentityRole {Name = "ministryadmin"},
-        };
-        foreach (var role in roles)
-        {
-            manager.CreateAsync(role).Wait();
         }
     }
 }

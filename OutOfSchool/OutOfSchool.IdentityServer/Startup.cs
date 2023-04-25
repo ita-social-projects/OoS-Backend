@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.Extensions.FileProviders;
 using OutOfSchool.AuthCommon;
 using OutOfSchool.AuthCommon.Config;
@@ -156,12 +155,7 @@ public static class Startup
 
         app.UseCookiePolicy(new CookiePolicyOptions { MinimumSameSitePolicy = SameSiteMode.Lax });
 
-        var commonAssembly = typeof(AuthController).Assembly;
-        app.UseStaticFiles(new StaticFileOptions
-        {
-            FileProvider = new ManifestEmbeddedFileProvider(commonAssembly, "wwwroot"),
-            RequestPath = string.Empty,
-        });
+        app.UseStaticFiles();
 
         app.UseSerilogRequestLogging();
 
@@ -178,6 +172,7 @@ public static class Startup
             .WithMetadata(new AllowAnonymousAttribute());
 
         app.UseEndpoints(endpoints => { endpoints.MapDefaultControllerRoute(); });
+        app.MapRazorPages();
 
         var gRPCConfig = app.Configuration.GetSection(GRPCConfig.Name).Get<GRPCConfig>();
 

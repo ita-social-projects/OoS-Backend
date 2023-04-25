@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
     <PropertyGroup>
+        <PackageId>auth</PackageId>
         <CodeAnalysisRuleSet>..\StyleCopAnalyzersRules.ruleset</CodeAnalysisRuleSet>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
-        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+        <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,8 +18,6 @@
         <PackageReference Include="Grpc.AspNetCore" />
         <PackageReference Include="Newtonsoft.Json" />
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
-        <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded"/>
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -45,18 +43,5 @@
 
     <ItemGroup>
         <Watch Include="wwwroot\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <EmbeddedResource Include="Views\**" />
-        <EmbeddedResource Include="wwwroot\**\*" />
-        <EmbeddedResource Include="Resources/SharedResource.en.resx">
-            <LogicalName>Resources/SharedResource.en.resx</LogicalName>
-<!--            <ExcludeFromManifest>true</ExcludeFromManifest>-->
-        </EmbeddedResource>
-        <EmbeddedResource Include="Resources/SharedResource.uk.resx">
-            <LogicalName>Resources/SharedResource.uk.resx</LogicalName>
-<!--            <ExcludeFromManifest>true</ExcludeFromManifest>-->
-        </EmbeddedResource>
     </ItemGroup>
 </Project>

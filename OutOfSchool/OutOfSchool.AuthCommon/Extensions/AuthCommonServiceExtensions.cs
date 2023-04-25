@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.Extensions.FileProviders;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Config.ExternalUriModels;
@@ -31,22 +30,14 @@ public static class AuthCommonServiceExtensions
             mailConfig.SendGridKey,
             builder => builder.Bind(config.GetSection(EmailOptions.SectionName)));
 
-        var commonAssembly = typeof(AuthCommonServiceExtensions).Assembly;
-
         services.AddControllersWithViews()
-            .AddApplicationPart(commonAssembly)
             .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
             .AddDataAnnotationsLocalization(options =>
             {
-                options.DataAnnotationLocalizerProvider = (type, factory) =>
+                options.DataAnnotationLocalizerProvider = (_, factory) =>
                     factory.Create(typeof(SharedResource));
-            })
-            .AddRazorRuntimeCompilation();
-
-        services.Configure<MvcRazorRuntimeCompilationOptions>(options =>
-        {
-            options.FileProviders.Add(new EmbeddedFileProvider(commonAssembly));
-        });
+            });
+        services.AddRazorPages();
         services.AddAutoMapper(typeof(MappingProfile));
         services.AddTransient<IParentRepository, ParentRepository>();
         services.AddTransient<IEntityRepository<long, PermissionsForRole>, EntityRepository<long, PermissionsForRole>>();

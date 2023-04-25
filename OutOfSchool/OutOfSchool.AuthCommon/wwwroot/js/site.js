@@ -65,13 +65,13 @@ btn_provider.addEventListener('click', function () {
 
 passwordEye.addEventListener('click', function () {
     if (check_passwordEye) {
-        passwordEye.src = "../icons/ic_eye.svg";
+        passwordEye.src = "../_content/auth/icons/ic_eye.svg";
         check_passwordEye = false;
         password.style.fontSize = "20px";
         password.setAttribute("type", "Password");
        
     } else {
-        passwordEye.src = "../icons/eye.svg";
+        passwordEye.src = "../_content/auth/icons/eye.svg";
         check_passwordEye = true;
         password.style.fontSize = "20px";
         password.setAttribute("type", "Text");  
@@ -80,12 +80,12 @@ passwordEye.addEventListener('click', function () {
 
 confirmPasswordEye.addEventListener('click', function () {
     if (check_confirmPasswordEye) {
-        confirmPasswordEye.src = "../icons/ic_eye.svg";
+        confirmPasswordEye.src = "../_content/auth/icons/ic_eye.svg";
         check_confirmPasswordEye = false;
         repeatPassword.style.fontSize = "20px";
         repeatPassword.setAttribute("type", "Password");  
     } else {
-        confirmPasswordEye.src = "../icons/eye.svg";
+        confirmPasswordEye.src = "../_content/auth/icons/eye.svg";
         check_confirmPasswordEye = true;
         repeatPassword.style.fontSize = "20px";
         repeatPassword.setAttribute("type", "Text");  
