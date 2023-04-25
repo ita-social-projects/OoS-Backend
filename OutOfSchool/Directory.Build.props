@@ -1,0 +1,10 @@
+<Project>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+    <Target Name="PostClean" AfterTargets="Clean">
+        <RemoveDir Directories="$(BaseIntermediateOutputPath)"/><!-- obj -->
+        <RemoveDir Directories="$(BaseOutputPath)"/><!-- bin -->
+    </Target>
+</Project>
