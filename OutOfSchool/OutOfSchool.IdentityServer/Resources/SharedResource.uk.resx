@@ -381,4 +381,7 @@ Login: {0}
   <data name="Date of birth is required" xml:space="preserve">
     <value>Дата народження є обов’язковою</value>
   </data>
+  <data name="You must be at least 18 years old." xml:space="preserve">
+    <value>Вам має бути не менше 18 років.</value>
+  </data>
 </root>

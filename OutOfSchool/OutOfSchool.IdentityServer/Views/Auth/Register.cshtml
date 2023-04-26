@@ -103,7 +103,8 @@
                         </label>
                         <div class="registration_gender">
                             <input class="registration_input" type="date" asp-for="DateOfBirth"
-                                id="date_of_birth">
+                                   id="date_of_birth" min="@DateTime.Now.AddYears(-120).ToString("yyyy-MM-dd")"
+                                   max="@DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd")">
                         </div>
                         <div>
                             <span asp-validation-for="DateOfBirth"></span>

@@ -1,6 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using OutOfSchool.Common;
+﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.IdentityServer.ViewModels;
