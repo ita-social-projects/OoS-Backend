@@ -484,6 +484,11 @@ public class ProviderService : IProviderService, INotificationReciever
             throw new ArgumentNullException(nameof(userId));
         }
 
+        if (await ExistsAnotherProviderWithTheSameEdrpouIpn(providerUpdateDto))
+        {
+            return null;
+        }
+
         logger.LogDebug("Updating Provider with Id = {Id} was started", providerUpdateDto.Id);
 
         try
@@ -776,5 +781,15 @@ public class ProviderService : IProviderService, INotificationReciever
             logger.LogInformation($"Provider's status with Id = {providerId} " +
                                   $"in workshops with Id = {workshop.Id} updated successfully.");
         }
+    }
+
+    private async Task<bool> ExistsAnotherProviderWithTheSameEdrpouIpn(ProviderUpdateDto providerUpdateDto)
+    {
+        var providersWithTheSameEdrpouIpn = await providerRepository
+            .GetByFilter(x => x.EdrpouIpn == providerUpdateDto.EdrpouIpn)
+            .ConfigureAwait(false);
+
+        return providersWithTheSameEdrpouIpn.Any()
+            && providersWithTheSameEdrpouIpn.First().Id != providerUpdateDto.Id;
     }
 }

@@ -78,5 +78,7 @@ internal class ProviderConfiguration : IEntityTypeConfiguration<Provider>
         builder.HasOne(x => x.ActualAddress)
             .WithOne()
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(x => x.EdrpouIpn);
     }
 }
