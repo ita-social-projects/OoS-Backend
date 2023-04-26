@@ -1,7 +1,11 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using OutOfSchool.Common.Models;
 using OutOfSchool.IdentityServer.Config.ExternalUriModels;
 using OutOfSchool.IdentityServer.Services.Interfaces;
+using OutOfSchool.IdentityServer.Validators;
+using OutOfSchool.IdentityServer.ViewModels;
 
 namespace OutOfSchool.IdentityServer;
 
@@ -125,6 +129,7 @@ public static class Startup
                 options.DataAnnotationLocalizerProvider = (type, factory) =>
                     factory.Create(typeof(SharedResource));
             });
+
         services.AddProxy();
         services.AddAutoMapper(typeof(MappingProfile));
         services.AddTransient<IParentRepository, ParentRepository>();
@@ -147,6 +152,11 @@ public static class Startup
         services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
+
+        services.AddFluentValidationAutoValidation();
+
+        services.AddScoped<IValidator<RegisterViewModel>, RegisterViewModelValidator>();
+
         services.AddGrpc();
 
         services.AddHostedService<AdditionalClientsHostedService>();

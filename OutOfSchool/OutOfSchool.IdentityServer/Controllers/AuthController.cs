@@ -1,25 +1,11 @@
-using System;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 using IdentityServer4.Services;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using OutOfSchool.Common;
-using OutOfSchool.Common.Extensions;
-using OutOfSchool.IdentityServer.Config;
 using OutOfSchool.IdentityServer.ViewModels;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 
 namespace OutOfSchool.IdentityServer.Controllers;
 

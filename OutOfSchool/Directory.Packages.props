@@ -89,6 +89,7 @@
         <PackageVersion Include="H3Lib" Version="3.7.2"/>
         <PackageVersion Include="Ardalis.SmartEnum" Version="2.1.0"/>
         <PackageVersion Include="NetEscapades.AspNetCore.SecurityHeaders" Version="0.18.0"/>
+        <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.0" />
         <!--Code Analysis-->
         <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0"/>
         <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.435"/>
