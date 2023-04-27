@@ -19,8 +19,18 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.IdentityServer.Controllers;
 
+public static class HelperExtension
+{
+    public static string GetPath(this AccountController accountController)
+    {
+        return $"{accountController.HttpContext.Request.Path.Value}[{accountController.HttpContext.Request.Method}]";
+    }
+}
+
+
 public class AccountController : Controller
 {
+    private const string ReturnUrl = "Login";
     private readonly SignInManager<User> signInManager;
     private readonly UserManager<User> userManager;
     private readonly IEmailSender emailSender;
@@ -28,6 +38,8 @@ public class AccountController : Controller
     private readonly IRazorViewToStringRenderer renderer;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IdentityServerConfig identityServerConfig;
+    private string userId;
+    private string path;
 
     public AccountController(
         SignInManager<User> signInManager,
@@ -46,6 +58,12 @@ public class AccountController : Controller
         this.renderer = renderer;
         this.localizer = localizer;
         this.identityServerConfig = identityServerConfig.Value;
+    }
+
+    public override void OnActionExecuting(ActionExecutingContext context)
+    {
+        userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
+        path = $"{context.HttpContext.Request.Path.Value}[{context.HttpContext.Request.Method}]";
     }
 
     [HttpGet]
@@ -197,13 +215,12 @@ public class AccountController : Controller
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> ReSendEmailConfirmation()
     {
         var user = await userManager.FindByEmailAsync(User.Identity.Name);
-
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-        var returnUrl = "Login";
-        var callBackUrl = Url.Action("EmailConfirmation", "Account", new { token, user.Email, returnUrl }, Request.Scheme);
+        var callBackUrl = Url.Action(nameof(EmailConfirmation), "Account", new { token, user.Email, ReturnUrl }, Request.Scheme);
 
         var email = user.Email;
         var subject = localizer["Confirm email"];
@@ -215,8 +232,6 @@ public class AccountController : Controller
         };
         var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ConfirmEmail, userActionViewModel);
         await emailSender.SendAsync(email, subject, content);
-
-        var path = $"{HttpContext.Request.Path.Value}[{HttpContext.Request.Method}]";
 
         logger.LogInformation($"{path} Message to confirm email was sent. User(id): {user.Id}.");
 
