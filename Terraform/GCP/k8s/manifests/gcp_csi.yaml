@@ -16,51 +16,6 @@ metadata:
   name: csi-gce-pd-node-sa-win
   namespace: gce-pd-csi-driver
 ---
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  name: csi-gce-pd-controller-psp
-spec:
-  fsGroup:
-    rule: RunAsAny
-  hostNetwork: true
-  runAsUser:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    rule: RunAsAny
-  volumes:
-  - emptyDir
-  - secret
----
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  name: csi-gce-pd-node-psp
-spec:
-  allowedHostPaths:
-  - pathPrefix: /var/lib/kubelet/plugins_registry/
-  - pathPrefix: /var/lib/kubelet
-  - pathPrefix: /var/lib/kubelet/plugins/pd.csi.storage.gke.io/
-  - pathPrefix: /dev
-  - pathPrefix: /etc/udev
-  - pathPrefix: /lib/udev
-  - pathPrefix: /run/udev
-  - pathPrefix: /sys
-  fsGroup:
-    rule: RunAsAny
-  hostNetwork: true
-  privileged: true
-  runAsUser:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    rule: RunAsAny
-  volumes:
-  - '*'
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
