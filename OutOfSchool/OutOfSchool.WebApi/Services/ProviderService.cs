@@ -486,6 +486,8 @@ public class ProviderService : IProviderService, INotificationReciever
 
         if (await ExistsAnotherProviderWithTheSameEdrpouIpn(providerUpdateDto))
         {
+            logger.LogTrace("Provider with Id = {providerUpdateDtoId} wasn't updated: Edrpou or Ipn isn't unique.", providerUpdateDto.Id);
+
             return null;
         }
 
