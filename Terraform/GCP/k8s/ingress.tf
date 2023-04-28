@@ -1,6 +1,6 @@
 resource "helm_release" "ingress" {
   name             = "ingress"
-  chart            = "../../k8s/infrastructure/charts/ingress-nginx-4.3.0.tgz"
+  chart            = "../../k8s/infrastructure/charts/ingress-nginx-4.6.0.tgz"
   namespace        = "ingress-nginx"
   create_namespace = true
   wait             = true
