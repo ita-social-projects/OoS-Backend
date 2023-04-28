@@ -7,7 +7,7 @@ set -uo pipefail
 # sudo bash add-monitoring-agent-repo.sh --also-install
 # sudo service stackdriver-agent start
 
-export INSTALL_K3S_VERSION=v1.22.7+k3s1
+export INSTALL_K3S_VERSION=v1.25.9+k3s1
 export K3S_DATASTORE_ENDPOINT="mysql://${db_username}:${db_password}@tcp(${db_host}:3306)/k3s"
 export K3S_TOKEN=${token}
 
