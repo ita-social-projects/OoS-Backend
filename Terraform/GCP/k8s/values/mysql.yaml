@@ -1,55 +1,56 @@
-pvc:
-  mysql:
-    storageClass: standard
-  redis:
-    enabled: true
-    storageClass: standard
-    size: 1Gi
-
-mysql:
+credentials:
+  root:
+    user: root
+    password: ""
+    host: "%"
+serverVersion: 8.0.32
+tls:
+  useSelfSigned: true
+serverInstances: 1
+router:
+  instances: 1
+podSpec:
+  containers:
+  - name: mysql
+    resources:
+      requests:
+        memory: "512Mi"
+        # cpu: "1800m"
+      limits:
+        memory: "1Gi"
+        # cpu: "3600m"
+datadirVolumeClaimTemplate:
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 10Gi
+backupProfiles:
+- name: dump-instance
+  dumpInstance:
+    dumpOptions:
+      excludeTables:
+      - outofschool.PersistedGrants
+    storage:
+      persistentVolumeClaim:
+        claimName: mysql-backup-pvc
+backupSchedules:
+- name: backup-schedule
+  schedule: "0 2 * * *"
+  deleteBackupData: true
+  backupProfileName: dump-instance
   enabled: true
-  architecture: standalone
-  rbac:
-    create: true
-  auth:
-    database: outofschool
-    username: "oos"
-    replicationUser: replicator
-    existingSecret: "mysql-auth"
-    forcePassword: false
-    usePasswordFiles: false
-  initdbScripts:
-    my_init_script.sh: |
-      #!/bin/bash
-      mysql -u root -p${MYSQL_ROOT_PASSWORD} <<EOF
-      CREATE USER 'api'@'%' IDENTIFIED BY '${API_PASSWORD}';
-      GRANT INSERT ON outofschool.* TO 'api'@'%';
-      GRANT SELECT ON outofschool.* TO 'api'@'%';
-      GRANT UPDATE ON outofschool.* TO 'api'@'%';
-      GRANT DELETE ON outofschool.* TO 'api'@'%';
-      FLUSH PRIVILEGES;
-      EOF
-  primary:
-    persistence:
-      enabled: true
-      # storageClass: standard
-      # size: 10Gi 
-    extraEnvVarsSecret: mysql-api-auth
-
-phpmyadmin:
-  enabled: true
-  ingress:
-    enabled: true
-    hostname: ""
-    pathType: ImplementationSpecific
-    annotations:
-      kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
-      cert-manager.io/issuer: "letsencrypt"
-      cert-manager.io/duration: 2160h0m0s
-      cert-manager.io/renew-before: 168h0m0s
-    tls: true
-    ingressClassName: nginx
-  db:
-    allowArbitraryServer: false
-    host: "mysql"
+serverConfig:
+  mycnf: |
+    [mysqld]
+    default-time-zone = 'Europe/Kiev'
+# TODO: Replace by a Job
+# my_init_script.sh: |
+#   #!/bin/bash
+#   mysql -u root -p${MYSQL_ROOT_PASSWORD} <<EOF
+#   CREATE USER 'api'@'%' IDENTIFIED BY '${API_PASSWORD}';
+#   GRANT INSERT ON outofschool.* TO 'api'@'%';
+#   GRANT SELECT ON outofschool.* TO 'api'@'%';
+#   GRANT UPDATE ON outofschool.* TO 'api'@'%';
+#   GRANT DELETE ON outofschool.* TO 'api'@'%';
+#   FLUSH PRIVILEGES;
+#   EOF
