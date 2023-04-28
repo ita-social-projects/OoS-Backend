@@ -8,7 +8,8 @@ auth:
 master:
   persistence:
     enabled: true
-    existingClaim: redis-master
+    storageClass: standard
+    size: 1Gi
 # commonConfiguration: |-
 #   # Enable AOF https://redis.io/topics/persistence#append-only-file
 #   appendonly yes
