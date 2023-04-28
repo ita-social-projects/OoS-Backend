@@ -139,7 +139,7 @@ kibana:
 
 vector:
   enabled: true
-  
+
   # fullnameOverride -- Override the full name of resources.
   fullnameOverride: vector
 
@@ -155,11 +155,11 @@ vector:
       memory: 64M
     limits:
       memory: 512M
-  
+
   service:
     ports:
       - port: 8686
-  
+
   env:
     - name: "ES_ENDPOINT"
       value: "http://elasticsearch-master.default.svc:9200"
@@ -177,7 +177,7 @@ vector:
   # customConfig -- Override Vector's default configs, if used **all** options need to be specified. This section supports
   # using helm templates to populate dynamic values. See Vector's [configuration documentation](https://vector.dev/docs/reference/configuration/)
   # for all options.
-  customConfig: 
+  customConfig:
     data_dir: /vector-data-dir
     api:
       enabled: false
@@ -234,20 +234,20 @@ metricbeat:
           secretKeyRef:
             name: elasticsearch-credentials
             key: password
-  
+
     hostNetworking: true
 
-    extraVolumeMounts: 
+    extraVolumeMounts:
       - name: mtab
         mountPath: /etc/mtab
         readOnly: true
-    
-    extraVolumes: 
+
+    extraVolumes:
       - name: mtab
         hostPath:
           path: /etc/mtab
-          type: File 
-    
+          type: File
+
     metricbeatConfig:
       metricbeat.yml: |-
         metricbeat.modules:
@@ -292,7 +292,7 @@ metricbeat:
             metricsets:
               - filesystem
               - fsstat
-            filesystem.ignore_types: []  
+            filesystem.ignore_types: []
             processors:
             - drop_event.when.regexp:
                 system.filesystem.mount_point: '^/(sys|cgroup|proc|dev|etc|host|lib)($|/)'
@@ -345,7 +345,7 @@ metricbeat:
         valueFrom:
           secretKeyRef:
             name: elastic-metricbeat-mysql
-            key: user       
+            key: user
       - name: "REDIS_PASSWORD"
         valueFrom:
           secretKeyRef:
@@ -354,8 +354,8 @@ metricbeat:
       - name: "MYSQL_PASSWORD"
         valueFrom:
           secretKeyRef:
-            name: mysql-auth
-            key: mysql-password            
+            name: mysql-api-auth
+            key: IDENTITY_PASSWORD
     metricbeatConfig:
       metricbeat.yml: |-
         metricbeat.modules:
@@ -390,14 +390,14 @@ metricbeat:
             xpack.enabled: true
           - module: kibana
             period: 60s
-            hosts: 
+            hosts:
               - "${KIBANA_URL}"
             username: "${ES_USERNAME}"
-            password: "${ES_PASSWORD}" 
+            password: "${ES_PASSWORD}"
             ssl:
               enable: false
             enabled: true
-            xpack.enabled: true 
+            xpack.enabled: true
           - module: mysql
             enabled: true
             metricsets: ["status"]
@@ -419,7 +419,7 @@ metricbeat:
           username: '${ES_USERNAME}'
           password: '${ES_PASSWORD}'
           enabled: true
-          allow_older_versions: true    
+          allow_older_versions: true
 
     secretMounts:
       - name: elasticsearch-master-certs
@@ -441,7 +441,7 @@ metricbeat:
   secrets:
     - name: "mysql"
       value:
-        user: 
+        user:
 
   # Replicas being used for the kube-state-metrics metricbeat deployment
   replicas: 1
