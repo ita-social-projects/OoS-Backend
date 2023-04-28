@@ -788,10 +788,9 @@ public class ProviderService : IProviderService, INotificationReciever
     private async Task<bool> ExistsAnotherProviderWithTheSameEdrpouIpn(ProviderUpdateDto providerUpdateDto)
     {
         var providersWithTheSameEdrpouIpn = await providerRepository
-            .GetByFilter(x => x.EdrpouIpn == providerUpdateDto.EdrpouIpn)
+            .GetByFilter(x => x.EdrpouIpn == providerUpdateDto.EdrpouIpn && x.Id != providerUpdateDto.Id)
             .ConfigureAwait(false);
 
-        return providersWithTheSameEdrpouIpn.Any()
-            && providersWithTheSameEdrpouIpn.First().Id != providerUpdateDto.Id;
+        return providersWithTheSameEdrpouIpn.Any();
     }
 }
