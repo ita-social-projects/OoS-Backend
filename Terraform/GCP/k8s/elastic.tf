@@ -29,33 +29,35 @@ resource "helm_release" "elastic" {
   values = [
     "${file("${path.module}/values/elastic.yaml")}"
   ]
+
   set {
     name  = "kibana.ingress.annotations.nginx\\.ingress\\.kubernetes\\.io/whitelist-source-range"
     value = join("\\,", var.admin_ips)
   }
+
   set {
     name  = "elasticsearch.ingress.tls[0].hosts[0]"
     value = var.elastic_hostname
   }
+
   set {
     name  = "elasticsearch.ingress.hosts[0].host"
     value = var.elastic_hostname
   }
+
   set {
     name  = "kibana.ingress.tls[0].hosts[0]"
     value = var.kibana_hostname
   }
+
   set {
     name  = "kibana.ingress.hosts[0].host"
     value = var.kibana_hostname
   }
+
   set {
-    name = "vector.env[0].value"
-    value = var.elastic_url
-  }
-  set {
-    name = "metricbeat.daemonset.extraEnvs[0].value"
-    value = var.elastic_url
+    name  = "metricbeat.secrets[0].value.user"
+    value = var.mysql_user
   }
 
   depends_on = [

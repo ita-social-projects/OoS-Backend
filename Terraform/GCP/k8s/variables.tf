@@ -81,8 +81,9 @@ variable "enable_ingress_http" {
   type = bool
 }
 
-variable "elastic_url" {
-  type    = string
-  default = "http://elasticsearch-master.default.svc.cluster.local:9200"
+variable "mysql_user" {
+  type = string
+  default = "oos"
 }
+
 
