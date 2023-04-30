@@ -19,15 +19,6 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.IdentityServer.Controllers;
 
-public static class HelperExtension
-{
-    public static string GetPath(this AccountController accountController)
-    {
-        return $"{accountController.HttpContext.Request.Path.Value}[{accountController.HttpContext.Request.Method}]";
-    }
-}
-
-
 public class AccountController : Controller
 {
     private const string ReturnUrl = "Login";
@@ -38,8 +29,6 @@ public class AccountController : Controller
     private readonly IRazorViewToStringRenderer renderer;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IdentityServerConfig identityServerConfig;
-    private string userId;
-    private string path;
 
     public AccountController(
         SignInManager<User> signInManager,
@@ -58,12 +47,6 @@ public class AccountController : Controller
         this.renderer = renderer;
         this.localizer = localizer;
         this.identityServerConfig = identityServerConfig.Value;
-    }
-
-    public override void OnActionExecuting(ActionExecutingContext context)
-    {
-        userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
-        path = $"{context.HttpContext.Request.Path.Value}[{context.HttpContext.Request.Method}]";
     }
 
     [HttpGet]
@@ -129,7 +112,10 @@ public class AccountController : Controller
             return View("Email/ChangeEmail", model);
         }
 
-        await SendConfirmEmail();
+        var user = await userManager.FindByEmailAsync(User.Identity.Name);
+        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+
+        await SendConfirmEmailProcess(user, RazorTemplates.ChangeEmail, new { userId = user.Id, token, email = model.Email });
 
         return View("Email/SendChangeEmail", model);
     }
@@ -187,53 +173,14 @@ public class AccountController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> SendConfirmEmail()
-    {
-        var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
-        var path = $"{HttpContext.Request.Path.Value}[{HttpContext.Request.Method}]";
-        logger.LogDebug("{Path} started. User(id): {UserId}", path, userId);
-
-        var user = await userManager.FindByEmailAsync(User.Identity.Name);
-        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-        var callBackUrl = Url.Action(nameof(EmailConfirmation), "Account", new { userId = user.Id, token }, Request.Scheme);
-
-        var email = user.Email;
-        var subject = "Confirm email.";
-
-        var userActionViewModel = new UserActionViewModel
-        {
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            ActionUrl = HtmlEncoder.Default.Encode(callBackUrl),
-        };
-        var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ResetPassword, userActionViewModel);
-        await emailSender.SendAsync(email, subject, content);
-
-        logger.LogInformation("Confirmation message was sent. User(id): {UserId}", userId);
-
-        return Ok();
-    }
-
-    [HttpGet]
-    [Authorize]
     public async Task<IActionResult> ReSendEmailConfirmation()
     {
         var user = await userManager.FindByEmailAsync(User.Identity.Name);
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-        var callBackUrl = Url.Action(nameof(EmailConfirmation), "Account", new { token, user.Email, ReturnUrl }, Request.Scheme);
-
         var email = user.Email;
-        var subject = localizer["Confirm email"];
-        var userActionViewModel = new UserActionViewModel
-        {
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            ActionUrl = callBackUrl,
-        };
-        var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ConfirmEmail, userActionViewModel);
-        await emailSender.SendAsync(email, subject, content);
+        var passedData = new { token, email, ReturnUrl };
 
-        logger.LogInformation($"{path} Message to confirm email was sent. User(id): {user.Id}.");
+        await SendConfirmEmailProcess(user, RazorTemplates.ConfirmEmail, passedData);
 
         return View("Email/ConfirmEmail", new RegisterViewModel { Email = email, });
     }
@@ -332,7 +279,7 @@ public class AccountController : Controller
         }
 
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
-        var callBackUrl = Url.Action("ResetPassword", "Account", new { token, user.Email }, Request.Scheme);
+        var callBackUrl = Url.Action("ResetPassword", ControllerContext.ActionDescriptor.ControllerName, new { token, user.Email }, Request.Scheme);
 
         var email = model.Email;
         var subject = "Reset Password";
@@ -470,5 +417,30 @@ public class AccountController : Controller
 
         ModelState.AddModelError(string.Empty, localizer["Change password failed"]);
         return View("Password/ChangePassword");
+    }
+
+    [HttpGet]
+    [Authorize]
+    private async Task<IActionResult> SendConfirmEmailProcess(User user, string razorTemplate, object passedData)
+    {
+        logger.LogDebug("{0} started. User(id): {1}", ControllerContext.ActionDescriptor.ActionName, user.Id);
+
+        var callBackUrl = Url.Action(nameof(EmailConfirmation), ControllerContext.ActionDescriptor.ControllerName, passedData, Request.Scheme);
+
+        var email = user.Email;
+        var subject = localizer["Confirm email"];
+
+        var userActionViewModel = new UserActionViewModel
+        {
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            ActionUrl = HtmlEncoder.Default.Encode(callBackUrl),
+        };
+        var content = await renderer.GetHtmlPlainStringAsync(razorTemplate, userActionViewModel);
+        await emailSender.SendAsync(email, subject, content);
+
+        logger.LogInformation("Confirmation message was sent. User(id): {UserId}", user.Id);
+
+        return Ok();
     }
 }

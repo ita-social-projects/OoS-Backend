@@ -259,7 +259,7 @@
     <value>Forgot password confirmation</value>
   </data>
   <data name="Confirm email" xml:space="preserve">
-    <value>Підтвердження емейлу</value>
+    <value>Email confirmation</value>
   </data>
   <data name="Error! Something happened on the server!" xml:space="preserve">
     <value>Error! Something happened on the server!</value>
@@ -364,7 +364,7 @@
     <value>Invalid mail confirmation token</value>
   </data>
   <data name="Confirm email {0} sent" xml:space="preserve">
-    <value>Confirm email {} sent</value>
+    <value>Confirm email {0} sent</value>
   </data>
   <data name="Enter your email to send password recovery instructions" xml:space="preserve">
     <value>Enter your email to send password recovery instructions</value>
