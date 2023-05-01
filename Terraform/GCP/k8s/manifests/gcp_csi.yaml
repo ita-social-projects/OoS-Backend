@@ -290,12 +290,14 @@ rules:
   - watch
   - update
   - delete
+  - patch
 - apiGroups:
   - snapshot.storage.k8s.io
   resources:
   - volumesnapshotcontents/status
   verbs:
   - update
+  - patch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -453,43 +455,70 @@ spec:
         - --v=5
         - --csi-address=/csi/csi.sock
         - --feature-gates=Topology=true
-        - --metrics-address=:22011
+        - --http-endpoint=:22011
         - --leader-election-namespace=$(PDCSI_NAMESPACE)
         - --timeout=250s
         - --extra-create-metadata
         - --leader-election
+        - --default-fstype=ext4
+        - --controller-publish-readonly=true
+        env:
+        - name: PDCSI_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        image: registry.k8s.io/sig-storage/csi-provisioner:v3.4.0
+        livenessProbe:
+          failureThreshold: 1
+          httpGet:
+            path: /healthz/leader-election
+            port: http-endpoint
+          initialDelaySeconds: 10
+          periodSeconds: 20
+          timeoutSeconds: 10
+        name: csi-provisioner
+        ports:
+        - containerPort: 22011
+          name: http-endpoint
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /csi
+          name: socket-dir
+      - args:
+        - --v=5
+        - --csi-address=/csi/csi.sock
+        - --http-endpoint=:22012
+        - --leader-election
+        - --leader-election-namespace=$(PDCSI_NAMESPACE)
+        - --timeout=250s
+        - --max-grpc-log-length=10000
         - --default-fstype=ext4
         env:
         - name: PDCSI_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: k8s.gcr.io/sig-storage/csi-provisioner:v2.0.4
-        name: csi-provisioner
-        volumeMounts:
-        - mountPath: /csi
-          name: socket-dir
-      - args:
-        - --v=5
-        - --csi-address=/csi/csi.sock
-        - --metrics-address=:22012
-        - --leader-election
-        - --leader-election-namespace=$(PDCSI_NAMESPACE)
-        - --timeout=250s
-        env:
-        - name: PDCSI_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        image: k8s.gcr.io/sig-storage/csi-attacher:v3.0.1
+        image: registry.k8s.io/sig-storage/csi-attacher:v4.2.0
+        livenessProbe:
+          failureThreshold: 1
+          httpGet:
+            path: /healthz/leader-election
+            port: http-endpoint
+          initialDelaySeconds: 10
+          periodSeconds: 20
+          timeoutSeconds: 10
         name: csi-attacher
+        ports:
+        - containerPort: 22012
+          name: http-endpoint
+          protocol: TCP
         volumeMounts:
         - mountPath: /csi
           name: socket-dir
       - args:
         - --v=5
         - --csi-address=/csi/csi.sock
-        - --metrics-address=:22013
+        - --http-endpoint=:22013
         - --leader-election
         - --leader-election-namespace=$(PDCSI_NAMESPACE)
         - --handle-volume-inuse-error=false
@@ -498,8 +527,20 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: k8s.gcr.io/sig-storage/csi-resizer:v1.0.1
+        image: registry.k8s.io/sig-storage/csi-resizer:v1.7.0
+        livenessProbe:
+          failureThreshold: 1
+          httpGet:
+            path: /healthz/leader-election
+            port: http-endpoint
+          initialDelaySeconds: 10
+          periodSeconds: 20
+          timeoutSeconds: 10
         name: csi-resizer
+        ports:
+        - containerPort: 22013
+          name: http-endpoint
+          protocol: TCP
         volumeMounts:
         - mountPath: /csi
           name: socket-dir
@@ -515,7 +556,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: k8s.gcr.io/sig-storage/csi-snapshotter:v3.0.1
+        image: registry.k8s.io/sig-storage/csi-snapshotter:v6.1.0
         name: csi-snapshotter
         volumeMounts:
         - mountPath: /csi
@@ -526,7 +567,7 @@ spec:
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/cloud-sa/cloud-sa.json
-        image: gke.gcr.io/gcp-compute-persistent-disk-csi-driver:v1.2.1-gke.0
+        image: registry.k8s.io/cloud-provider-gcp/gcp-compute-persistent-disk-csi-driver:v1.10.1
         name: gce-pd-driver
         volumeMounts:
         - mountPath: /csi
@@ -570,7 +611,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.0.1
+        image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.7.0
         name: csi-driver-registrar
         volumeMounts:
         - mountPath: /csi
@@ -580,7 +621,8 @@ spec:
       - args:
         - --v=5
         - --endpoint=unix:/csi/csi.sock
-        image: gke.gcr.io/gcp-compute-persistent-disk-csi-driver:v1.2.1-gke.0
+        - --run-controller-service=false
+        image: registry.k8s.io/cloud-provider-gcp/gcp-compute-persistent-disk-csi-driver:v1.10.1
         name: gce-pd-driver
         securityContext:
           privileged: true

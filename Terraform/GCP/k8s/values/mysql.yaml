@@ -3,7 +3,7 @@ credentials:
     user: root
     password: ""
     host: "%"
-serverVersion: 8.0.32
+serverVersion: 8.0.33
 tls:
   useSelfSigned: true
 serverInstances: 1
