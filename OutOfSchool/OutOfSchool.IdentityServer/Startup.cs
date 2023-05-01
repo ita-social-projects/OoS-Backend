@@ -17,7 +17,7 @@ public static class Startup
         var config = builder.Configuration;
 
         services.Configure<IdentityServerConfig>(config.GetSection(IdentityServerConfig.Name));
-        var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+        var migrationsAssembly = "OutOfSchool.Migrations";
 
         // TODO: Move version check into an extension to reuse code across apps
         var mySQLServerVersion = config["MySQLServerVersion"];
@@ -46,7 +46,7 @@ public static class Startup
                     optionsBuilder =>
                         optionsBuilder
                             .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
-                            .MigrationsAssembly("OutOfSchool.IdentityServer")));
+                            .MigrationsAssembly(migrationsAssembly)));
 
         services.AddCustomDataProtection("IdentityServer");
 
