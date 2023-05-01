@@ -17,3 +17,8 @@ dotnet tool install --global dotnet-ef
 
 // Return list of migrations with theirs status
 dotnet ef migrations list -c OutOfSchoolDbContext
+
+// Build migration bundle
+// Runtimes: osx-64, linux-x64 or win-x64
+// depending on your system, example is osx.
+dotnet ef migrations bundle --configuration Bundle --context OutOfSchoolDbContext --target-runtime=osx-x64 -o efbundle
