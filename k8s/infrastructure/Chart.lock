@@ -27,7 +27,7 @@ dependencies:
   repository: https://kubernetes.github.io/ingress-nginx
   version: 4.6.0
 - name: outofschool
-  repository: file://../outofschool
-  version: 1.0.0
-digest: sha256:00da2151aada8cca8340e44306e391e43a54d6eb5da8803d24952481ec111feb
-generated: "2023-04-28T18:29:20.03265+03:00"
+  repository: file://../webapp
+  version: 1.0.1
+digest: sha256:e21e0f3479c0ad1d16e5cedcdc3490268b22d35fbf302c5d3c6d58218af46287
+generated: "2023-05-04T18:49:48.673769+03:00"

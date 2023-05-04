@@ -19,7 +19,7 @@ configuration:
 
   ## TODO: file type secret handling
   ## List of secrets from which to take variables
-  ## - type: env                
+  ## - type: env
   ##   name: my-secret     # secret name
   ##   prefix: MY_         # optional prefix
   ##   keys:               # secret key ref list
@@ -107,9 +107,21 @@ autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 5
-  targetCPU: ""
-  targetMemory: ""
-
+  targetCPU: 50
+  targetMemory: 50
+  behavior: {}
+    # scaleDown:
+    #   stabilizationWindowSeconds: 300
+    #   policies:
+    #   - type: Pods
+    #     value: 1
+    #     periodSeconds: 180
+    # scaleUp:
+    #   stabilizationWindowSeconds: 300
+    #   policies:
+    #   - type: Pods
+    #     value: 2
+    #     periodSeconds: 60
 nodeSelector: {}
 
 tolerations: []
