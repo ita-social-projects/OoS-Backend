@@ -111,7 +111,7 @@ public class AccountController : Controller
             return View("Email/ChangeEmail", model);
         }
 
-        await SendConfirmEmail();
+        await SendConfirmEmail(model.Email);
 
         return View("Email/SendChangeEmail", model);
     }
@@ -135,6 +135,14 @@ public class AccountController : Controller
             logger.LogError("{Path} User(id): {UserId} was not found", path, userId);
 
             return NotFound($"Changing email for user with ID: '{userId}' was not allowed.");
+        }
+
+        var userByEmail = await userManager.FindByEmailAsync(email);
+        if (userByEmail is not null)
+        {
+            logger.LogError("{Path} User(email): {email} was found", path, email);
+
+            return View("Email/ConfirmEmailFailed", localizer[@"Email '{0}' is already used", email]);
         }
 
         var result = await userManager.ChangeEmailAsync(user, email, token);
@@ -169,15 +177,15 @@ public class AccountController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> SendConfirmEmail()
+    public async Task<IActionResult> SendConfirmEmail(string newEmail)
     {
         var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
         var path = $"{HttpContext.Request.Path.Value}[{HttpContext.Request.Method}]";
         logger.LogDebug("{Path} started. User(id): {UserId}", path, userId);
 
         var user = await userManager.FindByEmailAsync(User.Identity.Name);
-        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-        var callBackUrl = Url.Action(nameof(EmailConfirmation), "Account", new { userId = user.Id, token }, Request.Scheme);
+        var token = await userManager.GenerateChangeEmailTokenAsync(user, newEmail);
+        var callBackUrl = Url.Action(nameof(ConfirmChangeEmail), "Account", new { userId = user.Id, email = newEmail, token }, Request.Scheme);
 
         var email = user.Email;
         var subject = "Confirm email.";
@@ -188,7 +196,7 @@ public class AccountController : Controller
             LastName = user.LastName,
             ActionUrl = HtmlEncoder.Default.Encode(callBackUrl),
         };
-        var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ResetPassword, userActionViewModel);
+        var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ChangeEmail, userActionViewModel);
         await emailSender.SendAsync(email, subject, content);
 
         logger.LogInformation("Confirmation message was sent. User(id): {UserId}", userId);
