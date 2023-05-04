@@ -11,11 +11,6 @@ variable "sa_email" {
   type = string
 }
 
-variable "admin_ips" {
-  type        = list(string)
-  description = "Admin IPs to manage database if needed"
-}
-
 variable "tags" {
   type        = list(string)
   description = "A list of network tags to assign to the resources."
@@ -50,7 +45,12 @@ variable "startup" {
 }
 
 variable "node_role" {
+  type        = string
   description = "Node role"
+  validation {
+    condition     = contains(["master", "worker"], var.node_role)
+    error_message = "Valid value is one of the following: master, worker."
+  }
 }
 
 variable "node_count" {

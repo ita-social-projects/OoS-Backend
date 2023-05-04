@@ -50,7 +50,8 @@ resource "google_compute_instance_template" "k3s" {
 }
 
 resource "google_compute_health_check" "k3s" {
-  name = "k3s-port-hc-${var.node_role}-${var.random_number}"
+  count = var.node_role == "master" ? 1 : 0
+  name  = "k3s-port-hc-${var.node_role}-${var.random_number}"
 
   timeout_sec         = 5
   check_interval_sec  = 10
@@ -64,7 +65,8 @@ resource "google_compute_health_check" "k3s" {
 }
 
 resource "google_compute_instance_group_manager" "k3s" {
-  name = "k3s-igm-${var.node_role}-${var.random_number}"
+  count = var.node_role == "master" ? 1 : 0
+  name  = "k3s-igm-${var.node_role}-${var.random_number}"
 
   base_instance_name = "k3s-${var.node_role}"
   zone               = var.zone
@@ -76,7 +78,7 @@ resource "google_compute_instance_group_manager" "k3s" {
   target_size = 0
 
   auto_healing_policies {
-    health_check      = google_compute_health_check.k3s.id
+    health_check      = google_compute_health_check.k3s[0].id
     initial_delay_sec = 300
   }
 
@@ -93,10 +95,32 @@ resource "google_compute_instance_group_manager" "k3s" {
   }
 }
 
+resource "google_compute_instance_group_manager" "k3s_worker" {
+  count = var.node_role == "worker" ? 1 : 0
+  name  = "k3s-igm-${var.node_role}-${var.random_number}"
+
+  base_instance_name = "k3s-${var.node_role}"
+  zone               = var.zone
+
+  version {
+    instance_template = google_compute_instance_template.k3s.id
+  }
+
+  target_size = var.node_count
+
+  update_policy {
+    type                  = "PROACTIVE"
+    minimal_action        = "REPLACE"
+    max_surge_fixed       = 0
+    max_unavailable_fixed = 1
+    replacement_method    = "RECREATE"
+  }
+}
+
 resource "google_compute_per_instance_config" "k3s" {
-  for_each               = toset(local.full_names)
-  zone                   = google_compute_instance_group_manager.k3s.zone
-  instance_group_manager = google_compute_instance_group_manager.k3s.name
+  for_each               = var.node_role == "master" ? toset(local.full_names) : []
+  zone                   = google_compute_instance_group_manager.k3s[0].zone
+  instance_group_manager = google_compute_instance_group_manager.k3s[0].name
   name                   = each.key
   minimal_action         = "REPLACE"
   preserved_state {
