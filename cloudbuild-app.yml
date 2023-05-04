@@ -5,7 +5,7 @@ steps:
   args:
     - build
     - gcr.io/$PROJECT_ID/oos-api:$SHORT_SHA
-    - --cache-image=gcr.io/$PROJECT_ID/oos-api:cache
+    - --cache-image=gcr.io/$PROJECT_ID/oos-cache:api
     - --builder=paketobuildpacks/builder:base
     - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --buildpack=gcr.io/paketo-buildpacks/environment-variables
