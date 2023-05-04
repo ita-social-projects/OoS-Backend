@@ -19,5 +19,13 @@ output "csi_sa_email" {
 }
 
 output "csi_sa_key" {
-  value = base64decode(google_service_account_key.csi.private_key)
+  value = google_service_account_key.csi.private_key
+}
+
+output "pull_sa_email" {
+  value = google_service_account.csi.email
+}
+
+output "pull_sa_key" {
+  value = google_service_account_key.pull.private_key
 }
