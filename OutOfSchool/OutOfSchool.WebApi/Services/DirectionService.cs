@@ -255,6 +255,12 @@ public class DirectionService : IDirectionService
             }
         }
 
+        if (!isAdmins)
+        {
+            workshopCountFilter = workshopCountFilter
+                .And<Workshop>(w => w.Address.CATOTTGId == filter.CatottgId);
+        }
+        
         return (predicate, workshopCountFilter);
     }
 }
