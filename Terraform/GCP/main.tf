@@ -69,6 +69,20 @@ module "cloud_router" {
   }]
 }
 
+resource "google_compute_global_address" "private_ip" {
+  name          = "sql-private-ip-${random_integer.ri.result}"
+  purpose       = "VPC_PEERING"
+  address_type  = "INTERNAL"
+  prefix_length = 16
+  network       = module.vpc.network_id
+}
+
+resource "google_service_networking_connection" "private_vpc_connection" {
+  service                 = "servicenetworking.googleapis.com"
+  reserved_peering_ranges = [google_compute_global_address.private_ip.name]
+  network                 = module.vpc.network_id
+}
+
 module "ops" {
   source             = "./ops"
   project            = var.project
@@ -103,6 +117,8 @@ module "sql" {
   region        = var.region
   random_number = random_integer.ri.result
   network_id    = module.vpc.network_id
+
+  depends_on = [google_service_networking_connection.private_vpc_connection]
 }
 
 module "cluster" {
@@ -121,6 +137,9 @@ module "cluster" {
   db_host          = module.sql.db_host
   subnet_cidr      = module.vpc.subnets["${var.region}/outofschool"].ip_cidr_range
   network_name     = module.vpc.network_name
+  k3s_version      = var.k3s_version
+  k3s_workers      = var.k3s_workers
+  k3s_masters      = var.k3s_masters
 }
 
 resource "time_sleep" "wait_30_seconds" {
@@ -164,6 +183,12 @@ module "k8s" {
   sql_port            = var.sql_port
   redis_port          = var.redis_port
   enable_ingress_http = var.enable_ingress_http
+  pull_sa_key         = module.iam.pull_sa_key
+  pull_sa_email       = module.iam.pull_sa_email
+  lb_internal_address = module.cluster.lb_internal_address
+  front_hostname      = var.front_hostname
+  app_hostname        = var.app_hostname
+  auth_hostname       = var.auth_hostname
   depends_on = [
     time_sleep.wait_30_seconds
   ]
@@ -182,6 +207,7 @@ module "secrets" {
   github_back_deploy_base64  = var.github_back_deploy_base64
   github_access_token        = var.github_access_token
   geo_apikey                 = var.geo_apikey
+  deployer_kubeconfig        = module.k8s.deployer_kubeconfig
 }
 
 module "build" {
@@ -206,6 +232,13 @@ module "build" {
   sql_port            = var.sql_port
   redis_port          = var.redis_port
   geo_key_secret      = module.secrets.geo_key_secret
+  random_number       = random_integer.ri.result
+  network_id          = module.vpc.network_id
+  kube_secret         = module.secrets.kube_secret
+  private_ip_range    = "${google_compute_global_address.private_ip.address}/${google_compute_global_address.private_ip.prefix_length}"
+  front_hostname      = var.front_hostname
+  app_hostname        = var.app_hostname
+  auth_hostname       = var.auth_hostname
 }
 
 module "extralb" {
@@ -221,13 +254,13 @@ module "extralb" {
     # TODO: Move to variables
     services = {
       frontend = {
-        domain = "oos.dmytrominochkin.cloud"
+        domain = var.front_hostname
       }
       apiservice = {
-        domain = "api.oos.dmytrominochkin.cloud"
+        domain = var.app_hostname
       }
       authservice = {
-        domain = "auth.oos.dmytrominochkin.cloud"
+        domain = var.auth_hostname
       }
     }
     ssl = true
