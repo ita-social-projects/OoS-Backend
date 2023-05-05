@@ -1,24 +1,8 @@
-resource "google_compute_global_address" "private_ip" {
-  name          = "sql-private-ip-${var.random_number}"
-  purpose       = "VPC_PEERING"
-  address_type  = "INTERNAL"
-  prefix_length = 16
-  network       = var.network_id
-}
-
-resource "google_service_networking_connection" "private_vpc_connection" {
-  service                 = "servicenetworking.googleapis.com"
-  reserved_peering_ranges = [google_compute_global_address.private_ip.name]
-  network                 = var.network_id
-}
-
 resource "google_sql_database_instance" "storage" {
   name                = "k3s-store-${var.random_number}"
   database_version    = "MYSQL_8_0_26"
   region              = var.region
   deletion_protection = false
-
-  depends_on = [google_service_networking_connection.private_vpc_connection]
 
   settings {
     tier              = "db-f1-micro"

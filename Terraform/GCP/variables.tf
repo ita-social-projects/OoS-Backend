@@ -45,7 +45,13 @@ variable "auth_hostname" {
 variable "app_hostname" {
   type        = string
   default     = "none"
-  description = "Application custom hostname"
+  description = "Web application custom hostname"
+}
+
+variable "front_hostname" {
+  type        = string
+  default     = "none"
+  description = "Frontend custom hostname"
 }
 
 variable "devops" {
@@ -127,4 +133,18 @@ variable "geo_apikey" {
 
 variable "enable_ingress_http" {
   type = bool
+}
+
+variable "k3s_version" {
+  type = string
+}
+
+variable "k3s_masters" {
+  type    = number
+  default = 2
+}
+
+variable "k3s_workers" {
+  type    = number
+  default = 0
 }

@@ -37,3 +37,9 @@ resource "google_project_iam_member" "secret_access" {
   member  = "serviceAccount:${google_project_service_identity.build.email}"
   project = var.project
 }
+
+resource "google_project_iam_member" "private_pool" {
+  role    = "roles/cloudbuild.workerPoolUser"
+  member  = "serviceAccount:${google_project_service_identity.build.email}"
+  project = var.project
+}

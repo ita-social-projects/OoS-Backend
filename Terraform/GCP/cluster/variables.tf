@@ -65,3 +65,15 @@ variable "subnet_cidr" {
 variable "network_name" {
   type = string
 }
+
+variable "k3s_version" {
+  type = string
+}
+
+variable "k3s_masters" {
+  type    = number
+}
+
+variable "k3s_workers" {
+  type = number
+}

@@ -79,5 +79,6 @@ resource "kubectl_manifest" "letsencrypt_issuer" {
               - ${var.elastic_hostname}
               - ${var.sql_hostname}
               - ${var.phpmyadmin_hostname}
+              - ${var.front_hostname}
   EOF
 }

@@ -42,3 +42,6 @@ variable "github_access_token" {
 variable "geo_apikey" {
   type = string
 }
+
+variable "deployer_kubeconfig" {
+}

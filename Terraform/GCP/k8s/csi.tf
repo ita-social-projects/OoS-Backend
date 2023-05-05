@@ -10,7 +10,7 @@ resource "kubernetes_secret" "csi_gcp_credentials" {
     namespace = kubernetes_namespace.csi.metadata[0].name
   }
   data = {
-    "cloud-sa.json" = var.csi_sa_key
+    "cloud-sa.json" = base64decode(var.csi_sa_key)
   }
 }
 
@@ -29,6 +29,11 @@ resource "kubectl_manifest" "admin_binding" {
       kind: User
       name: "${var.csi_sa_email}"
   EOF
+
+  ignore_fields = [
+    "status",
+    "metadata.annotations"
+  ]
 }
 
 data "kubectl_file_documents" "csi_manifests" {
@@ -42,5 +47,10 @@ resource "kubectl_manifest" "gcp_cis" {
   yaml_body = element(data.kubectl_file_documents.csi_manifests.documents, count.index)
   depends_on = [
     kubernetes_secret.csi_gcp_credentials
+  ]
+
+  ignore_fields = [
+    "status",
+    "metadata.annotations",
   ]
 }

@@ -54,7 +54,11 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
+          {{- if .Values.image.fullTagOverride }}
+          image: "{{ .Values.image.fullTagOverride }}"
+          {{- else }}
           image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           {{- if .Values.containerSecurity.enabled }}
           securityContext:
@@ -66,7 +70,7 @@ spec:
           {{- end }}
           env:
             - name: PORT
-              value: {{ .Values.containerPort | quote }}
+              value: {{ .Values.deploy.containerPort | quote }}
           {{- $env := merge (.Values.configuration.extraEnvironment | default dict) (.Values.global.extraEnvironment | default dict) -}}
           {{- range $k, $v := $env }}
             - name: {{ $k | quote }}

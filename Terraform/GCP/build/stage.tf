@@ -75,6 +75,6 @@
 #   filename = "cloudbuild-auth.yml"
 # }
 
-locals {
-  frontend_stage_trigger_id = split("/", google_cloudbuild_trigger.frontend_stage.id)
-}
+# locals {
+#   frontend_stage_trigger_id = split("/", google_cloudbuild_trigger.frontend_stage.id)
+# }
