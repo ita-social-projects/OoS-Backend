@@ -2,6 +2,8 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+global: {}
+
 nameOverride: ""
 fullnameOverride: ""
 
@@ -32,12 +34,13 @@ configuration:
   secrets: []
 
 image:
-  registry: ""
+  registry: "gcr.io"
   repository: ""
   name: ""
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
+  fullTagOverride: ""
 
 imagePullSecrets: []
 

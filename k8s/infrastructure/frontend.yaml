@@ -2,6 +2,10 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+#########################################################################
+#### This is an example, current values are located in frontend repo ####
+#########################################################################
+
 global: {}
 
 nameOverride: ""
@@ -9,7 +13,7 @@ fullnameOverride: ""
 
 image:
   registry: gcr.io
-  repository: gcp101292-pozashkillya
+  repository: example
   name: oos-frontend
   pullPolicy: IfNotPresent
 
@@ -24,13 +28,14 @@ ingress:
     cert-manager.io/duration: 2160h0m0s
     cert-manager.io/renew-before: 168h0m0s
   hosts:
-    - host: ""
+    - host: "replace_me"
       paths:
         - path: /
           pathType: ImplementationSpecific
   tls:
   - secretName: frontend-tls
-    hosts: []
+    hosts:
+    - replace_me
 resources:
   limits:
     cpu: 500m

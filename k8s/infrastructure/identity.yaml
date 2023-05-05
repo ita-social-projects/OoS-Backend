@@ -8,7 +8,6 @@ nameOverride: ""
 fullnameOverride: ""
 
 image:
-  registry: gcr.io
   repository: gcp101292-pozashkillya
   name: oos-auth
   pullPolicy: IfNotPresent
