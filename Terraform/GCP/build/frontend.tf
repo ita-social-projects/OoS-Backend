@@ -14,28 +14,37 @@ resource "google_cloudbuild_trigger" "frontend" {
     _SERVICE_NAME    = "frontend"
     _STS_SERVER      = "https://auth.oos.dmytrominochkin.cloud"
     _API_SERVER      = "https://api.oos.dmytrominochkin.cloud"
+    _GITHUB_DEPLOY   = var.github_front_secret
   }
 
   filename = "cloudbuild.yaml"
 }
 
-resource "google_cloudbuild_trigger" "frontend_stage" {
-  name = "frontend-stage"
-  github {
-    owner = "ita-social-projects"
-    name  = "OoS-Frontend"
-    push {
-      branch = "main"
-    }
+resource "google_cloudbuild_trigger" "frontend_deploy" {
+  name = "frontend-deploy"
+  pubsub_config {
+    topic = google_pubsub_topic.gcr.id
   }
 
   substitutions = {
-    _REGION          = var.region
-    _SERVICE_ACCOUNT = var.front_sa_email
-    _SERVICE_NAME    = "frontend-stage"
-    _STS_SERVER      = "https://auth.pozashkillia.dmytrominochkin.cloud"
-    _API_SERVER      = "https://api.pozashkillia.dmytrominochkin.cloud"
+    _KUBE_CONFIG = var.kube_secret
+    _POOL        = google_cloudbuild_worker_pool.pool.id
+    _ACTION      = "$(body.message.data.action)"
+    _IMAGE_TAG   = "$(body.message.data.tag)"
+    _HOST        = var.front_hostname
   }
 
-  filename = "cloudbuild.yaml"
+  source_to_build {
+    uri       = "https://github.com/ita-social-projects/OoS-Frontend"
+    ref       = "refs/heads/develop"
+    repo_type = "GITHUB"
+  }
+
+  git_file_source {
+    path      = "cloudbuild-deploy.yaml"
+    uri       = "https://github.com/ita-social-projects/OoS-Frontend"
+    revision  = "refs/heads/develop"
+    repo_type = "GITHUB"
+  }
+  filter = "_ACTION.matches(\"INSERT\") && _IMAGE_TAG.matches(\"^.*oos-frontend:.*$\")"
 }

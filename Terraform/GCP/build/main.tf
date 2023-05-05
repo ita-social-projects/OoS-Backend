@@ -2,6 +2,10 @@ resource "google_pubsub_topic" "cloud_build" {
   name = "cloud-builds"
 }
 
+resource "google_pubsub_topic" "gcr" {
+  name = "gcr"
+}
+
 resource "google_cloudbuild_trigger" "backend_api" {
   name = "backend-api"
   github {
