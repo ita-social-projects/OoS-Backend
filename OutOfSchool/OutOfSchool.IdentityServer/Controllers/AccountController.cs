@@ -113,9 +113,9 @@ public class AccountController : Controller
         }
 
         var user = await userManager.FindByEmailAsync(User.Identity.Name);
-        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        var token = await userManager.GenerateChangeEmailTokenAsync(user, model.Email);
 
-        await SendConfirmEmailProcess(user, RazorTemplates.ChangeEmail, new { userId = user.Id, token, email = model.Email });
+        await SendConfirmEmailProcess(nameof(ConfirmChangeEmail), user, RazorTemplates.ChangeEmail, new { userId = user.Id, token, email = model.Email });
 
         return View("Email/SendChangeEmail", model);
     }
@@ -188,7 +188,7 @@ public class AccountController : Controller
         var email = user.Email;
         var passedData = new { token, email, ReturnUrl };
 
-        await SendConfirmEmailProcess(user, RazorTemplates.ConfirmEmail, passedData);
+        await SendConfirmEmailProcess(nameof(EmailConfirmation), user, RazorTemplates.ConfirmEmail, passedData);
 
         return View("Email/ConfirmEmail", new RegisterViewModel { Email = email, });
     }
@@ -429,11 +429,11 @@ public class AccountController : Controller
 
     [HttpGet]
     [Authorize]
-    private async Task<IActionResult> SendConfirmEmailProcess(User user, string razorTemplate, object passedData)
+    private async Task<IActionResult> SendConfirmEmailProcess(string action, User user, string razorTemplate, object passedData)
     {
         logger.LogDebug("{0} started. User(id): {1}", ControllerContext.ActionDescriptor.ActionName, user.Id);
 
-        var callBackUrl = Url.Action(nameof(EmailConfirmation), ControllerContext.ActionDescriptor.ControllerName, passedData, Request.Scheme);
+        var callBackUrl = Url.Action(action, ControllerContext.ActionDescriptor.ControllerName, passedData, Request.Scheme);
 
         var email = user.Email;
         var subject = localizer["Confirm email"];
@@ -442,8 +442,9 @@ public class AccountController : Controller
         {
             FirstName = user.FirstName,
             LastName = user.LastName,
-            ActionUrl = HtmlEncoder.Default.Encode(callBackUrl),
+            ActionUrl = callBackUrl,
         };
+
         var content = await renderer.GetHtmlPlainStringAsync(razorTemplate, userActionViewModel);
         await emailSender.SendAsync(email, subject, content);
 
