@@ -82,8 +82,28 @@ variable "enable_ingress_http" {
 }
 
 variable "mysql_user" {
-  type = string
+  type    = string
   default = "oos"
 }
 
+variable "pull_sa_key" {
+}
 
+variable "pull_sa_email" {
+}
+
+variable "lb_internal_address" {
+  type = string
+}
+
+variable "auth_hostname" {
+  type        = string
+}
+
+variable "app_hostname" {
+  type        = string
+}
+
+variable "front_hostname" {
+  type        = string
+}

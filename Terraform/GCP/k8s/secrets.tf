@@ -33,3 +33,24 @@ resource "kubernetes_secret" "redis_credentials" {
     password = var.redis_pass
   }
 }
+
+resource "kubernetes_secret" "pull" {
+  metadata {
+    name = "outofschool-gcp-pull-secrets"
+  }
+
+  type = "kubernetes.io/dockerconfigjson"
+
+  data = {
+    ".dockerconfigjson" = jsonencode({
+      auths = {
+        "https://gcr.io" = {
+          "username" = "_json_key"
+          "password" = trimspace(base64decode(var.pull_sa_key))
+          "email"    = var.pull_sa_email
+          "auth"     = base64encode(join(":", ["_json_key", base64decode(var.pull_sa_key)]))
+        }
+      }
+    })
+  }
+}
