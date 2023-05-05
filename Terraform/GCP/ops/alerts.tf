@@ -8,9 +8,6 @@ resource "google_monitoring_alert_policy" "iam_role" {
       duration        = "60s"
       comparison      = "COMPARISON_GT"
       threshold_value = 0
-      aggregations {
-        per_series_aligner = "ALIGN_NONE"
-      }
     }
   }
 
