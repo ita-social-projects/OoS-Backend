@@ -72,6 +72,11 @@ resource "kubernetes_role" "deployer" {
     verbs      = ["*"]
   }
   rule {
+    api_groups = ["apps"]
+    resources  = ["replicasets"]
+    verbs      = ["*"]
+  }
+  rule {
     api_groups = ["autoscaling"]
     resources  = ["horizontalpodautoscalers"]
     verbs      = ["*"]
