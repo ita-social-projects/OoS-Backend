@@ -45,7 +45,7 @@ elasticsearch:
         secretKeyRef:
           name: elasticsearch-credentials
           key: username
-  esJavaOpts: "-Xms512m -Xmx512m"
+  esJavaOpts: "-Xms768m -Xmx768m"
   volumeClaimTemplate:
     accessModes: [ "ReadWriteOnce" ]
     storageClassName: "standard"
@@ -55,10 +55,10 @@ elasticsearch:
   resources:
     requests:
       cpu: "200m"
-      memory: "1Gi"
+      memory: "512Mi"
     limits:
       cpu: "500m"
-      memory: "1Gi"
+      memory: "1024Mi"
   rbac:
     create: true
   lifecycle: {}
@@ -108,10 +108,10 @@ kibana:
   resources:
     requests:
       cpu: "200m"
-      memory: "1Gi"
+      memory: "512Mi"
     limits:
       cpu: "500m"
-      memory: "1Gi"
+      memory: "1256Mi"
   extraEnvs:
     - name: 'ELASTICSEARCH_USERNAME'
       valueFrom:
@@ -123,6 +123,8 @@ kibana:
         secretKeyRef:
           name: elasticsearch-credentials
           key: password
+    - name: "NODE_OPTIONS"
+      value: "--max-old-space-size=1024"
   ingress:
     enabled: true
     annotations:
@@ -210,7 +212,7 @@ vector:
         mode: bulk
         bulk:
           action: index
-          index: vector-logs-%F
+          index: vector-logs
         auth:
           strategy: basic
           user: "${ES_USERNAME}"
@@ -218,6 +220,11 @@ vector:
 
 metricbeat:
   enabled: true
+
+  // last release kube-state-metrics
+  kube-state-metrics:
+    image:
+      tag: v2.8.2
 
   daemonset:
     enabled: true
@@ -513,5 +520,3 @@ metricbeat:
         - "/metrics"
       verbs:
         - get
-
-
