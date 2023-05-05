@@ -432,6 +432,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName ?? string.Empty))
             .ForMember(dest => dest.IsRegistered, opt => opt.MapFrom(src => src.User.IsRegistered))
+            .ForMember(dest => dest.EmailConfirmed, opt => opt.MapFrom(src => src.User.EmailConfirmed))
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber.Right(Constants.PhoneShortLength)))
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName));
 

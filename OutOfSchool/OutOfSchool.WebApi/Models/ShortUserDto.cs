@@ -13,6 +13,8 @@ public class ShortUserDto : BaseUserDto
 
     public bool IsRegistered { get; set; }
 
+    public bool EmailConfirmed { get; set; }
+
     [EnumDataType(typeof(Gender), ErrorMessage = Constants.EnumErrorMessage)]
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public Gender? Gender { get; set; }
