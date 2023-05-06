@@ -209,8 +209,17 @@ a {
   margin-bottom: 0;
 }
 
+.registration_item-box {
+  display: flex;
+  align-items: start;
+}
+
+.registration_item-box label {
+    margin-top: 1px;
+}
+
 .registration_item-accept {
-  margin: 0 auto;
+    margin: 0 auto;
 }
 
 .registration_item-tip {
@@ -346,7 +355,7 @@ a {
   height: 30px;
   width: 100%;
   margin-top: 8px !important;
-  padding: 0 0 0 16px !important;
+  padding: 0 13px 0 16px !important;
   outline: none;
   font-family: "Open Sans", sans-serif;
   font-style: normal;
