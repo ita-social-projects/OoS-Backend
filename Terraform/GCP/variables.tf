@@ -148,3 +148,7 @@ variable "k3s_workers" {
   type    = number
   default = 0
 }
+
+variable "discord_notification_webhook" {
+  type = string
+}

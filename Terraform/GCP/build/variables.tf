@@ -103,13 +103,25 @@ variable "kube_secret" {
 }
 
 variable "auth_hostname" {
-  type        = string
+  type = string
 }
 
 variable "app_hostname" {
-  type        = string
+  type = string
 }
 
 variable "front_hostname" {
-  type        = string
+  type = string
+}
+
+variable "gcf_bucket" {
+  type = string
+}
+
+variable "gcf_sa_email" {
+  type = string
+}
+
+variable "discord_notification_webhook" {
+  type = string
 }

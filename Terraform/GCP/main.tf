@@ -211,34 +211,37 @@ module "secrets" {
 }
 
 module "build" {
-  source              = "./build"
-  app_sa_email        = module.iam.webapi_sa_email
-  auth_sa_email       = module.iam.identity_sa_email
-  front_sa_email      = module.iam.frontend_sa_email
-  project             = var.project
-  zone                = var.zone
-  region              = var.region
-  api_secret          = module.secrets.sql_api_secret
-  auth_secret         = module.secrets.sql_auth_secret
-  es_api_pass_secret  = module.secrets.es_api_secret
-  redis_hostname      = var.redis_hostname
-  redis_secret        = module.secrets.redis_secret
-  sender_email        = var.sender_email
-  sendgrid_key_secret = module.secrets.sendgrid_key_secret
-  bucket              = module.storage.image_bucket
-  github_front_secret = module.secrets.github_front_secret
-  github_back_secret  = module.secrets.github_back_secret
-  github_token_secret = module.secrets.github_token_secret
-  sql_port            = var.sql_port
-  redis_port          = var.redis_port
-  geo_key_secret      = module.secrets.geo_key_secret
-  random_number       = random_integer.ri.result
-  network_id          = module.vpc.network_id
-  kube_secret         = module.secrets.kube_secret
-  private_ip_range    = "${google_compute_global_address.private_ip.address}/${google_compute_global_address.private_ip.prefix_length}"
-  front_hostname      = var.front_hostname
-  app_hostname        = var.app_hostname
-  auth_hostname       = var.auth_hostname
+  source                       = "./build"
+  app_sa_email                 = module.iam.webapi_sa_email
+  auth_sa_email                = module.iam.identity_sa_email
+  front_sa_email               = module.iam.frontend_sa_email
+  project                      = var.project
+  zone                         = var.zone
+  region                       = var.region
+  api_secret                   = module.secrets.sql_api_secret
+  auth_secret                  = module.secrets.sql_auth_secret
+  es_api_pass_secret           = module.secrets.es_api_secret
+  redis_hostname               = var.redis_hostname
+  redis_secret                 = module.secrets.redis_secret
+  sender_email                 = var.sender_email
+  sendgrid_key_secret          = module.secrets.sendgrid_key_secret
+  bucket                       = module.storage.image_bucket
+  github_front_secret          = module.secrets.github_front_secret
+  github_back_secret           = module.secrets.github_back_secret
+  github_token_secret          = module.secrets.github_token_secret
+  sql_port                     = var.sql_port
+  redis_port                   = var.redis_port
+  geo_key_secret               = module.secrets.geo_key_secret
+  random_number                = random_integer.ri.result
+  network_id                   = module.vpc.network_id
+  kube_secret                  = module.secrets.kube_secret
+  private_ip_range             = "${google_compute_global_address.private_ip.address}/${google_compute_global_address.private_ip.prefix_length}"
+  front_hostname               = var.front_hostname
+  app_hostname                 = var.app_hostname
+  auth_hostname                = var.auth_hostname
+  gcf_bucket                   = module.storage.gcf_bucket
+  gcf_sa_email                 = module.iam.gcf_sa_email
+  discord_notification_webhook = var.discord_notification_webhook
 }
 
 module "extralb" {
