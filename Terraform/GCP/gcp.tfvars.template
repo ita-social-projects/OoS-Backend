@@ -31,3 +31,4 @@ enable_ingress_http=false
 k3s_version="v1.25.9+k3s1"
 k3s_masters=2
 k3s_workers=1
+discord_notification_webhook="https://discord.gg"

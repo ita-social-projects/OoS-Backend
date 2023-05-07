@@ -1,0 +1,102 @@
+{
+  "id": "guid",
+  "status": "SUCCESS",
+  "source": {
+    "gitSource": {
+      "url": "https://github.com/ita-social-projects/OoS-Frontend.git",
+      "revision": "commit sha"
+    }
+  },
+  "createTime": "2023-05-05T15:24:26.245779942Z",
+  "startTime": "2023-05-05T15:25:08.663891238Z",
+  "finishTime": "2023-05-05T15:25:24.461607Z",
+  "results": {
+    "buildStepImages": ["sha256:sh", "sha256:sha"],
+    "buildStepOutputs": ["", ""]
+  },
+  "steps": [{
+    "name": "gcr.io/cloud-builders/gcloud",
+    "args": ["-c", "cat command"],
+    "entrypoint": "bash",
+    "secretEnv": ["KUBECFG"],
+    "volumes": [{
+      "name": "kube",
+      "path": "/root/.kube"
+    }],
+    "timing": {
+      "startTime": "2023-05-05T15:25:15.102403641Z",
+      "endTime": "2023-05-05T15:25:15.841110668Z"
+    },
+    "status": "SUCCESS",
+    "pullTiming": {
+      "startTime": "2023-05-05T15:25:15.102403641Z",
+      "endTime": "2023-05-05T15:25:15.105214718Z"
+    }
+  }, {
+    "name": "alpine/helm:3.11.3",
+    "env": ["KUBECONFIG\u003d/root/.kube/config"],
+    "args": ["upgrade", "--install", "args"],
+    "volumes": [{
+      "name": "kube",
+      "path": "/root/.kube"
+    }],
+    "timing": {
+      "startTime": "2023-05-05T15:25:15.841208140Z",
+      "endTime": "2023-05-05T15:25:23.843730050Z"
+    },
+    "status": "SUCCESS",
+    "pullTiming": {
+      "startTime": "2023-05-05T15:25:15.841208140Z",
+      "endTime": "2023-05-05T15:25:19.714006027Z"
+    }
+  }],
+  "timeout": "3600s",
+  "projectId": "",
+  "logsBucket": "gs://",
+  "sourceProvenance": {
+  },
+  "buildTriggerId": "guid",
+  "options": {
+    "substitutionOption": "ALLOW_LOOSE",
+    "logging": "LEGACY",
+    "dynamicSubstitutions": true,
+    "pool": {
+      "name": "private pool id"
+    }
+  },
+  "logUrl": "https://console.cloud.google.com/cloud-build/builds",
+  "substitutions": {
+    "SHORT_SHA": "dce2224",
+    "_ACTION": "INSERT",
+    "_HOST": "example.com",
+    "TRIGGER_BUILD_CONFIG_PATH": "cloudbuild.yaml",
+    "REVISION_ID": "commit sha",
+    "REF_NAME": "develop",
+    "_POOL": "private pool id",
+    "REPO_NAME": "OoS-Frontend",
+    "BRANCH_NAME": "develop",
+    "_KUBE_CONFIG": "secret/1",
+    "COMMIT_SHA": "commit sha",
+    "TRIGGER_NAME": "deploy",
+    "_IMAGE_TAG": "gcr.io/frontend:commit_sha"
+  },
+  "tags": ["trigger-guid"],
+  "timing": {
+    "FETCHSOURCE": {
+      "startTime": "2023-05-05T15:25:09.845960063Z",
+      "endTime": "2023-05-05T15:25:14.499086801Z"
+    },
+    "BUILD": {
+      "startTime": "2023-05-05T15:25:14.499170119Z",
+      "endTime": "2023-05-05T15:25:23.843817587Z"
+    }
+  },
+  "queueTtl": "3600s",
+  "name": "whatever",
+  "availableSecrets": {
+    "secretManager": [{
+      "versionName": "secret/2",
+      "env": "KUBECFG"
+    }]
+  }
+}

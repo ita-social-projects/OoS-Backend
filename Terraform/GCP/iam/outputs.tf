@@ -29,3 +29,7 @@ output "pull_sa_email" {
 output "pull_sa_key" {
   value = google_service_account_key.pull.private_key
 }
+
+output "gcf_sa_email" {
+  value = google_service_account.notification.email
+}
