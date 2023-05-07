@@ -55,14 +55,14 @@ def createMessage(build: GoogleCloudBuild) -> DiscordMessage:
     commit_url = f"https://github.com/ita-social-projects/OoS-Backend/commit/{commit}"
   if build['status'] == 'WORKING':
     embeds.append({
-      'color': 1027128,
+      'color': 1127128,
       'title': "🔨 DEPLOYING",
       'description': f"Deployment started at {datetime.fromisoformat(build['startTime']).strftime('%A %m %-Y, %H:%M:%S')}. Check out commit info by clicking the link.",
       'url': commit_url
     })
   elif build['status'] == 'SUCCESS':
     embeds.append({
-      'color': 1127128,
+      'color': 1027128,
       'title': "✅ SUCCESS",
       'description': f"Deployment took a {(datetime.fromisoformat(build['finishTime']) - datetime.fromisoformat(build['startTime'])).seconds} seconds. Check out new version by clicking the link.",
       'url': url
