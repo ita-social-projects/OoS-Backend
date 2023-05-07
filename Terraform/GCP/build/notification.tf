@@ -26,9 +26,6 @@ resource "google_cloudfunctions2_function" "function" {
   build_config {
     runtime     = "python311"
     entry_point = "subscribe"
-    environment_variables = {
-      WEBHOOK_URL = var.discord_notification_webhook
-    }
     source {
       storage_source {
         bucket = var.gcf_bucket
@@ -44,6 +41,9 @@ resource "google_cloudfunctions2_function" "function" {
     ingress_settings               = "ALLOW_INTERNAL_ONLY"
     all_traffic_on_latest_revision = true
     service_account_email          = var.gcf_sa_email
+    environment_variables = {
+      WEBHOOK_URL = var.discord_notification_webhook
+    }
   }
 
   event_trigger {
