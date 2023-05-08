@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.VisualBasic;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.EmailSender;
@@ -138,7 +139,14 @@ public class AccountController : Controller
         {
             logger.LogError("{Path} User(id): {UserId} was not found", path, userId);
 
-            return NotFound($"Changing email for user with ID: '{userId}' was not allowed.");
+            return BadRequest("Verify information and try again.");
+        }
+
+        if (!await userManager.VerifyUserTokenAsync(user, userManager.Options.Tokens.ChangeEmailTokenProvider, UserManager<User>.GetChangeEmailTokenPurpose(email), token))
+        {
+            logger.LogError("Token was not valid");
+
+            return BadRequest("Verify information and try again.");
         }
 
         var userByEmail = await userManager.FindByEmailAsync(email);
