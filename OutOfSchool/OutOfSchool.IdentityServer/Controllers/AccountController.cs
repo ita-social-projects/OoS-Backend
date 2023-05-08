@@ -282,7 +282,7 @@ public class AccountController : Controller
         var callBackUrl = Url.Action("ResetPassword", ControllerContext.ActionDescriptor.ControllerName, new { token, user.Email }, Request.Scheme);
 
         var email = model.Email;
-        var subject = "Reset Password";
+        var subject = localizer["Reset password confirmation"];
         var userActionViewModel = new UserActionViewModel
         {
             FirstName = user.FirstName,
@@ -434,7 +434,7 @@ public class AccountController : Controller
         {
             FirstName = user.FirstName,
             LastName = user.LastName,
-            ActionUrl = HtmlEncoder.Default.Encode(callBackUrl),
+            ActionUrl = callBackUrl,
         };
         var content = await renderer.GetHtmlPlainStringAsync(razorTemplate, userActionViewModel);
         await emailSender.SendAsync(email, subject, content);
