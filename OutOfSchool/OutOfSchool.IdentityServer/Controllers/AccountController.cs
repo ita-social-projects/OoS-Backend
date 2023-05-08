@@ -427,8 +427,6 @@ public class AccountController : Controller
         return View("Password/ChangePassword");
     }
 
-    [HttpGet]
-    [Authorize]
     private async Task<IActionResult> SendConfirmEmailProcess(string action, User user, string razorTemplate, object passedData)
     {
         logger.LogDebug("{0} started. User(id): {1}", ControllerContext.ActionDescriptor.ActionName, user.Id);
