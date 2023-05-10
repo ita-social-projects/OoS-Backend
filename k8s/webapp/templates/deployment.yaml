@@ -5,6 +5,9 @@ metadata:
   namespace:  {{ .Release.Namespace }}
   labels:
     {{- include "webapp.labels" . | nindent 4 }}
+    {{- with .Values.commonLabels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .Values.deploy.replicaCount }}
   selector:
@@ -23,6 +26,9 @@ spec:
       {{- end }}
       labels:
         {{- include "webapp.labels" . | nindent 8 }}
+        {{- with .Values.commonLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -136,10 +142,16 @@ spec:
           {{- with .Values.resources }}
           resources: {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.storage.extraVolumeMounts }}
+          volumeMounts: {{- toYaml . | nindent 12 }}
+          {{- end }}
         {{- with .Values.sidecars }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       {{- with .Values.initContainers }}
       initContainers:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.storage.extraVolumes }}
+      volumes: {{- toYaml . | nindent 8 }}
       {{- end }}

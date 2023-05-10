@@ -7,6 +7,9 @@ global: {}
 nameOverride: ""
 fullnameOverride: ""
 
+commonLabels: {}
+podAnnotations: {}
+
 deploy:
   replicaCount: 1
   containerPort: 8080
@@ -20,6 +23,10 @@ deploy:
   # To avoid killing pods before we are ready
   ##
   minReadySeconds: 0
+
+  # List of extra Kubernetes objects to create
+  ##
+  extraObjects: []
 
 configuration:
   extraEnvironment: {}
@@ -53,6 +60,20 @@ image:
 
 imagePullSecrets: []
 
+storage:
+  ## Optionally specify extra list of additional volumes for pod
+  extraVolumes: []
+  ## extraVolumes:
+  ##   - name: extras
+  ##     emptyDir: {}
+
+  ## Optionally specify extra list of additional volumeMounts for container
+  extraVolumeMounts: []
+  ## extraVolumeMounts:
+  ##   - name: extras
+  ##     mountPath: /usr/share/extras
+  ##     readOnly: true
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
@@ -63,8 +84,6 @@ serviceAccount:
   name: ""
 
   imagePullSecrets: []
-
-podAnnotations: {}
 
 service:
   type: ClusterIP

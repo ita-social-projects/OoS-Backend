@@ -5,6 +5,9 @@ metadata:
   namespace:  {{ .Release.Namespace }}
   labels:
     {{- include "webapp.labels" . | nindent 4 }}
+    {{- with .Values.commonLabels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   type: {{ .Values.service.type }}
   {{- if and .Values.service.clusterIP (eq .Values.service.type "ClusterIP") }}
