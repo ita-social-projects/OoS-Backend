@@ -384,4 +384,7 @@ Login: {0}
   <data name="You must be at least 18 years old." xml:space="preserve">
     <value>Вам має бути не менше 18 років.</value>
   </data>
+  <data name="Email '{0}' is already used" xml:space="preserve">
+    <value>Електронна пошта '{0}' вже використовується</value>
+  </data>
 </root>

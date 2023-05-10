@@ -378,4 +378,7 @@
   <data name="You must be at least 18 years old." xml:space="preserve">
     <value>You must be at least 18 years old.</value>
   </data>
+  <data name="Email '{0}' is already used" xml:space="preserve">
+    <value>Email '{0}' is already used</value>
+  </data>
 </root>
