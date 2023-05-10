@@ -305,7 +305,7 @@ public class AuthController : Controller
         {
             ReturnUrl = returnUrl,
             ProviderRegistration = providerRegistration ?? GetProviderRegistrationFromUri(returnUrl),
-            DateOfBirth = new DateTime(DateTime.Now.Year, 1, 1),
+            DateOfBirth = DateTime.Now.AddYears(-18),
         });
     }
 
