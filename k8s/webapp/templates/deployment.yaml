@@ -10,11 +10,11 @@ spec:
   selector:
     matchLabels:
       {{- include "webapp.selectorLabels" . | nindent 6 }}
+  {{- with .Values.deploy.updateStrategy }}
   strategy:
-    type: {{ .Values.deploy.strategyType }}
-    {{- if (eq "Recreate" .Values.deploy.strategyType) }}
-    rollingUpdate: null
-    {{- end }}
+    {{ toYaml . | nindent 4 }}
+  {{- end }}
+  minReadySeconds: {{ .Values.deploy.minReadySeconds }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}

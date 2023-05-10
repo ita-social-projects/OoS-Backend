@@ -9,8 +9,17 @@ fullnameOverride: ""
 
 deploy:
   replicaCount: 1
-  strategyType: Recreate
   containerPort: 8080
+  # The update strategy to apply to the Deployment
+  ##
+  updateStrategy: {}
+  #  rollingUpdate:
+  #    maxUnavailable: 1
+  #  type: RollingUpdate
+
+  # To avoid killing pods before we are ready
+  ##
+  minReadySeconds: 0
 
 configuration:
   extraEnvironment: {}
@@ -82,7 +91,15 @@ service:
   ## http://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
   ##
   externalTrafficPolicy: Local
+  ## Session Affinity for Kubernetes service, can be "None" or "ClientIP"
+  ## If "ClientIP", consecutive client requests will be directed to the same Pod
+  ## https://kubernetes.io/docs/reference/networking/virtual-ips/#session-affinity
+  sessionAffinity: None
 
+  ## Additional settings for the sessionAffinity
+  sessionAffinityConfig: {}
+  ##   clientIP:
+  ##     timeoutSeconds: 300
 ingress:
   enabled: false
   className: ""
@@ -182,14 +199,12 @@ initContainers: []
 lifecycleHooks: {}
 
 ## Configure extra options for liveness and readiness probes
-## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
-## @param livenessProbe.enabled Enable livenessProbe
-## @param livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
-## @param livenessProbe.periodSeconds Period seconds for livenessProbe
-## @param livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
-## @param livenessProbe.failureThreshold Failure threshold for livenessProbe
-## @param livenessProbe.successThreshold Success threshold for livenessProbe
-##
+## initialDelaySeconds Initial delay seconds for livenessProbe
+## periodSeconds Period seconds for livenessProbe
+## timeoutSeconds Timeout seconds for livenessProbe
+## failureThreshold Failure threshold for livenessProbe
+## successThreshold Success threshold for livenessProbe
+## https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
 livenessProbe:
   enabled: false
   path: "/"
@@ -199,12 +214,11 @@ livenessProbe:
   failureThreshold: 6
   successThreshold: 1
 
-## @param readinessProbe.enabled Enable readinessProbe
-## @param readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
-## @param readinessProbe.periodSeconds Period seconds for readinessProbe
-## @param readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
-## @param readinessProbe.failureThreshold Failure threshold for readinessProbe
-## @param readinessProbe.successThreshold Success threshold for readinessProbe
+## initialDelaySeconds Initial delay seconds for readinessProbe
+## periodSeconds Period seconds for readinessProbe
+## timeoutSeconds Timeout seconds for readinessProbe
+## failureThreshold Failure threshold for readinessProbe
+## successThreshold Success threshold for readinessProbe
 ##
 readinessProbe:
   enabled: false
@@ -214,9 +228,18 @@ readinessProbe:
   periodSeconds: 20
   failureThreshold: 6
   successThreshold: 1
-## @param customLivenessProbe Custom livenessProbe that overrides the default one
+## Custom livenessProbe that overrides the default one
 ##
 customLivenessProbe: {}
-## @param customReadinessProbe Custom readinessProbe that overrides the default one
+## Custom readinessProbe that overrides the default one
 ##
 customReadinessProbe: {}
+
+## Configure Pod Disruption Budget
+## minAvailable Minimum number/percentage of pods that should remain scheduled
+## maxUnavailable Maximum number/percentage of pods that may be made unavailable
+## https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+pdb:
+  create: false
+  minAvailable: 1
+  maxUnavailable: ""
