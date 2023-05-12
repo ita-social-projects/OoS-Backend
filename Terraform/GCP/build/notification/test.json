@@ -7,9 +7,9 @@
       "revision": "commit sha"
     }
   },
-  "createTime": "2023-05-05T15:24:26.245779942Z",
-  "startTime": "2023-05-05T15:25:08.663891238Z",
-  "finishTime": "2023-05-05T15:25:24.461607Z",
+  "createTime": "2023-05-06T15:24:26.245779942Z",
+  "startTime": "2023-05-06T15:25:08.663891238Z",
+  "finishTime": "2023-05-06T15:25:24.461607Z",
   "results": {
     "buildStepImages": ["sha256:sh", "sha256:sha"],
     "buildStepOutputs": ["", ""]
@@ -24,13 +24,13 @@
       "path": "/root/.kube"
     }],
     "timing": {
-      "startTime": "2023-05-05T15:25:15.102403641Z",
-      "endTime": "2023-05-05T15:25:15.841110668Z"
+      "startTime": "2023-05-06T15:25:15.102403641Z",
+      "endTime": "2023-05-06T15:25:15.841110668Z"
     },
     "status": "SUCCESS",
     "pullTiming": {
-      "startTime": "2023-05-05T15:25:15.102403641Z",
-      "endTime": "2023-05-05T15:25:15.105214718Z"
+      "startTime": "2023-05-06T15:25:15.102403641Z",
+      "endTime": "2023-05-06T15:25:15.105214718Z"
     }
   }, {
     "name": "alpine/helm:3.11.3",
@@ -41,13 +41,13 @@
       "path": "/root/.kube"
     }],
     "timing": {
-      "startTime": "2023-05-05T15:25:15.841208140Z",
-      "endTime": "2023-05-05T15:25:23.843730050Z"
+      "startTime": "2023-05-06T15:25:15.841208140Z",
+      "endTime": "2023-05-06T15:25:23.843730050Z"
     },
     "status": "SUCCESS",
     "pullTiming": {
-      "startTime": "2023-05-05T15:25:15.841208140Z",
-      "endTime": "2023-05-05T15:25:19.714006027Z"
+      "startTime": "2023-05-06T15:25:15.841208140Z",
+      "endTime": "2023-05-06T15:25:19.714006027Z"
     }
   }],
   "timeout": "3600s",
@@ -78,17 +78,17 @@
     "_KUBE_CONFIG": "secret/1",
     "COMMIT_SHA": "commit sha",
     "TRIGGER_NAME": "deploy",
-    "_IMAGE_TAG": "gcr.io/frontend:commit_sha"
+    "_IMAGE_TAG": "gcr.io/frontend:dce2224"
   },
   "tags": ["trigger-guid"],
   "timing": {
     "FETCHSOURCE": {
-      "startTime": "2023-05-05T15:25:09.845960063Z",
-      "endTime": "2023-05-05T15:25:14.499086801Z"
+      "startTime": "2023-05-06T15:25:09.845960063Z",
+      "endTime": "2023-05-06T15:25:14.499086801Z"
     },
     "BUILD": {
-      "startTime": "2023-05-05T15:25:14.499170119Z",
-      "endTime": "2023-05-05T15:25:23.843817587Z"
+      "startTime": "2023-05-06T15:25:14.499170119Z",
+      "endTime": "2023-05-06T15:25:23.843817587Z"
     }
   },
   "queueTtl": "3600s",
