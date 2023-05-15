@@ -3,7 +3,7 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using OutOfSchool.Common.Models;
 using OutOfSchool.IdentityServer.Config.ExternalUriModels;
-using OutOfSchool.IdentityServer.Services.Interfaces;
+using OutOfSchool.IdentityServer.Extensions;
 using OutOfSchool.IdentityServer.Validators;
 using OutOfSchool.IdentityServer.ViewModels;
 
@@ -17,7 +17,7 @@ public static class Startup
         var config = builder.Configuration;
 
         services.Configure<IdentityServerConfig>(config.GetSection(IdentityServerConfig.Name));
-        var migrationsAssembly = "OutOfSchool.Migrations";
+        var migrationsAssembly = config["MigrationsAssembly"];
 
         // TODO: Move version check into an extension to reuse code across apps
         var mySQLServerVersion = config["MySQLServerVersion"];
@@ -61,16 +61,6 @@ public static class Startup
                 options.RequireHttpsMetadata = false;
             });
 
-        services.AddIdentity<User, IdentityRole>(options =>
-        {
-            options.Password.RequireDigit = true;
-            options.Password.RequireLowercase = true;
-            options.Password.RequireNonAlphanumeric = true;
-            options.Password.RequireUppercase = true;
-            options.Password.RequiredLength = 8;
-        })
-            .AddEntityFrameworkStores<OutOfSchoolDbContext>()
-            .AddDefaultTokenProviders();
         services.ConfigureApplicationCookie(c =>
         {
             c.Cookie.Name = "IdentityServer.Cookie";
@@ -87,32 +77,7 @@ public static class Startup
         // ExternalUris options
         services.Configure<AngularClientScopeExternalUrisConfig>(config.GetSection(AngularClientScopeExternalUrisConfig.Name));
 
-        services.AddIdentityServer(options => { options.IssuerUri = issuerSection["Uri"]; })
-            .AddConfigurationStore(options =>
-            {
-                options.ConfigureDbContext = builder =>
-                    builder.UseMySql(
-                        connectionString,
-                        serverVersion,
-                        sql => sql.MigrationsAssembly(migrationsAssembly));
-            })
-            .AddOperationalStore(options =>
-            {
-                options.ConfigureDbContext = builder =>
-                    builder.UseMySql(
-                        connectionString,
-                        serverVersion,
-                        sql => sql.MigrationsAssembly(migrationsAssembly));
-                options.EnableTokenCleanup = true;
-                options.TokenCleanupInterval = 3600;
-            })
-            .AddAspNetIdentity<User>()
-            .AddProfileService<ProfileService>()
-            .AddCustomKeyManagement<CertificateDbContext>(builder =>
-                builder.UseMySql(
-                    connectionString,
-                    serverVersion,
-                    sql => sql.MigrationsAssembly(migrationsAssembly)));
+        services.ConfigureIdentity(connectionString, issuerSection["Uri"], serverVersion, migrationsAssembly);
 
         var mailConfig = config
             .GetSection(EmailOptions.SectionName)

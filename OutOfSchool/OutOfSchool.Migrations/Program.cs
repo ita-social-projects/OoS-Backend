@@ -8,9 +8,10 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Extensions.Startup;
+using OutOfSchool.IdentityServer.Extensions;
 using OutOfSchool.IdentityServer.KeyManagement;
 using OutOfSchool.Services;
-using OutOfSchool.Services.Models;
+using System.Reflection;
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>
@@ -36,7 +37,8 @@ var host = Host.CreateDefaultBuilder(args)
                 GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
             });
 
-        var migrationsAssembly = "OutOfSchool.Migrations";
+        var migrationsAssembly = typeof(Program).GetTypeInfo().Assembly.GetName().Name;
+
         services
             .AddDbContext<OutOfSchoolDbContext>(options => options
                 .UseMySql(
@@ -47,41 +49,7 @@ var host = Host.CreateDefaultBuilder(args)
                             .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
                             .MigrationsAssembly(migrationsAssembly)));
 
-        services.AddIdentity<User, IdentityRole>(options =>
-        {
-            options.Password.RequireDigit = true;
-            options.Password.RequireLowercase = true;
-            options.Password.RequireNonAlphanumeric = true;
-            options.Password.RequireUppercase = true;
-            options.Password.RequiredLength = 8;
-        })
-            .AddEntityFrameworkStores<OutOfSchoolDbContext>();
-
-        services.AddIdentityServer(options => { options.IssuerUri = config["Uri"]; })
-            .AddConfigurationStore(options =>
-            {
-                options.ConfigureDbContext = builder =>
-                    builder.UseMySql(
-                        connectionString,
-                serverVersion,
-                        sql => sql.MigrationsAssembly(migrationsAssembly));
-            })
-            .AddOperationalStore(options =>
-            {
-                options.ConfigureDbContext = builder =>
-                    builder.UseMySql(
-                        connectionString,
-                serverVersion,
-                        sql => sql.MigrationsAssembly(migrationsAssembly));
-                options.EnableTokenCleanup = true;
-                options.TokenCleanupInterval = 3600;
-            })
-            .AddAspNetIdentity<User>()
-            .AddCustomKeyManagement<CertificateDbContext>(builder =>
-                builder.UseMySql(
-                    connectionString,
-            serverVersion,
-                    sql => sql.MigrationsAssembly(migrationsAssembly)));
+        services.ConfigureIdentity(connectionString, config["Uri"], serverVersion, migrationsAssembly);
     })
     .Build();
 
