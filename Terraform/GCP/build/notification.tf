@@ -13,7 +13,7 @@ data "archive_file" "app" {
 }
 
 resource "google_storage_bucket_object" "archive" {
-  name   = "index.zip"
+  name   = "index-${data.archive_file.app.output_sha}.zip"
   bucket = var.gcf_bucket
   source = "${path.module}/index.zip"
 }
