@@ -189,6 +189,7 @@ module "k8s" {
   front_hostname      = var.front_hostname
   app_hostname        = var.app_hostname
   auth_hostname       = var.auth_hostname
+  sendgrid_key        = var.sendgrid_key
   depends_on = [
     time_sleep.wait_30_seconds
   ]

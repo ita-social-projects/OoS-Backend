@@ -97,13 +97,17 @@ variable "lb_internal_address" {
 }
 
 variable "auth_hostname" {
-  type        = string
+  type = string
 }
 
 variable "app_hostname" {
-  type        = string
+  type = string
 }
 
 variable "front_hostname" {
-  type        = string
+  type = string
+}
+
+variable "sendgrid_key" {
+  type = string
 }

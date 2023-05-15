@@ -8,8 +8,65 @@ nameOverride: ""
 fullnameOverride: ""
 
 image:
-  repository: gcp101292-pozashkillya
-  name: oos-auth
+  fullTagOverride: ""
   pullPolicy: IfNotPresent
+
 deploy:
   containerPort: 8080
+
+configuration:
+  extraEnvironment:
+    ASPNETCORE_ENVIRONMENT: Kubernetes
+    ConnectionStringsOverride__DefaultConnection__UserId: oos
+  extraEnvVarsSecret: "authserver-secrets"
+  secrets:
+  - type: env
+    name: mysql-api-auth
+    key: IDENTITY_PASSWORD
+    envKey: ConnectionStringsOverride__DefaultConnection__Password
+    upper: false
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/issuer: "letsencrypt"
+    cert-manager.io/duration: 2160h0m0s
+    cert-manager.io/renew-before: 168h0m0s
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  hosts:
+    - host: "replace_me"
+      paths:
+        - path: /(?!.*(?:healthz))(.*)
+          pathType: ImplementationSpecific
+  tls:
+  - secretName: authserver-tls
+    hosts:
+    - replace_me
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 768Mi
+  requests:
+    cpu: 500m
+    memory: 256Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPU: 60
+  targetMemory: 80
+
+readinessProbe:
+  enabled: true
+  path: "/healthz/ready"
+  initialDelaySeconds: 30
+  timeoutSeconds: 2
+  periodSeconds: 20
+  failureThreshold: 3
+  successThreshold: 1
+
+serviceAccount:
+  imagePullSecrets:
+  - name: outofschool-gcp-pull-secrets
