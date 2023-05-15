@@ -43,15 +43,36 @@ resource "google_cloudbuild_trigger" "backend_auth" {
     }
   }
 
-  substitutions = {
-    _ASPNETCORE_ENVIRONMENT = "Google"
-    _REGION                 = var.region
-    _SERVICE_ACCOUNT        = var.auth_sa_email
-    _DB_PASS                = var.auth_secret
-    _SENDER_EMAIL           = var.sender_email
-    _SENDGRID_KEY           = var.sendgrid_key_secret
-    _SQL_PORT               = var.sql_port
+  filename = "cloudbuild-auth.yml"
+}
+
+resource "google_cloudbuild_trigger" "auth_deploy" {
+  name = "backend-auth-deploy"
+  pubsub_config {
+    topic = google_pubsub_topic.gcr.id
   }
 
-  filename = "cloudbuild-auth.yml"
+  substitutions = {
+    _KUBE_CONFIG  = var.kube_secret
+    _POOL         = google_cloudbuild_worker_pool.pool.id
+    _ACTION       = "$(body.message.data.action)"
+    _IMAGE_TAG    = "$(body.message.data.tag)"
+    _HOST         = var.auth_hostname
+    _SENDER_EMAIL = var.sender_email
+    _SERVICE_NAME = "authserver"
+  }
+
+  source_to_build {
+    uri       = "https://github.com/ita-social-projects/OoS-Backend"
+    ref       = "refs/heads/develop"
+    repo_type = "GITHUB"
+  }
+
+  git_file_source {
+    path      = "cloudbuild-auth-deploy.yaml"
+    uri       = "https://github.com/ita-social-projects/OoS-Backend"
+    revision  = "refs/heads/develop"
+    repo_type = "GITHUB"
+  }
+  filter = "_ACTION.matches(\"INSERT\") && _IMAGE_TAG.matches(\"^.*oos-auth:.*$\")"
 }

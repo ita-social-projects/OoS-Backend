@@ -54,3 +54,30 @@ resource "kubernetes_secret" "pull" {
     })
   }
 }
+
+# TODO: Do we really need this enabled?:)
+resource "random_password" "api_secret" {
+  length           = 16
+  special          = true
+  override_special = "_%@"
+}
+
+# TODO: Do we really need this enabled?:)
+resource "random_password" "client_secret" {
+  length           = 16
+  special          = true
+  override_special = "_%@"
+}
+
+resource "kubernetes_secret" "authserver_secrets" {
+  metadata {
+    name      = "authserver-secrets"
+    namespace = data.kubernetes_namespace.oos.metadata[0].name
+  }
+
+  data = {
+    Email__SendGridKey         = var.sendgrid_key
+    outofschoolapi__ApiSecret  = random_password.api_secret.result
+    "m2m.client__ClientSecret" = random_password.client_secret.result
+  }
+}

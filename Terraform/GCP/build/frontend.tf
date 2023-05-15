@@ -9,11 +9,9 @@ resource "google_cloudbuild_trigger" "frontend" {
   }
 
   substitutions = {
-    _REGION          = var.region
-    _SERVICE_ACCOUNT = var.front_sa_email
     _SERVICE_NAME    = "frontend"
-    _STS_SERVER      = "https://auth.oos.dmytrominochkin.cloud"
-    _API_SERVER      = "https://api.oos.dmytrominochkin.cloud"
+    _STS_SERVER      = "https://${var.auth_hostname}"
+    _API_SERVER      = "https://${var.app_hostname}"
     _GITHUB_DEPLOY   = var.github_front_secret
   }
 
