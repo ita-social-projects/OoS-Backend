@@ -22,9 +22,10 @@ configuration:
   secrets:
   - type: env
     name: mysql-api-auth
-    key: IDENTITY_PASSWORD
-    envKey: ConnectionStringsOverride__DefaultConnection__Password
-    upper: false
+    keys:
+    - key: IDENTITY_PASSWORD
+      envKey: ConnectionStringsOverride__DefaultConnection__Password
+      upper: false
 ingress:
   enabled: true
   className: "nginx"
