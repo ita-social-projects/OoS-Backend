@@ -28,6 +28,6 @@ dependencies:
   version: 4.6.0
 - name: outofschool
   repository: file://../webapp
-  version: 1.0.3
-digest: sha256:908f7822611318f7a97757e57edf545483735805e3712ca5260bf14cd3dd4a62
-generated: "2023-05-05T10:07:04.589331+03:00"
+  version: 1.0.4
+digest: sha256:7365c33aa1e7dfd05271c3f5eced4ef1e1387963d95e21ca67b9b60144582c08
+generated: "2023-05-15T16:18:23.072551+03:00"

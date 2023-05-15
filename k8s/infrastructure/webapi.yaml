@@ -13,3 +13,23 @@ image:
   pullPolicy: IfNotPresent
 deploy:
   containerPort: 8080
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/issuer: "letsencrypt"
+    cert-manager.io/duration: 2160h0m0s
+    cert-manager.io/renew-before: 168h0m0s
+    # Websocket increased limits
+    nginx.ingress.kubernetes.io/proxy-read-timeout: 3600
+    nginx.ingress.kubernetes.io/proxy-send-timeout: 3600
+  hosts:
+    - host: "replace_me"
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+  - secretName: webapi-tls
+    hosts:
+    - replace_me
