@@ -161,4 +161,19 @@ public enum Permissions : short
     [Display(GroupName = "RegionAdmin", Name = "Block", Description = "Can block region admin")]
     RegionAdminBlock = 125,
     #endregion
+    
+    #region AreaAdmin Control permissions # 14
+    [Display(GroupName = "AreaAdmin", Name = "Read", Description = "Can read area admin")]
+    AreaAdminRead = 130,
+    [Display(GroupName = "AreaAdmin", Name = "Edit", Description = "Can edit area admin")]
+    AreaAdminEdit = 131,
+    [Display(GroupName = "AreaAdmin", Name = "Add new", Description = "Can add a new area admin")]
+    AreaAdminAddNew = 132,
+    [Display(GroupName = "AreaAdmin", Name = "Remove", Description = "Can remove area admin")]
+    AreaAdminRemove = 133,
+    [Display(GroupName = "AreaAdmin", Name = "Area Admins", Description = "Can manage area admins")]
+    AreaAdmins = 134,
+    [Display(GroupName = "AreaAdmin", Name = "Block", Description = "Can block area admin")]
+    AreaAdminBlock = 135,
+    #endregion
 }

@@ -39,7 +39,7 @@ public class LicenseApprovalNotificationService : ILicenseApprovalNotificationSe
 
     public async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
     {
-        // TODO Add filter for OtgAdmin when he will be created, and delete filter for TechAdmin after that
+        // TODO Add filter for AreaAdmin when he will be created, and delete filter for TechAdmin after that
         return (await userRepository
             .GetByFilter(u => u.Role.Equals(nameof(Role.TechAdmin), StringComparison.CurrentCultureIgnoreCase)
                       || u.Role.Equals(nameof(Role.RegionAdmin), StringComparison.CurrentCultureIgnoreCase))

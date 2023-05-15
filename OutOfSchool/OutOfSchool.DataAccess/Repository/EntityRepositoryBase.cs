@@ -185,8 +185,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     }
 
     /// <inheritdoc/>
-    public virtual IQueryable<TEntity> Get(
-        int skip = 0,
+    public virtual IQueryable<TEntity> Get(int skip = 0,
         int take = 0,
         string includeProperties = "",
         Expression<Func<TEntity, bool>> where = null,

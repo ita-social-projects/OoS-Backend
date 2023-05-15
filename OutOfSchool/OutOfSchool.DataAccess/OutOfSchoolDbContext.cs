@@ -102,6 +102,8 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
     public DbSet<FileInDb> FilesInDb { get; set; }
 
     public DbSet<RegionAdmin> RegionAdmins { get; set; }
+    
+    public DbSet<AreaAdmin> AreaAdmins { get; set; }
 
     public DbSet<AverageRating> AverageRatings { get; set; }
 

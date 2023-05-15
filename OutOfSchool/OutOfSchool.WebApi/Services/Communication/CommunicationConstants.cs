@@ -21,9 +21,19 @@ public static class CommunicationConstants
     public const string BlockMinistryAdmin = "ministryadmin/block/";
 
     public const string ReinviteMinistryAdmin = "ministryadmin/reinvite/";
+    
+    public const string UpdateOtgAdmin = "regionadmin/update/";
 
+    public const string DeleteOtgAdmin = "regionadmin/delete/";
+
+    public const string BlockOtgAdmin = "regionadmin/block/";
+
+    public const string ReinviteOtgAdmin = "regionadmin/reinvite/";
+
+    public const string CreateOtgnAdmin = "otgadmin/create";
+    
     public const string CreateRegionAdmin = "regionadmin/create";
-
+    
     public const string UpdateRegionAdmin = "regionadmin/update/";
 
     public const string DeleteRegionAdmin = "regionadmin/delete/";
