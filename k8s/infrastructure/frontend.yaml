@@ -12,9 +12,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 image:
-  registry: gcr.io
-  repository: example
-  name: oos-frontend
+  fullTagOverride: ""
   pullPolicy: IfNotPresent
 
 deploy:
