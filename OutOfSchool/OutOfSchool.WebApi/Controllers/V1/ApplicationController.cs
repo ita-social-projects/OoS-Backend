@@ -317,15 +317,15 @@ public class ApplicationController : ControllerBase
 
         try
         {
-            var updatedApplication =
+            var result =
                 await applicationService.Update(applicationDto, workshop.ProviderId).ConfigureAwait(false);
 
-            if (updatedApplication is null)
+            if (!result.Succeeded)
             {
-                return BadRequest("Application does not exist.");
+                return BadRequest(result.OperationResult.Errors.ElementAt(0).Description);
             }
 
-            return Ok(updatedApplication);
+            return Ok(result.Value);
         }
         catch (ArgumentException ex)
         {
