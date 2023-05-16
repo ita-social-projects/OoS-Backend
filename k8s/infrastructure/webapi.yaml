@@ -7,13 +7,50 @@ global: {}
 nameOverride: ""
 fullnameOverride: ""
 
+commonLabels:
+  tier: backend
+  app: webapi
+
 image:
-  repository: gcp101292-pozashkillya
-  name: oos-api
+  fullTagOverride: ""
   pullPolicy: IfNotPresent
+
 deploy:
   containerPort: 8080
 
+configuration:
+  extraEnvironment:
+    ASPNETCORE_ENVIRONMENT: Kubernetes
+    ConnectionStringsOverride__DefaultConnection__UserId: api
+  extraEnvVarsSecret: "webapi-secrets"
+  secrets:
+  - type: env
+    name: mysql-api-auth
+    keys:
+    - key: API_PASSWORD
+      envKey: ConnectionStringsOverride__DefaultConnection__Password
+      upper: false
+  - type: env
+    name: authserver-secrets
+    keys:
+    - key: outofschoolapi__ApiSecret
+      envKey: outofschoolapi__ApiSecret
+      upper: false
+    - key: m2m.client__ClientSecret
+      envKey: m2m.client__ClientSecret
+      upper: false
+  - type: env
+    name: redis-auth
+    keys:
+    - key: password
+      envKey: Redis__Password
+      upper: false
+  - type: env
+    name: elasticsearch-credentials
+    keys:
+    - key: apipass
+      envKey: Elasticsearch__Password
+      upper: false
 ingress:
   enabled: true
   className: "nginx"
@@ -24,12 +61,41 @@ ingress:
     # Websocket increased limits
     nginx.ingress.kubernetes.io/proxy-read-timeout: 3600
     nginx.ingress.kubernetes.io/proxy-send-timeout: 3600
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
   hosts:
     - host: "replace_me"
       paths:
-        - path: /
+        - path: /(?!.*(?:healthz))(.*)
           pathType: ImplementationSpecific
   tls:
   - secretName: webapi-tls
     hosts:
     - replace_me
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 768Mi
+  requests:
+    cpu: 500m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPU: 60
+  targetMemory: 80
+
+readinessProbe:
+  enabled: true
+  path: "/healthz/ready"
+  initialDelaySeconds: 30
+  timeoutSeconds: 2
+  periodSeconds: 20
+  failureThreshold: 3
+  successThreshold: 1
+
+serviceAccount:
+  imagePullSecrets:
+  - name: outofschool-gcp-pull-secrets

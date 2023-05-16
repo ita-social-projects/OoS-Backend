@@ -81,3 +81,14 @@ resource "kubernetes_secret" "authserver_secrets" {
     "m2m.client__ClientSecret" = random_password.client_secret.result
   }
 }
+
+resource "kubernetes_secret" "webapi_secrets" {
+  metadata {
+    name      = "webapi-secrets"
+    namespace = data.kubernetes_namespace.oos.metadata[0].name
+  }
+
+  data = {
+    GeoCoding__ApiKey = var.geo_apikey
+  }
+}

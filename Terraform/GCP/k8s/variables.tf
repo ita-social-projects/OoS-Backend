@@ -111,3 +111,7 @@ variable "front_hostname" {
 variable "sendgrid_key" {
   type = string
 }
+
+variable "geo_apikey" {
+  type = string
+}

@@ -22,6 +22,34 @@ resource "google_cloudbuild_trigger" "backend_auth_old" {
   filename = "cloudbuild-auth-old.yml"
 }
 
+resource "google_cloudbuild_trigger" "backend_api_old" {
+  name = "backend-api-old"
+  disabled = true
+  github {
+    owner = "ita-social-projects"
+    name  = "OoS-Backend"
+    push {
+      branch = "develop"
+    }
+  }
+  substitutions = {
+    _ASPNETCORE_ENVIRONMENT = "Google"
+    _ZONE                   = var.zone
+    _REGION                 = var.region
+    _SERVICE_ACCOUNT        = var.app_sa_email
+    _DB_PASS                = var.api_secret
+    _ES_PASSWORD            = var.es_api_pass_secret
+    _BUCKET                 = var.bucket
+    _REDIS_HOST             = var.redis_hostname
+    _REDIS_PASS             = var.redis_secret
+    _REDIS_PORT             = var.redis_port
+    _SQL_PORT               = var.sql_port
+    _GEO_KEY                = var.geo_key_secret
+  }
+
+  filename = "cloudbuild-app-old.yml"
+}
+
 resource "google_cloudbuild_trigger" "frontend_old" {
   name     = "frontend-old"
   disabled = true
