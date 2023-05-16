@@ -190,6 +190,7 @@ module "k8s" {
   app_hostname        = var.app_hostname
   auth_hostname       = var.auth_hostname
   sendgrid_key        = var.sendgrid_key
+  geo_apikey          = var.geo_apikey
   depends_on = [
     time_sleep.wait_30_seconds
   ]

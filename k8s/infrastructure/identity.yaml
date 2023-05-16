@@ -7,6 +7,10 @@ global: {}
 nameOverride: ""
 fullnameOverride: ""
 
+commonLabels:
+  tier: backend
+  app: identity
+
 image:
   fullTagOverride: ""
   pullPolicy: IfNotPresent
@@ -33,7 +37,7 @@ ingress:
     cert-manager.io/issuer: "letsencrypt"
     cert-manager.io/duration: 2160h0m0s
     cert-manager.io/renew-before: 168h0m0s
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
   hosts:
     - host: "replace_me"
       paths:
