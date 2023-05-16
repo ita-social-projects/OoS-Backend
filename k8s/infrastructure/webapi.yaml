@@ -59,8 +59,8 @@ ingress:
     cert-manager.io/duration: 2160h0m0s
     cert-manager.io/renew-before: 168h0m0s
     # Websocket increased limits
-    nginx.ingress.kubernetes.io/proxy-read-timeout: 3600
-    nginx.ingress.kubernetes.io/proxy-send-timeout: 3600
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
     nginx.ingress.kubernetes.io/rewrite-target: /$1
   hosts:
     - host: "replace_me"
