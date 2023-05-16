@@ -88,12 +88,13 @@ def create_message(build: GoogleCloudBuild) -> DiscordMessage:
         'description':
         f"Deployment took a {(datetime.fromisoformat(build['finishTime']) - datetime.fromisoformat(build['startTime'])).seconds} seconds."
     })
-    embeds.append({
-        'color': 1027128,
-        'title': url,
-        'description': "Click to test new features.",
-        'url': url
-    })
+    if "auth" not in tag:
+      embeds.append({
+          'color': 1027128,
+          'title': url,
+          'description': "Click to test new features.",
+          'url': url
+      })
   else:
     embeds.append({
         'color': 14177041,

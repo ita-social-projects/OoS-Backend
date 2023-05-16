@@ -80,5 +80,7 @@ resource "kubectl_manifest" "letsencrypt_issuer" {
               - ${var.sql_hostname}
               - ${var.phpmyadmin_hostname}
               - ${var.front_hostname}
+              - ${var.app_hostname}
+              - ${var.auth_hostname}
   EOF
 }

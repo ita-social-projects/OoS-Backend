@@ -12,42 +12,73 @@ steps:
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.WebApi/
     - --env=BPE_AppDefaults__Version=$SHORT_SHA
     - --publish
-# Deploy container image to Cloud Run
-- name: 'gcr.io/cloud-builders/gcloud'
+##### Update the tag #####
+# Access the SSH key from Secret Manager
+- name: gcr.io/cloud-builders/gcloud
+  entrypoint: 'bash'
   args:
-    - beta
-    - run
-    - deploy
-    - apiservice
-    - --image
-    - gcr.io/$PROJECT_ID/oos-api:$SHORT_SHA
-    - --region
-    - $_REGION
-    - --platform
-    - managed
-    - --ingress
-    - internal-and-cloud-load-balancing
-    - --allow-unauthenticated
-    - --service-account
-    - $_SERVICE_ACCOUNT
-    - --cpu=2
-    - --memory=1Gi
-    - --max-instances=5
-    - --concurrency=200
-    - --timeout=120
-    - --set-env-vars=ASPNETCORE_ENVIRONMENT=$_ASPNETCORE_ENVIRONMENT
-    - --set-env-vars=Elasticsearch__User=webapi
-    - --set-env-vars=ConnectionStringsOverride__DefaultConnection__UserId=api
-    - --set-env-vars=ConnectionStringsOverride__DefaultConnection__Port=$_SQL_PORT
-    - --set-env-vars=GoogleCloudPlatform__Storage__OosImages__BucketName=$_BUCKET
-    - --set-env-vars=Redis__Server=$_REDIS_HOST
-    - --set-env-vars=Redis__Port=$_REDIS_PORT
-    - --set-env-vars=AppDefaults__Version=$SHORT_SHA
-    - --set-secrets=ConnectionStringsOverride__DefaultConnection__Password=$_DB_PASS,Elasticsearch__Password=$_ES_PASSWORD,Redis__Password=$_REDIS_PASS,GeoCoding__ApiKey=$_GEO_KEY
-    - --no-use-http2
-# Clean old versions except previous Cloud Run
-- name: 'gcr.io/cloud-builders/gcloud'
-  entrypoint: bash
+  - '-c'
+  - |
+    cat <<EOF > /root/.ssh/id_github
+    $$SSH
+    EOF
+  secretEnv: ['SSH']
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+# Set up git with key and domain
+- name: 'gcr.io/cloud-builders/git'
+  entrypoint: 'bash'
   args:
-    - -c
-    - for revision in `gcloud run revisions list --service apiservice --platform managed --region $_REGION --format 'value(name)' | sort -r | tail -n +3 | paste -sd " " -`; do $(yes | gcloud run revisions delete --platform managed --region $_REGION $revision) || exit 0; done;
+  - '-c'
+  - |
+    chmod 600 /root/.ssh/id_github
+    cat <<EOF >/root/.ssh/config
+    Hostname github.com
+    IdentityFile /root/.ssh/id_github
+    EOF
+    ssh-keyscan -t rsa github.com > /root/.ssh/known_hosts
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+# Increment tag
+- name: gcr.io/cloud-builders/git
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    git config --global user.name cloudbuild
+    git config --global user.email oos@cloudbuild.gserviceaccount.com
+    echo "Cloning repo"
+    git clone --branch $BRANCH_NAME git@github.com:ita-social-projects/OoS-Backend.git
+    cd OoS-Backend
+    CURRENT_VERSION=`git describe --tags $$(git rev-list --tags --max-count=1) 2>/dev/null`
+    if [[ $$CURRENT_VERSION == '' ]]
+    then
+      CURRENT_VERSION='gcp-0.0.0'
+    fi
+    echo "Current Version: $$CURRENT_VERSION"
+    CURRENT_VERSION_PARTS=($${CURRENT_VERSION//./ })
+    VNUM1=$${CURRENT_VERSION_PARTS[0]}
+    VNUM2=$${CURRENT_VERSION_PARTS[1]}
+    VNUM3=$${CURRENT_VERSION_PARTS[2]}
+    VNUM3=$$((VNUM3+1))
+    NEW_TAG="$$VNUM1.$$VNUM2.$$VNUM3"
+    echo "Updating $$CURRENT_VERSION to $$NEW_TAG"
+    GIT_COMMIT=`git rev-parse HEAD`
+    NEEDS_TAG=`git describe --contains $$GIT_COMMIT 2>/dev/null`
+    if [ -z "$$NEEDS_TAG" ]; then
+      DESCRIPTION=`git log --cherry --pretty=format:'▪ %s by %an' --max-count=1`
+      git tag -a $$NEW_TAG -m "$$DESCRIPTION"
+      echo "Tagged with $$NEW_TAG"
+      git push --tags
+    else
+      echo "Already a tag on this commit"
+    fi
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+availableSecrets:
+  secretManager:
+  - versionName: $_GITHUB_DEPLOY
+    env: 'SSH'
