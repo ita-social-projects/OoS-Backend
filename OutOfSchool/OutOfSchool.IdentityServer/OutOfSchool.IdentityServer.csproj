@@ -8,71 +8,58 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211101082648_InitialMigration.cs"/>
-        <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211101082648_InitialMigration.Designer.cs"/>
-    </ItemGroup>
-    <ItemGroup>
-        <Protobuf Include="..\OutOfSchool.GRPC\Protos\ProviderAdmin.proto" GrpcServices="Server"/>
-        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection"/>
-        <PackageReference Include="Grpc.AspNetCore"/>
-        <PackageReference Include="IdentityServer4.AccessTokenValidation"/>
-        <PackageReference Include="LazyCache.AspNetCore"/>
-        <PackageReference Include="IdentityModel"/>
-        <PackageReference Include="IdentityServer4"/>
-        <PackageReference Include="IdentityServer4.AspNetIdentity"/>
-        <PackageReference Include="IdentityServer4.EntityFramework"/>
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets"/>
-        <PackageReference Include="Microsoft.Extensions.Identity.Core"/>
-        <PackageReference Include="Microsoft.IdentityModel.Tokens"/>
-        <PackageReference Include="Newtonsoft.Json"/>
-        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql"/>
-        <PackageReference Include="Serilog.AspNetCore"/>
-        <PackageReference Include="Serilog.Enrichers.GlobalLogContext"/>
-        <PackageReference Include="Serilog.Exceptions"/>
-        <PackageReference Include="Serilog.Exceptions.EntityFrameworkCore"/>
-        <PackageReference Include="Serilog.Formatting.Elasticsearch"/>
-        <PackageReference Include="Serilog.Settings.Configuration"/>
-        <PackageReference Include="Serilog.Sinks.File"/>
-        <PackageReference Include="Serilog.Sinks.GoogleCloudLogging"/>
-        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore"/>
-		<PackageReference Include="FluentValidation.AspNetCore"/>
+        <Protobuf Include="..\OutOfSchool.GRPC\Protos\ProviderAdmin.proto" GrpcServices="Server" />
+        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
+        <PackageReference Include="Grpc.AspNetCore" />
+        <PackageReference Include="IdentityServer4.AccessTokenValidation" />
+        <PackageReference Include="LazyCache.AspNetCore" />
+        <PackageReference Include="IdentityModel" />
+        <PackageReference Include="IdentityServer4" />
+        <PackageReference Include="IdentityServer4.AspNetIdentity" />
+        <PackageReference Include="IdentityServer4.EntityFramework" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+        <PackageReference Include="Microsoft.Extensions.Identity.Core" />
+        <PackageReference Include="Microsoft.IdentityModel.Tokens" />
+        <PackageReference Include="Newtonsoft.Json" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
+        <PackageReference Include="Serilog.AspNetCore" />
+        <PackageReference Include="Serilog.Enrichers.GlobalLogContext" />
+        <PackageReference Include="Serilog.Exceptions" />
+        <PackageReference Include="Serilog.Exceptions.EntityFrameworkCore" />
+        <PackageReference Include="Serilog.Formatting.Elasticsearch" />
+        <PackageReference Include="Serilog.Settings.Configuration" />
+        <PackageReference Include="Serilog.Sinks.File" />
+        <PackageReference Include="Serilog.Sinks.GoogleCloudLogging" />
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
+		<PackageReference Include="FluentValidation.AspNetCore" />
 		<PackageReference Include="StyleCop.Analyzers">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj"/>
-        <ProjectReference Include="..\OutOfSchool.EmailSender\OutOfSchool.EmailSender.csproj"/>
-        <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj"/>
-        <ProjectReference Include="..\OutOfSchool.RazorTemplatesData\OutOfSchool.RazorTemplatesData.csproj"/>
-        <ProjectReference Include="..\OutOfSchool.GRPC\OutOfSchool.GRPC.csproj"/>
+        <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
+        <ProjectReference Include="..\OutOfSchool.EmailSender\OutOfSchool.EmailSender.csproj" />
+        <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
+        <ProjectReference Include="..\OutOfSchool.RazorTemplatesData\OutOfSchool.RazorTemplatesData.csproj" />
+        <ProjectReference Include="..\OutOfSchool.GRPC\OutOfSchool.GRPC.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <Content Remove="stylecop.json"/>
+        <Content Remove="stylecop.json" />
         <AdditionalFiles Include="stylecop.json">
             <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
         </AdditionalFiles>
     </ItemGroup>
-    <ItemGroup>
-        <Folder Include="Data\Migrations\IdentityServer\CertificateDb\"/>
-        <Folder Include="Data\Migrations\IdentityServer\ConfigurationDb\"/>
-        <Folder Include="Data\Migrations\IdentityServer\PersistedGrantDb\"/>
-    </ItemGroup>
     <ProjectExtensions>
         <VisualStudio>
-            <UserProperties appsettings_1development_1json__JsonSchema="https://json.schemastore.org/appsettings" appsettings_1release_1json__JsonSchema="https://json.schemastore.org/appsettings"/>
+            <UserProperties appsettings_1development_1json__JsonSchema="https://json.schemastore.org/appsettings" appsettings_1release_1json__JsonSchema="https://json.schemastore.org/appsettings" />
         </VisualStudio>
     </ProjectExtensions>
     <ItemGroup>
-        <Watch Include="wwwroot/**"/>
+        <Watch Include="wwwroot/**" />
     </ItemGroup>
 </Project>

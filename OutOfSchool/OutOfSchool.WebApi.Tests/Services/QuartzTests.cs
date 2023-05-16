@@ -14,7 +14,7 @@ public class QuartzTests
     {
         // Arrange
         DirectoryInfo directory = TryGetSolutionDirectoryInfo();
-        string path = @"OutOfSchool.IdentityServer\Data\Migrations\OutOfSchoolMigrations\20220523184345_Quartz.cs";
+        string path = @"OutOfSchool.Migrations\Data\Migrations\OutOfSchoolMigrations\20220523184345_Quartz.cs";
         var paths = new string[] {directory.FullName}.Concat(path.Split(@"\"));
         path = Path.Combine(paths.ToArray());
 
