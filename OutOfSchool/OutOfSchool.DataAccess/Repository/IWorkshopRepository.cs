@@ -25,4 +25,12 @@ public interface IWorkshopRepository : IEntityRepositoryBase<Guid, Workshop>
     /// <param name="provider">Provider to be searched by.</param>
     /// <returns>List of Workshops for the specified provider.</returns>
     Task<IEnumerable<Workshop>> BlockByProvider(Provider provider);
+
+    /// <summary>
+    /// Return amount of available seats for specified workshop.
+    /// </summary>
+    /// <param name="workshopId">Id of Workshop.</param>
+    /// <returns>Amount of available seats for the specified workshop.</returns>
+    /// <exception cref="InvalidOperationException">It can throw exception when method get workshopId but Workshop doesn't exist.</exception>
+    Task<uint> GetAvailableSeats(Guid workshopId);
 }

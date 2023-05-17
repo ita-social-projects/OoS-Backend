@@ -20,6 +20,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
@@ -497,7 +498,9 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>()))
             .ReturnsAsync(changedEntity);
         applicationRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(changedEntity);
+        applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
         mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto() {Id = id});
+
         var expected = new ApplicationDto() {Id = id};
         var update = new ApplicationUpdate
         {
@@ -506,6 +509,7 @@ public class ApplicationServiceTests
             WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
             ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
         };
+
         workshopServiceCombinerMock.Setup(c =>
                 c.GetById(It.Is<Guid>(i => i == update.WorkshopId)))
             .ReturnsAsync(new WorkshopDTO()
@@ -515,11 +519,16 @@ public class ApplicationServiceTests
                 Status = WorkshopStatus.Open,
             });
 
+        workshopRepositoryMock.Setup(w => w.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
+            .ReturnsAsync(new List<Workshop>());
+
+        workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
+
         // Act
         var result = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
-        AssertApplicationsDTOsAreEqual(expected, result);
+        AssertApplicationsDTOsAreEqual(expected, result.Value);
     }
 
     [Test]
@@ -534,14 +543,17 @@ public class ApplicationServiceTests
 
         applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>()))
             .ReturnsAsync(changedEntity);
+
         applicationRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(entity);
         applicationRepositoryMock.Setup(a => a.Count(x =>
                 x.WorkshopId == workshop.Id &&
                 (x.Status == ApplicationStatus.Approved || x.Status == ApplicationStatus.StudyingForYears)))
             .ReturnsAsync(1);
+
         workshopRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
         mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto()
             {Id = id, Status = ApplicationStatus.Approved});
+
         var expected = new ApplicationDto() {Id = id, Status = ApplicationStatus.Approved};
         var update = new ApplicationUpdate
         {
@@ -550,6 +562,7 @@ public class ApplicationServiceTests
             WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
             ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
         };
+
         workshopServiceCombinerMock.Setup(c =>
                 c.GetById(It.Is<Guid>(i => i == update.WorkshopId)))
             .ReturnsAsync(new WorkshopDTO()
@@ -559,15 +572,20 @@ public class ApplicationServiceTests
                 Status = WorkshopStatus.Open,
             });
 
+        workshopRepositoryMock.Setup(w => w.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
+            .ReturnsAsync(new List<Workshop>());
+
+        workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
+
         // Act
         var result = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
-        AssertApplicationsDTOsAreEqual(expected, result);
+        AssertApplicationsDTOsAreEqual(expected, result.Value);
     }
 
     [Test]
-    public async Task UpdateApplication_WhenThereIsNoApplicationWithId_ShouldReturnNull()
+    public async Task UpdateApplication_WhenThereIsNoApplicationWithId_ShouldReturnNotSucceeded()
     {
         // Arrange
         var userId = Guid.NewGuid().ToString();
@@ -579,7 +597,7 @@ public class ApplicationServiceTests
         };
 
         // Act and Assert
-        Assert.IsNull(await service.Update(application, Guid.NewGuid()));
+        Assert.IsFalse((await service.Update(application, Guid.NewGuid())).Succeeded);
     }
 
     [Test]
