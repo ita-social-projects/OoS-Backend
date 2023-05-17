@@ -1,4 +1,0 @@
-{{- range .Values.deploy.extraObjects }}
----
-{{ toYaml . }}
-{{- end }}
