@@ -31,5 +31,6 @@ public interface IWorkshopRepository : IEntityRepositoryBase<Guid, Workshop>
     /// </summary>
     /// <param name="workshopId">Id of Workshop.</param>
     /// <returns>Amount of available seats for the specified workshop.</returns>
+    /// <exception cref="InvalidOperationException">It can throw exception when method get workshopId but Workshop doesn't exist.</exception>
     Task<uint> GetAvailableSeats(Guid workshopId);
 }
