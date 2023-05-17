@@ -61,13 +61,6 @@ public static class Startup
                 options.RequireHttpsMetadata = false;
             });
 
-        services.ConfigureApplicationCookie(c =>
-        {
-            c.Cookie.Name = "IdentityServer.Cookie";
-            c.LoginPath = "/Auth/Login";
-            c.LogoutPath = "/Auth/Logout";
-        });
-
         var issuerSection = config.GetSection(IssuerConfig.Name);
         services.Configure<IssuerConfig>(issuerSection);
 
@@ -78,6 +71,13 @@ public static class Startup
         services.Configure<AngularClientScopeExternalUrisConfig>(config.GetSection(AngularClientScopeExternalUrisConfig.Name));
 
         services.ConfigureIdentity(connectionString, issuerSection["Uri"], serverVersion, migrationsAssembly);
+
+        services.ConfigureApplicationCookie(c =>
+        {
+            c.Cookie.Name = "IdentityServer.Cookie";
+            c.LoginPath = "/Auth/Login";
+            c.LogoutPath = "/Auth/Logout";
+        });
 
         var mailConfig = config
             .GetSection(EmailOptions.SectionName)
