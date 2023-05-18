@@ -1,6 +1,5 @@
-﻿using IdentityServer4.Test;
+﻿namespace OutOfSchool.IdentityServer.Extensions;
 
-namespace OutOfSchool.IdentityServer.Extensions;
 public static class ConfigureIdentityExtensions
 {
     public static void ConfigureIdentity(
