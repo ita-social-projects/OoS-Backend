@@ -1,4 +1,6 @@
-﻿namespace OutOfSchool.IdentityServer.Extensions;
+﻿using IdentityServer4.Test;
+
+namespace OutOfSchool.IdentityServer.Extensions;
 public static class ConfigureIdentityExtensions
 {
     public static void ConfigureIdentity(
@@ -16,7 +18,8 @@ public static class ConfigureIdentityExtensions
             options.Password.RequireUppercase = true;
             options.Password.RequiredLength = 8;
         })
-            .AddEntityFrameworkStores<OutOfSchoolDbContext>();
+            .AddEntityFrameworkStores<OutOfSchoolDbContext>()
+            .AddTokenProvider<DataProtectorTokenProvider<User>>(TokenOptions.DefaultProvider);
 
         services.AddIdentityServer(options => { options.IssuerUri = issuerUri; })
             .AddConfigurationStore(options =>
