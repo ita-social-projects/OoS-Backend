@@ -48,6 +48,10 @@ public class AccountControllerTests
             .Setup(localizer => localizer[It.IsAny<string>()])
             .Returns(new LocalizedString("mock", "error"));
 
+        fakeIdentityServerConfig
+            .SetupGet(c => c.Value)
+            .Returns(new Mock<IdentityServerConfig>().Object);
+
         accountController = new AccountController(
             fakeSignInManager.Object,
             fakeUserManager.Object,
@@ -190,6 +194,7 @@ public class AccountControllerTests
             .ReturnsAsync(new User());
         fakeUserManager.Setup(userManager => userManager.ResetPasswordAsync(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(IdentityResult.Success);
+        //fakeIdentityServerConfig.SetupGet(c => c.Value).Returns(new IdentityServerConfig() { RedirectFromEmailConfirmationUrl = ""});
 
         // Act
         IActionResult result = await accountController.ResetPassword(new ResetPasswordViewModel());
