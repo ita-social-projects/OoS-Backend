@@ -194,7 +194,6 @@ public class AccountControllerTests
             .ReturnsAsync(new User());
         fakeUserManager.Setup(userManager => userManager.ResetPasswordAsync(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(IdentityResult.Success);
-        //fakeIdentityServerConfig.SetupGet(c => c.Value).Returns(new IdentityServerConfig() { RedirectFromEmailConfirmationUrl = ""});
 
         // Act
         IActionResult result = await accountController.ResetPassword(new ResetPasswordViewModel());
