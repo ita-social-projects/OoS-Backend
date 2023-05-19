@@ -108,7 +108,10 @@ public static class ElasticsearchMappingExtensions
                 .ForMember(
                     dest => dest.AddressParts,
                     opt => opt.MapFrom(src => src));
-            cfg.CreateMap<CodeficatorAddressES, CodeficatorDto>();
+            cfg.CreateMap<CodeficatorAddressES, CodeficatorDto>()
+                .ForMember(
+                    dest => dest.Name,
+                    opt => opt.MapFrom(src => src.Settlement));
         });
     }
 
