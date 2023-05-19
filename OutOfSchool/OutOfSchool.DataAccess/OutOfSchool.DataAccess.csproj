@@ -28,12 +28,12 @@
       <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
       <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" >
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
       <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
-      <PackageReference Include="Newtonsoft.Json"/>
+      <PackageReference Include="Newtonsoft.Json" />
       <PackageReference Include="MongoDB.Driver.GridFS" />
       <PackageReference Include="StyleCop.Analyzers">
         <PrivateAssets>all</PrivateAssets>

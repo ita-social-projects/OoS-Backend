@@ -56,8 +56,8 @@
         <PackageVersion Include="Serilog.Sinks.File" Version="5.0.0"/>
         <PackageVersion Include="Serilog.Sinks.GoogleCloudLogging" Version="5.0.0"/>
         <!--Automapper-->
-        <PackageVersion Include="AutoMapper" Version="10.1.1"/>
-        <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1"/>
+        <PackageVersion Include="AutoMapper" Version="12.0.1"/>
+        <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1"/>
         <!--Quartz-->
         <PackageVersion Include="Quartz.AspNetCore" Version="$(QuartzVersion)"/>
         <PackageVersion Include="Quartz.Extensions.DependencyInjection" Version="$(QuartzVersion)"/>

@@ -1,6 +1,6 @@
-using Google.Apis.Auth.OAuth2;
+using AutoMapper;
+using Google.Protobuf.WellKnownTypes;
 using GrpcService;
-using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
@@ -20,8 +20,6 @@ using OutOfSchool.WebApi.Models.StatisticReports;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Util.CustomComparers;
-using Profile = AutoMapper.Profile;
-using Timestamp = Google.Protobuf.WellKnownTypes.Timestamp;
 
 namespace OutOfSchool.WebApi.Util;
 
@@ -29,11 +27,10 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        const char SEPARATOR = '¤';
         CreateMap<WorkshopDTO, Workshop>()
             .ForMember(
                 dest => dest.Keywords,
-                opt => opt.MapFrom(src => string.Join(SEPARATOR, src.Keywords.Distinct())))
+                opt => opt.MapFrom(src => string.Join(Constants.MappingSeparator, src.Keywords.Distinct())))
             .ForMember(dest => dest.DateTimeRanges, opt => opt.MapFrom((dto, entity, dest, ctx) =>
             {
                 var dateTimeRanges = ctx.Mapper.Map<List<DateTimeRange>>(dto.DateTimeRanges);
@@ -68,7 +65,7 @@ public class MappingProfile : Profile
         CreateMap<Workshop, WorkshopDTO>()
             .ForMember(
                 dest => dest.Keywords,
-                opt => opt.MapFrom(src => src.Keywords.Split(SEPARATOR, StringSplitOptions.None)))
+                opt => opt.MapFrom(src => src.Keywords.Split(Constants.MappingSeparator, StringSplitOptions.None)))
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
             .ForMember(dest => dest.DirectionIds,
@@ -195,10 +192,12 @@ public class MappingProfile : Profile
 
         CreateMap<Application, ApplicationDto>();
         CreateMap<ApplicationCreate, Application>()
-            .ForMember(dest => dest.ChildId, opt => opt.MapFrom(src => src.ChildId))
-            .ForMember(dest => dest.ParentId, opt => opt.MapFrom(src => src.ParentId))
-            .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(src => src.WorkshopId))
-            .ForAllOtherMembers(opt => opt.Ignore());
+            .ConvertUsing(src => new Application
+            {
+                ChildId = src.ChildId,
+                ParentId = src.ParentId,
+                WorkshopId = src.WorkshopId,
+            });
 
         CreateMap<ApplicationDto, Application>().ForMember(dest => dest.Workshop, opt => opt.Ignore());
 
@@ -284,66 +283,6 @@ public class MappingProfile : Profile
         CreateMap<StatisticReport, StatisticReportDto>().ReverseMap();
 
         CreateMap<ElasticsearchSyncRecord, ElasticsearchSyncRecordDto>().ReverseMap();
-
-        CreateMap<Address, AddressES>()
-            .ForMember(
-                dest => dest.Point,
-                opt => opt.MapFrom(gl => new Nest.GeoLocation(
-                    gl.Latitude == 0d ? gl.CATOTTG.Latitude : gl.Latitude,
-                    gl.Longitude == 0d ? gl.CATOTTG.Longitude : gl.Longitude)))
-            .ForMember(
-                dest => dest.City,
-                opt => opt.MapFrom(c => c.CATOTTG.Name))
-            .ForMember(
-                dest => dest.CodeficatorAddressES,
-                opt => opt.MapFrom(c => c.CATOTTG));
-
-        CreateMap<CATOTTG, CodeficatorAddressES>()
-            .ForMember(
-                dest => dest.Settlement,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Name : src.Name))
-            .ForMember(
-                dest => dest.TerritorialCommunity,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Parent.Name : src.Parent.Name))
-            .ForMember(
-                dest => dest.District,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name
-                        ? src.Parent.Parent.Parent.Name
-                        : src.Parent.Parent.Name))
-            .ForMember(
-                dest => dest.Region,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name
-                        ? src.Parent.Parent.Parent.Parent.Name
-                        : src.Parent.Parent.Parent.Name))
-            .ForMember(
-                dest => dest.CityDistrict,
-                opt => opt.MapFrom(src => src.Category == CodeficatorCategory.CityDistrict.Name ? src.Name : null))
-            .ForMember(dest => dest.FullAddress, opt => opt.Ignore())
-            .ForMember(dest => dest.FullName, opt => opt.Ignore());
-
-        CreateMap<DateTimeRange, DateTimeRangeES>()
-            .ForMember(
-                dest => dest.Workdays,
-                opt => opt.MapFrom(dtr => string.Join(" ", dtr.Workdays.ToDaysBitMaskEnumerable())));
-
-        CreateMap<Workshop, WorkshopES>()
-            .ForMember(dest => dest.Rating, opt => opt.Ignore())
-            .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
-            .ForMember(dest => dest.DirectionIds,
-                opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(d => d.Id)))
-            .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
-            .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
-            .ForMember(
-                dest => dest.Description,
-                opt =>
-                    opt.MapFrom(src =>
-                        src.WorkshopDescriptionItems
-                            .Aggregate(string.Empty, (accumulator, wdi) =>
-                                $"{accumulator}{wdi.SectionName}{SEPARATOR}{wdi.Description}{SEPARATOR}")));
 
 #warning The next mapping is here to test UI Admin features. Will be removed or refactored
         CreateMap<ShortUserDto, AdminDto>();
@@ -608,12 +547,13 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title));
 
         CreateMap<GeocodingSingleFeatureResponse, GeocodingResponse>()
-            .ForMember(dest => dest.Street,
-                opt => opt.MapFrom(src => $"{src.Properties.StreetType} {src.Properties.Street}"))
-            .ForMember(dest => dest.BuildingNumber, opt => opt.MapFrom(src => src.Properties.Name))
-            .ForMember(dest => dest.Lon, opt => opt.MapFrom(src => src.GeoCentroid.Coordinates.FirstOrDefault()))
-            .ForMember(dest => dest.Lat, opt => opt.MapFrom(src => src.GeoCentroid.Coordinates.LastOrDefault()))
-            .ForAllOtherMembers(opts => opts.Ignore());
+            .ConvertUsing(src => new GeocodingResponse
+            {
+                Street = $"{src.Properties.StreetType} {src.Properties.Street}",
+                BuildingNumber = src.Properties.Name,
+                Lon = src.GeoCentroid.Coordinates.FirstOrDefault(),
+                Lat = src.GeoCentroid.Coordinates.LastOrDefault(),
+            });
 
         CreateMap<CATOTTG, CodeficatorAddressDto>()
             .ForMember(
