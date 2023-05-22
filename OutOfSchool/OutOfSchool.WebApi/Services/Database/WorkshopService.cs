@@ -288,26 +288,28 @@ public class WorkshopService : IWorkshopService
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation($"Updating Workshop with Id = {dto?.Id} started.");
 
-        var currentWorkshop = await workshopRepository.GetWithNavigations(dto!.Id).ConfigureAwait(false);
-
-        // In case if AddressId was changed. AddresId is one and unique for workshop.
-        dto.AddressId = currentWorkshop.AddressId;
-        dto.Address.Id = currentWorkshop.AddressId;
-
-        mapper.Map(dto, currentWorkshop);
-        currentWorkshop.Teachers = dto.Teachers?.Select(dtoTeacher => mapper.Map<Teacher>(dtoTeacher)).ToList();
-
-        try
+        async Task<Workshop> UpdateWorkshopLocally()
         {
-            await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
-        }
-        catch (DbUpdateConcurrencyException exception)
-        {
-            logger.LogError($"Updating failed. Exception: {exception.Message}");
-            throw;
+            await UpdateDateTimeRanges(dto.DateTimeRanges, dto.Id).ConfigureAwait(false);
+            var currentWorkshop = await workshopRepository.GetWithNavigations(dto!.Id).ConfigureAwait(false);
+
+            // In case if AddressId was changed. AddresId is one and unique for workshop.
+            dto.AddressId = currentWorkshop.AddressId;
+            dto.Address.Id = currentWorkshop.AddressId;
+
+            await ChangeTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherDTO>()).ConfigureAwait(false);
+
+            mapper.Map(dto, currentWorkshop);
+
+            await UpdateWorkshop().ConfigureAwait(false);
+
+            return currentWorkshop;
         }
 
-        return mapper.Map<WorkshopDTO>(currentWorkshop);
+        var updatedWorkshop = await workshopRepository
+            .RunInTransaction(UpdateWorkshopLocally).ConfigureAwait(false);
+
+        return mapper.Map<WorkshopDTO>(updatedWorkshop);
     }
 
     /// <inheritdoc/>
