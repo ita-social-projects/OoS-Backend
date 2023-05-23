@@ -382,7 +382,9 @@ public class AccountController : Controller
         {
             logger.LogInformation("{Path} Password was successfully reset. User(id): {UserId}", path, user.Id);
 
-            return View("Password/ResetPasswordConfirmation");
+            return View(
+                "Password/ResetPasswordConfirmation",
+                identityServerConfig.RedirectFromEmailConfirmationUrl);
         }
 
         logger.LogError(

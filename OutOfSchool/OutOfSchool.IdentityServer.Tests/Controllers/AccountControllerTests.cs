@@ -48,6 +48,10 @@ public class AccountControllerTests
             .Setup(localizer => localizer[It.IsAny<string>()])
             .Returns(new LocalizedString("mock", "error"));
 
+        fakeIdentityServerConfig
+            .SetupGet(c => c.Value)
+            .Returns(new Mock<IdentityServerConfig>().Object);
+
         accountController = new AccountController(
             fakeSignInManager.Object,
             fakeUserManager.Object,
