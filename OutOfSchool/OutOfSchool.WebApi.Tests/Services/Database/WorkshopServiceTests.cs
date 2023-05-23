@@ -326,6 +326,7 @@ public class WorkshopServiceTests
         var changedFirstEntity = WithWorkshop(id);
         var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(changedFirstEntity);
         changedFirstEntity.Teachers = teachers;
+        changedFirstEntity.DateTimeRanges = new List<DateTimeRange>();
         SetupUpdate(changedFirstEntity);
         var expectedTeachers = teachers.Select(s => mapper.Map<TeacherDTO>(s));
 
@@ -695,6 +696,11 @@ public class WorkshopServiceTests
         workshopRepository.Setup(w => w.UnitOfWork.CompleteAsync()).ReturnsAsync(It.IsAny<int>());
         mapperMock.Setup(m => m.Map<WorkshopDTO>(workshop))
             .Returns(mapper.Map<WorkshopDTO>(workshop));
+        mapperMock.Setup(m => m.Map<List<DateTimeRange>>(It.IsAny<List<DateTimeRangeDto>>()))
+            .Returns(mapper.Map<List<DateTimeRange>>(It.IsAny<List<DateTimeRangeDto>>()));
+
+        workshopRepository.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
+            .Returns((Func<Task<Workshop>> f) => f.Invoke());
     }
 
     private void SetupDelete(Workshop workshop)
