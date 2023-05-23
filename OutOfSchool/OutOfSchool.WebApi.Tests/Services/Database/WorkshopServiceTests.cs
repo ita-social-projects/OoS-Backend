@@ -414,6 +414,12 @@ public class WorkshopServiceTests
         mapperMock.Setup(m => m.Map<WorkshopDTO>(workshopDtoMock))
             .Returns(mapper.Map<WorkshopDTO>(workshopDtoMock));
 
+        mapperMock.Setup(m => m.Map<List<DateTimeRange>>(It.IsAny<List<DateTimeRangeDto>>()))
+            .Returns(mapper.Map<List<DateTimeRange>>(It.IsAny<List<DateTimeRangeDto>>()));
+
+        workshopRepository.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
+            .Returns((Func<Task<Workshop>> f) => f.Invoke());
+
         // Act
         var result = await workshopService.Update(mapper.Map<WorkshopDTO>(inputWorkshopDto)).ConfigureAwait(false);
 
@@ -551,49 +557,69 @@ public class WorkshopServiceTests
         return RatingsGenerator.GetAverageRatings(workshopGuids);
     }
 
-    private static Workshop WithWorkshop(Guid id)
+    private static Workshop WithWorkshop(Guid id) => new Workshop()
     {
-        return new Workshop()
+        Id = id,
+        Title = "ChangedTitle",
+        Phone = "1111111111",
+        Price = 1000,
+        WithDisabilityOptions = true,
+        ProviderTitle = "ProviderTitle",
+        DisabilityOptionsDesc = "Desc1",
+        Website = "website1",
+        Instagram = "insta1",
+        Facebook = "facebook1",
+        Email = "email1@gmail.com",
+        MaxAge = 10,
+        MinAge = 4,
+        ProviderOwnership = OwnershipType.Private,
+        Status = WorkshopStatus.Open,
+        CoverImageId = "image1",
+        ProviderId = new Guid("65eb933f-6502-4e89-a7cb-65901e51d119"),
+        InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
+        AddressId = 55,
+        Address = new Address
         {
-            Id = id,
-            Title = "ChangedTitle",
-            Phone = "1111111111",
-            Price = 1000,
-            WithDisabilityOptions = true,
-            ProviderTitle = "ProviderTitle",
-            DisabilityOptionsDesc = "Desc1",
-            Website = "website1",
-            Instagram = "insta1",
-            Facebook = "facebook1",
-            Email = "email1@gmail.com",
-            MaxAge = 10,
-            MinAge = 4,
-            ProviderOwnership = OwnershipType.Private,
-            Status = WorkshopStatus.Open,
-            CoverImageId = "image1",
-            ProviderId = new Guid("65eb933f-6502-4e89-a7cb-65901e51d119"),
-            InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
-            AddressId = 55,
-            Address = new Address
+            Id = 55,
+            CATOTTGId = 4970,
+            Street = "Street55",
+            BuildingNumber = "BuildingNumber55",
+            Latitude = 10,
+            Longitude = 10,
+        },
+        WorkshopDescriptionItems = new[]
+        {
+            new WorkshopDescriptionItem()
             {
-                Id = 55,
-                CATOTTGId = 4970,
-                Street = "Street55",
-                BuildingNumber = "BuildingNumber55",
-                Latitude = 10,
-                Longitude = 10,
+                Id = Guid.NewGuid(),
+                SectionName = "Workshop description heading 1",
+                Description = "Workshop description text 1",
             },
-            WorkshopDescriptionItems = new[]
+        },
+        DateTimeRanges = new List<DateTimeRange>()
+        {
+            new DateTimeRange
             {
-                new WorkshopDescriptionItem()
-                {
-                    Id = Guid.NewGuid(),
-                    SectionName = "Workshop description heading 1",
-                    Description = "Workshop description text 1",
-                },
+                Id = It.IsAny<long>(),
+                EndTime = It.IsAny<TimeSpan>(),
+                StartTime = It.IsAny<TimeSpan>(),
+                Workdays = default,
             },
-        };
-    }
+        },
+        Teachers = new List<Teacher>(),
+        //{
+        //    new Teacher
+        //    {
+        //        Id = Guid.NewGuid(),
+        //        FirstName = "Alex",
+        //        LastName = "Brown",
+        //        MiddleName = "SomeMiddleName",
+        //        Description = "Description",
+        //        DateOfBirth = DateTime.Parse("2000-01-01"),
+        //        WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
+        //    },
+        //},
+    };
 
     private Workshop WithNullWorkshopEntity()
     {
