@@ -9,6 +9,9 @@ public static class ConfigureIdentityExtensions
         MySqlServerVersion serverVersion,
         string migrationsAssembly)
     {
+        services.AddTransient<IEntityRepository<long, PermissionsForRole>, EntityRepository<long, PermissionsForRole>>();
+        services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
+
         services.AddIdentity<User, IdentityRole>(options =>
         {
             options.Password.RequireDigit = true;
