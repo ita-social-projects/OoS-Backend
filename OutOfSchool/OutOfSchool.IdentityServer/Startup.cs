@@ -98,8 +98,6 @@ public static class Startup
         services.AddProxy();
         services.AddAutoMapper(typeof(MappingProfile));
         services.AddTransient<IParentRepository, ParentRepository>();
-        services.AddTransient<IEntityRepository<long, PermissionsForRole>, EntityRepository<long, PermissionsForRole>>();
-        services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
         services.AddTransient<IProviderAdminService, ProviderAdminService>();
         services.AddTransient<IUserManagerAdditionalService, UserManagerAdditionalService>();
         services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
