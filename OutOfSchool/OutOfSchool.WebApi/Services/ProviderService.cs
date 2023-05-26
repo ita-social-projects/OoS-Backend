@@ -672,12 +672,24 @@ public class ProviderService : IProviderService, INotificationReciever
 
             foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
             {
-                tempPredicate = tempPredicate.Or(
-                    x => x.FullTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.ActualAddress.CATOTTG.Name.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.LegalAddress.CATOTTG.Name.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.EdrpouIpn.StartsWith(word, StringComparison.InvariantCultureIgnoreCase));
+                if (word.Any(c => char.IsLetter(c)))
+                {
+                    tempPredicate = tempPredicate.Or(
+                        x => x.FullTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                            || x.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                            || x.Email.Contains(word, StringComparison.InvariantCultureIgnoreCase));
+                }
+                else
+                {
+                    string searchNumber = string.Join(string.Empty, word.Where(c => char.IsNumber(c)));
+                    if (searchNumber.Length > 0)
+                    {
+                        tempPredicate = tempPredicate.Or(
+                            x => x.PhoneNumber.Contains(searchNumber, StringComparison.InvariantCultureIgnoreCase)
+                                || x.EdrpouIpn.Contains(searchNumber, StringComparison.InvariantCultureIgnoreCase)
+                                || x.Email.Contains(searchNumber, StringComparison.InvariantCultureIgnoreCase));
+                    }
+                }
             }
 
             predicate = predicate.And(tempPredicate);
