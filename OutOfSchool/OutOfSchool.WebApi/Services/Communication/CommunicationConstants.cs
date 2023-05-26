@@ -22,15 +22,15 @@ public static class CommunicationConstants
 
     public const string ReinviteMinistryAdmin = "ministryadmin/reinvite/";
     
-    public const string UpdateOtgAdmin = "regionadmin/update/";
+    public const string UpdateAreaAdmin = "areaadmin/update/";
 
-    public const string DeleteOtgAdmin = "regionadmin/delete/";
+    public const string DeleteAreaAdmin = "areaadmin/delete/";
 
-    public const string BlockOtgAdmin = "regionadmin/block/";
+    public const string BlockAreaAdmin = "areaadmin/block/";
 
-    public const string ReinviteOtgAdmin = "regionadmin/reinvite/";
+    public const string ReinviteAreaAdmin = "areaadmin/reinvite/";
 
-    public const string CreateOtgnAdmin = "otgadmin/create";
+    public const string CreateAreaAdmin = "areaadmin/create";
     
     public const string CreateRegionAdmin = "regionadmin/create";
     

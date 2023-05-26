@@ -70,13 +70,13 @@ public class AreaAdminController : Controller
     /// </summary>
     /// <param name="id">AreaAdmin id.</param>
     /// <returns>Authorized AreaAdmin's profile.</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RegionAdminDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AreaAdminDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HasPermission(Permissions.RegionAdminRead)]
+    [HasPermission(Permissions.AreaAdminRead)]
     [HttpGet]
     public async Task<IActionResult> GetById([FromQuery] string id)
     {
@@ -94,13 +94,13 @@ public class AreaAdminController : Controller
     /// </summary>
     /// <param name="filter">Entity that represents searching parameters.</param>
     /// <returns><see cref="SearchResult{AreaAdminDto}"/>, or no content.</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<RegionAdminDto>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<AreaAdminDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HasPermission(Permissions.RegionAdminEdit)]
+    [HasPermission(Permissions.AreaAdminEdit)]
     [HttpGet]
     public async Task<IActionResult> GetByFilter([FromQuery] AreaAdminFilter filter)
     {
@@ -119,13 +119,13 @@ public class AreaAdminController : Controller
     /// </summary>
     /// <param name="areaAdminBase">Entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(RegionAdminBaseDto))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AreaAdminBaseDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HasPermission(Permissions.RegionAdminAddNew)]
+    [HasPermission(Permissions.AreaAdminAddNew)]
     [HttpPost]
     public async Task<ActionResult> Create(AreaAdminBaseDto areaAdminBase)
     {
@@ -159,11 +159,11 @@ public class AreaAdminController : Controller
     /// </summary>
     /// <param name="updateAreaAdminDto">AreaAdminDto object with new properties.</param>
     /// <returns>AreaAdmin's key.</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RegionAdminDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AreaAdminDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HasPermission(Permissions.RegionAdminEdit)]
+    [HasPermission(Permissions.AreaAdminEdit)]
     [HttpPut]
     public async Task<ActionResult> Update(AreaAdminDto updateAreaAdminDto)
     {
@@ -238,7 +238,7 @@ public class AreaAdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [HasPermission(Permissions.RegionAdminRemove)]
+    [HasPermission(Permissions.AreaAdminRemove)]
     [HttpDelete]
     public async Task<ActionResult> Delete(string areaAdminId)
     {
@@ -273,14 +273,14 @@ public class AreaAdminController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [HasPermission(Permissions.RegionAdminBlock)]
+    [HasPermission(Permissions.AreaAdminBlock)]
     [HttpPut]
-    public async Task<ActionResult> Block(string otgAdminId, bool? isBlocked)
+    public async Task<ActionResult> Block(string areaAdminId, bool? isBlocked)
     {
         logger.LogDebug($"{path} started. User(id): {currentUserId}.");
 
         if (currentUserRole == nameof(Role.MinistryAdmin).ToLower()
-            && !await areaAdminService.IsAreaAdminSubordinateAsync(currentUserId, otgAdminId))
+            && !await areaAdminService.IsAreaAdminSubordinateAsync(currentUserId, areaAdminId))
         {
             logger.LogDebug("Forbidden to block AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
             return StatusCode(403, "Forbidden to block AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
@@ -293,7 +293,7 @@ public class AreaAdminController : Controller
         }
 
         var response = await areaAdminService.BlockAreaAdminAsync(
-                otgAdminId,
+                areaAdminId,
                 currentUserId,
                 await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false),
                 (bool)isBlocked)
@@ -304,7 +304,7 @@ public class AreaAdminController : Controller
             _ =>
             {
                 logger.LogInformation(
-                    $"Successfully blocked AreaAdmin(id): {otgAdminId} by User(id): {currentUserId}.");
+                    $"Successfully blocked AreaAdmin(id): {areaAdminId} by User(id): {currentUserId}.");
                 return Ok();
             });
     }
@@ -320,7 +320,7 @@ public class AreaAdminController : Controller
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HasPermission(Permissions.RegionAdminEdit)]
+    [HasPermission(Permissions.AreaAdminEdit)]
     [HttpPut("{regionAdminId}")]
     public async Task<IActionResult> Reinvite(string areaAdminId)
     {

@@ -117,10 +117,14 @@ public static class Startup
         services.AddTransient<IUserManagerAdditionalService, UserManagerAdditionalService>();
         services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
         services.AddTransient<IRegionAdminRepository, RegionAdminRepository>();
+        services.AddTransient<IAreaAdminRepository, AreaAdminRepository>();
         services.AddTransient<ICommonMinistryAdminService<MinistryAdminBaseDto>,
             CommonMinistryAdminService<Guid, InstitutionAdmin, MinistryAdminBaseDto, IInstitutionAdminRepository>>();
         services.AddTransient<ICommonMinistryAdminService<RegionAdminBaseDto>,
             CommonMinistryAdminService<long, RegionAdmin, RegionAdminBaseDto, IRegionAdminRepository>>();
+        services.AddTransient<ICommonMinistryAdminService<AreaAdminBaseDto>,
+            CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, IAreaAdminRepository>>();
+
         services.AddTransient<IProviderAdminChangesLogService, ProviderAdminChangesLogService>();
 
         // Register the Permission policy handlers

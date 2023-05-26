@@ -94,7 +94,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Post,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateOtgnAdmin),
+            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateAreaAdmin),
             Token = token,
             Data = areaAdminBaseDto,
             RequestId = Guid.NewGuid(),
@@ -246,9 +246,9 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.UpdateRegionAdmin + updateAreaAdminDto.Id),
+            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.UpdateAreaAdmin + updateAreaAdminDto.Id),
             Token = token,
-            Data = mapper.Map<AreaAdminBaseDto>(updateAreaAdminDto),
+            Data = mapper.Map<AreaAdminBaseDto>(updateAreaAdminDto), 
             RequestId = Guid.NewGuid(),
         };
 
@@ -271,20 +271,20 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? mapper.Map<AreaAdminDto>(JsonConvert.DeserializeObject<RegionAdminBaseDto>(result.Result.ToString()))
+                ? mapper.Map<AreaAdminDto>(JsonConvert.DeserializeObject<AreaAdminBaseDto>(result.Result.ToString()))
                 : null);
     }
 
-    public async Task<Either<ErrorResponse, ActionResult>> DeleteAreaAdminAsync(string otgAdminId, string userId, string token)
+    public async Task<Either<ErrorResponse, ActionResult>> DeleteAreaAdminAsync(string areaAdminId, string userId, string token)
     {
-        Logger.LogDebug("AreaAdmin(id): {OtgAdminId} deleting was started. User(id): {UserId}", otgAdminId, userId);
+        Logger.LogDebug("AreaAdmin(id): {AreaAdminId} deleting was started. User(id): {UserId}", areaAdminId, userId);
 
-        var otgAdmin = await areaAdminRepository.GetByIdAsync(otgAdminId)
+        var otgAdmin = await areaAdminRepository.GetByIdAsync(areaAdminId)
             .ConfigureAwait(false);
 
         if (otgAdmin is null)
         {
-            Logger.LogError("AreaAdmin(id) {OtgAdminId} not found. User(id): {UserId}", otgAdminId, userId);
+            Logger.LogError("AreaAdmin(id) {AreaAdminId} not found. User(id): {UserId}", areaAdminId, userId);
 
             return new ErrorResponse
             {
@@ -295,7 +295,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Delete,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.DeleteOtgAdmin + otgAdminId),
+            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.DeleteAreaAdmin + areaAdminId),
             Token = token,
             RequestId = Guid.NewGuid(),
         };
@@ -323,16 +323,16 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
                     .DeserializeObject<ActionResult>(result.Result.ToString())
                 : null);
     }
-    public async Task<Either<ErrorResponse, ActionResult>> BlockAreaAdminAsync(string otgAdminId, string userId, string token, bool isBlocked)
+    public async Task<Either<ErrorResponse, ActionResult>> BlockAreaAdminAsync(string areaAdminId, string userId, string token, bool isBlocked)
     {
-        Logger.LogDebug("RegionAdmin(id): {OtgAdminId} blocking was started. User(id): {UserId}", otgAdminId, userId);
+        Logger.LogDebug("AreaAdmin(id): {AreaAdminId} blocking was started. User(id): {UserId}", areaAdminId, userId);
 
-        var otgAdmin = await areaAdminRepository.GetByIdAsync(otgAdminId)
+        var otgAdmin = await areaAdminRepository.GetByIdAsync(areaAdminId)
             .ConfigureAwait(false);
 
         if (otgAdmin is null)
         {
-            Logger.LogError("RegionAdmin(id) {OtgAdminId} not found. User(id): {UserId}", otgAdminId, userId);
+            Logger.LogError("AreaAdmin(id) {AreaAdminId} not found. User(id): {UserId}", areaAdminId, userId);
 
             return new ErrorResponse
             {
@@ -344,8 +344,8 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         {
             HttpMethodType = HttpMethodType.Put,
             Url = new Uri(identityServerConfig.Authority, string.Concat(
-                CommunicationConstants.BlockOtgAdmin,
-                otgAdminId,
+                CommunicationConstants.BlockAreaAdmin,
+                areaAdminId,
                 "/",
                 isBlocked)),
             Token = token,
@@ -378,22 +378,22 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
 
     /// <inheritdoc/>
     public async Task<Either<ErrorResponse, ActionResult>> ReinviteAreaAdminAsync(
-        string otgAdminId,
+        string areaAdminId,
         string userId,
         string token)
     {
         Logger.LogDebug(
-            "AreaAdmin(id): {OtgAdminId} reinvite was started. User(id): {UserId}",
-            otgAdminId,
+            "AreaAdmin(id): {AreaAdminId} reinvite was started. User(id): {UserId}",
+            areaAdminId,
             userId);
 
-        var otgAdmin = await areaAdminRepository.GetByIdAsync(otgAdminId).ConfigureAwait(false);
-        if (otgAdmin == null)
+        var areaAdmin = await areaAdminRepository.GetByIdAsync(areaAdminId).ConfigureAwait(false);
+        if (areaAdmin == null)
         {
             return null;
         }
 
-        var user = (await userRepository.GetByFilter(u => u.Id == otgAdmin.UserId).ConfigureAwait(false))
+        var user = (await userRepository.GetByFilter(u => u.Id == areaAdmin.UserId).ConfigureAwait(false))
             .SingleOrDefault();
         if (user == null)
         {
@@ -412,8 +412,8 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         {
             HttpMethodType = HttpMethodType.Put,
             Url = new Uri(identityServerConfig.Authority, string.Concat(
-                CommunicationConstants.ReinviteRegionAdmin,
-                otgAdminId,
+                CommunicationConstants.ReinviteAreaAdmin,
+                areaAdminId,
                 new PathString("/"))),
             Token = token,
             RequestId = Guid.NewGuid(),
@@ -441,13 +441,13 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
     }
 
     /// <inheritdoc/>
-    public async Task<bool> IsAreaAdminSubordinateAsync(string ministryAdminUserId, string otgAdminId)
+    public async Task<bool> IsAreaAdminSubordinateAsync(string ministryAdminUserId, string areaAdminId)
     {
         _= ministryAdminUserId ?? throw new ArgumentNullException(nameof(ministryAdminUserId));
-        _ = otgAdminId ?? throw new ArgumentNullException(nameof(otgAdminId));
+        _ = areaAdminId ?? throw new ArgumentNullException(nameof(areaAdminId));
 
         var ministryAdmin = await ministryAdminService.GetByIdAsync(ministryAdminUserId).ConfigureAwait(false);
-        var otgAdmin = await areaAdminRepository.GetByIdAsync(otgAdminId).ConfigureAwait(false);
+        var otgAdmin = await areaAdminRepository.GetByIdAsync(areaAdminId).ConfigureAwait(false);
 
         return ministryAdmin.InstitutionId == otgAdmin.InstitutionId;
     }
