@@ -70,7 +70,20 @@ public static class Startup
         // ExternalUris options
         services.Configure<AngularClientScopeExternalUrisConfig>(config.GetSection(AngularClientScopeExternalUrisConfig.Name));
 
-        services.ConfigureIdentity(connectionString, issuerSection["Uri"], serverVersion, migrationsAssembly);
+        services.ConfigureIdentity(
+            connectionString,
+            issuerSection["Uri"],
+            serverVersion,
+            migrationsAssembly,
+            identityBuilder =>
+            {
+                identityBuilder.AddTokenProvider<DataProtectorTokenProvider<User>>(TokenOptions.DefaultProvider);
+            },
+            identityServerBuilder =>
+            {
+                identityServerBuilder.AddAspNetIdentity<User>();
+                identityServerBuilder.AddProfileService<ProfileService>();
+            });
 
         services.ConfigureApplicationCookie(c =>
         {
@@ -85,7 +98,7 @@ public static class Startup
         services.AddEmailSender(
             builder.Environment.IsDevelopment(),
             mailConfig.SendGridKey,
-            builder => builder.Bind(config.GetSection(EmailOptions.SectionName)));
+            emailOptions => emailOptions.Bind(config.GetSection(EmailOptions.SectionName)));
 
         services.AddControllersWithViews()
             .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
@@ -97,6 +110,8 @@ public static class Startup
 
         services.AddProxy();
         services.AddAutoMapper(typeof(MappingProfile));
+        services.AddTransient(typeof(IEntityRepository<,>), typeof(EntityRepository<,>));
+        services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
         services.AddTransient<IParentRepository, ParentRepository>();
         services.AddTransient<IProviderAdminService, ProviderAdminService>();
         services.AddTransient<IUserManagerAdditionalService, UserManagerAdditionalService>();
@@ -106,8 +121,6 @@ public static class Startup
             CommonMinistryAdminService<Guid, InstitutionAdmin, MinistryAdminBaseDto, IInstitutionAdminRepository>>();
         services.AddTransient<ICommonMinistryAdminService<RegionAdminBaseDto>,
             CommonMinistryAdminService<long, RegionAdmin, RegionAdminBaseDto, IRegionAdminRepository>>();
-
-        services.AddTransient<IEntityRepository<long, ProviderAdminChangesLog>, EntityRepository<long, ProviderAdminChangesLog>>();
         services.AddTransient<IProviderAdminChangesLogService, ProviderAdminChangesLogService>();
 
         // Register the Permission policy handlers

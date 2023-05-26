@@ -1,4 +1,5 @@
-﻿namespace OutOfSchool.IdentityServer.Extensions;
+﻿#nullable enable
+namespace OutOfSchool.IdentityServer.Extensions;
 
 public static class ConfigureIdentityExtensions
 {
@@ -7,23 +8,23 @@ public static class ConfigureIdentityExtensions
         string connectionString,
         string issuerUri,
         MySqlServerVersion serverVersion,
-        string migrationsAssembly)
+        string migrationsAssembly,
+        Action<IdentityBuilder>? msIdentityConfig = null,
+        Action<IIdentityServerBuilder>? identityServerConfig = null)
     {
-        services.AddTransient<IEntityRepository<long, PermissionsForRole>, EntityRepository<long, PermissionsForRole>>();
-        services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
+        var identityBuilder = services.AddIdentity<User, IdentityRole>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequiredLength = 8;
+            })
+            .AddEntityFrameworkStores<OutOfSchoolDbContext>();
 
-        services.AddIdentity<User, IdentityRole>(options =>
-        {
-            options.Password.RequireDigit = true;
-            options.Password.RequireLowercase = true;
-            options.Password.RequireNonAlphanumeric = true;
-            options.Password.RequireUppercase = true;
-            options.Password.RequiredLength = 8;
-        })
-            .AddEntityFrameworkStores<OutOfSchoolDbContext>()
-            .AddTokenProvider<DataProtectorTokenProvider<User>>(TokenOptions.DefaultProvider);
+        msIdentityConfig?.Invoke(identityBuilder);
 
-        services.AddIdentityServer(options => { options.IssuerUri = issuerUri; })
+        var identityServerBuilder = services.AddIdentityServer(options => { options.IssuerUri = issuerUri; })
             .AddConfigurationStore(options =>
             {
                 options.ConfigureDbContext = builder =>
@@ -42,12 +43,12 @@ public static class ConfigureIdentityExtensions
                 options.EnableTokenCleanup = true;
                 options.TokenCleanupInterval = 3600;
             })
-            .AddAspNetIdentity<User>()
-            .AddProfileService<ProfileService>()
             .AddCustomKeyManagement<CertificateDbContext>(builder =>
                 builder.UseMySql(
                     connectionString,
                     serverVersion,
                     sql => sql.MigrationsAssembly(migrationsAssembly)));
+
+        identityServerConfig?.Invoke(identityServerBuilder);
     }
 }
