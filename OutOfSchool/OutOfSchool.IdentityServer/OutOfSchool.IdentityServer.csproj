@@ -9,6 +9,7 @@
     </PropertyGroup>
     <ItemGroup>
         <Protobuf Include="..\OutOfSchool.GRPC\Protos\ProviderAdmin.proto" GrpcServices="Server" />
+        <PackageReference Include="AutoMapper" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
         <PackageReference Include="Grpc.AspNetCore" />
         <PackageReference Include="IdentityServer4.AccessTokenValidation" />
