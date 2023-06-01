@@ -23,5 +23,5 @@ public class InstitutionHierarchy : IKeyedEntity<Guid>
 
     public virtual Institution Institution { get; set; }
 
-    public virtual ICollection<Direction> Directions { get; set; }
+    public virtual List<Direction> Directions { get; set; }
 }

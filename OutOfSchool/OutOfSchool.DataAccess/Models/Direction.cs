@@ -17,5 +17,5 @@ public class Direction : IKeyedEntity<long>
     [MaxLength(500)]
     public string Description { get; set; } = string.Empty;
 
-    public virtual ICollection<InstitutionHierarchy> InstitutionHierarchies { get; set; }
+    public virtual List<InstitutionHierarchy> InstitutionHierarchies { get; set; }
 }

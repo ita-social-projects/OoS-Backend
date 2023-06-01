@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -16,7 +17,7 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure;
 
 public class InstitutionHierarchyService : IInstitutionHierarchyService
 {
-    private readonly ISensitiveEntityRepository<InstitutionHierarchy> repository;
+    private readonly IInstitutionHierarchyRepository repository;
     private readonly IWorkshopRepository repositoryWorkshop;
     private readonly IProviderRepository repositoryProvider;
     private readonly ILogger<InstitutionHierarchyService> logger;
@@ -35,7 +36,7 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
     /// <param name="mapper">Mapper.</param>
     /// <param name="cache">Redis cache service.</param>
     public InstitutionHierarchyService(
-        ISensitiveEntityRepository<InstitutionHierarchy> repository,
+        IInstitutionHierarchyRepository repository,
         IWorkshopRepository repositoryWorkshop,
         IProviderRepository repositoryProvider,
         ILogger<InstitutionHierarchyService> logger,
@@ -223,7 +224,11 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
 
         try
         {
-            var institutionHierarchy = await repository.Update(mapper.Map<InstitutionHierarchy>(dto)).ConfigureAwait(false);
+            var institutionHierarchy = await repository
+                .Update(
+                    mapper.Map<InstitutionHierarchy>(dto),
+                    dto.Directions.Select(d => d.Id).ToList())
+                .ConfigureAwait(false);
 
             logger.LogInformation($"InstitutionHierarchy with Id = {institutionHierarchy?.Id} updated succesfully.");
 

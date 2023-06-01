@@ -259,8 +259,7 @@ public static class Startup
         services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
         services.AddTransient<IChangesLogRepository, ChangesLogRepository>();
         services.AddTransient<IGeocodingService, GeocodingService>();
-
-
+        services.AddTransient<IInstitutionHierarchyRepository, InstitutionHierarchyRepository>();
         services.AddTransient<IAchievementTypeService, AchievementTypeService>();
         services.AddTransient<IAchievementRepository, AchievementRepository>();
         services.AddTransient<IAchievementService, AchievementService>();

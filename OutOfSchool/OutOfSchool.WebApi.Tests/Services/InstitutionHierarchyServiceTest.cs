@@ -10,9 +10,11 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Redis;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Services.SubordinationStructure;
 
@@ -21,7 +23,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 [TestFixture]
 public class InstitutionHierarchyServiceTests
 {
-    private Mock<ISensitiveEntityRepository<InstitutionHierarchy>> repo;
+    private Mock<IInstitutionHierarchyRepository> repo;
     private Mock<IWorkshopRepository> repositoryWorkshop;
     private Mock<IProviderRepository> repositoryProvider;
     private IInstitutionHierarchyService service;
@@ -33,7 +35,7 @@ public class InstitutionHierarchyServiceTests
     [SetUp]
     public void SetUp()
     {
-        repo = new Mock<ISensitiveEntityRepository<InstitutionHierarchy>>();
+        repo = new Mock<IInstitutionHierarchyRepository>();
         repositoryWorkshop = new Mock<IWorkshopRepository>();
         repositoryProvider = new Mock<IProviderRepository>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
@@ -231,6 +233,9 @@ public class InstitutionHierarchyServiceTests
         // Arrange
         Guid institutionId = Guid.NewGuid();
         Guid hierarchyId = Guid.NewGuid();
+        List<long> directionsIds = new List<long> { 1 };
+        List<Direction> directions = new List<Direction> { new Direction() { Id = 1, Title = "Direction" } };
+        List<DirectionDto> directionsDtos = new List<DirectionDto> { new DirectionDto() { Id = 1, Title = "Direction" } };
 
         var changedEntity = new InstitutionHierarchy()
         {
@@ -238,6 +243,7 @@ public class InstitutionHierarchyServiceTests
             Title = "ChangedTitle1",
             HierarchyLevel = 1,
             InstitutionId = institutionId,
+            Directions = directions,
         };
 
         var changedDto = new InstitutionHierarchyDto()
@@ -246,17 +252,18 @@ public class InstitutionHierarchyServiceTests
             Title = "ChangedTitle1",
             HierarchyLevel = 1,
             InstitutionId = institutionId,
+            Directions = directionsDtos,
         };
 
         mapper.Setup(m => m.Map<InstitutionHierarchyDto>(changedEntity)).Returns(changedDto);
         mapper.Setup(m => m.Map<InstitutionHierarchy>(changedDto)).Returns(changedEntity);
-        repo.Setup(r => r.Update(changedEntity)).ReturnsAsync(changedEntity);
+        repo.Setup(r => r.Update(changedEntity, directionsIds)).ReturnsAsync(changedEntity);
 
         // Act
         var result = await service.Update(changedDto).ConfigureAwait(false);
 
         // Assert
-        repo.Verify(r => r.Update(changedEntity), Times.Once);
+        repo.Verify(r => r.Update(changedEntity, directionsIds), Times.Once);
         Assert.That(changedEntity.Title, Is.EqualTo(result.Title));
     }
 
@@ -266,6 +273,9 @@ public class InstitutionHierarchyServiceTests
         // Arrange
         Guid institutionId = Guid.NewGuid();
         Guid hierarchyId = Guid.NewGuid();
+        List<long> directionsIds = new List<long> { 1 };
+        List<Direction> directions = new List<Direction> { new Direction() { Id = 1, Title = "Direction" } };
+        List<DirectionDto> directionsDtos = new List<DirectionDto> { new DirectionDto() { Id = 1, Title = "Direction" } };
 
         var changedEntity = new InstitutionHierarchy()
         {
@@ -273,6 +283,7 @@ public class InstitutionHierarchyServiceTests
             Title = "ChangedTitle1",
             HierarchyLevel = 1,
             InstitutionId = institutionId,
+            Directions = directions,
         };
 
         var changedDto = new InstitutionHierarchyDto()
@@ -281,10 +292,11 @@ public class InstitutionHierarchyServiceTests
             Title = "ChangedTitle1",
             HierarchyLevel = 1,
             InstitutionId = institutionId,
+            Directions = directionsDtos,
         };
 
         mapper.Setup(m => m.Map<InstitutionHierarchy>(changedDto)).Returns(changedEntity);
-        repo.Setup(r => r.Update(changedEntity)).Throws<DbUpdateConcurrencyException>();
+        repo.Setup(r => r.Update(changedEntity, directionsIds)).Throws<DbUpdateConcurrencyException>();
 
         // Act and Assert
         Assert.ThrowsAsync<DbUpdateConcurrencyException>(
