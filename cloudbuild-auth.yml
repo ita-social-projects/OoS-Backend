@@ -4,8 +4,8 @@ steps:
   entrypoint: 'pack'
   args:
     - build
-    - gcr.io/$PROJECT_ID/oos-auth:$SHORT_SHA
-    - --cache-image=gcr.io/$PROJECT_ID/oos-cache:auth
+    - ${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-auth:$SHORT_SHA
+    - --cache-image=${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-cache:auth
     - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --buildpack=gcr.io/paketo-buildpacks/environment-variables
     - --builder=paketobuildpacks/builder:base
