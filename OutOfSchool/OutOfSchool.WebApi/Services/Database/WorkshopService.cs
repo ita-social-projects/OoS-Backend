@@ -82,6 +82,7 @@ public class WorkshopService : IWorkshopService
 
         var workshop = mapper.Map<Workshop>(dto);
         workshop.Provider = await providerRepository.GetById(workshop.ProviderId).ConfigureAwait(false);
+        workshop.ProviderOwnership = workshop.Provider.Ownership;
 
         if (dto.Teachers is not null)
         {
