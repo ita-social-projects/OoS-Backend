@@ -524,6 +524,9 @@ public class ApplicationServiceTests
 
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
 
+        currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
+        currentUserServiceMock.Setup(c => c.UserSubRole).Returns(string.Empty);
+
         // Act
         var result = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
 
@@ -576,6 +579,9 @@ public class ApplicationServiceTests
             .ReturnsAsync(new List<Workshop>());
 
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
+
+        currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
+        currentUserServiceMock.Setup(c => c.UserSubRole).Returns("");
 
         // Act
         var result = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);

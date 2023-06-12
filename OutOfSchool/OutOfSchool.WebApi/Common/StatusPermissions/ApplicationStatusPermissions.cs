@@ -7,16 +7,9 @@ public class ApplicationStatusPermissions : StatusPermissions<ApplicationStatus>
     public ApplicationStatusPermissions()
     {
         // allow statuses for Admin/TechAdmin
-        AllowStatusChange("admin", "all", fromStatus: ApplicationStatus.Pending);
         AllowStatusChange("techadmin", "all", fromStatus: ApplicationStatus.Pending);
-
-        AllowStatusChange("admin", "all", fromStatus: ApplicationStatus.Approved, toStatus: ApplicationStatus.StudyingForYears);
         AllowStatusChange("techadmin", "all", fromStatus: ApplicationStatus.Approved, toStatus: ApplicationStatus.StudyingForYears);
-
-        AllowStatusChange("admin", "all", fromStatus: ApplicationStatus.Approved, toStatus: ApplicationStatus.Rejected);
         AllowStatusChange("techadmin", "all", fromStatus: ApplicationStatus.Approved, toStatus: ApplicationStatus.Rejected);
-
-        AllowStatusChange("admin", "all", fromStatus: ApplicationStatus.StudyingForYears, toStatus: ApplicationStatus.Completed);
         AllowStatusChange("techadmin", "all", fromStatus: ApplicationStatus.StudyingForYears, toStatus: ApplicationStatus.Completed);
 
         // allow statuses for Parent
@@ -41,19 +34,10 @@ public class ApplicationStatusPermissions : StatusPermissions<ApplicationStatus>
         DenyStatusChange("all", "all", toStatus: ApplicationStatus.AcceptedForSelection);
 
         // allow statuses for Admin/TechAdmin
-        AllowStatusChange("admin", "all", fromStatus: ApplicationStatus.Approved, toStatus: ApplicationStatus.Pending);
         AllowStatusChange("techadmin", "all", fromStatus: ApplicationStatus.Approved, toStatus: ApplicationStatus.Pending);
-
-        AllowStatusChange("admin", "all", fromStatus: ApplicationStatus.Approved, toStatus: ApplicationStatus.Completed);
         AllowStatusChange("techadmin", "all", fromStatus: ApplicationStatus.Approved, toStatus: ApplicationStatus.Completed);
-
-        AllowStatusChange("admin", "all", fromStatus: ApplicationStatus.Approved, toStatus: ApplicationStatus.Left);
         AllowStatusChange("techadmin", "all", fromStatus: ApplicationStatus.Approved, toStatus: ApplicationStatus.Left);
-
-        AllowStatusChange("admin", "all", fromStatus: ApplicationStatus.StudyingForYears, toStatus: ApplicationStatus.Rejected);
         AllowStatusChange("techadmin", "all", fromStatus: ApplicationStatus.StudyingForYears, toStatus: ApplicationStatus.Rejected);
-
-        AllowStatusChange("admin", "all", fromStatus: ApplicationStatus.StudyingForYears, toStatus: ApplicationStatus.Left);
         AllowStatusChange("techadmin", "all", fromStatus: ApplicationStatus.StudyingForYears, toStatus: ApplicationStatus.Left);
 
         // parent
@@ -80,16 +64,9 @@ public class ApplicationStatusPermissions : StatusPermissions<ApplicationStatus>
     public void InitCompetitiveSelectionPermissions()
     {
         // allow statuses for Admin/TechAdmin
-        AllowStatusChange("admin", "all", fromStatus: ApplicationStatus.Rejected, toStatus: ApplicationStatus.Pending);
         AllowStatusChange("techadmin", "all", fromStatus: ApplicationStatus.Rejected, toStatus: ApplicationStatus.Pending);
-
-        AllowStatusChange("admin", "all", fromStatus: ApplicationStatus.AcceptedForSelection, toStatus: ApplicationStatus.Approved);
         AllowStatusChange("techadmin", "all", fromStatus: ApplicationStatus.AcceptedForSelection, toStatus: ApplicationStatus.Approved);
-
-        AllowStatusChange("admin", "all", fromStatus: ApplicationStatus.AcceptedForSelection, toStatus: ApplicationStatus.StudyingForYears);
         AllowStatusChange("techadmin", "all", fromStatus: ApplicationStatus.AcceptedForSelection, toStatus: ApplicationStatus.StudyingForYears);
-
-        AllowStatusChange("admin", "all", fromStatus: ApplicationStatus.AcceptedForSelection, toStatus: ApplicationStatus.Rejected);
         AllowStatusChange("techadmin", "all", fromStatus: ApplicationStatus.AcceptedForSelection, toStatus: ApplicationStatus.Rejected);
 
         // parent
