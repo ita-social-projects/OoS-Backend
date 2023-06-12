@@ -635,6 +635,11 @@ public class WorkshopServiceTests
 
     private void SetupCreate()
     {
+        var provider = ProvidersGenerator.Generate();
+
+        providerRepositoryMock
+            .Setup(p => p.GetById(It.IsAny<Guid>()))
+            .Returns(Task.FromResult(provider));
         workshopRepository.Setup(
                 w => w.Create(It.IsAny<Workshop>()))
             .Returns(Task.FromResult(It.IsAny<Workshop>()));
