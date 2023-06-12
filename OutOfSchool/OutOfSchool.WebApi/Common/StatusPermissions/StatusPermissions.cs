@@ -33,7 +33,7 @@ public class StatusPermissions<T>
 
     public bool CanChangeStatus(string role, string subRole, T from, T to)
     {
-        var denyResult = statusPermissionsList.Any(p =>
+        var denyResult = statusPermissionsList.Exists(p =>
             (p.Role == role || p.Role == "all")
             && (p.SubRole == subRole || p.SubRole == "all")
             && (Convert.ToInt32(p.FromStatus) == Convert.ToInt32(from) || Convert.ToInt32(p.FromStatus) == 0)
@@ -45,7 +45,7 @@ public class StatusPermissions<T>
             return false;
         }
 
-        var allowResult = statusPermissionsList.Any(p =>
+        var allowResult = statusPermissionsList.Exists(p =>
             (p.Role == role || p.Role == "all")
             && (p.SubRole == subRole || p.SubRole == "all")
             && (Convert.ToInt32(p.FromStatus) == Convert.ToInt32(from) || Convert.ToInt32(p.FromStatus) == 0)
