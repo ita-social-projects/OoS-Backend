@@ -38,7 +38,7 @@ public class StatusPermissions<T>
             && (p.SubRole == subRole || p.SubRole == "all")
             && (Convert.ToInt32(p.FromStatus) == Convert.ToInt32(from) || Convert.ToInt32(p.FromStatus) == 0)
             && (Convert.ToInt32(p.ToStatus) == Convert.ToInt32(to) || Convert.ToInt32(p.ToStatus) == 0)
-            && p.Allowed == false
+            && !p.Allowed
         );
 
         if (denyResult)
