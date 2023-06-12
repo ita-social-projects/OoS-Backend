@@ -519,6 +519,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.WithDisabilityOptions, opt => opt.Ignore())
             .ForMember(dest => dest.AvailableSeats, opt => opt.Ignore())
             .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
+            .ForMember(dest => dest.CompetitiveSelection, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderLicenseStatus, opt =>
                 opt.MapFrom(src => src.Workshop.ProviderLicenseStatus));
 

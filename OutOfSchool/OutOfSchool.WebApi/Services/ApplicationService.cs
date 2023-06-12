@@ -6,6 +6,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Common.StatusPermissions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Util;
@@ -492,11 +493,30 @@ public class ApplicationService : IApplicationService, INotificationReciever
         return result;
     }
 
-    private static void UpdateStatus(ApplicationUpdate applicationDto, Application application, bool isUserProvider)
+    private static void UpdateStatus(ApplicationUpdate applicationDto, Application application, ICurrentUserService currentUserService)
     {
-        if (application.Status is ApplicationStatus.Completed or ApplicationStatus.Rejected or ApplicationStatus.Left && !isUserProvider)
+        if (application.Status == applicationDto.Status)
         {
-            throw new ArgumentException("Forbidden to update application.");
+            return;
+        }
+
+        var applicationStatusPermissions = new ApplicationStatusPermissions();
+
+        if (application.Workshop.CompetitiveSelection)
+        {
+            applicationStatusPermissions.InitCompetitiveSelectionPermissions();
+        }
+        else
+        {
+            applicationStatusPermissions.InitDefaultPermissions();
+        }
+
+        var userRole = currentUserService.UserRole.ToLower();
+        var userSubroleName = currentUserService.UserSubRole.ToLower();
+
+        if (!applicationStatusPermissions.CanChangeStatus(userRole, userSubroleName, application.Status, applicationDto.Status))
+        {
+            throw new ArgumentException("Forbidden to update status from " + application.Status + " to " + applicationDto.Status);
         }
 
         application.Status = applicationDto.Status;
@@ -861,7 +881,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
                 }
             }
 
-            UpdateStatus(applicationDto, currentApplication, currentUserService.IsInRole(Role.Provider));
+            UpdateStatus(applicationDto, currentApplication, currentUserService);
 
             var updatedApplication = await applicationRepository.Update(
                     currentApplication,

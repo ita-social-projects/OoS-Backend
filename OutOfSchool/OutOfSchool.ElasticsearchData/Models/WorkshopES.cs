@@ -34,6 +34,7 @@ public class WorkshopES
 
     public int MaxAge { get; set; }
 
+    public bool CompetitiveSelection { get; set; }
     public decimal Price { get; set; }
 
     public PayRateType PayRate { get; set; }
