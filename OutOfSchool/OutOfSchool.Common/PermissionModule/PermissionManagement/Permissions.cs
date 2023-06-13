@@ -163,17 +163,18 @@ public enum Permissions : short
     #endregion
     
     #region AreaAdmin Control permissions # 14
+    //numbers from range 130-135 will cause troubles with migration
     [Display(GroupName = "AreaAdmin", Name = "Read", Description = "Can read area admin")]
-    AreaAdminRead = 130,
+    AreaAdminRead = 140,
     [Display(GroupName = "AreaAdmin", Name = "Edit", Description = "Can edit area admin")]
-    AreaAdminEdit = 131,
+    AreaAdminEdit = 141,
     [Display(GroupName = "AreaAdmin", Name = "Add new", Description = "Can add a new area admin")]
-    AreaAdminAddNew = 132,
+    AreaAdminAddNew = 142,
     [Display(GroupName = "AreaAdmin", Name = "Remove", Description = "Can remove area admin")]
-    AreaAdminRemove = 133,
+    AreaAdminRemove = 143,
     [Display(GroupName = "AreaAdmin", Name = "Area Admins", Description = "Can manage area admins")]
-    AreaAdmins = 134,
+    AreaAdmins = 144,
     [Display(GroupName = "AreaAdmin", Name = "Block", Description = "Can block area admin")]
-    AreaAdminBlock = 135,
+    AreaAdminBlock = 145,
     #endregion
 }

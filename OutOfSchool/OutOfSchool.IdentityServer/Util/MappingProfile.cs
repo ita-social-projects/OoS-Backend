@@ -60,5 +60,11 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => Constants.PhonePrefix + src.PhoneNumber.Right(Constants.PhoneShortLength)));
 
         CreateMap<RegionAdminBaseDto, RegionAdmin>();
+        
+        CreateMap<AreaAdminBaseDto, User>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
+            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => Constants.PhonePrefix + src.PhoneNumber.Right(Constants.PhoneShortLength)));
+
+        CreateMap<AreaAdminBaseDto, AreaAdmin>();
     }
 }
