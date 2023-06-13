@@ -80,7 +80,6 @@ public class WorkshopRepository : SensitiveEntityRepository<Workshop>, IWorkshop
     public override async Task<Workshop> Create(Workshop workshop)
     {
         await dbSet.AddAsync(workshop).ConfigureAwait(false);
-        workshop.ProviderOwnership = workshop.Provider.Ownership;
         await dbContext.SaveChangesAsync().ConfigureAwait(false);
 
         return await Task.FromResult(workshop).ConfigureAwait(false);
