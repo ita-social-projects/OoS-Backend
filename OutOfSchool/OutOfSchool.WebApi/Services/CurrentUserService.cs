@@ -5,6 +5,7 @@ using AutoMapper;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 
@@ -45,6 +46,10 @@ public class CurrentUserService : ICurrentUserService
     }
 
     public string UserId => user?.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? string.Empty;
+
+    public string UserRole => GettingUserProperties.GetUserRole(user);
+
+    public string UserSubRole => GettingUserProperties.GetUserSubrole(user);
 
     public bool IsInRole(Role role) => role switch
     {
