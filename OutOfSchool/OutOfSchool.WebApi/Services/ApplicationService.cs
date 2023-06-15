@@ -493,7 +493,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
         return result;
     }
 
-    private static void UpdateStatus(ApplicationUpdate applicationDto, Application application, ICurrentUserService currentUserService)
+    private void UpdateStatus(ApplicationUpdate applicationDto, Application application)
     {
         if (application.Status == applicationDto.Status)
         {
@@ -881,7 +881,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
                 }
             }
 
-            UpdateStatus(applicationDto, currentApplication, currentUserService);
+            UpdateStatus(applicationDto, currentApplication);
 
             var updatedApplication = await applicationRepository.Update(
                     currentApplication,
