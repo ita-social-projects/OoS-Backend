@@ -7,6 +7,7 @@ using H3Lib.Extensions;
 using Nest;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
@@ -309,6 +310,8 @@ public class WorkshopService : IWorkshopService
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherDTO>()).ConfigureAwait(false);
 
             mapper.Map(dto, currentWorkshop);
+
+            currentWorkshop.ProviderOwnership = currentWorkshop.Provider.Ownership;
 
             await UpdateWorkshop().ConfigureAwait(false);
 
