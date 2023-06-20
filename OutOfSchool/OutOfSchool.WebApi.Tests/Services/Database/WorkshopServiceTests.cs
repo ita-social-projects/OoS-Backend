@@ -328,8 +328,10 @@ public class WorkshopServiceTests
         var id = new Guid("ca2cc30c-419c-4b00-a344-b23f0cbf18d8");
         var changedFirstEntity = WithWorkshop(id);
         var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(changedFirstEntity);
+        var provider = ProvidersGenerator.Generate();
         changedFirstEntity.Teachers = teachers;
         changedFirstEntity.DateTimeRanges = new List<DateTimeRange>();
+        changedFirstEntity.Provider = provider;
         SetupUpdate(changedFirstEntity);
         var expectedTeachers = teachers.Select(s => mapper.Map<TeacherDTO>(s));
 
@@ -407,10 +409,13 @@ public class WorkshopServiceTests
     public async Task Update_WhenTryUpdateStatus_ShouldReturnEntityWithOldStatus([Random(1, 100, 1)] long classId)
     {
         // Arrange
+        var provider = ProvidersGenerator.Generate();
         var inputWorkshopDto = WithWorkshop(Guid.NewGuid());
         inputWorkshopDto.Status = WorkshopStatus.Closed;
+        inputWorkshopDto.Provider = provider;
         var expectedStatus = WorkshopStatus.Open;
         var workshopDtoMock = WithWorkshop(Guid.NewGuid());
+        workshopDtoMock.Provider = provider;
 
         workshopRepository.Setup(w => w.GetWithNavigations(It.IsAny<Guid>())).ReturnsAsync(workshopDtoMock);
         workshopRepository.Setup(w => w.UnitOfWork.CompleteAsync()).ReturnsAsync(It.IsAny<int>());

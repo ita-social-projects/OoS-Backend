@@ -7,6 +7,7 @@ using H3Lib.Extensions;
 using Nest;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
