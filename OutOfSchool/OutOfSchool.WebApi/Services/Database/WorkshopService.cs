@@ -311,8 +311,6 @@ public class WorkshopService : IWorkshopService
 
             mapper.Map(dto, currentWorkshop);
 
-            currentWorkshop.ProviderOwnership = currentWorkshop.Provider.Ownership;
-
             await UpdateWorkshop().ConfigureAwait(false);
 
             return currentWorkshop;
