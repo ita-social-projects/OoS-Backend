@@ -155,9 +155,10 @@ public class ProviderService : IProviderService, INotificationReciever
         int count = await providerRepository.Count(filterPredicate).ConfigureAwait(false);
 
         var sortExpression = new Dictionary<Expression<Func<Provider, object>>, SortDirection>
-    {
-        { x => x.User.FirstName, SortDirection.Ascending },
-    };
+        {
+            { x => x.IsBlocked, SortDirection.Ascending },
+            { x => x.Status, SortDirection.Ascending },
+        };
 
         var providers = await providerRepository
             .Get(

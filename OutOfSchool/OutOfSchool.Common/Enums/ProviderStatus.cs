@@ -6,8 +6,8 @@ namespace OutOfSchool.Common.Enums;
 [JsonConverter(typeof(StringEnumConverter))]
 public enum ProviderStatus
 {
-    Pending,
-    Editing,
-    Approved,
-    Recheck,
+    Pending = 10,
+    Editing = 20,
+    Approved = 40,
+    Recheck = 30,
 }
