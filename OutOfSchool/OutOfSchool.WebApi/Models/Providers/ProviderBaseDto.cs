@@ -76,7 +76,7 @@ public class ProviderBaseDto
 
     [Required]
     [EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]
-    public ProviderStatus Status { get; set; }
+    public ProviderStatus Status { get; set; } = ProviderStatus.Pending;
 
     [MaxLength(500)]
     public string StatusReason { get; set; }

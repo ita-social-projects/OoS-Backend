@@ -104,7 +104,7 @@ public class WorkshopDTO : IValidatableObject
     public Guid ProviderId { get; set; }
 
     [EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]
-    public ProviderStatus ProviderStatus { get; set; }
+    public ProviderStatus ProviderStatus { get; set; } = ProviderStatus.Pending;
 
     [Required]
     public long AddressId { get; set; }
