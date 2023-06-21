@@ -51,7 +51,7 @@ public class AccountControllerTests
 
         fakeIdentityServerConfig
             .SetupGet(c => c.Value)
-            .Returns(new Mock<IdentityServerConfig>().Object);
+            .Returns(new Mock<AuthServerConfig>().Object);
 
         accountController = new AccountController(
             fakeSignInManager.Object,
