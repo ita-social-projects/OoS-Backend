@@ -8,28 +8,28 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="IdentityServer4.AccessTokenValidation"/>
-        <PackageReference Include="LazyCache.AspNetCore"/>
-        <PackageReference Include="IdentityServer4"/>
-        <PackageReference Include="IdentityServer4.AspNetIdentity"/>
-        <PackageReference Include="IdentityServer4.EntityFramework"/>
+        <PackageReference Include="IdentityServer4.AccessTokenValidation" />
+        <PackageReference Include="LazyCache.AspNetCore" />
+        <PackageReference Include="IdentityServer4" />
+        <PackageReference Include="IdentityServer4.AspNetIdentity" />
+        <PackageReference Include="IdentityServer4.EntityFramework" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets"/>
-        <PackageReference Include="Microsoft.Extensions.Identity.Core"/>
-        <PackageReference Include="Microsoft.IdentityModel.Tokens"/>
-        <PackageReference Include="Newtonsoft.Json"/>
-        <PackageReference Include="Serilog.AspNetCore"/>
-        <PackageReference Include="Serilog.Enrichers.GlobalLogContext"/>
-        <PackageReference Include="Serilog.Exceptions"/>
-        <PackageReference Include="Serilog.Exceptions.EntityFrameworkCore"/>
-        <PackageReference Include="Serilog.Formatting.Elasticsearch"/>
-        <PackageReference Include="Serilog.Settings.Configuration"/>
-        <PackageReference Include="Serilog.Sinks.File"/>
-        <PackageReference Include="Serilog.Sinks.GoogleCloudLogging"/>
-        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+        <PackageReference Include="Microsoft.Extensions.Identity.Core" />
+        <PackageReference Include="Microsoft.IdentityModel.Tokens" />
+        <PackageReference Include="Newtonsoft.Json" />
+        <PackageReference Include="Serilog.AspNetCore" />
+        <PackageReference Include="Serilog.Enrichers.GlobalLogContext" />
+        <PackageReference Include="Serilog.Exceptions" />
+        <PackageReference Include="Serilog.Exceptions.EntityFrameworkCore" />
+        <PackageReference Include="Serilog.Formatting.Elasticsearch" />
+        <PackageReference Include="Serilog.Settings.Configuration" />
+        <PackageReference Include="Serilog.Sinks.File" />
+        <PackageReference Include="Serilog.Sinks.GoogleCloudLogging" />
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
         <PackageReference Include="StyleCop.Analyzers">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -48,7 +48,7 @@
     </ItemGroup>
     <ProjectExtensions>
         <VisualStudio>
-            <UserProperties appsettings_1development_1json__JsonSchema="https://json.schemastore.org/appsettings" appsettings_1release_1json__JsonSchema="https://json.schemastore.org/appsettings"/>
+            <UserProperties appsettings_1development_1json__JsonSchema="https://json.schemastore.org/appsettings" appsettings_1release_1json__JsonSchema="https://json.schemastore.org/appsettings" />
         </VisualStudio>
     </ProjectExtensions>
 </Project>

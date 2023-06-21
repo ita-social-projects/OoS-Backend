@@ -1,15 +1,8 @@
-using Microsoft.Extensions.FileProviders;
-using OutOfSchool.AuthCommon;
-using OutOfSchool.AuthCommon.Config;
-using OutOfSchool.AuthCommon.Config.ExternalUriModels;
-using OutOfSchool.AuthCommon.Controllers;
-using OutOfSchool.AuthCommon.Extensions;
-using OutOfSchool.AuthCommon.Services;
-using OutOfSchool.AuthCommon.Services.Interfaces;
-using FluentValidation;
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using OutOfSchool.Common.Models;
+using OutOfSchool.AuthCommon.Config;
+using OutOfSchool.AuthCommon.Extensions;
+using OutOfSchool.AuthCommon.Services.Interfaces;
+using OutOfSchool.IdentityServer.Extensions;
 
 namespace OutOfSchool.IdentityServer;
 
