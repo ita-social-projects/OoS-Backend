@@ -18,6 +18,7 @@
         <PackageReference Include="Grpc.AspNetCore" />
         <PackageReference Include="Newtonsoft.Json" />
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
+        <PackageReference Include="FluentValidation.AspNetCore" />
     </ItemGroup>
 
     <ItemGroup>

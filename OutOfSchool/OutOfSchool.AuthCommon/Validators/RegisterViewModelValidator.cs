@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.IdentityServer.ViewModels;
+using OutOfSchool.AuthCommon.ViewModels;
 
-namespace OutOfSchool.IdentityServer.Validators;
+namespace OutOfSchool.AuthCommon.Validators;
 
 public class RegisterViewModelValidator : AbstractValidator<RegisterViewModel>
 {

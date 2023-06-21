@@ -1,8 +1,11 @@
-using Microsoft.Extensions.FileProviders;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Config.ExternalUriModels;
 using OutOfSchool.AuthCommon.Services;
 using OutOfSchool.AuthCommon.Util;
+using OutOfSchool.AuthCommon.Validators;
+using OutOfSchool.AuthCommon.ViewModels;
 using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.AuthCommon.Extensions;
@@ -39,8 +42,8 @@ public static class AuthCommonServiceExtensions
             });
         services.AddRazorPages();
         services.AddAutoMapper(typeof(MappingProfile));
+        services.AddTransient(typeof(IEntityRepository<,>), typeof(EntityRepository<,>));
         services.AddTransient<IParentRepository, ParentRepository>();
-        services.AddTransient<IEntityRepository<long, PermissionsForRole>, EntityRepository<long, PermissionsForRole>>();
         services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
         services.AddTransient<IProviderAdminService, ProviderAdminService>();
         services.AddTransient<IUserManagerAdditionalService, UserManagerAdditionalService>();
@@ -51,7 +54,6 @@ public static class AuthCommonServiceExtensions
         services.AddTransient<ICommonMinistryAdminService<RegionAdminBaseDto>,
             CommonMinistryAdminService<long, RegionAdmin, RegionAdminBaseDto, IRegionAdminRepository>>();
 
-        services.AddTransient<IEntityRepository<long, ProviderAdminChangesLog>, EntityRepository<long, ProviderAdminChangesLog>>();
         services.AddTransient<IProviderAdminChangesLogService, ProviderAdminChangesLogService>();
 
         // Register the Permission policy handlers
@@ -60,5 +62,8 @@ public static class AuthCommonServiceExtensions
 
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
         services.AddGrpc();
+
+        services.AddFluentValidationAutoValidation();
+        services.AddScoped<IValidator<RegisterViewModel>, RegisterViewModelValidator>();
     }
 }

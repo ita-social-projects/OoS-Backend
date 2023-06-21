@@ -1,5 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Mvc.Localization
-@using OutOfSchool.IdentityServer
+@using OutOfSchool.AuthCommon
 
 @inject IHtmlLocalizer<SharedResource> SharedLocalizer
 @{
@@ -7,7 +7,7 @@
     Layout = "_Layout";
 }
 
-@model OutOfSchool.IdentityServer.ViewModels.RegisterViewModel
+@model OutOfSchool.AuthCommon.ViewModels.RegisterViewModel
 
 <div class="wrapper_body">
     <div class="wrapper">
