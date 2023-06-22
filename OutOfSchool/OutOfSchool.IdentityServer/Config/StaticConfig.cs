@@ -31,13 +31,17 @@ public static class StaticConfig
         {
             new ApiScope("outofschoolapi.read"),
             new ApiScope("outofschoolapi.write"),
+
+            // this is for transition to openiddict to have same scopes.
+            new ApiScope("outofschoolapi"),
         };
 
     public static IEnumerable<ApiResource> ApiResources(string apiSecret) => new[]
     {
         new ApiResource("outofschoolapi")
         {
-            Scopes = new List<string> {"outofschoolapi.read", "outofschoolapi.write"},
+            // this is for transition to openiddict to have same scopes.
+            Scopes = new List<string> {"outofschoolapi.read", "outofschoolapi.write", "outofschoolapi"},
             ApiSecrets = new List<Secret> { new Secret(apiSecret.Sha256()) },
             UserClaims = new List<string> {"role", "permissions"},
         },
@@ -54,7 +58,9 @@ public static class StaticConfig
                 ClientName = "Client Credentials Client",
                 AllowedGrantTypes = GrantTypes.ClientCredentials,
                 ClientSecrets = {new Secret(clientSecret.Sha256()) },
-                AllowedScopes = {"outofschoolapi.read", "outofschoolapi.write"},
+
+                // this is for transition to openiddict to have same scopes.
+                AllowedScopes = {"outofschoolapi.read", "outofschoolapi.write", "outofschoolapi"},
             },
         };
 
@@ -73,7 +79,9 @@ public static class StaticConfig
             AllowedScopes =
             {
                 IdentityServerConstants.StandardScopes.OpenId,
-                "outofschoolapi.read", "outofschoolapi.write",
+
+                // this is for transition to openiddict to have same scopes.
+                "outofschoolapi.read", "outofschoolapi.write", "outofschoolapi",
             },
 
             AllowAccessTokensViaBrowser = true,

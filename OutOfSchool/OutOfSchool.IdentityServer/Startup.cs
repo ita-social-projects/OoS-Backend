@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Extensions;
@@ -46,15 +47,6 @@ public static class Startup
 
         services.AddCustomDataProtection("IdentityServer");
 
-        services.AddAuthentication("Bearer")
-            .AddIdentityServerAuthentication("Bearer", options =>
-            {
-                options.ApiName = "outofschoolapi";
-                options.Authority = config["Identity:Authority"];
-
-                options.RequireHttpsMetadata = false;
-            });
-
         var issuerSection = config.GetSection(IssuerConfig.Name);
         services.Configure<IssuerConfig>(issuerSection);
 
@@ -71,6 +63,23 @@ public static class Startup
             {
                 identityServerBuilder.AddAspNetIdentity<User>();
                 identityServerBuilder.AddProfileService<ProfileService>();
+            });
+
+        // Must be AFTER services.AddIdentity() call
+        services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.Authority = config["Identity:Authority"];
+                options.Audience = config["Identity:ApiName"];
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters.ValidAudiences = new[] { config["Identity:ApiName"] };
+                options.SaveToken = true;
+                options.MapInboundClaims = false;
             });
 
         services.ConfigureApplicationCookie(c =>
