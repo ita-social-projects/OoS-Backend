@@ -18,7 +18,7 @@ public static class QuartzExtension
         this IServiceCollection services,
         IConfiguration configuration,
         string quartzConnectionString = "QuartzConnection",
-        Action<IServiceCollectionQuartzConfigurator> configureJobs = null)
+        Action<IServiceCollectionQuartzConfigurator>? configureJobs = null)
     {
         _ = services ?? throw new ArgumentNullException(nameof(services));
 

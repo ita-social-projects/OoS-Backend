@@ -3,6 +3,7 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OutOfSchool.AuthorizationServer;
 
+// TODO: Use client info from settings
 public class Worker : IHostedService
     {
         private readonly IServiceProvider _serviceProvider;
@@ -30,11 +31,13 @@ public class Worker : IHostedService
                     await manager.CreateAsync(new OpenIddictApplicationDescriptor
                     {
                         ClientId = "angular",
-                        ConsentType = OpenIddictConstants.ConsentTypes.Explicit,
+                        ConsentType = ConsentTypes.Explicit,
                         DisplayName = "angular client PKCE",
                         DisplayNames =
                         {
                             [CultureInfo.GetCultureInfo("uk-UA")] = "Позашкілля",
+                            [CultureInfo.GetCultureInfo("en-US")] = "Pozashkillia",
+                            [CultureInfo.GetCultureInfo("en-GB")] = "Pozashkillia",
                         },
                         PostLogoutRedirectUris =
                         {
@@ -46,101 +49,84 @@ public class Worker : IHostedService
                         },
                         Permissions =
                         {
-                            OpenIddictConstants.Permissions.Endpoints.Authorization,
-                            OpenIddictConstants.Permissions.Endpoints.Logout,
-                            OpenIddictConstants.Permissions.Endpoints.Token,
-                            OpenIddictConstants.Permissions.Endpoints.Revocation,
-                            OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
-                            OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
-                            OpenIddictConstants.Permissions.ResponseTypes.Code,
-                            OpenIddictConstants.Permissions.Scopes.Email,
-                            OpenIddictConstants.Permissions.Scopes.Profile,
-                            OpenIddictConstants.Permissions.Scopes.Roles,
-                            OpenIddictConstants.Permissions.Prefixes.Scope + "outofschoolapi.read",
-                            OpenIddictConstants.Permissions.Prefixes.Scope + "outofschoolapi.write",
+                            Permissions.Endpoints.Authorization,
+                            Permissions.Endpoints.Logout,
+                            Permissions.Endpoints.Token,
+                            Permissions.Endpoints.Revocation,
+                            Permissions.GrantTypes.AuthorizationCode,
+                            Permissions.GrantTypes.RefreshToken,
+                            Permissions.ResponseTypes.Code,
+                            Permissions.Scopes.Email,
+                            Permissions.Scopes.Profile,
+                            Permissions.Scopes.Roles,
+                            Permissions.Prefixes.Scope + "outofschoolapi",
                         },
                         Requirements =
                         {
-                            OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange
-                        }
+                            Requirements.Features.ProofKeyForCodeExchange,
+                        },
                     });
                 }
 
-                // // API application CC
-                // if (await manager.FindByClientIdAsync("Swagger") == null)
-                // {
-                //     await manager.CreateAsync(new OpenIddictApplicationDescriptor
-                //     {
-                //         ClientId = "CC",
-                //         ClientSecret = "cc_secret",
-                //         DisplayName = "CC for protected API",
-                //         Permissions =
-                //     {
-                //         Permissions.Endpoints.Authorization,
-                //         Permissions.Endpoints.Token,
-                //         Permissions.GrantTypes.ClientCredentials,
-                //         Permissions.Prefixes.Scope + "dataEventRecords"
-                //     }
-                //     });
-                // }
+                // API validation
+                if (await manager.FindByClientIdAsync("outofschool_api") == null)
+                {
+                    var descriptor = new OpenIddictApplicationDescriptor
+                    {
+                        ClientId = "outofschool_api",
+                        ClientSecret = "outofschool_api_secret",
+                        Permissions =
+                        {
+                            Permissions.Endpoints.Introspection,
+                        },
+                    };
 
-                // // API
-                // if (await manager.FindByClientIdAsync("rs_dataEventRecordsApi") == null)
-                // {
-                //     var descriptor = new OpenIddictApplicationDescriptor
-                //     {
-                //         ClientId = "rs_dataEventRecordsApi",
-                //         ClientSecret = "dataEventRecordsSecret",
-                //         Permissions =
-                //         {
-                //             Permissions.Endpoints.Introspection
-                //         }
-                //     };
-                //
-                //     await manager.CreateAsync(descriptor);
-                // }
+                    await manager.CreateAsync(descriptor);
+                }
 
-                // Blazor Hosted
+                // Swagger
                 if (await manager.FindByClientIdAsync("Swagger") is null)
                 {
                     await manager.CreateAsync(new OpenIddictApplicationDescriptor
                     {
                         ClientId = "Swagger",
                         Type = ClientTypes.Public,
-                        ConsentType = OpenIddictConstants.ConsentTypes.Explicit,
-                        DisplayName = "Blazor code PKCE",
+                        ConsentType = ConsentTypes.Explicit,
+                        DisplayName = "Swagger UI PKCE",
                         DisplayNames =
                         {
                             [CultureInfo.GetCultureInfo("uk-UA")] = "Позашкілля API",
+                            [CultureInfo.GetCultureInfo("en-US")] = "Pozashkillia API",
+                            [CultureInfo.GetCultureInfo("en-GB")] = "Pozashkillia API",
                         },
                         PostLogoutRedirectUris =
                         {
-                            new Uri("http://localhost:5000/swagger/oauth2-redirect.html")
+                            new Uri("http://localhost:5000/swagger/oauth2-redirect.html"),
+                            new Uri("http://localhost:8080/swagger/oauth2-redirect.html"),
                         },
                         RedirectUris =
                         {
                             new Uri("http://localhost:5000/swagger/oauth2-redirect.html"),
+                            new Uri("http://localhost:8080/swagger/oauth2-redirect.html"),
                         },
-                        // ClientSecret = "codeflow_pkce_client_secret",
                         Permissions =
                         {
-                            OpenIddictConstants.Permissions.Endpoints.Authorization,
-                            OpenIddictConstants.Permissions.Endpoints.Logout,
-                            OpenIddictConstants.Permissions.Endpoints.Token,
-                            OpenIddictConstants.Permissions.Endpoints.Revocation,
-                            OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
-                            OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
-                            OpenIddictConstants.Permissions.ResponseTypes.Code,
-                            OpenIddictConstants.Permissions.Scopes.Email,
-                            OpenIddictConstants.Permissions.Scopes.Profile,
-                            OpenIddictConstants.Permissions.Scopes.Roles,
-                            OpenIddictConstants.Permissions.Prefixes.Scope + "outofschoolapi.read",
-                            OpenIddictConstants.Permissions.Prefixes.Scope + "outofschoolapi.write",
+                            Permissions.Endpoints.Authorization,
+                            Permissions.Endpoints.Logout,
+                            Permissions.Endpoints.Token,
+                            Permissions.Endpoints.Revocation,
+                            Permissions.GrantTypes.AuthorizationCode,
+                            Permissions.GrantTypes.RefreshToken,
+                            Permissions.ResponseTypes.Code,
+                            Permissions.Scopes.Email,
+                            Permissions.Scopes.Profile,
+                            Permissions.Scopes.Roles,
+                            Permissions.Prefixes.Scope + "outofschoolapi",
                         },
                         Requirements =
                         {
-                            OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange
-                        }
+                            Requirements.Features.ProofKeyForCodeExchange,
+                        },
                     });
                 }
             }
@@ -157,12 +143,14 @@ public class Worker : IHostedService
                         DisplayNames =
                         {
                             [CultureInfo.GetCultureInfo("uk-UA")] = "Позашкілля",
+                            [CultureInfo.GetCultureInfo("en-US")] = "Pozashkillia",
+                            [CultureInfo.GetCultureInfo("en-GB")] = "Pozashkillia",
                         },
                         Name = "outofschoolapi",
                         Resources =
                         {
-                            "outofschoolapi"
-                        }
+                            "outofschool_api",
+                        },
                     });
                 }
             }

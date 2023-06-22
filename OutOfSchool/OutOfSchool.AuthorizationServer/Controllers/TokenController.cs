@@ -8,9 +8,9 @@ using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
 using OutOfSchool.AuthCommon.Config;
+using OutOfSchool.AuthorizationServer.Services;
 using OutOfSchool.AuthorizationServer.Util;
 using OutOfSchool.IdentityServer.ViewModels.OpenIdDict;
-using OutOfSchool.Services.Repository;
 
 namespace OutOfSchool.AuthorizationServer.Controllers;
 
@@ -22,8 +22,7 @@ public class TokenController : Controller
     private readonly SignInManager<User> _signInManager;
     private readonly UserManager<User> _userManager;
     private readonly AuthServerConfig authorizationServerConfig;
-    private readonly IEntityRepository<long, PermissionsForRole> permissionsForRolesRepository;
-    private readonly IProviderAdminRepository providerAdminRepository;
+    private readonly IProfileService _profileService;
 
     public TokenController(
         IOpenIddictApplicationManager applicationManager,
@@ -32,8 +31,7 @@ public class TokenController : Controller
         SignInManager<User> signInManager,
         UserManager<User> userManager,
         IOptions<AuthServerConfig> identityServerConfig,
-        IEntityRepository<long, PermissionsForRole> permissionsForRolesRepository,
-        IProviderAdminRepository providerAdminRepository)
+        IProfileService profileService)
     {
         _applicationManager = applicationManager;
         _authorizationManager = authorizationManager;
@@ -41,8 +39,7 @@ public class TokenController : Controller
         _signInManager = signInManager;
         _userManager = userManager;
         authorizationServerConfig = identityServerConfig.Value;
-        this.permissionsForRolesRepository = permissionsForRolesRepository;
-        this.providerAdminRepository = providerAdminRepository;
+        _profileService = profileService;
     }
 
     [HttpGet("~/connect/authorize")]
@@ -163,6 +160,7 @@ public class TokenController : Controller
                 }
 
                 principal.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
+                await _profileService.GetProfileDataAsync(principal);
 
                 foreach (var claim in principal.Claims)
                 {
@@ -255,7 +253,7 @@ public class TokenController : Controller
         }
 
         principal.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
-
+        await _profileService.GetProfileDataAsync(principal);
         foreach (var claim in principal.Claims)
         {
             claim.SetDestinations(GetDestinations(claim, principal));

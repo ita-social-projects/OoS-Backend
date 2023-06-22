@@ -1,54 +1,48 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Options;
-using OpenIddict.Abstractions;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository;
 
 namespace OutOfSchool.AuthorizationServer.Services;
 
-public class CustomClaimsSingInManager : SignInManager<User>
+public class ProfileService : IProfileService
 {
+    private readonly UserManager<User> userManager;
     private readonly IEntityRepository<long, PermissionsForRole> permissionsForRolesRepository;
     private readonly IProviderAdminRepository providerAdminRepository;
 
-    public CustomClaimsSingInManager(
+    public ProfileService(
         UserManager<User> userManager,
-        IHttpContextAccessor contextAccessor,
-        IUserClaimsPrincipalFactory<User> claimsFactory,
-        IOptions<IdentityOptions> optionsAccessor,
-        ILogger<SignInManager<User>> logger,
-        IAuthenticationSchemeProvider schemes,
-        IUserConfirmation<User> confirmation,
         IEntityRepository<long, PermissionsForRole> permissionsForRolesRepository,
         IProviderAdminRepository providerAdminRepository)
-        : base(
-        userManager,
-        contextAccessor,
-        claimsFactory,
-        optionsAccessor,
-        logger,
-        schemes,
-        confirmation)
     {
+        this.userManager = userManager;
         this.permissionsForRolesRepository = permissionsForRolesRepository;
         this.providerAdminRepository = providerAdminRepository;
     }
 
-    public override async Task<ClaimsPrincipal> CreateUserPrincipalAsync(User user)
+    public async Task GetProfileDataAsync(ClaimsPrincipal principal)
     {
-        var principal = await base.CreateUserPrincipalAsync(user);
+        var nameClaim = principal.Claims.FirstOrDefault(claim => claim.Type == "name");
         var roleClaim = principal.Claims.FirstOrDefault(claim => claim.Type == "role");
 
-        var permissionsClaim = new Claim(IdentityResourceClaimsTypes.Permissions, await GetPermissionsForUser(user, roleClaim.Value));
+        var userFromLogin = await userManager.FindByNameAsync(nameClaim.Value);
 
-        var subrole = await GetSubroleByUserName(user);
+        var permissionsClaim = new Claim(IdentityResourceClaimsTypes.Permissions, await GetPermissionsForUser(userFromLogin, roleClaim.Value));
+
+        var subrole = await GetSubroleByUserName(userFromLogin);
         var subRoleClaim = new Claim(IdentityResourceClaimsTypes.Subrole, subrole.ToString());
-        principal.Claims.Append(permissionsClaim).Append(subRoleClaim);
-        return principal;
+
+        var claims = new List<Claim>
+        {
+            permissionsClaim,
+            subRoleClaim,
+        };
+
+        var identity = principal.Identity as ClaimsIdentity;
+        identity?.AddClaims(claims);
     }
-    
+
     // get's list of permissions for current user's role from db
     private async Task<string> GetPermissionsForUser(User userFromLogin, string roleName)
     {

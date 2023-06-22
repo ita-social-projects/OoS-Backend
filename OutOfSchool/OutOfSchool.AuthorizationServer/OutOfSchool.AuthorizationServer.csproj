@@ -15,15 +15,15 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="OpenIddict.AspNetCore"/>
+        <PackageReference Include="OpenIddict.AspNetCore" />
         <PackageReference Include="OpenIddict.EntityFrameworkCore" />
         <PackageReference Include="OpenIddict.Quartz" />
-        <PackageReference Include="LazyCache.AspNetCore"/>
-        <PackageReference Include="Newtonsoft.Json"/>
+        <PackageReference Include="LazyCache.AspNetCore" />
+        <PackageReference Include="Newtonsoft.Json" />
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
         <PackageReference Include="Serilog.AspNetCore" />
-        <PackageReference Include="Serilog.Enrichers.GlobalLogContext"/>
-        <PackageReference Include="Serilog.Exceptions"/>
+        <PackageReference Include="Serilog.Enrichers.GlobalLogContext" />
+        <PackageReference Include="Serilog.Exceptions" />
         <PackageReference Include="Serilog.Exceptions.EntityFrameworkCore" />
         <PackageReference Include="Serilog.Formatting.Elasticsearch" />
         <PackageReference Include="Serilog.Settings.Configuration" />
@@ -31,7 +31,7 @@
         <PackageReference Include="Serilog.Sinks.GoogleCloudLogging" />
         <PackageReference Include="Quartz.AspNetCore" />
         <PackageReference Include="Quartz.Extensions.DependencyInjection" />
-        <PackageReference Include="Quartz.Plugins.TimeZoneConverter"/>
+        <PackageReference Include="Quartz.Plugins.TimeZoneConverter" />
         <PackageReference Include="Quartz.Serialization.Json" />
         <PackageReference Include="MySql.Data" />
     </ItemGroup>
@@ -46,7 +46,7 @@
         <ProjectReference Include="..\OutOfSchool.AuthCommon\OutOfSchool.AuthCommon.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.321">
+        <PackageReference Include="StyleCop.Analyzers">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

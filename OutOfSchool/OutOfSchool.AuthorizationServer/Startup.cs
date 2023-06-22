@@ -1,13 +1,11 @@
 using GrpcServiceServer;
-using Microsoft.Extensions.FileProviders;
 using OpenIddict.Abstractions;
+using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.AuthCommon.Config;
-using OutOfSchool.AuthCommon.Controllers;
 using OutOfSchool.AuthCommon.Extensions;
 using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.AuthorizationServer.Config;
 using OutOfSchool.AuthorizationServer.Extensions;
-using OutOfSchool.AuthorizationServer.KeyManagement;
 using OutOfSchool.AuthorizationServer.Services;
 
 namespace OutOfSchool.AuthorizationServer;
@@ -32,11 +30,7 @@ public static class Startup
         var quartzConfig = config.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
         services.AddDefaultQuartz(
             config,
-            quartzConfig.ConnectionStringKey,
-            q =>
-            {
-                // TODO: 
-            });
+            quartzConfig.ConnectionStringKey);
 
         var connectionString = config.GetMySqlConnectionString<AuthorizationConnectionOptions>(
             "DefaultConnection",
@@ -57,15 +51,18 @@ public static class Startup
                     optionsBuilder =>
                         optionsBuilder
                             .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
-                            .MigrationsAssembly(migrationsAssembly))
-                .UseOpenIddict());
+                            .MigrationsAssembly(migrationsAssembly)))
+            .AddDbContext<OpenIdDictDbContext>(options => options
+            .UseMySql(
+                connectionString,
+                serverVersion,
+                optionsBuilder =>
+                    optionsBuilder
+                        .MigrationsAssembly(migrationsAssembly)));
 
         services.AddCustomDataProtection("AuthorizationServer");
 
         services.AddLocalization(options => options.ResourcesPath = "Resources");
-
-        // TODO: remove?
-        services.AddAuthentication("Bearer");
 
         services.AddIdentity<User, IdentityRole>(options =>
             {
@@ -76,8 +73,9 @@ public static class Startup
                 options.Password.RequiredLength = 8;
             })
             .AddEntityFrameworkStores<OutOfSchoolDbContext>()
-            .AddDefaultTokenProviders()
-            .AddSignInManager<CustomClaimsSingInManager>();
+            .AddDefaultTokenProviders();
+
+        // TODO: do we need it?
         services.ConfigureApplicationCookie(c =>
         {
             c.Cookie.Name = "IdentityServer.Cookie";
@@ -106,26 +104,16 @@ public static class Startup
             options.SignIn.RequireConfirmedAccount = false;
         });
 
-        //TODO: fow now do this only for Google
-
-        // if (builder.Environment.IsDevelopment())
-        // {
-            // services.AddDbContext<CertificateDbContext>(options => options.UseMySql(
-            //     connectionString,
-            //     serverVersion,
-            //     sql => sql.MigrationsAssembly(migrationsAssembly)));
-
-            // services.AddLazyCache();
-            // services.AddSingleton<IKeyManager, KeyManager>();
-            // services.AddSingleton<IOptionsMonitor<OpenIddictServerOptions>, OpenIdDictServerOptionsProvider>();
-            // services.AddSingleton<IConfigureOptions<OpenIddictServerOptions>, OpenIdDictServerOptionsInitializer>();
-        // }
-
+        // Must be AFTER services.AddIdentity() call
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+        });
         services.AddOpenIddict()
             .AddCore(options =>
             {
                 options.UseEntityFrameworkCore()
-                    .UseDbContext<OutOfSchoolDbContext>();
+                    .UseDbContext<OpenIdDictDbContext>();
                 options.UseQuartz();
             })
             .AddServer(options =>
@@ -148,8 +136,7 @@ public static class Startup
                     OpenIddictConstants.Scopes.Email,
                     OpenIddictConstants.Scopes.Profile,
                     OpenIddictConstants.Scopes.Roles,
-                    "outofschoolapi.read",
-                    "outofschoolapi.write");
+                    "outofschoolapi");
 
                 var aspNetCoreBuilder = options.UseAspNetCore()
                     .EnableAuthorizationEndpointPassthrough()
@@ -165,6 +152,7 @@ public static class Startup
                     aspNetCoreBuilder.DisableTransportSecurityRequirement();
                 }
 
+                // TODO: add config for test and release environments
                 if (builder.Environment.IsEnvironment("Google"))
                 {
                     // options.AddSigningKey()
@@ -186,8 +174,10 @@ public static class Startup
                 {
                     policyBuilder
                         .AllowCredentials()
+
+                        // TODO: extract to settings
                         .WithOrigins(
-                            "http://localhost:4200", "http://localhost:5000")
+                            "http://localhost:4200", "http://localhost:5000", "http://localhost:8080")
                         .SetIsOriginAllowedToAllowWildcardSubdomains()
                         .AllowAnyHeader()
                         .AllowAnyMethod();
@@ -198,6 +188,7 @@ public static class Startup
         services.AddProxy();
         services.AddAuthCommon(config, builder.Environment.IsDevelopment());
         services.AddTransient<IInteractionService, InteractionService>();
+        services.AddTransient<IProfileService, ProfileService>();
     }
 
     public static void Configure(this WebApplication app)
