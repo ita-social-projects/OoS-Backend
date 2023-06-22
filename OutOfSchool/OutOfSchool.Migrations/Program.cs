@@ -1,9 +1,10 @@
-﻿using IdentityServer4.EntityFramework.DbContexts;
-using Microsoft.AspNetCore.Identity;
+﻿using System.Reflection;
+using IdentityServer4.EntityFramework.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MySqlConnector;
+using OutOfSchool.AuthorizationServer;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Extensions;
@@ -11,7 +12,6 @@ using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.IdentityServer.Extensions;
 using OutOfSchool.IdentityServer.KeyManagement;
 using OutOfSchool.Services;
-using System.Reflection;
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>
@@ -46,7 +46,13 @@ var host = Host.CreateDefaultBuilder(args)
                     serverVersion,
                     optionsBuilder =>
                         optionsBuilder
-                            .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
+                            .MigrationsAssembly(migrationsAssembly)))
+            .AddDbContext<OpenIdDictDbContext>(options => options
+                .UseMySql(
+                    connectionString,
+                    serverVersion,
+                    optionsBuilder =>
+                        optionsBuilder
                             .MigrationsAssembly(migrationsAssembly)));
 
         services.ConfigureIdentity(connectionString, config["Uri"], serverVersion, migrationsAssembly);
@@ -59,3 +65,4 @@ scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Mig
 scope.ServiceProvider.GetRequiredService<CertificateDbContext>().Database.Migrate();
 scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>().Database.Migrate();
 scope.ServiceProvider.GetRequiredService<OutOfSchoolDbContext>().Database.Migrate();
+scope.ServiceProvider.GetRequiredService<OpenIdDictDbContext>().Database.Migrate();
