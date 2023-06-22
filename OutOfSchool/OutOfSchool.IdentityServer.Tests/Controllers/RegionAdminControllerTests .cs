@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.IdentityServer.Controllers;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
 using System;
+using OutOfSchool.AuthCommon.Controllers;
 using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.Services.Enums;
 

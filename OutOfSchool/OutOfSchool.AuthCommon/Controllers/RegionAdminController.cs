@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.IdentityServer.Controllers;
+namespace OutOfSchool.AuthCommon.Controllers;
 
 [ApiController]
 [Route("[controller]/[action]")]
-[Authorize(AuthenticationSchemes = Constants.BearerScheme)]
+[Authorize]
 public class RegionAdminController : Controller
 {
     private readonly ILogger<RegionAdminController> logger;

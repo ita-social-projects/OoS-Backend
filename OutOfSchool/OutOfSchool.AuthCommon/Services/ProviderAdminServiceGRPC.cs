@@ -5,7 +5,7 @@ using OutOfSchool.Common.Models;
 
 namespace GrpcServiceServer;
 
-[Authorize(AuthenticationSchemes = Constants.BearerScheme)]
+[Authorize]
 public class ProviderAdminServiceGRPC : GRPCProviderAdmin.GRPCProviderAdminBase
 {
     private readonly IProviderAdminService providerAdminService;

@@ -2,11 +2,11 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using OutOfSchool.Common.Models;
 
-namespace OutOfSchool.IdentityServer.Controllers;
+namespace OutOfSchool.AuthCommon.Controllers;
 
 [ApiController]
 [Route("[controller]/[action]")]
-[Authorize(AuthenticationSchemes = Constants.BearerScheme)]
+[Authorize]
 public class ProviderAdminController : Controller
 {
     private readonly ILogger<ProviderAdminController> logger;
