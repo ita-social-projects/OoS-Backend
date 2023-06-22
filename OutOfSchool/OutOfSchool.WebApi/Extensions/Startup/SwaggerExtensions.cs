@@ -44,7 +44,7 @@ public static class SwaggerExtensions
                     {
                         AuthorizationCode = new OpenApiOAuthFlow
                         {
-                            AuthorizationUrl = new Uri($"{identityBaseUrl}/connect/authorize", UriKind.Absolute),
+                            AuthorizationUrl = new Uri($"{identityBaseUrl}/connect/authorize?prompt=login", UriKind.Absolute),
                             TokenUrl = new Uri($"{identityBaseUrl}/connect/token", UriKind.Absolute),
                             Scopes = new Dictionary<string, string>
                             {
