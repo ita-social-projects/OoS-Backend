@@ -44,7 +44,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.GRPC", "OutOfSc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.AdminInitializer", "OutOfSchool.AdminInitializer\OutOfSchool.AdminInitializer.csproj", "{3F5B71B9-F9A6-4FA9-AB7F-789C10DD48A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.Migrations", "OutOfSchool.Migrations\OutOfSchool.Migrations.csproj", "{DEC6938D-5197-4AC2-A2D1-379C40FB0899}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.Migrations", "OutOfSchool.Migrations\OutOfSchool.Migrations.csproj", "{DEC6938D-5197-4AC2-A2D1-379C40FB0899}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

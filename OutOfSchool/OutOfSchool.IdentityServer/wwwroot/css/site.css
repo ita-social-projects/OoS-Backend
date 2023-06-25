@@ -625,3 +625,12 @@ a {
     width: 100%;
   }
 }
+
+.gdtr_title {
+    text-align: center;
+}
+
+.gdtr_text {
+    text-align:justify;
+    margin-block: 0px;
+}
