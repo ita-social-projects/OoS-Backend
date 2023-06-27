@@ -17,7 +17,7 @@ let ageConfirm = document.getElementById('checkbox_age_confirm');
 let rulesAgreement = document.getElementById('checkbox_rules_agreement');
 
 btn_register.disabled = true;
-link_gdpr_terms.setAttribute("href", "/GDPR/ParentTerms");
+link_gdpr_terms.setAttribute("href", "/Privacy/ParentTerms");
 link_gdpr_terms.setAttribute("target", "_blank");
 
 if (sessionStorage.getItem("Button") && sessionStorage.getItem("Role")) {
@@ -53,7 +53,7 @@ btn_parent.addEventListener('click', function () {
     sessionStorage.setItem("Button", "btn_parent");
     li_date_of_birth.className = "registration_item";
     li_gender.className = "registration_item";
-    link_gdpr_terms.setAttribute("href", "/GDPR/ParentTerms");
+    link_gdpr_terms.setAttribute("href", "/Privacy/ParentTerms");
 })
 
 btn_provider.addEventListener('click', function () {
@@ -64,7 +64,7 @@ btn_provider.addEventListener('click', function () {
     sessionStorage.setItem("Button", "btn_provider");
     li_date_of_birth.className = "registration_item hidden";
     li_gender.className = "registration_item hidden";
-    link_gdpr_terms.setAttribute("href", "/GDPR/ProviderTerms");
+    link_gdpr_terms.setAttribute("href", "/Privacy/ProviderTerms");
 })
 
 passwordEye.addEventListener('click', function () {
