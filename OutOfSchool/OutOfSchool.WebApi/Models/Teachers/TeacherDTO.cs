@@ -22,7 +22,6 @@ public class TeacherDTO
     [RegularExpression(@"^([^0-9]*)$", ErrorMessage = "Last name cannot contains digits")]
     public string LastName { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Middle name is required")]
     [DataType(DataType.Text)]
     [MaxLength(60)]
     [RegularExpression(@"^([^0-9]*)$", ErrorMessage = "Middle name cannot contains digits")]

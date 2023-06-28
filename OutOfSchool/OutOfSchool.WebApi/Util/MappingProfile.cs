@@ -178,7 +178,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.WorkshopId, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore())
-            .ForMember(dest => dest.Workshop, opt => opt.Ignore());
+            .ForMember(dest => dest.Workshop, opt => opt.Ignore())
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
         CreateMap<Teacher, TeacherDTO>()
             .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
