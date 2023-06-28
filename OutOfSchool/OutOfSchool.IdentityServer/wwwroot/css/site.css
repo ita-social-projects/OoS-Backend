@@ -561,6 +561,30 @@ a {
     display: none;
 }
 
+.sup {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+}
+
+.header {
+    text-align: center;
+}
+
+.main {
+    text-align: justify;
+    margin-block: 0px;
+}
+
+.footer {
+    margin-top: 40px;
+}
+
+.sign {
+    float: right;
+    text-align: center;
+}
+
 @media (max-width: 600px) {
 
   .option-short:after {

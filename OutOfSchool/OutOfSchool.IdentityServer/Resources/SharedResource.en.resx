@@ -120,8 +120,8 @@
   <data name="Already registered?" xml:space="preserve">
     <value>Already registered?</value>
   </data>
-  <data name="and consent to the processing of personal data" xml:space="preserve">
-    <value>and consent to the processing of personal data</value>
+  <data name="consent to the processing of personal data" xml:space="preserve">
+    <value>consent to the processing of personal data</value>
   </data>
   <data name="By registering I agree with" xml:space="preserve">
     <value>By registering I agree with</value>
@@ -380,5 +380,14 @@
   </data>
   <data name="Email '{0}' is already used" xml:space="preserve">
     <value>Email '{0}' is already used</value>
+  </data>
+  <data name="and" xml:space="preserve">
+    <value>and </value>
+  </data>
+  <data name="Consent Title" xml:space="preserve">
+    <value>Consent</value>
+  </data>
+  <data name="Terms of use Title" xml:space="preserve">
+    <value>Terms of use</value>
   </data>
 </root>
