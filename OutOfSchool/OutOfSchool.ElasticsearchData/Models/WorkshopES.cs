@@ -34,6 +34,7 @@ public class WorkshopES
 
     public int MaxAge { get; set; }
 
+    public bool CompetitiveSelection { get; set; }
     public decimal Price { get; set; }
 
     public PayRateType PayRate { get; set; }
@@ -62,5 +63,12 @@ public class WorkshopES
     public List<DateTimeRangeES> DateTimeRanges { get; set; }
 
     public WorkshopStatus Status { get; set; }
+
     public bool IsBlocked { get; set; }
+
+    public uint AvailableSeats { get; set; }
+
+    public uint TakenSeats { get; set; }
+
+    public ProviderLicenseStatus ProviderLicenseStatus { get; set; }
 }

@@ -39,6 +39,7 @@ public class WorkshopServiceTests
     private Mock<IImageDependentEntityImagesInteractionService<Workshop>> workshopImagesMediator;
     private Mock<IProviderAdminRepository> providerAdminRepository;
     private Mock<IAverageRatingService> averageRatingServiceMock;
+    private Mock<IProviderRepository> providerRepositoryMock;
 
     [SetUp]
     public void SetUp()
@@ -52,6 +53,7 @@ public class WorkshopServiceTests
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         providerAdminRepository = new Mock<IProviderAdminRepository>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
+        providerRepositoryMock = new Mock<IProviderRepository>();
 
         workshopService =
             new WorkshopService(
@@ -62,7 +64,8 @@ public class WorkshopServiceTests
                 mapperMock.Object,
                 workshopImagesMediator.Object,
                 providerAdminRepository.Object,
-                averageRatingServiceMock.Object);
+                averageRatingServiceMock.Object,
+                providerRepositoryMock.Object);
     }
 
     #region Create
@@ -325,7 +328,10 @@ public class WorkshopServiceTests
         var id = new Guid("ca2cc30c-419c-4b00-a344-b23f0cbf18d8");
         var changedFirstEntity = WithWorkshop(id);
         var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(changedFirstEntity);
+        var provider = ProvidersGenerator.Generate();
         changedFirstEntity.Teachers = teachers;
+        changedFirstEntity.DateTimeRanges = new List<DateTimeRange>();
+        changedFirstEntity.Provider = provider;
         SetupUpdate(changedFirstEntity);
         var expectedTeachers = teachers.Select(s => mapper.Map<TeacherDTO>(s));
 
@@ -403,15 +409,24 @@ public class WorkshopServiceTests
     public async Task Update_WhenTryUpdateStatus_ShouldReturnEntityWithOldStatus([Random(1, 100, 1)] long classId)
     {
         // Arrange
+        var provider = ProvidersGenerator.Generate();
         var inputWorkshopDto = WithWorkshop(Guid.NewGuid());
         inputWorkshopDto.Status = WorkshopStatus.Closed;
+        inputWorkshopDto.Provider = provider;
         var expectedStatus = WorkshopStatus.Open;
         var workshopDtoMock = WithWorkshop(Guid.NewGuid());
+        workshopDtoMock.Provider = provider;
 
         workshopRepository.Setup(w => w.GetWithNavigations(It.IsAny<Guid>())).ReturnsAsync(workshopDtoMock);
         workshopRepository.Setup(w => w.UnitOfWork.CompleteAsync()).ReturnsAsync(It.IsAny<int>());
         mapperMock.Setup(m => m.Map<WorkshopDTO>(workshopDtoMock))
             .Returns(mapper.Map<WorkshopDTO>(workshopDtoMock));
+
+        mapperMock.Setup(m => m.Map<List<DateTimeRange>>(It.IsAny<List<DateTimeRangeDto>>()))
+            .Returns(mapper.Map<List<DateTimeRange>>(It.IsAny<List<DateTimeRangeDto>>()));
+
+        workshopRepository.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
+            .Returns((Func<Task<Workshop>> f) => f.Invoke());
 
         // Act
         var result = await workshopService.Update(mapper.Map<WorkshopDTO>(inputWorkshopDto)).ConfigureAwait(false);
@@ -550,49 +565,69 @@ public class WorkshopServiceTests
         return RatingsGenerator.GetAverageRatings(workshopGuids);
     }
 
-    private static Workshop WithWorkshop(Guid id)
+    private static Workshop WithWorkshop(Guid id) => new Workshop()
     {
-        return new Workshop()
+        Id = id,
+        Title = "ChangedTitle",
+        Phone = "1111111111",
+        Price = 1000,
+        WithDisabilityOptions = true,
+        ProviderTitle = "ProviderTitle",
+        DisabilityOptionsDesc = "Desc1",
+        Website = "website1",
+        Instagram = "insta1",
+        Facebook = "facebook1",
+        Email = "email1@gmail.com",
+        MaxAge = 10,
+        MinAge = 4,
+        ProviderOwnership = OwnershipType.Private,
+        Status = WorkshopStatus.Open,
+        CoverImageId = "image1",
+        ProviderId = new Guid("65eb933f-6502-4e89-a7cb-65901e51d119"),
+        InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
+        AddressId = 55,
+        Address = new Address
         {
-            Id = id,
-            Title = "ChangedTitle",
-            Phone = "1111111111",
-            Price = 1000,
-            WithDisabilityOptions = true,
-            ProviderTitle = "ProviderTitle",
-            DisabilityOptionsDesc = "Desc1",
-            Website = "website1",
-            Instagram = "insta1",
-            Facebook = "facebook1",
-            Email = "email1@gmail.com",
-            MaxAge = 10,
-            MinAge = 4,
-            ProviderOwnership = OwnershipType.Private,
-            Status = WorkshopStatus.Open,
-            CoverImageId = "image1",
-            ProviderId = new Guid("65eb933f-6502-4e89-a7cb-65901e51d119"),
-            InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
-            AddressId = 55,
-            Address = new Address
+            Id = 55,
+            CATOTTGId = 4970,
+            Street = "Street55",
+            BuildingNumber = "BuildingNumber55",
+            Latitude = 10,
+            Longitude = 10,
+        },
+        WorkshopDescriptionItems = new[]
+        {
+            new WorkshopDescriptionItem()
             {
-                Id = 55,
-                CATOTTGId = 4970,
-                Street = "Street55",
-                BuildingNumber = "BuildingNumber55",
-                Latitude = 10,
-                Longitude = 10,
+                Id = Guid.NewGuid(),
+                SectionName = "Workshop description heading 1",
+                Description = "Workshop description text 1",
             },
-            WorkshopDescriptionItems = new[]
+        },
+        DateTimeRanges = new List<DateTimeRange>()
+        {
+            new DateTimeRange
             {
-                new WorkshopDescriptionItem()
-                {
-                    Id = Guid.NewGuid(),
-                    SectionName = "Workshop description heading 1",
-                    Description = "Workshop description text 1",
-                },
+                Id = It.IsAny<long>(),
+                EndTime = It.IsAny<TimeSpan>(),
+                StartTime = It.IsAny<TimeSpan>(),
+                Workdays = default,
             },
-        };
-    }
+        },
+        Teachers = new List<Teacher>(),
+        //{
+        //    new Teacher
+        //    {
+        //        Id = Guid.NewGuid(),
+        //        FirstName = "Alex",
+        //        LastName = "Brown",
+        //        MiddleName = "SomeMiddleName",
+        //        Description = "Description",
+        //        DateOfBirth = DateTime.Parse("2000-01-01"),
+        //        WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
+        //    },
+        //},
+    };
 
     private Workshop WithNullWorkshopEntity()
     {
@@ -605,6 +640,11 @@ public class WorkshopServiceTests
 
     private void SetupCreate()
     {
+        var provider = ProvidersGenerator.Generate();
+
+        providerRepositoryMock
+            .Setup(p => p.GetById(It.IsAny<Guid>()))
+            .Returns(Task.FromResult(provider));
         workshopRepository.Setup(
                 w => w.Create(It.IsAny<Workshop>()))
             .Returns(Task.FromResult(It.IsAny<Workshop>()));
@@ -695,6 +735,11 @@ public class WorkshopServiceTests
         workshopRepository.Setup(w => w.UnitOfWork.CompleteAsync()).ReturnsAsync(It.IsAny<int>());
         mapperMock.Setup(m => m.Map<WorkshopDTO>(workshop))
             .Returns(mapper.Map<WorkshopDTO>(workshop));
+        mapperMock.Setup(m => m.Map<List<DateTimeRange>>(It.IsAny<List<DateTimeRangeDto>>()))
+            .Returns(mapper.Map<List<DateTimeRange>>(It.IsAny<List<DateTimeRangeDto>>()));
+
+        workshopRepository.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
+            .Returns((Func<Task<Workshop>> f) => f.Invoke());
     }
 
     private void SetupDelete(Workshop workshop)

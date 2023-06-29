@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models.Configurations;
 
@@ -78,5 +77,7 @@ internal class ProviderConfiguration : IEntityTypeConfiguration<Provider>
         builder.HasOne(x => x.ActualAddress)
             .WithOne()
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(x => x.EdrpouIpn);
     }
 }

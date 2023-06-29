@@ -13,6 +13,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4354D271-F117-47CD-BFDD-9785F584D833}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
 		StyleCopAnalyzersRules.ruleset = StyleCopAnalyzersRules.ruleset
 	EndProjectSection
 EndProject
@@ -36,11 +38,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.WebApi.Integrat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.Redis", "OutOfSchool.Redis\OutOfSchool.Redis.csproj", "{ED7E72ED-6A6C-4C49-BC59-4B3FEF9E503C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.RazorTemplatesData", "OutOfSchool.RazorTemplatesData\OutOfSchool.RazorTemplatesData.csproj", "{8B05B816-EAB3-40FA-B549-3072F933F759}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.RazorTemplatesData", "OutOfSchool.RazorTemplatesData\OutOfSchool.RazorTemplatesData.csproj", "{8B05B816-EAB3-40FA-B549-3072F933F759}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.GRPC", "OutOfSchool.GRPC\OutOfSchool.GRPC.csproj", "{FDDEE291-850B-4CB7-A5D6-4A3854C24EF8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.AdminInitializer", "OutOfSchool.AdminInitializer\OutOfSchool.AdminInitializer.csproj", "{3F5B71B9-F9A6-4FA9-AB7F-789C10DD48A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.AdminInitializer", "OutOfSchool.AdminInitializer\OutOfSchool.AdminInitializer.csproj", "{3F5B71B9-F9A6-4FA9-AB7F-789C10DD48A3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.Migrations", "OutOfSchool.Migrations\OutOfSchool.Migrations.csproj", "{DEC6938D-5197-4AC2-A2D1-379C40FB0899}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -104,6 +108,10 @@ Global
 		{3F5B71B9-F9A6-4FA9-AB7F-789C10DD48A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F5B71B9-F9A6-4FA9-AB7F-789C10DD48A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3F5B71B9-F9A6-4FA9-AB7F-789C10DD48A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEC6938D-5197-4AC2-A2D1-379C40FB0899}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEC6938D-5197-4AC2-A2D1-379C40FB0899}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEC6938D-5197-4AC2-A2D1-379C40FB0899}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEC6938D-5197-4AC2-A2D1-379C40FB0899}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

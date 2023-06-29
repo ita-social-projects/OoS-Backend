@@ -155,9 +155,10 @@ public class ProviderService : IProviderService, INotificationReciever
         int count = await providerRepository.Count(filterPredicate).ConfigureAwait(false);
 
         var sortExpression = new Dictionary<Expression<Func<Provider, object>>, SortDirection>
-    {
-        { x => x.User.FirstName, SortDirection.Ascending },
-    };
+        {
+            { x => x.IsBlocked, SortDirection.Ascending },
+            { x => x.Status, SortDirection.Ascending },
+        };
 
         var providers = await providerRepository
             .Get(
@@ -484,6 +485,13 @@ public class ProviderService : IProviderService, INotificationReciever
             throw new ArgumentNullException(nameof(userId));
         }
 
+        if (await ExistsAnotherProviderWithTheSameEdrpouIpn(providerUpdateDto))
+        {
+            logger.LogTrace("Provider with Id = {providerUpdateDtoId} wasn't updated: Edrpou or Ipn isn't unique.", providerUpdateDto.Id);
+
+            return null;
+        }
+
         logger.LogDebug("Updating Provider with Id = {Id} was started", providerUpdateDto.Id);
 
         try
@@ -665,12 +673,24 @@ public class ProviderService : IProviderService, INotificationReciever
 
             foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
             {
-                tempPredicate = tempPredicate.Or(
-                    x => x.FullTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.ActualAddress.CATOTTG.Name.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.LegalAddress.CATOTTG.Name.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.EdrpouIpn.StartsWith(word, StringComparison.InvariantCultureIgnoreCase));
+                if (word.Any(c => char.IsLetter(c)))
+                {
+                    tempPredicate = tempPredicate.Or(
+                        x => x.FullTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                            || x.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                            || x.Email.Contains(word, StringComparison.InvariantCultureIgnoreCase));
+                }
+                else
+                {
+                    string searchNumber = string.Join(string.Empty, word.Where(c => char.IsNumber(c)));
+                    if (searchNumber.Length > 0)
+                    {
+                        tempPredicate = tempPredicate.Or(
+                            x => x.PhoneNumber.Contains(searchNumber, StringComparison.InvariantCultureIgnoreCase)
+                                || x.EdrpouIpn.Contains(searchNumber, StringComparison.InvariantCultureIgnoreCase)
+                                || x.Email.Contains(searchNumber, StringComparison.InvariantCultureIgnoreCase));
+                    }
+                }
             }
 
             predicate = predicate.And(tempPredicate);
@@ -776,5 +796,14 @@ public class ProviderService : IProviderService, INotificationReciever
             logger.LogInformation($"Provider's status with Id = {providerId} " +
                                   $"in workshops with Id = {workshop.Id} updated successfully.");
         }
+    }
+
+    private async Task<bool> ExistsAnotherProviderWithTheSameEdrpouIpn(ProviderUpdateDto providerUpdateDto)
+    {
+        var providersWithTheSameEdrpouIpn = await providerRepository
+            .GetByFilter(x => x.EdrpouIpn == providerUpdateDto.EdrpouIpn && x.Id != providerUpdateDto.Id)
+            .ConfigureAwait(false);
+
+        return providersWithTheSameEdrpouIpn.Any();
     }
 }

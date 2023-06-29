@@ -1,0 +1,114 @@
+<Project>
+    <PropertyGroup>
+        <BaseVersion>6.0.0</BaseVersion>
+        <EFCoreVersion>6.0.7</EFCoreVersion>
+        <IdentityServerVersion>4.1.1</IdentityServerVersion>
+        <SwaggerVersion>6.3.1</SwaggerVersion>
+        <QuartzVersion>3.4.0</QuartzVersion>
+    </PropertyGroup>
+    <ItemGroup>
+        <!--Basic Microsoft Packages-->
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(BaseVersion)"/>
+        <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(BaseVersion)"/>
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(BaseVersion)"/>
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(BaseVersion)"/>
+        <PackageVersion Include="Microsoft.Extensions.Options" Version="$(BaseVersion)"/>
+        <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1"/>
+        <PackageVersion Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+        <!--MVC-->
+        <!-- TODO: Isn't AspNetCore.Mvc.Core included by default for a Web project?-->
+        <PackageVersion Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5"/>
+        <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.6"/>
+        <PackageVersion Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.6"/>
+        <!--Entity Framework-->
+        <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(EFCoreVersion)"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="$(EFCoreVersion)"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="$(EFCoreVersion)"/>
+        <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="$(EFCoreVersion)"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="$(EFCoreVersion)"/>
+        <!-- TODO: Figure out why we need SQLITE :)-->
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(EFCoreVersion)"/>
+        <!--MySQL-->
+        <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.2"/>
+        <PackageVersion Include="MySql.Data" Version="8.0.32"/>
+        <PackageVersion Include="Google.Protobuf" Version="3.21.9"/>
+        <!--Elasticsearch-->
+        <PackageVersion Include="NEST" Version="7.13.2"/>
+        <!--Redis-->
+        <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.6"/>
+        <PackageVersion Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="6.0.9"/>
+        <!--Identity-->
+        <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(EFCoreVersion)"/>
+        <PackageVersion Include="IdentityServer4.AccessTokenValidation" Version="3.0.1"/>
+        <PackageVersion Include="IdentityModel" Version="5.0.0"/>
+        <PackageVersion Include="IdentityServer4" Version="$(IdentityServerVersion)"/>
+        <PackageVersion Include="IdentityServer4.AspNetIdentity" Version="$(IdentityServerVersion)"/>
+        <PackageVersion Include="IdentityServer4.EntityFramework" Version="$(IdentityServerVersion)"/>
+        <PackageVersion Include="Microsoft.Extensions.Identity.Core" Version="$(EFCoreVersion)"/>
+        <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="6.8.0"/>
+        <!--Serilog-->
+        <PackageVersion Include="Serilog.AspNetCore" Version="6.0.1"/>
+        <PackageVersion Include="Serilog.Enrichers.GlobalLogContext" Version="1.1.0"/>
+        <PackageVersion Include="Serilog.Exceptions" Version="8.3.0"/>
+        <PackageVersion Include="Serilog.Exceptions.EntityFrameworkCore" Version="8.3.0"/>
+        <PackageVersion Include="Serilog.Formatting.Elasticsearch" Version="8.4.1"/>
+        <PackageVersion Include="Serilog.Settings.Configuration" Version="3.3.0"/>
+        <PackageVersion Include="Serilog.Sinks.File" Version="5.0.0"/>
+        <PackageVersion Include="Serilog.Sinks.GoogleCloudLogging" Version="5.0.0"/>
+        <!--Automapper-->
+        <PackageVersion Include="AutoMapper" Version="10.1.1"/>
+        <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1"/>
+        <!--Quartz-->
+        <PackageVersion Include="Quartz.AspNetCore" Version="$(QuartzVersion)"/>
+        <PackageVersion Include="Quartz.Extensions.DependencyInjection" Version="$(QuartzVersion)"/>
+        <PackageVersion Include="Quartz.Plugins.TimeZoneConverter" Version="$(QuartzVersion)"/>
+        <PackageVersion Include="Quartz.Serialization.Json" Version="$(QuartzVersion)"/>
+        <!--Image processing-->
+        <PackageVersion Include="SkiaSharp" Version="2.88.0"/>
+        <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.0"/>
+        <!--Feature Management-->
+        <PackageVersion Include="Microsoft.FeatureManagement" Version="2.5.1"/>
+        <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="2.5.1"/>
+        <!--Swagger & Versioning-->
+        <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="$(SwaggerVersion)"/>
+        <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="$(SwaggerVersion)"/>
+        <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="$(SwaggerVersion)"/>
+        <PackageVersion Include="Swashbuckle.AspNetCore.Newtonsoft" Version="$(SwaggerVersion)"/>
+        <PackageVersion Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.0.0"/>
+        <PackageVersion Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.0.0"/>
+        <!--JSON-->
+        <PackageVersion Include="JsonSubTypes" Version="1.9.0"/>
+        <PackageVersion Include="Newtonsoft.Json" Version="13.0.1"/>
+        <!--Health Checks-->
+        <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="$(EFCoreVersion)" />
+        <!--Helper libs-->
+        <PackageVersion Include="LazyCache.AspNetCore" Version="2.4.0"/>
+        <PackageVersion Include="SendGrid.Extensions.DependencyInjection" Version="1.0.1"/>
+        <PackageVersion Include="CsvHelper" Version="30.0.1"/>
+        <PackageVersion Include="Google.Cloud.Storage.V1" Version="3.7.0"/>
+        <PackageVersion Include="H3Lib" Version="3.7.2"/>
+        <PackageVersion Include="Ardalis.SmartEnum" Version="2.1.0"/>
+        <PackageVersion Include="NetEscapades.AspNetCore.SecurityHeaders" Version="0.18.0"/>
+        <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.0" />
+        <!--Code Analysis-->
+        <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0"/>
+        <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.435"/>
+        <!--GRPC-->
+        <PackageVersion Include="Grpc.AspNetCore" Version="2.46.0"/>
+        <PackageVersion Include="Grpc.Core" Version="2.46.3"/>
+        <PackageVersion Include="Grpc.Net.Client" Version="2.46.0"/>
+        <PackageVersion Include="Grpc.Tools" Version="2.47.0"/>
+        <!--Testing-->
+        <PackageVersion Include="coverlet.msbuild" Version="3.1.2"/>
+        <PackageVersion Include="Moq" Version="4.18.1"/>
+        <PackageVersion Include="NUnit" Version="3.13.3"/>
+        <PackageVersion Include="NUnit3TestAdapter" Version="4.2.1"/>
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.2.0"/>
+        <PackageVersion Include="FluentAssertions" Version="6.7.0"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(EFCoreVersion)"/>
+        <PackageVersion Include="MockQueryable.Moq" Version="6.0.1"/>
+        <PackageVersion Include="Bogus" Version="34.0.2"/>
+        <!--TODO: Remove this eventually-->
+        <PackageVersion Include="MongoDB.Driver.GridFS" Version="2.13.2"/>
+    </ItemGroup>
+</Project>

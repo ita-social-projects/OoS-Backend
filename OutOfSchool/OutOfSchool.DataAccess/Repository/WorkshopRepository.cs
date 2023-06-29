@@ -70,4 +70,18 @@ public class WorkshopRepository : SensitiveEntityRepository<Workshop>, IWorkshop
 
         return await workshops.ToListAsync();
     }
+
+    /// <inheritdoc/>
+    public async Task<uint> GetAvailableSeats(Guid workshopId)
+    {
+        return await db.Workshops.Where(w => w.Id == workshopId).Select(x => x.AvailableSeats).FirstAsync();
+    }
+
+    public override async Task<Workshop> Create(Workshop workshop)
+    {
+        await dbSet.AddAsync(workshop).ConfigureAwait(false);
+        await dbContext.SaveChangesAsync().ConfigureAwait(false);
+
+        return await Task.FromResult(workshop).ConfigureAwait(false);
+    }
 }

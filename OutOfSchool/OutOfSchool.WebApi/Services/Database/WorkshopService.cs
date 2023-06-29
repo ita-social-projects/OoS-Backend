@@ -7,6 +7,7 @@ using H3Lib.Extensions;
 using Nest;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
@@ -36,6 +37,7 @@ public class WorkshopService : IWorkshopService
     private readonly IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService;
     private readonly IProviderAdminRepository providerAdminRepository;
     private readonly IAverageRatingService averageRatingService;
+    private readonly IProviderRepository providerRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -46,7 +48,10 @@ public class WorkshopService : IWorkshopService
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Automapper DI service.</param>
     /// <param name="workshopImagesService">Workshop images mediator.</param>
+    /// <param name="providerAdminRepository">Repository for provider admins.</param>
     /// <param name="averageRatingService">Average rating service.</param>
+    /// <param name="providerRepository">Repository for providers.</param>
+
     public WorkshopService(
         IWorkshopRepository workshopRepository,
         IEntityRepository<long, DateTimeRange> dateTimeRangeRepository,
@@ -55,7 +60,8 @@ public class WorkshopService : IWorkshopService
         IMapper mapper,
         IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService,
         IProviderAdminRepository providerAdminRepository,
-        IAverageRatingService averageRating)
+        IAverageRatingService averageRatingService,
+        IProviderRepository providerRepository)
     {
         this.workshopRepository = workshopRepository;
         this.dateTimeRangeRepository = dateTimeRangeRepository;
@@ -64,7 +70,8 @@ public class WorkshopService : IWorkshopService
         this.mapper = mapper;
         this.workshopImagesService = workshopImagesService;
         this.providerAdminRepository = providerAdminRepository;
-        this.averageRatingService = averageRating;
+        this.averageRatingService = averageRatingService;
+        this.providerRepository = providerRepository;
     }
 
     /// <inheritdoc/>
@@ -75,6 +82,9 @@ public class WorkshopService : IWorkshopService
         logger.LogInformation("Workshop creating was started.");
 
         var workshop = mapper.Map<Workshop>(dto);
+        workshop.Provider = await providerRepository.GetById(workshop.ProviderId).ConfigureAwait(false);
+        workshop.ProviderOwnership = workshop.Provider.Ownership;
+
         if (dto.Teachers is not null)
         {
             workshop.Teachers = dto.Teachers.Select(dtoTeacher => mapper.Map<Teacher>(dtoTeacher)).ToList();
@@ -288,26 +298,28 @@ public class WorkshopService : IWorkshopService
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation($"Updating Workshop with Id = {dto?.Id} started.");
 
-        var currentWorkshop = await workshopRepository.GetWithNavigations(dto!.Id).ConfigureAwait(false);
-
-        // In case if AddressId was changed. AddresId is one and unique for workshop.
-        dto.AddressId = currentWorkshop.AddressId;
-        dto.Address.Id = currentWorkshop.AddressId;
-
-        mapper.Map(dto, currentWorkshop);
-        currentWorkshop.Teachers = dto.Teachers?.Select(dtoTeacher => mapper.Map<Teacher>(dtoTeacher)).ToList();
-
-        try
+        async Task<Workshop> UpdateWorkshopLocally()
         {
-            await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
-        }
-        catch (DbUpdateConcurrencyException exception)
-        {
-            logger.LogError($"Updating failed. Exception: {exception.Message}");
-            throw;
+            await UpdateDateTimeRanges(dto.DateTimeRanges, dto.Id).ConfigureAwait(false);
+            var currentWorkshop = await workshopRepository.GetWithNavigations(dto!.Id).ConfigureAwait(false);
+
+            // In case if AddressId was changed. AddresId is one and unique for workshop.
+            dto.AddressId = currentWorkshop.AddressId;
+            dto.Address.Id = currentWorkshop.AddressId;
+
+            await ChangeTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherDTO>()).ConfigureAwait(false);
+
+            mapper.Map(dto, currentWorkshop);
+
+            await UpdateWorkshop().ConfigureAwait(false);
+
+            return currentWorkshop;
         }
 
-        return mapper.Map<WorkshopDTO>(currentWorkshop);
+        var updatedWorkshop = await workshopRepository
+            .RunInTransaction(UpdateWorkshopLocally).ConfigureAwait(false);
+
+        return mapper.Map<WorkshopDTO>(updatedWorkshop);
     }
 
     /// <inheritdoc/>

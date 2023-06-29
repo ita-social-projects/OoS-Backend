@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.VisualBasic;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.EmailSender;
@@ -21,6 +22,7 @@ namespace OutOfSchool.IdentityServer.Controllers;
 
 public class AccountController : Controller
 {
+    private const string ReturnUrl = "Login";
     private readonly SignInManager<User> signInManager;
     private readonly UserManager<User> userManager;
     private readonly IEmailSender emailSender;
@@ -111,7 +113,10 @@ public class AccountController : Controller
             return View("Email/ChangeEmail", model);
         }
 
-        await SendConfirmEmail();
+        var user = await userManager.FindByEmailAsync(User.Identity.Name);
+        var token = await userManager.GenerateChangeEmailTokenAsync(user, model.Email);
+
+        await SendConfirmEmailProcess(nameof(ConfirmChangeEmail), user, RazorTemplates.ChangeEmail, new { userId = user.Id, token, email = model.Email });
 
         return View("Email/SendChangeEmail", model);
     }
@@ -134,7 +139,22 @@ public class AccountController : Controller
         {
             logger.LogError("{Path} User(id): {UserId} was not found", path, userId);
 
-            return NotFound($"Changing email for user with ID: '{userId}' was not allowed.");
+            return BadRequest("Verify information and try again.");
+        }
+
+        if (!await userManager.VerifyUserTokenAsync(user, userManager.Options.Tokens.ChangeEmailTokenProvider, UserManager<User>.GetChangeEmailTokenPurpose(email), token))
+        {
+            logger.LogError("Token was not valid");
+
+            return BadRequest("Verify information and try again.");
+        }
+
+        var userByEmail = await userManager.FindByEmailAsync(email);
+        if (userByEmail is not null)
+        {
+            logger.LogError("{Path} User(email): {email} was found", path, email);
+
+            return View("Email/ConfirmEmailFailed", localizer[@"Email '{0}' is already used", email]);
         }
 
         var result = await userManager.ChangeEmailAsync(user, email, token);
@@ -169,31 +189,16 @@ public class AccountController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> SendConfirmEmail()
+    public async Task<IActionResult> ReSendEmailConfirmation()
     {
-        var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
-        var path = $"{HttpContext.Request.Path.Value}[{HttpContext.Request.Method}]";
-        logger.LogDebug("{Path} started. User(id): {UserId}", path, userId);
-
         var user = await userManager.FindByEmailAsync(User.Identity.Name);
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-        var callBackUrl = Url.Action(nameof(EmailConfirmation), "Account", new { userId = user.Id, token }, Request.Scheme);
-
         var email = user.Email;
-        var subject = "Confirm email.";
+        var passedData = new { token, email, ReturnUrl };
 
-        var userActionViewModel = new UserActionViewModel
-        {
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            ActionUrl = HtmlEncoder.Default.Encode(callBackUrl),
-        };
-        var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ResetPassword, userActionViewModel);
-        await emailSender.SendAsync(email, subject, content);
+        await SendConfirmEmailProcess(nameof(EmailConfirmation), user, RazorTemplates.ConfirmEmail, passedData);
 
-        logger.LogInformation("Confirmation message was sent. User(id): {UserId}", userId);
-
-        return Ok();
+        return View("Email/ConfirmEmail", new RegisterViewModel { Email = email, });
     }
 
     [HttpGet]
@@ -290,10 +295,10 @@ public class AccountController : Controller
         }
 
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
-        var callBackUrl = Url.Action("ResetPassword", "Account", new { token, user.Email }, Request.Scheme);
+        var callBackUrl = Url.Action("ResetPassword", ControllerContext.ActionDescriptor.ControllerName, new { token, user.Email }, Request.Scheme);
 
         var email = model.Email;
-        var subject = "Reset Password";
+        var subject = localizer["Reset password confirmation"];
         var userActionViewModel = new UserActionViewModel
         {
             FirstName = user.FirstName,
@@ -377,7 +382,9 @@ public class AccountController : Controller
         {
             logger.LogInformation("{Path} Password was successfully reset. User(id): {UserId}", path, user.Id);
 
-            return View("Password/ResetPasswordConfirmation");
+            return View(
+                "Password/ResetPasswordConfirmation",
+                identityServerConfig.RedirectFromEmailConfirmationUrl);
         }
 
         logger.LogError(
@@ -428,5 +435,29 @@ public class AccountController : Controller
 
         ModelState.AddModelError(string.Empty, localizer["Change password failed"]);
         return View("Password/ChangePassword");
+    }
+
+    private async Task<IActionResult> SendConfirmEmailProcess(string action, User user, string razorTemplate, object passedData)
+    {
+        logger.LogDebug("{0} started. User(id): {1}", ControllerContext.ActionDescriptor.ActionName, user.Id);
+
+        var callBackUrl = Url.Action(action, ControllerContext.ActionDescriptor.ControllerName, passedData, Request.Scheme);
+
+        var email = user.Email;
+        var subject = localizer["Confirm email"];
+
+        var userActionViewModel = new UserActionViewModel
+        {
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            ActionUrl = callBackUrl,
+        };
+
+        var content = await renderer.GetHtmlPlainStringAsync(razorTemplate, userActionViewModel);
+        await emailSender.SendAsync(email, subject, content);
+
+        logger.LogInformation("Confirmation message was sent. User(id): {UserId}", user.Id);
+
+        return Ok();
     }
 }

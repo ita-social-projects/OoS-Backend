@@ -120,8 +120,8 @@
   <data name="Already registered?" xml:space="preserve">
     <value>Already registered?</value>
   </data>
-  <data name="and consent to the processing of personal data" xml:space="preserve">
-    <value>and consent to the processing of personal data</value>
+  <data name="consent to the processing of personal data" xml:space="preserve">
+    <value>consent to the processing of personal data</value>
   </data>
   <data name="By registering I agree with" xml:space="preserve">
     <value>By registering I agree with</value>
@@ -259,7 +259,7 @@
     <value>Forgot password confirmation</value>
   </data>
   <data name="Confirm email" xml:space="preserve">
-    <value>Підтвердження емейлу</value>
+    <value>Email confirmation</value>
   </data>
   <data name="Error! Something happened on the server!" xml:space="preserve">
     <value>Error! Something happened on the server!</value>
@@ -364,7 +364,7 @@
     <value>Invalid mail confirmation token</value>
   </data>
   <data name="Confirm email {0} sent" xml:space="preserve">
-    <value>Confirm email {} sent</value>
+    <value>Confirm email {0} sent</value>
   </data>
   <data name="Enter your email to send password recovery instructions" xml:space="preserve">
     <value>Enter your email to send password recovery instructions</value>
@@ -374,5 +374,20 @@
   </data>
   <data name="Date of birth is required" xml:space="preserve">
     <value>Date of birth is required</value>
+  </data>
+  <data name="You must be at least 18 years old." xml:space="preserve">
+    <value>You must be at least 18 years old.</value>
+  </data>
+  <data name="Email '{0}' is already used" xml:space="preserve">
+    <value>Email '{0}' is already used</value>
+  </data>
+  <data name="and" xml:space="preserve">
+    <value>and </value>
+  </data>
+  <data name="Consent Title" xml:space="preserve">
+    <value>Consent</value>
+  </data>
+  <data name="Terms of use Title" xml:space="preserve">
+    <value>Terms of use</value>
   </data>
 </root>

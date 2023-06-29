@@ -20,7 +20,7 @@ public static class ApplicationDTOsGenerator
     private static readonly Faker<ApplicationDto> faker = new Faker<ApplicationDto>()
         .RuleFor(x => x.Id, _ => Guid.NewGuid())
         .RuleFor(x => x.CreationTime, f => f.Date.Between(DateTime.Now - timeShift, DateTime.Now + timeShift))
-        .RuleFor(x => x.Status, f => f.Random.Enum<ApplicationStatus>());
+        .RuleFor(x => x.Status, f => ApplicationStatus.Approved);
 
     /// <summary>
     /// Generates new instance of the <see cref="ApplicationDto"/> class.

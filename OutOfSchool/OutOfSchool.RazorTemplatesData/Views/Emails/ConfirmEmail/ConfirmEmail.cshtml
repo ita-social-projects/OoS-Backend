@@ -9,6 +9,6 @@
     <div class="content">
         <h1 class="title">Вітаємо, @Model.FirstName @Model.LastName</h1>
         <p class="text">Будь ласка, підтвердьте свою адресу електронної пошти.</p>
-            @await Html.PartialAsync("EmailButton", new EmailButtonViewModel("Перейдіть за посиланням", Model.ActionUrl))
+            @await Html.PartialAsync("EmailButton", new EmailButtonViewModel("Підтвердити", Model.ActionUrl))
     </div>
 </main>

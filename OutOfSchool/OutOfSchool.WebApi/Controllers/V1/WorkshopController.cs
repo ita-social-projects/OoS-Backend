@@ -408,24 +408,30 @@ public class WorkshopController : ControllerBase
         if (User.IsInRole(nameof(Role.Provider).ToLower()))
         {
             var userId = GettingUserProperties.GetUserId(User);
-            try
+            var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
+
+            if (provider != null)
             {
-                var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
-                if (providerId != provider?.Id)
+                if (provider.Id != providerId)
                 {
                     return false;
                 }
             }
-            catch (ArgumentException)
+            else
             {
-                var isUserRelatedAdmin = await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId).ConfigureAwait(false);
+                var isUserRelatedAdmin = await providerAdminService
+                    .CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId)
+                    .ConfigureAwait(false);
+
                 if (!isUserRelatedAdmin)
                 {
                     return false;
                 }
             }
+
+            return true;
         }
 
-        return true;
+        return false;
     }
 }

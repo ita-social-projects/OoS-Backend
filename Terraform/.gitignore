@@ -1,0 +1,10 @@
+**/*.tfvars
+**/backend.tf
+**/kubeconfig.yaml
+**/.terraform/*
+**/*.tfstate
+**/*.tfstate.*
+**/venv
+**/index.zip
+**/__pycache__
+**/.pytest_cache

@@ -427,6 +427,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
             throw;
         }
     }
+
     /// <summary>
     /// Create new ChatRoom without checking if it exists.
     /// </summary>
@@ -454,6 +455,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
             throw;
         }
     }
+
     public async Task<SearchResult<ChatRoomWorkshopDtoWithLastMessage>> GetChatRoomByFilter(ChatWorkshopFilter filter, Guid userId)
     {
         logger.LogInformation("Getting ChatRoomWorkshops by filter started.");
@@ -466,10 +468,11 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
                 where: filterPredicate);
 
         var roomsCount = rooms.Count();
-        var roomsList = rooms.Skip(filter.From).Take(filter.Size).ToList();
 
-        var chatRoomsWithMessages = await roomWorkshopWithLastMessageRepository
-            .GetByWorkshopIdsAsync(roomsList.Select(x => x.WorkshopId));
+        var chatRoomsWithMessages = (await roomWorkshopWithLastMessageRepository
+                .GetByWorkshopIdsAsync(rooms.Select(x => x.WorkshopId)).ConfigureAwait(false))
+            .Skip(filter.From)
+            .Take(filter.Size);
 
         logger.LogInformation(!rooms.Any()
             ? "There was no matching entity found."

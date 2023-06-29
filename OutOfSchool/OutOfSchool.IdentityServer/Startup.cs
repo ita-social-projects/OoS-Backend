@@ -1,7 +1,11 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using OutOfSchool.Common.Models;
 using OutOfSchool.IdentityServer.Config.ExternalUriModels;
-using OutOfSchool.IdentityServer.Services.Interfaces;
+using OutOfSchool.IdentityServer.Extensions;
+using OutOfSchool.IdentityServer.Validators;
+using OutOfSchool.IdentityServer.ViewModels;
 
 namespace OutOfSchool.IdentityServer;
 
@@ -13,7 +17,7 @@ public static class Startup
         var config = builder.Configuration;
 
         services.Configure<IdentityServerConfig>(config.GetSection(IdentityServerConfig.Name));
-        var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+        var migrationsAssembly = config["MigrationsAssembly"];
 
         // TODO: Move version check into an extension to reuse code across apps
         var mySQLServerVersion = config["MySQLServerVersion"];
@@ -42,7 +46,7 @@ public static class Startup
                     optionsBuilder =>
                         optionsBuilder
                             .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
-                            .MigrationsAssembly("OutOfSchool.IdentityServer")));
+                            .MigrationsAssembly(migrationsAssembly)));
 
         services.AddCustomDataProtection("IdentityServer");
 
@@ -57,23 +61,6 @@ public static class Startup
                 options.RequireHttpsMetadata = false;
             });
 
-        services.AddIdentity<User, IdentityRole>(options =>
-        {
-            options.Password.RequireDigit = true;
-            options.Password.RequireLowercase = true;
-            options.Password.RequireNonAlphanumeric = true;
-            options.Password.RequireUppercase = true;
-            options.Password.RequiredLength = 8;
-        })
-            .AddEntityFrameworkStores<OutOfSchoolDbContext>()
-            .AddDefaultTokenProviders();
-        services.ConfigureApplicationCookie(c =>
-        {
-            c.Cookie.Name = "IdentityServer.Cookie";
-            c.LoginPath = "/Auth/Login";
-            c.LogoutPath = "/Auth/Logout";
-        });
-
         var issuerSection = config.GetSection(IssuerConfig.Name);
         services.Configure<IssuerConfig>(issuerSection);
 
@@ -83,32 +70,27 @@ public static class Startup
         // ExternalUris options
         services.Configure<AngularClientScopeExternalUrisConfig>(config.GetSection(AngularClientScopeExternalUrisConfig.Name));
 
-        services.AddIdentityServer(options => { options.IssuerUri = issuerSection["Uri"]; })
-            .AddConfigurationStore(options =>
+        services.ConfigureIdentity(
+            connectionString,
+            issuerSection["Uri"],
+            serverVersion,
+            migrationsAssembly,
+            identityBuilder =>
             {
-                options.ConfigureDbContext = builder =>
-                    builder.UseMySql(
-                        connectionString,
-                        serverVersion,
-                        sql => sql.MigrationsAssembly(migrationsAssembly));
-            })
-            .AddOperationalStore(options =>
+                identityBuilder.AddTokenProvider<DataProtectorTokenProvider<User>>(TokenOptions.DefaultProvider);
+            },
+            identityServerBuilder =>
             {
-                options.ConfigureDbContext = builder =>
-                    builder.UseMySql(
-                        connectionString,
-                        serverVersion,
-                        sql => sql.MigrationsAssembly(migrationsAssembly));
-                options.EnableTokenCleanup = true;
-                options.TokenCleanupInterval = 3600;
-            })
-            .AddAspNetIdentity<User>()
-            .AddProfileService<ProfileService>()
-            .AddCustomKeyManagement<CertificateDbContext>(builder =>
-                builder.UseMySql(
-                    connectionString,
-                    serverVersion,
-                    sql => sql.MigrationsAssembly(migrationsAssembly)));
+                identityServerBuilder.AddAspNetIdentity<User>();
+                identityServerBuilder.AddProfileService<ProfileService>();
+            });
+
+        services.ConfigureApplicationCookie(c =>
+        {
+            c.Cookie.Name = "IdentityServer.Cookie";
+            c.LoginPath = "/Auth/Login";
+            c.LogoutPath = "/Auth/Logout";
+        });
 
         var mailConfig = config
             .GetSection(EmailOptions.SectionName)
@@ -116,7 +98,7 @@ public static class Startup
         services.AddEmailSender(
             builder.Environment.IsDevelopment(),
             mailConfig.SendGridKey,
-            builder => builder.Bind(config.GetSection(EmailOptions.SectionName)));
+            emailOptions => emailOptions.Bind(config.GetSection(EmailOptions.SectionName)));
 
         services.AddControllersWithViews()
             .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
@@ -125,11 +107,12 @@ public static class Startup
                 options.DataAnnotationLocalizerProvider = (type, factory) =>
                     factory.Create(typeof(SharedResource));
             });
+
         services.AddProxy();
         services.AddAutoMapper(typeof(MappingProfile));
-        services.AddTransient<IParentRepository, ParentRepository>();
-        services.AddTransient<IEntityRepository<long, PermissionsForRole>, EntityRepository<long, PermissionsForRole>>();
+        services.AddTransient(typeof(IEntityRepository<,>), typeof(EntityRepository<,>));
         services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
+        services.AddTransient<IParentRepository, ParentRepository>();
         services.AddTransient<IProviderAdminService, ProviderAdminService>();
         services.AddTransient<IUserManagerAdditionalService, UserManagerAdditionalService>();
         services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
@@ -138,8 +121,6 @@ public static class Startup
             CommonMinistryAdminService<Guid, InstitutionAdmin, MinistryAdminBaseDto, IInstitutionAdminRepository>>();
         services.AddTransient<ICommonMinistryAdminService<RegionAdminBaseDto>,
             CommonMinistryAdminService<long, RegionAdmin, RegionAdminBaseDto, IRegionAdminRepository>>();
-
-        services.AddTransient<IEntityRepository<long, ProviderAdminChangesLog>, EntityRepository<long, ProviderAdminChangesLog>>();
         services.AddTransient<IProviderAdminChangesLogService, ProviderAdminChangesLogService>();
 
         // Register the Permission policy handlers
@@ -147,6 +128,11 @@ public static class Startup
         services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
+
+        services.AddFluentValidationAutoValidation();
+
+        services.AddScoped<IValidator<RegisterViewModel>, RegisterViewModelValidator>();
+
         services.AddGrpc();
 
         services.AddHostedService<AdditionalClientsHostedService>();

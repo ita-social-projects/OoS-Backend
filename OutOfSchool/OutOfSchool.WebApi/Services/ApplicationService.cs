@@ -5,6 +5,8 @@ using Nest;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Common.StatusPermissions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Util;
@@ -389,7 +391,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
         return mapper.Map<ApplicationDto>(application);
     }
 
-    public Task<ApplicationDto> Update(ApplicationUpdate applicationDto, Guid providerId)
+    public Task<Result<ApplicationDto>> Update(ApplicationUpdate applicationDto, Guid providerId)
     {
         logger.LogInformation("Updating Application with Id = {Id} started", applicationDto?.Id);
 
@@ -491,11 +493,30 @@ public class ApplicationService : IApplicationService, INotificationReciever
         return result;
     }
 
-    private static void UpdateStatus(ApplicationUpdate applicationDto, Application application, bool isUserProvider)
+    private void UpdateStatus(ApplicationUpdate applicationDto, Application application)
     {
-        if (application.Status is ApplicationStatus.Completed or ApplicationStatus.Rejected or ApplicationStatus.Left && !isUserProvider)
+        if (application.Status == applicationDto.Status)
         {
-            throw new ArgumentException("Forbidden to update application.");
+            return;
+        }
+
+        var applicationStatusPermissions = new ApplicationStatusPermissions();
+
+        if (application.Workshop.CompetitiveSelection)
+        {
+            applicationStatusPermissions.InitCompetitiveSelectionPermissions();
+        }
+        else
+        {
+            applicationStatusPermissions.InitDefaultPermissions();
+        }
+
+        var userRole = currentUserService.UserRole.ToLower();
+        var userSubroleName = currentUserService.UserSubRole.ToLower();
+
+        if (!applicationStatusPermissions.CanChangeStatus(userRole, userSubroleName, application.Status, applicationDto.Status))
+        {
+            throw new ArgumentException("Forbidden to update status from " + application.Status + " to " + applicationDto.Status);
         }
 
         application.Status = applicationDto.Status;
@@ -813,7 +834,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
         };
     }
 
-    private async Task<ApplicationDto> ExecuteUpdateAsync(ApplicationUpdate applicationDto, Guid providerId)
+    private async Task<Result<ApplicationDto>> ExecuteUpdateAsync(ApplicationUpdate applicationDto, Guid providerId)
     {
         await currentUserService.UserHasRights(
             new ParentRights(applicationDto.ParentId),
@@ -824,7 +845,11 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         if (currentApplication is null)
         {
-            return null;
+            return Result<ApplicationDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = "Application does not exist.",
+            });
         }
 
         var previewAppStatus = currentApplication.Status;
@@ -833,10 +858,30 @@ public class ApplicationService : IApplicationService, INotificationReciever
         {
             if (currentApplication.Status == applicationDto.Status)
             {
-                return mapper.Map<ApplicationDto>(currentApplication);
+                return Result<ApplicationDto>.Success(mapper.Map<ApplicationDto>(currentApplication));
             }
 
-            UpdateStatus(applicationDto, currentApplication, currentUserService.IsInRole(Role.Provider));
+            if (applicationDto.Status == ApplicationStatus.Approved)
+            {
+                var providerOwnership = await workshopRepository.GetByFilter(predicate: w => w.Id == currentApplication.WorkshopId && w.Provider.Ownership != OwnershipType.State, includeProperties: "Provider");
+
+                if (providerOwnership.Any())
+                {
+                    int amountOfApproved = await GetAmountOfApprovedApplications(currentApplication.WorkshopId);
+                    uint availableSeats = await workshopRepository.GetAvailableSeats(currentApplication.WorkshopId);
+
+                    if (amountOfApproved >= availableSeats)
+                    {
+                        return Result<ApplicationDto>.Failed(new OperationError
+                        {
+                            Code = "400",
+                            Description = "The Workshop is full.",
+                        });
+                    }
+                }
+            }
+
+            UpdateStatus(applicationDto, currentApplication);
 
             var updatedApplication = await applicationRepository.Update(
                     currentApplication,
@@ -862,12 +907,17 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
             await ControlWorkshopStatus(previewAppStatus, updatedApplication.Status, currentApplication.WorkshopId);
 
-            return mapper.Map<ApplicationDto>(updatedApplication);
+            return Result<ApplicationDto>.Success(mapper.Map<ApplicationDto>(updatedApplication));
         }
         catch (DbUpdateConcurrencyException ex)
         {
             logger.LogError(ex, "Updating failed");
             throw;
         }
+    }
+
+    private async Task<int> GetAmountOfApprovedApplications(Guid workshopId)
+    {
+        return await applicationRepository.Count(x => x.WorkshopId == workshopId && x.Status == ApplicationStatus.Approved);
     }
 }

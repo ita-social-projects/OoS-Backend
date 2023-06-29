@@ -114,7 +114,8 @@ public class ChatRoomWorkshopModelForChatListRepository : IChatRoomWorkshopModel
                     })
                     .FirstOrDefault(),
                 NotReadByCurrentUserMessagesCount = item.ChatMessages.Count(mess => mess.ReadDateTime == null && (mess.SenderRoleIsProvider != searchMessagesForProvider)),
-            });
+            })
+            .OrderByDescending(x => x.LastMessage.CreatedDateTime);
         return query.ToListAsync();
     }
 }

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "OutOfSchool.Migrations": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

@@ -1,12 +1,12 @@
 using System.Text.Json.Serialization;
+using AutoMapper;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.SignalR;
-using OutOfSchool.Services.Contexts;
 using OutOfSchool.Services.Repository.Files;
-using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 using OutOfSchool.WebApi.Services.Strategies.WorkshopStrategies;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi;
 
@@ -163,6 +163,8 @@ public static class Startup
                 }))
             .AddCustomDataProtection("WebApi");
 
+        services.AddAutoMapper(typeof(MappingProfile), typeof(ElasticProfile));
+
         // Add Elasticsearch client
         var elasticConfig = configuration
             .GetSection(ElasticConfig.Name)
@@ -222,7 +224,10 @@ public static class Startup
         {
             var elasticSearchService = sp.GetRequiredService<IElasticsearchService<WorkshopES, WorkshopFilterES>>();
             return elasticSearchService.IsElasticAlive
-                ? new WorkshopESStrategy(elasticSearchService, sp.GetRequiredService<ILogger<WorkshopESStrategy>>())
+                ? new WorkshopESStrategy(
+                    elasticSearchService,
+                    sp.GetRequiredService<ILogger<WorkshopESStrategy>>(),
+                    sp.GetRequiredService<IMapper>())
                 : new WorkshopServiceStrategy(sp.GetRequiredService<IWorkshopService>(), sp.GetRequiredService<ILogger<WorkshopServiceStrategy>>());
         });
 
@@ -254,8 +259,7 @@ public static class Startup
         services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
         services.AddTransient<IChangesLogRepository, ChangesLogRepository>();
         services.AddTransient<IGeocodingService, GeocodingService>();
-
-
+        services.AddTransient<IInstitutionHierarchyRepository, InstitutionHierarchyRepository>();
         services.AddTransient<IAchievementTypeService, AchievementTypeService>();
         services.AddTransient<IAchievementRepository, AchievementRepository>();
         services.AddTransient<IAchievementService, AchievementService>();
@@ -326,8 +330,6 @@ public static class Startup
         services.AddSwagger(swaggerConfig);
 
         services.AddProxy();
-
-        services.AddAutoMapper(typeof(MappingProfile));
 
         var quartzConfig = configuration.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
         services.AddDefaultQuartz(

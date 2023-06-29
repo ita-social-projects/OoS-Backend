@@ -19,6 +19,7 @@ using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Models.SocialGroup;
+using OutOfSchool.WebApi.Common;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -479,7 +480,7 @@ public class ApplicationControllerTests
             RejectionMessage = applications.First().RejectionMessage,
         };
 
-        applicationService.Setup(s => s.Update(It.IsAny<ApplicationUpdate>(), It.IsAny<Guid>())).ReturnsAsync(applications.First());
+        applicationService.Setup(s => s.Update(It.IsAny<ApplicationUpdate>(), It.IsAny<Guid>())).ReturnsAsync(Result<ApplicationDto>.Success(applications.First()));
         workshopService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(new WorkshopDTO());
 
         // Act
@@ -753,14 +754,29 @@ public class ApplicationControllerTests
 
     private List<WorkshopCard> FakeWorkshopCards()
     {
-        var list = FakeWorkshops();
-        var eSlist = new List<WorkshopCard>();
-        foreach (var item in list)
+        return FakeWorkshops().Select(w => new WorkshopCard
         {
-            eSlist.Add(item.ToESModel().ToCardDto());
-        }
-
-        return eSlist;
+            WorkshopId = w.Id,
+            ProviderTitle = w.ProviderTitle,
+            ProviderOwnership = w.ProviderOwnership,
+            Title = w.Title,
+            PayRate = w.PayRate,
+            CoverImageId = w.CoverImageId,
+            MinAge = w.MinAge,
+            MaxAge = w.MaxAge,
+            Price = w.Price,
+            DirectionIds = w.DirectionIds,
+            ProviderId = w.ProviderId,
+            Address = w.Address,
+            WithDisabilityOptions = w.WithDisabilityOptions,
+            Rating = w.Rating,
+            ProviderLicenseStatus = w.ProviderLicenseStatus,
+            InstitutionHierarchyId = w.InstitutionHierarchyId,
+            InstitutionId = w.InstitutionId,
+            Institution = w.Institution,
+            AvailableSeats = w.AvailableSeats,
+            TakenSeats = w.TakenSeats,
+        }).ToList();
     }
 
     private WorkshopDescriptionItemDto FakeWorkshopDescriptionItem()

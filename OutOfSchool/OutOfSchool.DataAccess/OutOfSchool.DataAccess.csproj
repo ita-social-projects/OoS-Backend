@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
         <RootNamespace>OutOfSchool.Services</RootNamespace>
     </PropertyGroup>
   <PropertyGroup>
@@ -23,20 +22,20 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="CsvHelper" Version="30.0.1" />
-      <PackageReference Include="Google.Cloud.Storage.V1" Version="3.7.0" />
-      <PackageReference Include="H3Lib" Version="3.7.2" />
-      <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="6.0.6" />
-      <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.6" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.6" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.6">
+      <PackageReference Include="CsvHelper" />
+      <PackageReference Include="Google.Cloud.Storage.V1" />
+      <PackageReference Include="H3Lib" />
+      <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
+      <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="6.0.6" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-      <PackageReference Include="MongoDB.Driver.GridFS" Version="2.13.2" />
-      <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
+      <PackageReference Include="Newtonsoft.Json" />
+      <PackageReference Include="MongoDB.Driver.GridFS" />
+      <PackageReference Include="StyleCop.Analyzers">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
@@ -45,8 +44,4 @@
     <ItemGroup>
       <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
     </ItemGroup>
-  <Target Name="PostClean" AfterTargets="Clean">
-    <RemoveDir Directories="$(BaseIntermediateOutputPath)" /><!-- obj -->
-    <RemoveDir Directories="$(BaseOutputPath)" /><!-- bin -->
-  </Target>
 </Project>

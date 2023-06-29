@@ -579,7 +579,7 @@ public class ProviderAdminService : IProviderAdminService
                 : url.Action(
                     "EmailConfirmation",
                     "Account",
-                    new { userId = user.Id, token, redirectUrl = externalUrisConfig.Login },
+                    new { email = user.Email, token, redirectUrl = externalUrisConfig.Login },
                     "https");
 
         var subject = "Запрошення!";
