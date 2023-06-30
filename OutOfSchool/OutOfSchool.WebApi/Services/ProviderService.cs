@@ -128,6 +128,14 @@ public class ProviderService : IProviderService, INotificationReciever
 
         var filterPredicate = PredicateBuild(filter);
 
+        if (filter.CATOTTGId != 0)
+        {
+            var childSettlementsIds = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId).ConfigureAwait(false);
+
+            filterPredicate = filterPredicate.And(x => childSettlementsIds.Contains(x.LegalAddress.CATOTTGId));
+        }
+
         if (currentUserService.IsMinistryAdmin())
         {
             var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
@@ -704,6 +712,11 @@ public class ProviderService : IProviderService, INotificationReciever
         if (filter.LicenseStatus.Any())
         {
             predicate = predicate.And(x => filter.LicenseStatus.Contains(x.LicenseStatus));
+        }
+
+        if (filter.InstitutionId != Guid.Empty)
+        {
+            predicate = predicate.And(x => x.InstitutionId == filter.InstitutionId);
         }
 
         return predicate;
