@@ -19,6 +19,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
     private readonly IMapper mapper;
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
+    private readonly IRegionAdminService regionAdminService;
     private IAreaAdminService areaAdminServiceImplementation;
     private ICodeficatorRepository codeficatorRepository;
 
@@ -32,7 +33,8 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         IEntityRepository<string, User> userRepository,
         IMapper mapper,
         ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService)
+        IMinistryAdminService ministryAdminService,
+        IRegionAdminService regionAdminService)
         : base(httpClientFactory, communicationConfig?.Value, logger)
     {
         ArgumentNullException.ThrowIfNull(identityServerConfig);
@@ -48,6 +50,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         this.mapper = mapper;
         this.currentUserService = currentUserService;
         this.ministryAdminService = ministryAdminService;
+        this.regionAdminService = regionAdminService;
     }
 
     public async Task<AreaAdminDto> GetByIdAsync(string id)
@@ -148,43 +151,29 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         if (currentUserService.IsMinistryAdmin())
         {
             var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+            filter.InstitutionId = ministryAdmin.InstitutionId;
 
-            if (filter.InstitutionId == Guid.Empty)
+            Logger.LogInformation(
+                $"Filter institutionId {filter.InstitutionId} is not equals to logined Ministry admin institutionId {ministryAdmin.InstitutionId}");
+
+            return new SearchResult<AreaAdminDto>()
             {
-                filter.InstitutionId = ministryAdmin.InstitutionId;
-            }
-
-            if (filter.InstitutionId != ministryAdmin.InstitutionId)
-            {
-                Logger.LogInformation(
-                    $"Filter institutionId {filter.InstitutionId} is not equals to logined Ministry admin institutionId {ministryAdmin.InstitutionId}");
-
-                return new SearchResult<AreaAdminDto>()
-                {
-                    TotalAmount = 0,
-                    Entities = default,
-                };
-            }
+                TotalAmount = 0,
+                Entities = default,
+            };
         }
 
         if (currentUserService.IsRegionAdmin())
         {
-            var otgAdmin = await GetByUserId(currentUserService.UserId);
+            var areaAdminDto = await GetByUserId(currentUserService.UserId);
+            filter.InstitutionId = areaAdminDto.InstitutionId;
+            filter.CATOTTGId = areaAdminDto.CATOTTGId;
 
-            if (filter.InstitutionId == Guid.Empty)
-            {
-                filter.InstitutionId = otgAdmin.InstitutionId;
-            }
 
-            if (filter.CATOTTGId <= 0)
-            {
-                filter.CATOTTGId = otgAdmin.CATOTTGId;
-            }
-
-            if (filter.InstitutionId != otgAdmin.InstitutionId || filter.CATOTTGId != otgAdmin.CATOTTGId)
+            if (filter.InstitutionId != areaAdminDto.InstitutionId || filter.CATOTTGId != areaAdminDto.CATOTTGId)
             {
                 Logger.LogInformation($"Filter institutionId {filter.InstitutionId} and CATOTTGId {filter.CATOTTGId} " +
-                                      $"is not equals to logined Otg admin institutionId {otgAdmin.InstitutionId} and CATOTTGId {otgAdmin.CATOTTGId}");
+                                      $"is not equals to logined Otg admin institutionId {areaAdminDto.InstitutionId} and CATOTTGId {areaAdminDto.CATOTTGId}");
 
                 return new SearchResult<AreaAdminDto>()
                 {
@@ -464,15 +453,43 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
     }
 
     /// <inheritdoc/>
-    public async Task<bool> IsAreaAdminSubordinateAsync(string ministryAdminUserId, string areaAdminId)
+    public async Task<bool> IsAreaAdminSubordinateMinistryAsync(string ministryAdminUserId, string areaAdminId)
     {
         _ = ministryAdminUserId ?? throw new ArgumentNullException(nameof(ministryAdminUserId));
         _ = areaAdminId ?? throw new ArgumentNullException(nameof(areaAdminId));
 
         var ministryAdmin = await ministryAdminService.GetByIdAsync(ministryAdminUserId).ConfigureAwait(false);
-        var otgAdmin = await areaAdminRepository.GetByIdAsync(areaAdminId).ConfigureAwait(false);
+        var areaAdmin = await areaAdminRepository.GetByIdAsync(areaAdminId).ConfigureAwait(false);
 
-        return ministryAdmin.InstitutionId == otgAdmin.InstitutionId;
+        return ministryAdmin.InstitutionId == areaAdmin.InstitutionId;
+    }
+
+    public async Task<bool> IsAreaAdminSubordinateRegionAsync(string regionAdminUserId, string areaAdminId)
+    {
+        _ = regionAdminUserId ?? throw new ArgumentNullException(nameof(regionAdminUserId));
+        _ = areaAdminId ?? throw new ArgumentNullException(nameof(areaAdminId));
+
+        var regionAdmin = await regionAdminService.GetByIdAsync(regionAdminUserId).ConfigureAwait(false);
+        var areaAdmin = await areaAdminRepository.GetByIdAsync(areaAdminId).ConfigureAwait(false);
+
+        return regionAdmin.InstitutionId == areaAdmin.InstitutionId && regionAdmin.CATOTTGId == areaAdmin.CATOTTGId;
+    }
+
+    public async Task<bool> IsAreaAdminSubordinateMinistryCreateAsync(string ministryAdminUserId, Guid institutionId)
+    {
+        _ = ministryAdminUserId ?? throw new ArgumentNullException(nameof(ministryAdminUserId));
+        var ministryAdmin = await ministryAdminService.GetByIdAsync(ministryAdminUserId).ConfigureAwait(false);
+
+
+        return ministryAdmin.InstitutionId == institutionId;
+    }
+
+    public async Task<bool> IsAreaAdminSubordinateRegionCreateAsync(string regionAdminUserId, Guid institutionId, long catottgId)
+    {
+        _ = regionAdminUserId ?? throw new ArgumentNullException(nameof(regionAdminUserId));
+        var regionAdmin = await regionAdminService.GetByIdAsync(regionAdminUserId).ConfigureAwait(false);
+
+        return regionAdmin.InstitutionId == institutionId && regionAdmin.CATOTTGId == catottgId;
     }
 
     private static Expression<Func<AreaAdmin, bool>> PredicateBuild(AreaAdminFilter filter)

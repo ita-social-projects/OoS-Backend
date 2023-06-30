@@ -28,7 +28,7 @@ public interface IAreaAdminService
     /// <param name="areaAdminBaseDto">Entity to add.</param>
     /// <param name="token">Valid token with AreaAdminAddNew permissions.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<Either<ErrorResponse, AreaAdminBaseDto>> CreateAreaAdminAsync(string userId, AreaAdminBaseDto regionAdminBaseDto, string token);
+    Task<Either<ErrorResponse, AreaAdminBaseDto>> CreateAreaAdminAsync(string userId, AreaAdminBaseDto areaAdminBaseDto, string token);
 
     /// <summary>
     /// Update Area Admin.
@@ -37,7 +37,7 @@ public interface IAreaAdminService
     /// <param name="updateAreaAdminDto">Entity to update.</param>
     /// <param name="token">Valid token with AreaAdminUpdate permissions.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<Either<ErrorResponse, AreaAdminDto>> UpdateAreaAdminAsync(string userId, AreaAdminDto updateRegionAdminDto, string token);
+    Task<Either<ErrorResponse, AreaAdminDto>> UpdateAreaAdminAsync(string userId, AreaAdminDto updateAreaAdminDto, string token);
 
     /// <summary>
     /// Delete Area Admin.
@@ -66,7 +66,34 @@ public interface IAreaAdminService
     /// <param name="areaAdminId">AreaAdmin id.</param>
     /// <returns>The task result contains <see langword="true" /> if area admin is subordinate of the ministry admin
     /// filter; otherwise, <see langword="false" />.</returns>
-    Task<bool> IsAreaAdminSubordinateAsync(string ministryAdminUserId, string areaAdminId);
+    Task<bool> IsAreaAdminSubordinateMinistryAsync(string ministryAdminUserId, string areaAdminId);
+
+    /// <summary>
+    /// Determines whether area admin is subordinate of the region admin.
+    /// </summary>
+    /// <param name="regionAdminUserId">Region admin user id.</param>
+    /// <param name="areaAdminId">AreaAdmin id.</param>
+    /// <returns>The task result contains <see langword="true" /> if area admin is subordinate of the region admin
+    /// filter; otherwise, <see langword="false" />.</returns>
+    Task<bool> IsAreaAdminSubordinateRegionAsync(string regionAdminUserId, string areaAdminId);
+
+    /// <summary>
+    /// Determines whether area admin is subordinate of the ministry admin to be created.
+    /// </summary>
+    /// <param name="ministryAdminUserId">Ministry admin user id.</param>
+    /// <param name="areaAdminId">AreaAdmin id.</param>
+    /// <returns>The task result contains <see langword="true" /> if area admin is subordinate of the ministry admin to be created
+    /// filter; otherwise, <see langword="false" />.</returns>
+    Task<bool> IsAreaAdminSubordinateMinistryCreateAsync(string ministryAdminUserId, Guid institutionId);
+
+    /// <summary>
+    /// Determines whether area admin is subordinate of the region admin to be created.
+    /// </summary>
+    /// <param name="regionAdminUserId">Region admin user id.</param>
+    /// <param name="areaAdminId">AreaAdmin id.</param>
+    /// <returns>The task result contains <see langword="true" /> if area admin is subordinate of the region admin to be created
+    /// filter; otherwise, <see langword="false" />.</returns>
+    Task<bool> IsAreaAdminSubordinateRegionCreateAsync(string regionAdminUserId, Guid institutionId, long catottgId);
 
     /// <summary>
     /// Get Area Admins from the database that match filter's parameters.

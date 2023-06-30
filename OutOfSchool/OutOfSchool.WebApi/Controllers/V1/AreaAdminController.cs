@@ -17,7 +17,6 @@ public class AreaAdminController : Controller
 {
     private readonly IAreaAdminService areaAdminService;
     private readonly ILogger<AreaAdminController> logger;
-    private string path;
     private string currentUserId;
     private string currentUserRole;
 
@@ -34,7 +33,6 @@ public class AreaAdminController : Controller
 
     public override void OnActionExecuting(ActionExecutingContext context)
     {
-        path = $"{context.HttpContext.Request.Path.Value}[{context.HttpContext.Request.Method}]";
         currentUserId = GettingUserProperties.GetUserId(User);
         currentUserRole = GettingUserProperties.GetUserRole(User);
     }
@@ -43,7 +41,7 @@ public class AreaAdminController : Controller
     /// To Get the Profile of authorized AreaAdmin.
     /// </summary>
     /// <returns>Authorized AreaAdmin's profile.</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RegionAdminDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AreaAdminDto))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HasPermission(Permissions.PersonalInfo)]
     [HttpGet]
@@ -129,13 +127,23 @@ public class AreaAdminController : Controller
     [HttpPost]
     public async Task<ActionResult> Create(AreaAdminBaseDto areaAdminBase)
     {
-        logger.LogDebug("{Path} started. User(id): {UserId}", path, currentUserId);
+        logger.LogDebug("{User(id): {UserId}", currentUserId);
 
         if (!ModelState.IsValid)
         {
             logger.LogError("Input data was not valid for User(id): {UserId}", currentUserId);
 
             return StatusCode(StatusCodes.Status422UnprocessableEntity);
+        }
+
+        if ((currentUserRole == nameof(Role.MinistryAdmin).ToLower()
+             && !await areaAdminService.IsAreaAdminSubordinateMinistryCreateAsync(currentUserId, areaAdminBase.InstitutionId)) ||
+            (currentUserRole == nameof(Role.RegionAdmin).ToLower()
+             && !await areaAdminService.IsAreaAdminSubordinateRegionCreateAsync(currentUserId, areaAdminBase.InstitutionId, areaAdminBase.CATOTTGId)))
+        {
+            logger.LogDebug("Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
+            return StatusCode(403,
+                "Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
         }
 
         var response = await areaAdminService.CreateAreaAdminAsync(
@@ -148,7 +156,7 @@ public class AreaAdminController : Controller
             error => StatusCode((int)error.HttpStatusCode, error.Message),
             result =>
             {
-                logger.LogInformation("Successfully created RegionAdmin(id): {result.UserId} by User(id): {UserId}",
+                logger.LogInformation("Successfully created AreaAdmin(id): {result.UserId} by User(id): {UserId}",
                     result.UserId, currentUserId);
                 return Ok(result);
             });
@@ -169,7 +177,7 @@ public class AreaAdminController : Controller
     {
         if (updateAreaAdminDto == null)
         {
-            return BadRequest("RegionAdmin is null.");
+            return BadRequest("AreaAdmin is null.");
         }
 
         if (!ModelState.IsValid)
@@ -187,12 +195,14 @@ public class AreaAdminController : Controller
                     "Forbidden to update another user if you don't have TechAdmin or MinistryAdmin role.");
             }
 
-            if (currentUserRole == nameof(Role.MinistryAdmin).ToLower()
-                && !await areaAdminService.IsAreaAdminSubordinateAsync(currentUserId, updateAreaAdminDto.Id))
+            if ((currentUserRole == nameof(Role.MinistryAdmin).ToLower()
+                && !await areaAdminService.IsAreaAdminSubordinateMinistryAsync(currentUserId, updateAreaAdminDto.Id)) ||
+                (currentUserRole == nameof(Role.RegionAdmin).ToLower()
+                 && !await areaAdminService.IsAreaAdminSubordinateRegionAsync(currentUserId, updateAreaAdminDto.Id)))
             {
-                logger.LogDebug("Forbidden to update RegionAdmin. RegionAdmin doesn't subordinate to MinistryAdmin.");
+                logger.LogDebug("Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
                 return StatusCode(403,
-                    "Forbidden to update RegionAdmin. RegionAdmin doesn't subordinate to MinistryAdmin.");
+                    "Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
             }
 
             var updatedRegionAdmin = await areaAdminService.GetByIdAsync(updateAreaAdminDto.Id);
@@ -242,14 +252,16 @@ public class AreaAdminController : Controller
     [HttpDelete]
     public async Task<ActionResult> Delete(string areaAdminId)
     {
-        logger.LogDebug($"{path} started. User(id): {currentUserId}.");
+        logger.LogDebug($"User(id): {currentUserId}.");
 
-        if (currentUserRole == nameof(Role.MinistryAdmin).ToLower()
-            && !await areaAdminService.IsAreaAdminSubordinateAsync(currentUserId, areaAdminId))
+        if ((currentUserRole == nameof(Role.MinistryAdmin).ToLower()
+             && !await areaAdminService.IsAreaAdminSubordinateMinistryAsync(currentUserId, areaAdminId)) ||
+            (currentUserRole == nameof(Role.RegionAdmin).ToLower()
+             && !await areaAdminService.IsAreaAdminSubordinateRegionAsync(currentUserId, areaAdminId)))
         {
-            logger.LogDebug("Forbidden to delete AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
+            logger.LogDebug("Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
             return StatusCode(403,
-                "Forbidden to delete AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
+                "Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
         }
 
         var response = await areaAdminService.DeleteAreaAdminAsync(
@@ -277,13 +289,16 @@ public class AreaAdminController : Controller
     [HttpPut]
     public async Task<ActionResult> Block(string areaAdminId, bool? isBlocked)
     {
-        logger.LogDebug($"{path} started. User(id): {currentUserId}.");
+        logger.LogDebug($"User(id): {currentUserId}.");
 
-        if (currentUserRole == nameof(Role.MinistryAdmin).ToLower()
-            && !await areaAdminService.IsAreaAdminSubordinateAsync(currentUserId, areaAdminId))
+        if ((currentUserRole == nameof(Role.MinistryAdmin).ToLower()
+             && !await areaAdminService.IsAreaAdminSubordinateMinistryAsync(currentUserId, areaAdminId)) ||
+            (currentUserRole == nameof(Role.RegionAdmin).ToLower()
+             && !await areaAdminService.IsAreaAdminSubordinateRegionAsync(currentUserId, areaAdminId)))
         {
-            logger.LogDebug("Forbidden to block AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
-            return StatusCode(403, "Forbidden to block AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
+            logger.LogDebug("Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
+            return StatusCode(403,
+                "Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
         }
 
         if (isBlocked is null)
@@ -324,7 +339,7 @@ public class AreaAdminController : Controller
     [HttpPut("{regionAdminId}")]
     public async Task<IActionResult> Reinvite(string areaAdminId)
     {
-        logger.LogDebug($"{path} started. User(id): {currentUserId}.");
+        logger.LogDebug($"User(id): {currentUserId}.");
 
         var response = await areaAdminService.ReinviteAreaAdminAsync(
                 areaAdminId,
