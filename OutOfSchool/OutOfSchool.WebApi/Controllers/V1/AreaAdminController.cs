@@ -81,7 +81,7 @@ public class AreaAdminController : Controller
         var areaAdmin = await areaAdminService.GetByIdAsync(id).ConfigureAwait(false);
         if (areaAdmin == null)
         {
-            return NotFound($"There is no RegionAdmin in DB with {nameof(areaAdmin.Id)} - {id}");
+            return NotFound($"There is no AreaAdmin in DB with {nameof(areaAdmin.Id)} - {id}");
         }
 
         return Ok(areaAdmin);
@@ -225,7 +225,7 @@ public class AreaAdminController : Controller
                 error => StatusCode((int)error.HttpStatusCode),
                 _ =>
                 {
-                    logger.LogInformation($"Can't update RegionAdmin with such parameters.\n" +
+                    logger.LogInformation($"Can't update AreaAdmin with such parameters.\n" +
                                           "Please check that information are valid.");
 
                     return Ok();
