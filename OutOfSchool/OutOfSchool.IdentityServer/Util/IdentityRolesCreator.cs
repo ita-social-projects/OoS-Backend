@@ -11,6 +11,7 @@ public static class IdentityRolesCreator
                 new IdentityRole {Name = "techadmin"},
                 new IdentityRole {Name = "ministryadmin"},
                 new IdentityRole {Name = "regionadmin"},
+                new IdentityRole {Name = "areaadmin"}
         };
         var newRoles = roles.ExceptBy(manager.Roles.Select(r => r.Name), role => role.Name);
 

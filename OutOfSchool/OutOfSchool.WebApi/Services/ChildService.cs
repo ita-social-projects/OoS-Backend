@@ -351,7 +351,7 @@ public class ChildService : IChildService
         };
 
         var children = await childRepository
-            .Get(offsetFilter.From, offsetFilter.Size, string.Empty, x => childrenGuids.Contains(x.Id), sortExpression)
+            .Get(offsetFilter.From, offsetFilter.Size, string.Empty, x => childrenGuids.Contains((Guid)x.Id), sortExpression)
             .ToListAsync()
             .ConfigureAwait(false);
 

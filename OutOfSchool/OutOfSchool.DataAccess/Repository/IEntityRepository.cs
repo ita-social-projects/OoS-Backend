@@ -138,8 +138,7 @@ public interface IEntityRepositoryBase<TKey, TEntity>
     /// <param name="asNoTracking">Define if the result set will be tracked by the context.</param>
     /// <returns>An <see cref="IQueryable{TResult}"/> that contains elements from the input sequence that
     /// satisfy the condition specified by predicate. An ordered, filtered <see cref="IQueryable{T}"/>.</returns>
-    IQueryable<TEntity> Get(
-        int skip = 0,
+    IQueryable<TEntity> Get(int skip = 0,
         int take = 0,
         string includeProperties = "",
         Expression<Func<TEntity, bool>> where = null,
