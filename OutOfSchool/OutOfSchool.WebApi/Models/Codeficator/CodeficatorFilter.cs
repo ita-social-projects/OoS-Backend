@@ -8,6 +8,8 @@ public class CodeficatorFilter
     [DisplayFormat(ConvertEmptyStringToNull = false)]
     public string Name { get; set; } = string.Empty;
 
+    public long ParentId { get; set; } = 0;
+
     /// <summary>
     /// Gets or sets сategories. By default - 'MTCXK'".
     /// </summary>

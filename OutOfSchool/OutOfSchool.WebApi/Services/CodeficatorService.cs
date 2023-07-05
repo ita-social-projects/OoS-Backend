@@ -64,7 +64,9 @@ public class CodeficatorService : ICodeficatorService
     /// <inheritdoc/>
     public async Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(CodeficatorFilter filter)
     {
-        return await codeficatorRepository.GetFullAddressesByPartOfName(filter?.Name, filter?.Categories).ConfigureAwait(false);
+        filter ??= new CodeficatorFilter();
+
+        return await codeficatorRepository.GetFullAddressesByPartOfName(filter.Name, filter.Categories, filter.ParentId).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
