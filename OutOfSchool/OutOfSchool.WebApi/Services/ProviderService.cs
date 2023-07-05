@@ -69,6 +69,7 @@ public class ProviderService : IProviderService, INotificationReciever
     /// <param name="ministryAdminService">Service for manage ministry admin.</param>
     /// <param name="regionAdminService">Service for managing region admin rigths.</param>
     /// <param name="codeficatorService">Codeficator service.</param>
+    /// <param name="regionAdminRepository">RegionAdminRepository</param>
     /// <param name="averageRatingService">Average rating service.</param>
     public ProviderService(
         IProviderRepository providerRepository,

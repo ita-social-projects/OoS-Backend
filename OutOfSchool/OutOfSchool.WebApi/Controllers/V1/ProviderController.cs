@@ -214,7 +214,7 @@ public class ProviderController : ControllerBase
     /// </summary>
     /// <param name="providerBlockDto">Entity to update.</param>
     /// <returns>Block Provider.</returns>
-    [HasPermission(Permissions.ProviderEdit)]
+    [HasPermission(Permissions.ProviderBlock)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderBlockDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
