@@ -303,7 +303,7 @@ public class ProviderService : IProviderService, INotificationReciever
     }
 
     /// <inheritdoc/>
-    public async Task<ProviderBlockDto> Block(ProviderBlockDto providerBlockDto)
+    public async Task<ResponseDto> Block(ProviderBlockDto providerBlockDto)
     {
         logger.LogInformation($"Block/Unblock Provider by Id started.");
 
@@ -315,10 +315,30 @@ public class ProviderService : IProviderService, INotificationReciever
         {
             logger.LogInformation($"Provider(id) {providerBlockDto.Id} not found.");
 
-            return null;
+            return new ResponseDto()
+            {
+                Result = null,
+                Message = $"There is no Provider in DB with Id - {providerBlockDto.Id}",
+                HttpStatusCode = HttpStatusCode.NotFound,
+                IsSuccess = false,
+            };
         }
 
-        // TODO: validate if current user has permission to block/unblock the provider
+        var isUserHasRights = await IsCurrentUserHasRightsToBlockProvider(provider);
+
+        if (!isUserHasRights)
+        {
+            logger.LogInformation("The user {UserId} doesn't have rights to block/unblock the provider {ProviderId}", currentUserService.UserId, providerBlockDto.Id);
+
+            return new ResponseDto()
+            {
+                Result = null,
+                Message = $"The user {currentUserService.UserId} doesn't have the rights to block/unblock the Provider {providerBlockDto.Id}",
+                HttpStatusCode = HttpStatusCode.Forbidden,
+                IsSuccess = false,
+            };
+        }
+
         provider.IsBlocked = providerBlockDto.IsBlocked;
         provider.BlockReason = providerBlockDto.IsBlocked ? providerBlockDto.BlockReason : null;
 
@@ -339,7 +359,14 @@ public class ProviderService : IProviderService, INotificationReciever
             logger.LogInformation($"Provider(id) {providerBlockDto.Id} IsBlocked was changed to {provider.IsBlocked}");
         });
 
-        return providerBlockDto;
+        var blockedStatus = providerBlockDto.IsBlocked ? "blocked" : "unblocked";
+        return new ResponseDto()
+        {
+            Result = providerBlockDto,
+            Message = $"The user {currentUserService.UserId} {blockedStatus} the Provider {providerBlockDto.Id}",
+            HttpStatusCode = HttpStatusCode.OK,
+            IsSuccess = true,
+        };
     }
 
     public async Task<ProviderLicenseStatusDto> UpdateLicenseStatus(ProviderLicenseStatusDto dto, string userId)
@@ -819,5 +846,40 @@ public class ProviderService : IProviderService, INotificationReciever
             .ConfigureAwait(false);
 
         return providersWithTheSameEdrpouIpn.Any();
+    }
+
+    private async Task<bool> IsCurrentUserHasRightsToBlockProvider(Provider provider)
+    {
+        if (currentUserService.IsAdmin() && !currentUserService.IsAreaAdmin())
+        {
+            if (currentUserService.IsMinistryAdmin())
+            {
+                var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+
+                if (ministryAdmin.InstitutionId != provider.InstitutionId)
+                {
+                    return false;
+                }
+            }
+
+            if (currentUserService.IsRegionAdmin())
+            {
+                var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
+
+                var subSettlementsIds = await codeficatorService
+                    .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+
+                if (regionAdmin.InstitutionId != provider.InstitutionId || !subSettlementsIds.Contains(provider.LegalAddress.CATOTTGId))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

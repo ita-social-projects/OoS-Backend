@@ -90,5 +90,5 @@ public interface IProviderService
     /// </summary>
     /// <param name="providerBlockDto">Provider to block/unblock.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
-    Task<ProviderBlockDto> Block(ProviderBlockDto providerBlockDto);
+    Task<ResponseDto> Block(ProviderBlockDto providerBlockDto);
 }
