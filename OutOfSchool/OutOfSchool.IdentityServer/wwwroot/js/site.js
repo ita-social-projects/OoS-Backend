@@ -17,14 +17,14 @@ let ageConfirm = document.getElementById('checkbox_age_confirm');
 let rulesAgreement = document.getElementById('checkbox_rules_agreement');
 
 btn_register.disabled = true;
-link_gdpr_terms.setAttribute("href", "/Privacy/ParentTerms");
-link_gdpr_terms.setAttribute("target", "_blank");
+setPersonalLinksAndAttributesVisibility(sessionStorage.getItem("Button"));
 
 if (sessionStorage.getItem("Button") && sessionStorage.getItem("Role")) {
     btn_provider.className = "registration_type";
     btn_parent.className = "registration_type";
     btn_register.setAttribute("name", sessionStorage.getItem("Role"));
     document.getElementById(sessionStorage.getItem("Button")).className = "registration_type registration_type-active";
+    setPersonalLinksAndAttributesVisibility(sessionStorage.getItem("Button"));
 }
 
 if (password.className.includes('input-validation-error')) {
@@ -51,9 +51,7 @@ btn_parent.addEventListener('click', function () {
     btn_register.setAttribute("name", "Parent");
     sessionStorage.setItem("Role", "Parent");
     sessionStorage.setItem("Button", "btn_parent");
-    li_date_of_birth.className = "registration_item";
-    li_gender.className = "registration_item";
-    link_gdpr_terms.setAttribute("href", "/Privacy/ParentTerms");
+    setPersonalLinksAndAttributesVisibility(sessionStorage.getItem("Button"));
 })
 
 btn_provider.addEventListener('click', function () {
@@ -62,9 +60,7 @@ btn_provider.addEventListener('click', function () {
     btn_register.setAttribute("name", "Provider");
     sessionStorage.setItem("Role", "Provider");
     sessionStorage.setItem("Button", "btn_provider");
-    li_date_of_birth.className = "registration_item hidden";
-    li_gender.className = "registration_item hidden";
-    link_gdpr_terms.setAttribute("href", "/Privacy/ProviderTerms");
+    setPersonalLinksAndAttributesVisibility(sessionStorage.getItem("Button"));
 })
 
 passwordEye.addEventListener('click', function () {
@@ -142,6 +138,21 @@ function allFieldsValid(form) {
             return false;
     }
     return true;
+}
+
+function setPersonalLinksAndAttributesVisibility(button) {
+    switch (button) {
+        case "btn_provider":
+            li_date_of_birth.className = "registration_item hidden";
+            li_gender.className = "registration_item hidden";
+            link_privacy_terms.setAttribute("href", "/Privacy/ProviderTerms");
+            break;
+        case "btn_parent":
+        default:
+            li_date_of_birth.className = "registration_item";
+            li_gender.className = "registration_item";
+            link_privacy_terms.setAttribute("href", "/Privacy/ParentTerms");
+    }
 }
 
 
