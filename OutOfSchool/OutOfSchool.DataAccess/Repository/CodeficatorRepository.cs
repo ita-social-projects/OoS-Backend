@@ -53,13 +53,13 @@ public class CodeficatorRepository : EntityRepository<long, CATOTTG>, ICodeficat
                     {
                         Id = e.Id,
                         Category = e.Category,
-                        Settlement = e.Category == CodeficatorCategory.CityDistrict.Name ? p.Name : e.Name,
+                        Settlement = e.Category == CodeficatorCategory.CityDistrict.Name ? p.Name : (e.Category == CodeficatorCategory.TerritorialCommunity.Name ? null : e.Name),
                         Latitude = e.Latitude,
                         Longitude = e.Longitude,
                         Order = e.Order,
-                        TerritorialCommunity = e.Category == CodeficatorCategory.CityDistrict.Name ? pp.Name : p.Name,
-                        District = e.Category == CodeficatorCategory.CityDistrict.Name ? ppp.Name : pp.Name,
-                        Region = e.Category == CodeficatorCategory.CityDistrict.Name ? pppp.Name : ppp.Name,
+                        TerritorialCommunity = e.Category == CodeficatorCategory.CityDistrict.Name ? pp.Name : (e.Category == CodeficatorCategory.TerritorialCommunity.Name ? e.Name : p.Name),
+                        District = e.Category == CodeficatorCategory.CityDistrict.Name ? ppp.Name : (e.Category == CodeficatorCategory.TerritorialCommunity.Name ? p.Name : pp.Name),
+                        Region = e.Category == CodeficatorCategory.CityDistrict.Name ? pppp.Name : (e.Category == CodeficatorCategory.TerritorialCommunity.Name ? pp.Name : ppp.Name),
                         CityDistrict = e.Category == CodeficatorCategory.CityDistrict.Name ? e.Name : null,
                     };
 
