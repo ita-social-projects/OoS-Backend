@@ -454,6 +454,36 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CATOTTGCategory, opt => opt.Ignore())
             .ForMember(dest => dest.CATOTTGName, opt => opt.Ignore());
 
+        CreateMap<AreaAdmin, AreaAdminDto>()
+                   .ForMember(dest => dest.InstitutionTitle, opt => opt.MapFrom(src => src.Institution.Title))
+                   .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.User.Id))
+                   .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
+                   .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
+                   .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber.Right(Constants.PhoneShortLength)))
+                   .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName ?? string.Empty))
+                   .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+                   .ForMember(dest => dest.CATOTTGCategory, opt => opt.MapFrom(src => src.CATOTTG.Category))
+                   .ForMember(dest => dest.CATOTTGName, opt => opt.MapFrom(src => src.CATOTTG.Name))
+                   .ForMember(
+                       dest => dest.AccountStatus,
+                       opt => opt.MapFrom(src =>
+                           src.User.IsBlocked
+                               ? AccountStatus.Blocked
+                               : src.User.LastLogin == DateTimeOffset.MinValue
+                                   ? AccountStatus.NeverLogged
+                                   : AccountStatus.Accepted));
+
+        CreateMap<AreaAdminDto, AreaAdminBaseDto>()
+                   .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+                   .ForMember(dest => dest.CreatingTime, opt => opt.Ignore());
+
+        CreateMap<AreaAdminBaseDto, AreaAdminDto>()
+                   .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId))
+                   .ForMember(dest => dest.AccountStatus, opt => opt.Ignore())
+                   .ForMember(dest => dest.InstitutionTitle, opt => opt.Ignore())
+                   .ForMember(dest => dest.CATOTTGCategory, opt => opt.Ignore())
+                   .ForMember(dest => dest.CATOTTGName, opt => opt.Ignore()); 
+
         CreateMap<ProviderChangesLogRequest, ChangesLogFilter>()
             .ForMember(dest => dest.EntityType, opt => opt.Ignore())
             .ForMember(dest => dest.From, opt => opt.Ignore())
