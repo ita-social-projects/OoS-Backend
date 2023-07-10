@@ -53,6 +53,9 @@ public static class AuthCommonServiceExtensions
             CommonMinistryAdminService<Guid, InstitutionAdmin, MinistryAdminBaseDto, IInstitutionAdminRepository>>();
         services.AddTransient<ICommonMinistryAdminService<RegionAdminBaseDto>,
             CommonMinistryAdminService<long, RegionAdmin, RegionAdminBaseDto, IRegionAdminRepository>>();
+        services.AddTransient<IAreaAdminRepository, AreaAdminRepository>();
+        services.AddTransient<ICommonMinistryAdminService<AreaAdminBaseDto>,
+            CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, IAreaAdminRepository>>();
 
         services.AddTransient<IProviderAdminChangesLogService, ProviderAdminChangesLogService>();
 

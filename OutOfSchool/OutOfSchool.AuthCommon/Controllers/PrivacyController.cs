@@ -1,12 +1,6 @@
-﻿using IdentityServer4.Services;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Options;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
+﻿using Microsoft.AspNetCore.Mvc;
 
-namespace OutOfSchool.IdentityServer.Controllers;
+namespace OutOfSchool.AuthCommon.Controllers;
 public class PrivacyController : Controller
 {
     private readonly ILogger<PrivacyController> logger;
