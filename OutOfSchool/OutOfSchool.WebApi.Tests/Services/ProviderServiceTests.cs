@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
+using Bogus;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
@@ -955,10 +957,35 @@ public class ProviderServiceTests
     #region Block
 
     [Test]
+    public async Task Block_ReturnsNull_IfDtoIsNotValid()
+    {
+        // Arrange
+        var provider = ProvidersGenerator.Generate();
+
+        var providerBlockDto = new ProviderBlockDto()
+        {
+            Id = provider.Id,
+            IsBlocked = true,
+            BlockReason = "Test reason",
+        };
+
+        providersRepositoryMock.Setup(r => r.GetById(providerBlockDto.Id))
+            .ReturnsAsync(null as Provider);
+
+        // Act
+        var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.NotFound, result.HttpStatusCode);
+        Assert.IsNull(result.Result);
+    }
+
+    [Test]
     public async Task Block_ReturnsProviderBlockDto_IfDtoIsValid()
     {
         // Arrange
-        var provider = fakeProviders.First();
+        var provider = ProvidersGenerator.Generate();
 
         var providerBlockDto = new ProviderBlockDto()
         {
@@ -973,33 +1000,179 @@ public class ProviderServiceTests
             .ReturnsAsync(It.IsAny<int>());
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<ProviderBlockDto>>>()))
             .ReturnsAsync(providerBlockDto);
+        currentUserServiceMock.Setup(x => x.IsAdmin())
+            .Returns(true);
+        currentUserServiceMock.Setup(x => x.IsMinistryAdmin())
+            .Returns(false);
+        currentUserServiceMock.Setup(x => x.IsRegionAdmin())
+            .Returns(false);
+        currentUserServiceMock.Setup(x => x.IsAreaAdmin())
+            .Returns(false);
 
         // Act
         var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
 
         // Assert
-        Assert.AreEqual(providerBlockDto, result);
+        Assert.IsTrue(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.OK, result.HttpStatusCode);
+        Assert.AreEqual(providerBlockDto, result.Result);
     }
 
     [Test]
-    public async Task Block_ReturnsNull_IfDtoIsNotValid()
+    public async Task Block_ReturnsProviderBlockDto_IfMinistryAdminHasRights()
     {
         // Arrange
+        var institutionId = Guid.NewGuid();
+
+        var provider = ProvidersGenerator.Generate();
+        provider.InstitutionId = institutionId;
+
+        MinistryAdminDto ministryAdmin = AdminGenerator.GenerateMinistryAdminDto();
+        ministryAdmin.InstitutionId = institutionId;
+
         var providerBlockDto = new ProviderBlockDto()
         {
-            Id = Guid.NewGuid(),
+            Id = provider.Id,
+            IsBlocked = true,
+            BlockReason = "Test reason",
+        };
+
+        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
+            .ReturnsAsync(provider);
+        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+            .ReturnsAsync(It.IsAny<int>());
+        providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<ProviderBlockDto>>>()))
+            .ReturnsAsync(providerBlockDto);
+        ministryAdminServiceMock.Setup(x => x.GetByUserId(It.IsAny<string>()))
+            .Returns(Task.FromResult(ministryAdmin));
+        currentUserServiceMock.Setup(x => x.IsAdmin())
+            .Returns(true);
+        currentUserServiceMock.Setup(x => x.IsMinistryAdmin())
+            .Returns(true);
+        currentUserServiceMock.Setup(x => x.IsAreaAdmin())
+            .Returns(false);
+
+        // Act
+        var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsTrue(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.OK, result.HttpStatusCode);
+        Assert.AreEqual(providerBlockDto, result.Result);
+    }
+
+    [Test]
+    public async Task Block_ReturnsProviderBlockDto_IfRegionAdminHasRights()
+    {
+        // Arrange
+        var institutionId = Guid.NewGuid();
+        var catottgId = 12345;
+
+        var provider = ProvidersGenerator.Generate();
+        provider.InstitutionId = institutionId;
+        provider.LegalAddress.CATOTTGId = catottgId;
+
+        RegionAdminDto regionAdmin = AdminGenerator.GenerateRegionAdminDto();
+        regionAdmin.InstitutionId = institutionId;
+        regionAdmin.CATOTTGId = catottgId;
+
+        var providerBlockDto = new ProviderBlockDto()
+        {
+            Id = provider.Id,
+            IsBlocked = true,
+            BlockReason = "Test reason",
+        };
+
+        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
+            .ReturnsAsync(provider);
+        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+            .ReturnsAsync(It.IsAny<int>());
+        providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<ProviderBlockDto>>>()))
+            .ReturnsAsync(providerBlockDto);
+        regionAdminServiceMock.Setup(x => x.GetByUserId(It.IsAny<string>()))
+            .Returns(Task.FromResult(regionAdmin));
+        currentUserServiceMock.Setup(x => x.IsAdmin())
+            .Returns(true);
+        currentUserServiceMock.Setup(x => x.IsRegionAdmin())
+            .Returns(true);
+        currentUserServiceMock.Setup(x => x.IsAreaAdmin())
+            .Returns(false);
+        codeficatorServiceMock.Setup(x => x.GetAllChildrenIdsByParentIdAsync(It.IsAny<long>()))
+            .Returns(Task.FromResult((IEnumerable<long>)new List<long> { catottgId }));
+
+        // Act
+        var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsTrue(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.OK, result.HttpStatusCode);
+        Assert.AreEqual(providerBlockDto, result.Result);
+    }
+
+    [Test]
+    public async Task Block_ReturnsNull_IfAreaAdmin()
+    {
+        // Arrange
+        var institutionId = Guid.NewGuid();
+        var catottgId = 12345;
+
+        var provider = ProvidersGenerator.Generate();
+        provider.InstitutionId = institutionId;
+        provider.LegalAddress.CATOTTGId = catottgId;
+
+        var providerBlockDto = new ProviderBlockDto()
+        {
+            Id = provider.Id,
+            IsBlocked = true,
+            BlockReason = "Test reason",
+        };
+
+        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
+            .ReturnsAsync(provider);
+        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+            .ReturnsAsync(It.IsAny<int>());
+        providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<ProviderBlockDto>>>()))
+            .ReturnsAsync(providerBlockDto);
+        currentUserServiceMock.Setup(x => x.IsAdmin())
+            .Returns(true);
+        currentUserServiceMock.Setup(x => x.IsAreaAdmin())
+            .Returns(true);
+
+        // Act
+        var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.Forbidden, result.HttpStatusCode);
+        Assert.IsNull(result.Result);
+    }
+
+    [Test]
+    public async Task Block_ReturnsNull_IfNotAdmin()
+    {
+        // Arrange
+        var provider = ProvidersGenerator.Generate();
+
+        var providerBlockDto = new ProviderBlockDto()
+        {
+            Id = provider.Id,
             IsBlocked = true,
             BlockReason = "Test reason",
         };
 
         providersRepositoryMock.Setup(r => r.GetById(providerBlockDto.Id))
-            .ReturnsAsync(null as Provider);
+            .ReturnsAsync(provider);
+
+        currentUserServiceMock.Setup(x => x.IsAdmin())
+            .Returns(false);
 
         // Act
         var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
 
         // Assert
-        Assert.IsNull(result);
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.Forbidden, result.HttpStatusCode);
+        Assert.IsNull(result.Result);
     }
 
     #endregion Block

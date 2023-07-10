@@ -75,6 +75,8 @@ public enum Permissions : short
     ProviderAdmins = 54,
     [Display(GroupName = "Provider", Name = "Provider Approve", Description = "Can approve Provider and License")]
     ProviderApprove = 55,
+    [Display(GroupName = "Provider", Name = "Block", Description = "Can block Provider")]
+    ProviderBlock = 56,
     #endregion
 
     #region Rating control permissions #7
@@ -161,7 +163,7 @@ public enum Permissions : short
     [Display(GroupName = "RegionAdmin", Name = "Block", Description = "Can block region admin")]
     RegionAdminBlock = 125,
     #endregion
-    
+
     #region AreaAdmin Control permissions # 14
     //numbers from range 130-135 will cause troubles with migration
     [Display(GroupName = "AreaAdmin", Name = "Read", Description = "Can read area admin")]

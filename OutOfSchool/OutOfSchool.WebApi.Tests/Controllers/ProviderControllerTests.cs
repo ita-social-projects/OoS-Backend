@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -407,14 +408,22 @@ public class ProviderControllerTests
             BlockReason = "Test reason",
         };
 
+        var responseDto = new ResponseDto()
+        {
+            Result = providerBlockDto,
+            Message = It.IsAny<string>(),
+            HttpStatusCode = HttpStatusCode.OK,
+            IsSuccess = true,
+        };
+
         providerService.Setup(x => x.Block(providerBlockDto))
-            .ReturnsAsync(providerBlockDto);
+            .ReturnsAsync(responseDto);
 
         // Act
         var result = await providerController.Block(providerBlockDto).ConfigureAwait(false);
 
         // Assert
-        result.AssertResponseOkResultAndValidateValue(providerBlockDto);
+        result.AssertResponseOkResultAndValidateValue(responseDto.Result);
     }
 
     [Test]
@@ -428,10 +437,19 @@ public class ProviderControllerTests
             IsBlocked = true,
             BlockReason = "Test reason",
         };
-        var expected = new NotFoundObjectResult($"There is no Provider in DB with Id - {providerBlockDto.Id}");
+
+        var responseDto = new ResponseDto()
+        {
+            Result = null,
+            Message = $"There is no Provider in DB with Id - {providerBlockDto.Id}",
+            HttpStatusCode = HttpStatusCode.NotFound,
+            IsSuccess = false,
+        };
+
+        var expected = new NotFoundObjectResult(responseDto.Message);
 
         providerService.Setup(x => x.Block(providerBlockDto))
-            .ReturnsAsync(null as ProviderBlockDto);
+            .ReturnsAsync(responseDto);
 
         // Act
         var result = await providerController.Block(providerBlockDto).ConfigureAwait(false);

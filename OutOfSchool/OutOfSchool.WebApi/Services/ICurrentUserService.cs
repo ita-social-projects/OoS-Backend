@@ -48,22 +48,28 @@ public interface ICurrentUserService
     public bool IsAdmin();
 
     /// <summary>
-    /// Check if user is an techadmin.
+    /// Check if user is a techadmin.
     /// </summary>
     /// <returns>A <see cref="bool"/> with value true if user is in techadmin role, false otherwise.</returns>
     public bool IsTechAdmin();
 
     /// <summary>
-    /// Check if user is an ministryadmin.
+    /// Check if user is a ministryadmin.
     /// </summary>
     /// <returns>A <see cref="bool"/> with value true if user is in ministryadmin role, false otherwise.</returns>
     public bool IsMinistryAdmin();
 
     /// <summary>
-    /// Check if user is an region admin.
+    /// Check if user is a region admin.
     /// </summary>
     /// <returns>A <see cref="bool"/> with value true if user is in region admin role, false otherwise.</returns>
     public bool IsRegionAdmin();
+
+    /// <summary>
+    /// Check if user is an area admin.
+    /// </summary>
+    /// <returns>A <see cref="bool"/> with value true if user is in area admin role, false otherwise.</returns>
+    public bool IsAreaAdmin();
 
     /// <summary>
     /// Check if user's role is the same as provided.

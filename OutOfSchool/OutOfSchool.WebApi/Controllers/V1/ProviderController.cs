@@ -214,7 +214,7 @@ public class ProviderController : ControllerBase
     /// </summary>
     /// <param name="providerBlockDto">Entity to update.</param>
     /// <returns>Block Provider.</returns>
-    [HasPermission(Permissions.ProviderEdit)]
+    [HasPermission(Permissions.ProviderBlock)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderBlockDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -225,12 +225,20 @@ public class ProviderController : ControllerBase
     {
         var result = await providerService.Block(providerBlockDto);
 
-        if (result is null)
+        if (!result.IsSuccess)
         {
-            return NotFound($"There is no Provider in DB with Id - {providerBlockDto.Id}");
+            switch (result.HttpStatusCode)
+            {
+                case HttpStatusCode.Forbidden:
+                    return Forbid();
+                case HttpStatusCode.NotFound:
+                    return NotFound(result.Message);
+                default:
+                    return NotFound(result.Message);
+            }
         }
 
-        return Ok(result);
+        return Ok(result.Result);
     }
 
     /// <summary>
