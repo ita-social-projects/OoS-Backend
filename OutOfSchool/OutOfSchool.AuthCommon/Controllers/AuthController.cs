@@ -26,7 +26,6 @@ public class AuthController : Controller
     private readonly IRazorViewToStringRenderer renderer;
     private readonly IEmailSender emailSender;
     private string userId;
-    private string path;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AuthController"/> class.
@@ -72,7 +71,6 @@ public class AuthController : Controller
         HttpContext.Response.Cookies.Append("culture", culture.Name);
 
         userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
-        path = $"{context.HttpContext.Request.Path.Value}[{context.HttpContext.Request.Method}]";
     }
 
     /// <summary>
@@ -83,7 +81,7 @@ public class AuthController : Controller
     [HttpGet]
     public async Task<IActionResult> Logout(string logoutId)
     {
-        logger.LogDebug($"{path} started. User(id): {userId}.");
+        logger.LogDebug("Logout started. User(id): {UserId}", userId);
 
         await signInManager.SignOutAsync();
 
@@ -92,12 +90,12 @@ public class AuthController : Controller
         // TODO: Check whether it is correct to return NotImplementedException here
         if (string.IsNullOrEmpty(logoutRedirectUri))
         {
-            logger.LogError($"{path} PostLogoutRedirectUri was null. User(id): {userId}.");
+            logger.LogError("PostLogoutRedirectUri was null. User(id): {UserId}", userId);
 
             return Redirect(identityServerConfig.RedirectToStartPageUrl);
         }
 
-        logger.LogInformation($"{path} Successfully logged out. User(id): {userId}");
+        logger.LogInformation("Successfully logged out. User(id): {UserId}", userId);
 
         return Redirect(logoutRedirectUri);
     }
@@ -116,11 +114,11 @@ public class AuthController : Controller
             return RedirectToAction("Register", new { returnUrl, providerRegistration });
         }
 
-        logger.LogDebug($"{path} started.");
+        logger.LogDebug("Login started");
 
         var externalProviders = await signInManager.GetExternalAuthenticationSchemesAsync();
 
-        logger.LogDebug($"{path} External providers were obtained.");
+        logger.LogDebug("External providers were obtained");
 
         return View(new LoginViewModel
         {
@@ -137,11 +135,11 @@ public class AuthController : Controller
     [HttpPost]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
-        logger.LogDebug($"{path} started.");
+        logger.LogDebug("Login started");
 
         if (!ModelState.IsValid)
         {
-            logger.LogError($"{path} Input data was not valid.");
+            logger.LogError("Input data was not valid");
 
             return View(new LoginViewModel
             {
@@ -156,7 +154,7 @@ public class AuthController : Controller
         {
             if (user.IsBlocked)
             {
-                logger.LogInformation($"{path} User is blocked. Login was failed.");
+                logger.LogInformation("User is blocked. Login was failed");
 
                 ModelState.AddModelError(string.Empty, localizer["Your account is blocked"]);
                 return View(new LoginViewModel
@@ -184,7 +182,7 @@ public class AuthController : Controller
 
                 if (result.Succeeded)
                 {
-                    logger.LogInformation($"{path} Successfully logged. User(id): {userId}.");
+                    logger.LogInformation("Successfully logged. User(id): {UserId}", userId);
 
                     user.LastLogin = DateTimeOffset.UtcNow;
                     var lastLoginResult = await userManager.UpdateAsync(user);
@@ -199,14 +197,14 @@ public class AuthController : Controller
 
                 if (result.IsLockedOut)
                 {
-                    logger.LogWarning($"{path} Attempting to sign-in is locked out.");
+                    logger.LogWarning("{Attempting to sign-in is locked out");
 
                     return BadRequest();
                 }
             }
         }
 
-        logger.LogInformation($"{path} Login was failed.");
+        logger.LogInformation("Login was failed");
 
         ModelState.AddModelError(string.Empty, localizer["Login or password is wrong"]);
         return View(new LoginViewModel
@@ -236,11 +234,11 @@ public class AuthController : Controller
     [HttpPost]
     public async Task<IActionResult> ChangePasswordLogin(ChangePasswordLoginViewModel model)
     {
-        logger.LogDebug("{Path} started", path);
+        logger.LogDebug("ChangePasswordLogin started");
 
         if (!ModelState.IsValid)
         {
-            logger.LogError("{Path} Input data was not valid", path);
+            logger.LogError("Input data was not valid");
 
             return View(new ChangePasswordLoginViewModel { Email = model.Email, ReturnUrl = model.ReturnUrl });
         }
@@ -279,14 +277,14 @@ public class AuthController : Controller
             }
             else
             {
-                logger.LogWarning("{Path} User is not allowed to change password login action", path);
+                logger.LogWarning("User is not allowed to change password login action");
 
                 ModelState.AddModelError(string.Empty, localizer["User is not allowed to change password login action"]);
                 return View(new ChangePasswordLoginViewModel { Email = model.Email, ReturnUrl = model.ReturnUrl });
             }
         }
 
-        logger.LogInformation("{Path} Login was failed", path);
+        logger.LogInformation("Login was failed");
 
         ModelState.AddModelError(string.Empty, localizer["Login or password is wrong"]);
         return View(new ChangePasswordLoginViewModel { Email = model.Email, ReturnUrl = model.ReturnUrl });
@@ -317,11 +315,11 @@ public class AuthController : Controller
     [HttpPost]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
-        logger.LogDebug($"{path} started.");
+        logger.LogDebug("Register started");
 
         if (!ModelState.IsValid)
         {
-            logger.LogError($"{path} Input data was not valid.");
+            logger.LogError("Input data was not valid");
 
             return View("Register", model);
         }
@@ -358,7 +356,7 @@ public class AuthController : Controller
             var result = await userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
-                logger.LogDebug($"{path} User was created. User(id): {user.Id}");
+                logger.LogDebug("User was created. User(id): {UserId}", user.Id);
 
                 // TODO: Move sending email process to separated method
                 var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -375,7 +373,7 @@ public class AuthController : Controller
                 var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ConfirmEmail, userActionViewModel);
                 await emailSender.SendAsync(email, subject, content);
 
-                logger.LogInformation($"{path} Message to confirm email was sent. User(id): {user.Id}.");
+                logger.LogInformation("Message to confirm email was sent. User(id): {UserId}", user.Id);
 
                 IdentityResult roleAssignResult = IdentityResult.Failed();
 
@@ -399,7 +397,7 @@ public class AuthController : Controller
                         await parentRepository.RunInTransaction(operation).ConfigureAwait(false);
                     }
 
-                    logger.LogInformation($"{path} User(id): {user.Id} was successfully registered with Role: {user.Role}.");
+                    logger.LogInformation("User(id): {UserId} was successfully registered with Role: {UserRole}", user.Id, user.Role);
 
                     return View("ConfirmEmail", model);
                 }
@@ -408,7 +406,7 @@ public class AuthController : Controller
 
                 if (!deletionResult.Succeeded)
                 {
-                    logger.LogWarning($"{path} User(id): {user.Id} was created without role.");
+                    logger.LogWarning("User(id): {UserId} was created without role", user.Id);
                 }
 
                 foreach (var error in roleAssignResult.Errors)
@@ -418,7 +416,7 @@ public class AuthController : Controller
             }
             else
             {
-                logger.LogError($"{path} Registration was failed. " +
+                logger.LogError("Registration was failed. " +
                                 $"{string.Join(Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
                 foreach (var error in result.Errors)
@@ -441,7 +439,7 @@ public class AuthController : Controller
 
             ModelState.AddModelError(string.Empty, localizer["Error! Something happened on the server!"]);
 
-            logger.LogError("Error happened while creating Parent entity. " + ex.Message);
+            logger.LogError(ex, "Error happened while creating Parent entity");
 
             return View("Register", model);
         }

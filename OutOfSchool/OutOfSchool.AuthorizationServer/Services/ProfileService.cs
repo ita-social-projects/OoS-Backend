@@ -26,21 +26,24 @@ public class ProfileService : IProfileService
         var nameClaim = principal.Claims.FirstOrDefault(claim => claim.Type == "name");
         var roleClaim = principal.Claims.FirstOrDefault(claim => claim.Type == "role");
 
-        var userFromLogin = await userManager.FindByNameAsync(nameClaim.Value);
-
-        var permissionsClaim = new Claim(IdentityResourceClaimsTypes.Permissions, await GetPermissionsForUser(userFromLogin, roleClaim.Value));
-
-        var subrole = await GetSubroleByUserName(userFromLogin);
-        var subRoleClaim = new Claim(IdentityResourceClaimsTypes.Subrole, subrole.ToString());
-
-        var claims = new List<Claim>
+        if (nameClaim is not null && roleClaim is not null)
         {
-            permissionsClaim,
-            subRoleClaim,
-        };
+            var userFromLogin = await userManager.FindByNameAsync(nameClaim.Value);
 
-        var identity = principal.Identity as ClaimsIdentity;
-        identity?.AddClaims(claims);
+            var permissionsClaim = new Claim(IdentityResourceClaimsTypes.Permissions, await GetPermissionsForUser(userFromLogin, roleClaim.Value));
+
+            var subrole = await GetSubroleByUserName(userFromLogin);
+            var subRoleClaim = new Claim(IdentityResourceClaimsTypes.Subrole, subrole.ToString());
+
+            var claims = new List<Claim>
+            {
+                permissionsClaim,
+                subRoleClaim,
+            };
+
+            var identity = principal.Identity as ClaimsIdentity;
+            identity?.AddClaims(claims);
+        }
     }
 
     // get's list of permissions for current user's role from db
@@ -54,15 +57,10 @@ public class ProfileService : IProfileService
 
         var permissionsForUser = (await permissionsForRolesRepository
                 .GetByFilter(p => p.RoleName == roleName))
-            .FirstOrDefault().PackedPermissions;
+            .FirstOrDefault()?.PackedPermissions;
 
         // action when no permissions for user's role existes in DB
-        if (permissionsForUser == null)
-        {
-            return new List<Permissions>() { Permissions.NotSet }.PackPermissionsIntoString();
-        }
-
-        return permissionsForUser;
+        return permissionsForUser ?? new List<Permissions>() { Permissions.NotSet }.PackPermissionsIntoString();
     }
 
     // Get subrole for user
