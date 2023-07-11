@@ -4,7 +4,11 @@ public class AuthorizationServerConfig
 {
     public const string Name = "AuthorizationServer";
 
-    public string EncryptionKey { get; set; }
+    public string IntrospectionSecret { get; set; }
 
-    public string SigningKey { get; set; }
+    public string[] AllowedCorsOrigins { get; set; }
+
+    public AuthorizationCertificateConfig Certificate { get; set; }
+
+    public OpenIdClient[] OpenIdClients { get; set; }
 }

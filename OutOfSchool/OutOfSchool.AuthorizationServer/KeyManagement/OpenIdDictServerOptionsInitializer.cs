@@ -4,6 +4,7 @@ using OpenIddict.Server;
 
 namespace OutOfSchool.AuthorizationServer.KeyManagement;
 
+[Obsolete("Using externally generated certificates")]
 public class OpenIdDictServerOptionsInitializer : IConfigureNamedOptions<OpenIddictServerOptions>
 {
     private readonly IKeyManager keyManager;

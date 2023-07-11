@@ -6,6 +6,7 @@ using OutOfSchool.AuthCommon.Extensions;
 using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.AuthorizationServer.Config;
 using OutOfSchool.AuthorizationServer.Extensions;
+using OutOfSchool.AuthorizationServer.KeyManagement;
 using OutOfSchool.AuthorizationServer.Services;
 
 namespace OutOfSchool.AuthorizationServer;
@@ -109,6 +110,10 @@ public static class Startup
         {
             options.DefaultAuthenticateScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
         });
+
+        var authorizationSection = config.GetSection(AuthorizationServerConfig.Name);
+        var authorizationConfig = authorizationSection.Get<AuthorizationServerConfig>();
+        services.Configure<AuthorizationServerConfig>(authorizationSection);
         services.AddOpenIddict()
             .AddCore(options =>
             {
@@ -151,11 +156,12 @@ public static class Startup
                         .AddEphemeralSigningKey();
                     aspNetCoreBuilder.DisableTransportSecurityRequirement();
                 }
-
-                // TODO: add config for test and release environments
-                if (builder.Environment.IsEnvironment("Google"))
+                else
                 {
-                    // options.AddSigningKey()
+                    var certificate = ExternalCertificate.LoadCertificates(authorizationConfig.Certificate);
+                    // TODO: create two different certificates after testing this
+                    options.AddSigningCertificate(certificate)
+                        .AddEncryptionCertificate(certificate);
                 }
 
                 options.DisableAccessTokenEncryption(); //TODO: Maybe do encrypt? :)
@@ -174,10 +180,7 @@ public static class Startup
                 {
                     policyBuilder
                         .AllowCredentials()
-
-                        // TODO: extract to settings
-                        .WithOrigins(
-                            "http://localhost:4200", "http://localhost:5000", "http://localhost:8080")
+                        .WithOrigins(authorizationConfig.AllowedCorsOrigins)
                         .SetIsOriginAllowedToAllowWildcardSubdomains()
                         .AllowAnyHeader()
                         .AllowAnyMethod();

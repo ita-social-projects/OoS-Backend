@@ -2,6 +2,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace OutOfSchool.AuthorizationServer.KeyManagement;
 
+[Obsolete("Using externally generated certificates")]
 public interface IKeyManager
 {
     /// <summary>

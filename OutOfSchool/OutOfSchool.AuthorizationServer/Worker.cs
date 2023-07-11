@@ -1,4 +1,6 @@
+using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
+using OutOfSchool.AuthorizationServer.Config;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OutOfSchool.AuthorizationServer;
@@ -24,113 +26,64 @@ public class Worker : IHostedService
             static async Task RegisterApplicationsAsync(IServiceProvider provider)
             {
                 var manager = provider.GetRequiredService<IOpenIddictApplicationManager>();
-
-                // Angular UI client
-                if (await manager.FindByClientIdAsync("angular") is null)
+                var options = provider.GetRequiredService<IOptions<AuthorizationServerConfig>>().Value;
+                foreach (var client in options.OpenIdClients)
                 {
-                    await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                    if (await manager.FindByClientIdAsync(client.ClientId) is null)
                     {
-                        ClientId = "angular",
-                        ConsentType = ConsentTypes.Explicit,
-                        DisplayName = "angular client PKCE",
-                        DisplayNames =
+                        OpenIddictApplicationDescriptor descriptor;
+                        if (client.IsIntrospection)
                         {
-                            [CultureInfo.GetCultureInfo("uk-UA")] = "Позашкілля",
-                            [CultureInfo.GetCultureInfo("en-US")] = "Pozashkillia",
-                            [CultureInfo.GetCultureInfo("en-GB")] = "Pozashkillia",
-                        },
-                        PostLogoutRedirectUris =
+                            descriptor = new()
+                            {
+                                ClientId = client.ClientId,
+                                ClientSecret = options.IntrospectionSecret,
+                                Permissions =
+                                {
+                                    Permissions.Endpoints.Introspection,
+                                },
+                            };
+                        }
+                        else
                         {
-                            new Uri("http://localhost:4200")
-                        },
-                        RedirectUris =
-                        {
-                            new Uri("http://localhost:4200")
-                        },
-                        Permissions =
-                        {
-                            Permissions.Endpoints.Authorization,
-                            Permissions.Endpoints.Logout,
-                            Permissions.Endpoints.Token,
-                            Permissions.Endpoints.Revocation,
-                            Permissions.GrantTypes.AuthorizationCode,
-                            Permissions.GrantTypes.RefreshToken,
-                            Permissions.ResponseTypes.Code,
-                            Permissions.Scopes.Email,
-                            Permissions.Scopes.Profile,
-                            Permissions.Scopes.Roles,
-                            Permissions.Prefixes.Scope + "outofschoolapi",
-                        },
-                        Requirements =
-                        {
-                            Requirements.Features.ProofKeyForCodeExchange,
-                        },
-                    });
-                }
+                            descriptor = new OpenIddictApplicationDescriptor
+                            {
+                                ClientId = client.ClientId,
+                                ConsentType = ConsentTypes.Explicit,
+                                DisplayName = client.DisplayName,
+                                Permissions =
+                                {
+                                    Permissions.Endpoints.Authorization,
+                                    Permissions.Endpoints.Logout,
+                                    Permissions.Endpoints.Token,
+                                    Permissions.Endpoints.Revocation,
+                                    Permissions.GrantTypes.AuthorizationCode,
+                                    Permissions.GrantTypes.RefreshToken,
+                                    Permissions.ResponseTypes.Code,
+                                    Permissions.Scopes.Email,
+                                    Permissions.Scopes.Profile,
+                                    Permissions.Scopes.Roles,
+                                    Permissions.Prefixes.Scope + "outofschoolapi",
+                                },
+                                Requirements =
+                                {
+                                    Requirements.Features.ProofKeyForCodeExchange,
+                                },
+                            };
+                            descriptor.PostLogoutRedirectUris.UnionWith(client.PostLogoutRedirectUris.Select(s => new Uri(s)));
+                            descriptor.RedirectUris.UnionWith(client.RedirectUris.Select(s => new Uri(s)));
+                            foreach (var entry in client.DisplayNames)
+                            {
+                                descriptor.DisplayNames.Add(CultureInfo.GetCultureInfo(entry.Key), entry.Value);
+                            }
+                        }
 
-                // API validation
-                if (await manager.FindByClientIdAsync("outofschool_api") == null)
-                {
-                    var descriptor = new OpenIddictApplicationDescriptor
-                    {
-                        ClientId = "outofschool_api",
-                        ClientSecret = "outofschool_api_secret",
-                        Permissions =
-                        {
-                            Permissions.Endpoints.Introspection,
-                        },
-                    };
-
-                    await manager.CreateAsync(descriptor);
-                }
-
-                // Swagger
-                if (await manager.FindByClientIdAsync("Swagger") is null)
-                {
-                    await manager.CreateAsync(new OpenIddictApplicationDescriptor
-                    {
-                        ClientId = "Swagger",
-                        Type = ClientTypes.Public,
-                        ConsentType = ConsentTypes.Explicit,
-                        DisplayName = "Swagger UI PKCE",
-                        DisplayNames =
-                        {
-                            [CultureInfo.GetCultureInfo("uk-UA")] = "Позашкілля API",
-                            [CultureInfo.GetCultureInfo("en-US")] = "Pozashkillia API",
-                            [CultureInfo.GetCultureInfo("en-GB")] = "Pozashkillia API",
-                        },
-                        PostLogoutRedirectUris =
-                        {
-                            new Uri("http://localhost:5000/swagger/oauth2-redirect.html"),
-                            new Uri("http://localhost:8080/swagger/oauth2-redirect.html"),
-                        },
-                        RedirectUris =
-                        {
-                            new Uri("http://localhost:5000/swagger/oauth2-redirect.html"),
-                            new Uri("http://localhost:8080/swagger/oauth2-redirect.html"),
-                        },
-                        Permissions =
-                        {
-                            Permissions.Endpoints.Authorization,
-                            Permissions.Endpoints.Logout,
-                            Permissions.Endpoints.Token,
-                            Permissions.Endpoints.Revocation,
-                            Permissions.GrantTypes.AuthorizationCode,
-                            Permissions.GrantTypes.RefreshToken,
-                            Permissions.ResponseTypes.Code,
-                            Permissions.Scopes.Email,
-                            Permissions.Scopes.Profile,
-                            Permissions.Scopes.Roles,
-                            Permissions.Prefixes.Scope + "outofschoolapi",
-                        },
-                        Requirements =
-                        {
-                            Requirements.Features.ProofKeyForCodeExchange,
-                        },
-                    });
+                        await manager.CreateAsync(descriptor);
+                    }
                 }
             }
 
+            // TODO: Maybe extract to appsettigns too later.
             static async Task RegisterScopesAsync(IServiceProvider provider)
             {
                 var manager = provider.GetRequiredService<IOpenIddictScopeManager>();

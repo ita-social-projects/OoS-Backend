@@ -6,6 +6,7 @@ using OutOfSchool.AuthorizationServer.Config;
 
 namespace OutOfSchool.AuthorizationServer.KeyManagement;
 
+[Obsolete("Using externally generated certificates")]
 public class KeyManager : IKeyManager
 {
     private readonly IServiceScopeFactory scopeFactory;

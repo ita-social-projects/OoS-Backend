@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.AuthorizationServer.KeyManagement;
 
+[Obsolete("Using externally generated certificates")]
 public class SigningOrEncryptionCertificate
 {
     public string Id { get; set; }
