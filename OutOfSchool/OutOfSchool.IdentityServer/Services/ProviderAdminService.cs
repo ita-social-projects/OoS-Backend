@@ -218,8 +218,7 @@ public class ProviderAdminService : IProviderAdminService
             return response;
         }
 
-        if ((!providerAdmin.IsDeputy && !providerAdminUpdateDto.ManagedWorkshopIds.Any())
-            || providerAdminUpdateDto.ManagedWorkshopIds is null)
+        if (!providerAdmin.IsDeputy && !providerAdminUpdateDto.ManagedWorkshopIds.Any())
         {
             logger.LogError("Cant update assistant provider admin without related workshops");
             response.IsSuccess = false;
