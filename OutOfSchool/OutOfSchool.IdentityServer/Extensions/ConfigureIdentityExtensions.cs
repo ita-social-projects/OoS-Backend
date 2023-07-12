@@ -24,7 +24,12 @@ public static class ConfigureIdentityExtensions
 
         msIdentityConfig?.Invoke(identityBuilder);
 
-        var identityServerBuilder = services.AddIdentityServer(options => { options.IssuerUri = issuerUri; })
+        var identityServerBuilder = services.AddIdentityServer(options =>
+            {
+                options.IssuerUri = issuerUri;
+                options.UserInteraction.LoginUrl = "/Auth/Login";
+                options.UserInteraction.LogoutUrl = "/Auth/Logout";
+            })
             .AddConfigurationStore(options =>
             {
                 options.ConfigureDbContext = builder =>
