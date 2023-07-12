@@ -43,7 +43,7 @@ public class CodeficatorRepository : EntityRepository<long, CATOTTG>, ICodeficat
                     from ppp in db.CATOTTGs.Where(x3 => pp.ParentId == x3.Id).DefaultIfEmpty()
                     from pppp in db.CATOTTGs.Where(x4 => ppp.ParentId == x4.Id).DefaultIfEmpty()
                     where ((parentId == 0) ? true : (e.ParentId == parentId || p.ParentId == parentId || pp.ParentId == parentId || ppp.ParentId == parentId || pppp.ParentId == parentId))
-                        && (string.IsNullOrEmpty(namePart) &&
+                        && (string.IsNullOrEmpty(namePart) && (parentId == 0) &&
                             !(categories.Contains(CodeficatorCategory.SpecialStatusCity.Name) || categories.Contains(CodeficatorCategory.Region.Name))
                        ? EF.Property<bool>(e, "IsTop")
                        : ((e.Name.StartsWith(namePart) &&
