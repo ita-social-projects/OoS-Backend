@@ -6,6 +6,8 @@ public static class Constants
 
     public const long DefaultCityCodeficatorId = 31737;
 
+    public const string DefaultAuthScheme = "bearer_or_cookie";
+
     public const string PhonePrefix = "380";
 
     public const int PhoneShortLength = 9;

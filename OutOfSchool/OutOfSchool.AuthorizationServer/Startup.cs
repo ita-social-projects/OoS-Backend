@@ -1,4 +1,5 @@
 using GrpcServiceServer;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.AuthCommon.Config;
@@ -109,6 +110,7 @@ public static class Startup
         services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+            options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         });
 
         var authorizationSection = config.GetSection(AuthorizationServerConfig.Name);

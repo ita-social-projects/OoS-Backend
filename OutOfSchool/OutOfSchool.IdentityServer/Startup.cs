@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Net.Http.Headers;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Extensions;
 using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.IdentityServer.Extensions;
+using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
 namespace OutOfSchool.IdentityServer;
 
@@ -68,18 +71,32 @@ public static class Startup
         // Must be AFTER services.AddIdentity() call
         services.AddAuthentication(options =>
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = Constants.DefaultAuthScheme;
+                options.DefaultAuthenticateScheme = Constants.DefaultAuthScheme;
+                options.DefaultScheme = Constants.DefaultAuthScheme;
             })
             .AddJwtBearer(options =>
             {
                 options.Authority = config["Identity:Authority"];
                 options.Audience = config["Identity:ApiName"];
                 options.RequireHttpsMetadata = false;
-                options.TokenValidationParameters.ValidAudiences = new[] { config["Identity:ApiName"] };
+                options.TokenValidationParameters.ValidAudiences = new[] {config["Identity:ApiName"]};
                 options.SaveToken = true;
                 options.MapInboundClaims = false;
+            })
+            .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddPolicyScheme(Constants.DefaultAuthScheme, Constants.DefaultAuthScheme, options =>
+            {
+                options.ForwardDefaultSelector = context =>
+                {
+                    string authorization = context.Request.Headers[HeaderNames.Authorization];
+                    if (!string.IsNullOrEmpty(authorization) && authorization.StartsWith("Bearer "))
+                    {
+                        return JwtBearerDefaults.AuthenticationScheme;
+                    }
+
+                    return CookieAuthenticationDefaults.AuthenticationScheme;
+                };
             });
 
         services.ConfigureApplicationCookie(c =>
@@ -97,7 +114,7 @@ public static class Startup
         services.AddHealthChecks()
             .AddDbContextCheck<OutOfSchoolDbContext>(
                 "Database",
-                tags: new[] { "readiness" });
+                tags: new[] {"readiness"});
     }
 
     public static void Configure(this WebApplication app)
@@ -114,8 +131,8 @@ public static class Startup
 
         var supportedCultures = new[]
         {
-                new CultureInfo("en"),
-                new CultureInfo("uk"),
+            new CultureInfo("en"),
+            new CultureInfo("uk"),
         };
 
         var requestLocalization = new RequestLocalizationOptions
@@ -124,31 +141,31 @@ public static class Startup
             SupportedCultures = supportedCultures,
             SupportedUICultures = supportedCultures,
             RequestCultureProviders = new List<IRequestCultureProvider>
+            {
+                new CustomRequestCultureProvider(context =>
                 {
-                    new CustomRequestCultureProvider(context =>
+                    if (!context.Request.Query.TryGetValue("ui-culture", out var selectedUiCulture) &
+                        !context.Request.Query.TryGetValue("culture", out var selectedCulture))
                     {
-                        if (!context.Request.Query.TryGetValue("ui-culture", out var selectedUiCulture) &
-                            !context.Request.Query.TryGetValue("culture", out var selectedCulture))
-                        {
-                            var encodedPathAndQuery = context.Request.GetEncodedPathAndQuery();
-                            var decodedUrl = WebUtility.UrlDecode(encodedPathAndQuery);
-                            var dictionary = QueryHelpers.ParseQuery(decodedUrl);
-                            dictionary.TryGetValue("ui-culture", out selectedUiCulture);
-                            dictionary.TryGetValue("culture", out selectedCulture);
-                        }
+                        var encodedPathAndQuery = context.Request.GetEncodedPathAndQuery();
+                        var decodedUrl = WebUtility.UrlDecode(encodedPathAndQuery);
+                        var dictionary = QueryHelpers.ParseQuery(decodedUrl);
+                        dictionary.TryGetValue("ui-culture", out selectedUiCulture);
+                        dictionary.TryGetValue("culture", out selectedCulture);
+                    }
 
-                        if (selectedCulture.FirstOrDefault() is null ^ selectedUiCulture.FirstOrDefault() is null)
-                        {
-                            return Task.FromResult(new ProviderCultureResult(
-                                selectedCulture.FirstOrDefault() ??
-                                selectedUiCulture.FirstOrDefault()));
-                        }
-
+                    if (selectedCulture.FirstOrDefault() is null ^ selectedUiCulture.FirstOrDefault() is null)
+                    {
                         return Task.FromResult(new ProviderCultureResult(
-                            selectedCulture.FirstOrDefault(),
+                            selectedCulture.FirstOrDefault() ??
                             selectedUiCulture.FirstOrDefault()));
-                    }),
-                },
+                    }
+
+                    return Task.FromResult(new ProviderCultureResult(
+                        selectedCulture.FirstOrDefault(),
+                        selectedUiCulture.FirstOrDefault()));
+                }),
+            },
         };
 
         app.UseRequestLocalization(requestLocalization);
@@ -161,9 +178,8 @@ public static class Startup
 
         app.UseSerilogRequestLogging();
 
-        app.UseIdentityServer();
-
         app.UseAuthentication();
+        app.UseIdentityServer();
         app.UseAuthorization();
 
         app.MapHealthChecks("/healthz/ready", new HealthCheckOptions

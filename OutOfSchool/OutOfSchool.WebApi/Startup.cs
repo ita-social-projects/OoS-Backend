@@ -97,7 +97,7 @@ public static class Startup
                 .AddValidation(options =>
                 {
                     options.SetIssuer(identityConfig.Authority);
-                    options.AddAudiences(identityConfig.ApiName);
+                    options.AddAudiences(identityConfig.ClientId);
                     options.UseIntrospection()
                         .SetClientId(identityConfig.ClientId)
                         .SetClientSecret(identityConfig.ClientSecret);
@@ -116,9 +116,9 @@ public static class Startup
                 .AddJwtBearer(options =>
                 {
                     options.Authority = identityConfig.Authority.AbsoluteUri;
-                    options.Audience = configuration["Identity:ApiName"];
+                    options.Audience = identityConfig.ApiName;
                     options.RequireHttpsMetadata = false;
-                    options.TokenValidationParameters.ValidAudiences = new[] {configuration["Identity:ApiName"]};
+                    options.TokenValidationParameters.ValidAudiences = new[] {identityConfig.ApiName};
                     options.SaveToken = true;
                     options.MapInboundClaims = false;
                 });

@@ -27,8 +27,9 @@ public static class ConfigureIdentityExtensions
         var identityServerBuilder = services.AddIdentityServer(options =>
             {
                 options.IssuerUri = issuerUri;
-                options.UserInteraction.LoginUrl = "/Auth/Login";
-                options.UserInteraction.LogoutUrl = "/Auth/Logout";
+                options.UserInteraction.LoginUrl = "~/Auth/Login";
+                options.UserInteraction.LogoutUrl = "~/Auth/Logout";
+                options.UserInteraction.LoginReturnUrlParameter = "ReturnUrl";
             })
             .AddConfigurationStore(options =>
             {
