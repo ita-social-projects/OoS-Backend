@@ -159,6 +159,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Images, opt => opt.Ignore())
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.Status, opt => opt.Ignore())
+            .ForMember(dest => dest.StatusReason, opt => opt.Ignore())
             .ForMember(dest => dest.LicenseStatus, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore());
 
