@@ -4,5 +4,13 @@ public class IdentityServerConfig
 {
     public const string Name = "Identity";
 
-    public System.Uri Authority { get; set; }
+    public Uri Authority { get; set; }
+
+    public string ApiName { get; set; }
+
+    public string ClientId { get; set; }
+
+    public string ClientSecret { get; set; }
+
+    public bool EnableOpenIdDict { get; set; }
 }

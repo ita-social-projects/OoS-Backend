@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
@@ -10,24 +8,23 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.IdentityServer.Controllers;
-using OutOfSchool.IdentityServer.ViewModels;
+using OutOfSchool.AuthCommon;
+using OutOfSchool.AuthCommon.Config;
+using OutOfSchool.AuthCommon.Controllers;
+using OutOfSchool.AuthCommon.Services.Interfaces;
+using OutOfSchool.AuthCommon.ViewModels;
+using OutOfSchool.EmailSender;
+using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Options;
-using OutOfSchool.EmailSender;
-using OutOfSchool.IdentityServer.Config;
-using OutOfSchool.IdentityServer.Services.Interfaces;
-using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Tests.Common.TestDataGenerators;
+using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace OutOfSchool.IdentityServer.Tests.Controllers;
 
@@ -37,12 +34,12 @@ public class AuthControllerTests
     private readonly Mock<FakeUserManager> fakeUserManager;
     private readonly Mock<IUserManagerAdditionalService> fakeUserManagerAdditionalService;
     private readonly Mock<FakeSignInManager> fakeSignInManager;
-    private readonly Mock<IIdentityServerInteractionService> fakeInteractionService;
+    private readonly Mock<IInteractionService> fakeInteractionService;
     private readonly Mock<ILogger<AuthController>> fakeLogger;
     private readonly Mock<IParentRepository> fakeparentRepository;
     private AuthController authController;
     private readonly Mock<IStringLocalizer<SharedResource>> fakeLocalizer;
-    private static Mock<IOptions<IdentityServerConfig>> fakeIdentityServerConfig;
+    private static Mock<IOptions<AuthServerConfig>> fakeIdentityServerConfig;
     private readonly Mock<IEmailSender> fakeEmailSender;
     private readonly Mock<IRazorViewToStringRenderer> fakeRenderer;
 
@@ -50,7 +47,7 @@ public class AuthControllerTests
     {
         fakeUserManager = new Mock<FakeUserManager>();
         fakeUserManagerAdditionalService = new Mock<IUserManagerAdditionalService>();
-        fakeInteractionService = new Mock<IIdentityServerInteractionService>();
+        fakeInteractionService = new Mock<IInteractionService>();
         fakeSignInManager = new Mock<FakeSignInManager>();
         fakeLogger = new Mock<ILogger<AuthController>>();
         fakeparentRepository = new Mock<IParentRepository>();
@@ -62,10 +59,10 @@ public class AuthControllerTests
     [OneTimeSetUp]
     public void OneTimeSetup()
     {
-        var config = new IdentityServerConfig();
+        var config = new AuthServerConfig();
         config.RedirectToStartPageUrl = "http://localhost:4200";
 
-        fakeIdentityServerConfig = new Mock<IOptions<IdentityServerConfig>>();
+        fakeIdentityServerConfig = new Mock<IOptions<AuthServerConfig>>();
         fakeIdentityServerConfig.Setup(m => m.Value).Returns(config);
     }
 
@@ -92,15 +89,12 @@ public class AuthControllerTests
     public async Task Logout_WithLogoutId_ReturnsRedirectResult()
     {
         // Arrange
-        var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage())
-        { 
-            PostLogoutRedirectUri = "True logout id",
-        };
+        var PostLogoutRedirectUri = "True logout id";
             
         fakeSignInManager.Setup(manager => manager.SignOutAsync())
             .Returns(Task.CompletedTask);
-        fakeInteractionService.Setup(service => service.GetLogoutContextAsync(It.IsAny<string>()))
-            .Returns(Task.FromResult(logoutRequest));
+        fakeInteractionService.Setup(service => service.GetPostLogoutRedirectUri(It.IsAny<string>()))
+            .Returns(Task.FromResult(PostLogoutRedirectUri));
         // Act
         var result = await authController.Logout("Any logout ID");
 
@@ -112,14 +106,12 @@ public class AuthControllerTests
     public async Task Logout_WithoutLogoutId_ReturnsRedirectResult()
     {
         // Arrange
-        var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage())
-        {
-            PostLogoutRedirectUri = "",
-        };
+        var PostLogoutRedirectUri = "";
+
         fakeSignInManager.Setup(manager => manager.SignOutAsync())
             .Returns(Task.CompletedTask);
-        fakeInteractionService.Setup(service => service.GetLogoutContextAsync(It.IsAny<string>()))
-            .Returns(Task.FromResult(logoutRequest));
+        fakeInteractionService.Setup(service => service.GetPostLogoutRedirectUri(It.IsAny<string>()))
+            .Returns(Task.FromResult(PostLogoutRedirectUri));
 
         // Act
         var result = await authController.Logout("Any logout ID");

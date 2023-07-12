@@ -1,11 +1,9 @@
-using FluentValidation;
-using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using OutOfSchool.Common.Models;
-using OutOfSchool.IdentityServer.Config.ExternalUriModels;
+using OutOfSchool.AuthCommon.Config;
+using OutOfSchool.AuthCommon.Extensions;
+using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.IdentityServer.Extensions;
-using OutOfSchool.IdentityServer.Validators;
-using OutOfSchool.IdentityServer.ViewModels;
 
 namespace OutOfSchool.IdentityServer;
 
@@ -16,7 +14,6 @@ public static class Startup
         var services = builder.Services;
         var config = builder.Configuration;
 
-        services.Configure<IdentityServerConfig>(config.GetSection(IdentityServerConfig.Name));
         var migrationsAssembly = config["MigrationsAssembly"];
 
         // TODO: Move version check into an extension to reuse code across apps
@@ -27,7 +24,7 @@ public static class Startup
             throw new Exception("MySQL Server version should be 8 or higher.");
         }
 
-        var connectionString = config.GetMySqlConnectionString<IdentityConnectionOptions>(
+        var connectionString = config.GetMySqlConnectionString<AuthorizationConnectionOptions>(
             "DefaultConnection",
             options => new MySqlConnectionStringBuilder
             {
@@ -50,25 +47,8 @@ public static class Startup
 
         services.AddCustomDataProtection("IdentityServer");
 
-        services.AddLocalization(options => options.ResourcesPath = "Resources");
-
-        services.AddAuthentication("Bearer")
-            .AddIdentityServerAuthentication("Bearer", options =>
-            {
-                options.ApiName = "outofschoolapi";
-                options.Authority = config["Identity:Authority"];
-
-                options.RequireHttpsMetadata = false;
-            });
-
         var issuerSection = config.GetSection(IssuerConfig.Name);
         services.Configure<IssuerConfig>(issuerSection);
-
-        // GRPC options
-        services.Configure<GRPCConfig>(config.GetSection(GRPCConfig.Name));
-
-        // ExternalUris options
-        services.Configure<AngularClientScopeExternalUrisConfig>(config.GetSection(AngularClientScopeExternalUrisConfig.Name));
 
         services.ConfigureIdentity(
             connectionString,
@@ -85,59 +65,32 @@ public static class Startup
                 identityServerBuilder.AddProfileService<ProfileService>();
             });
 
+        // Must be AFTER services.AddIdentity() call
+        services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.Authority = config["Identity:Authority"];
+                options.Audience = config["Identity:ApiName"];
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters.ValidAudiences = new[] { config["Identity:ApiName"] };
+                options.SaveToken = true;
+                options.MapInboundClaims = false;
+            });
+
         services.ConfigureApplicationCookie(c =>
         {
             c.Cookie.Name = "IdentityServer.Cookie";
             c.LoginPath = "/Auth/Login";
             c.LogoutPath = "/Auth/Logout";
         });
-
-        var mailConfig = config
-            .GetSection(EmailOptions.SectionName)
-            .Get<EmailOptions>();
-        services.AddEmailSender(
-            builder.Environment.IsDevelopment(),
-            mailConfig.SendGridKey,
-            emailOptions => emailOptions.Bind(config.GetSection(EmailOptions.SectionName)));
-
-        services.AddControllersWithViews()
-            .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
-            .AddDataAnnotationsLocalization(options =>
-            {
-                options.DataAnnotationLocalizerProvider = (type, factory) =>
-                    factory.Create(typeof(SharedResource));
-            });
-
         services.AddProxy();
-        services.AddAutoMapper(typeof(MappingProfile));
-        services.AddTransient(typeof(IEntityRepository<,>), typeof(EntityRepository<,>));
-        services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
-        services.AddTransient<IParentRepository, ParentRepository>();
-        services.AddTransient<IProviderAdminService, ProviderAdminService>();
-        services.AddTransient<IUserManagerAdditionalService, UserManagerAdditionalService>();
-        services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
-        services.AddTransient<IRegionAdminRepository, RegionAdminRepository>();
-        services.AddTransient<IAreaAdminRepository, AreaAdminRepository>();
-        services.AddTransient<ICommonMinistryAdminService<MinistryAdminBaseDto>,
-            CommonMinistryAdminService<Guid, InstitutionAdmin, MinistryAdminBaseDto, IInstitutionAdminRepository>>();
-        services.AddTransient<ICommonMinistryAdminService<RegionAdminBaseDto>,
-            CommonMinistryAdminService<long, RegionAdmin, RegionAdminBaseDto, IRegionAdminRepository>>();
-        services.AddTransient<ICommonMinistryAdminService<AreaAdminBaseDto>,
-            CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, IAreaAdminRepository>>();
-
-        services.AddTransient<IProviderAdminChangesLogService, ProviderAdminChangesLogService>();
-
-        // Register the Permission policy handlers
-        services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
-        services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
-
-        services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
-
-        services.AddFluentValidationAutoValidation();
-
-        services.AddScoped<IValidator<RegisterViewModel>, RegisterViewModelValidator>();
-
-        services.AddGrpc();
+        services.AddAuthCommon(config, builder.Environment.IsDevelopment());
+        services.AddTransient<IInteractionService, InteractionService>();
 
         services.AddHostedService<AdditionalClientsHostedService>();
 
@@ -221,6 +174,7 @@ public static class Startup
             .WithMetadata(new AllowAnonymousAttribute());
 
         app.UseEndpoints(endpoints => { endpoints.MapDefaultControllerRoute(); });
+        app.MapRazorPages();
 
         var gRPCConfig = app.Configuration.GetSection(GRPCConfig.Name).Get<GRPCConfig>();
 

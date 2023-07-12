@@ -1,0 +1,21 @@
+{
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:52550",
+      "sslPort": 44369
+    }
+  },
+  "profiles": {
+    "OutOfSchool.AuthorizationServer": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "Auth/Login",
+      "applicationUrl": "http://localhost:5443;https://localhost:5444;https://localhost:5002",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

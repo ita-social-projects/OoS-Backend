@@ -22,12 +22,12 @@ app.Configure();
 
 try
 {
-    Log.Information("Application has started.");
+    Log.Information("Application has started");
     await app.RunAsync();
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "Application failed to start.");
+    Log.Fatal(ex, "Application failed to start");
 }
 finally
 {

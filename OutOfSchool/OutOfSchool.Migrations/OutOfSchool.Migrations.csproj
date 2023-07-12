@@ -19,6 +19,7 @@
     <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
     <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
     <ProjectReference Include="..\OutOfSchool.IdentityServer\OutOfSchool.IdentityServer.csproj" />
+    <ProjectReference Include="..\OutOfSchool.AuthorizationServer\OutOfSchool.AuthorizationServer.csproj" />
   </ItemGroup>
 
   <ItemGroup>

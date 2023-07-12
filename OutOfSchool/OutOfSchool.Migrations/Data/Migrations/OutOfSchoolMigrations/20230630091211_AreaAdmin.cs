@@ -3,13 +3,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations;
+
+public partial class AreaAdmin : Migration
 {
-    public partial class AreaAdmin : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AreaAdmins",
                 columns: table => new
                 {
@@ -40,65 +40,64 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 1L,
-                column: "PackedPermissions",
-                value: "def\n\r !()+43257>=<?HGIFPQ[]\\rpqon|z{yx}T");
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 1L,
+            column: "PackedPermissions",
+            value: "def\n\r !()+43257>=<?HGIFPQ[]\\rpqon|z{yx}T");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 5L,
-                column: "PackedPermissions",
-                value: "ef\n257(PQFTn[zxy{}");
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 5L,
+            column: "PackedPermissions",
+            value: "ef\n257(PQFTn[zxy{}");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 6L,
-                column: "PackedPermissions",
-                value: "ef\n257(PQFTxy[");
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 6L,
+            column: "PackedPermissions",
+            value: "ef\n257(PQFTxy[");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_AreaAdmins_CATOTTGId",
-                table: "AreaAdmins",
-                column: "CATOTTGId");
+        migrationBuilder.CreateIndex(
+            name: "IX_AreaAdmins_CATOTTGId",
+            table: "AreaAdmins",
+            column: "CATOTTGId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_AreaAdmins_InstitutionId",
-                table: "AreaAdmins",
-                column: "InstitutionId");
-        }
+        migrationBuilder.CreateIndex(
+            name: "IX_AreaAdmins_InstitutionId",
+            table: "AreaAdmins",
+            column: "InstitutionId");
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "AreaAdmins");
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropTable(
+            name: "AreaAdmins");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 1L,
-                column: "PackedPermissions",
-                value: "def\n\r !()+43257>=<?HGIFPQ[]\\rpqon|z{yx}T");
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 1L,
+            column: "PackedPermissions",
+            value: "def\n\r !()+43257>=<?HGIFPQ[]\\rpqon|z{yx}T");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 5L,
-                column: "PackedPermissions",
-                value: "ef\n257(PQFTn[zxy{}");
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 5L,
+            column: "PackedPermissions",
+            value: "ef\n257(PQFTn[zxy{}");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 6L,
-                column: "PackedPermissions",
-                value: "ef\n257(PQFTxy[");
-        }
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 6L,
+            column: "PackedPermissions",
+            value: "ef\n257(PQFTxy[");
     }
 }

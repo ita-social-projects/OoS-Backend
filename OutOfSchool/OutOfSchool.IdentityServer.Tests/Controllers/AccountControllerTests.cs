@@ -6,15 +6,16 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.EmailSender;
-using OutOfSchool.IdentityServer.Controllers;
-using OutOfSchool.IdentityServer.ViewModels;
+using OutOfSchool.AuthCommon.Controllers;
+using OutOfSchool.AuthCommon.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using OutOfSchool.Services.Models;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using OutOfSchool.AuthCommon;
 using OutOfSchool.Common;
-using OutOfSchool.IdentityServer.Config;
+using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.RazorTemplatesData.Services;
 
 namespace OutOfSchool.IdentityServer.Tests.Controllers;
@@ -28,7 +29,7 @@ public class AccountControllerTests
     private readonly Mock<ILogger<AccountController>> fakeLogger;
     private readonly Mock<IStringLocalizer<SharedResource>> fakeLocalizer;
     private readonly Mock<IRazorViewToStringRenderer> fakeRazorViewToStringRenderer;
-    private readonly Mock<IOptions<IdentityServerConfig>> fakeIdentityServerConfig;
+    private readonly Mock<IOptions<AuthServerConfig>> fakeIdentityServerConfig;
 
     public AccountControllerTests()
     {
@@ -38,7 +39,7 @@ public class AccountControllerTests
         fakeLogger = new Mock<ILogger<AccountController>>();
         fakeLocalizer = new Mock<IStringLocalizer<SharedResource>>();
         fakeRazorViewToStringRenderer = new Mock<IRazorViewToStringRenderer>();
-        fakeIdentityServerConfig = new Mock<IOptions<IdentityServerConfig>>();
+        fakeIdentityServerConfig = new Mock<IOptions<AuthServerConfig>>();
     }
 
     [SetUp]
@@ -50,7 +51,7 @@ public class AccountControllerTests
 
         fakeIdentityServerConfig
             .SetupGet(c => c.Value)
-            .Returns(new Mock<IdentityServerConfig>().Object);
+            .Returns(new Mock<AuthServerConfig>().Object);
 
         accountController = new AccountController(
             fakeSignInManager.Object,
