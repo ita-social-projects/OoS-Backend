@@ -1,3 +1,4 @@
+using IdentityServer4;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -84,7 +85,6 @@ public static class Startup
                 options.SaveToken = true;
                 options.MapInboundClaims = false;
             })
-            .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddPolicyScheme(Constants.DefaultAuthScheme, Constants.DefaultAuthScheme, options =>
             {
                 options.ForwardDefaultSelector = context =>
@@ -95,7 +95,7 @@ public static class Startup
                         return JwtBearerDefaults.AuthenticationScheme;
                     }
 
-                    return CookieAuthenticationDefaults.AuthenticationScheme;
+                    return IdentityConstants.ApplicationScheme;
                 };
             });
 
