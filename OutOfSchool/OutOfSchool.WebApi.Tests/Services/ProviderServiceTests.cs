@@ -1008,6 +1008,14 @@ public class ProviderServiceTests
             .Returns(false);
         currentUserServiceMock.Setup(x => x.IsAreaAdmin())
             .Returns(false);
+        notificationService.Setup(s => s.Create(
+                NotificationType.Provider,
+                NotificationAction.Block,
+                provider.Id,
+                providerService,
+                It.IsAny<Dictionary<string, string>>(),
+                null))
+            .Returns(Task.CompletedTask);
 
         // Act
         var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
@@ -1051,6 +1059,14 @@ public class ProviderServiceTests
             .Returns(true);
         currentUserServiceMock.Setup(x => x.IsAreaAdmin())
             .Returns(false);
+        notificationService.Setup(s => s.Create(
+                NotificationType.Provider,
+                NotificationAction.Block,
+                provider.Id,
+                providerService,
+                It.IsAny<Dictionary<string, string>>(),
+                null))
+            .Returns(Task.CompletedTask);
 
         // Act
         var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
@@ -1099,6 +1115,14 @@ public class ProviderServiceTests
             .Returns(false);
         codeficatorServiceMock.Setup(x => x.GetAllChildrenIdsByParentIdAsync(It.IsAny<long>()))
             .Returns(Task.FromResult((IEnumerable<long>)new List<long> { catottgId }));
+        notificationService.Setup(s => s.Create(
+                NotificationType.Provider,
+                NotificationAction.Block,
+                provider.Id,
+                providerService,
+                It.IsAny<Dictionary<string, string>>(),
+                null))
+            .Returns(Task.CompletedTask);
 
         // Act
         var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
