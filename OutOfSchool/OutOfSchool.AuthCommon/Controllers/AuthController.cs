@@ -182,7 +182,7 @@ public class AuthController : Controller
 
                 if (result.Succeeded)
                 {
-                    logger.LogInformation("Successfully logged. User(id): {UserId}", userId);
+                    logger.LogInformation("Successfully logged. User(id): {UserId}", user.Id);
 
                     user.LastLogin = DateTimeOffset.UtcNow;
                     var lastLoginResult = await userManager.UpdateAsync(user);

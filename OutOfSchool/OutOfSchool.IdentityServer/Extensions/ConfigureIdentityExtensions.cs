@@ -30,6 +30,7 @@ public static class ConfigureIdentityExtensions
                 options.UserInteraction.LoginUrl = "~/Auth/Login";
                 options.UserInteraction.LogoutUrl = "~/Auth/Logout";
                 options.UserInteraction.LoginReturnUrlParameter = "ReturnUrl";
+                options.Authentication.CookieAuthenticationScheme = IdentityConstants.ApplicationScheme;
             })
             .AddConfigurationStore(options =>
             {
