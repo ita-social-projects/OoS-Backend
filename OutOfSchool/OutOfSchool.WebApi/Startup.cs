@@ -120,7 +120,11 @@ public static class Startup
                     options.RequireHttpsMetadata = false;
                     options.TokenValidationParameters.ValidAudiences = new[] {identityConfig.ApiName};
                     options.SaveToken = true;
-                    options.MapInboundClaims = false;
+
+                    // This is the default value
+                    // leaving it here so we know what's happening
+                    // source: https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.authentication.jwtbearer.jwtbeareroptions.mapinboundclaims?view=aspnetcore-7.0
+                    options.MapInboundClaims = true;
                 });
         }
 

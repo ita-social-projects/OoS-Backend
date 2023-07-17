@@ -50,7 +50,7 @@ public class ChildControllerTests
         currentUserId = Guid.NewGuid().ToString();
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[] { new Claim("sub", currentUserId) }, "sub"));
+            new Claim[] { new Claim(ClaimTypes.NameIdentifier, currentUserId) }, "sub"));
 
         controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
