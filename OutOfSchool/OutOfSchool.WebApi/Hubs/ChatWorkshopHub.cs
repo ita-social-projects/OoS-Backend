@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Authentication;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -153,7 +154,7 @@ public class ChatWorkshopHub : Hub
             }
 
             // Save chatMessage in the system.
-            Role userRole = (Role)Enum.Parse(typeof(Role), Context.User.FindFirst("role").Value, true);
+            Role userRole = (Role)Enum.Parse(typeof(Role), Context.User.FindFirst(ClaimTypes.Role).Value, true);
             var createdMessageDto = await messageService.CreateAsync(chatMessageWorkshopCreateDto, userRole).ConfigureAwait(false);
 
             // Add Parent's connections to the Group.
