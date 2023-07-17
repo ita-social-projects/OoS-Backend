@@ -16,7 +16,7 @@ public static class GettingUserProperties
 
         if (userId is null)
         {
-            ThrowAuthenticationException(nameof(IdentityResourceClaimsTypes.Sub));
+            ThrowAuthenticationException(nameof(ClaimTypes.NameIdentifier));
         }
 
         return userId;
@@ -24,7 +24,7 @@ public static class GettingUserProperties
 
     public static string GetUserId(ClaimsPrincipal user)
     {
-        return user?.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+        return user?.GetUserPropertyByClaimType(ClaimTypes.NameIdentifier);
     }
 
     public static Role GetUserRole(HttpContext httpContext)
@@ -33,7 +33,7 @@ public static class GettingUserProperties
 
         if (userRoleName is null)
         {
-            ThrowAuthenticationException(nameof(IdentityResourceClaimsTypes.Role));
+            ThrowAuthenticationException(nameof(ClaimTypes.Role));
         }
 
         Role userRole = (Role)Enum.Parse(typeof(Role), userRoleName, true);
@@ -43,7 +43,7 @@ public static class GettingUserProperties
 
     public static string GetUserRole(ClaimsPrincipal user)
     {
-        return user?.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role);
+        return user?.GetUserPropertyByClaimType(ClaimTypes.Role);
     }
 
     public static Subrole GetUserSubrole(HttpContext httpContext)
