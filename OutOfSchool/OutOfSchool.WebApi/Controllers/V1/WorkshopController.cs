@@ -19,6 +19,7 @@ public class WorkshopController : ControllerBase
     private readonly IWorkshopServicesCombiner combinedWorkshopService;
     private readonly IProviderService providerService;
     private readonly IProviderAdminService providerAdminService;
+    private readonly IUserService userService;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly AppDefaultsConfig options;
 
@@ -28,12 +29,14 @@ public class WorkshopController : ControllerBase
     /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
     /// <param name="providerService">Service for Provider model.</param>
     /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
+    /// <param name="userService">Service for operations with users.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="options">Application default values.</param>
     public WorkshopController(
         IWorkshopServicesCombiner combinedWorkshopService,
         IProviderService providerService,
         IProviderAdminService providerAdminService,
+        IUserService userService,
         IStringLocalizer<SharedResource> localizer,
         IOptions<AppDefaultsConfig> options)
     {
@@ -41,6 +44,7 @@ public class WorkshopController : ControllerBase
         this.combinedWorkshopService = combinedWorkshopService;
         this.providerAdminService = providerAdminService;
         this.providerService = providerService;
+        this.userService = userService;
         this.options = options.Value;
     }
 
@@ -257,6 +261,11 @@ public class WorkshopController : ControllerBase
             return BadRequest(ModelState);
         }
 
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to create the workshop by the blocked provider.");
+        }
+
         var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.ProviderId).ConfigureAwait(false);
         if (!userHasRights)
         {
@@ -326,6 +335,11 @@ public class WorkshopController : ControllerBase
             return BadRequest(ModelState);
         }
 
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to update the workshop by the blocked provider.");
+        }
+
         var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.ProviderId, dto.Id).ConfigureAwait(false);
 
         if (!userHasRights)
@@ -355,6 +369,11 @@ public class WorkshopController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> UpdateStatus([FromBody] WorkshopStatusDto request)
     {
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to update the workshop by the blocked provider.");
+        }
+
         var providerId = await providerService.GetProviderIdForWorkshopById(request.WorkshopId).ConfigureAwait(false);
 
         if (await providerService.IsProviderBlocked(providerId).ConfigureAwait(false))
@@ -402,13 +421,6 @@ public class WorkshopController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var providerId = await providerService.GetProviderIdForWorkshopById(id).ConfigureAwait(false);
-
-        if (await providerService.IsProviderBlocked(providerId).ConfigureAwait(false))
-        {
-            return StatusCode(403, "It is forbidden to delete workshops at blocked providers");
-        }
-
         var workshop = await combinedWorkshopService.GetById(id).ConfigureAwait(false);
 
         if (workshop is null)
@@ -457,5 +469,12 @@ public class WorkshopController : ControllerBase
         }
 
         return false;
+    }
+
+    private async Task<bool> IsCurrentUserBlocked()
+    {
+        var userId = GettingUserProperties.GetUserId(User);
+
+        return await userService.IsBlocked(userId);
     }
 }

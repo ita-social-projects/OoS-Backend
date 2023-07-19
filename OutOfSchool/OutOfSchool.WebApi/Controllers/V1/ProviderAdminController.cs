@@ -6,6 +6,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers;
 
@@ -16,15 +17,18 @@ namespace OutOfSchool.WebApi.Controllers;
 public class ProviderAdminController : Controller
 {
     private readonly IProviderAdminService providerAdminService;
+    private readonly IUserService userService;
     private readonly ILogger<ProviderAdminController> logger;
     private string path;
     private string userId;
 
     public ProviderAdminController(
         IProviderAdminService providerAdminService,
+        IUserService userService,
         ILogger<ProviderAdminController> logger)
     {
         this.providerAdminService = providerAdminService;
+        this.userService = userService;
         this.logger = logger;
     }
 
@@ -49,6 +53,11 @@ public class ProviderAdminController : Controller
     public async Task<ActionResult> Create(CreateProviderAdminDto providerAdmin)
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to create the provider admin by the blocked provider.");
+        }
 
         if (!ModelState.IsValid)
         {
@@ -86,6 +95,11 @@ public class ProviderAdminController : Controller
     [HttpPut]
     public async Task<IActionResult> Update(Guid providerId, UpdateProviderAdminDto providerAdminModel)
     {
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to update the provider admin by the blocked provider.");
+        }
+
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -133,6 +147,11 @@ public class ProviderAdminController : Controller
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
 
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to delete the provider admin by the blocked provider.");
+        }
+
         var response = await providerAdminService.DeleteProviderAdminAsync(
                 providerAdminId,
                 userId,
@@ -164,6 +183,11 @@ public class ProviderAdminController : Controller
         {
             logger.LogDebug("IsBlocked parameter is not specified");
             return BadRequest("IsBlocked parameter is required");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to block the provider admin by the blocked provider.");
         }
 
         var response = await providerAdminService.BlockProviderAdminAsync(
@@ -293,6 +317,11 @@ public class ProviderAdminController : Controller
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
 
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to reinvite the provider admin by the blocked provider.");
+        }
+
         var response = await providerAdminService.ReinviteProviderAdminAsync(
                 providerAdminId,
                 userId,
@@ -312,5 +341,10 @@ public class ProviderAdminController : Controller
 
                 return Ok();
             });
+    }
+
+    private async Task<bool> IsCurrentUserBlocked()
+    {
+        return await userService.IsBlocked(userId);
     }
 }

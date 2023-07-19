@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
+using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -16,6 +18,7 @@ public class ApplicationController : ControllerBase
     private readonly IProviderService providerService;
     private readonly IProviderAdminService providerAdminService;
     private readonly IWorkshopService workshopService;
+    private readonly IUserService userService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationController"/> class.
@@ -24,16 +27,19 @@ public class ApplicationController : ControllerBase
     /// <param name="providerService">Service for Provider model.</param>
     /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
     /// <param name="workshopService">Service for Workshop model.</param>
+    /// <param name="userService">Service for operations with users.</param>
     public ApplicationController(
         IApplicationService applicationService,
         IProviderService providerService,
         IProviderAdminService providerAdminService,
-        IWorkshopService workshopService)
+        IWorkshopService workshopService,
+        IUserService userService)
     {
         this.applicationService = applicationService;
         this.providerService = providerService;
         this.providerAdminService = providerAdminService;
         this.workshopService = workshopService;
+        this.userService = userService;
     }
 
     /// <summary>
@@ -252,6 +258,11 @@ public class ApplicationController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(ApplicationCreate applicationDto)
     {
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to create the application by the blocked provider.");
+        }
+
         if (applicationDto == null)
         {
             return BadRequest("Application is null.");
@@ -303,6 +314,11 @@ public class ApplicationController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update(ApplicationUpdate applicationDto)
     {
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to update the application by the blocked provider.");
+        }
+
         if (applicationDto is null)
         {
             return BadRequest("Application data is not provided.");
@@ -359,5 +375,12 @@ public class ApplicationController : ControllerBase
     public async Task<IActionResult> AllowedToReview(Guid parentId, Guid workshopId)
     {
         return Ok(await applicationService.AllowedToReview(parentId, workshopId).ConfigureAwait(false));
+    }
+
+    private async Task<bool> IsCurrentUserBlocked()
+    {
+        var userId = GettingUserProperties.GetUserId(User);
+
+        return await userService.IsBlocked(userId);
     }
 }
