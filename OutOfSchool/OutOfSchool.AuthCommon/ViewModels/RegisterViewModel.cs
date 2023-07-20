@@ -23,7 +23,7 @@ public class RegisterViewModel
     [RegularExpression(
         Constants.NameRegexViewModel,
         ErrorMessage = Constants.NameErrorMessage)]
-    public string MiddleName { get; set; }
+    public string? MiddleName { get; set; }
 
     [EnumDataType(typeof(Gender), ErrorMessage = Constants.EnumErrorMessage)]
     public Gender Gender { get; set; }
@@ -67,7 +67,7 @@ public class RegisterViewModel
 
     public string ReturnUrl { get; set; }
 
-    public string Role { get; set; }
+    public string? Role { get; set; }
 
     public bool ProviderRegistration { get; set; }
 }

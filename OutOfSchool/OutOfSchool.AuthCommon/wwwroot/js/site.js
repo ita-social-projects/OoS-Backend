@@ -1,114 +1,112 @@
-﻿let btn_parent = document.getElementById('btn_parent');
-let btn_provider = document.getElementById('btn_provider');
-let btn_register = document.getElementById('btn_register');
-let li_date_of_birth = document.getElementById('li_date_of_birth');
-let li_gender = document.getElementById('li_gender');
-
-let passwordEye = document.getElementById('password_eye');
-let confirmPasswordEye = document.getElementById('confirm_password_eye');
-
-let check_passwordEye = false;
-let check_confirmPasswordEye = false;
-
-let password = document.getElementById('password');
-let repeatPassword = document.getElementById('repeat_password');
-
-let ageConfirm = document.getElementById('checkbox_age_confirm');
-let rulesAgreement = document.getElementById('checkbox_rules_agreement');
-
-btn_register.disabled = true;
-setPersonalLinksAndAttributesVisibility(sessionStorage.getItem("Button"));
-
-if (sessionStorage.getItem("Button") && sessionStorage.getItem("Role")) {
-    btn_provider.className = "registration_type";
-    btn_parent.className = "registration_type";
-    btn_register.setAttribute("name", sessionStorage.getItem("Role"));
-    document.getElementById(sessionStorage.getItem("Button")).className = "registration_type registration_type-active";
-    setPersonalLinksAndAttributesVisibility(sessionStorage.getItem("Button"));
-}
-
-if (password.className.includes('input-validation-error')) {
-    let elements = document.getElementsByClassName('registration_privacy_password');
-    for (let element of elements) {
-        element.style.height = "105px";
-    } 
-}
-
-if (repeatPassword.className.includes('input-validation-error')) {
-    let elements = document.getElementsByClassName('registration_privacy_confirm_password');
-    for (let element of elements) {
-        element.style.height = "65px";
+﻿$(function () {
+    function setPersonalLinksAndAttributesVisibility(button) {
+        if (button === "btn_provider") {
+            $("#li_date_of_birth").hide();
+            $("#li_gender").hide();
+            $("#link_privacy_terms").attr("href", "/Privacy/ProviderTerms");
+        } else {
+            $("#li_date_of_birth").show();
+            $("#li_gender").show();
+            $("#link_privacy_terms").attr("href", "/Privacy/ParentTerms");
+        }
     }
-}
 
-if (document.getElementsByClassName('validation-summary-errors').length > 0) {
-    document.getElementById("user_mail").className += ' input-validation-error';
-}
+    let check_passwordEye = false;
+    let check_confirmPasswordEye = false;
 
-btn_parent.addEventListener('click', function () {
-    btn_parent.className = "registration_type registration_type-active";
-    btn_provider.className = "registration_type";
-    btn_register.setAttribute("name", "Parent");
-    sessionStorage.setItem("Role", "Parent");
-    sessionStorage.setItem("Button", "btn_parent");
+    const $buttonProvider = $("#btn_provider");
+    const $buttonParent = $("#btn_parent");
+    const $buttonRegister = $("#btn_register");
+    const $password = $("#password");
+    const $repeatPassword = $("#repeat_password");
+
+    $buttonRegister.prop("disabled", true);
     setPersonalLinksAndAttributesVisibility(sessionStorage.getItem("Button"));
-})
 
-btn_provider.addEventListener('click', function () {
-    btn_provider.className = "registration_type registration_type-active";
-    btn_parent.className = "registration_type";
-    btn_register.setAttribute("name", "Provider");
-    sessionStorage.setItem("Role", "Provider");
-    sessionStorage.setItem("Button", "btn_provider");
-    setPersonalLinksAndAttributesVisibility(sessionStorage.getItem("Button"));
-})
-
-passwordEye.addEventListener('click', function () {
-    if (check_passwordEye) {
-        passwordEye.src = "../_content/auth/icons/ic_eye.svg";
-        check_passwordEye = false;
-        password.style.fontSize = "20px";
-        password.setAttribute("type", "Password");
-       
-    } else {
-        passwordEye.src = "../_content/auth/icons/eye.svg";
-        check_passwordEye = true;
-        password.style.fontSize = "20px";
-        password.setAttribute("type", "Text");  
-    }  
-})
-
-confirmPasswordEye.addEventListener('click', function () {
-    if (check_confirmPasswordEye) {
-        confirmPasswordEye.src = "../_content/auth/icons/ic_eye.svg";
-        check_confirmPasswordEye = false;
-        repeatPassword.style.fontSize = "20px";
-        repeatPassword.setAttribute("type", "Password");  
-    } else {
-        confirmPasswordEye.src = "../_content/auth/icons/eye.svg";
-        check_confirmPasswordEye = true;
-        repeatPassword.style.fontSize = "20px";
-        repeatPassword.setAttribute("type", "Text");  
+    if (sessionStorage.getItem("Button") && sessionStorage.getItem("Role")) {
+        $buttonProvider.removeClass("registration_type-active");
+        $buttonParent.removeClass("registration_type-active");
+        $buttonRegister.attr("name", sessionStorage.getItem("Role"));
+        $(`#${sessionStorage.getItem("Button")}`).addClass("registration_type-active");
+        setPersonalLinksAndAttributesVisibility(sessionStorage.getItem("Button"));
     }
+
+    if ($password.hasClass("input-validation-error")) {
+        $(".registration_privacy_password").css("height", "105px");
+    }
+
+    if ($repeatPassword.hasClass('input-validation-error')) {
+        $(".registration_privacy_confirm_password").css("height", "65px");
+    }
+
+    if ($(".validation-summary-errors").length) {
+        $("#user_mail").addClass("input-validation-error");
+    }
+
+    $buttonParent.on('click', function () {
+        $buttonParent.addClass("registration_type-active");
+        $buttonProvider.removeClass("registration_type-active");
+        $buttonRegister.attr("name", "Parent");
+        sessionStorage.setItem("Role", "Parent");
+        sessionStorage.setItem("Button", "btn_parent");
+        setPersonalLinksAndAttributesVisibility(sessionStorage.getItem("Button"));
+    })
+
+    $buttonProvider.on('click', function () {
+        $buttonProvider.addClass("registration_type-active");
+        $buttonParent.removeClass("registration_type-active");
+        $buttonRegister.attr("name", "Provider");
+        sessionStorage.setItem("Role", "Provider");
+        sessionStorage.setItem("Button", "btn_provider");
+        setPersonalLinksAndAttributesVisibility(sessionStorage.getItem("Button"));
+    })
+
+    $("#password_eye").on('click', function () {
+        if (check_passwordEye) {
+            $(this).attr("src", "../_content/auth/icons/ic_eye.svg");
+            check_passwordEye = false;
+            $password.css("fontSize", "20px");
+            $password.attr("type", "Password");
+
+        } else {
+            $(this).attr("src", "../_content/auth/icons/eye.svg");
+            check_passwordEye = true;
+            $password.css("fontSize", "20px");
+            $password.attr("type", "Text");
+        }
+    })
+    $("#confirm_password_eye").on('click', function () {
+        if (check_confirmPasswordEye) {
+            $(this).attr("src", "../_content/auth/icons/ic_eye.svg");
+            check_confirmPasswordEye = false;
+            $repeatPassword.css("fontSize", "20px");
+            $repeatPassword.attr("type", "Password");
+        } else {
+            $(this).attr("src", "../_content/auth/icons/eye.svg");
+            check_confirmPasswordEye = true;
+            $repeatPassword.css("fontSize", "20px");
+            $repeatPassword.attr("type", "Text");
+        }
+    });
 });
 
 function validateFormMaturity(form) {
     if (!form.maturity.checked) {
-        document.getElementById('maturity').style.visibility = 'visible';
+        $("#maturity").css("visibility", "visible");
         return false;
     }
     else {
-        document.getElementById('maturity').style.visibility = 'hidden';
+        $("#maturity").css("visibility", "hidden");
         return true;
     }    
 }
 
 function validateFormAccept(form) {
     if (!form.accept.checked) {
-        document.getElementById('accept').style.visibility = 'visible';
+        $("#accept").css("visibility", "visible");
         return false;
     } else {
-        document.getElementById('accept').style.visibility = 'hidden';
+        $("#accept").css("visibility", "hidden");
         return true;
     }
 }
@@ -117,18 +115,16 @@ function validateForm(form) {
     let isValidMature = validateFormMaturity(form);
     let isValidAccept = validateFormAccept(form);
 
-    return (isValidMature && isValidAccept) ? true : false;
+    return isValidMature && isValidAccept;
 }
 
 function validateFormOnEvent(form) {
     let valid = allFieldsValid(form);
-
-    if (btn_register.disabled === valid)
-        btn_register.disabled = !valid;
+    $("#btn_register").prop("disabled", !valid)
 }
 
 function allFieldsValid(form) {
-    if(!ageConfirm.checked || !rulesAgreement.checked){
+    if(!$("#checkbox_age_confirm").checked() || !$("#checkbox_rules_agreement").checked()){
         return false;
     }
 
@@ -139,20 +135,3 @@ function allFieldsValid(form) {
     }
     return true;
 }
-
-function setPersonalLinksAndAttributesVisibility(button) {
-    switch (button) {
-        case "btn_provider":
-            li_date_of_birth.className = "registration_item hidden";
-            li_gender.className = "registration_item hidden";
-            link_privacy_terms.setAttribute("href", "/Privacy/ProviderTerms");
-            break;
-        case "btn_parent":
-        default:
-            li_date_of_birth.className = "registration_item";
-            li_gender.className = "registration_item";
-            link_privacy_terms.setAttribute("href", "/Privacy/ParentTerms");
-    }
-}
-
-
