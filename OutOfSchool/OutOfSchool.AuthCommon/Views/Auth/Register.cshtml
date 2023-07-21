@@ -17,7 +17,7 @@
         <div class="registration_goal">@SharedLocalizer["Registration goal"]</div>
         <div class="icon_wrapper">
             <form onsubmit="return validateForm(this)" onclick="validateFormOnEvent(this)" onkeyup="validateFormOnEvent(this)" asp-controller="Auth"
-                asp-action="Register" method="post">
+                  asp-action="Register" method="post">
                 <input type="hidden" asp-for="ReturnUrl" />
                 <div asp-validation-summary="ModelOnly"></div>
                 <ul class="registration_list">
@@ -27,10 +27,10 @@
                         </label>
                         <div class="registration_as">
                             <div class="registration_type @(!Model.ProviderRegistration ? "registration_type-active" : "")"
-                                id="btn_parent">
+                                 id="btn_parent">
                                 <div class="registration_icon registration_icon-person">
                                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
-                                        xmlns="http://www.w3.org/2000/svg">
+                                         xmlns="http://www.w3.org/2000/svg">
                                         <path
                                             d="M5.99984 5.99984C7.47317 5.99984 8.6665 4.8065 8.6665 3.33317C8.6665 1.85984 7.47317 0.666504 5.99984 0.666504C4.5265 0.666504 3.33317 1.85984 3.33317 3.33317C3.33317 4.8065 4.5265 5.99984 5.99984 5.99984ZM5.99984 7.33317C4.21984 7.33317 0.666504 8.2265 0.666504 9.99984V11.3332H11.3332V9.99984C11.3332 8.2265 7.77984 7.33317 5.99984 7.33317Z"
                                             fill="#272425" />
@@ -39,10 +39,10 @@
                                 @SharedLocalizer["User"]
                             </div>
                             <div class="registration_type @(Model.ProviderRegistration ? "registration_type-active" : "")"
-                                id="btn_provider">
+                                 id="btn_provider">
                                 <div class="registration_icon registration_icon-provider">
                                     <svg width="13" height="15" viewBox="0 0 13 15" fill="none"
-                                        xmlns="http://www.w3.org/2000/svg">
+                                         xmlns="http://www.w3.org/2000/svg">
                                         <path
                                             d="M1.66683 6.6665V11.3332H3.66683V6.6665H1.66683ZM5.66683 6.6665V11.3332H7.66683V6.6665H5.66683ZM0.333496 14.6665H13.0002V12.6665H0.333496V14.6665ZM9.66683 6.6665V11.3332H11.6668V6.6665H9.66683ZM6.66683 0.666504L0.333496 3.99984V5.33317H13.0002V3.99984L6.66683 0.666504Z"
                                             fill="#272425" />
@@ -60,7 +60,7 @@
                             @SharedLocalizer["Last name"]<span class="registration_star">*</span>
                         </label>
                         <input class="registration_input registration_input_required" type="text" asp-for="LastName"
-                            id="last_name">
+                               id="last_name">
                         <div>
                             <span asp-validation-for="LastName"></span>
                         </div>
@@ -71,7 +71,7 @@
                             @SharedLocalizer["First name"]<span class="registration_star">*</span>
                         </label>
                         <input class="registration_input registration_input_required" type="text" asp-for="FirstName"
-                            id="first_name">
+                               id="first_name">
                         <div>
                             <span asp-validation-for="FirstName"></span>
                         </div>
@@ -79,12 +79,14 @@
                     <li class="registration_item">
                         <label class="registration_label" asp-for="MiddleName">@SharedLocalizer["Middle name"]</label>
                         <input class="registration_input" type="text" asp-for="MiddleName"
-                            id="middle_name">
+                               id="middle_name">
                         <div>
                             <span asp-validation-for="MiddleName"></span>
                         </div>
                     </li>
-                    <li class="registration_item @(Model.ProviderRegistration ? "hidden" : "")" id="li_gender">
+                    <li class="registration_item"
+                        id="li_gender"
+                        style="@(Model.ProviderRegistration ? "display: none;" : "")">
                         <label class="registration_label" asp-for="Gender">
                             @SharedLocalizer["Gender"]<span class="registration_star">*</span>
                         </label>
@@ -96,7 +98,9 @@
                             <span asp-validation-for="Gender"></span>
                         </div>
                     </li>
-                    <li class="registration_item @(Model.ProviderRegistration ? "hidden" : "")" id="li_date_of_birth">
+                    <li class="registration_item"
+                        id="li_date_of_birth"
+                        style="@(Model.ProviderRegistration ? "display: none;" : "")">
                         <label class="registration_label" asp-for="DateOfBirth">
                             @SharedLocalizer["Date of birth"]<span class="registration_star">*</span>
                         </label>
@@ -116,7 +120,7 @@
                         <div class="registration_phone">
                             <div class="registration_phone-code">+380</div>
                             <input class="registration_input registration_input_required" maxlength="9" type="text"
-                                asp-for="PhoneNumber" id="phone_number">
+                                   asp-for="PhoneNumber" id="phone_number">
                         </div>
                         <div>
                             <span asp-validation-for="PhoneNumber"></span>
@@ -127,7 +131,7 @@
                             @SharedLocalizer["Email"]<span class="registration_star">*</span>
                         </label>
                         <input class="registration_input registration_input_required" type="email" asp-for="Email"
-                            id="user_mail">
+                               id="user_mail">
                         <div>
                             <span asp-validation-for="Email"></span>
                         </div>
@@ -138,7 +142,7 @@
                                 @SharedLocalizer["Password"]<span class="registration_star">*</span>
                             </label>
                             <input class="registration_input registration_input-password registration_input_required"
-                                type="Password" asp-for="Password" id="password">
+                                   type="Password" asp-for="Password" id="password">
                             <div class="registration_privacy_password">
                                 <img src="~/_content/auth/icons/ic_eye.svg" alt="eye" class="registration_eye" id="password_eye">
                             </div>
@@ -156,10 +160,10 @@
                                 @SharedLocalizer["Confirm password"]<span class="registration_star">*</span>
                             </label>
                             <input class="registration_input registration_input-password registration_input_required"
-                                type="password" asp-for="ConfirmPassword" id="repeat_password">
+                                   type="password" asp-for="ConfirmPassword" id="repeat_password">
                             <div class="registration_privacy_confirm_password">
                                 <img src="~/_content/auth/icons/ic_eye.svg" alt="eye" class="registration_eye"
-                                    id="confirm_password_eye">
+                                     id="confirm_password_eye">
                             </div>
                         </div>
                         <div>
@@ -198,16 +202,17 @@
 
                     <li class="registration_item registration_item_submit">
                         <input class="registration_submit registration_button" type="submit" id="btn_register"
-                            name="Parent" value="@SharedLocalizer["Register"].Value.ToUpper()">
+                               name="Parent" value="@SharedLocalizer["Register"].Value.ToUpper()">
                     </li>
                     <div class="title registered_question">
                         <span>@SharedLocalizer["Already registered?"]</span>
                         <a class="link" asp-controller="Auth" asp-action="Login"
-                            asp-route-returnUrl="@Model.ReturnUrl", asp-route-providerRegistration="false">@SharedLocalizer["Sign In"]</a>
+                           asp-route-returnUrl="@Model.ReturnUrl", asp-route-providerRegistration="false">@SharedLocalizer["Sign In"]</a>
                     </div>
                 </ul>
             </form>
         </div>
     </div>
 </div>
-<script src="~/_content/auth/js/site.js"></script>
+@await Html.PartialAsync("_JqueryPartial")
+<script src="~/_content/auth/js/site.js" type="text/javascript" asp-append-version="true"></script>
