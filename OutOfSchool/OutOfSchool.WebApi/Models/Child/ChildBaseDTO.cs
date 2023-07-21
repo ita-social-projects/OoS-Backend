@@ -16,7 +16,7 @@ public class ChildBaseDto
     [RegularExpression(@"^(?i)[А-ЯҐЄІЇ](([\'\-][А-ЯҐЄІЇ])?[А-ЯҐЄІЇ]*)*$", ErrorMessage = "Last name contains invalid characters")]
     public string LastName { get; set; } = string.Empty;
 
-    [StringLength(60, MinimumLength = 1)]
+    [StringLength(60)]
     [RegularExpression(@"^(?i)[А-ЯҐЄІЇ](([\'\-][А-ЯҐЄІЇ])?[А-ЯҐЄІЇ]*)*$", ErrorMessage = "Middle name contains invalid characters")]
     public string MiddleName { get; set; } = string.Empty;
 
