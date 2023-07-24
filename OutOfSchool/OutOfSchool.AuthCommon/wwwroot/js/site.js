@@ -124,7 +124,7 @@ function validateFormOnEvent(form) {
 }
 
 function allFieldsValid(form) {
-    if(!$("#checkbox_age_confirm").checked() || !$("#checkbox_rules_agreement").checked()){
+    if(!$("#checkbox_age_confirm").prop("checked") || !$("#checkbox_rules_agreement").prop("checked")){
         return false;
     }
 
