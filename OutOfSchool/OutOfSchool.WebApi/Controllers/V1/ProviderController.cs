@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.WebApi.Common;
@@ -223,7 +224,9 @@ public class ProviderController : ControllerBase
     [HttpPut]
     public async Task<ActionResult> Block([FromBody] ProviderBlockDto providerBlockDto)
     {
-        var result = await providerService.Block(providerBlockDto);
+        var result = await providerService.Block(
+            providerBlockDto,
+            await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false));
 
         if (!result.IsSuccess)
         {

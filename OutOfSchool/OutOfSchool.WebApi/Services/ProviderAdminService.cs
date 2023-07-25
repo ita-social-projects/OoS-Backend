@@ -3,8 +3,11 @@ using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson.Serialization.IdGenerators;
+using MongoDB.Driver;
 using Nest;
 using Newtonsoft.Json;
+using NuGet.Common;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -277,6 +280,41 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             request.RequestId,
             userId,
             request.Url);
+
+        var response = await SendRequest<ResponseDto>(request)
+            .ConfigureAwait(false);
+
+        return response
+            .FlatMap<ResponseDto>(r => r.IsSuccess
+                ? r
+                : new ErrorResponse
+                {
+                    HttpStatusCode = r.HttpStatusCode,
+                    Message = r.Message,
+                })
+            .Map(result => result.Result is not null
+                ? JsonConvert
+                    .DeserializeObject<ActionResult>(result.Result.ToString())
+                : null);
+    }
+
+    public async Task<Either<ErrorResponse, ActionResult>> BlockProviderAdminsAndDeputiesByProviderAsync(
+        Guid providerId,
+        string userId,
+        string token,
+        bool isBlocked)
+    {
+        var request = new Request()
+        {
+            HttpMethodType = HttpMethodType.Put,
+            Url = new Uri(identityServerConfig.Authority, string.Concat(
+                CommunicationConstants.BlockProviderAdminByProvider,
+                providerId,
+                new PathString("/"),
+                isBlocked)),
+            Token = token,
+            RequestId = Guid.NewGuid(),
+        };
 
         var response = await SendRequest<ResponseDto>(request)
             .ConfigureAwait(false);

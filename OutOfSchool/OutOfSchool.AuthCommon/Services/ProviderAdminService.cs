@@ -7,6 +7,7 @@ using OutOfSchool.AuthCommon.Services.Password;
 using OutOfSchool.Common.Models;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.AuthCommon.Services;
 
@@ -493,11 +494,50 @@ public class ProviderAdminService : IProviderAdminService
         }
     }
 
+    public async Task<ResponseDto> BlockProviderAdminsAndDeputiesByProviderAsync(
+        Guid providerId,
+        string userId,
+        string requestId,
+        bool isBlocked)
+    {
+        var mainResponse = new ResponseDto() { IsSuccess = true, HttpStatusCode = HttpStatusCode.OK, Message = string.Empty };
+
+        var providerAdmins = await providerAdminRepository.GetByFilter(x => x.ProviderId == providerId).ConfigureAwait(false);
+
+        foreach (var providerAdmin in providerAdmins)
+        {
+            var response = await BlockProviderAdminAsync(providerAdmin.UserId, userId, requestId, isBlocked);
+
+            if (response.IsSuccess)
+            {
+                logger.LogInformation(
+                    "ProviderAdmin(id):{providerAdminId} was successfully blocked by User(id): {userId}. Request(id): {requestId}",
+                    providerAdmin.UserId,
+                    userId,
+                    requestId);
+            }
+            else
+            {
+                mainResponse.IsSuccess = false;
+                mainResponse.Message = string.Concat(mainResponse.Message, providerAdmin.UserId, " ", response.HttpStatusCode.ToString(), " ");
+
+                logger.LogInformation(
+                    "ProviderAdmin(id):{providerAdminId} wasn't blocked by User(id): {userId}. Reason {ResponseHttpStatusCode}. Request(id): {requestId}",
+                    providerAdmin.UserId,
+                    userId,
+                    response.HttpStatusCode,
+                    requestId);
+            }
+        }
+
+        return mainResponse;
+    }
+
     public async Task<ResponseDto> ReinviteProviderAdminAsync(
-    string providerAdminId,
-    string userId,
-    IUrlHelper url,
-    string requestId)
+        string providerAdminId,
+        string userId,
+        IUrlHelper url,
+        string requestId)
     {
         var executionStrategy = context.Database.CreateExecutionStrategy();
         var result = await executionStrategy.Execute(async () =>

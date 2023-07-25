@@ -5,15 +5,18 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Extensions;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.AverageRatings;
@@ -303,7 +306,7 @@ public class ProviderService : IProviderService, INotificationReciever
     }
 
     /// <inheritdoc/>
-    public async Task<ResponseDto> Block(ProviderBlockDto providerBlockDto)
+    public async Task<ResponseDto> Block(ProviderBlockDto providerBlockDto, string token = default)
     {
         logger.LogInformation($"Block/Unblock Provider by Id started.");
 
@@ -365,7 +368,15 @@ public class ProviderService : IProviderService, INotificationReciever
             false,
             false);
 
+        logger.LogInformation($"Block/Unblock the particular provider admins and deputy providers belonging to the Provider starts.");
+
+        var providerAdminsResponse = await providerAdminService
+            .BlockProviderAdminsAndDeputiesByProviderAsync(provider.Id, currentUserService.UserId, token, providerBlockDto.IsBlocked);
+
+        logger.LogInformation($"Block/Unblock the particular provider admins and deputy providers belonging to the Provider finished.");
+
         var blockedStatus = providerBlockDto.IsBlocked ? "blocked" : "unblocked";
+
         return new ResponseDto()
         {
             Result = providerBlockDto,

@@ -30,6 +30,12 @@ public interface IProviderAdminService
         string token,
         bool isBlocked);
 
+    Task<Either<ErrorResponse, ActionResult>> BlockProviderAdminsAndDeputiesByProviderAsync(
+        Guid providerId,
+        string userId,
+        string token,
+        bool isBlocked);
+
     Task GiveAssistantAccessToWorkshop(string userId, Guid workshopId);
 
     /// <summary>
