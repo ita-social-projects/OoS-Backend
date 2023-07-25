@@ -359,6 +359,12 @@ public class ProviderService : IProviderService, INotificationReciever
             logger.LogInformation($"Provider(id) {providerBlockDto.Id} IsBlocked was changed to {provider.IsBlocked}");
         });
 
+        await SendNotification(
+            provider,
+            providerBlockDto.IsBlocked ? NotificationAction.Block : NotificationAction.Unblock,
+            false,
+            false);
+
         var blockedStatus = providerBlockDto.IsBlocked ? "blocked" : "unblocked";
         return new ResponseDto()
         {
@@ -459,6 +465,14 @@ public class ProviderService : IProviderService, INotificationReciever
                     recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(provider.Id).ConfigureAwait(false));
                 }
             }
+        }
+        else if (action == NotificationAction.Block)
+        {
+            recipientIds.Add(provider.UserId);
+        }
+        else if (action == NotificationAction.Unblock)
+        {
+            recipientIds.Add(provider.UserId);
         }
 
         return recipientIds.Distinct();
