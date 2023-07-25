@@ -79,7 +79,7 @@ public class FavoriteController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllByUser()
     {
-        string userId = User.FindFirst("sub")?.Value;
+        string userId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
 
         var favorites = await service.GetAllByUser(userId).ConfigureAwait(false);
 
@@ -103,7 +103,7 @@ public class FavoriteController : ControllerBase
     [HttpGet("workshops")]
     public async Task<IActionResult> GetFavoriteWorkshopsByUser([FromQuery] OffsetFilter offsetFilter)
     {
-        string userId = User.FindFirst("sub")?.Value;
+        string userId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
 
         var favorites = await service.GetFavoriteWorkshopsByUser(userId, offsetFilter).ConfigureAwait(false);
 
