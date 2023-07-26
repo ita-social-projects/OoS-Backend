@@ -375,6 +375,11 @@ public class ProviderService : IProviderService, INotificationReciever
         };
     }
 
+    public async Task<bool> IsProviderBlocked(Guid providerId)
+    {
+        return (await providerRepository.GetById(providerId).ConfigureAwait(false)).IsBlocked;
+    }
+
     public async Task<ProviderLicenseStatusDto> UpdateLicenseStatus(ProviderLicenseStatusDto dto, string userId)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
