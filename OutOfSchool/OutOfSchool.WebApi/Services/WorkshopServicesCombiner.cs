@@ -146,6 +146,8 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     /// <inheritdoc/>
     public async Task Delete(Guid id)
     {
+        var workshopDto = await workshopService.GetById(id).ConfigureAwait(false);
+
         await workshopService.Delete(id).ConfigureAwait(false);
 
         await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
@@ -153,6 +155,9 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
                 id,
                 ElasticsearchSyncOperation.Delete)
             .ConfigureAwait(false);
+
+        await SendNotification(workshopDto, NotificationAction.Delete, false).ConfigureAwait(false);
+
     }
 
     /// <inheritdoc/>
@@ -282,5 +287,29 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         return filter != null && filter.MaxStartTime >= filter.MinStartTime
                               && filter.MaxAge >= filter.MinAge
                               && filter.MaxPrice >= filter.MinPrice;
+    }
+
+    private async Task SendNotification(
+        WorkshopDTO workshop,
+        NotificationAction notificationAction,
+        bool addStatusData)
+    {
+        if (workshop != null)
+        {
+            var additionalData = new Dictionary<string, string>();
+
+            if (addStatusData)
+            {
+                additionalData.Add("Status", workshop.Status.ToString());
+            }
+
+            await notificationService.Create(
+                    NotificationType.Workshop,
+                    notificationAction,
+                    workshop.Id,
+                    this,
+                    additionalData)
+                .ConfigureAwait(false);
+        }
     }
 }
