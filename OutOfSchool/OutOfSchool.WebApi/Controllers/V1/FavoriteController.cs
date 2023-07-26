@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -79,7 +80,7 @@ public class FavoriteController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllByUser()
     {
-        string userId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         var favorites = await service.GetAllByUser(userId).ConfigureAwait(false);
 
@@ -103,7 +104,7 @@ public class FavoriteController : ControllerBase
     [HttpGet("workshops")]
     public async Task<IActionResult> GetFavoriteWorkshopsByUser([FromQuery] OffsetFilter offsetFilter)
     {
-        string userId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         var favorites = await service.GetFavoriteWorkshopsByUser(userId, offsetFilter).ConfigureAwait(false);
 
