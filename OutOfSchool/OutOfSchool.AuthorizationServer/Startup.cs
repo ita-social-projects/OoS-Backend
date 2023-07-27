@@ -80,7 +80,7 @@ public static class Startup
         // TODO: do we need it?
         services.ConfigureApplicationCookie(c =>
         {
-            c.Cookie.Name = "IdentityServer.Cookie";
+            c.Cookie.Name = "OpenIdDict.Cookie";
             c.LoginPath = "/Auth/Login";
             c.LogoutPath = "/Auth/Logout";
         });
