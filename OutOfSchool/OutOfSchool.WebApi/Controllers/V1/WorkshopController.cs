@@ -247,6 +247,11 @@ public class WorkshopController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(WorkshopDTO dto)
     {
+        if (await providerService.IsProviderBlocked(dto.ProviderId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "It is forbidden to create workshops at blocked providers");
+        }
+
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -311,6 +316,11 @@ public class WorkshopController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update(WorkshopDTO dto)
     {
+        if (await providerService.IsProviderBlocked(dto.ProviderId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "It is forbidden to update workshops at blocked providers");
+        }
+
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -345,6 +355,13 @@ public class WorkshopController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> UpdateStatus([FromBody] WorkshopStatusDto request)
     {
+        var providerId = await providerService.GetProviderIdForWorkshopById(request.WorkshopId).ConfigureAwait(false);
+
+        if (await providerService.IsProviderBlocked(providerId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "It is forbidden to update workshops statuses at blocked providers");
+        }
+
         var workshop = await combinedWorkshopService.GetById(request.WorkshopId).ConfigureAwait(false);
 
         if (workshop is null)
@@ -385,6 +402,13 @@ public class WorkshopController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
+        var providerId = await providerService.GetProviderIdForWorkshopById(id).ConfigureAwait(false);
+
+        if (await providerService.IsProviderBlocked(providerId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "It is forbidden to delete workshops at blocked providers");
+        }
+
         var workshop = await combinedWorkshopService.GetById(id).ConfigureAwait(false);
 
         if (workshop is null)

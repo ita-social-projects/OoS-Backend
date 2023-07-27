@@ -100,6 +100,13 @@ public class AchievementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Create(AchievementCreateDTO achievementDto)
     {
+        var providerId = await providerService.GetProviderIdForWorkshopById(achievementDto.WorkshopId).ConfigureAwait(false);
+
+        if (await providerService.IsProviderBlocked(providerId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "It is forbidden to add achievements to workshops at blocked providers");
+        }
+
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -148,6 +155,13 @@ public class AchievementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> Update(AchievementCreateDTO achievementDto)
     {
+        var providerId = await providerService.GetProviderIdForWorkshopById(achievementDto.WorkshopId).ConfigureAwait(false);
+
+        if (await providerService.IsProviderBlocked(providerId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "It is forbidden to update the workshops achievements at blocked providers");
+        }
+
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -182,6 +196,7 @@ public class AchievementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Delete(Guid id)
     {
+
         AchievementDto achievement;
 
         try
@@ -191,6 +206,13 @@ public class AchievementController : ControllerBase
         catch (ArgumentException ex)
         {
             return BadRequest(ex.Message);
+        }
+
+        var providerId = await providerService.GetProviderIdForWorkshopById(achievement.WorkshopId).ConfigureAwait(false);
+
+        if (await providerService.IsProviderBlocked(providerId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "It is forbidden to delete the workshops achievements at blocked providers");
         }
 
         var userHasRights = await this.IsUserProvidersOwnerOrAdmin(achievement.WorkshopId).ConfigureAwait(false);
