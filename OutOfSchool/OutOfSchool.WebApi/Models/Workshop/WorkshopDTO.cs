@@ -56,6 +56,9 @@ public class WorkshopDTO : IValidatableObject
 
     public bool CompetitiveSelection { get; set; }
 
+    [MaxLength(500)]
+    public string CompetitiveSelectionDescription { get; set; }
+
     [Column(TypeName = "decimal(18,2)")]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
     public decimal Price { get; set; } = default;
