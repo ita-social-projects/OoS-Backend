@@ -440,6 +440,8 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             predicate = predicate.And(a => a.Institution.Id == filter.InstitutionId);
         }
 
+        predicate = predicate.And(p => !p.Institution.IsDeleted);
+
         return predicate;
     }
 

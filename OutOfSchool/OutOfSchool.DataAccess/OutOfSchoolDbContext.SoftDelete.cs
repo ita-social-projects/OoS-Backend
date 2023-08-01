@@ -59,7 +59,7 @@ public partial class OutOfSchoolDbContext
             .ApplySoftDelete<DateTimeRange>()
             .ApplySoftDelete<Direction>()
             .ApplySoftDelete<Favorite>()
-            .ApplySoftDelete<Institution>()
+            //.ApplySoftDelete<Institution>()
             .ApplySoftDelete<InstitutionFieldDescription>()
             .ApplySoftDelete<InstitutionHierarchy>()
             .ApplySoftDelete<InstitutionStatus>()

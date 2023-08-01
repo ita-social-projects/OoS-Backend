@@ -17,5 +17,7 @@ public class Institution : IKeyedEntity<Guid>
 
     public bool IsGovernment { get; set; }
 
+    public bool IsDeleted { get; set; }
+
     public virtual List<Provider> RelatedProviders { get; set; }
 }

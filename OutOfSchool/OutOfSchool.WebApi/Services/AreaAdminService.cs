@@ -524,6 +524,8 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
             predicate = predicate.And(c => c.CATOTTG.Id == filter.CATOTTGId);
         }
 
+        predicate = predicate.And(x => !x.Institution.IsDeleted);
+
         return predicate;
     }
 
