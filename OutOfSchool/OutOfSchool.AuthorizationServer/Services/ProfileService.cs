@@ -23,27 +23,35 @@ public class ProfileService : IProfileService
 
     public async Task GetProfileDataAsync(ClaimsPrincipal principal)
     {
+        var claims = await GetAdditionalClaimsAsync(principal);
+        var claimsList = claims.Select(kvp => new Claim(kvp.Key, kvp.Value)).ToList();
+
+        if (claimsList.Any())
+        {
+            var identity = principal.Identity as ClaimsIdentity;
+            identity?.AddClaims(claimsList);
+        }
+    }
+
+    public async Task<IReadOnlyDictionary<string, string>> GetAdditionalClaimsAsync(ClaimsPrincipal principal)
+    {
         var nameClaim = principal.Claims.FirstOrDefault(claim => claim.Type == "name");
         var roleClaim = principal.Claims.FirstOrDefault(claim => claim.Type == "role");
+
+        var additionalClaims = new Dictionary<string, string>(StringComparer.Ordinal);
 
         if (nameClaim is not null && roleClaim is not null)
         {
             var userFromLogin = await userManager.FindByNameAsync(nameClaim.Value);
 
-            var permissionsClaim = new Claim(IdentityResourceClaimsTypes.Permissions, await GetPermissionsForUser(userFromLogin, roleClaim.Value));
-
             var subrole = await GetSubroleByUserName(userFromLogin);
-            var subRoleClaim = new Claim(IdentityResourceClaimsTypes.Subrole, subrole.ToString());
 
-            var claims = new List<Claim>
-            {
-                permissionsClaim,
-                subRoleClaim,
-            };
-
-            var identity = principal.Identity as ClaimsIdentity;
-            identity?.AddClaims(claims);
+            additionalClaims[IdentityResourceClaimsTypes.Permissions] =
+                await GetPermissionsForUser(userFromLogin, roleClaim.Value);
+            additionalClaims[IdentityResourceClaimsTypes.Subrole] = subrole.ToString();
         }
+
+        return additionalClaims;
     }
 
     // get's list of permissions for current user's role from db
