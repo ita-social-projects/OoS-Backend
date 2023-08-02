@@ -16,10 +16,10 @@ public class WorkshopFilter : OffsetFilter
 
     public string OrderByField { get; set; } = OrderBy.Rating.ToString();
 
-    [Range(0, 100, ErrorMessage = "Field value should be in a range from 0 to 100")]
+    [Range(0, 120, ErrorMessage = "Field value should be in a range from 0 to 120")]
     public int MinAge { get; set; } = 0;
 
-    [Range(0, 100, ErrorMessage = "Field value should be in a range from 0 to 100")]
+    [Range(0, 120, ErrorMessage = "Field value should be in a range from 0 to 120")]
     public int MaxAge { get; set; } = 100;
 
     public bool IsFree { get; set; } = false;
