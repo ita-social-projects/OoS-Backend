@@ -45,7 +45,7 @@ public class CurrentUserService : ICurrentUserService
         this.mapper = mapper;
     }
 
-    public string UserId => user?.GetUserPropertyByClaimType(ClaimTypes.NameIdentifier) ?? string.Empty;
+    public string UserId => user?.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? string.Empty;
 
     public string UserRole => GettingUserProperties.GetUserRole(user);
 

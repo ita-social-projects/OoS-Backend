@@ -119,12 +119,12 @@ public static class Startup
                     options.Audience = identityConfig.ApiName;
                     options.RequireHttpsMetadata = false;
                     options.TokenValidationParameters.ValidAudiences = new[] {identityConfig.ApiName};
+                    options.TokenValidationParameters.NameClaimType = IdentityResourceClaimsTypes.Sub;
+                    options.TokenValidationParameters.RoleClaimType = IdentityResourceClaimsTypes.Role;
                     options.SaveToken = true;
 
-                    // This is the default value
-                    // leaving it here so we know what's happening
-                    // source: https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.authentication.jwtbearer.jwtbeareroptions.mapinboundclaims?view=aspnetcore-7.0
-                    options.MapInboundClaims = true;
+                    // Disable mapping because OpenIdDict does can't re-create it :(
+                    options.MapInboundClaims = false;
                 });
         }
 

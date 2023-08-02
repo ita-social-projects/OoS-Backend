@@ -1,9 +1,5 @@
-﻿using System;
-using System.Security.Authentication;
+﻿using System.Security.Authentication;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
-using OutOfSchool.Common;
-using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Common;
@@ -16,7 +12,7 @@ public static class GettingUserProperties
 
         if (userId is null)
         {
-            ThrowAuthenticationException(nameof(ClaimTypes.NameIdentifier));
+            ThrowAuthenticationException(nameof(IdentityResourceClaimsTypes.Sub));
         }
 
         return userId;
@@ -24,7 +20,7 @@ public static class GettingUserProperties
 
     public static string GetUserId(ClaimsPrincipal user)
     {
-        return user?.GetUserPropertyByClaimType(ClaimTypes.NameIdentifier);
+        return user?.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
     }
 
     public static Role GetUserRole(HttpContext httpContext)
@@ -33,7 +29,7 @@ public static class GettingUserProperties
 
         if (userRoleName is null)
         {
-            ThrowAuthenticationException(nameof(ClaimTypes.Role));
+            ThrowAuthenticationException(nameof(IdentityResourceClaimsTypes.Role));
         }
 
         Role userRole = (Role)Enum.Parse(typeof(Role), userRoleName, true);
@@ -43,7 +39,7 @@ public static class GettingUserProperties
 
     public static string GetUserRole(ClaimsPrincipal user)
     {
-        return user?.GetUserPropertyByClaimType(ClaimTypes.Role);
+        return user?.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role);
     }
 
     public static Subrole GetUserSubrole(HttpContext httpContext)

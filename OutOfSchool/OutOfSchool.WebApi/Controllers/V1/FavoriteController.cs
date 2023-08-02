@@ -1,15 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.Common.PermissionsModule;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -80,7 +71,7 @@ public class FavoriteController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllByUser()
     {
-        string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        string userId = User.FindFirst(IdentityResourceClaimsTypes.Sub)?.Value;
 
         var favorites = await service.GetAllByUser(userId).ConfigureAwait(false);
 
@@ -104,7 +95,7 @@ public class FavoriteController : ControllerBase
     [HttpGet("workshops")]
     public async Task<IActionResult> GetFavoriteWorkshopsByUser([FromQuery] OffsetFilter offsetFilter)
     {
-        string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        string userId = User.FindFirst(IdentityResourceClaimsTypes.Sub)?.Value;
 
         var favorites = await service.GetFavoriteWorkshopsByUser(userId, offsetFilter).ConfigureAwait(false);
 
