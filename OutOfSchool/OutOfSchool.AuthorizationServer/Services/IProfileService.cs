@@ -6,4 +6,6 @@ namespace OutOfSchool.AuthorizationServer.Services;
 public interface IProfileService
 {
     public Task GetProfileDataAsync(ClaimsPrincipal principal);
+
+    public Task<IReadOnlyDictionary<string, string>> GetAdditionalClaimsAsync(ClaimsPrincipal principal);
 }
