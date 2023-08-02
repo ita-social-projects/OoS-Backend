@@ -47,11 +47,11 @@ public class WorkshopDTO : IValidatableObject
     public string Instagram { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Children's min age is required")]
-    [Range(0, 100, ErrorMessage = "Min age should be a number from 0 to 100")]
+    [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
     public int MinAge { get; set; }
 
     [Required(ErrorMessage = "Children's max age is required")]
-    [Range(0, 100, ErrorMessage = "Max age should be a number from 0 to 100")]
+    [Range(0, 120, ErrorMessage = "Max age should be a number from 0 to 120")]
     public int MaxAge { get; set; }
 
     public bool CompetitiveSelection { get; set; }
