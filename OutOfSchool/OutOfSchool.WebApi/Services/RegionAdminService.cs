@@ -484,6 +484,8 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             predicate = predicate.And(c => c.CATOTTG.Id == filter.CATOTTGId);
         }
 
+        predicate = predicate.And(x => !x.Institution.IsDeleted);
+
         return predicate;
     }
 

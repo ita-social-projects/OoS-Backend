@@ -75,7 +75,7 @@ public class InstitutionService : IInstitutionService
     /// <inheritdoc/>
     public async Task<List<InstitutionDto>> GetAllFromDatabase()
     {
-        var institutions = await repository.GetAll().ConfigureAwait(false);
+        var institutions = await repository.GetByFilter(x => !x.IsDeleted).ConfigureAwait(false);
         return institutions.Select(institution => mapper.Map<InstitutionDto>(institution)).ToList();
     }
 
