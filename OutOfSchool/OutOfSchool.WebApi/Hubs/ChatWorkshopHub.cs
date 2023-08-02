@@ -1,21 +1,11 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Collections.Concurrent;
 using System.Security.Authentication;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Hubs;
 
@@ -154,7 +144,7 @@ public class ChatWorkshopHub : Hub
             }
 
             // Save chatMessage in the system.
-            Role userRole = (Role)Enum.Parse(typeof(Role), Context.User.FindFirst(ClaimTypes.Role).Value, true);
+            Role userRole = (Role)Enum.Parse(typeof(Role), Context.User.FindFirst(IdentityResourceClaimsTypes.Role).Value, true);
             var createdMessageDto = await messageService.CreateAsync(chatMessageWorkshopCreateDto, userRole).ConfigureAwait(false);
 
             // Add Parent's connections to the Group.

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using IdentityServer4;
+﻿using IdentityServer4;
 using IdentityServer4.Models;
 
 namespace OutOfSchool.IdentityServer.Config;
@@ -34,6 +32,7 @@ public static class StaticConfig
 
             // this is for transition to openiddict to have same scopes.
             new ApiScope("outofschoolapi"),
+            new ApiScope("roles"),
         };
 
     public static IEnumerable<ApiResource> ApiResources(string apiSecret) => new[]
@@ -79,9 +78,10 @@ public static class StaticConfig
             AllowedScopes =
             {
                 IdentityServerConstants.StandardScopes.OpenId,
+                IdentityServerConstants.StandardScopes.Profile,
 
                 // this is for transition to openiddict to have same scopes.
-                "outofschoolapi.read", "outofschoolapi.write", "outofschoolapi",
+                "outofschoolapi.read", "outofschoolapi.write", "outofschoolapi", "roles",
             },
 
             AllowAccessTokensViaBrowser = true,
