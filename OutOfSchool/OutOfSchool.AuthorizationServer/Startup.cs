@@ -1,5 +1,6 @@
 using GrpcServiceServer;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Net.Http.Headers;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.AuthCommon.Config;
@@ -9,6 +10,7 @@ using OutOfSchool.AuthorizationServer.Config;
 using OutOfSchool.AuthorizationServer.Extensions;
 using OutOfSchool.AuthorizationServer.KeyManagement;
 using OutOfSchool.AuthorizationServer.Services;
+using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
 namespace OutOfSchool.AuthorizationServer;
 
@@ -77,7 +79,6 @@ public static class Startup
             .AddEntityFrameworkStores<OutOfSchoolDbContext>()
             .AddDefaultTokenProviders();
 
-        // TODO: do we need it?
         services.ConfigureApplicationCookie(c =>
         {
             c.Cookie.Name = "OpenIdDict.Cookie";
@@ -107,10 +108,25 @@ public static class Startup
         });
 
         // Must be AFTER services.AddIdentity() call
-        services.AddAuthentication(options =>
+        services
+            .AddAuthentication(options =>
         {
-            options.DefaultAuthenticateScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
-            options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = Constants.DefaultAuthScheme;
+            options.DefaultAuthenticateScheme = Constants.DefaultAuthScheme;
+            options.DefaultScheme = Constants.DefaultAuthScheme;
+        })
+            .AddPolicyScheme(Constants.DefaultAuthScheme, Constants.DefaultAuthScheme, options =>
+        {
+            options.ForwardDefaultSelector = context =>
+            {
+                string authorization = context.Request.Headers[HeaderNames.Authorization];
+                if (!string.IsNullOrEmpty(authorization) && authorization.StartsWith("Bearer "))
+                {
+                    return OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+                }
+
+                return IdentityConstants.ApplicationScheme;
+            };
         });
 
         var authorizationSection = config.GetSection(AuthorizationServerConfig.Name);
@@ -194,6 +210,11 @@ public static class Startup
         services.AddAuthCommon(config, builder.Environment.IsDevelopment());
         services.AddTransient<IInteractionService, InteractionService>();
         services.AddTransient<IProfileService, ProfileService>();
+
+        services.AddHealthChecks()
+            .AddDbContextCheck<OutOfSchoolDbContext>(
+                "Database",
+                tags: new[] {"readiness"});
     }
 
     public static void Configure(this WebApplication app)
@@ -258,6 +279,13 @@ public static class Startup
 
         app.UseAuthentication();
         app.UseAuthorization();
+
+        app.MapHealthChecks("/healthz/ready", new HealthCheckOptions
+            {
+                Predicate = healthCheck => healthCheck.Tags.Contains("readiness"),
+                AllowCachingResponses = false,
+            })
+            .WithMetadata(new AllowAnonymousAttribute());
 
         app.UseEndpoints(endpoints =>
         {

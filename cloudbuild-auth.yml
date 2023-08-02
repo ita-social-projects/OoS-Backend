@@ -9,6 +9,6 @@ steps:
     - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --buildpack=gcr.io/paketo-buildpacks/environment-variables
     - --builder=paketobuildpacks/builder:base
-    - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.IdentityServer/
+    - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.AuthorizationServer/
     - --env=BPE_AppDefaults__Version=$SHORT_SHA
     - --publish
