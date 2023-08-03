@@ -73,8 +73,8 @@ public class ChatWorkshopHubTests
             Groups = groupsMock.Object,
         };
 
-        hubCallerContextMock.Setup(x => x.User.FindFirst(ClaimTypes.NameIdentifier))
-            .Returns(new Claim(ClaimTypes.NameIdentifier, UserId));
+        hubCallerContextMock.Setup(x => x.User.FindFirst(IdentityResourceClaimsTypes.Sub))
+            .Returns(new Claim(IdentityResourceClaimsTypes.Sub, UserId));
         hubCallerContextMock.Setup(x => x.User.FindFirst(IdentityResourceClaimsTypes.Subrole))
             .Returns(new Claim(IdentityResourceClaimsTypes.Subrole, "None"));
     }
@@ -85,8 +85,8 @@ public class ChatWorkshopHubTests
     {
         // Arrange
         var userRole = Role.Provider.ToString();
-        hubCallerContextMock.Setup(x => x.User.FindFirst(ClaimTypes.Role))
-            .Returns(new Claim(ClaimTypes.Role, userRole));
+        hubCallerContextMock.Setup(x => x.User.FindFirst(IdentityResourceClaimsTypes.Role))
+            .Returns(new Claim(IdentityResourceClaimsTypes.Role, userRole));
 
         var validProviderId = Guid.NewGuid();
         validationServiceMock.Setup(x => x.GetParentOrProviderIdByUserRoleAsync(UserId, Role.Provider)).ReturnsAsync(validProviderId);
@@ -123,7 +123,7 @@ public class ChatWorkshopHubTests
         // Arrange
         var userRole = Role.Provider.ToString();
         hubCallerContextMock.Setup(x => x.User.FindFirst("role"))
-            .Returns(new Claim(ClaimTypes.NameIdentifier, userRole));
+            .Returns(new Claim(IdentityResourceClaimsTypes.Role, userRole));
         hubCallerContextMock.Setup(x => x.User.FindFirst("sub"))
             .Returns(default(Claim));
 
@@ -159,7 +159,7 @@ public class ChatWorkshopHubTests
         // Arrange
         var userRole = Role.Parent.ToString();
         hubCallerContextMock.Setup(x => x.User.FindFirst("role"))
-            .Returns(new Claim(ClaimTypes.NameIdentifier, userRole));
+            .Returns(new Claim(IdentityResourceClaimsTypes.Role, userRole));
 
         var invalidParentId = Guid.NewGuid();
 
@@ -182,8 +182,8 @@ public class ChatWorkshopHubTests
     {
         // Arrange
         var userRole = Role.Provider.ToString();
-        hubCallerContextMock.Setup(x => x.User.FindFirst(ClaimTypes.Role))
-            .Returns(new Claim(ClaimTypes.Role, userRole));
+        hubCallerContextMock.Setup(x => x.User.FindFirst(IdentityResourceClaimsTypes.Role))
+            .Returns(new Claim(IdentityResourceClaimsTypes.Role, userRole));
 
         var validWorkshopId = Guid.NewGuid();
         var validParentId = Guid.NewGuid();
@@ -231,8 +231,8 @@ public class ChatWorkshopHubTests
     {
         // Arrange
         var userRole = Role.Parent.ToString();
-        hubCallerContextMock.Setup(x => x.User.FindFirst(ClaimTypes.Role))
-            .Returns(new Claim(ClaimTypes.Role, userRole));
+        hubCallerContextMock.Setup(x => x.User.FindFirst(IdentityResourceClaimsTypes.Role))
+            .Returns(new Claim(IdentityResourceClaimsTypes.Role, userRole));
 
         var validParentId = Guid.NewGuid();
 

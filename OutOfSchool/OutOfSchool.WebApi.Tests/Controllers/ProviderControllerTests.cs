@@ -49,8 +49,8 @@ public class ProviderControllerTests
         (new ClaimsIdentity(
             new Claim[]
             {
-                new Claim(ClaimTypes.NameIdentifier, userId),
-                new Claim(ClaimTypes.Role, Role.Provider.ToString()),
+                new Claim(IdentityResourceClaimsTypes.Sub, userId),
+                new Claim(IdentityResourceClaimsTypes.Role, Role.Provider.ToString()),
             },
             IdentityResourceClaimsTypes.Sub));
 
