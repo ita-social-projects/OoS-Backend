@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
@@ -50,7 +51,7 @@ public class ChildControllerTests
         currentUserId = Guid.NewGuid().ToString();
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[] { new Claim(ClaimTypes.NameIdentifier, currentUserId) }, "sub"));
+            new Claim[] { new Claim(IdentityResourceClaimsTypes.Sub, currentUserId) }, "sub"));
 
         controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 

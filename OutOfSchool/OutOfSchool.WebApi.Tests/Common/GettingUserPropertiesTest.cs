@@ -20,8 +20,8 @@ public class GettingUserPropertiesTest
     public void Setup()
     {
         httpContextMoq = new Mock<HttpContext>();
-        httpContextMoq.Setup(x => x.User.FindFirst(ClaimTypes.NameIdentifier)).Returns(userIdClaim);
-        httpContextMoq.Setup(x => x.User.FindFirst(ClaimTypes.Role)).Returns(userRoleClaim);
+        httpContextMoq.Setup(x => x.User.FindFirst(IdentityResourceClaimsTypes.Sub)).Returns(userIdClaim);
+        httpContextMoq.Setup(x => x.User.FindFirst(IdentityResourceClaimsTypes.Role)).Returns(userRoleClaim);
         httpContextMoq.Setup(x => x.User.FindFirst("subrole")).Returns(userSubroleClaim);
     }
 
