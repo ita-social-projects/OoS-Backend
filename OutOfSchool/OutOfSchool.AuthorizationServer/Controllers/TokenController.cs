@@ -270,9 +270,13 @@ public class TokenController : Controller
     // to redirect the user agent to the client application using the appropriate response_mode.
     public IActionResult Deny() => Forbid(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
 
+    [HttpGet("~/connect/logout")]
+    public IActionResult Logout() => View();
+
+    [ActionName(nameof(Logout))]
     [HttpPost("~/connect/logout")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Logout()
+    public async Task<IActionResult> DoLogout()
     {
         // logger.LogDebug($"{path} started. User(id): {userId}.");
         // Ask ASP.NET Core Identity to delete the local and external cookies created
