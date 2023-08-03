@@ -9,7 +9,6 @@ using OutOfSchool.WebApi.Models.ChatWorkshop;
 
 namespace OutOfSchool.WebApi.Hubs;
 
-[Authorize(AuthenticationSchemes = "Bearer")]
 [Authorize(Roles = "provider,parent")]
 public class ChatWorkshopHub : Hub
 {
