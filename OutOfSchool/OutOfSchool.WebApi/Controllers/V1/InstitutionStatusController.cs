@@ -137,8 +137,5 @@ public class InstitutionStatusController : ControllerBase
         {
             return BadRequest(e.Message);
         }
-
-
     }
-
 }

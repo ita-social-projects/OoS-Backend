@@ -49,7 +49,7 @@ public class StatusService : IStatusService
     {
         logger.LogInformation("Getting all Institution Statuses started.");
 
-        var institutionStatuses = await repository.GetAll().ConfigureAwait(false);
+        var institutionStatuses = await repository.GetByFilter(x => !x.IsDeleted).ConfigureAwait(false);
 
         logger.LogInformation(!institutionStatuses.Any()
             ? "InstitutionStatus table is empty."
@@ -63,7 +63,8 @@ public class StatusService : IStatusService
     {
         logger.LogInformation($"Getting InstitutionStatus by Id started. Looking Id = {id}.");
 
-        var institutionStatus = await repository.GetById(id).ConfigureAwait(false);
+        var institutionStatuses = await repository.GetByFilter(x => !x.IsDeleted && x.Id == id).ConfigureAwait(false);
+        var institutionStatus = institutionStatuses.SingleOrDefault();
 
         if (institutionStatus == null)
         {
@@ -96,19 +97,20 @@ public class StatusService : IStatusService
     {
         logger.LogInformation($"Updating InstitutionStatus with Id = {dto?.Id} started.");
 
-        try
-        {
-            var institutionStatus = await repository.Update(mapper.Map<InstitutionStatus>(dto)).ConfigureAwait(false);
+        var institutionStatus = await repository.GetById(dto.Id);
 
-            logger.LogInformation($"InstitutionStatus with Id = {institutionStatus?.Id} updated succesfully.");
-
-            return mapper.Map<InstitutionStatusDTO>(institutionStatus);
-        }
-        catch (DbUpdateConcurrencyException)
+        if (institutionStatus is null)
         {
             logger.LogError($"Updating failed. InstitutionStatus with Id = {dto?.Id} doesn't exist in the system.");
-            throw;
+            throw new DbUpdateConcurrencyException($"Updating failed. InstitutionStatus with Id = {dto?.Id} doesn't exist in the system.");
         }
+
+        mapper.Map(dto, institutionStatus);
+        institutionStatus = await repository.Update(institutionStatus).ConfigureAwait(false);
+
+        logger.LogInformation($"InstitutionStatus with Id = {institutionStatus?.Id} updated succesfully.");
+
+        return mapper.Map<InstitutionStatusDTO>(institutionStatus);
     }
 
     /// <inheritdoc/>
