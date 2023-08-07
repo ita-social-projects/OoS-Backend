@@ -541,7 +541,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
         var confirmationLink = url.Action(
             "EmailConfirmation",
             "Account",
-            new { userId = user.Id, token },
+            new { email = user.Email, token },
             "https");
         var subject = localizer["Confirm email"];
         var adminInvitationViewModel = new AdminInvitationViewModel
