@@ -14,7 +14,6 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(AuthenticationSchemes = "Bearer")]
 [Authorize(Roles = "provider,parent,ministryadmin")]
 public class ChatWorkshopController : ControllerBase
 {
@@ -26,6 +25,8 @@ public class ChatWorkshopController : ControllerBase
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly ILogger<ChatWorkshopController> logger;
     private readonly IProviderAdminService providerAdminService;
+
+    // TODO: figure out why we have ministry admin here :)
     private readonly IMinistryAdminService ministryAdminService;
 
     /// <summary>
