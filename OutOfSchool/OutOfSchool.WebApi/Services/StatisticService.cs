@@ -195,11 +195,10 @@ public class StatisticService : IStatisticService
     private async Task<List<WorkshopCard>> GetWorkshopsWithAverageRating(List<WorkshopCard> workshopsCards)
     {
         var averageRatings = await averageRatingService.GetByEntityIdsAsync(workshopsCards.Select(p => p.WorkshopId)).ConfigureAwait(false);
-        AverageRatingDto averageRatingDto = null;
 
         foreach (var workshop in workshopsCards)
         {
-            averageRatingDto = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.WorkshopId);
+            var averageRatingDto = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.WorkshopId);
             workshop.Rating = averageRatingDto?.Rate ?? default;
             workshop.NumberOfRatings = averageRatingDto?.RateQuantity ?? default;
         }
