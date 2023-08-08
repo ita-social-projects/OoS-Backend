@@ -63,6 +63,8 @@ public class WorkshopBaseCard
 
     public float Rating { get; set; }
 
+    public int NumberOfRatings { get; set; }
+
     [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus ProviderLicenseStatus { get; set; } = ProviderLicenseStatus.NotProvided;
 }

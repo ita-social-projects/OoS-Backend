@@ -19,6 +19,8 @@ public class WorkshopES
 
     public float Rating { get; set; }
 
+    public int NumberOfRatings { get; set; }
+
     [Keyword]
     public Guid ProviderId { get; set; }
 

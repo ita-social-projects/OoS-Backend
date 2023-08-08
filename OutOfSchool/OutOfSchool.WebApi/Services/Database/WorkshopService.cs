@@ -768,9 +768,13 @@ public class WorkshopService : IWorkshopService
     {
         var averageRatings = await averageRatingService.GetByEntityIdsAsync(workshops.Select(p => p.WorkshopId)).ConfigureAwait(false);
 
+        AverageRatingDto averageRatingDto = null;
+
         foreach (var workshop in workshops)
         {
-            workshop.Rating = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.WorkshopId)?.Rate ?? default;
+            averageRatingDto = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.WorkshopId);
+            workshop.Rating = averageRatingDto?.Rate ?? default;
+            workshop.NumberOfRatings = averageRatingDto?.RateQuantity ?? default;
         }
 
         return workshops;

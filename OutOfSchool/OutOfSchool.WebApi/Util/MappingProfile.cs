@@ -209,6 +209,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
+            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
             .ForMember(dest => dest.TakenSeats, opt =>
                 opt.MapFrom(src =>
                     src.Applications.Count(x =>
@@ -221,6 +222,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.DirectionIds,
                 opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)))
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
+            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderLicenseStatus, opt =>
                 opt.MapFrom(src => src.Provider.LicenseStatus));
 
@@ -538,6 +540,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProviderTitle, opt => opt.MapFrom(src => src.Workshop.ProviderTitle))
             .ForMember(dest => dest.ProviderOwnership, opt => opt.MapFrom(src => src.Workshop.ProviderOwnership))
             .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => src.Workshop.Rating))
+            .ForMember(dest => dest.NumberOfRatings, opt => opt.MapFrom(src => src.Workshop.NumberOfRatings))
             .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Workshop.Title))
             .ForMember(dest => dest.PayRate, opt => opt.MapFrom(src => src.Workshop.PayRate))
             .ForMember(dest => dest.MaxAge, opt => opt.MapFrom(src => src.Workshop.MaxAge))
