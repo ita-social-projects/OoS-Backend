@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Nest;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -66,7 +67,7 @@ public class StatusService : IStatusService
         var institutionStatuses = await repository.GetByFilter(x => !x.IsDeleted && x.Id == id).ConfigureAwait(false);
         var institutionStatus = institutionStatuses.SingleOrDefault();
 
-        if (institutionStatus == null)
+        if (institutionStatus is null)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(id),
@@ -97,7 +98,8 @@ public class StatusService : IStatusService
     {
         logger.LogInformation($"Updating InstitutionStatus with Id = {dto?.Id} started.");
 
-        var institutionStatus = await repository.GetById(dto.Id);
+        var institutionStatuses = await repository.GetByFilter(x => !x.IsDeleted && x.Id == dto.Id).ConfigureAwait(false);
+        var institutionStatus = institutionStatuses.SingleOrDefault();
 
         if (institutionStatus is null)
         {
