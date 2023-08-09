@@ -198,7 +198,9 @@ public class StatisticService : IStatisticService
 
         foreach (var workshop in workshopsCards)
         {
-            workshop.Rating = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.WorkshopId)?.Rate ?? default;
+            var averageRatingDto = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.WorkshopId);
+            workshop.Rating = averageRatingDto?.Rate ?? default;
+            workshop.NumberOfRatings = averageRatingDto?.RateQuantity ?? default;
         }
 
         return workshopsCards;

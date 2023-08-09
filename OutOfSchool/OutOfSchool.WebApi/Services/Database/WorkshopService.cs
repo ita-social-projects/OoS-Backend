@@ -770,7 +770,9 @@ public class WorkshopService : IWorkshopService
 
         foreach (var workshop in workshops)
         {
-            workshop.Rating = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.WorkshopId)?.Rate ?? default;
+            var averageRatingDto = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.WorkshopId);
+            workshop.Rating = averageRatingDto?.Rate ?? default;
+            workshop.NumberOfRatings = averageRatingDto?.RateQuantity ?? default;
         }
 
         return workshops;
