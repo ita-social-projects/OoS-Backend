@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models;
@@ -30,4 +31,7 @@ public class Application : IKeyedEntity<Guid>
     public virtual Child Child { get; set; }
 
     public virtual Parent Parent { get; set; }
+
+    [NotMapped]
+    public static readonly ApplicationStatus[] ValidApplicationStatuses = { ApplicationStatus.Approved, ApplicationStatus.StudyingForYears, ApplicationStatus.Completed};
 }
