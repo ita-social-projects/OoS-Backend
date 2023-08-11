@@ -7,7 +7,6 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using System.Linq.Expressions;
-using System.Runtime.InteropServices.ComTypes;
 using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.WebApi.Services;
@@ -155,16 +154,16 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
 
         filter ??= new AreaAdminFilter();
         ModelValidationHelper.ValidateOffsetFilter(filter);
-        var catottgs = new List<long>();
         if (currentUserService.IsMinistryAdmin())
         {
             var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
             filter.InstitutionId = ministryAdmin.InstitutionId;
         }
 
+        var catottgs = new List<long>();
         if (currentUserService.IsRegionAdmin())
         {
-            var regionAdminDto = await regionAdminService.GetByUserId(currentUserService.UserId);
+            var regionAdminDto = await regionAdminService.GetByUserId(currentUserService.UserId).ConfigureAwait(false);
             filter.InstitutionId = regionAdminDto.InstitutionId;
             var childrenIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId);
             catottgs = childrenIds.ToList();
@@ -506,9 +505,9 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
             predicate = predicate.And(a => a.Institution.Id == filter.InstitutionId);
         }
 
-        if (catottgs.Count > 0 && catottgs.Contains(filter.CATOTTGId))
+        if (catottgs.Count > 0)
         {
-            predicate = predicate.And(a => a.Institution.Id == filter.InstitutionId && a.CATOTTG.Id == filter.CATOTTGId);
+            predicate = predicate.And(a => catottgs.Contains(a.CATOTTGId));
         }
         else if (filter.CATOTTGId > 0)
         {

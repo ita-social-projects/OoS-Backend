@@ -32,7 +32,4 @@ public class Application : IKeyedEntity<Guid>
     public virtual Child Child { get; set; }
 
     public virtual Parent Parent { get; set; }
-
-    [NotMapped]
-    public static readonly ApplicationStatus[] ValidApplicationStatuses = { ApplicationStatus.Approved, ApplicationStatus.StudyingForYears, ApplicationStatus.Completed};
 }
