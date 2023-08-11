@@ -377,9 +377,8 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                 user.FirstName = ministryAdminUpdateDto.FirstName;
                 user.LastName = ministryAdminUpdateDto.LastName;
                 user.MiddleName = ministryAdminUpdateDto.MiddleName;
-
-                // TODO Email is changed but UserName, NormalizedUserName - no
                 user.Email = ministryAdminUpdateDto.Email;
+                user.UserName = ministryAdminUpdateDto.Email;
                 user.PhoneNumber = Constants.PhonePrefix + ministryAdminUpdateDto.PhoneNumber;
 
                 var updateResult = await userManager.UpdateAsync(user);
