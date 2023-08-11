@@ -62,7 +62,7 @@ public partial class OutOfSchoolDbContext
             //.ApplySoftDelete<Institution>()
             .ApplySoftDelete<InstitutionFieldDescription>()
             .ApplySoftDelete<InstitutionHierarchy>()
-            .ApplySoftDelete<InstitutionStatus>()
+            //.ApplySoftDelete<InstitutionStatus>()
             .ApplySoftDelete<Parent>()
             .ApplySoftDelete<Provider>()
             .ApplySoftDelete<ProviderAdmin>()

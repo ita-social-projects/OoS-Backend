@@ -138,13 +138,13 @@ public class StatusServiceTests
     public async Task Delete_WhenIdIsValid_DeletesEntityFromRepository()
     {
         // Arrange
-        var collection = await repository.GetAll() as ICollection<InstitutionStatus>;
+        var collection = await repository.GetByFilter(x => !x.IsDeleted) as ICollection<InstitutionStatus>;
         var existingId = TestDataHelper.RandomItem(collection).Id;
         var expectedCollection = (await repository.GetByFilter(x => x.Id != existingId)).ToList();
 
         // Act
         await service.Delete(existingId).ConfigureAwait(false);
-        var actualCollection = await repository.GetAll();
+        var actualCollection = await repository.GetByFilter(x => !x.IsDeleted);
 
         // Assert
         TestHelper.AssertTwoCollectionsEqualByValues(expectedCollection, actualCollection);
