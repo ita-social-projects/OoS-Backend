@@ -1,16 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using NuGet.Protocol.Core.Types;
-using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
