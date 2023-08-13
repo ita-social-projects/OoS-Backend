@@ -49,6 +49,7 @@ public partial class OutOfSchoolDbContext
             .ApplySoftDelete<AchievementType>()
             .ApplySoftDelete<Address>()
             .ApplySoftDelete<Application>()
+            .ApplySoftDelete<AverageRating>()
             .ApplySoftDelete<BlockedProviderParent>()
             .ApplySoftDelete<ChatMessageWorkshop>()
             .ApplySoftDelete<ChatRoomWorkshop>()
@@ -58,7 +59,7 @@ public partial class OutOfSchoolDbContext
             .ApplySoftDelete<CompanyInformationItem>()
             .ApplySoftDelete<DateTimeRange>()
             .ApplySoftDelete<Direction>()
-            .ApplySoftDelete<Favorite>()
+            //.ApplySoftDelete<Favorite>()
             //.ApplySoftDelete<Institution>()
             .ApplySoftDelete<InstitutionFieldDescription>()
             .ApplySoftDelete<InstitutionHierarchy>()
@@ -73,7 +74,6 @@ public partial class OutOfSchoolDbContext
             .ApplySoftDelete<Teacher>()
             .ApplySoftDelete<Workshop>()
             .ApplySoftDelete<WorkshopDescriptionItem>()
-            .ApplySoftDelete<AverageRating>()
             .ApplySoftDelete<QuartzJob>();
     }
 }

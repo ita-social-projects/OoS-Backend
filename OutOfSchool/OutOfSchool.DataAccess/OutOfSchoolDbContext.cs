@@ -122,25 +122,26 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.Entity<DateTimeRange>()
             .HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "EndTime >= StartTime");
 
-        builder.ApplyConfiguration(new TeacherConfiguration());
+        builder.ApplyConfiguration(new AchievementConfiguration());
+        builder.ApplyConfiguration(new AddressConfiguration());
         builder.ApplyConfiguration(new ApplicationConfiguration());
+        builder.ApplyConfiguration(new AverageRatingConfiguration());
         builder.ApplyConfiguration(new ChatMessageWorkshopConfiguration());
         builder.ApplyConfiguration(new ChatRoomWorkshopConfiguration());
         builder.ApplyConfiguration(new ChildConfiguration());
-        builder.ApplyConfiguration(new ProviderConfiguration());
-        builder.ApplyConfiguration(new EntityImagesConfiguration<Provider>());
-        builder.ApplyConfiguration(new ProviderAdminConfiguration());
-        builder.ApplyConfiguration(new WorkshopConfiguration());
-        builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
-        builder.ApplyConfiguration(new NotificationConfiguration());
-        builder.ApplyConfiguration(new AchievementConfiguration());
-        builder.ApplyConfiguration(new AddressConfiguration());
         builder.ApplyConfiguration(new CodeficatorConfiguration());
-        builder.ApplyConfiguration(new RatingConfiguration());
-        builder.ApplyConfiguration(new AverageRatingConfiguration());
-        builder.ApplyConfiguration(new OperationWithObjectConfiguration());
+        builder.ApplyConfiguration(new EntityImagesConfiguration<Provider>());
+        builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
+        builder.ApplyConfiguration(new FavoriteConfiguration());
         builder.ApplyConfiguration(new InstitutionConfiguration());
         builder.ApplyConfiguration(new InstitutionStatusConfiguration());
+        builder.ApplyConfiguration(new NotificationConfiguration());
+        builder.ApplyConfiguration(new OperationWithObjectConfiguration());
+        builder.ApplyConfiguration(new ProviderConfiguration());
+        builder.ApplyConfiguration(new ProviderAdminConfiguration());
+        builder.ApplyConfiguration(new RatingConfiguration());
+        builder.ApplyConfiguration(new TeacherConfiguration());
+        builder.ApplyConfiguration(new WorkshopConfiguration());
 
         ApplySoftDelete(builder);
 

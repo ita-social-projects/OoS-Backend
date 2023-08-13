@@ -7,6 +7,8 @@ public class Favorite : IKeyedEntity<long>
 {
     public long Id { get; set; }
 
+    public bool IsDeleted { get; set; }
+
     [Required]
     public Guid WorkshopId { get; set; }
 

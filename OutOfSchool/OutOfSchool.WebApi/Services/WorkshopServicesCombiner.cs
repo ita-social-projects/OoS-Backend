@@ -247,7 +247,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     {
         var recipientIds = new List<string>();
 
-        var favoriteWorkshopUsersIds = await favoriteRepository.Get(where: x => x.WorkshopId == objectId)
+        var favoriteWorkshopUsersIds = await favoriteRepository.Get(where: x => !x.IsDeleted && x.WorkshopId == objectId)
             .Select(x => x.UserId)
             .ToListAsync()
             .ConfigureAwait(false);
