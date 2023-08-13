@@ -8,6 +8,7 @@ using MongoDB.Driver;
 using Nest;
 using Newtonsoft.Json;
 using NuGet.Common;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -249,10 +250,10 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             };
         }
 
-        var provideradmin = await providerAdminRepository.GetByIdAsync(providerAdminId, providerId)
+        var providerAdmin = await providerAdminRepository.GetByIdAsync(providerAdminId, providerId)
             .ConfigureAwait(false);
 
-        if (provideradmin is null)
+        if (providerAdmin is null)
         {
             Logger.LogError("ProviderAdmin(id) {ProviderAdminId} not found. User(id): {UserId}", providerAdminId, userId);
 
@@ -261,6 +262,9 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
                 HttpStatusCode = HttpStatusCode.NotFound,
             };
         }
+
+        providerAdmin.BlockingType = isBlocked ? BlockingType.Manually : BlockingType.None;
+        providerAdmin = await providerAdminRepository.Update(providerAdmin).ConfigureAwait(false);
 
         var request = new Request()
         {
@@ -304,6 +308,19 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         string token,
         bool isBlocked)
     {
+        var providerAdmins = await providerAdminRepository.GetByFilter(x => x.ProviderId == providerId).ConfigureAwait(false);
+
+        var blockingType = isBlocked ? BlockingType.Automatically : BlockingType.None;
+
+        foreach (var providerAdmin in providerAdmins)
+        {
+            if (providerAdmin.BlockingType != BlockingType.Manually)
+            {
+                providerAdmin.BlockingType = blockingType;
+                _ = await providerAdminRepository.Update(providerAdmin).ConfigureAwait(false);
+            }
+        }
+
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,

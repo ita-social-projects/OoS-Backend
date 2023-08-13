@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OutOfSchool.Common.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -17,6 +18,8 @@ public class ProviderAdmin : IKeyedEntity<(string, Guid)>
     // "true" gives access to all related with base provider workshops.
     // "false" executes further inspection into admins-to-workshops relations
     public bool IsDeputy { get; set; }
+
+    public BlockingType BlockingType { get; set; }
 
     public virtual List<Workshop> ManagedWorkshops { get; set; }
 
