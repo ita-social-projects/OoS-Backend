@@ -22,9 +22,12 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
     private readonly IRegionAdminService regionAdminService;
     private IAreaAdminService areaAdminServiceImplementation;
     private ICodeficatorRepository codeficatorRepository;
+    private readonly ICodeficatorService codeficatorService;
+
 
     public AreaAdminService(
         ICodeficatorRepository codeficatorRepository,
+        ICodeficatorService codeficatorService,
         IHttpClientFactory httpClientFactory,
         IOptions<IdentityServerConfig> identityServerConfig,
         IOptions<CommunicationConfig> communicationConfig,
@@ -51,6 +54,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         this.currentUserService = currentUserService;
         this.ministryAdminService = ministryAdminService;
         this.regionAdminService = regionAdminService;
+        this.codeficatorService = codeficatorService;
     }
 
     public async Task<AreaAdminDto> GetByIdAsync(string id)
@@ -96,15 +100,18 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
 
         if (await IsSuchEmailExisted(areaAdminBaseDto.Email))
         {
-            Logger.LogDebug("AreaAdmin creating is not possible. Username {Email} is already taken", areaAdminBaseDto.Email);
+            Logger.LogDebug("AreaAdmin creating is not possible. Username {Email} is already taken",
+                areaAdminBaseDto.Email);
             throw new InvalidOperationException($"Username {areaAdminBaseDto.Email} is already taken.");
         }
 
         bool isValidCatottg = await IsValidCatottg(areaAdminBaseDto.CATOTTGId);
         if (!isValidCatottg)
         {
-            Logger.LogDebug("AreaAdmin creating is not possible. Catottg with Id {CatottgId} does not contain to area", areaAdminBaseDto.CATOTTGId);
-            throw new InvalidOperationException($"Catottg with Id {areaAdminBaseDto.CATOTTGId} does not contain to area.");
+            Logger.LogDebug("AreaAdmin creating is not possible. Catottg with Id {CatottgId} does not contain to area",
+                areaAdminBaseDto.CATOTTGId);
+            throw new InvalidOperationException(
+                $"Catottg with Id {areaAdminBaseDto.CATOTTGId} does not contain to area.");
         }
 
         var request = new Request()
@@ -147,43 +154,22 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
 
         filter ??= new AreaAdminFilter();
         ModelValidationHelper.ValidateOffsetFilter(filter);
-
         if (currentUserService.IsMinistryAdmin())
         {
             var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
             filter.InstitutionId = ministryAdmin.InstitutionId;
-
-            Logger.LogInformation(
-                $"Filter institutionId {filter.InstitutionId} is not equals to logined Ministry admin institutionId {ministryAdmin.InstitutionId}");
-
-            return new SearchResult<AreaAdminDto>()
-            {
-                TotalAmount = 0,
-                Entities = default,
-            };
         }
 
+        var catottgs = new List<long>();
         if (currentUserService.IsRegionAdmin())
         {
-            var areaAdminDto = await GetByUserId(currentUserService.UserId);
-            filter.InstitutionId = areaAdminDto.InstitutionId;
-            filter.CATOTTGId = areaAdminDto.CATOTTGId;
-
-
-            if (filter.InstitutionId != areaAdminDto.InstitutionId || filter.CATOTTGId != areaAdminDto.CATOTTGId)
-            {
-                Logger.LogInformation($"Filter institutionId {filter.InstitutionId} and CATOTTGId {filter.CATOTTGId} " +
-                                      $"is not equals to logined Otg admin institutionId {areaAdminDto.InstitutionId} and CATOTTGId {areaAdminDto.CATOTTGId}");
-
-                return new SearchResult<AreaAdminDto>()
-                {
-                    TotalAmount = 0,
-                    Entities = default,
-                };
-            }
+            var regionAdminDto = await regionAdminService.GetByUserId(currentUserService.UserId).ConfigureAwait(false);
+            filter.InstitutionId = regionAdminDto.InstitutionId;
+            var childrenIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId);
+            catottgs = childrenIds.ToList();
         }
 
-        Expression<Func<AreaAdmin, bool>> filterPredicate = PredicateBuild(filter);
+        Expression<Func<AreaAdmin, bool>> filterPredicate = PredicateBuild(filter, catottgs);
 
         int count = await areaAdminRepository.Count(filterPredicate).ConfigureAwait(false);
 
@@ -492,7 +478,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         return regionAdmin.InstitutionId == institutionId && regionAdmin.CATOTTGId == catottgId;
     }
 
-    private static Expression<Func<AreaAdmin, bool>> PredicateBuild(AreaAdminFilter filter)
+    private static Expression<Func<AreaAdmin, bool>> PredicateBuild(AreaAdminFilter filter, List<long> catottgs)
     {
         Expression<Func<AreaAdmin, bool>> predicate = PredicateBuilder.True<AreaAdmin>();
 
@@ -519,7 +505,11 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
             predicate = predicate.And(a => a.Institution.Id == filter.InstitutionId);
         }
 
-        if (filter.CATOTTGId > 0)
+        if (catottgs.Count > 0)
+        {
+            predicate = predicate.And(a => catottgs.Contains(a.CATOTTGId));
+        }
+        else if (filter.CATOTTGId > 0)
         {
             predicate = predicate.And(c => c.CATOTTG.Id == filter.CATOTTGId);
         }
@@ -539,6 +529,6 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
     {
         var catottg = await codeficatorRepository.GetById(catottgId);
         return catottg is not null && (catottg.Category == CodeficatorCategory.TerritorialCommunity.ToString() ||
-               catottg.Category == CodeficatorCategory.SpecialStatusCity.ToString());
+                                       catottg.Category == CodeficatorCategory.SpecialStatusCity.ToString());
     }
 }
