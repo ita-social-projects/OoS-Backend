@@ -1,15 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -44,7 +34,7 @@ public class FavoriteService : IFavoriteService
     {
         logger.LogInformation("Getting all Favorites started.");
 
-        var favorites = await favoriteRepository.GetAll().ConfigureAwait(false);
+        var favorites = await favoriteRepository.GetByFilter(x => !x.IsDeleted).ConfigureAwait(false);
 
         logger.LogInformation(!favorites.Any()
             ? "Favorites table is empty."
@@ -58,7 +48,8 @@ public class FavoriteService : IFavoriteService
     {
         logger.LogInformation($"Getting Favorite by Id started. Looking Id = {id}.");
 
-        var favorite = await favoriteRepository.GetById(id).ConfigureAwait(false);
+        var favorites = await favoriteRepository.GetByFilter(x => !x.IsDeleted && x.Id == id).ConfigureAwait(false);
+        var favorite = favorites.SingleOrDefault();
 
         if (favorite == null)
         {
@@ -78,7 +69,7 @@ public class FavoriteService : IFavoriteService
         logger.LogInformation("Getting Favorites by User started. Looking UserId = {UserId}", userId);
 
         var favoritesQuery = await favoriteRepository
-            .GetByFilter(x => x.UserId == userId && Provider.ValidProviderStatuses.Contains(x.Workshop.Provider.Status))
+            .GetByFilter(x => !x.IsDeleted && x.UserId == userId && Provider.ValidProviderStatuses.Contains(x.Workshop.Provider.Status))
             .ConfigureAwait(false);
 
         var favorites = favoritesQuery.ToList();
@@ -97,7 +88,7 @@ public class FavoriteService : IFavoriteService
         logger.LogInformation($"Getting Favorites by User started. Looking UserId = {userId}.");
 
         var favorites = await favoriteRepository
-            .Get(where: x => x.UserId == userId && Provider.ValidProviderStatuses.Contains(x.Workshop.Provider.Status))
+            .Get(where: x => !x.IsDeleted && x.UserId == userId && Provider.ValidProviderStatuses.Contains(x.Workshop.Provider.Status))
             .Select(x => x.WorkshopId)
             .ToListAsync()
             .ConfigureAwait(false);
@@ -142,19 +133,21 @@ public class FavoriteService : IFavoriteService
     {
         logger.LogInformation($"Updating Favorite with Id = {dto?.Id} started.");
 
-        try
-        {
-            var favorite = await favoriteRepository.Update(mapper.Map<Favorite>(dto)).ConfigureAwait(false);
+        var favorites = await favoriteRepository.GetByFilter(x => !x.IsDeleted && x.Id == dto.Id).ConfigureAwait(false);
+        var favorite = favorites.SingleOrDefault();
 
-            logger.LogInformation($"Favorite with Id = {favorite?.Id} updated succesfully.");
-
-            return mapper.Map<FavoriteDto>(favorite);
-        }
-        catch (DbUpdateConcurrencyException)
+        if (favorite is null)
         {
             logger.LogError($"Updating failed. Favorite with Id = {dto?.Id} doesn't exist in the system.");
-            throw;
+            throw new DbUpdateConcurrencyException($"Updating failed. Favorite with Id = {dto?.Id} doesn't exist in the system.");
         }
+
+        mapper.Map(dto, favorite);
+        favorite = await favoriteRepository.Update(mapper.Map<Favorite>(dto)).ConfigureAwait(false);
+
+        logger.LogInformation($"Favorite with Id = {favorite?.Id} updated succesfully.");
+
+        return mapper.Map<FavoriteDto>(favorite);
     }
 
     /// <inheritdoc/>
@@ -162,7 +155,8 @@ public class FavoriteService : IFavoriteService
     {
         logger.LogInformation($"Deleting Favorite with Id = {id} started.");
 
-        var favorite = await favoriteRepository.GetById(id).ConfigureAwait(false);
+        var favorites = await favoriteRepository.GetByFilter(x => !x.IsDeleted && x.Id == id).ConfigureAwait(false);
+        var favorite = favorites.SingleOrDefault();
 
         if (favorite == null)
         {
