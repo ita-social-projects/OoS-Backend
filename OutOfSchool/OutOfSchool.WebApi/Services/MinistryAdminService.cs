@@ -170,6 +170,11 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
 
         var ministryAdminsDto = institutionAdmins.Select(admin => mapper.Map<MinistryAdminDto>(admin)).ToList();
 
+        // order by status
+        ministryAdminsDto = ministryAdminsDto.OrderBy(x => x.AccountStatus == Enums.AccountStatus.Blocked)
+            .ThenBy(x => x.AccountStatus == Enums.AccountStatus.Accepted)
+            .ThenBy(x => x.AccountStatus == Enums.AccountStatus.NeverLogged).ToList();
+
         var result = new SearchResult<MinistryAdminDto>()
         {
             TotalAmount = count,
