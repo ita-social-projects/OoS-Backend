@@ -130,6 +130,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new ChatRoomWorkshopConfiguration());
         builder.ApplyConfiguration(new ChildConfiguration());
         builder.ApplyConfiguration(new CodeficatorConfiguration());
+        builder.ApplyConfiguration(new DirectionConfiguration());
         builder.ApplyConfiguration(new EntityImagesConfiguration<Provider>());
         builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
         builder.ApplyConfiguration(new FavoriteConfiguration());

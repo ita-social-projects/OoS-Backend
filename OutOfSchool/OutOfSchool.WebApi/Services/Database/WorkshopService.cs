@@ -671,7 +671,7 @@ public class WorkshopService : IWorkshopService
             var tempPredicate = PredicateBuilder.False<Workshop>();
             foreach (var direction in filter.DirectionIds)
             {
-                tempPredicate = tempPredicate.Or(x => x.InstitutionHierarchy.Directions.Any(d => d.Id == direction));
+                tempPredicate = tempPredicate.Or(x => x.InstitutionHierarchy.Directions.Any(d => !d.IsDeleted && d.Id == direction));
             }
 
             predicate = predicate.And(tempPredicate);

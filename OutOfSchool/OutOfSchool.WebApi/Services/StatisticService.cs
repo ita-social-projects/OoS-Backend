@@ -81,6 +81,7 @@ public class StatisticService : IStatisticService
 
         var directionsWithWorkshops = workshops
             .SelectMany(w => w.InstitutionHierarchy.Directions)
+            .Where(d => !d.IsDeleted)
             .GroupBy(d => d.Id)
             .Select(g => new
             {
@@ -90,6 +91,7 @@ public class StatisticService : IStatisticService
 
         var directionsWithApplications = applications
             .SelectMany(a => a.Workshop.InstitutionHierarchy.Directions)
+            .Where(d => !d.IsDeleted)
             .GroupBy(d => d.Id)
             .Select(g => new
             {
@@ -116,7 +118,7 @@ public class StatisticService : IStatisticService
                     WorkshopsCount = x.directionWithWorkshop.WorkshopsCount,
                 });
 
-        var allDirections = directionRepository.Get();
+        var allDirections = directionRepository.Get(where: d => !d.IsDeleted);
 
         var statistics = allDirections
             .GroupJoin(
