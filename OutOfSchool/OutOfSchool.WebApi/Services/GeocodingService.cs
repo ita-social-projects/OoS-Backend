@@ -140,7 +140,7 @@ public class GeocodingService : CommunicationService, IGeocodingService
                 { "key", config.ApiKey },
                 { "categories", "adr_address" },
                 { "radius", $"{config.Radius}" },
-                { "near", $"{request.Lon},{request.Lat}" }, // it has to be lng first, lat second as per api
+                { "near", $"{request.Lon.ToStringWithDotSeparator()},{request.Lat.ToStringWithDotSeparator()}" }, // it has to be lng first, lat second as per api
                 { "order", "distance" },
             },
         };
@@ -219,7 +219,7 @@ public class RectangularBounds
 
     // Creates a well known text representation of a geometric polygon
     public string WKT =>
-        $"POLYGON (( {northWest.lon} {northWest.lat}, {northEast.lon} {northEast.lat}, {southEast.lon} {southEast.lat}, {southWest.lon} {southWest.lat}, {northWest.lon} {northWest.lat} ))";
+        $"POLYGON (( {northWest}, {northEast}, {southEast}, {southWest}, {northWest} ))";
 
     private static Point CalculateSouthWest(double lat, double lon, double deltaMeters)
     {
@@ -241,5 +241,11 @@ public class RectangularBounds
         return new Point(lat - (deltaMeters * Coef), lon + (deltaMeters * Coef / Math.Cos(GeoMathHelper.Deg2Rad(lat))));
     }
 
-    private sealed record Point(double lat, double lon);
+    private sealed record Point(double lat, double lon)
+    {
+        public override string ToString()
+        {
+            return $"{lon.ToStringWithDotSeparator()} {lat.ToStringWithDotSeparator()}";
+        }
+    }
 }
