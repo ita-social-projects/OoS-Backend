@@ -131,6 +131,7 @@ public class GeocodingService : CommunicationService, IGeocodingService
             };
         }
 
+        IFormatProvider dotSeparatorFormat = new NumberFormatInfo { NumberDecimalSeparator = "." };
         var req = new Request
         {
             HttpMethodType = HttpMethodType.Get,
@@ -140,7 +141,7 @@ public class GeocodingService : CommunicationService, IGeocodingService
                 { "key", config.ApiKey },
                 { "categories", "adr_address" },
                 { "radius", $"{config.Radius}" },
-                { "near", $"{request.Lon.ToStringWithDotSeparator()},{request.Lat.ToStringWithDotSeparator()}" }, // it has to be lng first, lat second as per api
+                { "near", $"{request.Lon.ToString(dotSeparatorFormat)},{request.Lat.ToString(dotSeparatorFormat)}" }, // it has to be lng first, lat second as per api
                 { "order", "distance" },
             },
         };
@@ -245,7 +246,8 @@ public class RectangularBounds
     {
         public override string ToString()
         {
-            return $"{lon.ToStringWithDotSeparator()} {lat.ToStringWithDotSeparator()}";
+            IFormatProvider dotSeparatorFormat = new NumberFormatInfo { NumberDecimalSeparator = "." };
+            return $"{lon.ToString(dotSeparatorFormat)} {lat.ToString(dotSeparatorFormat)}";
         }
     }
 }
