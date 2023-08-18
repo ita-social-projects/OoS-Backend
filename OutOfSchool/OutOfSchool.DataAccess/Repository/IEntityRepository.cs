@@ -161,3 +161,14 @@ public interface ISensitiveEntityRepository<TEntity> : IEntityRepositoryBase<Gui
     where TEntity : class, IKeyedEntity<Guid>, new()
 {
 }
+
+public interface IEntityRepositorySoftDeleted<TKey, TEntity> : IEntityRepositoryBase<TKey, TEntity>
+    where TEntity : class, IKeyedEntity<TKey>, ISoftDeleted, new()
+    where TKey : IEquatable<TKey>
+{
+}
+
+public interface ISensitiveEntityRepositorySoftDeleted<TEntity> : IEntityRepositorySoftDeleted<Guid, TEntity>
+    where TEntity : class, IKeyedEntity<Guid>, ISoftDeleted, new()
+{
+}

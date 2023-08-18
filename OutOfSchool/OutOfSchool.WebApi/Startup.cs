@@ -270,6 +270,9 @@ public static class Startup
         services.AddTransient(typeof(IEntityRepository<,>), typeof(EntityRepository<,>));
         services.AddTransient(typeof(ISensitiveEntityRepository<>), typeof(SensitiveEntityRepository<>));
 
+        services.AddTransient(typeof(IEntityRepositorySoftDeleted<,>), typeof(EntityRepositorySoftDeleted<,>));
+        services.AddTransient(typeof(ISensitiveEntityRepositorySoftDeleted<>), typeof(SensitiveEntityRepositorySoftDeleted<>));
+
         services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
         services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
         services.AddTransient<IRegionAdminRepository, RegionAdminRepository>();

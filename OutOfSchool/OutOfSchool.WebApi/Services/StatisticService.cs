@@ -14,7 +14,7 @@ public class StatisticService : IStatisticService
 {
     private readonly IApplicationRepository applicationRepository;
     private readonly IWorkshopRepository workshopRepository;
-    private readonly IEntityRepository<long, Direction> directionRepository;
+    private readonly IEntityRepositorySoftDeleted<long, Direction> directionRepository;
     private readonly ILogger<StatisticService> logger;
     private readonly IMapper mapper;
     private readonly ICacheService cache;
@@ -33,7 +33,7 @@ public class StatisticService : IStatisticService
     public StatisticService(
         IApplicationRepository applicationRepository,
         IWorkshopRepository workshopRepository,
-        IEntityRepository<long, Direction> directionRepository,
+        IEntityRepositorySoftDeleted<long, Direction> directionRepository,
         ILogger<StatisticService> logger,
         IMapper mapper,
         ICacheService cache,
@@ -118,7 +118,7 @@ public class StatisticService : IStatisticService
                     WorkshopsCount = x.directionWithWorkshop.WorkshopsCount,
                 });
 
-        var allDirections = directionRepository.Get(where: d => !d.IsDeleted);
+        var allDirections = directionRepository.Get();
 
         var statistics = allDirections
             .GroupJoin(
