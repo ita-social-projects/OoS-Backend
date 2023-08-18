@@ -198,7 +198,7 @@ public class DirectionService : IDirectionService
     {
         logger.LogInformation($"Updating Direction with Id = {dto?.Id} started.");
 
-        ArgumentNullException.ThrowIfNull(dto, nameof(dto));
+        ArgumentNullException.ThrowIfNull(dto);
 
         var direction = await repository.GetById(dto.Id).ConfigureAwait(false);
 
