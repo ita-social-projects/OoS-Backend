@@ -4,6 +4,7 @@ using AutoMapper;
 using Castle.Core.Internal;
 using H3Lib;
 using H3Lib.Extensions;
+using Microsoft.Extensions.Logging;
 using Nest;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
@@ -38,6 +39,7 @@ public class WorkshopService : IWorkshopService
     private readonly IProviderAdminRepository providerAdminRepository;
     private readonly IAverageRatingService averageRatingService;
     private readonly IProviderRepository providerRepository;
+    private readonly IChatMessageWorkshopService chatMessageWorkshopService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -61,7 +63,8 @@ public class WorkshopService : IWorkshopService
         IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService,
         IProviderAdminRepository providerAdminRepository,
         IAverageRatingService averageRatingService,
-        IProviderRepository providerRepository)
+        IProviderRepository providerRepository,
+        IChatMessageWorkshopService chatMessageWorkshopService)
     {
         this.workshopRepository = workshopRepository;
         this.dateTimeRangeRepository = dateTimeRangeRepository;
@@ -72,6 +75,7 @@ public class WorkshopService : IWorkshopService
         this.providerAdminRepository = providerAdminRepository;
         this.averageRatingService = averageRatingService;
         this.providerRepository = providerRepository;
+        this.chatMessageWorkshopService = chatMessageWorkshopService;
     }
 
     /// <inheritdoc/>
@@ -254,7 +258,7 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<T>> GetByProviderId<T>(Guid id, ExcludeIdFilter filter)
+    public async Task<SearchResult<WorkshopProviderViewCard>> GetByProviderId<T>(Guid id, ExcludeIdFilter filter)
         where T : WorkshopBaseCard
     {
         logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
@@ -280,11 +284,22 @@ public class WorkshopService : IWorkshopService
             ? $"There aren't Workshops for Provider with Id = {id}."
             : $"From Workshop table were successfully received {workshops.Count} records.");
 
-        var workshopBaseCards = mapper.Map<List<T>>(workshops).ToList();
-        var result = new SearchResult<T>()
+        var workshopBaseCards = mapper.Map<List<WorkshopProviderViewCard>>(workshops).ToList();
+
+        if (workshopBaseCards.Any())
+        {
+            foreach (var workshop in workshopBaseCards)
+            {
+                var x = await chatMessageWorkshopService.CountUnreadMessagesAsync(workshop.WorkshopId).ConfigureAwait(false);
+                logger.LogInformation($"Workshop.Id: {workshop.WorkshopId} has {x} unread messages.");
+                workshop.UnreadMessages = x;
+            }
+        }
+
+        var result = new SearchResult<WorkshopProviderViewCard>()
         {
             TotalAmount = workshopBaseCardsCount,
-            Entities = await GetWorkshopsWithAverageRating(workshopBaseCards).ConfigureAwait(false),
+            Entities = await GetWorkshopsWithAverageRating<WorkshopProviderViewCard>(workshopBaseCards).ConfigureAwait(false),
         };
 
         return result;

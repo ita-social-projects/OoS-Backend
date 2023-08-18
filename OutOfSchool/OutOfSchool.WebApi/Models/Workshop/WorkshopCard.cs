@@ -78,4 +78,6 @@ public class WorkshopProviderViewCard : WorkshopBaseCard
     public int AmountOfPendingApplications { get; set; }
 
     public WorkshopStatus Status { get; set; }
+
+    public int UnreadMessages { get; set; }
 }

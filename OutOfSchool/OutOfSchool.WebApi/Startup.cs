@@ -211,8 +211,8 @@ public static class Startup
 
         // entities services
         services.AddTransient<IApplicationService, ApplicationService>();
-        services.AddTransient<IChatMessageWorkshopService, ChatMessageWorkshopService>();
         services.AddTransient<IChatRoomWorkshopService, ChatRoomWorkshopService>();
+        services.AddTransient<IChatMessageWorkshopService, ChatMessageWorkshopService>();
         services.AddTransient<IChildService, ChildService>();
         services.AddTransient<IDirectionService, DirectionService>();
         services.AddTransient<IFavoriteService, FavoriteService>();
@@ -279,6 +279,7 @@ public static class Startup
         services
             .AddTransient<IChatRoomWorkshopModelForChatListRepository, ChatRoomWorkshopModelForChatListRepository
             >();
+        services.AddTransient<IChatMessageRepository, ChatMessageRepository>();
         services.AddTransient<IParentRepository, ParentRepository>();
         services.AddTransient<IProviderRepository, ProviderRepository>();
         services.AddTransient<IWorkshopRepository, WorkshopRepository>();

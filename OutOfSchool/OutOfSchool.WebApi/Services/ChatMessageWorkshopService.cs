@@ -1,8 +1,11 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore.Storage;
+using Nest;
 using Newtonsoft.Json;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 
@@ -13,7 +16,7 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class ChatMessageWorkshopService : IChatMessageWorkshopService
 {
-    private readonly IEntityRepository<Guid, ChatMessageWorkshop> messageRepository;
+    private readonly IChatMessageRepository messageRepository;
     private readonly IChatRoomWorkshopService roomService;
     private readonly IHubContext<ChatWorkshopHub> workshopHub;
     private readonly ILogger<ChatMessageWorkshopService> logger;
@@ -28,7 +31,7 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Mapper.</param>
     public ChatMessageWorkshopService(
-        IEntityRepository<Guid, ChatMessageWorkshop> chatMessageRepository,
+        IChatMessageRepository chatMessageRepository,
         IChatRoomWorkshopService roomRepository,
         IHubContext<ChatWorkshopHub> workshopHub,
         ILogger<ChatMessageWorkshopService> logger,
@@ -120,6 +123,19 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
         catch (Exception exception)
         {
             logger.LogError($"Getting and updating all {nameof(ChatMessageWorkshopDto)}s with {nameof(chatRoomId)}:{chatRoomId} failed. Exception: {exception.Message}");
+            throw;
+        }
+    }
+
+    public async Task<int> CountUnreadMessagesAsync(Guid workshopId)
+    {
+        try
+        {
+            return await messageRepository.CountUnreadMessagesAsync(workshopId).ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError($"Getting number of unread messages with {nameof(workshopId)}:{workshopId} failed. Exception: {exception.Message}");
             throw;
         }
     }

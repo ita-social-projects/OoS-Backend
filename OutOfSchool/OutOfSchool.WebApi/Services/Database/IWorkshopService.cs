@@ -103,7 +103,7 @@ public interface IWorkshopService
     /// <typeparam name="T">Type of entity that must be return.</typeparam>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="SearchResult{WorkshopCard}"/> that contains elements from the input sequence.</returns>
-    Task<SearchResult<T>> GetByProviderId<T>(Guid id, ExcludeIdFilter filter)
+    Task<SearchResult<WorkshopProviderViewCard>> GetByProviderId<T>(Guid id, ExcludeIdFilter filter)
         where T : WorkshopBaseCard;
 
     /// <summary>

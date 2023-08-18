@@ -9,5 +9,10 @@ namespace OutOfSchool.Services.Repository;
 
 public interface IChatMessageRepository : ISensitiveEntityRepository<ChatMessageWorkshop>
 {
-    Task<int> CountUnreadMessages(Guid workshopId);
+    /// <summary>
+    /// Get a number of unread ChatMessages with specified WorkshopId.
+    /// </summary>
+    /// <param name="workshopId">Workshop's key.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="int"/> that contains the number of unread messages for the specified Workshop.</returns>
+    Task<int> CountUnreadMessagesAsync(Guid workshopId);
 }

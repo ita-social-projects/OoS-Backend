@@ -19,7 +19,7 @@ public class ChatMessageRepository : SensitiveEntityRepository<ChatMessageWorksh
         db = dbContext;
     }
 
-    public async Task<int> CountUnreadMessages(Guid workshopId)
+    public async Task<int> CountUnreadMessagesAsync(Guid workshopId)
     {
         return await db.ChatMessageWorkshops
             .Include(chr => chr.ChatRoom)

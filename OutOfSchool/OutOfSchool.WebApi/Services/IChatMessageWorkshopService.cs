@@ -40,4 +40,11 @@ public interface IChatMessageWorkshopService
     /// <param name="userRole">Role of current user.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{ChatMessageDTO}"/> that contains elements from the input sequence.</returns>
     Task<List<ChatMessageWorkshopDto>> GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(Guid chatRoomId, OffsetFilter offsetFilter, Role userRole);
+
+    /// <summary>
+    /// Get a number of unread ChatMessages with specified WorkshopId.
+    /// </summary>
+    /// <param name="workshopId">Workshop's key.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="int"/> that contains the number of unread messages for the specified Workshop.</returns>
+    Task<int> CountUnreadMessagesAsync(Guid workshopId);
 }
