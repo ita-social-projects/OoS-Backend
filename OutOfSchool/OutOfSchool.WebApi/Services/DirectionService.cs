@@ -4,6 +4,7 @@ using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Application;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -196,6 +197,8 @@ public class DirectionService : IDirectionService
     public async Task<DirectionDto> Update(DirectionDto dto)
     {
         logger.LogInformation($"Updating Direction with Id = {dto?.Id} started.");
+
+        ArgumentNullException.ThrowIfNull(dto, nameof(dto));
 
         var direction = await repository.GetById(dto.Id).ConfigureAwait(false);
 
