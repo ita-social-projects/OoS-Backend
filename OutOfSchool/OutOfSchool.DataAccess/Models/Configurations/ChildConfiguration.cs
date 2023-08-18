@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
+using OutOfSchool.Common;
 using OutOfSchool.Services.Common;
 using OutOfSchool.Services.Enums;
 
@@ -14,15 +14,15 @@ internal class ChildConfiguration : IEntityTypeConfiguration<Child>
 
         builder.Property(x => x.FirstName)
             .IsRequired()
-            .HasMaxLength(ModelsConfigurationConstants.NameMaxLength);
+            .HasMaxLength(Constants.NameMaxLength);
 
         builder.Property(x => x.LastName)
             .IsRequired()
-            .HasMaxLength(ModelsConfigurationConstants.NameMaxLength);
+            .HasMaxLength(Constants.NameMaxLength);
 
         builder.Property(x => x.MiddleName)
             .IsRequired()
-            .HasMaxLength(ModelsConfigurationConstants.NameMaxLength);
+            .HasMaxLength(Constants.NameMaxLength);
 
         builder.Property(x => x.DateOfBirth)
             .IsRequired()
