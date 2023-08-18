@@ -290,9 +290,9 @@ public class WorkshopService : IWorkshopService
         {
             foreach (var workshop in workshopBaseCards)
             {
-                var x = await chatMessageWorkshopService.CountUnreadMessagesAsync(workshop.WorkshopId).ConfigureAwait(false);
+                var messages = await chatMessageWorkshopService.CountUnreadMessagesAsync(workshop.WorkshopId).ConfigureAwait(false);
                 logger.LogInformation($"Workshop.Id: {workshop.WorkshopId} has {x} unread messages.");
-                workshop.UnreadMessages = x;
+                workshop.UnreadMessages = messages;
             }
         }
 
