@@ -835,8 +835,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
             new ParentRights(applicationDto.ParentId),
             new ProviderRights(providerId),
             new ProviderAdminWorkshopRights(providerId, applicationDto.WorkshopId));
-
-        var currentApplication = CheckApplicationExists(applicationDto.Id);
+        var currentApplication = this.CheckApplicationExists(applicationDto.Id);
 
         if (currentApplication is null)
         {
@@ -856,7 +855,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
                 return Result<ApplicationDto>.Success(mapper.Map<ApplicationDto>(currentApplication));
             }
 
-            if (applicationDto.Status == ApplicationStatus.Approved)
+            if (Application.ValidApplicationStatuses.Contains(applicationDto.Status))
             {
                 var providerOwnership = await workshopRepository.GetByFilter(predicate: w => w.Id == currentApplication.WorkshopId && w.Provider.Ownership != OwnershipType.State, includeProperties: "Provider");
 
@@ -871,6 +870,15 @@ public class ApplicationService : IApplicationService, INotificationReciever
                         {
                             Code = "400",
                             Description = "The Workshop is full.",
+                        });
+                    }
+
+                    if (await GetApprovedWorkshopAndChild(currentApplication) >= 1)
+                    {
+                        return Result<ApplicationDto>.Failed(new OperationError
+                        {
+                            Code = "400",
+                            Description = "There is already approved workshop.",
                         });
                     }
                 }
@@ -913,6 +921,13 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
     private async Task<int> GetAmountOfApprovedApplications(Guid workshopId)
     {
-        return await applicationRepository.Count(x => x.WorkshopId == workshopId && x.Status == ApplicationStatus.Approved);
+        return await applicationRepository.Count(x => x.WorkshopId == workshopId && Application.ValidApplicationStatuses.Contains(x.Status));
+    }
+
+    private async Task<int> GetApprovedWorkshopAndChild(Application application)
+    {
+        return await applicationRepository.Count(a => application.ChildId == a.ChildId &&
+                                                      application.WorkshopId == a.WorkshopId &&
+                                                      Application.ValidApplicationStatuses.Contains(a.Status));
     }
 }
