@@ -107,7 +107,7 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
         return where;
     }
 
-    public class ExpressionParameterReplacer : ExpressionVisitor
+    private class ExpressionParameterReplacer : ExpressionVisitor
     {
         private IDictionary<ParameterExpression, ParameterExpression> ParameterReplacements { get; set; }
 
