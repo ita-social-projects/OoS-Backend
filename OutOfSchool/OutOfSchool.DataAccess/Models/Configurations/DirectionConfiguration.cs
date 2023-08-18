@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace OutOfSchool.Services.Models.Configurations;
 
-internal class FavoriteConfiguration : IEntityTypeConfiguration<Favorite>
+internal class DirectionConfiguration : IEntityTypeConfiguration<Direction>
 {
-    public void Configure(EntityTypeBuilder<Favorite> builder)
+    public void Configure(EntityTypeBuilder<Direction> builder)
     {
         builder.HasKey(x => x.Id);
 

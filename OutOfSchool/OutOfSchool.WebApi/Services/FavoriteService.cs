@@ -143,7 +143,7 @@ public class FavoriteService : IFavoriteService
         }
 
         mapper.Map(dto, favorite);
-        favorite = await favoriteRepository.Update(mapper.Map<Favorite>(dto)).ConfigureAwait(false);
+        favorite = await favoriteRepository.Update(favorite).ConfigureAwait(false);
 
         logger.LogInformation($"Favorite with Id = {favorite?.Id} updated succesfully.");
 

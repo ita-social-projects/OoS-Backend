@@ -13,6 +13,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -168,11 +169,11 @@ public class DirectionServiceTests
             Id = 1,
             Title = "ChangedTitle1",
         };
-        var expected = new Direction()
-        {
-            Id = 1,
-            Title = "NewTitle",
-        };
+
+        var expected = (await repo.GetByFilter(
+            d => !d.IsDeleted && d.Id == changedEntity.Id)
+            .ConfigureAwait(false)).SingleOrDefault();
+
         mapper.Setup(m => m.Map<Direction>(changedEntity)).Returns(expected);
         mapper.Setup(m => m.Map<DirectionDto>(expected)).Returns(changedEntity);
 
