@@ -168,12 +168,8 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             ? "Parents table is empty."
             : $"All {institutionAdmins.Count} records were successfully received from the Parent table");
 
-        var ministryAdminsDto = institutionAdmins.Select(admin => mapper.Map<MinistryAdminDto>(admin)).ToList();
-
-        // order by status
-        ministryAdminsDto = ministryAdminsDto.OrderBy(x => x.AccountStatus == Enums.AccountStatus.Blocked)
-            .ThenBy(x => x.AccountStatus == Enums.AccountStatus.Accepted)
-            .ThenBy(x => x.AccountStatus == Enums.AccountStatus.NeverLogged).ToList();
+        var ministryAdminsDto = institutionAdmins.Select(admin => mapper.Map<MinistryAdminDto>(admin))
+                                                 .OrderBy(admin => admin.AccountStatus).ToList();
 
         var result = new SearchResult<MinistryAdminDto>()
         {

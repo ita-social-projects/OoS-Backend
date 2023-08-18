@@ -7,7 +7,7 @@ namespace OutOfSchool.WebApi.Enums;
 [JsonConverter(typeof(StringEnumConverter))]
 public enum AccountStatus
 {
-    NeverLogged,
-    Accepted,
-    Blocked,
+    NeverLogged = 0,
+    Accepted = 10,
+    Blocked = 20,
 }
