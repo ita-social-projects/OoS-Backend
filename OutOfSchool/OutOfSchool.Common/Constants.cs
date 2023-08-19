@@ -39,4 +39,6 @@ public static class Constants
     public const string AdminKeyword = "Admin";
 
     public const char MappingSeparator = '¤';
+
+    public const int NameMaxLength = 60;
 }
