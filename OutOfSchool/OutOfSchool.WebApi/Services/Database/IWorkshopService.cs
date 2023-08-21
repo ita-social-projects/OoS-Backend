@@ -145,4 +145,11 @@ public interface IWorkshopService
     /// <param name="workshopId">WorkshopId for which we need to get provider owner entity.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     Task<Guid> GetWorkshopProviderOwnerIdAsync(Guid workshopId);
+
+    /// <summary>
+    ///  Returns isBlocked status of the workshop.
+    /// </summary>
+    /// <param name="workshopId">WorkshopId for which we need to get status.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+    Task<bool> isBlocked(Guid workshopId);
 }

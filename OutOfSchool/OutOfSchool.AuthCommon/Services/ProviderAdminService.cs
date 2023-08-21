@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Config.ExternalUriModels;
 using OutOfSchool.AuthCommon.Services.Password;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.Services.Enums;
@@ -502,7 +503,9 @@ public class ProviderAdminService : IProviderAdminService
     {
         var mainResponse = new ResponseDto() { IsSuccess = true, HttpStatusCode = HttpStatusCode.OK, Message = string.Empty };
 
-        var providerAdmins = await providerAdminRepository.GetByFilter(x => x.ProviderId == providerId).ConfigureAwait(false);
+        var providerAdmins = await providerAdminRepository
+            .GetByFilter(x => x.ProviderId == providerId && x.BlockingType != BlockingType.Manually)
+            .ConfigureAwait(false);
 
         foreach (var providerAdmin in providerAdmins)
         {

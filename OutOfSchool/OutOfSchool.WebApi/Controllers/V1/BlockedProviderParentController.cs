@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using OutOfSchool.Common.PermissionsModule;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Services;
@@ -18,6 +19,7 @@ public class BlockedProviderParentController : ControllerBase
 {
     private readonly IBlockedProviderParentService blockedProviderParentService;
     private readonly IUserService userService;
+    private readonly IProviderService providerService;
     private string currentUserId;
 
     /// <summary>
@@ -25,13 +27,16 @@ public class BlockedProviderParentController : ControllerBase
     /// </summary>
     /// <param name="blockedProviderParentService">Service for BlockedProviderParent model.</param>
     /// <param name="userService">Service for operations with users.</param>
+    /// <param name="providerService">Service for operations with providers.</param>
     public BlockedProviderParentController(
         IBlockedProviderParentService blockedProviderParentService,
-        IUserService userService)
+        IUserService userService,
+        IProviderService providerService)
     {
         this.blockedProviderParentService = blockedProviderParentService;
         this.userService = userService;
         currentUserId = GettingUserProperties.GetUserId(User);
+        this.providerService = providerService;
     }
 
     /// <summary>
@@ -51,6 +56,11 @@ public class BlockedProviderParentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Block(BlockedProviderParentBlockDto blockedProviderParentBlockDto)
     {
+        if (await IsProviderBlocked(blockedProviderParentBlockDto.ProviderId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to block the parent at the blocked provider");
+        }
+
         if (await IsCurrentUserBlocked())
         {
             return StatusCode(403, "Forbidden to block the parent by the blocked provider.");
@@ -88,6 +98,11 @@ public class BlockedProviderParentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UnBlock(BlockedProviderParentUnblockDto blockedProviderParentUnblockDto)
     {
+        if (await IsProviderBlocked(blockedProviderParentUnblockDto.ProviderId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to unblock the parent at the blocked provider");
+        }
+
         if (await IsCurrentUserBlocked())
         {
             return StatusCode(403, "Forbidden to unblock the parent by the blocked provider.");
@@ -126,8 +141,9 @@ public class BlockedProviderParentController : ControllerBase
         return Ok(await blockedProviderParentService.GetBlock(parentId, providerId).ConfigureAwait(false));
     }
 
-    private async Task<bool> IsCurrentUserBlocked()
-    {
-        return await userService.IsBlocked(currentUserId);
-    }
+    private async Task<bool> IsCurrentUserBlocked() =>
+        await userService.IsBlocked(currentUserId);
+
+    private async Task<bool> IsProviderBlocked(Guid providerId) =>
+        await providerService.IsBlocked(providerId).ConfigureAwait(false);
 }

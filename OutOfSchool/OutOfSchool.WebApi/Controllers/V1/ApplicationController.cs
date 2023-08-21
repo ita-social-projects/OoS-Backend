@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
@@ -258,11 +259,6 @@ public class ApplicationController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(ApplicationCreate applicationDto)
     {
-        if (await IsCurrentUserBlocked())
-        {
-            return StatusCode(403, "Forbidden to create the application by the blocked provider.");
-        }
-
         if (applicationDto == null)
         {
             return BadRequest("Application is null.");
@@ -271,6 +267,16 @@ public class ApplicationController : ControllerBase
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
+        }
+
+        if (await IsWorkshopOrProviderBlocked(applicationDto.WorkshopId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to create the application at the blocked workshop/provider");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to create the application by the blocked provider.");
         }
 
         try
@@ -314,6 +320,11 @@ public class ApplicationController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update(ApplicationUpdate applicationDto)
     {
+        if (await IsWorkshopOrProviderBlocked(applicationDto.WorkshopId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to update the application at the blocked workshop/provider");
+        }
+
         if (await IsCurrentUserBlocked())
         {
             return StatusCode(403, "Forbidden to update the application by the blocked provider.");
@@ -382,5 +393,16 @@ public class ApplicationController : ControllerBase
         var userId = GettingUserProperties.GetUserId(User);
 
         return await userService.IsBlocked(userId);
+    }
+
+    private async Task<bool> IsWorkshopOrProviderBlocked(Guid workshopId)
+    {
+        var isWorkshopBlocked = await workshopService.isBlocked(workshopId).ConfigureAwait(false);
+
+        var providerId = await providerService.GetProviderIdForWorkshopById(workshopId).ConfigureAwait(false);
+
+        var isProviderBlocked = await providerService.IsBlocked(providerId).ConfigureAwait(false);
+
+        return isWorkshopBlocked || isProviderBlocked;
     }
 }

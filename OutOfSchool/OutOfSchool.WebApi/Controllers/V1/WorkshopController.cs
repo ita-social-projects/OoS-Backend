@@ -251,19 +251,19 @@ public class WorkshopController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(WorkshopDTO dto)
     {
-        if (await providerService.IsProviderBlocked(dto.ProviderId).ConfigureAwait(false))
+        if (await IsProviderBlocked(default, dto.ProviderId).ConfigureAwait(false))
         {
-            return StatusCode(403, "It is forbidden to create workshops at blocked providers");
-        }
-
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
+            return StatusCode(403, "Forbidden to create workshops at blocked providers");
         }
 
         if (await IsCurrentUserBlocked())
         {
             return StatusCode(403, "Forbidden to create the workshop by the blocked provider.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
         }
 
         var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.ProviderId).ConfigureAwait(false);
@@ -325,19 +325,19 @@ public class WorkshopController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update(WorkshopDTO dto)
     {
-        if (await providerService.IsProviderBlocked(dto.ProviderId).ConfigureAwait(false))
+        if (await IsProviderBlocked(default, dto.ProviderId).ConfigureAwait(false))
         {
-            return StatusCode(403, "It is forbidden to update workshops at blocked providers");
-        }
-
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
+            return StatusCode(403, "Forbidden to update workshops at blocked providers");
         }
 
         if (await IsCurrentUserBlocked())
         {
             return StatusCode(403, "Forbidden to update the workshop by the blocked provider.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
         }
 
         var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.ProviderId, dto.Id).ConfigureAwait(false);
@@ -369,16 +369,14 @@ public class WorkshopController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> UpdateStatus([FromBody] WorkshopStatusDto request)
     {
+        if (await IsProviderBlocked(request.WorkshopId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to update workshops statuses at blocked providers");
+        }
+
         if (await IsCurrentUserBlocked())
         {
             return StatusCode(403, "Forbidden to update the workshop by the blocked provider.");
-        }
-
-        var providerId = await providerService.GetProviderIdForWorkshopById(request.WorkshopId).ConfigureAwait(false);
-
-        if (await providerService.IsProviderBlocked(providerId).ConfigureAwait(false))
-        {
-            return StatusCode(403, "It is forbidden to update workshops statuses at blocked providers");
         }
 
         var workshop = await combinedWorkshopService.GetById(request.WorkshopId).ConfigureAwait(false);
@@ -426,6 +424,16 @@ public class WorkshopController : ControllerBase
         if (workshop is null)
         {
             return NoContent();
+        }
+
+        if (await IsProviderBlocked(default, workshop.ProviderId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to delete workshops at blocked providers");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to delete the workshop by the blocked provider.");
         }
 
         var userHasRights = await this.IsUserProvidersOwnerOrAdmin(workshop.ProviderId).ConfigureAwait(false);
@@ -476,5 +484,14 @@ public class WorkshopController : ControllerBase
         var userId = GettingUserProperties.GetUserId(User);
 
         return await userService.IsBlocked(userId);
+    }
+
+    private async Task<bool> IsProviderBlocked(Guid workshopId = default, Guid providerId = default)
+    {
+        providerId = providerId == default ?
+            await providerService.GetProviderIdForWorkshopById(workshopId).ConfigureAwait(false) :
+            providerId;
+
+        return await providerService.IsBlocked(providerId).ConfigureAwait(false);
     }
 }

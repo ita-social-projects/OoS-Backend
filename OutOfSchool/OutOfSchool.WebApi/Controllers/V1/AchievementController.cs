@@ -102,7 +102,7 @@ public class AchievementController : ControllerBase
     {
         var providerId = await providerService.GetProviderIdForWorkshopById(achievementDto.WorkshopId).ConfigureAwait(false);
 
-        if (await providerService.IsProviderBlocked(providerId).ConfigureAwait(false))
+        if (await providerService.IsBlocked(providerId).ConfigureAwait(false))
         {
             return StatusCode(403, "It is forbidden to add achievements to workshops at blocked providers");
         }
@@ -157,7 +157,7 @@ public class AchievementController : ControllerBase
     {
         var providerId = await providerService.GetProviderIdForWorkshopById(achievementDto.WorkshopId).ConfigureAwait(false);
 
-        if (await providerService.IsProviderBlocked(providerId).ConfigureAwait(false))
+        if (await providerService.IsBlocked(providerId).ConfigureAwait(false))
         {
             return StatusCode(403, "It is forbidden to update the workshops achievements at blocked providers");
         }
@@ -210,7 +210,7 @@ public class AchievementController : ControllerBase
 
         var providerId = await providerService.GetProviderIdForWorkshopById(achievement.WorkshopId).ConfigureAwait(false);
 
-        if (await providerService.IsProviderBlocked(providerId).ConfigureAwait(false))
+        if (await providerService.IsBlocked(providerId).ConfigureAwait(false))
         {
             return StatusCode(403, "It is forbidden to delete the workshops achievements at blocked providers");
         }

@@ -97,5 +97,5 @@ public interface IProviderService
     /// </summary>
     /// <param name="providerId">Key of the Provider entity in the table.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
-    Task<bool> IsProviderBlocked(Guid providerId);
+    Task<bool> IsBlocked(Guid providerId);
 }

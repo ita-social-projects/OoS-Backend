@@ -368,12 +368,12 @@ public class ProviderService : IProviderService, INotificationReciever
             false,
             false);
 
-        logger.LogInformation($"Block/Unblock the particular provider admins and deputy providers belonging to the Provider starts.");
+        logger.LogInformation("Block/Unblock the particular provider admins and deputy providers belonging to the Provider starts.");
 
         var providerAdminsResponse = await providerAdminService
             .BlockProviderAdminsAndDeputiesByProviderAsync(provider.Id, currentUserService.UserId, token, providerBlockDto.IsBlocked);
 
-        logger.LogInformation($"Block/Unblock the particular provider admins and deputy providers belonging to the Provider finished.");
+        logger.LogInformation("Block/Unblock the particular provider admins and deputy providers belonging to the Provider finished.");
 
         var blockedStatus = providerBlockDto.IsBlocked ? "blocked" : "unblocked";
 
@@ -386,7 +386,7 @@ public class ProviderService : IProviderService, INotificationReciever
         };
     }
 
-    public async Task<bool> IsProviderBlocked(Guid providerId)
+    public async Task<bool> IsBlocked(Guid providerId)
     {
         return (await providerRepository.GetById(providerId).ConfigureAwait(false)).IsBlocked;
     }
