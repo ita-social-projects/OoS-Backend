@@ -66,45 +66,45 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
     public override Task<TEntity> GetById(TKey id) => dbSet.FirstOrDefaultAsync(x => !x.IsDeleted && x.Id.Equals(id));
 
     /// <inheritdoc/>
-    public override Task<int> Count(Expression<Func<TEntity, bool>> where = null)
+    public override Task<int> Count(Expression<Func<TEntity, bool>> predicate = null)
     {
-        return base.Count(GetWhereExpression(where));
+        return base.Count(GetWhereExpression(predicate));
     }
 
-    public override Task<bool> Any(Expression<Func<TEntity, bool>> where = null)
+    public override Task<bool> Any(Expression<Func<TEntity, bool>> predicate = null)
     {
-        return base.Any(GetWhereExpression(where));
+        return base.Any(GetWhereExpression(predicate));
     }
 
     public override IQueryable<TEntity> Get(
         int skip = 0,
         int take = 0,
         string includeProperties = "",
-        Expression<Func<TEntity, bool>> where = null,
+        Expression<Func<TEntity, bool>> predicate = null,
         Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null,
         bool asNoTracking = false)
     {
-        return base.Get(skip, take, includeProperties, GetWhereExpression(where), orderBy, asNoTracking);
+        return base.Get(skip, take, includeProperties, GetWhereExpression(predicate), orderBy, asNoTracking);
     }
 
-    private Expression<Func<TEntity, bool>> GetWhereExpression(Expression<Func<TEntity, bool>> where)
+    private Expression<Func<TEntity, bool>> GetWhereExpression(Expression<Func<TEntity, bool>> predicate)
     {
-        if (where != null)
+        if (predicate != null)
         {
             Expression<Func<TEntity, bool>> right = x => !x.IsDeleted;
-            where = Expression.Lambda<Func<TEntity, bool>>(
+            predicate = Expression.Lambda<Func<TEntity, bool>>(
                 Expression.AndAlso(
-                    where.Body,
-                    new ExpressionParameterReplacer(right.Parameters, where.Parameters).Visit(right.Body)
+                    predicate.Body,
+                    new ExpressionParameterReplacer(right.Parameters, predicate.Parameters).Visit(right.Body)
                     ),
-                where.Parameters);
+                predicate.Parameters);
         }
         else
         {
-            where = x => !x.IsDeleted;
+            predicate = x => !x.IsDeleted;
         }
 
-        return where;
+        return predicate;
     }
 
     private sealed class ExpressionParameterReplacer : ExpressionVisitor
