@@ -115,10 +115,8 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
             IList<ParameterExpression> fromParameters,
             IList<ParameterExpression> toParameters)
         {
-            ParameterReplacements = new Dictionary<ParameterExpression, ParameterExpression>();
-
-            for (int i = 0; i != fromParameters.Count && i != toParameters.Count; i++)
-            { ParameterReplacements.Add(fromParameters[i], toParameters[i]); }
+            ParameterReplacements = fromParameters.Zip(toParameters, (k, v) => new { k, v })
+                .ToDictionary(x => x.k, x => x.v);
         }
 
         protected override Expression VisitParameter(ParameterExpression node)
