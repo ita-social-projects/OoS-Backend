@@ -46,65 +46,65 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
 
     /// <inheritdoc/>
     public override async Task<IEnumerable<TEntity>> GetByFilter(
-        Expression<Func<TEntity, bool>> predicate,
+        Expression<Func<TEntity, bool>> whereExpression,
         string includeProperties = "")
     {
-        predicate = GetWhereExpression(predicate);
-        return await base.GetByFilter(predicate, includeProperties).ConfigureAwait(false);
+        whereExpression = GetWhereExpression(whereExpression);
+        return await base.GetByFilter(whereExpression, includeProperties).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public override IQueryable<TEntity> GetByFilterNoTracking(
-        Expression<Func<TEntity, bool>> predicate,
+        Expression<Func<TEntity, bool>> whereExpression,
         string includeProperties = "")
     {
-        predicate = GetWhereExpression(predicate);
-        return base.GetByFilterNoTracking(predicate, includeProperties);
+        whereExpression = GetWhereExpression(whereExpression);
+        return base.GetByFilterNoTracking(whereExpression, includeProperties);
     }
 
     /// <inheritdoc/>
     public override Task<TEntity> GetById(TKey id) => dbSet.FirstOrDefaultAsync(x => !x.IsDeleted && x.Id.Equals(id));
 
     /// <inheritdoc/>
-    public override Task<int> Count(Expression<Func<TEntity, bool>> predicate = null)
+    public override Task<int> Count(Expression<Func<TEntity, bool>> whereExpression = null)
     {
-        return base.Count(GetWhereExpression(predicate));
+        return base.Count(GetWhereExpression(whereExpression));
     }
 
-    public override Task<bool> Any(Expression<Func<TEntity, bool>> predicate = null)
+    public override Task<bool> Any(Expression<Func<TEntity, bool>> whereExpression = null)
     {
-        return base.Any(GetWhereExpression(predicate));
+        return base.Any(GetWhereExpression(whereExpression));
     }
 
     public override IQueryable<TEntity> Get(
         int skip = 0,
         int take = 0,
         string includeProperties = "",
-        Expression<Func<TEntity, bool>> predicate = null,
+        Expression<Func<TEntity, bool>> whereExpression = null,
         Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null,
         bool asNoTracking = false)
     {
-        return base.Get(skip, take, includeProperties, GetWhereExpression(predicate), orderBy, asNoTracking);
+        return base.Get(skip, take, includeProperties, GetWhereExpression(whereExpression), orderBy, asNoTracking);
     }
 
-    private Expression<Func<TEntity, bool>> GetWhereExpression(Expression<Func<TEntity, bool>> predicate)
+    private Expression<Func<TEntity, bool>> GetWhereExpression(Expression<Func<TEntity, bool>> whereExpression)
     {
-        if (predicate != null)
+        if (whereExpression != null)
         {
             Expression<Func<TEntity, bool>> right = x => !x.IsDeleted;
-            predicate = Expression.Lambda<Func<TEntity, bool>>(
+            whereExpression = Expression.Lambda<Func<TEntity, bool>>(
                 Expression.AndAlso(
-                    predicate.Body,
-                    new ExpressionParameterReplacer(right.Parameters, predicate.Parameters).Visit(right.Body)
+                    whereExpression.Body,
+                    new ExpressionParameterReplacer(right.Parameters, whereExpression.Parameters).Visit(right.Body)
                     ),
-                predicate.Parameters);
+                whereExpression.Parameters);
         }
         else
         {
-            predicate = x => !x.IsDeleted;
+            whereExpression = x => !x.IsDeleted;
         }
 
-        return predicate;
+        return whereExpression;
     }
 
     private sealed class ExpressionParameterReplacer : ExpressionVisitor
