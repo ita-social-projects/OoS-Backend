@@ -370,7 +370,7 @@ public class ProviderService : IProviderService, INotificationReciever
 
         logger.LogInformation("Block/Unblock the particular provider admins and deputy providers belonging to the Provider starts.");
 
-        var providerAdminsResponse = await providerAdminService
+        _ = await providerAdminService
             .BlockProviderAdminsAndDeputiesByProviderAsync(provider.Id, currentUserService.UserId, token, providerBlockDto.IsBlocked);
 
         logger.LogInformation("Block/Unblock the particular provider admins and deputy providers belonging to the Provider finished.");

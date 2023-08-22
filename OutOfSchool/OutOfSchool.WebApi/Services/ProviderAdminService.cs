@@ -264,7 +264,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         }
 
         providerAdmin.BlockingType = isBlocked ? BlockingType.Manually : BlockingType.None;
-        providerAdmin = await providerAdminRepository.Update(providerAdmin).ConfigureAwait(false);
+        _ = await providerAdminRepository.Update(providerAdmin).ConfigureAwait(false);
 
         var request = new Request()
         {

@@ -251,7 +251,7 @@ public class WorkshopController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(WorkshopDTO dto)
     {
-        if (await IsProviderBlocked(default, dto.ProviderId).ConfigureAwait(false))
+        if (await IsProviderBlocked(dto.ProviderId).ConfigureAwait(false))
         {
             return StatusCode(403, "Forbidden to create workshops at blocked providers");
         }
@@ -325,7 +325,7 @@ public class WorkshopController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update(WorkshopDTO dto)
     {
-        if (await IsProviderBlocked(default, dto.ProviderId).ConfigureAwait(false))
+        if (await IsProviderBlocked(dto.ProviderId).ConfigureAwait(false))
         {
             return StatusCode(403, "Forbidden to update workshops at blocked providers");
         }
@@ -369,7 +369,7 @@ public class WorkshopController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> UpdateStatus([FromBody] WorkshopStatusDto request)
     {
-        if (await IsProviderBlocked(request.WorkshopId).ConfigureAwait(false))
+        if (await IsProviderBlocked(Guid.Empty, request.WorkshopId).ConfigureAwait(false))
         {
             return StatusCode(403, "Forbidden to update workshops statuses at blocked providers");
         }
@@ -426,7 +426,7 @@ public class WorkshopController : ControllerBase
             return NoContent();
         }
 
-        if (await IsProviderBlocked(default, workshop.ProviderId).ConfigureAwait(false))
+        if (await IsProviderBlocked(workshop.ProviderId).ConfigureAwait(false))
         {
             return StatusCode(403, "Forbidden to delete workshops at blocked providers");
         }
@@ -486,9 +486,9 @@ public class WorkshopController : ControllerBase
         return await userService.IsBlocked(userId);
     }
 
-    private async Task<bool> IsProviderBlocked(Guid workshopId = default, Guid providerId = default)
+    private async Task<bool> IsProviderBlocked(Guid providerId, Guid workshopId = default)
     {
-        providerId = providerId == default ?
+        providerId = providerId == Guid.Empty ?
             await providerService.GetProviderIdForWorkshopById(workshopId).ConfigureAwait(false) :
             providerId;
 

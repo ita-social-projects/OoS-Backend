@@ -507,7 +507,7 @@ public class ProviderAdminService : IProviderAdminService
             .GetByFilter(x => x.ProviderId == providerId && x.BlockingType != BlockingType.Manually)
             .ConfigureAwait(false);
 
-        foreach (var providerAdmin in providerAdmins)
+        providerAdmins.Select(async providerAdmin =>
         {
             var response = await BlockProviderAdminAsync(providerAdmin.UserId, userId, requestId, isBlocked);
 
@@ -531,7 +531,7 @@ public class ProviderAdminService : IProviderAdminService
                     response.HttpStatusCode,
                     requestId);
             }
-        }
+        });
 
         return mainResponse;
     }

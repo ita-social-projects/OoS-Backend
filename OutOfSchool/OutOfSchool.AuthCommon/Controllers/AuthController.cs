@@ -152,8 +152,7 @@ public class AuthController : Controller
 
         if (user != null)
         {
-            //if (user.IsBlocked && (user.Role == Role.Provider.ToString().ToLower() && user.IsDerived))
-            if (user.IsBlocked && !(user.Role == Role.Provider.ToString().ToLower()))
+            if (user.IsBlocked && !user.Role.Equals(Role.Provider.ToString(), StringComparison.InvariantCultureIgnoreCase))
             {
                 logger.LogInformation("User is blocked. Login was failed");
 

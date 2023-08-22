@@ -20,7 +20,7 @@ public class BlockedProviderParentController : ControllerBase
     private readonly IBlockedProviderParentService blockedProviderParentService;
     private readonly IUserService userService;
     private readonly IProviderService providerService;
-    private string currentUserId;
+    private readonly string currentUserId;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BlockedProviderParentController"/> class.
