@@ -401,6 +401,8 @@ public class ProviderControllerTests
     [Ignore("Until mock HttpContext.GetTokenAsync()")]
     public async Task Block_ReturnsProviderBlockDto_IfProviderExist()
     {
+        // TODO: it's nessesary to mock HttpContext.GetTokenAsync() to run this test.
+
         // Arrange
         var providerBlockDto = new ProviderBlockDto()
         {
@@ -431,6 +433,8 @@ public class ProviderControllerTests
     [Ignore("Until mock HttpContext.GetTokenAsync()")]
     public async Task Block_ReturnsNotFoundResult_IfIdDoesNotExist()
     {
+        // TODO: it's needed to mock HttpContext.GetTokenAsync() to run this test.
+
         // Arrange
         var nonExistentProviderId = Guid.NewGuid();
         var providerBlockDto = new ProviderBlockDto()
