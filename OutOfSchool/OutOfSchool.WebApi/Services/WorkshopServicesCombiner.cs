@@ -247,7 +247,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     {
         var recipientIds = new List<string>();
 
-        var favoriteWorkshopUsersIds = await favoriteRepository.Get(where: x => !x.IsDeleted && x.WorkshopId == objectId)
+        var favoriteWorkshopUsersIds = await favoriteRepository.Get(whereExpression: x => !x.IsDeleted && x.WorkshopId == objectId)
             .Select(x => x.UserId)
             .ToListAsync()
             .ConfigureAwait(false);
@@ -256,7 +256,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
             x => x.Status != ApplicationStatus.Left
                  && x.WorkshopId == objectId;
 
-        var appliedUsersIds = await applicationRepository.Get(where: predicate)
+        var appliedUsersIds = await applicationRepository.Get(whereExpression: predicate)
             .Select(x => x.Parent.UserId)
             .ToListAsync()
             .ConfigureAwait(false);

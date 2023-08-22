@@ -88,7 +88,7 @@ public class FavoriteService : IFavoriteService
         logger.LogInformation($"Getting Favorites by User started. Looking UserId = {userId}.");
 
         var favorites = await favoriteRepository
-            .Get(where: x => !x.IsDeleted && x.UserId == userId && Provider.ValidProviderStatuses.Contains(x.Workshop.Provider.Status))
+            .Get(whereExpression: x => !x.IsDeleted && x.UserId == userId && Provider.ValidProviderStatuses.Contains(x.Workshop.Provider.Status))
             .Select(x => x.WorkshopId)
             .ToListAsync()
             .ConfigureAwait(false);

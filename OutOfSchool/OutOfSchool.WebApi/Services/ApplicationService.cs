@@ -141,13 +141,13 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         var sortPredicate = SortExpressionBuild(filter);
 
-        var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
+        var totalAmount = await applicationRepository.Count(whereExpression: predicate).ConfigureAwait(false);
 
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
             includeProperties: "Workshop,Child,Parent",
-            where: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            whereExpression: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
         logger.LogInformation("There are {Count} applications in the Db", applications.Count);
 
@@ -175,13 +175,13 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         var sortPredicate = SortExpressionBuild(filter);
 
-        var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
+        var totalAmount = await applicationRepository.Count(whereExpression: predicate).ConfigureAwait(false);
 
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
             includeProperties: "Workshop,Child,Parent",
-            where: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            whereExpression: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
         logger.LogInformation("There are {Count} applications in the Db with Parent Id = {Id}", applications.Count, id);
 
@@ -239,12 +239,12 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         var sortPredicate = SortExpressionBuild(filter);
 
-        var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
+        var totalAmount = await applicationRepository.Count(whereExpression: predicate).ConfigureAwait(false);
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
             includeProperties: "Workshop,Child,Parent",
-            where: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            whereExpression: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
         logger.LogInformation(
             "There are {Count} applications in the Db with Workshop Id = {Id}",
@@ -273,18 +273,18 @@ public class ApplicationService : IApplicationService, INotificationReciever
         filter ??= new ApplicationFilter();
 
         Expression<Func<Workshop, bool>> workshopFilter = w => w.ProviderId == id;
-        var workshops = workshopRepository.Get(where: workshopFilter).Select(w => w.Id);
+        var workshops = workshopRepository.Get(whereExpression: workshopFilter).Select(w => w.Id);
 
         var predicate = PredicateBuild(filter, a => workshops.Contains(a.WorkshopId));
 
         var sortPredicate = SortExpressionBuild(filter);
 
-        var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
+        var totalAmount = await applicationRepository.Count(whereExpression: predicate).ConfigureAwait(false);
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
             includeProperties: "Workshop,Child,Parent",
-            where: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            whereExpression: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
         logger.LogInformation(
             "There are {Count} applications in the Db with Provider Id = {Id}",
@@ -333,18 +333,18 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         Expression<Func<Workshop, bool>> workshopFilter =
             w => isDeputy ? w.ProviderId == providerId : workshopIds.Contains(w.Id);
-        var workshops = workshopRepository.Get(where: workshopFilter).Select(w => w.Id);
+        var workshops = workshopRepository.Get(whereExpression: workshopFilter).Select(w => w.Id);
 
         var predicate = PredicateBuild(filter, a => workshops.Contains(a.WorkshopId));
         var sortPredicate = SortExpressionBuild(filter);
 
-        var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
+        var totalAmount = await applicationRepository.Count(whereExpression: predicate).ConfigureAwait(false);
 
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
             includeProperties: "Workshop,Child,Parent",
-            where: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            whereExpression: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
         logger.LogInformation(
             "There are {Count} applications in the Db with AdminProvider Id = {UserId}",
@@ -857,7 +857,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
             if (Application.ValidApplicationStatuses.Contains(applicationDto.Status))
             {
-                var providerOwnership = await workshopRepository.GetByFilter(predicate: w => w.Id == currentApplication.WorkshopId && w.Provider.Ownership != OwnershipType.State, includeProperties: "Provider");
+                var providerOwnership = await workshopRepository.GetByFilter(whereExpression: w => w.Id == currentApplication.WorkshopId && w.Provider.Ownership != OwnershipType.State, includeProperties: "Provider");
 
                 if (providerOwnership.Any())
                 {

@@ -72,7 +72,7 @@ public class AchievementService : IAchievementService
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: "Children",
-                where: predicate)
+                whereExpression: predicate)
             .ToListAsync()
             .ConfigureAwait(false);
 

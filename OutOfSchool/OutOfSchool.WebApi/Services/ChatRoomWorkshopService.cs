@@ -76,7 +76,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
 
         try
         {
-            var query = roomRepository.Get(includeProperties: $"{nameof(ChatRoomWorkshop.ChatMessages)}", where: x => x.Id == id);
+            var query = roomRepository.Get(includeProperties: $"{nameof(ChatRoomWorkshop.ChatMessages)}", whereExpression: x => x.Id == id);
             var chatRooms = await query.ToListAsync().ConfigureAwait(false);
             var chatRoom = chatRooms.Single();
 
@@ -104,7 +104,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         try
         {
             var chatRooms = await roomRepository.GetByFilter(
-                    predicate: x => x.Id == id,
+                    whereExpression: x => x.Id == id,
                     includeProperties: $"{nameof(ChatRoomWorkshop.Parent)},{nameof(ChatRoomWorkshop.Workshop)}")
                 .ConfigureAwait(false);
 
@@ -127,7 +127,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         try
         {
             var rooms = (await roomRepository.GetByFilter(
-                predicate: x => x.ParentId == parentId && x.Workshop.ProviderId == providerId)
+                whereExpression: x => x.ParentId == parentId && x.Workshop.ProviderId == providerId)
                 .ConfigureAwait(false)).Select(x => mapper.Map<ChatRoomWorkshopDto>(x)).ToList();
 
             if (rooms.Count > 0)
@@ -194,7 +194,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         try
         {
             var room = (await roomRepository.GetByFilter(
-                predicate: x => x.ParentId == parentId && x.WorkshopId == workshopId)
+                whereExpression: x => x.ParentId == parentId && x.WorkshopId == workshopId)
                 .ConfigureAwait(false)).SingleOrDefault();
 
             if (room is null)
@@ -465,7 +465,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         var filterPredicate = PredicateBuild(filter, userId);
 
         var rooms = roomRepository.Get(
-                where: filterPredicate);
+                whereExpression: filterPredicate);
 
         var roomsCount = rooms.Count();
 

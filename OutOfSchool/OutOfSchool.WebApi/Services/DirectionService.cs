@@ -141,11 +141,11 @@ public class DirectionService : IDirectionService
         };
 
         var directions = await repository
-            .Get(skip: filter.From, take: filter.Size, where: predicate, orderBy: sortExpression)
+            .Get(skip: filter.From, take: filter.Size, whereExpression: predicate, orderBy: sortExpression)
             .ToListAsync();
 
         var workshopCount = await repositoryWorkshop
-            .Get(where: workshopCountFilter
+            .Get(whereExpression: workshopCountFilter
                 .And(w => w.InstitutionHierarchy.Directions.Any(d => directions.Contains(d))))
             .SelectMany(w => w.InstitutionHierarchy.Directions)
             .GroupBy(d => d.Id)
@@ -218,7 +218,7 @@ public class DirectionService : IDirectionService
 
     private void DirectionValidation(DirectionDto dto)
     {
-        if (repository.Get(where: x => x.Title == dto.Title).Any())
+        if (repository.Get(whereExpression: x => x.Title == dto.Title).Any())
         {
             throw new ArgumentException(localizer["There is already a Direction with such a data."]);
         }

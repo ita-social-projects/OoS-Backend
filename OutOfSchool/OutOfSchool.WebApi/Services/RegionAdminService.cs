@@ -193,7 +193,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: "Institution,User,CATOTTG",
-                where: filterPredicate,
+                whereExpression: filterPredicate,
                 orderBy: sortExpression,
                 asNoTracking: true)
             .ToListAsync()

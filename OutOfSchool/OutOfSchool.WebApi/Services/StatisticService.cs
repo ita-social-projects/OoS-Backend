@@ -67,7 +67,7 @@ public class StatisticService : IStatisticService
     public async Task<IEnumerable<DirectionDto>> GetPopularDirectionsFromDatabase(int limit, long catottgId)
     {
         var workshops = workshopRepository.Get(
-            where: w => !w.IsBlocked && Provider.ValidProviderStatuses.Contains(w.Provider.Status));
+            whereExpression: w => !w.IsBlocked && Provider.ValidProviderStatuses.Contains(w.Provider.Status));
 
         var applications = applicationRepository.Get();
 
@@ -164,7 +164,7 @@ public class StatisticService : IStatisticService
         var workshops = workshopRepository
             .Get(
                 includeProperties: $"{nameof(Address)},{nameof(InstitutionHierarchy)}",
-                where: w => !w.IsBlocked && Provider.ValidProviderStatuses.Contains(w.Provider.Status));
+                whereExpression: w => !w.IsBlocked && Provider.ValidProviderStatuses.Contains(w.Provider.Status));
 
         if (catottgId > 0)
         {
