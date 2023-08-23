@@ -135,14 +135,14 @@ public class WorkshopController : ControllerBase
     /// <param name="id">Provider's id.</param>
     /// <param name="filter">Filter to get specified portion of workshop view cards for specified provider.
     /// Id of the excluded workshop could be specified.</param>
-    /// <returns><see cref="SearchResult{WorkshopBaseCard}"/>, or no content.</returns>
+    /// <returns><see cref="SearchResult{WorkshopProviderViewCard}"/>, or no content.</returns>
     /// <response code="200">The list of found entities by given Id.</response>
     /// <response code="204">No entity with given Id was found.</response>
     /// <response code="400">Provider id is empty.</response>
     /// <response code="500">If any server error occures. For example: Id was less than one.</response>
     [AllowAnonymous]
     [HttpGet("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopBaseCard>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopProviderViewCard>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -153,7 +153,7 @@ public class WorkshopController : ControllerBase
             return BadRequest("Provider id is empty.");
         }
 
-        var workshopCards = await combinedWorkshopService.GetByProviderId<WorkshopBaseCard>(id, filter)
+        var workshopCards = await combinedWorkshopService.GetByProviderId<WorkshopProviderViewCard>(id, filter)
             .ConfigureAwait(false);
 
         if (workshopCards.TotalAmount == 0)
