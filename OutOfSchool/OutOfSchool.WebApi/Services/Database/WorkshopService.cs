@@ -258,8 +258,7 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<T>> GetByProviderId<T>(Guid id, ExcludeIdFilter filter)
-        where T : WorkshopProviderViewCard
+    public async Task<SearchResult<WorkshopProviderViewCard>> GetByProviderId(Guid id, ExcludeIdFilter filter)
     {
         logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
@@ -284,7 +283,7 @@ public class WorkshopService : IWorkshopService
             ? $"There aren't Workshops for Provider with Id = {id}."
             : $"From Workshop table were successfully received {workshops.Count} records.");
 
-        var workshopBaseCards = mapper.Map<List<T>>(workshops).ToList();
+        var workshopBaseCards = mapper.Map<List<WorkshopProviderViewCard>>(workshops).ToList();
 
         if (workshopBaseCards.Any())
         {
@@ -296,10 +295,10 @@ public class WorkshopService : IWorkshopService
             }
         }
 
-        var result = new SearchResult<T>()
+        var result = new SearchResult<WorkshopProviderViewCard>()
         {
             TotalAmount = workshopBaseCardsCount,
-            Entities = await GetWorkshopsWithAverageRating<T>(workshopBaseCards).ConfigureAwait(false),
+            Entities = await GetWorkshopsWithAverageRating<WorkshopProviderViewCard>(workshopBaseCards).ConfigureAwait(false),
         };
 
         return result;

@@ -153,7 +153,7 @@ public class WorkshopController : ControllerBase
             return BadRequest("Provider id is empty.");
         }
 
-        var workshopCards = await combinedWorkshopService.GetByProviderId<WorkshopProviderViewCard>(id, filter)
+        var workshopCards = await combinedWorkshopService.GetByProviderId(id, filter)
             .ConfigureAwait(false);
 
         if (workshopCards.TotalAmount == 0)
@@ -183,7 +183,7 @@ public class WorkshopController : ControllerBase
             return BadRequest("Provider id is empty.");
         }
 
-        var workshopProviderViewCards = await combinedWorkshopService.GetByProviderId<WorkshopProviderViewCard>(id, filter).ConfigureAwait(false);
+        var workshopProviderViewCards = await combinedWorkshopService.GetByProviderId(id, filter).ConfigureAwait(false);
 
         if (workshopProviderViewCards.TotalAmount == 0)
         {
