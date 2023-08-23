@@ -66,7 +66,7 @@ public class CurrentUserService : ICurrentUserService
         IsInRole(Role.Provider) &&
         (IsInSubRole(Subrole.ProviderDeputy) || IsInSubRole(Subrole.ProviderAdmin));
 
-    public bool IsAdmin() => IsInRole(Role.TechAdmin) || IsInRole(Role.MinistryAdmin) || IsInRole(Role.RegionAdmin);
+    public bool IsAdmin() => IsInRole(Role.TechAdmin) || IsInRole(Role.MinistryAdmin) || IsInRole(Role.RegionAdmin) || IsInRole(Role.AreaAdmin);
 
     public bool IsTechAdmin() => IsInRole(Role.TechAdmin);
 

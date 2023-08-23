@@ -30,6 +30,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
     private readonly IRegionAdminService regionAdminService;
+    private readonly IAreaAdminService areaAdminService;
     private readonly ICodeficatorService codeficatorService;
 
     private readonly string errorNullWorkshopMessage = "Operation failed. Workshop in Application dto is null";
@@ -52,6 +53,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
     /// <param name="currentUserService">Service for managing current user rights.</param>
     /// <param name="ministryAdminService">Service for managing ministry admin rigths.</param>
     /// <param name="regionAdminService">Service for managing region admin rigths.</param>
+    /// <param name="areaAdminService">Service for managing area admin rigths.</param>
     /// <param name="codeficatorService">Codeficator service.</param>
     public ApplicationService(
         IApplicationRepository repository,
@@ -66,6 +68,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService,
+        IAreaAdminService areaAdminService,
         ICodeficatorService codeficatorService)
     {
         applicationRepository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -83,6 +86,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
         this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
+        this.areaAdminService = areaAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
         this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
     }
 
@@ -125,6 +129,28 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
             var subSettlementsIds = await codeficatorService
                 .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+
+            if (subSettlementsIds.Any())
+            {
+                var tempPredicate = PredicateBuilder.False<Application>();
+
+                foreach (var item in subSettlementsIds)
+                {
+                    tempPredicate = tempPredicate.Or(x => x.Workshop.Provider.LegalAddress.CATOTTGId == item);
+                }
+
+                predicate = predicate.And(tempPredicate);
+            }
+        }
+
+        if (currentUserService.IsAreaAdmin())
+        {
+            var areaAdmin = await areaAdminService.GetByUserId(currentUserService.UserId);
+            predicate = predicate
+                .And(p => p.Workshop.InstitutionHierarchy.InstitutionId == areaAdmin.InstitutionId);
+
+            var subSettlementsIds = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
 
             if (subSettlementsIds.Any())
             {
