@@ -43,6 +43,7 @@ public class ApplicationServiceTests
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
+    private Mock<IAreaAdminService> areaAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
 
     private Mock<IOptions<ApplicationsConstraintsConfig>> applicationsConstraintsConfig;
@@ -59,6 +60,7 @@ public class ApplicationServiceTests
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
+        areaAdminServiceMock = new Mock<IAreaAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
 
         logger = new Mock<ILogger<ApplicationService>>();
@@ -85,6 +87,7 @@ public class ApplicationServiceTests
             currentUserServiceMock.Object,
             ministryAdminServiceMock.Object,
             regionAdminServiceMock.Object,
+            areaAdminServiceMock.Object,
             codeficatorServiceMock.Object);
     }
 
@@ -168,6 +171,47 @@ public class ApplicationServiceTests
         regionAdminServiceMock
             .Setup(m => m.GetByUserId(It.IsAny<string>()))
             .Returns(Task.FromResult<RegionAdminDto>(new RegionAdminDto()
+            {
+                InstitutionId = institutionId,
+            }));
+
+        codeficatorServiceMock
+            .Setup(x => x.GetAllChildrenIdsByParentIdAsync(It.IsAny<long>()))
+            .Returns(Task.FromResult((IEnumerable<long>)new List<long> { catottgId }));
+
+        // Act
+        var result = await service.GetAll(new ApplicationFilter());
+
+        // Assert
+        Assert.That(result.Entities.Count, Is.EqualTo(1));
+        Assert.That(result.Entities.FirstOrDefault().Workshop.InstitutionId, Is.EqualTo(institutionId));
+    }
+
+    [Test]
+    public async Task GetApplications_WhenAreaAdminCalled_ShouldReturnApplications()
+    {
+        // Arrange
+        var institutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4");
+        long catottgId = 31737;
+        var applications = WithApplicationsList();
+        SetupGetAllByInstitutionId(applications);
+
+        currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
+        currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(false);
+		currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(false);
+		currentUserServiceMock.Setup(c => c.IsAreaAdmin()).Returns(true);
+        areaAdminServiceMock
+            .Setup(m => m.GetByUserId(It.IsAny<string>()))
+            .Returns(Task.FromResult<AreaAdminDto>(new AreaAdminDto()
+            {
+                InstitutionId = institutionId,
+                CATOTTGId = catottgId,
+            }));
+
+        currentUserServiceMock.Setup(c => c.IsAreaAdmin()).Returns(true);
+        areaAdminServiceMock
+            .Setup(m => m.GetByUserId(It.IsAny<string>()))
+            .Returns(Task.FromResult<AreaAdminDto>(new AreaAdminDto()
             {
                 InstitutionId = institutionId,
             }));
