@@ -610,7 +610,7 @@ public class WorkshopService : IWorkshopService
             .ConfigureAwait(false)).ProviderId;
     }
 
-    public async Task<bool> isBlocked(Guid workshopId)
+    public async Task<bool> IsBlocked(Guid workshopId)
     {
         return (await workshopRepository.GetById(workshopId).ConfigureAwait(false)).IsBlocked;
     }

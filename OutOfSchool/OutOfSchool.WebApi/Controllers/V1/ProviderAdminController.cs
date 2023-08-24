@@ -6,6 +6,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers;
@@ -57,6 +58,11 @@ public class ProviderAdminController : Controller
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
 
+        if (providerAdmin == null)
+        {
+            return BadRequest("ProviderAdmin is null.");
+        }
+
         if (await IsProviderBlocked(providerAdmin.ProviderId).ConfigureAwait(false))
         {
             return StatusCode(403, "Forbidden to create the provider admin at the blocked provider");
@@ -103,6 +109,11 @@ public class ProviderAdminController : Controller
     [HttpPut]
     public async Task<IActionResult> Update(Guid providerId, UpdateProviderAdminDto providerAdminModel)
     {
+        if (providerAdminModel == null)
+        {
+            return BadRequest("ProviderAdmin is null.");
+        }
+
         if (await IsProviderBlocked(providerId).ConfigureAwait(false))
         {
             return StatusCode(403, "Forbidden to update the provider admin at the blocked provider");

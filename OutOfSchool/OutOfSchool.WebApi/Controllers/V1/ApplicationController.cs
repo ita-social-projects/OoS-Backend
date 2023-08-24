@@ -264,19 +264,19 @@ public class ApplicationController : ControllerBase
             return BadRequest("Application is null.");
         }
 
-        if (!ModelState.IsValid)
+        if (await IsWorkshopBlocked(applicationDto.WorkshopId).ConfigureAwait(false))
         {
-            return BadRequest(ModelState);
-        }
-
-        if (await IsWorkshopOrProviderBlocked(applicationDto.WorkshopId).ConfigureAwait(false))
-        {
-            return StatusCode(403, "Forbidden to create the application at the blocked workshop/provider");
+            return StatusCode(403, "Forbidden to create the application at the blocked workshop.");
         }
 
         if (await IsCurrentUserBlocked())
         {
-            return StatusCode(403, "Forbidden to create the application by the blocked provider.");
+            return StatusCode(403, "Forbidden to create the application by the blocked user.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
         }
 
         try
@@ -320,19 +320,19 @@ public class ApplicationController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update(ApplicationUpdate applicationDto)
     {
-        if (await IsWorkshopOrProviderBlocked(applicationDto.WorkshopId).ConfigureAwait(false))
+        if (applicationDto is null)
         {
-            return StatusCode(403, "Forbidden to update the application at the blocked workshop/provider");
+            return BadRequest("Application data is not provided.");
+        }
+
+        if (await IsWorkshopBlocked(applicationDto.WorkshopId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to update the application at the blocked workshop.");
         }
 
         if (await IsCurrentUserBlocked())
         {
-            return StatusCode(403, "Forbidden to update the application by the blocked provider.");
-        }
-
-        if (applicationDto is null)
-        {
-            return BadRequest("Application data is not provided.");
+            return StatusCode(403, "Forbidden to update the application by the blocked user.");
         }
 
         var workshop = await workshopService.GetById(applicationDto.WorkshopId).ConfigureAwait(false);
@@ -395,14 +395,6 @@ public class ApplicationController : ControllerBase
         return await userService.IsBlocked(userId);
     }
 
-    private async Task<bool> IsWorkshopOrProviderBlocked(Guid workshopId)
-    {
-        var isWorkshopBlocked = await workshopService.isBlocked(workshopId).ConfigureAwait(false);
-
-        var providerId = await providerService.GetProviderIdForWorkshopById(workshopId).ConfigureAwait(false);
-
-        var isProviderBlocked = await providerService.IsBlocked(providerId).ConfigureAwait(false);
-
-        return isWorkshopBlocked || isProviderBlocked;
-    }
+    private async Task<bool> IsWorkshopBlocked(Guid workshopId) =>
+        await workshopService.IsBlocked(workshopId).ConfigureAwait(false);
 }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Models.Workshop;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
@@ -251,6 +252,11 @@ public class WorkshopController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(WorkshopDTO dto)
     {
+        if (dto == null)
+        {
+            return BadRequest("Workshop is null.");
+        }
+
         if (await IsProviderBlocked(dto.ProviderId).ConfigureAwait(false))
         {
             return StatusCode(403, "Forbidden to create workshops at blocked providers");
@@ -325,6 +331,11 @@ public class WorkshopController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update(WorkshopDTO dto)
     {
+        if (dto == null)
+        {
+            return BadRequest("Workshop is null.");
+        }
+
         if (await IsProviderBlocked(dto.ProviderId).ConfigureAwait(false))
         {
             return StatusCode(403, "Forbidden to update workshops at blocked providers");
@@ -369,6 +380,11 @@ public class WorkshopController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> UpdateStatus([FromBody] WorkshopStatusDto request)
     {
+        if (request == null)
+        {
+            return BadRequest("WorkshopStatus is null.");
+        }
+
         if (await IsProviderBlocked(Guid.Empty, request.WorkshopId).ConfigureAwait(false))
         {
             return StatusCode(403, "Forbidden to update workshops statuses at blocked providers");

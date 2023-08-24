@@ -151,5 +151,5 @@ public interface IWorkshopService
     /// </summary>
     /// <param name="workshopId">WorkshopId for which we need to get status.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task<bool> isBlocked(Guid workshopId);
+    Task<bool> IsBlocked(Guid workshopId);
 }

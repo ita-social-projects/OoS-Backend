@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Services;
 
@@ -56,6 +57,11 @@ public class BlockedProviderParentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Block(BlockedProviderParentBlockDto blockedProviderParentBlockDto)
     {
+        if (blockedProviderParentBlockDto == null)
+        {
+            return BadRequest("ProviderParent is null.");
+        }
+
         if (await IsProviderBlocked(blockedProviderParentBlockDto.ProviderId).ConfigureAwait(false))
         {
             return StatusCode(403, "Forbidden to block the parent at the blocked provider");
@@ -98,6 +104,11 @@ public class BlockedProviderParentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UnBlock(BlockedProviderParentUnblockDto blockedProviderParentUnblockDto)
     {
+        if (blockedProviderParentUnblockDto == null)
+        {
+            return BadRequest("ProviderParent is null.");
+        }
+
         if (await IsProviderBlocked(blockedProviderParentUnblockDto.ProviderId).ConfigureAwait(false))
         {
             return StatusCode(403, "Forbidden to unblock the parent at the blocked provider");
