@@ -26,6 +26,7 @@ public class WorkshopService : IWorkshopService
 
     private readonly IWorkshopRepository workshopRepository;
     private readonly IEntityRepository<long, DateTimeRange> dateTimeRangeRepository;
+    private readonly IEntityRepository<Guid, ChatRoomWorkshop> roomRepository;
     private readonly ITeacherService teacherService;
     private readonly ILogger<WorkshopService> logger;
     private readonly IMapper mapper;
@@ -50,6 +51,7 @@ public class WorkshopService : IWorkshopService
     public WorkshopService(
         IWorkshopRepository workshopRepository,
         IEntityRepository<long, DateTimeRange> dateTimeRangeRepository,
+        IEntityRepository<Guid, ChatRoomWorkshop> roomRepository,
         ITeacherService teacherService,
         ILogger<WorkshopService> logger,
         IMapper mapper,
@@ -60,6 +62,7 @@ public class WorkshopService : IWorkshopService
     {
         this.workshopRepository = workshopRepository;
         this.dateTimeRangeRepository = dateTimeRangeRepository;
+        this.roomRepository = roomRepository;
         this.teacherService = teacherService;
         this.logger = logger;
         this.mapper = mapper;
