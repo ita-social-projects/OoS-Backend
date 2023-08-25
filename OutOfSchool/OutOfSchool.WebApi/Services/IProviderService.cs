@@ -90,12 +90,12 @@ public interface IProviderService
     /// </summary>
     /// <param name="providerBlockDto">Provider to block/unblock.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
-    Task<ResponseDto> Block(ProviderBlockDto providerBlockDto);
+    Task<ResponseDto> Block(ProviderBlockDto providerBlockDto, string token = default);
 
     /// <summary>
     /// Get blocked/unblocked status for provider.
     /// </summary>
     /// <param name="providerId">Key of the Provider entity in the table.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
-    Task<bool> IsProviderBlocked(Guid providerId);
+    Task<bool> IsBlocked(Guid providerId);
 }

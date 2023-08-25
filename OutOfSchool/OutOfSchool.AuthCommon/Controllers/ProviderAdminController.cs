@@ -82,6 +82,17 @@ public class ProviderAdminController : Controller
             .BlockProviderAdminAsync(providerAdminId, userId, Request.Headers["X-Request-ID"], isBlocked);
     }
 
+    [HttpPut("{providerId}/{isBlocked}")]
+    [HasPermission(Permissions.ProviderBlock)]
+    public async Task<ResponseDto> BlockByProvider(Guid providerId, bool isBlocked)
+    {
+        logger.LogDebug($"Received request " +
+                        $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
+
+        return await providerAdminService
+            .BlockProviderAdminsAndDeputiesByProviderAsync(providerId, userId, Request.Headers["X-Request-ID"], isBlocked);
+    }
+
     [HttpPut("{providerAdminId}")]
     [HasPermission(Permissions.ProviderRemove)]
     public async Task<ResponseDto> Reinvite(string providerAdminId)

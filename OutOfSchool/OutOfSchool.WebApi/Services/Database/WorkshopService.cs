@@ -610,6 +610,11 @@ public class WorkshopService : IWorkshopService
             .ConfigureAwait(false)).ProviderId;
     }
 
+    public async Task<bool> IsBlocked(Guid workshopId)
+    {
+        return (await workshopRepository.GetById(workshopId).ConfigureAwait(false)).IsBlocked;
+    }
+
     private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) =>
         ModelValidationHelper.ValidateExcludedIdFilter(filter);
 

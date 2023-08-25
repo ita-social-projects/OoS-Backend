@@ -27,6 +27,12 @@ public interface IProviderAdminService
         string requestId,
         bool isBlocked);
 
+    Task<ResponseDto> BlockProviderAdminsAndDeputiesByProviderAsync(
+        Guid providerId,
+        string userId,
+        string requestId,
+        bool isBlocked);
+
     Task<ResponseDto> ReinviteProviderAdminAsync(
         string providerAdminId,
         string userId,

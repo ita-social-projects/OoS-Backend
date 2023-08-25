@@ -25,4 +25,11 @@ public interface IUserService
     /// <param name="dto">User entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     Task<ShortUserDto> Update(ShortUserDto dto);
+
+    /// <summary>
+    /// Check if entity is blocked.
+    /// </summary>
+    /// <param name="id">Key in the table.</param>
+    /// <returns><see cref="Task{TResult}"/>.</returns>
+    Task<bool> IsBlocked(string id);
 }

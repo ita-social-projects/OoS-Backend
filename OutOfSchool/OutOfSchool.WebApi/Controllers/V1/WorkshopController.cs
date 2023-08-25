@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Models.Workshop;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
@@ -19,6 +20,7 @@ public class WorkshopController : ControllerBase
     private readonly IWorkshopServicesCombiner combinedWorkshopService;
     private readonly IProviderService providerService;
     private readonly IProviderAdminService providerAdminService;
+    private readonly IUserService userService;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly AppDefaultsConfig options;
 
@@ -28,12 +30,14 @@ public class WorkshopController : ControllerBase
     /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
     /// <param name="providerService">Service for Provider model.</param>
     /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
+    /// <param name="userService">Service for operations with users.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="options">Application default values.</param>
     public WorkshopController(
         IWorkshopServicesCombiner combinedWorkshopService,
         IProviderService providerService,
         IProviderAdminService providerAdminService,
+        IUserService userService,
         IStringLocalizer<SharedResource> localizer,
         IOptions<AppDefaultsConfig> options)
     {
@@ -41,6 +45,7 @@ public class WorkshopController : ControllerBase
         this.combinedWorkshopService = combinedWorkshopService;
         this.providerAdminService = providerAdminService;
         this.providerService = providerService;
+        this.userService = userService;
         this.options = options.Value;
     }
 
@@ -247,9 +252,19 @@ public class WorkshopController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(WorkshopDTO dto)
     {
-        if (await providerService.IsProviderBlocked(dto.ProviderId).ConfigureAwait(false))
+        if (dto == null)
         {
-            return StatusCode(403, "It is forbidden to create workshops at blocked providers");
+            return BadRequest("Workshop is null.");
+        }
+
+        if (await IsProviderBlocked(dto.ProviderId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to create workshops at blocked providers");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to create the workshop by the blocked provider.");
         }
 
         if (!ModelState.IsValid)
@@ -316,9 +331,19 @@ public class WorkshopController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update(WorkshopDTO dto)
     {
-        if (await providerService.IsProviderBlocked(dto.ProviderId).ConfigureAwait(false))
+        if (dto == null)
         {
-            return StatusCode(403, "It is forbidden to update workshops at blocked providers");
+            return BadRequest("Workshop is null.");
+        }
+
+        if (await IsProviderBlocked(dto.ProviderId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to update workshops at blocked providers");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to update the workshop by the blocked provider.");
         }
 
         if (!ModelState.IsValid)
@@ -355,11 +380,19 @@ public class WorkshopController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> UpdateStatus([FromBody] WorkshopStatusDto request)
     {
-        var providerId = await providerService.GetProviderIdForWorkshopById(request.WorkshopId).ConfigureAwait(false);
-
-        if (await providerService.IsProviderBlocked(providerId).ConfigureAwait(false))
+        if (request == null)
         {
-            return StatusCode(403, "It is forbidden to update workshops statuses at blocked providers");
+            return BadRequest("WorkshopStatus is null.");
+        }
+
+        if (await IsProviderBlocked(Guid.Empty, request.WorkshopId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to update workshops statuses at blocked providers");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to update the workshop by the blocked provider.");
         }
 
         var workshop = await combinedWorkshopService.GetById(request.WorkshopId).ConfigureAwait(false);
@@ -402,18 +435,21 @@ public class WorkshopController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var providerId = await providerService.GetProviderIdForWorkshopById(id).ConfigureAwait(false);
-
-        if (await providerService.IsProviderBlocked(providerId).ConfigureAwait(false))
-        {
-            return StatusCode(403, "It is forbidden to delete workshops at blocked providers");
-        }
-
         var workshop = await combinedWorkshopService.GetById(id).ConfigureAwait(false);
 
         if (workshop is null)
         {
             return NoContent();
+        }
+
+        if (await IsProviderBlocked(workshop.ProviderId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to delete workshops at blocked providers");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to delete the workshop by the blocked provider.");
         }
 
         var userHasRights = await this.IsUserProvidersOwnerOrAdmin(workshop.ProviderId).ConfigureAwait(false);
@@ -457,5 +493,21 @@ public class WorkshopController : ControllerBase
         }
 
         return false;
+    }
+
+    private async Task<bool> IsCurrentUserBlocked()
+    {
+        var userId = GettingUserProperties.GetUserId(User);
+
+        return await userService.IsBlocked(userId);
+    }
+
+    private async Task<bool> IsProviderBlocked(Guid providerId, Guid workshopId = default)
+    {
+        providerId = providerId == Guid.Empty ?
+            await providerService.GetProviderIdForWorkshopById(workshopId).ConfigureAwait(false) :
+            providerId;
+
+        return await providerService.IsBlocked(providerId).ConfigureAwait(false);
     }
 }

@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.Services.Models;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
+using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -16,6 +19,7 @@ public class ApplicationController : ControllerBase
     private readonly IProviderService providerService;
     private readonly IProviderAdminService providerAdminService;
     private readonly IWorkshopService workshopService;
+    private readonly IUserService userService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationController"/> class.
@@ -24,16 +28,19 @@ public class ApplicationController : ControllerBase
     /// <param name="providerService">Service for Provider model.</param>
     /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
     /// <param name="workshopService">Service for Workshop model.</param>
+    /// <param name="userService">Service for operations with users.</param>
     public ApplicationController(
         IApplicationService applicationService,
         IProviderService providerService,
         IProviderAdminService providerAdminService,
-        IWorkshopService workshopService)
+        IWorkshopService workshopService,
+        IUserService userService)
     {
         this.applicationService = applicationService;
         this.providerService = providerService;
         this.providerAdminService = providerAdminService;
         this.workshopService = workshopService;
+        this.userService = userService;
     }
 
     /// <summary>
@@ -257,6 +264,16 @@ public class ApplicationController : ControllerBase
             return BadRequest("Application is null.");
         }
 
+        if (await IsWorkshopBlocked(applicationDto.WorkshopId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to create the application at the blocked workshop.");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to create the application by the blocked user.");
+        }
+
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -306,6 +323,16 @@ public class ApplicationController : ControllerBase
         if (applicationDto is null)
         {
             return BadRequest("Application data is not provided.");
+        }
+
+        if (await IsWorkshopBlocked(applicationDto.WorkshopId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to update the application at the blocked workshop.");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to update the application by the blocked user.");
         }
 
         var workshop = await workshopService.GetById(applicationDto.WorkshopId).ConfigureAwait(false);
@@ -360,4 +387,14 @@ public class ApplicationController : ControllerBase
     {
         return Ok(await applicationService.AllowedToReview(parentId, workshopId).ConfigureAwait(false));
     }
+
+    private async Task<bool> IsCurrentUserBlocked()
+    {
+        var userId = GettingUserProperties.GetUserId(User);
+
+        return await userService.IsBlocked(userId);
+    }
+
+    private async Task<bool> IsWorkshopBlocked(Guid workshopId) =>
+        await workshopService.IsBlocked(workshopId).ConfigureAwait(false);
 }

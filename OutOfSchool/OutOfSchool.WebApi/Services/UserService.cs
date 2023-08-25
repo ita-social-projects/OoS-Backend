@@ -99,4 +99,20 @@ public class UserService : IUserService
             throw;
         }
     }
+
+    public async Task<bool> IsBlocked(string id)
+    {
+        logger.LogInformation("Checking if the User is blocked was started. Getting user by Id = {id}.", id);
+
+        var user = await repository.GetById(id).ConfigureAwait(false);
+
+        if (user is null)
+        {
+            throw new ArgumentException(localizer["There is no User in the Db with such an id"], nameof(id));
+        }
+
+        logger.LogInformation("Successfully got the User with Id = {id}.", id);
+
+        return user.IsBlocked;
+    }
 }

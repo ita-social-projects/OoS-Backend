@@ -31,6 +31,7 @@ public class ApplicationControllerTests
     private Mock<IWorkshopService> workshopService;
     private Mock<IProviderService> providerService;
     private Mock<IProviderAdminService> providerAdminService;
+    private Mock<IUserService> userService;
 
     private string userId;
     private Guid providerId;
@@ -50,6 +51,7 @@ public class ApplicationControllerTests
         workshopService = new Mock<IWorkshopService>();
         providerService = new Mock<IProviderService>();
         providerAdminService = new Mock<IProviderAdminService>();
+        userService = new Mock<IUserService>();
 
         userId = Guid.NewGuid().ToString();
 
@@ -61,7 +63,8 @@ public class ApplicationControllerTests
             applicationService.Object,
             providerService.Object,
             providerAdminService.Object,
-            workshopService.Object)
+            workshopService.Object,
+            userService.Object)
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContext.Object },
         };
