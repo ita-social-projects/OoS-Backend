@@ -86,7 +86,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
         this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
-        this.areaAdminService = areaAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
+        this.areaAdminService = areaAdminService ?? throw new ArgumentNullException(nameof(areaAdminService));
         this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
     }
 
