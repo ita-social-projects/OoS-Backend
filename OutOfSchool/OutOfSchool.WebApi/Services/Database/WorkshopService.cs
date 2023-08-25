@@ -3,6 +3,7 @@ using AutoMapper;
 using H3Lib;
 using H3Lib.Extensions;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.WebApi.Common;
@@ -264,21 +265,79 @@ public class WorkshopService : IWorkshopService
             filter.ExcludedId == null
                 ? (x.ProviderId == id)
                 : (x.ProviderId == id && x.Id != filter.ExcludedId)).ConfigureAwait(false);
-        var workshops = await workshopRepository.Get(
+
+        var workshops = workshopRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: includingPropertiesForMappingDtoModel,
                 whereExpression: x => filter.ExcludedId == null
                     ? (x.ProviderId == id)
-                    : (x.ProviderId == id && x.Id != filter.ExcludedId))
-            .ToListAsync()
-            .ConfigureAwait(false);
+                    : (x.ProviderId == id && x.Id != filter.ExcludedId));
 
-        logger.LogInformation(!workshops.Any()
+        var chatrooms = roomRepository.Get(
+            includeProperties: $"{nameof(ChatRoomWorkshop.ChatMessages)}",
+            where: x => x.ChatMessages.Where(x => x.ReadDateTime == null && !x.SenderRoleIsProvider).Any());
+
+        var workshopsWithUnreadMessages = workshops.Join(
+            chatrooms,
+            w => w.Id,
+            c => c.WorkshopId,
+            (w, c) => new
+            {
+                w.Id,
+                w.Title,
+                w.Phone,
+                w.Email,
+                w.Website,
+                w.Facebook,
+                w.Instagram,
+                w.MinAge,
+                w.MaxAge,
+                w.CompetitiveSelection,
+                w.CompetitiveSelectionDescription,
+                w.Price,
+                w.WorkshopDescriptionItems,
+                w.WithDisabilityOptions,
+                w.DisabilityOptionsDesc,
+                w.CoverImageId,
+                w.ProviderTitle,
+                w.ProviderOwnership,
+                w.Keywords,
+                w.PayRate,
+                w.ProviderId,
+                w.AddressId,
+                w.InstitutionHierarchyId,
+                w.Status,
+                w.AvailableSeats,
+                w.Provider,
+                w.InstitutionHierarchy,
+                w.Address,
+                w.ProviderAdmins,
+                w.Teachers,
+                w.Applications,
+                w.DateTimeRanges,
+                w.ChatRooms,
+                w.Images,
+                w.IsBlocked,
+                UnreadMessages = c.ChatMessages.Count,
+            });
+
+        var workshopsUnread = await workshopsWithUnreadMessages.ToListAsync().ConfigureAwait(false);
+        var workshops2 = await workshops.ToListAsync().ConfigureAwait(false);
+
+        if (workshopsUnread.Any())
+        {
+            foreach (var workshop in workshopsUnread)
+            {
+                logger.LogInformation($"WorkshopId: {workshop.Id}, UnreadMessages: {workshop.UnreadMessages}");
+            }
+        }
+
+        logger.LogInformation(!workshops2.Any()
             ? $"There aren't Workshops for Provider with Id = {id}."
-            : $"From Workshop table were successfully received {workshops.Count} records.");
+            : $"From Workshop table were successfully received {workshops2.Count} records.");
 
-        var workshopBaseCards = mapper.Map<List<T>>(workshops).ToList();
+        var workshopBaseCards = mapper.Map<List<T>>(workshops2).ToList();
         var result = new SearchResult<T>()
         {
             TotalAmount = workshopBaseCardsCount,
