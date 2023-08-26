@@ -1,6 +1,5 @@
 using System.Text.Json.Serialization;
 using AutoMapper;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.SignalR;
 using OpenIddict.Validation.AspNetCore;
@@ -81,52 +80,29 @@ public static class Startup
 
         services.Configure<AppDefaultsConfig>(configuration.GetSection(AppDefaultsConfig.Name));
         var identityConfig = configuration
-            .GetSection(IdentityServerConfig.Name)
-            .Get<IdentityServerConfig>();
-        services.Configure<IdentityServerConfig>(configuration.GetSection(IdentityServerConfig.Name));
+            .GetSection(AuthorizationServerConfig.Name)
+            .Get<AuthorizationServerConfig>();
+        services.Configure<AuthorizationServerConfig>(configuration.GetSection(AuthorizationServerConfig.Name));
         services.Configure<ProviderAdminConfig>(configuration.GetSection(ProviderAdminConfig.Name));
         services.Configure<CommunicationConfig>(configuration.GetSection(CommunicationConfig.Name));
         services.Configure<GeocodingConfig>(configuration.GetSection(GeocodingConfig.Name));
         services.Configure<ParentConfig>(configuration.GetSection(ParentConfig.Name));
 
         services.AddLocalization(options => options.ResourcesPath = "Resources");
-        if (identityConfig.EnableOpenIdDict)
-        {
-            services.AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
-            services.AddOpenIddict()
-                .AddValidation(options =>
-                {
-                    options.SetIssuer(identityConfig.Authority);
-                    options.AddAudiences(identityConfig.ClientId);
-                    options.UseIntrospection()
-                        .SetClientId(identityConfig.ClientId)
-                        .SetClientSecret(identityConfig.ClientSecret);
 
-                    options.UseSystemNetHttp();
-                    options.UseAspNetCore();
-                });
-        }
-        else
-        {
-            services.AddAuthentication(options =>
-                {
-                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                })
-                .AddJwtBearer(options =>
-                {
-                    options.Authority = identityConfig.Authority.AbsoluteUri;
-                    options.Audience = identityConfig.ApiName;
-                    options.RequireHttpsMetadata = false;
-                    options.TokenValidationParameters.ValidAudiences = new[] {identityConfig.ApiName};
-                    options.TokenValidationParameters.NameClaimType = IdentityResourceClaimsTypes.Sub;
-                    options.TokenValidationParameters.RoleClaimType = IdentityResourceClaimsTypes.Role;
-                    options.SaveToken = true;
+        services.AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+        services.AddOpenIddict()
+            .AddValidation(options =>
+            {
+                options.SetIssuer(identityConfig.Authority);
+                options.AddAudiences(identityConfig.ClientId);
+                options.UseIntrospection()
+                    .SetClientId(identityConfig.ClientId)
+                    .SetClientSecret(identityConfig.ClientSecret);
 
-                    // Disable mapping because OpenIdDict does can't re-create it :(
-                    options.MapInboundClaims = false;
-                });
-        }
+                options.UseSystemNetHttp();
+                options.UseAspNetCore();
+            });
 
         services.AddCors(confg =>
             confg.AddPolicy(

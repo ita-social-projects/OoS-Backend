@@ -1,9 +1,8 @@
 <Project>
     <PropertyGroup>
         <BaseVersion>6.0.0</BaseVersion>
-        <EFCoreVersion>6.0.12</EFCoreVersion>
-        <IdentityServerVersion>4.1.1</IdentityServerVersion>
-        <OpenIdDictVersion>4.0.0</OpenIdDictVersion>
+        <EFCoreVersion>6.0.16</EFCoreVersion>
+        <OpenIdDictVersion>4.7.0</OpenIdDictVersion>
         <SwaggerVersion>6.3.1</SwaggerVersion>
         <QuartzVersion>3.5.0</QuartzVersion>
     </PropertyGroup>
@@ -40,15 +39,10 @@
         <PackageVersion Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="6.0.9"/>
         <!--Identity-->
         <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(EFCoreVersion)"/>
-        <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.18" />
         <PackageVersion Include="IdentityModel" Version="6.1.0"/>
-        <PackageVersion Include="IdentityServer4" Version="$(IdentityServerVersion)"/>
-        <PackageVersion Include="IdentityServer4.AspNetIdentity" Version="$(IdentityServerVersion)"/>
-        <PackageVersion Include="IdentityServer4.EntityFramework" Version="$(IdentityServerVersion)"/>
         <PackageVersion Include="Microsoft.Extensions.Identity.Core" Version="$(EFCoreVersion)"/>
-        <!-- this is also used in Openiddict -->
+        <!-- TODO: check if this dep is needed -->
         <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="6.25.1"/>
-        <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="6.25.1"/>
         <!--OpenID Dict-->
         <PackageVersion Include="OpenIddict.AspNetCore" Version="$(OpenIdDictVersion)" />
         <PackageVersion Include="OpenIddict.EntityFrameworkCore" Version="$(OpenIdDictVersion)" />
