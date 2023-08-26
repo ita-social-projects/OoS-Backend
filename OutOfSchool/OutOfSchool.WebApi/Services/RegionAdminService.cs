@@ -12,7 +12,7 @@ namespace OutOfSchool.WebApi.Services;
 
 public class RegionAdminService : CommunicationService, IRegionAdminService
 {
-    private readonly IdentityServerConfig identityServerConfig;
+    private readonly AuthorizationServerConfig authorizationServerConfig;
     private readonly IRegionAdminRepository regionAdminRepository;
     private readonly IEntityRepository<string, User> userRepository;
     private readonly IMapper mapper;
@@ -21,7 +21,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
 
     public RegionAdminService(
         IHttpClientFactory httpClientFactory,
-        IOptions<IdentityServerConfig> identityServerConfig,
+        IOptions<AuthorizationServerConfig> identityServerConfig,
         IOptions<CommunicationConfig> communicationConfig,
         IRegionAdminRepository regionAdminRepository,
         ILogger<RegionAdminService> logger,
@@ -37,7 +37,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         ArgumentNullException.ThrowIfNull(mapper);
         ArgumentNullException.ThrowIfNull(ministryAdminService);
 
-        this.identityServerConfig = identityServerConfig.Value;
+        this.authorizationServerConfig = identityServerConfig.Value;
         this.regionAdminRepository = regionAdminRepository;
         this.userRepository = userRepository;
         this.mapper = mapper;
@@ -93,7 +93,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Post,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateRegionAdmin),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.CreateRegionAdmin),
             Token = token,
             Data = regionAdminBaseDto,
             RequestId = Guid.NewGuid(),
@@ -245,7 +245,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.UpdateRegionAdmin + updateRegionAdminDto.Id),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.UpdateRegionAdmin + updateRegionAdminDto.Id),
             Token = token,
             Data = mapper.Map<RegionAdminBaseDto>(updateRegionAdminDto),
             RequestId = Guid.NewGuid(),
@@ -294,7 +294,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Delete,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.DeleteRegionAdmin + regionAdminId),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.DeleteRegionAdmin + regionAdminId),
             Token = token,
             RequestId = Guid.NewGuid(),
         };
@@ -343,7 +343,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, string.Concat(
+            Url = new Uri(authorizationServerConfig.Authority, string.Concat(
                 CommunicationConstants.BlockRegionAdmin,
                 regionAdminId,
                 "/",
@@ -411,7 +411,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, string.Concat(
+            Url = new Uri(authorizationServerConfig.Authority, string.Concat(
                 CommunicationConstants.ReinviteRegionAdmin,
                 regionAdminId,
                 new PathString("/"))),

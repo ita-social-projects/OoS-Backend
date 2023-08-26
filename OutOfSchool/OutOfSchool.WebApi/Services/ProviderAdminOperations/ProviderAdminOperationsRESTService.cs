@@ -9,7 +9,7 @@ namespace OutOfSchool.WebApi.Services.ProviderAdminOperations;
 /// </summary>
 public class ProviderAdminOperationsRESTService : CommunicationService, IProviderAdminOperationsService
 {
-    private readonly IdentityServerConfig identityServerConfig;
+    private readonly AuthorizationServerConfig authorizationServerConfig;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProviderAdminOperationsRESTService"/> class.
@@ -20,12 +20,12 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
     /// <param name="communicationConfig">CommunicationConfig. For base class.</param>
     public ProviderAdminOperationsRESTService(
         ILogger<ProviderAdminOperationsRESTService> logger,
-        IOptions<IdentityServerConfig> identityServerConfig,
+        IOptions<AuthorizationServerConfig> identityServerConfig,
         IHttpClientFactory httpClientFactory,
         IOptions<CommunicationConfig> communicationConfig)
         : base(httpClientFactory, communicationConfig.Value, logger)
     {
-        this.identityServerConfig = identityServerConfig.Value;
+        this.authorizationServerConfig = identityServerConfig.Value;
     }
 
     /// <inheritdoc/>
@@ -37,7 +37,7 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Post,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateProviderAdmin),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.CreateProviderAdmin),
             Token = token,
             Data = providerAdminDto,
             RequestId = Guid.NewGuid(),

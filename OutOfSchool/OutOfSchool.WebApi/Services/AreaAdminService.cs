@@ -13,7 +13,7 @@ namespace OutOfSchool.WebApi.Services;
 
 public class AreaAdminService : CommunicationService, IAreaAdminService
 {
-    private readonly IdentityServerConfig identityServerConfig;
+    private readonly AuthorizationServerConfig authorizationServerConfig;
     private readonly IAreaAdminRepository areaAdminRepository;
     private readonly IEntityRepository<string, User> userRepository;
     private readonly IMapper mapper;
@@ -29,7 +29,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         ICodeficatorRepository codeficatorRepository,
         ICodeficatorService codeficatorService,
         IHttpClientFactory httpClientFactory,
-        IOptions<IdentityServerConfig> identityServerConfig,
+        IOptions<AuthorizationServerConfig> identityServerConfig,
         IOptions<CommunicationConfig> communicationConfig,
         IAreaAdminRepository areaAdminRepository,
         ILogger<AreaAdminService> logger,
@@ -46,7 +46,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         ArgumentNullException.ThrowIfNull(mapper);
         ArgumentNullException.ThrowIfNull(ministryAdminService);
 
-        this.identityServerConfig = identityServerConfig.Value;
+        this.authorizationServerConfig = identityServerConfig.Value;
         this.areaAdminRepository = areaAdminRepository;
         this.userRepository = userRepository;
         this.codeficatorRepository = codeficatorRepository;
@@ -117,7 +117,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Post,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateAreaAdmin),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.CreateAreaAdmin),
             Token = token,
             Data = areaAdminBaseDto,
             RequestId = Guid.NewGuid(),
@@ -238,7 +238,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority,
+            Url = new Uri(authorizationServerConfig.Authority,
                 CommunicationConstants.UpdateAreaAdmin + updateAreaAdminDto.Id),
             Token = token,
             Data = mapper.Map<AreaAdminBaseDto>(updateAreaAdminDto),
@@ -289,7 +289,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Delete,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.DeleteAreaAdmin + areaAdminId),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.DeleteAreaAdmin + areaAdminId),
             Token = token,
             RequestId = Guid.NewGuid(),
         };
@@ -339,7 +339,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, string.Concat(
+            Url = new Uri(authorizationServerConfig.Authority, string.Concat(
                 CommunicationConstants.BlockAreaAdmin,
                 areaAdminId,
                 "/",
@@ -407,7 +407,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, string.Concat(
+            Url = new Uri(authorizationServerConfig.Authority, string.Concat(
                 CommunicationConstants.ReinviteAreaAdmin,
                 areaAdminId,
                 new PathString("/"))),
