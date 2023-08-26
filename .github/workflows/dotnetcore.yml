@@ -1,10 +1,10 @@
 name: Build
 on:
   push:
-    branches: 
-     - main
-     - develop
-     - '*' 
+    branches:
+    - main
+    - develop
+    - '*'
   pull_request:
     branches: [ develop ]
 
@@ -45,36 +45,36 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-          cd .\OutOfSchool\ 
-          ..\.sonar\scanner\dotnet-sonarscanner begin /k:"ita-social-projects-oos-backend" /o:"ita-social-projects" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.vstest.reportsPaths="/OutOfSchool.IdentityServer.Tests/TestResults/*.trx, /OutOfSchool.WebApi.Tests/TestResults/*.trx" /d:"sonar.verbose=true" /d:"sonar.cs.opencover.reportsPaths"="/OutOfSchool.IdentityServer.Tests/coverage.opencover.xml, /OutOfSchool.WebApi.Tests/coverage.opencover.xml"
-          dotnet build      
-          dotnet add OutOfSchool.IdentityServer.Tests\OutOfSchool.IdentityServer.Tests.csproj package coverlet.msbuild
+          cd .\OutOfSchool\
+          ..\.sonar\scanner\dotnet-sonarscanner begin /k:"ita-social-projects-oos-backend" /o:"ita-social-projects" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.vstest.reportsPaths="/OutOfSchool.AuthServer.Tests/TestResults/*.trx, /OutOfSchool.WebApi.Tests/TestResults/*.trx" /d:"sonar.verbose=true" /d:"sonar.cs.opencover.reportsPaths"="/OutOfSchool.AuthServer.Tests/coverage.opencover.xml, /OutOfSchool.WebApi.Tests/coverage.opencover.xml"
+          dotnet build
+          dotnet add OutOfSchool.AuthServer.Tests\OutOfSchool.AuthServer.Tests.csproj package coverlet.msbuild
           dotnet add OutOfSchool.WebApi.Tests\OutOfSchool.WebApi.Tests.csproj package coverlet.msbuild
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover -l:trx
           ..\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
   test:
     runs-on: ${{ matrix.os }}
-    strategy: 
-      matrix: 
+    strategy:
+      matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
     - uses: actions/checkout@v2
-      
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.406
-        
+
     - name: Clean
       run: dotnet clean ./OutOfSchool/OutOfSchool.sln --configuration Release && dotnet nuget locals all --clear
-      
+
     - name: Restore dependencies
       run: dotnet restore ./OutOfSchool/
-               
+
     - name: Build
       run: dotnet build --configuration Release --no-restore ./OutOfSchool
-      
+
     - name: Test
       run: dotnet test --no-restore --no-build --configuration Release ./OutOfSchool
