@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using IdentityServer4.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -18,7 +17,7 @@ using OutOfSchool.Common;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.RazorTemplatesData.Services;
 
-namespace OutOfSchool.IdentityServer.Tests.Controllers;
+namespace OutOfSchool.AuthServer.Tests.Controllers;
 
 public class AccountControllerTests
 {
