@@ -526,6 +526,7 @@ public class ApplicationServiceTests
 
         currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
         currentUserServiceMock.Setup(c => c.UserSubRole).Returns(string.Empty);
+        applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MinValue);
 
         // Act
         var result = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
