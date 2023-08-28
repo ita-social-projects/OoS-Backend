@@ -234,7 +234,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src =>
                 src.Applications.Count(x =>
                     x.Status == ApplicationStatus.Approved
-                    || x.Status == ApplicationStatus.StudyingForYears)));
+                    || x.Status == ApplicationStatus.StudyingForYears)))
+            .ForMember(dest => dest.Address, opt => opt.Ignore());
 
         CreateMap<SocialGroup, SocialGroupDto>().ReverseMap();
 
