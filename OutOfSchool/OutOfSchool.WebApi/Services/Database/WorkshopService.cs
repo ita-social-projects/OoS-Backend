@@ -335,7 +335,10 @@ public class WorkshopService : IWorkshopService
                 MaxAge = data.MaxAge,
                 CompetitiveSelection = data.CompetitiveSelection,
                 Price = data.Price,
-                DirectionIds = data.D
+                DirectionIds = data.InstitutionHierarchy.Directions.Select(x => x.Id).ToList(),
+                ProviderId = data.ProviderId,
+                Address = mapper.Map<AddressDto>(data.Address),
+
             });
 
         var workshopsUnread = await workshopsWithUnreadMessages.ToListAsync().ConfigureAwait(false);
