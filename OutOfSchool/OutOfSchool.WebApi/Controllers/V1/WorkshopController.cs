@@ -157,7 +157,7 @@ public class WorkshopController : ControllerBase
             return BadRequest("Provider id is empty.");
         }
 
-        var workshopCards = await combinedWorkshopService.GetByProviderId<WorkshopBaseCard>(id, filter)
+        var workshopCards = await combinedWorkshopService.GetByProviderId<WorkshopProviderViewCard>(id, filter)
             .ConfigureAwait(false);
 
         if (workshopCards.TotalAmount == 0)

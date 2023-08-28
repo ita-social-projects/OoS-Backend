@@ -254,7 +254,7 @@ public class WorkshopService : IWorkshopService
 
     /// <inheritdoc/>
     public async Task<SearchResult<T>> GetByProviderId<T>(Guid id, ExcludeIdFilter filter)
-        where T : WorkshopBaseCard
+        where T : WorkshopProviderViewCard
     {
         logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
@@ -320,6 +320,22 @@ public class WorkshopService : IWorkshopService
                 w.Images,
                 w.IsBlocked,
                 UnreadMessages = c.ChatMessages.Count,
+            });
+
+        var workshopsProviderViewCard = workshopsWithUnreadMessages.Select(
+            data => new WorkshopProviderViewCard
+            {
+                WorkshopId = data.Id,
+                ProviderTitle = data.ProviderTitle,
+                ProviderOwnership = data.ProviderOwnership,
+                Title = data.Title,
+                PayRate = data.PayRate,
+                CoverImageId = data.CoverImageId,
+                MinAge = data.MinAge,
+                MaxAge = data.MaxAge,
+                CompetitiveSelection = data.CompetitiveSelection,
+                Price = data.Price,
+                DirectionIds = data.D
             });
 
         var workshopsUnread = await workshopsWithUnreadMessages.ToListAsync().ConfigureAwait(false);
