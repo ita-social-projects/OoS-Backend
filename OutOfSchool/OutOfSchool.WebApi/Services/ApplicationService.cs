@@ -872,15 +872,15 @@ public class ApplicationService : IApplicationService, INotificationReciever
                             Description = "The Workshop is full.",
                         });
                     }
+                }
 
-                    if (await GetApprovedWorkshopAndChild(currentApplication) >= 1)
+                if (await GetApprovedWorkshopAndChild(currentApplication) >= 1)
+                {
+                    return Result<ApplicationDto>.Failed(new OperationError
                     {
-                        return Result<ApplicationDto>.Failed(new OperationError
-                        {
-                            Code = "400",
-                            Description = "There is already approved workshop.",
-                        });
-                    }
+                        Code = "400",
+                        Description = "There is already approved workshop.",
+                    });
                 }
             }
 
