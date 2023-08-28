@@ -4,6 +4,7 @@ using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Application;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -12,7 +13,7 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class DirectionService : IDirectionService
 {
-    private readonly IEntityRepository<long, Direction> repository;
+    private readonly IEntityRepositorySoftDeleted<long, Direction> repository;
     private readonly IWorkshopRepository repositoryWorkshop;
     private readonly ILogger<DirectionService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
@@ -33,7 +34,7 @@ public class DirectionService : IDirectionService
     /// <param name="ministryAdminService">Service for manage ministry admin.</param>
     /// <param name="regionAdminService">Service for managing region admin rigths.</param>
     public DirectionService(
-        IEntityRepository<long, Direction> repository,
+        IEntityRepositorySoftDeleted<long, Direction> repository,
         IWorkshopRepository repositoryWorkshop,
         ILogger<DirectionService> logger,
         IStringLocalizer<SharedResource> localizer,
@@ -73,8 +74,7 @@ public class DirectionService : IDirectionService
     {
         logger.LogInformation($"Deleting Direction with Id = {id} started.");
 
-        var directions = await repository.GetByFilter(x => !x.IsDeleted && x.Id == id).ConfigureAwait(false);
-        var direction = directions.SingleOrDefault();
+        var direction = await repository.GetById(id).ConfigureAwait(false);
 
         if (direction == null)
         {
@@ -118,7 +118,7 @@ public class DirectionService : IDirectionService
     {
         logger.LogInformation("Getting all Directions started.");
 
-        var directions = await repository.GetByFilter(x => !x.IsDeleted).ConfigureAwait(false);
+        var directions = await repository.GetAll().ConfigureAwait(false);
 
         logger.LogInformation(!directions.Any()
             ? "Direction table is empty."
@@ -141,11 +141,11 @@ public class DirectionService : IDirectionService
         };
 
         var directions = await repository
-            .Get(skip: filter.From, take: filter.Size, where: predicate, orderBy: sortExpression)
+            .Get(skip: filter.From, take: filter.Size, whereExpression: predicate, orderBy: sortExpression)
             .ToListAsync();
 
         var workshopCount = await repositoryWorkshop
-            .Get(where: workshopCountFilter
+            .Get(whereExpression: workshopCountFilter
                 .And(w => w.InstitutionHierarchy.Directions.Any(d => directions.Contains(d))))
             .SelectMany(w => w.InstitutionHierarchy.Directions)
             .GroupBy(d => d.Id)
@@ -179,8 +179,7 @@ public class DirectionService : IDirectionService
     {
         logger.LogInformation($"Getting Direction by Id started. Looking Id = {id}.");
 
-        var directions = await repository.GetByFilter(x => !x.IsDeleted && x.Id == (int)id).ConfigureAwait(false);
-        var direction = directions.SingleOrDefault();
+        var direction = await repository.GetById((int)id).ConfigureAwait(false);
 
         if (direction == null)
         {
@@ -199,8 +198,9 @@ public class DirectionService : IDirectionService
     {
         logger.LogInformation($"Updating Direction with Id = {dto?.Id} started.");
 
-        var directions = await repository.GetByFilter(x => !x.IsDeleted && x.Id == dto.Id).ConfigureAwait(false);
-        var direction = directions.SingleOrDefault();
+        ArgumentNullException.ThrowIfNull(dto);
+
+        var direction = await repository.GetById(dto.Id).ConfigureAwait(false);
 
         if (direction is null)
         {
@@ -218,7 +218,7 @@ public class DirectionService : IDirectionService
 
     private void DirectionValidation(DirectionDto dto)
     {
-        if (repository.Get(where: x => !x.IsDeleted && x.Title == dto.Title).Any())
+        if (repository.Get(whereExpression: x => x.Title == dto.Title).Any())
         {
             throw new ArgumentException(localizer["There is already a Direction with such a data."]);
         }
@@ -227,8 +227,6 @@ public class DirectionService : IDirectionService
     private async Task<(Expression<Func<Direction, bool>>, Expression<Func<Workshop, bool>>)> BuildPredicate(DirectionFilter filter, bool isAdmins)
     {
         Expression<Func<Direction, bool>> predicate = PredicateBuilder.True<Direction>();
-
-        predicate = predicate.And(direction => !direction.IsDeleted);
 
         if (!string.IsNullOrWhiteSpace(filter.Name))
         {

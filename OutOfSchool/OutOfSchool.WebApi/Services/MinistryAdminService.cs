@@ -158,7 +158,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: "Institution,User",
-                where: filterPredicate,
+                whereExpression: filterPredicate,
                 orderBy: sortExpression,
                 asNoTracking: true)
             .ToListAsync()

@@ -4,7 +4,7 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models;
 
-public class Direction : IKeyedEntity<long>
+public class Direction : IKeyedEntity<long>, ISoftDeleted
 {
     public long Id { get; set; }
 

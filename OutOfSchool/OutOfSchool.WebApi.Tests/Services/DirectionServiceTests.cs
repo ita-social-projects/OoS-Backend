@@ -24,7 +24,7 @@ public class DirectionServiceTests
 {
     private DbContextOptions<OutOfSchoolDbContext> options;
     private OutOfSchoolDbContext context;
-    private IEntityRepository<long, Direction> repo;
+    private IEntityRepositorySoftDeleted<long, Direction> repo;
     private IWorkshopRepository repositoryWorkshop;
     private IDirectionService service;
     private Mock<IStringLocalizer<SharedResource>> localizer;
@@ -44,7 +44,7 @@ public class DirectionServiceTests
         options = builder.Options;
         context = new OutOfSchoolDbContext(options);
 
-        repo = new EntityRepository<long, Direction>(context);
+        repo = new EntityRepositorySoftDeleted<long, Direction>(context);
         repositoryWorkshop = new WorkshopRepository(context);
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         logger = new Mock<ILogger<DirectionService>>();
@@ -170,9 +170,7 @@ public class DirectionServiceTests
             Title = "ChangedTitle1",
         };
 
-        var expected = (await repo.GetByFilter(
-            d => !d.IsDeleted && d.Id == changedEntity.Id)
-            .ConfigureAwait(false)).SingleOrDefault();
+        var expected = await repo.GetById(changedEntity.Id).ConfigureAwait(false);
 
         mapper.Setup(m => m.Map<Direction>(changedEntity)).Returns(expected);
         mapper.Setup(m => m.Map<DirectionDto>(expected)).Returns(changedEntity);

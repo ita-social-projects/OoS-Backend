@@ -73,12 +73,12 @@ public class StatisticReportService : IStatisticReportService
             { sr => sr.Date, SortDirection.Ascending },
         };
 
-        var totalAmount = await statisticReportRepository.Count(where: predicate).ConfigureAwait(false);
+        var totalAmount = await statisticReportRepository.Count(whereExpression: predicate).ConfigureAwait(false);
         var statisticReports = await statisticReportRepository.Get(
             skip: filter.From,
             take: filter.Size,
             includeProperties: string.Empty,
-            where: predicate, orderBy: sortExpression).ToListAsync().ConfigureAwait(false);
+            whereExpression: predicate, orderBy: sortExpression).ToListAsync().ConfigureAwait(false);
 
         if (!statisticReports.Any())
         {

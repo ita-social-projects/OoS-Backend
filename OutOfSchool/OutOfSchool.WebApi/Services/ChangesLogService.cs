@@ -114,7 +114,7 @@ public class ChangesLogService : IChangesLogService
 
         var changesLog = await GetChangesLogAsync(changeLogFilter).ConfigureAwait(false);
 
-        var providers = providerRepository.Get(where: predicate);
+        var providers = providerRepository.Get(whereExpression: predicate);
 
         var query = changesLog
                 .Join(
@@ -179,7 +179,7 @@ public class ChangesLogService : IChangesLogService
 
         var changesLog = await GetChangesLogAsync(changeLogFilter).ConfigureAwait(false);
 
-        var applications = applicationRepository.Get(where: predicate);
+        var applications = applicationRepository.Get(whereExpression: predicate);
 
         var query = changesLog
                 .Join(

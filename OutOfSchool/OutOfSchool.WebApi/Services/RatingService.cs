@@ -86,7 +86,7 @@ public class RatingService : IRatingService
     {
         logger.LogInformation("Getting all ratings by filter started.");
 
-        var ratings = await ratingRepository.GetByFilter(predicate: filter).ConfigureAwait(false);
+        var ratings = await ratingRepository.GetByFilter(whereExpression: filter).ConfigureAwait(false);
 
         logger.LogInformation("Getting all ratings by filter finished.");
 
@@ -123,7 +123,7 @@ public class RatingService : IRatingService
         var totalAmount = await ratingRepository.Count(filterPredicate).ConfigureAwait(false);
 
         var ratings = await ratingRepository
-            .Get(filter.From, filter.Size, where: filterPredicate)
+            .Get(filter.From, filter.Size, whereExpression: filterPredicate)
             .ToListAsync()
             .ConfigureAwait(false);
 

@@ -221,7 +221,7 @@ public class WorkshopService : IWorkshopService
             providerId);
 
         var workshops = await workshopRepository.GetByFilter(
-            predicate: x => x.ProviderId == providerId);
+            whereExpression: x => x.ProviderId == providerId);
 
         var result = mapper.Map<List<ShortEntityDto>>(workshops).OrderBy(entity => entity.Title).ToList();
 
@@ -262,7 +262,7 @@ public class WorkshopService : IWorkshopService
         filter ??= new ExcludeIdFilter();
         ValidateExcludedIdFilter(filter);
 
-        var workshopBaseCardsCount = await workshopRepository.Count(where: x =>
+        var workshopBaseCardsCount = await workshopRepository.Count(whereExpression: x =>
             filter.ExcludedId == null
                 ? (x.ProviderId == id)
                 : (x.ProviderId == id && x.Id != filter.ExcludedId)).ConfigureAwait(false);
@@ -270,7 +270,7 @@ public class WorkshopService : IWorkshopService
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: includingPropertiesForMappingDtoModel,
-                where: x => filter.ExcludedId == null
+                whereExpression: x => filter.ExcludedId == null
                     ? (x.ProviderId == id)
                     : (x.ProviderId == id && x.Id != filter.ExcludedId))
             .ToListAsync()
@@ -523,12 +523,12 @@ public class WorkshopService : IWorkshopService
         var filterPredicate = PredicateBuild(filter);
         var orderBy = GetOrderParameter(filter);
 
-        var workshopsCount = await workshopRepository.Count(where: filterPredicate).ConfigureAwait(false);
+        var workshopsCount = await workshopRepository.Count(whereExpression: filterPredicate).ConfigureAwait(false);
         var workshops = workshopRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: includingPropertiesForMappingDtoModel,
-                where: filterPredicate,
+                whereExpression: filterPredicate,
                 orderBy: orderBy)
             .ToList();
 
@@ -562,7 +562,7 @@ public class WorkshopService : IWorkshopService
                 skip: 0,
                 take: 0,
                 includeProperties: includingPropertiesForMappingWorkShopCard,
-                where: filterPredicate,
+                whereExpression: filterPredicate,
                 orderBy: null)
             .Where(w => neighbours
                 .Select(n => n.Value)

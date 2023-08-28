@@ -143,7 +143,7 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
             var query = messageRepository.Get(
                 skip: offsetFilter.From,
                 take: offsetFilter.Size,
-                where: x => x.ChatRoomId == chatRoomId,
+                whereExpression: x => x.ChatRoomId == chatRoomId,
                 orderBy: sortExpression);
 
             var chatMessages = await query.ToListAsync().ConfigureAwait(false);

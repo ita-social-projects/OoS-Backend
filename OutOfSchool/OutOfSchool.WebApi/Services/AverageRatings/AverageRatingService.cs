@@ -108,14 +108,14 @@ public class AverageRatingService : IAverageRatingService
 
     private async Task<DateTimeOffset> GetLastSuccessQuartzJobLaunch()
     {
-        var job = quartzJobRepository.Get(where: x => x.Name == JobConstants.AverageRatingCalculating).SingleOrDefault();
+        var job = quartzJobRepository.Get(whereExpression: x => x.Name == JobConstants.AverageRatingCalculating).SingleOrDefault();
 
         return job?.LastSuccessLaunch ?? DateTimeOffset.MinValue;
     }
 
     private async Task SaveLastSuccessQuartzJobLaunch(DateTimeOffset date)
     {
-        var job = quartzJobRepository.Get(where: x => x.Name == JobConstants.AverageRatingCalculating).SingleOrDefault();
+        var job = quartzJobRepository.Get(whereExpression: x => x.Name == JobConstants.AverageRatingCalculating).SingleOrDefault();
 
         if (job is not null)
         {
@@ -221,7 +221,7 @@ public class AverageRatingService : IAverageRatingService
 
         foreach (var rating in ratings)
         {
-            var entity = averageRatingRepository.Get(where: x => x.EntityId == rating.Key).SingleOrDefault();
+            var entity = averageRatingRepository.Get(whereExpression: x => x.EntityId == rating.Key).SingleOrDefault();
 
             if (entity != null)
             {

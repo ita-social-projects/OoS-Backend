@@ -177,7 +177,7 @@ public class ProviderService : IProviderService, INotificationReciever
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: string.Empty,
-                where: filterPredicate,
+                whereExpression: filterPredicate,
                 orderBy: sortExpression,
                 asNoTracking: false)
             .ToListAsync()

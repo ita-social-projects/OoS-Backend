@@ -183,7 +183,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: "Institution,User,CATOTTG",
-                where: filterPredicate,
+                whereExpression: filterPredicate,
                 orderBy: sortExpression,
                 asNoTracking: true)
             .ToListAsync()

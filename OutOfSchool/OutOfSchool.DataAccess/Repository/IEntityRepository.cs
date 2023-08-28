@@ -95,37 +95,37 @@ public interface IEntityRepositoryBase<TKey, TEntity>
     /// <summary>
     /// Get elements by a specific filter.
     /// </summary>
-    /// <param name="predicate">Filter with key.</param>
+    /// <param name="whereExpression">Filter with key.</param>
     /// <param name="includeProperties">Name of properties which should be included.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="IEnumerable{T}"/> that contains elements.</returns>
-    Task<IEnumerable<TEntity>> GetByFilter(Expression<Func<TEntity, bool>> predicate, string includeProperties = "");
+    Task<IEnumerable<TEntity>> GetByFilter(Expression<Func<TEntity, bool>> whereExpression, string includeProperties = "");
 
     /// <summary>
     /// Get elements by a specific filter with no tracking.
     /// </summary>
-    /// <param name="predicate">Filter with key.</param>
+    /// <param name="whereExpression">Filter with key.</param>
     /// <param name="includeProperties">Name of properties which should be included.</param>
     /// <returns>An <see cref="IQueryable{TResult}"/> that contains elements from the input sequence that
     /// satisfy the condition specified by predicate.
-    IQueryable<TEntity> GetByFilterNoTracking(Expression<Func<TEntity, bool>> predicate, string includeProperties = "");
+    IQueryable<TEntity> GetByFilterNoTracking(Expression<Func<TEntity, bool>> whereExpression, string includeProperties = "");
 
     /// <summary>
     /// Get the amount of elements with filter or without it.
     /// </summary>
-    /// <param name="where">Filter.</param>
+    /// <param name="whereExpression">Filter.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains an amount of found elements.</returns>
-    Task<int> Count(Expression<Func<TEntity, bool>> where = null);
+    Task<int> Count(Expression<Func<TEntity, bool>> whereExpression = null);
 
     /// <summary>
     /// Asynchronously determines whether any element of a sequence satisfies a condition.
     /// </summary>
-    /// <param name="where">Filter.</param>
+    /// <param name="whereExpression">Filter.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains <see langword="true" /> if any elements in the source sequence pass the test in the specified
     /// filter; otherwise, <see langword="false" />.</returns>
-    Task<bool> Any(Expression<Func<TEntity, bool>> where = null);
+    Task<bool> Any(Expression<Func<TEntity, bool>> whereExpression = null);
 
     /// <summary>
     /// Get ordered, filtered list of elements.
@@ -133,15 +133,16 @@ public interface IEntityRepositoryBase<TKey, TEntity>
     /// <param name="skip">How many records we want tp skip.</param>
     /// <param name="take">How many records we want to take.</param>
     /// <param name="includeProperties">What Properties we want to include to objects that we will receive.</param>
-    /// <param name="where">Filter.</param>
+    /// <param name="whereExpression">Filter.</param>
     /// <param name="orderBy">Filter that defines by wich properties we want to order by with ascending or descending ordering.</param>
     /// <param name="asNoTracking">Define if the result set will be tracked by the context.</param>
     /// <returns>An <see cref="IQueryable{TResult}"/> that contains elements from the input sequence that
     /// satisfy the condition specified by predicate. An ordered, filtered <see cref="IQueryable{T}"/>.</returns>
-    IQueryable<TEntity> Get(int skip = 0,
+    IQueryable<TEntity> Get(
+        int skip = 0,
         int take = 0,
         string includeProperties = "",
-        Expression<Func<TEntity, bool>> where = null,
+        Expression<Func<TEntity, bool>> whereExpression = null,
         Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null,
         bool asNoTracking = false);
 }
@@ -159,5 +160,16 @@ public interface IEntityRepository<TKey, TEntity> : IEntityRepositoryBase<TKey, 
 
 public interface ISensitiveEntityRepository<TEntity> : IEntityRepositoryBase<Guid, TEntity>
     where TEntity : class, IKeyedEntity<Guid>, new()
+{
+}
+
+public interface IEntityRepositorySoftDeleted<TKey, TEntity> : IEntityRepositoryBase<TKey, TEntity>
+    where TEntity : class, IKeyedEntity<TKey>, ISoftDeleted, new()
+    where TKey : IEquatable<TKey>
+{
+}
+
+public interface ISensitiveEntityRepositorySoftDeleted<TEntity> : IEntityRepositorySoftDeleted<Guid, TEntity>
+    where TEntity : class, IKeyedEntity<Guid>, ISoftDeleted, new()
 {
 }
