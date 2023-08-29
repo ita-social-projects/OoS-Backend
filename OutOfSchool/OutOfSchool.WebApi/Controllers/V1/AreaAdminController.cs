@@ -141,9 +141,9 @@ public class AreaAdminController : Controller
             (currentUserRole == nameof(Role.RegionAdmin).ToLower()
              && !await areaAdminService.IsAreaAdminSubordinateRegionCreateAsync(currentUserId, areaAdminBase.InstitutionId, areaAdminBase.CATOTTGId)))
         {
-            logger.LogDebug("Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
+            logger.LogDebug("Forbidden to create AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
             return StatusCode(403,
-                "Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
+                "Forbidden to create AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
         }
 
         var response = await areaAdminService.CreateAreaAdminAsync(
