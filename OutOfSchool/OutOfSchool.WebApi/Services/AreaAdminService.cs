@@ -1,14 +1,13 @@
+using System.Linq.Expressions;
 using AutoMapper;
 using Castle.Core.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
-using System.Linq.Expressions;
-using OutOfSchool.Common.Enums;
-using AutoMapper.Configuration.Annotations;
 
 namespace OutOfSchool.WebApi.Services;
 
