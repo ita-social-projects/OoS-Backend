@@ -15,17 +15,17 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
     /// Initializes a new instance of the <see cref="ProviderAdminOperationsRESTService"/> class.
     /// </summary>
     /// <param name="logger">Logger.</param>
-    /// <param name="identityServerConfig">Configuration for connection to IdentityServer.</param>
+    /// <param name="authorizationServerConfig">Configuration for connection to OpenIdDict.</param>
     /// <param name="httpClientFactory">HttpClientFactory. For base class.</param>
     /// <param name="communicationConfig">CommunicationConfig. For base class.</param>
     public ProviderAdminOperationsRESTService(
         ILogger<ProviderAdminOperationsRESTService> logger,
-        IOptions<AuthorizationServerConfig> identityServerConfig,
+        IOptions<AuthorizationServerConfig> authorizationServerConfig,
         IHttpClientFactory httpClientFactory,
         IOptions<CommunicationConfig> communicationConfig)
         : base(httpClientFactory, communicationConfig.Value, logger)
     {
-        this.authorizationServerConfig = identityServerConfig.Value;
+        this.authorizationServerConfig = authorizationServerConfig.Value;
     }
 
     /// <inheritdoc/>

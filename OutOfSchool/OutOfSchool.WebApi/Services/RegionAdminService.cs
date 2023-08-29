@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
+using AutoMapper;
 using Castle.Core.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -6,7 +7,6 @@ using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
-using System.Linq.Expressions;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -21,7 +21,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
 
     public RegionAdminService(
         IHttpClientFactory httpClientFactory,
-        IOptions<AuthorizationServerConfig> identityServerConfig,
+        IOptions<AuthorizationServerConfig> authorizationServerConfig,
         IOptions<CommunicationConfig> communicationConfig,
         IRegionAdminRepository regionAdminRepository,
         ILogger<RegionAdminService> logger,
@@ -31,13 +31,13 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         IMinistryAdminService ministryAdminService)
         : base(httpClientFactory, communicationConfig?.Value, logger)
     {
-        ArgumentNullException.ThrowIfNull(identityServerConfig);
+        ArgumentNullException.ThrowIfNull(authorizationServerConfig);
         ArgumentNullException.ThrowIfNull(regionAdminRepository);
         ArgumentNullException.ThrowIfNull(userRepository);
         ArgumentNullException.ThrowIfNull(mapper);
         ArgumentNullException.ThrowIfNull(ministryAdminService);
 
-        this.authorizationServerConfig = identityServerConfig.Value;
+        this.authorizationServerConfig = authorizationServerConfig.Value;
         this.regionAdminRepository = regionAdminRepository;
         this.userRepository = userRepository;
         this.mapper = mapper;

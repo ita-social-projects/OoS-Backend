@@ -23,7 +23,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
 
     public MinistryAdminService(
         IHttpClientFactory httpClientFactory,
-        IOptions<AuthorizationServerConfig> identityServerConfig,
+        IOptions<AuthorizationServerConfig> authorizationServerConfig,
         IOptions<CommunicationConfig> communicationConfig,
         IInstitutionAdminRepository institutionAdminRepository,
         ILogger<MinistryAdminService> logger,
@@ -32,7 +32,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         ICurrentUserService currentUserService)
         : base(httpClientFactory, communicationConfig?.Value, logger)
     {
-        this.authorizationServerConfig = (identityServerConfig ?? throw new ArgumentNullException(nameof(identityServerConfig))).Value;
+        this.authorizationServerConfig = (authorizationServerConfig ?? throw new ArgumentNullException(nameof(authorizationServerConfig))).Value;
         this.institutionAdminRepository = institutionAdminRepository ?? throw new ArgumentNullException(nameof(institutionAdminRepository));
         this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));

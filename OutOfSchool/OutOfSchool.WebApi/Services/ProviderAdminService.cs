@@ -1,17 +1,10 @@
-﻿using System.Linq;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using MongoDB.Bson.Serialization.IdGenerators;
-using MongoDB.Driver;
-using Nest;
 using Newtonsoft.Json;
-using NuGet.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 
@@ -32,7 +25,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
 
     public ProviderAdminService(
         IHttpClientFactory httpClientFactory,
-        IOptions<AuthorizationServerConfig> identityServerConfig,
+        IOptions<AuthorizationServerConfig> authorizationServerConfig,
         IOptions<ProviderAdminConfig> providerAdminConfig,
         IOptions<CommunicationConfig> communicationConfig,
         IProviderAdminRepository providerAdminRepository,
@@ -44,7 +37,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         ICurrentUserService currentUserService)
         : base(httpClientFactory, communicationConfig.Value, logger)
     {
-        this.authorizationServerConfig = identityServerConfig.Value;
+        this.authorizationServerConfig = authorizationServerConfig.Value;
         this.providerAdminConfig = providerAdminConfig.Value;
         this.providerAdminRepository = providerAdminRepository;
         this.userRepository = userRepository;

@@ -29,7 +29,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         ICodeficatorRepository codeficatorRepository,
         ICodeficatorService codeficatorService,
         IHttpClientFactory httpClientFactory,
-        IOptions<AuthorizationServerConfig> identityServerConfig,
+        IOptions<AuthorizationServerConfig> authorizationServerConfig,
         IOptions<CommunicationConfig> communicationConfig,
         IAreaAdminRepository areaAdminRepository,
         ILogger<AreaAdminService> logger,
@@ -40,13 +40,13 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         IRegionAdminService regionAdminService)
         : base(httpClientFactory, communicationConfig?.Value, logger)
     {
-        ArgumentNullException.ThrowIfNull(identityServerConfig);
+        ArgumentNullException.ThrowIfNull(authorizationServerConfig);
         ArgumentNullException.ThrowIfNull(areaAdminRepository);
         ArgumentNullException.ThrowIfNull(userRepository);
         ArgumentNullException.ThrowIfNull(mapper);
         ArgumentNullException.ThrowIfNull(ministryAdminService);
 
-        this.authorizationServerConfig = identityServerConfig.Value;
+        this.authorizationServerConfig = authorizationServerConfig.Value;
         this.areaAdminRepository = areaAdminRepository;
         this.userRepository = userRepository;
         this.codeficatorRepository = codeficatorRepository;
