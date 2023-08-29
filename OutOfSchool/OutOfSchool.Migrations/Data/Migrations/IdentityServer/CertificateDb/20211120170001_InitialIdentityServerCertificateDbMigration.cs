@@ -1,8 +1,7 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.CertificateDb;
+namespace OutOfSchool.Migrations.Data.Migrations.IdentityServer.CertificateDb;
 
 public partial class InitialIdentityServerCertificateDbMigration : Migration
 {

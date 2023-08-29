@@ -1,8 +1,8 @@
 ﻿namespace OutOfSchool.WebApi.Config;
 
-public class IdentityServerConfig
+public class AuthorizationServerConfig
 {
-    public const string Name = "Identity";
+    public const string Name = "AuthorizationServer";
 
     public Uri Authority { get; set; }
 
@@ -11,6 +11,4 @@ public class IdentityServerConfig
     public string ClientId { get; set; }
 
     public string ClientSecret { get; set; }
-
-    public bool EnableOpenIdDict { get; set; }
 }

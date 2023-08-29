@@ -36,8 +36,6 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
-        <PackageReference Include="IdentityModel" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
         <PackageReference Include="OpenIddict.Validation.AspNetCore"/>
         <PackageReference Include="OpenIddict.Validation.SystemNetHttp"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
@@ -47,8 +45,6 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
         <PackageReference Include="Microsoft.FeatureManagement" />
         <PackageReference Include="Microsoft.FeatureManagement.AspNetCore" />
-        <PackageReference Include="Microsoft.IdentityModel.Tokens" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" />
         <PackageReference Include="MySql.Data" />
         <PackageReference Include="Newtonsoft.Json"/>

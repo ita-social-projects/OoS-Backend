@@ -10,7 +10,7 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.IdentityServer.Tests.Controllers;
+namespace OutOfSchool.AuthServer.Tests.Controllers;
 
 [TestFixture]
 public class MinistryAdminControllerTests

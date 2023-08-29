@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using IdentityServer4.EntityFramework.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,8 +8,7 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Extensions.Startup;
-using OutOfSchool.IdentityServer.Extensions;
-using OutOfSchool.IdentityServer.KeyManagement;
+using OutOfSchool.AuthorizationServer.KeyManagement;
 using OutOfSchool.Services;
 
 var host = Host.CreateDefaultBuilder(args)
@@ -54,15 +52,11 @@ var host = Host.CreateDefaultBuilder(args)
                     optionsBuilder =>
                         optionsBuilder
                             .MigrationsAssembly(migrationsAssembly)));
-
-        services.ConfigureIdentity(connectionString, config["Uri"], serverVersion, migrationsAssembly);
     })
     .Build();
 
 using var scope = host.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
 
-scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
 scope.ServiceProvider.GetRequiredService<CertificateDbContext>().Database.Migrate();
-scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>().Database.Migrate();
 scope.ServiceProvider.GetRequiredService<OutOfSchoolDbContext>().Database.Migrate();
 scope.ServiceProvider.GetRequiredService<OpenIdDictDbContext>().Database.Migrate();

@@ -1,17 +1,10 @@
-﻿using System.Linq;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using MongoDB.Bson.Serialization.IdGenerators;
-using MongoDB.Driver;
-using Nest;
 using Newtonsoft.Json;
-using NuGet.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 
@@ -21,7 +14,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
 {
     private readonly string includingPropertiesForMaping = $"{nameof(ProviderAdmin.ManagedWorkshops)}";
 
-    private readonly IdentityServerConfig identityServerConfig;
+    private readonly AuthorizationServerConfig authorizationServerConfig;
     private readonly ProviderAdminConfig providerAdminConfig;
     private readonly IEntityRepository<string, User> userRepository;
     private readonly IProviderAdminRepository providerAdminRepository;
@@ -32,7 +25,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
 
     public ProviderAdminService(
         IHttpClientFactory httpClientFactory,
-        IOptions<IdentityServerConfig> identityServerConfig,
+        IOptions<AuthorizationServerConfig> authorizationServerConfig,
         IOptions<ProviderAdminConfig> providerAdminConfig,
         IOptions<CommunicationConfig> communicationConfig,
         IProviderAdminRepository providerAdminRepository,
@@ -44,7 +37,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         ICurrentUserService currentUserService)
         : base(httpClientFactory, communicationConfig.Value, logger)
     {
-        this.identityServerConfig = identityServerConfig.Value;
+        this.authorizationServerConfig = authorizationServerConfig.Value;
         this.providerAdminConfig = providerAdminConfig.Value;
         this.providerAdminRepository = providerAdminRepository;
         this.userRepository = userRepository;
@@ -132,7 +125,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.UpdateProviderAdmin + providerAdminModel.Id),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.UpdateProviderAdmin + providerAdminModel.Id),
             Token = token,
             Data = providerAdminModel,
             RequestId = Guid.NewGuid(),
@@ -199,7 +192,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Delete,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.DeleteProviderAdmin + providerAdminId),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.DeleteProviderAdmin + providerAdminId),
             Token = token,
             RequestId = Guid.NewGuid(),
         };
@@ -269,7 +262,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, string.Concat(
+            Url = new Uri(authorizationServerConfig.Authority, string.Concat(
                 CommunicationConstants.BlockProviderAdmin,
                 providerAdminId,
                 new PathString("/"),
@@ -324,7 +317,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, string.Concat(
+            Url = new Uri(authorizationServerConfig.Authority, string.Concat(
                 CommunicationConstants.BlockProviderAdminByProvider,
                 providerId,
                 new PathString("/"),
@@ -627,7 +620,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, string.Concat(
+            Url = new Uri(authorizationServerConfig.Authority, string.Concat(
                 CommunicationConstants.ReinviteProviderAdmin,
                 providerAdminId,
                 new PathString("/"))),

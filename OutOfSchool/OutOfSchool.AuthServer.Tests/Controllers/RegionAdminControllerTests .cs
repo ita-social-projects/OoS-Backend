@@ -6,12 +6,11 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
-using System;
 using OutOfSchool.AuthCommon.Controllers;
 using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.IdentityServer.Tests.Controllers;
+namespace OutOfSchool.AuthServer.Tests.Controllers;
 
 [TestFixture]
 public class RegionAdminControllerTests

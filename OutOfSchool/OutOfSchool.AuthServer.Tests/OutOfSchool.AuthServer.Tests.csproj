@@ -9,7 +9,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="IdentityServer4"/>
         <PackageReference Include="Moq"/>
         <PackageReference Include="NUnit"/>
         <PackageReference Include="NUnit3TestAdapter"/>
@@ -17,7 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\OutOfSchool.IdentityServer\OutOfSchool.IdentityServer.csproj"/>
+        <ProjectReference Include="..\OutOfSchool.AuthCommon\OutOfSchool.AuthCommon.csproj"/>
         <ProjectReference Include="..\Tests\OutOfSchool.Tests.Common\OutOfSchool.Tests.Common.csproj"/>
     </ItemGroup>
 </Project>

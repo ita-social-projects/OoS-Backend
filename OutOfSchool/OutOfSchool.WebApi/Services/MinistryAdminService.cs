@@ -15,7 +15,7 @@ namespace OutOfSchool.WebApi.Services;
 
 public class MinistryAdminService : CommunicationService, IMinistryAdminService
 {
-    private readonly IdentityServerConfig identityServerConfig;
+    private readonly AuthorizationServerConfig authorizationServerConfig;
     private readonly IInstitutionAdminRepository institutionAdminRepository;
     private readonly IEntityRepository<string, User> userRepository;
     private readonly IMapper mapper;
@@ -23,7 +23,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
 
     public MinistryAdminService(
         IHttpClientFactory httpClientFactory,
-        IOptions<IdentityServerConfig> identityServerConfig,
+        IOptions<AuthorizationServerConfig> authorizationServerConfig,
         IOptions<CommunicationConfig> communicationConfig,
         IInstitutionAdminRepository institutionAdminRepository,
         ILogger<MinistryAdminService> logger,
@@ -32,7 +32,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         ICurrentUserService currentUserService)
         : base(httpClientFactory, communicationConfig?.Value, logger)
     {
-        this.identityServerConfig = (identityServerConfig ?? throw new ArgumentNullException(nameof(identityServerConfig))).Value;
+        this.authorizationServerConfig = (authorizationServerConfig ?? throw new ArgumentNullException(nameof(authorizationServerConfig))).Value;
         this.institutionAdminRepository = institutionAdminRepository ?? throw new ArgumentNullException(nameof(institutionAdminRepository));
         this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -87,7 +87,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Post,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateMinistryAdmin),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.CreateMinistryAdmin),
             Token = token,
             Data = ministryAdminBaseDto,
             RequestId = Guid.NewGuid(),
@@ -207,7 +207,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.UpdateMinistryAdmin + updateMinistryAdminDto.Id),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.UpdateMinistryAdmin + updateMinistryAdminDto.Id),
             Token = token,
             Data = mapper.Map<MinistryAdminBaseDto>(updateMinistryAdminDto),
             RequestId = Guid.NewGuid(),
@@ -256,7 +256,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Delete,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.DeleteMinistryAdmin + ministryAdminId),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.DeleteMinistryAdmin + ministryAdminId),
             Token = token,
             RequestId = Guid.NewGuid(),
         };
@@ -305,7 +305,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, string.Concat(
+            Url = new Uri(authorizationServerConfig.Authority, string.Concat(
                 CommunicationConstants.BlockMinistryAdmin,
                 ministryAdminId,
                 "/",
@@ -373,7 +373,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, string.Concat(
+            Url = new Uri(authorizationServerConfig.Authority, string.Concat(
                 CommunicationConstants.ReinviteMinistryAdmin,
                 ministryAdminId,
                 new PathString("/"))),

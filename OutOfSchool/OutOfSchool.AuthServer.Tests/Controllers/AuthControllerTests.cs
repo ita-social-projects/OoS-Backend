@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using IdentityServer4.Models;
-using IdentityServer4.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -26,7 +24,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
-namespace OutOfSchool.IdentityServer.Tests.Controllers;
+namespace OutOfSchool.AuthServer.Tests.Controllers;
 
 [TestFixture]
 public class AuthControllerTests

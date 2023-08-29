@@ -1,5 +1,4 @@
-﻿using IdentityModel.Client;
-using System.Drawing.Text;
+﻿using System.Drawing.Text;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository;
 using Microsoft.AspNetCore.Builder;

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using OutOfSchool.Services.Models;
 
-namespace OutOfSchool.IdentityServer.Tests.Controllers;
+namespace OutOfSchool.AuthServer.Tests.Controllers;
 
 public class FakeSignInManager : SignInManager<User>
 {

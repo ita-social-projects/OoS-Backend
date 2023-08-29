@@ -30,7 +30,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class RegionAdminServiceTests
 {
     private Mock<IHttpClientFactory> httpClientFactory;
-    private Mock<IOptions<IdentityServerConfig>> identityServerConfig;
+    private Mock<IOptions<AuthorizationServerConfig>> identityServerConfig;
     private Mock<IOptions<CommunicationConfig>> communicationConfig;
     private Mock<IRegionAdminRepository> regionAdminRepositoryMock;
     private Mock<IEntityRepository<string, User>> userRepositoryMock;
@@ -53,7 +53,7 @@ public class RegionAdminServiceTests
         regionAdminsDtos = AdminGenerator.GenerateRegionAdminsDtos(5);
 
         httpClientFactory = new Mock<IHttpClientFactory>();
-        identityServerConfig = new Mock<IOptions<IdentityServerConfig>>();
+        identityServerConfig = new Mock<IOptions<AuthorizationServerConfig>>();
         communicationConfig = new Mock<IOptions<CommunicationConfig>>();
         communicationConfig.Setup(x => x.Value)
             .Returns(new CommunicationConfig()
