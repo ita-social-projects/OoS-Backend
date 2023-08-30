@@ -1,13 +1,13 @@
+using System.Linq.Expressions;
 using AutoMapper;
 using Castle.Core.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
-using System.Linq.Expressions;
-using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -475,7 +475,11 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         _ = regionAdminUserId ?? throw new ArgumentNullException(nameof(regionAdminUserId));
         var regionAdmin = await regionAdminService.GetByIdAsync(regionAdminUserId).ConfigureAwait(false);
 
-        return regionAdmin.InstitutionId == institutionId && regionAdmin.CATOTTGId == catottgId;
+        var subSettlementsIds = await codeficatorService
+            .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId)
+            .ConfigureAwait(false);
+
+        return regionAdmin.InstitutionId == institutionId && subSettlementsIds.Contains(catottgId);
     }
 
     private static Expression<Func<AreaAdmin, bool>> PredicateBuild(AreaAdminFilter filter, List<long> catottgs)

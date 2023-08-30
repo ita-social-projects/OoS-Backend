@@ -136,14 +136,20 @@ public class AreaAdminController : Controller
             return StatusCode(StatusCodes.Status422UnprocessableEntity);
         }
 
-        if ((currentUserRole == nameof(Role.MinistryAdmin).ToLower()
-             && !await areaAdminService.IsAreaAdminSubordinateMinistryCreateAsync(currentUserId, areaAdminBase.InstitutionId)) ||
-            (currentUserRole == nameof(Role.RegionAdmin).ToLower()
-             && !await areaAdminService.IsAreaAdminSubordinateRegionCreateAsync(currentUserId, areaAdminBase.InstitutionId, areaAdminBase.CATOTTGId)))
+        if (currentUserRole == nameof(Role.MinistryAdmin).ToLower()
+             && !await areaAdminService.IsAreaAdminSubordinateMinistryCreateAsync(currentUserId, areaAdminBase.InstitutionId))
         {
-            logger.LogDebug("Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
+            logger.LogDebug("Forbidden to create AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
             return StatusCode(403,
-                "Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
+                "Forbidden to create AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
+        }
+
+        if (currentUserRole == nameof(Role.RegionAdmin).ToLower()
+             && !await areaAdminService.IsAreaAdminSubordinateRegionCreateAsync(currentUserId, areaAdminBase.InstitutionId, areaAdminBase.CATOTTGId))
+        {
+            logger.LogDebug("Forbidden to create AreaAdmin. AreaAdmin doesn't subordinate to RegionAdmin.");
+            return StatusCode(403,
+                "Forbidden to create AreaAdmin. AreaAdmin doesn't subordinate to RegionAdmin.");
         }
 
         var response = await areaAdminService.CreateAreaAdminAsync(
