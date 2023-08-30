@@ -325,7 +325,7 @@ public class WorkshopService : IWorkshopService
 
         var workshopsWithUnreadMessages = await query.ToListAsync().ConfigureAwait(false);
 
-         var workshopProviderViewCards = workshopsWithUnreadMessages.Select(
+        var workshopProviderViewCards = workshopsWithUnreadMessages.Select(
             data => new WorkshopProviderViewCard
             {
                 WorkshopId = data.Id,
