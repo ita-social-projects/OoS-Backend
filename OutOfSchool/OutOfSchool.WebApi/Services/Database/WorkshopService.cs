@@ -320,12 +320,12 @@ public class WorkshopService : IWorkshopService
                         ChatRooms = cg,
                         w.Images,
                         w.IsBlocked,
-                        UnreadMessages = cg.ChatMessages.Count,
+                        UnreadMessages = cg != null ? cg.ChatMessages.Count : 0,
                     };
 
         var workshopsWithUnreadMessages = await query.ToListAsync().ConfigureAwait(false);
 
-        var workshopProviderViewCards = workshopsWithUnreadMessages.Select(
+         var workshopProviderViewCards = workshopsWithUnreadMessages.Select(
             data => new WorkshopProviderViewCard
             {
                 WorkshopId = data.Id,
