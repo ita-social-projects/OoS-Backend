@@ -84,6 +84,7 @@ public static class Startup
             c.Cookie.Name = "OpenIdDict.Cookie";
             c.LoginPath = "/Auth/Login";
             c.LogoutPath = "/Auth/Logout";
+            c.ExpireTimeSpan = TimeSpan.FromDays(30);
         });
 
         var issuerSection = config.GetSection(IssuerConfig.Name);
