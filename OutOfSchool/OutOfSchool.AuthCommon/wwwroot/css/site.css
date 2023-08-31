@@ -159,6 +159,13 @@ a {
   top: 50%;
   transform: translate(85%, -50%);
 }
+.checkbox-container {
+    display: flex;
+    align-items: center;
+}
+.checkbox-container label {
+        margin-left: 12px; 
+}
 
 .option-short:after {
   left: 6rem;
