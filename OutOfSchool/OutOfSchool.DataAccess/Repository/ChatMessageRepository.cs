@@ -11,17 +11,14 @@ namespace OutOfSchool.Services.Repository;
 
 public class ChatMessageRepository : SensitiveEntityRepository<ChatMessageWorkshop>, IChatMessageRepository
 {
-    private readonly OutOfSchoolDbContext db;
-
     public ChatMessageRepository(OutOfSchoolDbContext dbContext)
         : base(dbContext)
     {
-        db = dbContext;
     }
 
     public async Task<int> CountUnreadMessagesAsync(Guid workshopId)
     {
-        return await db.ChatMessageWorkshops
+        return await dbContext.ChatMessageWorkshops
             .Include(chr => chr.ChatRoom)
             .Where(x => x.ChatRoom.WorkshopId == workshopId && x.ReadDateTime == null && !x.SenderRoleIsProvider)
             .CountAsync();
