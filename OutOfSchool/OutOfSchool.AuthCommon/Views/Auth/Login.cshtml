@@ -48,6 +48,10 @@
                            asp-route-returnUrl="@Model.ReturnUrl">@SharedLocalizer["Forgot password?"]</a>
                     </div>
                 </div>
+                <div class="checkbox-container">
+                    <input asp-for="RememberMe" type="checkbox" id="rememberMe">
+                    <label>@SharedLocalizer["Remember me?"]</label>
+                </div>
                 <div class="title">
                     <button class="registration_submit registration_button" type="submit" >@SharedLocalizer["Sign In"].Value.ToUpper()</button>
                 </div>
