@@ -16,9 +16,9 @@ public class ChatMessageRepository : SensitiveEntityRepository<ChatMessageWorksh
     {
     }
 
-    public async Task<int> CountUnreadMessagesAsync(Guid workshopId)
+    public Task<int> CountUnreadMessagesAsync(Guid workshopId)
     {
-        return await dbContext.ChatMessageWorkshops
+        return dbContext.ChatMessageWorkshops
             .Include(chr => chr.ChatRoom)
             .Where(x => x.ChatRoom.WorkshopId == workshopId && x.ReadDateTime == null && !x.SenderRoleIsProvider)
             .CountAsync();
