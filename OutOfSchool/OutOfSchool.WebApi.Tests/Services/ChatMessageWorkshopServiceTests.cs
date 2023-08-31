@@ -35,7 +35,6 @@ public class ChatMessageWorkshopServiceTests
         WorkshopId = Guid.NewGuid(),
     };
 
-    //private IEntityRepository<Guid, ChatMessageWorkshop> messageRepository;
     private IChatMessageRepository messageRepository;
     private Mock<IChatRoomWorkshopService> roomServiceMock;
     private Mock<IHubContext<ChatWorkshopHub>> workshopHub;
