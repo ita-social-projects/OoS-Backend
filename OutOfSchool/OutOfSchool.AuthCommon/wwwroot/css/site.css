@@ -164,7 +164,7 @@ a {
     align-items: center;
 }
 .checkbox-container label {
-        margin-left: 12px; 
+    margin-left: 0.75rem; 
 }
 
 .option-short:after {
