@@ -5,6 +5,8 @@
         <OpenIdDictVersion>4.7.0</OpenIdDictVersion>
         <SwaggerVersion>6.3.1</SwaggerVersion>
         <QuartzVersion>3.5.0</QuartzVersion>
+        <RedisVersion>6.0.21</RedisVersion>
+        <AutoMapVersion>12.0.1</AutoMapVersion>
     </PropertyGroup>
     <ItemGroup>
         <!--Basic Microsoft Packages-->
@@ -33,10 +35,10 @@
         <PackageVersion Include="MySql.Data" Version="8.0.32"/>
         <PackageVersion Include="Google.Protobuf" Version="3.21.9"/>
         <!--Elasticsearch-->
-        <PackageVersion Include="NEST" Version="7.13.2"/>
+        <PackageVersion Include="NEST" Version="7.17.5"/>
         <!--Redis-->
-        <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.6"/>
-        <PackageVersion Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="6.0.9"/>
+        <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="$(RedisVersion)"/>
+        <PackageVersion Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="$(RedisVersion)"/>
         <!--Identity-->
         <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(EFCoreVersion)"/>
         <PackageVersion Include="IdentityModel" Version="6.1.0"/>
@@ -57,11 +59,10 @@
         <PackageVersion Include="Serilog.Formatting.Elasticsearch" Version="8.4.1"/>
         <PackageVersion Include="Serilog.Settings.Configuration" Version="3.3.0"/>
         <PackageVersion Include="Serilog.Sinks.File" Version="5.0.0"/>
-        <PackageVersion Include="Serilog.Sinks.GoogleCloudLogging" Version="5.0.0"/>
         <PackageVersion Include="Serilog.Expressions" Version="3.4.1"/>
         <!--Automapper-->
-        <PackageVersion Include="AutoMapper" Version="10.1.1"/>
-        <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1"/>
+        <PackageVersion Include="AutoMapper" Version="$(AutoMapVersion)"/>
+        <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="$(AutoMapVersion)"/>
         <!--Quartz-->
         <PackageVersion Include="Quartz.AspNetCore" Version="$(QuartzVersion)"/>
         <PackageVersion Include="Quartz.Extensions.DependencyInjection" Version="$(QuartzVersion)"/>
