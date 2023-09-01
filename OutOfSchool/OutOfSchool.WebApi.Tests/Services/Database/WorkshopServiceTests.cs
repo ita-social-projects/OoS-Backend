@@ -40,6 +40,7 @@ public class WorkshopServiceTests
     private Mock<IProviderAdminRepository> providerAdminRepository;
     private Mock<IAverageRatingService> averageRatingServiceMock;
     private Mock<IProviderRepository> providerRepositoryMock;
+    private Mock<IChatMessageWorkshopService> chatMessageWorkshopServiceMock;
 
     [SetUp]
     public void SetUp()
@@ -54,6 +55,7 @@ public class WorkshopServiceTests
         providerAdminRepository = new Mock<IProviderAdminRepository>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
         providerRepositoryMock = new Mock<IProviderRepository>();
+        chatMessageWorkshopServiceMock = new Mock<IChatMessageWorkshopService>();
 
         workshopService =
             new WorkshopService(
@@ -65,7 +67,8 @@ public class WorkshopServiceTests
                 workshopImagesMediator.Object,
                 providerAdminRepository.Object,
                 averageRatingServiceMock.Object,
-                providerRepositoryMock.Object);
+                providerRepositoryMock.Object,
+                chatMessageWorkshopServiceMock.Object);
     }
 
     #region Create
@@ -190,34 +193,34 @@ public class WorkshopServiceTests
     {
         // Arrange
         var workshops = WithWorkshopsList().ToList();
-        var expectedWorkshopBaseCards = workshops.Select(w => new WorkshopBaseCard() { ProviderId = w.ProviderId, WorkshopId = w.Id, }).ToList();
+        var expectedWorkshopBaseCards = workshops.Select(w => new WorkshopProviderViewCard() { ProviderId = w.ProviderId, WorkshopId = w.Id, }).ToList();
 
         SetupGetRepositoryCount(10);
         SetupGetByProviderById(workshops);
 
-        mapperMock.Setup(m => m.Map<List<WorkshopBaseCard>>(It.IsAny<List<Workshop>>())).Returns(expectedWorkshopBaseCards);
+        mapperMock.Setup(m => m.Map<List<WorkshopProviderViewCard>>(It.IsAny<List<Workshop>>())).Returns(expectedWorkshopBaseCards);
 
         // Act
-        var result = await workshopService.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()).ConfigureAwait(false);
+        var result = await workshopService.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()).ConfigureAwait(false);
 
         // Assert
         workshopRepository.VerifyAll();
         mapperMock.VerifyAll();
-        (result as SearchResult<WorkshopBaseCard>).TotalAmount.Should().Be(workshops.Count);
-        (result as SearchResult<WorkshopBaseCard>).Entities.Should().BeEquivalentTo(expectedWorkshopBaseCards);
+        (result as SearchResult<WorkshopProviderViewCard>).TotalAmount.Should().Be(workshops.Count);
+        (result as SearchResult<WorkshopProviderViewCard>).Entities.Should().BeEquivalentTo(expectedWorkshopBaseCards);
     }
 
     [Test]
     public async Task GetByProviderId_WhenThereIsNoEntityWithId_ShouldReturnEmptyList()
     {
         // Arrange
-        var emptyListWorkshopCards = new List<WorkshopBaseCard>();
+        var emptyListWorkshopCards = new List<WorkshopProviderViewCard>();
         SetupGetRepositoryCount(0);
         SetupGetByProviderById(new List<Workshop>());
-        mapperMock.Setup(m => m.Map<List<WorkshopBaseCard>>(It.IsAny<List<Workshop>>())).Returns(emptyListWorkshopCards);
+        mapperMock.Setup(m => m.Map<List<WorkshopProviderViewCard>>(It.IsAny<List<Workshop>>())).Returns(emptyListWorkshopCards);
 
         // Act
-        var result = await workshopService.GetByProviderId<WorkshopBaseCard>(Guid.NewGuid(), It.IsAny<ExcludeIdFilter>()).ConfigureAwait(false);
+        var result = await workshopService.GetByProviderId(Guid.NewGuid(), It.IsAny<ExcludeIdFilter>()).ConfigureAwait(false);
 
         // Assert
         workshopRepository.VerifyAll();
@@ -232,22 +235,22 @@ public class WorkshopServiceTests
         // Arrange
         var workshops = WithWorkshopsList().ToList();
         var excludedIds = new List<Guid>() { new Guid("b94f1989-c4e7-4878-ac86-21c4a402fb43"), new Guid("8c14044b-e30d-4b14-a18b-5b3b859ad676") };
-        var expectedWorkshopBaseCards = workshops.Select(w => new WorkshopBaseCard() { ProviderId = w.ProviderId })
+        var expectedWorkshopBaseCards = workshops.Select(w => new WorkshopProviderViewCard() { ProviderId = w.ProviderId })
             .Where(w => !excludedIds.Any(excluded => w.WorkshopId != excluded)).ToList();
 
         SetupGetRepositoryCount(10);
         SetupGetByProviderById(workshops);
 
-        mapperMock.Setup(m => m.Map<List<WorkshopBaseCard>>(It.IsAny<List<Workshop>>())).Returns(expectedWorkshopBaseCards);
+        mapperMock.Setup(m => m.Map<List<WorkshopProviderViewCard>>(It.IsAny<List<Workshop>>())).Returns(expectedWorkshopBaseCards);
 
         // Act
-        var result = await workshopService.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()).ConfigureAwait(false);
+        var result = await workshopService.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()).ConfigureAwait(false);
 
         // Assert
         workshopRepository.VerifyAll();
         mapperMock.VerifyAll();
-        (result as SearchResult<WorkshopBaseCard>).TotalAmount.Should().Be(workshops.Count);
-        (result as SearchResult<WorkshopBaseCard>).Entities.Should().BeEquivalentTo(expectedWorkshopBaseCards);
+        (result as SearchResult<WorkshopProviderViewCard>).TotalAmount.Should().Be(workshops.Count);
+        (result as SearchResult<WorkshopProviderViewCard>).Entities.Should().BeEquivalentTo(expectedWorkshopBaseCards);
     }
     #endregion
 
