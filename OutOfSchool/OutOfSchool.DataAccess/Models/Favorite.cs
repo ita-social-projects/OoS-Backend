@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models;
 
-public class Favorite : IKeyedEntity<long>
+public class Favorite : IKeyedEntity<long>, ISoftDeleted
 {
     public long Id { get; set; }
 
