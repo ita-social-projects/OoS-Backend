@@ -1,21 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Common.Resources.Codes;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Teachers;
-using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -24,7 +11,7 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class TeacherService : ITeacherService
 {
-    private readonly ISensitiveEntityRepository<Teacher> teacherRepository;
+    private readonly ISensitiveEntityRepositorySoftDeleted<Teacher> teacherRepository;
     private readonly IEntityCoverImageInteractionService<Teacher> teacherImagesService;
     private readonly ILogger<TeacherService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
@@ -38,7 +25,7 @@ public class TeacherService : ITeacherService
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
-    public TeacherService(ISensitiveEntityRepository<Teacher> teacherRepository, IEntityCoverImageInteractionService<Teacher> teacherImagesService, ILogger<TeacherService> logger, IStringLocalizer<SharedResource> localizer, IMapper mapper)
+    public TeacherService(ISensitiveEntityRepositorySoftDeleted<Teacher> teacherRepository, IEntityCoverImageInteractionService<Teacher> teacherImagesService, ILogger<TeacherService> logger, IStringLocalizer<SharedResource> localizer, IMapper mapper)
     {
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.teacherRepository = teacherRepository ?? throw new ArgumentNullException(nameof(teacherRepository));
@@ -98,7 +85,7 @@ public class TeacherService : ITeacherService
     {
         logger.LogInformation($"Getting Teacher by Id started. Looking Id = {id}.");
 
-        var teacher = (await teacherRepository.GetByFilter(t => t.Id == id).ConfigureAwait(false)).SingleOrDefault();
+        var teacher = await teacherRepository.GetById(id).ConfigureAwait(false);
 
         if (teacher == null)
         {
