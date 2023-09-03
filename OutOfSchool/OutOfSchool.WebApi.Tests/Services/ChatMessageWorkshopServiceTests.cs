@@ -27,6 +27,7 @@ public class ChatMessageWorkshopServiceTests
 {
     private static Guid chatRoomId1 = Guid.NewGuid();
     private static Guid chatRoomId2 = Guid.NewGuid();
+    private static Guid workshopId1 = Guid.NewGuid();
 
     private static ChatMessageWorkshopCreateDto newMessage = new ChatMessageWorkshopCreateDto()
     {
@@ -192,6 +193,22 @@ public class ChatMessageWorkshopServiceTests
             Assert.AreEqual(offsetFilter.Size, result.Count);
             Assert.AreEqual(existingChatRoomId, result.FirstOrDefault()?.ChatRoomId);
         });
+    }
+    #endregion
+
+    #region CountUnreadMessages
+    [Test]
+    public async Task CountUnreadMessages_WhenCalledWithValidWorkshopId_ShouldReturnNumberOfUnreadMessages()
+    {
+        // Arrange
+        var existingWorkshopId = workshopId1;
+
+        // Act
+        var result = await messageRepository.CountUnreadMessages(existingWorkshopId).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(0, result);
+
     }
     #endregion
 
