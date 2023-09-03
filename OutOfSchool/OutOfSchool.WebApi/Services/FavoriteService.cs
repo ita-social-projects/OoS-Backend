@@ -132,6 +132,8 @@ public class FavoriteService : IFavoriteService
     {
         logger.LogInformation($"Updating Favorite with Id = {dto?.Id} started.");
 
+        ArgumentNullException.ThrowIfNull(dto);
+
         var favorite = await favoriteRepository.GetById(dto.Id).ConfigureAwait(false);
 
         if (favorite is null)
