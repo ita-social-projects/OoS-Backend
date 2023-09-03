@@ -138,8 +138,9 @@ public class FavoriteService : IFavoriteService
 
         if (favorite is null)
         {
-            logger.LogError($"Updating failed. Favorite with Id = {dto?.Id} doesn't exist in the system.");
-            throw new DbUpdateConcurrencyException($"Updating failed. Favorite with Id = {dto?.Id} doesn't exist in the system.");
+            var message = $"Updating failed. Favorite with Id = {dto.Id} doesn't exist in the system.";
+            logger.LogError(message);
+            throw new DbUpdateConcurrencyException(message);
         }
 
         mapper.Map(dto, favorite);

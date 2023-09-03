@@ -93,8 +93,9 @@ public class StatusService : IStatusService
 
         if (institutionStatus is null)
         {
-            logger.LogError($"Updating failed. InstitutionStatus with Id = {dto?.Id} doesn't exist in the system.");
-            throw new DbUpdateConcurrencyException($"Updating failed. InstitutionStatus with Id = {dto?.Id} doesn't exist in the system.");
+            var message = $"Updating failed. InstitutionStatus with Id = {dto.Id} doesn't exist in the system.";
+            logger.LogError(message);
+            throw new DbUpdateConcurrencyException(message);
         }
 
         mapper.Map(dto, institutionStatus);
