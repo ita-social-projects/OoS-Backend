@@ -14,7 +14,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     private protected readonly IWorkshopService workshopService; // make it private after removing v2 version
     private protected readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService; // make it private after removing v2 version
     private readonly INotificationService notificationService;
-    private readonly IEntityRepository<long, Favorite> favoriteRepository;
+    private readonly IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository;
     private readonly IApplicationRepository applicationRepository;
     private readonly IWorkshopStrategy workshopStrategy;
     private readonly ICurrentUserService currentUserService;
@@ -28,7 +28,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         IWorkshopService workshopService,
         IElasticsearchSynchronizationService elasticsearchSynchronizationService,
         INotificationService notificationService,
-        IEntityRepository<long, Favorite> favoriteRepository,
+        IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository,
         IApplicationRepository applicationRepository,
         IWorkshopStrategy workshopStrategy,
         ICurrentUserService currentUserService,
@@ -247,7 +247,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     {
         var recipientIds = new List<string>();
 
-        var favoriteWorkshopUsersIds = await favoriteRepository.Get(whereExpression: x => !x.IsDeleted && x.WorkshopId == objectId)
+        var favoriteWorkshopUsersIds = await favoriteRepository.Get(whereExpression: x => x.WorkshopId == objectId)
             .Select(x => x.UserId)
             .ToListAsync()
             .ConfigureAwait(false);
