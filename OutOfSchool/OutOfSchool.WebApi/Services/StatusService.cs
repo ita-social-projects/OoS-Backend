@@ -87,6 +87,8 @@ public class StatusService : IStatusService
     {
         logger.LogInformation($"Updating InstitutionStatus with Id = {dto?.Id} started.");
 
+        ArgumentNullException.ThrowIfNull(dto);
+
         var institutionStatus = await repository.GetById(dto.Id).ConfigureAwait(false);
 
         if (institutionStatus is null)
