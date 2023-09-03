@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OutOfSchool.Services.Models;
 
-public class InstitutionStatus : IKeyedEntity<long>
+public class InstitutionStatus : IKeyedEntity<long>, ISoftDeleted
 {
     public InstitutionStatus()
     {

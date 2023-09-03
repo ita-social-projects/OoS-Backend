@@ -25,7 +25,7 @@ public class StatusServiceTests
 {
     private IStatusService service;
     private OutOfSchoolDbContext context;
-    private IEntityRepository<long, InstitutionStatus> repository;
+    private IEntityRepositorySoftDeleted<long, InstitutionStatus> repository;
     private DbContextOptions<OutOfSchoolDbContext> options;
     private IMapper mapper;
 
@@ -37,7 +37,7 @@ public class StatusServiceTests
 
         options = builder.Options;
         context = new OutOfSchoolDbContext(options);
-        repository = new EntityRepository<long, InstitutionStatus>(context);
+        repository = new EntityRepositorySoftDeleted<long, InstitutionStatus>(context);
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         var logger = new Mock<ILogger<StatusService>>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
@@ -138,13 +138,13 @@ public class StatusServiceTests
     public async Task Delete_WhenIdIsValid_DeletesEntityFromRepository()
     {
         // Arrange
-        var collection = await repository.GetByFilter(x => !x.IsDeleted) as ICollection<InstitutionStatus>;
+        var collection = await repository.GetAll() as ICollection<InstitutionStatus>;
         var existingId = TestDataHelper.RandomItem(collection).Id;
         var expectedCollection = (await repository.GetByFilter(x => x.Id != existingId)).ToList();
 
         // Act
         await service.Delete(existingId).ConfigureAwait(false);
-        var actualCollection = await repository.GetByFilter(x => !x.IsDeleted);
+        var actualCollection = await repository.GetAll();
 
         // Assert
         TestHelper.AssertTwoCollectionsEqualByValues(expectedCollection, actualCollection);
