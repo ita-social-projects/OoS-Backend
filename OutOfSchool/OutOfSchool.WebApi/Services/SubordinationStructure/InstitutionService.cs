@@ -17,7 +17,7 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure;
 
 public class InstitutionService : IInstitutionService
 {
-    private readonly ISensitiveEntityRepository<Institution> repository;
+    private readonly ISensitiveEntityRepositorySoftDeleted<Institution> repository;
     private readonly ILogger<InstitutionService> logger;
     private readonly IMapper mapper;
     private readonly ICacheService cache;
@@ -36,7 +36,7 @@ public class InstitutionService : IInstitutionService
     /// <param name="ministryAdminService">Service for manage ministry admin</param>
     /// <param name="regionAdminService">Service for managing region admin rigths.</param>
     public InstitutionService(
-        ISensitiveEntityRepository<Institution> repository,
+        ISensitiveEntityRepositorySoftDeleted<Institution> repository,
         ILogger<InstitutionService> logger,
         IMapper mapper,
         ICacheService cache,
@@ -75,7 +75,7 @@ public class InstitutionService : IInstitutionService
     /// <inheritdoc/>
     public async Task<List<InstitutionDto>> GetAllFromDatabase()
     {
-        var institutions = await repository.GetByFilter(x => !x.IsDeleted).ConfigureAwait(false);
+        var institutions = await repository.GetAll().ConfigureAwait(false);
         return institutions.Select(institution => mapper.Map<InstitutionDto>(institution)).ToList();
     }
 

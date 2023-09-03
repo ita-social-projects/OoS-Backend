@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models.SubordinationStructure;
 
-public class Institution : IKeyedEntity<Guid>
+public class Institution : IKeyedEntity<Guid>, ISoftDeleted
 {
     public Guid Id { get; set; }
 
