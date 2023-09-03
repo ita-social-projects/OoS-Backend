@@ -127,11 +127,11 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
         }
     }
 
-    public async Task<int> CountUnreadMessagesAsync(Guid workshopId)
+    public async Task<int> CountUnreadMessages(Guid workshopId)
     {
         try
         {
-            return await messageRepository.CountUnreadMessagesAsync(workshopId).ConfigureAwait(false);
+            return await messageRepository.CountUnreadMessages(workshopId).ConfigureAwait(false);
         }
         catch (Exception exception)
         {
