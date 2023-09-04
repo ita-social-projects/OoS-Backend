@@ -48,7 +48,7 @@ public class WorkshopRepositoryTests
         var workshop = context.Workshops.First();
         var expectedWorkshopsCount = initialWorkshopsCount - 1;
         var expectedApplicationsCount = context.Applications.Count() - workshop.Applications.Count;
-        var expectedTeachersCount = context.Teachers.Count() - workshop.Teachers.Count;
+        var expectedTeachersCount = context.Teachers.Count(x => !x.IsDeleted) - workshop.Teachers.Count;
         var expectedImagesCount = context.WorkshopImages.Count() - workshop.Images.Count;
         var expectedAddressesCount = context.Addresses.Count() - 1;
 
@@ -77,7 +77,7 @@ public class WorkshopRepositoryTests
         Assert.NotZero(expectedImagesCount);
         Assert.NotZero(expectedAddressesCount);
         Assert.AreEqual(expectedApplicationsCount, context.Applications.Count());
-        Assert.AreEqual(expectedTeachersCount, context.Teachers.Count());
+        Assert.AreEqual(expectedTeachersCount, context.Teachers.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedImagesCount, context.WorkshopImages.Count());
         Assert.AreEqual(expectedAddressesCount, context.Addresses.Count());
         Assert.False(context.Workshops.Any(x => x.Id == workshop.Id));
