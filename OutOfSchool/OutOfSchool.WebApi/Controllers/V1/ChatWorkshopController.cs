@@ -238,7 +238,7 @@ public class ChatWorkshopController : ControllerBase
     /// <summary>
     /// Get chat rooms for current provider and parentId.
     /// </summary>
-    /// <param name="parentId">ChatRoom's Id.</param>
+    /// <param name="parentId">Parent's Id.</param>
     /// <returns>ChatRoom that was found.</returns>
     [HttpGet("provider/chatroomsforparent/{parentId}")]
     [Authorize(Roles = "provider")]
@@ -253,7 +253,7 @@ public class ChatWorkshopController : ControllerBase
     /// <summary>
     /// Get chat rooms with messages for current provider and parentId.
     /// </summary>
-    /// <param name="parentId">ChatRoom's Id.</param>
+    /// <param name="parentId">Parent's Id.</param>
     /// <returns>ChatRoom that was found.</returns>
     [HttpGet("provider/chatroomswithmessagesforparent/{parentId}")]
     [Authorize(Roles = "provider")]
