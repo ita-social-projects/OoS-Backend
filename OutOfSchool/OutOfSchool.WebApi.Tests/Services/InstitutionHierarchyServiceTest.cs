@@ -237,15 +237,6 @@ public class InstitutionHierarchyServiceTests
         List<Direction> directions = new List<Direction> { new Direction() { Id = 1, Title = "Direction" } };
         List<DirectionDto> directionsDtos = new List<DirectionDto> { new DirectionDto() { Id = 1, Title = "Direction" } };
 
-        var changedEntity = new InstitutionHierarchy()
-        {
-            Id = hierarchyId,
-            Title = "ChangedTitle1",
-            HierarchyLevel = 1,
-            InstitutionId = institutionId,
-            Directions = directions,
-        };
-
         var changedDto = new InstitutionHierarchyDto()
         {
             Id = hierarchyId,
@@ -255,8 +246,19 @@ public class InstitutionHierarchyServiceTests
             Directions = directionsDtos,
         };
 
-        mapper.Setup(m => m.Map<InstitutionHierarchyDto>(changedEntity)).Returns(changedDto);
+        var changedEntity = new InstitutionHierarchy()
+        {
+            Id = hierarchyId,
+            Title = "ChangedTitle1",
+            HierarchyLevel = 1,
+            InstitutionId = institutionId,
+            Directions = directions,
+        };
+
         mapper.Setup(m => m.Map<InstitutionHierarchy>(changedDto)).Returns(changedEntity);
+        mapper.Setup(m => m.Map<InstitutionHierarchyDto>(changedEntity)).Returns(changedDto);
+
+        repo.Setup(r => r.GetById(changedDto.Id)).ReturnsAsync(changedEntity);
         repo.Setup(r => r.Update(changedEntity, directionsIds)).ReturnsAsync(changedEntity);
 
         // Act

@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Redis;
-using OutOfSchool.Services.Models.SubordinationStructure;
-using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
 
@@ -222,22 +213,27 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
     {
         logger.LogDebug("Updating InstitutionHierarchy is started.");
 
-        try
-        {
-            var institutionHierarchy = await repository
-                .Update(
-                    mapper.Map<InstitutionHierarchy>(dto),
-                    dto.Directions.Select(d => d.Id).ToList())
-                .ConfigureAwait(false);
+        ArgumentNullException.ThrowIfNull(dto);
 
-            logger.LogInformation($"InstitutionHierarchy with Id = {institutionHierarchy?.Id} updated succesfully.");
+        var institutionHierarchy = await repository.GetById(dto.Id).ConfigureAwait(false);
 
-            return mapper.Map<InstitutionHierarchyDto>(institutionHierarchy);
-        }
-        catch (DbUpdateConcurrencyException)
+        if (institutionHierarchy is null)
         {
-            logger.LogError($"Updating failed. InstitutionHierarchy with Id = {dto?.Id} doesn't exist in the system.");
-            throw;
+            var message = $"Updating failed. InstitutionHierarchy with Id = {dto.Id} doesn't exist in the system.";
+            logger.LogError(message);
+            throw new DbUpdateConcurrencyException(message);
         }
+
+        mapper.Map(dto, institutionHierarchy);
+
+        institutionHierarchy = await repository
+            .Update(
+                institutionHierarchy,
+                dto.Directions.Select(d => d.Id).ToList())
+            .ConfigureAwait(false);
+
+        logger.LogInformation($"InstitutionHierarchy with Id = {institutionHierarchy?.Id} updated succesfully.");
+
+        return mapper.Map<InstitutionHierarchyDto>(institutionHierarchy);
     }
 }
