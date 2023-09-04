@@ -1,5 +1,7 @@
-﻿using System;
+﻿using OutOfSchool.Common;
+using System;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection.Metadata;
 
 namespace OutOfSchool.Services.Models.ChatWorkshop;
 
@@ -11,7 +13,7 @@ public class ChatMessageWorkshop : IKeyedEntity<Guid>
     public Guid ChatRoomId { get; set; }
 
     [Required]
-    [MaxLength(200)]
+    [MaxLength(Constants.ChatMessageTextMaxLength)]
     public string Text { get; set; }
 
     [Required]
