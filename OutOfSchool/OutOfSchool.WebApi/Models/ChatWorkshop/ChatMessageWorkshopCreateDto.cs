@@ -16,7 +16,7 @@ public class ChatMessageWorkshopCreateDto
 
     // TODO: max length to const in Common
     [Required]
-    [MaxLength(200)]
+    [MaxLength(256)]
     [JsonProperty("Text", Required = Required.Always)]
     public string Text { get; set; }
 }

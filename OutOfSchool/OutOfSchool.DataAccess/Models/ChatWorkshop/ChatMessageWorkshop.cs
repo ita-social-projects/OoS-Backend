@@ -11,7 +11,7 @@ public class ChatMessageWorkshop : IKeyedEntity<Guid>
     public Guid ChatRoomId { get; set; }
 
     [Required]
-    [MaxLength(200)]
+    [MaxLength(256)]
     public string Text { get; set; }
 
     [Required]
