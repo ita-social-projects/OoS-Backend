@@ -41,4 +41,6 @@ public static class Constants
     public const char MappingSeparator = '¤';
 
     public const int NameMaxLength = 60;
+
+    public const int TextMaxLength = 256;
 }
