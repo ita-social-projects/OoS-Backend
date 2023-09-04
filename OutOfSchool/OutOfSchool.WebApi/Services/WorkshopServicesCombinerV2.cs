@@ -12,7 +12,7 @@ public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopSer
         IWorkshopService workshopService,
         IElasticsearchSynchronizationService elasticsearchSynchronizationService,
         INotificationService notificationService,
-        IEntityRepository<long, Favorite> favoriteRepository,
+        IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository,
         IApplicationRepository applicationRepository,
         IWorkshopStrategy workshopStrategy,
         ICurrentUserService currentUserServicse,
@@ -21,9 +21,11 @@ public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopSer
         ICodeficatorService codeficatorService,
         IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
         IMapper mapper)
-        : base(workshopService,
+        : base(
+            workshopService,
             elasticsearchSynchronizationService,
-            notificationService, favoriteRepository,
+            notificationService,
+            favoriteRepository,
             applicationRepository,
             workshopStrategy,
             currentUserServicse,

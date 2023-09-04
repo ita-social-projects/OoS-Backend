@@ -10,7 +10,7 @@ namespace OutOfSchool.WebApi.Services;
 public class StatusService : IStatusService
 {
 
-    private readonly IEntityRepository<long, InstitutionStatus> repository;
+    private readonly IEntityRepositorySoftDeleted<long, InstitutionStatus> repository;
     private readonly ILogger<StatusService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
@@ -23,7 +23,7 @@ public class StatusService : IStatusService
     /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
     public StatusService(
-        IEntityRepository<long, InstitutionStatus> repository,
+        IEntityRepositorySoftDeleted<long, InstitutionStatus> repository,
         ILogger<StatusService> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper)
@@ -40,7 +40,7 @@ public class StatusService : IStatusService
     {
         logger.LogInformation("Getting all Institution Statuses started.");
 
-        var institutionStatuses = await repository.GetByFilter(x => !x.IsDeleted).ConfigureAwait(false);
+        var institutionStatuses = await repository.GetAll().ConfigureAwait(false);
 
         logger.LogInformation(!institutionStatuses.Any()
             ? "InstitutionStatus table is empty."
@@ -54,8 +54,7 @@ public class StatusService : IStatusService
     {
         logger.LogInformation($"Getting InstitutionStatus by Id started. Looking Id = {id}.");
 
-        var institutionStatuses = await repository.GetByFilter(x => !x.IsDeleted && x.Id == id).ConfigureAwait(false);
-        var institutionStatus = institutionStatuses.SingleOrDefault();
+        var institutionStatus = await repository.GetById(id).ConfigureAwait(false);
 
         if (institutionStatus is null)
         {
@@ -88,13 +87,15 @@ public class StatusService : IStatusService
     {
         logger.LogInformation($"Updating InstitutionStatus with Id = {dto?.Id} started.");
 
-        var institutionStatuses = await repository.GetByFilter(x => !x.IsDeleted && x.Id == dto.Id).ConfigureAwait(false);
-        var institutionStatus = institutionStatuses.SingleOrDefault();
+        ArgumentNullException.ThrowIfNull(dto);
+
+        var institutionStatus = await repository.GetById(dto.Id).ConfigureAwait(false);
 
         if (institutionStatus is null)
         {
-            logger.LogError($"Updating failed. InstitutionStatus with Id = {dto?.Id} doesn't exist in the system.");
-            throw new DbUpdateConcurrencyException($"Updating failed. InstitutionStatus with Id = {dto?.Id} doesn't exist in the system.");
+            var message = $"Updating failed. InstitutionStatus with Id = {dto.Id} doesn't exist in the system.";
+            logger.LogError(message);
+            throw new DbUpdateConcurrencyException(message);
         }
 
         mapper.Map(dto, institutionStatus);
