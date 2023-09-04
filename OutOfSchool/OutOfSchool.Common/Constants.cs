@@ -42,5 +42,5 @@ public static class Constants
 
     public const int NameMaxLength = 60;
 
-    public const int TextMaxLength = 256;
+    public const int ChatMessageTextMaxLength = 256;
 }

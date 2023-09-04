@@ -9,6 +9,6 @@ public class ChatMessageWorkshopUpdateDto
     public Guid Id { get; set; }
 
     [Required]
-    [MaxLength(Constants.TextMaxLength)]
+    [MaxLength(Constants.ChatMessageTextMaxLength)]
     public string Text { get; set; }
 }

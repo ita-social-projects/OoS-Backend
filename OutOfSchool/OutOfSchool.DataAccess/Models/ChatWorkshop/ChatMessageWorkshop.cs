@@ -13,7 +13,7 @@ public class ChatMessageWorkshop : IKeyedEntity<Guid>
     public Guid ChatRoomId { get; set; }
 
     [Required]
-    [MaxLength(Constants.TextMaxLength)]
+    [MaxLength(Constants.ChatMessageTextMaxLength)]
     public string Text { get; set; }
 
     [Required]

@@ -15,7 +15,7 @@ public class ChatMessageWorkshopCreateDto
     public Guid ParentId { get; set; }
 
     [Required]
-    [MaxLength(Constants.TextMaxLength)]
+    [MaxLength(Constants.ChatMessageTextMaxLength)]
     [JsonProperty("Text", Required = Required.Always)]
     public string Text { get; set; }
 }
