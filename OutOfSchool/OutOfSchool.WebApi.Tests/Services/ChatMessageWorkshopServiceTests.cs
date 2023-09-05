@@ -217,6 +217,27 @@ public class ChatMessageWorkshopServiceTests
         // Assert
         Assert.AreEqual(expectedUnreadMessages, result);
     }
+
+    [Test]
+    public void CountUnreadMessagesAsync_ThrowsException()
+    {
+        // Arrange
+        var exceptionText = "Test exception";
+        var workshopId = Guid.NewGuid();
+        var messageRepositoryMock = new Mock<IChatMessageRepository>();
+        messageRepositoryMock.Setup(x => x.CountUnreadMessagesAsync(workshopId))
+            .Throws(new Exception(exceptionText));
+        var messageService = new ChatMessageWorkshopService(
+            messageRepositoryMock.Object,
+            roomServiceMock.Object,
+            workshopHub.Object,
+            loggerMock.Object,
+            mapper);
+
+        // Act and Assert
+        Exception ex = Assert.ThrowsAsync<Exception>(async () => await messageService.CountUnreadMessagesAsync(workshopId));
+        Assert.That(ex.Message, Is.EqualTo(exceptionText));
+    }
     #endregion
 
     private void SeedDatabase()
