@@ -195,6 +195,30 @@ public class ChatMessageWorkshopServiceTests
     }
     #endregion
 
+    #region CountUnreadMessagesAsync
+    [Test]
+    public async Task CountUnreadMessagesAsync_WhenCalledWithValidWorkshopId_ShouldReturnNumberOfUnreadMessages()
+    {
+        // Arrange
+        var workshopId = Guid.NewGuid();
+        int expectedUnreadMessages = 7;
+        var messageRepositoryMock = new Mock<IChatMessageRepository>();
+        messageRepositoryMock.Setup(x => x.CountUnreadMessagesAsync(workshopId)).Returns(Task.FromResult(expectedUnreadMessages));
+        var messageService = new ChatMessageWorkshopService(
+            messageRepositoryMock.Object,
+            roomServiceMock.Object,
+            workshopHub.Object,
+            loggerMock.Object,
+            mapper);
+
+        // Act
+        var result = await messageService.CountUnreadMessagesAsync(workshopId).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(expectedUnreadMessages, result);
+    }
+    #endregion
+
     private void SeedDatabase()
     {
         using var context = new OutOfSchoolDbContext(options);
