@@ -47,6 +47,7 @@ public class ProviderService : IProviderService, INotificationReciever
     private readonly ICodeficatorService codeficatorService;
     private readonly IRegionAdminRepository regionAdminRepository;
     private readonly IAverageRatingService averageRatingService;
+    private readonly IAreaAdminService areaAdminService;
 
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
@@ -74,6 +75,7 @@ public class ProviderService : IProviderService, INotificationReciever
     /// <param name="codeficatorService">Codeficator service.</param>
     /// <param name="regionAdminRepository">RegionAdminRepository</param>
     /// <param name="averageRatingService">Average rating service.</param>
+    /// <param name="areaAdminService">Service for manage area admin.</param>
     public ProviderService(
         IProviderRepository providerRepository,
         IEntityRepository<string, User> usersRepository,
@@ -93,7 +95,8 @@ public class ProviderService : IProviderService, INotificationReciever
         IRegionAdminService regionAdminService,
         ICodeficatorService codeficatorService,
         IRegionAdminRepository regionAdminRepository,
-        IAverageRatingService averageRatingService)
+        IAverageRatingService averageRatingService,
+        IAreaAdminService areaAdminService)
     {
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -114,6 +117,7 @@ public class ProviderService : IProviderService, INotificationReciever
         this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
         this.regionAdminRepository = regionAdminRepository;
         this.averageRatingService = averageRatingService ?? throw new ArgumentNullException(nameof(averageRatingService));
+        this.areaAdminService = areaAdminService ?? throw new ArgumentNullException(nameof(areaAdminService));
     }
 
     private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
@@ -882,13 +886,24 @@ public class ProviderService : IProviderService, INotificationReciever
 
     private async Task<bool> IsCurrentUserHasRightsToBlockProvider(Provider provider)
     {
-        if (currentUserService.IsAdmin() && !currentUserService.IsAreaAdmin())
+        if (currentUserService.IsAdmin())
         {
             if (currentUserService.IsMinistryAdmin())
             {
                 var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
 
                 if (ministryAdmin.InstitutionId != provider.InstitutionId)
+                {
+                    return false;
+                }
+            }
+
+            if (currentUserService.IsAreaAdmin())
+            {
+                var areaAdmin = await areaAdminService.GetByUserId(currentUserService.UserId);
+                var subSettlementsIds = await codeficatorService
+                    .GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
+                if (areaAdmin.InstitutionId != provider.InstitutionId || !subSettlementsIds.Contains(provider.LegalAddress.CATOTTGId))
                 {
                     return false;
                 }
