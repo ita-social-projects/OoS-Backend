@@ -25,7 +25,7 @@
         <PackageReference Include="Serilog.Enrichers.GlobalLogContext" />
         <PackageReference Include="Serilog.Exceptions" />
         <PackageReference Include="Serilog.Exceptions.EntityFrameworkCore" />
-        <PackageReference Include="Serilog.Formatting.Elasticsearch" />
+        <PackageReference Include="Elastic.CommonSchema.Serilog" />
         <PackageReference Include="Serilog.Settings.Configuration" />
         <PackageReference Include="Serilog.Sinks.File" />
         <PackageReference Include="Serilog.Expressions" />
