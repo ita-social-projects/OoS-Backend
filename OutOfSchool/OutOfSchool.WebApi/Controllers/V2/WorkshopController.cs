@@ -72,18 +72,18 @@ public class WorkshopController : ControllerBase
     /// </summary>
     /// <param name="id">Provider's id.</param>
     /// <param name="filter">Filter to get specified portion of workshops for specified provider. Ids of the excluded workshops could be specified.</param>
-    /// <returns><see cref="SearchResult{WorkshopCard}"/>, or no content.</returns>
+    /// <returns><see cref="SearchResult{WorkshopProviderViewCard}"/>, or no content.</returns>
     /// <response code="200">The list of found entities by given Id.</response>
     /// <response code="204">No entity with given Id was found.</response>
     /// <response code="500">If any server error occures. For example: Id was less than one.</response>
     [AllowAnonymous]
     [HttpGet("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopCard>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopProviderViewCard>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] ExcludeIdFilter filter)
     {
-        var workshopCards = await combinedWorkshopService.GetByProviderId<WorkshopProviderViewCard>(id, filter).ConfigureAwait(false);
+        var workshopCards = await combinedWorkshopService.GetByProviderId(id, filter).ConfigureAwait(false);
 
         if (workshopCards.TotalAmount == 0)
         {

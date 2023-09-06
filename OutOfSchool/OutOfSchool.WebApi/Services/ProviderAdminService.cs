@@ -406,7 +406,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             }
 
             var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
-            return await workshopService.GetByProviderId<WorkshopProviderViewCard>(providerAdmin.ProviderId, filter).ConfigureAwait(false);
+            return await workshopService.GetByProviderId(providerAdmin.ProviderId, filter).ConfigureAwait(false);
         }
 
         var pa = providersAdmins.SingleOrDefault();

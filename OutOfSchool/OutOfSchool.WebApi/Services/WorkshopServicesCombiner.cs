@@ -228,10 +228,9 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<T>> GetByProviderId<T>(Guid id, ExcludeIdFilter filter)
-        where T : WorkshopProviderViewCard
+    public async Task<SearchResult<WorkshopProviderViewCard>> GetByProviderId(Guid id, ExcludeIdFilter filter)
     {
-        var workshopBaseCards = await workshopService.GetByProviderId<T>(id, filter).ConfigureAwait(false);
+        var workshopBaseCards = await workshopService.GetByProviderId(id, filter).ConfigureAwait(false);
 
         return workshopBaseCards;
     }
