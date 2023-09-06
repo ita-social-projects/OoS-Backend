@@ -56,27 +56,23 @@ public class RegionAdminControllerTests
                 It.IsAny<RegionAdminBaseDto>(),
                 It.IsAny<Role>(),
                 It.IsAny<IUrlHelper>(),
-                It.IsAny<string>(),
                 It.IsAny<string>()))
             .ReturnsAsync(fakeResponseDto);
 
         fakeRegionAdminService.Setup(s => s
             .UpdateMinistryAdminAsync(
                 It.IsAny<RegionAdminBaseDto>(),
-                It.IsAny<string>(),
                 It.IsAny<string>()))
             .ReturnsAsync(fakeResponseDto);
 
         fakeRegionAdminService.Setup(s => s
             .DeleteMinistryAdminAsync(
                 It.IsAny<string>(),
-                It.IsAny<string>(),
                 It.IsAny<string>()))
             .ReturnsAsync(fakeResponseDto);
         
         fakeRegionAdminService.Setup(s => s
             .BlockMinistryAdminAsync(
-                It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<bool>()))
@@ -86,8 +82,7 @@ public class RegionAdminControllerTests
             .ReinviteMinistryAdminAsync(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
-                It.IsAny<IUrlHelper>(),
-                It.IsAny<string>()))
+                It.IsAny<IUrlHelper>()))
             .ReturnsAsync(fakeResponseDto);
 
         var fakeHttpContext = new Mock<HttpContext>();

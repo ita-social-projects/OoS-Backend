@@ -52,17 +52,16 @@ public class MinistryAdminControllerTests
         };
 
         fakeMinistryAdminService.Setup(s => s.CreateMinistryAdminAsync(It.IsAny<MinistryAdminBaseDto>(),
-            It.IsAny<Role>(), It.IsAny<IUrlHelper>(), It.IsAny<string>(),
-            It.IsAny<string>())).ReturnsAsync(fakeResponseDto);
+            It.IsAny<Role>(), It.IsAny<IUrlHelper>(), It.IsAny<string>())).ReturnsAsync(fakeResponseDto);
 
         fakeMinistryAdminService.Setup(s => s.DeleteMinistryAdminAsync(It.IsAny<string>(),
-            It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(fakeResponseDto);
+            It.IsAny<string>())).ReturnsAsync(fakeResponseDto);
         
         fakeMinistryAdminService.Setup(s => s.BlockMinistryAdminAsync(It.IsAny<string>(),
-            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(fakeResponseDto);
+            It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(fakeResponseDto);
 
         fakeMinistryAdminService.Setup(s => s.ReinviteMinistryAdminAsync(It.IsAny<string>(),
-            It.IsAny<string>(), It.IsAny<IUrlHelper>(), It.IsAny<string>())).ReturnsAsync(fakeResponseDto);
+            It.IsAny<string>(), It.IsAny<IUrlHelper>())).ReturnsAsync(fakeResponseDto);
 
         var fakeHttpContext = new Mock<HttpContext>();
         fakeHttpContext.Setup(s => s.Request.Headers[It.IsAny<string>()]).Returns("Ok");
