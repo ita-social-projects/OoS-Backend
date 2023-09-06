@@ -56,7 +56,7 @@
         <PackageVersion Include="Serilog.Enrichers.GlobalLogContext" Version="1.1.0"/>
         <PackageVersion Include="Serilog.Exceptions" Version="8.3.0"/>
         <PackageVersion Include="Serilog.Exceptions.EntityFrameworkCore" Version="8.3.0"/>
-        <PackageVersion Include="Serilog.Formatting.Elasticsearch" Version="8.4.1"/>
+        <PackageVersion Include="Elastic.CommonSchema.Serilog" Version="8.6.1" />
         <PackageVersion Include="Serilog.Settings.Configuration" Version="3.3.0"/>
         <PackageVersion Include="Serilog.Sinks.File" Version="5.0.0"/>
         <PackageVersion Include="Serilog.Expressions" Version="3.4.1"/>
