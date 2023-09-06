@@ -90,13 +90,11 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.CreateMinistryAdmin),
             Token = token,
             Data = ministryAdminBaseDto,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -137,7 +135,10 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             }
             else if (ministryAdmin.InstitutionId != filter.InstitutionId)
             {
-                Logger.LogInformation($"Filter institutionId {filter.InstitutionId} is not equals to logined Ministry admin institutionId {ministryAdmin.InstitutionId}");
+                Logger.LogInformation(
+                    "Filter institutionId {FilterInstitutionId} is not equals to logined Ministry admin institutionId {MinistryAdminInstitutionId}",
+                    filter.InstitutionId,
+                    ministryAdmin.InstitutionId);
 
                 return new SearchResult<MinistryAdminDto>()
                 {
@@ -164,9 +165,9 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             .ToListAsync()
             .ConfigureAwait(false);
 
-        Logger.LogInformation(!institutionAdmins.Any()
-            ? "Parents table is empty."
-            : $"All {institutionAdmins.Count} records were successfully received from the Parent table");
+        Logger.LogInformation(
+            "All {Count} records were successfully received from the Parent table",
+            institutionAdmins.Count);
 
         var ministryAdminsDto = institutionAdmins.Select(admin => mapper.Map<MinistryAdminDto>(admin))
                                                  .OrderBy(admin => admin.AccountStatus).ToList();
@@ -210,13 +211,11 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.UpdateMinistryAdmin + updateMinistryAdminDto.Id),
             Token = token,
             Data = mapper.Map<MinistryAdminBaseDto>(updateMinistryAdminDto),
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -258,13 +257,11 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             HttpMethodType = HttpMethodType.Delete,
             Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.DeleteMinistryAdmin + ministryAdminId),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -311,13 +308,11 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
                 "/",
                 isBlocked)),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -378,13 +373,11 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
                 ministryAdminId,
                 new PathString("/"))),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
