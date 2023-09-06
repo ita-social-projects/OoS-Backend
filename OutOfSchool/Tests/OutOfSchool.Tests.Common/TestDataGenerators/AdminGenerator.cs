@@ -33,14 +33,32 @@ public static class AdminGenerator
         .RuleFor(x => x.InstitutionId, _ => Guid.NewGuid())
         .RuleFor(x => x.CATOTTGId, f => f.Random.Long());
 
+    private static readonly Faker<AreaAdmin> FakerAreaAdmin = new Faker<AreaAdmin>()
+    .RuleFor(x => x.UserId, f => f.Random.Guid().ToString())
+    .RuleFor(x => x.InstitutionId, _ => Guid.NewGuid())
+    .RuleFor(x => x.CATOTTGId, f => f.Random.Long());
+
+    private static readonly Faker<AreaAdminDto> FakerAreaAdminDto = new Faker<AreaAdminDto>()
+        .RuleFor(x => x.Id, f => f.Random.Guid().ToString())
+        .RuleFor(x => x.FirstName, f => f.Name.FirstName())
+        .RuleFor(x => x.LastName, f => f.Name.LastName())
+        .RuleFor(x => x.InstitutionId, _ => Guid.NewGuid())
+        .RuleFor(x => x.CATOTTGId, f => f.Random.Long());
+
+
+
     public static MinistryAdminDto GenerateMinistryAdminDto() => Faker.Generate();
     public static InstitutionAdmin GenerateInstitutionAdmin() => FakerInstitutionAdmin.Generate();
     public static RegionAdmin GenerateRegionAdmin() => FakerRegionAdmin.Generate();
     public static RegionAdminDto GenerateRegionAdminDto() => FakerRegionAdminDto.Generate();
+    public static AreaAdmin GenerateRegionAreaAdmin() => FakerAreaAdmin.Generate();
+    public static AreaAdminDto GenerateAreaAdminDto() => FakerAreaAdminDto.Generate();
     public static List<MinistryAdminDto> GenerateMinistryAdminsDtos(int count) => Faker.Generate(count);
     public static List<InstitutionAdmin> GenerateInstitutionAdmins(int count) => FakerInstitutionAdmin.Generate(count);
     public static List<RegionAdmin> GenerateRegionAdmins(int count) => FakerRegionAdmin.Generate(count);
     public static List<RegionAdminDto> GenerateRegionAdminsDtos(int count) => FakerRegionAdminDto.Generate(count);
+    public static List<AreaAdmin> GenerateAreaAdmins(int count) => FakerAreaAdmin.Generate(count);
+    public static List<AreaAdminDto> GenerateAreaAdminsDtos(int count) => FakerAreaAdminDto.Generate(count);
     public static InstitutionAdmin WithUserAndInstitution(this InstitutionAdmin institutionAdmin)
     {
         institutionAdmin.User = UserGenerator.Generate();
@@ -66,5 +84,18 @@ public static class AdminGenerator
         regionAdmin.ForEach(x => x.User = UserGenerator.Generate());
         regionAdmin.ForEach(x => x.Institution = InstitutionsGenerator.Generate());
         return regionAdmin;
+    }
+    public static AreaAdmin WithUserAndInstitution(this AreaAdmin areaAdmin)
+    {
+        areaAdmin.User = UserGenerator.Generate();
+        areaAdmin.Institution = InstitutionsGenerator.Generate();
+        return areaAdmin;
+    }
+
+    public static List<AreaAdmin> WithUserAndInstitution(this List<AreaAdmin> areaAdmin)
+    {
+        areaAdmin.ForEach(x => x.User = UserGenerator.Generate());
+        areaAdmin.ForEach(x => x.Institution = InstitutionsGenerator.Generate());
+        return areaAdmin;
     }
 }

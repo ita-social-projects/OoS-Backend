@@ -62,6 +62,7 @@ public class ProviderServiceUpdate
         var codeficatorService = new Mock<ICodeficatorService>();
         var regionAdminRepository = new Mock<IRegionAdminRepository>();
         var averageRatingService = new Mock<IAverageRatingService>();
+        var areaAdminServiceMock=new Mock<IAreaAdminService>();
 
         this.providerService = new ProviderService(
             providerRepository,
@@ -82,7 +83,8 @@ public class ProviderServiceUpdate
             regionAdminService.Object,
             codeficatorService.Object,
             regionAdminRepository.Object,
-            averageRatingService.Object);
+            averageRatingService.Object,
+            areaAdminServiceMock.Object);
     }
 
     [Test]

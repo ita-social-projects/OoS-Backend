@@ -45,6 +45,7 @@ public class ProviderServiceTests
     private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<IRegionAdminRepository> regionAdminRepositoryMock;
     private Mock<IAverageRatingService> averageRatingServiceMock;
+    private Mock<IAreaAdminService> areaAdminServiceMock;
 
     private List<Provider> fakeProviders;
     private User fakeUser;
@@ -75,6 +76,7 @@ public class ProviderServiceTests
         codeficatorServiceMock = new Mock<ICodeficatorService>();
         regionAdminRepositoryMock = new Mock<IRegionAdminRepository>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
+        areaAdminServiceMock = new Mock<IAreaAdminService>();
 
 
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
@@ -98,7 +100,8 @@ public class ProviderServiceTests
             regionAdminServiceMock.Object,
             codeficatorServiceMock.Object,
             regionAdminRepositoryMock.Object,
-            averageRatingServiceMock.Object);
+            averageRatingServiceMock.Object,
+            areaAdminServiceMock.Object);
     }
 
     #region Create
@@ -1134,7 +1137,7 @@ public class ProviderServiceTests
     }
 
     [Test]
-    public async Task Block_ReturnsNull_IfAreaAdmin()
+    public async Task Block_ReturnsProviderBlockDto_IfAreaAdminHasRights()
     {
         // Arrange
         var institutionId = Guid.NewGuid();
@@ -1143,6 +1146,10 @@ public class ProviderServiceTests
         var provider = ProvidersGenerator.Generate();
         provider.InstitutionId = institutionId;
         provider.LegalAddress.CATOTTGId = catottgId;
+
+        AreaAdminDto areaAdmin = AdminGenerator.GenerateAreaAdminDto();
+        areaAdmin.InstitutionId = institutionId;
+        areaAdmin.CATOTTGId = catottgId;
 
         var providerBlockDto = new ProviderBlockDto()
         {
@@ -1157,18 +1164,32 @@ public class ProviderServiceTests
             .ReturnsAsync(It.IsAny<int>());
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<ProviderBlockDto>>>()))
             .ReturnsAsync(providerBlockDto);
+        areaAdminServiceMock.Setup(x => x.GetByUserId(It.IsAny<string>()))
+            .Returns(Task.FromResult(areaAdmin));
         currentUserServiceMock.Setup(x => x.IsAdmin())
             .Returns(true);
+        currentUserServiceMock.Setup(x => x.IsRegionAdmin())
+            .Returns(false);
         currentUserServiceMock.Setup(x => x.IsAreaAdmin())
             .Returns(true);
+        codeficatorServiceMock.Setup(x => x.GetAllChildrenIdsByParentIdAsync(It.IsAny<long>()))
+            .Returns(Task.FromResult((IEnumerable<long>)new List<long> { catottgId }));
+        notificationService.Setup(s => s.Create(
+                NotificationType.Provider,
+                NotificationAction.Block,
+                provider.Id,
+                providerService,
+                It.IsAny<Dictionary<string, string>>(),
+                null))
+            .Returns(Task.CompletedTask);
 
         // Act
         var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
 
         // Assert
-        Assert.IsFalse(result.IsSuccess);
-        Assert.AreEqual(HttpStatusCode.Forbidden, result.HttpStatusCode);
-        Assert.IsNull(result.Result);
+        Assert.IsTrue(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.OK, result.HttpStatusCode);
+        Assert.AreEqual(providerBlockDto, result.Result);
     }
 
     [Test]
