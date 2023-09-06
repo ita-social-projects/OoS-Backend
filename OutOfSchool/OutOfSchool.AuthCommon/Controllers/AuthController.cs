@@ -178,7 +178,7 @@ public class AuthController : Controller
             }
             else
             {
-                var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, false, false);
+                var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberMe, false);
 
                 if (result.Succeeded)
                 {

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authentication;
 
 namespace OutOfSchool.AuthCommon.ViewModels;
@@ -11,6 +11,8 @@ public class LoginViewModel
     [Required(ErrorMessage = "Password is required")]
     [DataType(DataType.Password)]
     public string Password { get; set; }
+
+    public bool RememberMe { get; set; }
 
     public string ReturnUrl { get; set; }
 

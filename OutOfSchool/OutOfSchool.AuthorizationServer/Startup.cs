@@ -10,6 +10,7 @@ using OutOfSchool.AuthorizationServer.Config;
 using OutOfSchool.AuthorizationServer.Extensions;
 using OutOfSchool.AuthorizationServer.KeyManagement;
 using OutOfSchool.AuthorizationServer.Services;
+
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
 namespace OutOfSchool.AuthorizationServer;
@@ -79,11 +80,13 @@ public static class Startup
             .AddEntityFrameworkStores<OutOfSchoolDbContext>()
             .AddDefaultTokenProviders();
 
+        var expireDaysStr = config["CookieConfig:ExpireDays"];
         services.ConfigureApplicationCookie(c =>
         {
             c.Cookie.Name = "OpenIdDict.Cookie";
             c.LoginPath = "/Auth/Login";
             c.LogoutPath = "/Auth/Logout";
+            c.ExpireTimeSpan = TimeSpan.FromDays(Convert.ToInt32(expireDaysStr));
         });
 
         var issuerSection = config.GetSection(IssuerConfig.Name);

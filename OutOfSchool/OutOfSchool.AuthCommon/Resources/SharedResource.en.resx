@@ -390,4 +390,7 @@
   <data name="Terms of use Title" xml:space="preserve">
     <value>Terms of use</value>
   </data>
+  <data name="Remember me?" xml:space="preserve">
+    <value>Remember me?</value>
+  </data>
 </root>
