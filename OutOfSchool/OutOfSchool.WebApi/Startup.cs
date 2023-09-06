@@ -61,6 +61,8 @@ public static class Startup
         app.UseAuthentication();
         app.UseAuthorization();
 
+        app.UseHeaderPropagation();
+
         app.MapHealthChecks("/healthz/ready", new HealthCheckOptions
             {
                 Predicate = healthCheck => healthCheck.Tags.Contains("readiness"),
@@ -124,7 +126,8 @@ public static class Startup
                 new HttpClientHandler()
                 {
                     AutomaticDecompression = DecompressionMethods.GZip,
-                });
+                })
+            .AddHeaderPropagation();
 
         services.AddHttpContextAccessor();
         services.AddScoped<IProviderAdminService, ProviderAdminService>();
@@ -392,5 +395,11 @@ public static class Startup
             .AddDbContextCheck<OutOfSchoolDbContext>(
                 "Database",
                 tags: new[] { "readiness" });
+
+        services.AddHeaderPropagation(options =>
+        {
+            options.Headers.Add("Request-Id");
+            options.Headers.Add("X-Request-Id");
+        });
     }
 }

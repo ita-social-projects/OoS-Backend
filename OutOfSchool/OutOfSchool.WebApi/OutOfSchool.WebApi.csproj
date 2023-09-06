@@ -75,6 +75,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" />
         <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.AspNetCore.HeaderPropagation" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
