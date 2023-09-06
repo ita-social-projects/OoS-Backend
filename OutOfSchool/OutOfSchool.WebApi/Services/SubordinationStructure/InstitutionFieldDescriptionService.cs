@@ -13,7 +13,7 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure;
 
 public class InstitutionFieldDescriptionService : IInstitutionFieldDescriptionService
 {
-    private readonly ISensitiveEntityRepository<InstitutionFieldDescription> repository;
+    private readonly ISensitiveEntityRepositorySoftDeleted<InstitutionFieldDescription> repository;
     private readonly ILogger<InstitutionFieldDescriptionService> logger;
     private readonly IMapper mapper;
     private readonly ICacheService cache;
@@ -26,7 +26,7 @@ public class InstitutionFieldDescriptionService : IInstitutionFieldDescriptionSe
     /// <param name="mapper">Mapper.</param>
     /// <param name="cache">Redis cache service.</param>
     public InstitutionFieldDescriptionService(
-        ISensitiveEntityRepository<InstitutionFieldDescription> repository,
+        ISensitiveEntityRepositorySoftDeleted<InstitutionFieldDescription> repository,
         ILogger<InstitutionFieldDescriptionService> logger,
         IMapper mapper,
         ICacheService cache)

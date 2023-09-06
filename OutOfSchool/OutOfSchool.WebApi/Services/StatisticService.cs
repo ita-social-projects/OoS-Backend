@@ -164,7 +164,7 @@ public class StatisticService : IStatisticService
         var workshops = workshopRepository
             .Get(
                 includeProperties: $"{nameof(Address)},{nameof(InstitutionHierarchy)}",
-                whereExpression: w => !w.IsBlocked && Provider.ValidProviderStatuses.Contains(w.Provider.Status));
+                whereExpression: w => !w.IsBlocked && Provider.ValidProviderStatuses.Contains(w.Provider.Status) && !w.InstitutionHierarchy.IsDeleted);
 
         if (catottgId > 0)
         {
