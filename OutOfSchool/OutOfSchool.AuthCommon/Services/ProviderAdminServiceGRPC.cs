@@ -24,7 +24,7 @@ public class ProviderAdminServiceGRPC : GRPCProviderAdmin.GRPCProviderAdminBase
         var createProviderAdminDto = mapper.Map<CreateProviderAdminDto>(request);
 
         var userId = context.GetHttpContext().User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
-        var result = await providerAdminService.CreateProviderAdminAsync(createProviderAdminDto, null, userId, request.RequestId);
+        var result = await providerAdminService.CreateProviderAdminAsync(createProviderAdminDto, null, userId);
         CreateProviderAdminReply createProviderAdminReply;
 
         if (result.IsSuccess && result.Result is CreateProviderAdminDto resultCreateProviderAdminDto)
