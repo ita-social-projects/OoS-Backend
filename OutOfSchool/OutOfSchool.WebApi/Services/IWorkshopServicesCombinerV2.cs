@@ -11,15 +11,15 @@ public interface IWorkshopServicesCombinerV2 : IWorkshopServicesCombiner
     /// Add entity to the database.
     /// </summary>
     /// <param name="dto">Entity to add.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopCreationResultDto"/>.</returns>
-    new Task<WorkshopCreationResultDto> Create(WorkshopDTO dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopResultDTO"/>.</returns>
+    new Task<WorkshopResultDTO> Create(WorkshopV2DTO dto);
 
     /// <summary>
     /// Update existing entity in the database.
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopUpdateResultDto"/>.</returns>
-    new Task<WorkshopUpdateResultDto> Update(WorkshopDTO dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopResultDTO"/>.</returns>
+    new Task<WorkshopResultDTO> Update(WorkshopV2DTO dto);
 
     /// <summary>
     ///  Delete entity.

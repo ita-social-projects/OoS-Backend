@@ -19,14 +19,14 @@ public interface IWorkshopService
     /// </summary>
     /// <param name="dto">Entity to add.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopDTO"/>.</returns>
-    Task<WorkshopDTO> Create(WorkshopDTO dto);
+    Task<WorkshopBaseDTO> Create(WorkshopBaseDTO dto);
 
     /// <summary>
     /// Add entity to the database.
     /// </summary>
     /// <param name="dto">Entity to add.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopCreationResultDto"/>.</returns>
-    Task<WorkshopCreationResultDto> CreateV2(WorkshopDTO dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopResultDTO"/>.</returns>
+    Task<WorkshopResultDTO> CreateV2(WorkshopV2DTO dto);
 
     /// <summary>
     /// Get entity by it's key.
@@ -41,21 +41,21 @@ public interface IWorkshopService
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopDTO"/>.</returns>
-    Task<WorkshopDTO> Update(WorkshopDTO dto);
+    Task<WorkshopBaseDTO> Update(WorkshopBaseDTO dto);
 
     /// <summary>
     /// Update existing entity in the database.
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopUpdateResultDto"/>.</returns>
-    Task<WorkshopUpdateResultDto> UpdateV2(WorkshopDTO dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopResultDTO"/>.</returns>
+    Task<WorkshopResultDTO> UpdateV2(WorkshopV2DTO dto);
 
     /// <summary>
     /// Update status field for existing entity in the database.
     /// </summary>
     /// <param name="dto">Workshop id and status to update.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopStatusWithTitleDto"/>.</returns>
-    Task<WorkshopStatusWithTitleDto> UpdateStatus(WorkshopStatusDto dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopStatusWithTitleDTO"/>.</returns>
+    Task<WorkshopStatusWithTitleDTO> UpdateStatus(WorkshopStatusDTO dto);
 
     /// <summary>
     ///  Delete entity.

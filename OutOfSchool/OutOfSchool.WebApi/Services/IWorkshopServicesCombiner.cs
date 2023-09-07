@@ -18,8 +18,8 @@ public interface IWorkshopServicesCombiner
     /// Add entity to the database.
     /// </summary>
     /// <param name="dto">Entity to add.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopCreationResultDto"/>.</returns>
-    Task<WorkshopDTO> Create(WorkshopDTO dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopBaseDTO"/>.</returns>
+    Task<WorkshopBaseDTO> Create(WorkshopBaseDTO dto);
 
     /// <summary>
     /// Get all workshop cards (Id, Title) with the specified provider's Id.
@@ -49,15 +49,15 @@ public interface IWorkshopServicesCombiner
     /// Update existing entity in the database.
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopUpdateResultDto"/>.</returns>
-    Task<WorkshopDTO> Update(WorkshopDTO dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopBaseDTO"/>.</returns>
+    Task<WorkshopBaseDTO> Update(WorkshopBaseDTO dto);
 
     /// <summary>
     /// Update status field for existing entity in the database.
     /// </summary>
     /// <param name="dto">Workshop to update.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopStatusDto"/>.</returns>
-    Task<WorkshopStatusDto> UpdateStatus(WorkshopStatusDto dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopStatusDTO"/>.</returns>
+    Task<WorkshopStatusDTO> UpdateStatus(WorkshopStatusDTO dto);
 
     /// <summary>
     ///  Delete entity.

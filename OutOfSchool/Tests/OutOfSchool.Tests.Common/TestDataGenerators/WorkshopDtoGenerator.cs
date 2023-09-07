@@ -9,7 +9,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
 public static class WorkshopDtoGenerator
 {
-    private static readonly Faker<WorkshopDTO> Faker = new Faker<WorkshopDTO>()
+    private static readonly Faker<WorkshopV2DTO> Faker = new Faker<WorkshopV2DTO>()
         .RuleForType(typeof(int), f => f.Random.Int())
         .RuleForType(typeof(Guid),f => f.Random.Guid())
         .RuleForType(typeof(long),f => f.Random.Long(0, long.MaxValue))
@@ -22,7 +22,7 @@ public static class WorkshopDtoGenerator
         .RuleFor(x => x.MaxAge, f => f.Random.Number(16, 18))
         .RuleFor(x => x.Price, f => f.Random.Decimal(0, 10000))
         .RuleFor(x => x.WorkshopDescriptionItems, f => f.Make(new Random().Next(1, 6), () =>
-            new WorkshopDescriptionItemDto()
+            new WorkshopDescriptionItemDTO()
             {
                 Id = Guid.NewGuid(),
                 SectionName = f.Lorem.Sentence(),
@@ -47,5 +47,5 @@ public static class WorkshopDtoGenerator
         .RuleFor(x => x.Teachers, f =>
             f.Make(new Random().Next(1, 3), () => new TeacherDTO()));
         
-    public static WorkshopDTO Generate() => Faker.Generate();
+    public static WorkshopV2DTO Generate() => Faker.Generate();
 }

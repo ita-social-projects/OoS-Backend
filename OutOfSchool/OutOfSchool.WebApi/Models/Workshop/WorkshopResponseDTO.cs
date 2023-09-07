@@ -2,9 +2,9 @@
 
 namespace OutOfSchool.WebApi.Models.Workshop;
 
-public class WorkshopCreationResponse
+public class WorkshopResponseDTO
 {
-    public WorkshopDTO Workshop { get; set; }
+    public WorkshopV2DTO Workshop { get; set; }
 
     public SingleImageUploadingResponse UploadingCoverImageResult { get; set; }
 

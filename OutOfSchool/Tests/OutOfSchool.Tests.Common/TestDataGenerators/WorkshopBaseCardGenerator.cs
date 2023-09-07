@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Bogus;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Workshop;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 

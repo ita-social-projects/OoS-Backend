@@ -32,9 +32,11 @@ public class WorkshopControllerTests
     private const int BadRequest = 400;
     private const int Forbidden = 403;
 
-    private static List<WorkshopDTO> workshops;
+    private static List<WorkshopV2DTO> workshops;
     private static List<WorkshopCard> workshopCards;
     private static WorkshopDTO workshop;
+    private static WorkshopBaseDTO workshopCreateDto;
+    private static WorkshopBaseDTO workshopUpdateDto;
     private static ProviderDto provider;
     private static Mock<IOptions<AppDefaultsConfig>> options;
 
@@ -63,6 +65,8 @@ public class WorkshopControllerTests
 
         workshops = WithWorkshops();
         workshop = WithWorkshop();
+        workshopCreateDto = WithWorkshopCreate();
+        workshopUpdateDto = WithWorkshopUpdate();
         provider = WithProvider();
         workshopCards = WithWorkshopCards();
         workshopBaseCards = WorkshopBaseCardGenerator.Generate(5);
@@ -422,14 +426,14 @@ public class WorkshopControllerTests
     {
         // Arrange
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
-        workshopServiceMoq.Setup(x => x.Create(workshop)).ReturnsAsync(workshop);
+        workshopServiceMoq.Setup(x => x.Create(workshopCreateDto)).ReturnsAsync(workshopCreateDto);
 
         // Act
-        var result = await controller.Create(workshop).ConfigureAwait(false) as CreatedAtActionResult;
+        var result = await controller.Create(workshopCreateDto).ConfigureAwait(false) as CreatedAtActionResult;
 
         // Assert
         providerServiceMoq.VerifyAll();
-        workshopServiceMoq.Verify(x => x.Create(workshop), Times.Once);
+        workshopServiceMoq.Verify(x => x.Create(workshopCreateDto), Times.Once);
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(Create, result.StatusCode);
     }
@@ -438,14 +442,14 @@ public class WorkshopControllerTests
     public async Task CreateWorkshop_WhenModelIsInvalid_ShouldReturnBadRequestObjectResult()
     {
         // Arrange
-        workshopServiceMoq.Setup(x => x.Create(workshop)).ReturnsAsync(workshop);
+        workshopServiceMoq.Setup(x => x.Create(workshopCreateDto)).ReturnsAsync(workshopCreateDto);
         controller.ModelState.AddModelError("CreateWorkshop", "Invalid model state.");
 
         // Act
-        var result = await controller.Create(workshop).ConfigureAwait(false) as BadRequestObjectResult;
+        var result = await controller.Create(workshopCreateDto).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert
-        workshopServiceMoq.Verify(x => x.Create(workshop), Times.Never);
+        workshopServiceMoq.Verify(x => x.Create(workshopCreateDto), Times.Never);
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(BadRequest, result.StatusCode);
     }
@@ -458,11 +462,11 @@ public class WorkshopControllerTests
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(notAuthorProvider);
 
         // Act
-        var result = await controller.Create(workshop) as ObjectResult;
+        var result = await controller.Create(workshopCreateDto) as ObjectResult;
 
         // Assert
         providerServiceMoq.VerifyAll();
-        workshopServiceMoq.Verify(x => x.Create(workshop), Times.Never);
+        workshopServiceMoq.Verify(x => x.Create(workshopCreateDto), Times.Never);
         Assert.IsNotNull(result);
         Assert.AreEqual(Forbidden, result.StatusCode);
     }
@@ -474,10 +478,10 @@ public class WorkshopControllerTests
     {
         // Arrange
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
-        workshopServiceMoq.Setup(x => x.Update(workshop)).ReturnsAsync(workshop);
+        workshopServiceMoq.Setup(x => x.Update(workshopUpdateDto)).ReturnsAsync(workshopUpdateDto);
 
         // Act
-        var result = await controller.Update(workshop).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -488,14 +492,14 @@ public class WorkshopControllerTests
     public async Task UpdateWorkshop_WhenModelIsInvalid_ShouldReturnBadRequestObjectResult()
     {
         // Arrange
-        workshopServiceMoq.Setup(x => x.Update(workshop)).ReturnsAsync(workshop);
+        workshopServiceMoq.Setup(x => x.Update(workshopUpdateDto)).ReturnsAsync(workshopUpdateDto);
         controller.ModelState.AddModelError("CreateWorkshop", "Invalid model state.");
 
         // Act
-        var result = await controller.Update(workshop).ConfigureAwait(false) as BadRequestObjectResult;
+        var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert
-        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopDTO>()), Times.Never);
+        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopBaseDTO>()), Times.Never);
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(BadRequest, result.StatusCode);
     }
@@ -508,11 +512,11 @@ public class WorkshopControllerTests
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(notAuthorProvider);
 
         // Act
-        var result = await controller.Update(workshop).ConfigureAwait(false) as ObjectResult;
+        var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as ObjectResult;
 
         // Assert
         providerServiceMoq.VerifyAll();
-        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopDTO>()), Times.Never);
+        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopBaseDTO>()), Times.Never);
         Assert.IsNotNull(result);
         Assert.AreEqual(Forbidden, result.StatusCode);
     }
@@ -596,7 +600,7 @@ public class WorkshopControllerTests
         var result = await controller.UpdateStatus(workShopStatusDto) as ObjectResult;
 
         // Assert
-        workshopServiceMoq.Verify(x => x.Create(workshop), Times.Never);
+        workshopServiceMoq.Verify(x => x.Create(workshopCreateDto), Times.Never);
         Assert.IsNotNull(result);
         Assert.AreEqual(Forbidden, result.StatusCode);
     }
@@ -659,9 +663,9 @@ public class WorkshopControllerTests
     }
     #endregion
 
-    private WorkshopDTO WithWorkshop()
+    private WorkshopV2DTO WithWorkshop()
     {
-        return new WorkshopDTO()
+        return new WorkshopV2DTO()
         {
             Id = Guid.NewGuid(),
             Title = "Title6",
@@ -738,11 +742,169 @@ public class WorkshopControllerTests
         };
     }
 
-    private List<WorkshopDTO> WithWorkshops()
+    private WorkshopBaseDTO WithWorkshopCreate()
     {
-        return new List<WorkshopDTO>()
+        return new WorkshopBaseDTO()
         {
-            new WorkshopDTO()
+            Id = Guid.NewGuid(),
+            Title = "Title6",
+            Phone = "1111111111",
+            WorkshopDescriptionItems = new[]
+            {
+            WithWorkshopDescriptionItem(),
+            WithWorkshopDescriptionItem(),
+            },
+            Price = 6000,
+            WithDisabilityOptions = true,
+            //Status = WorkshopStatus.Open,
+            ProviderTitle = "ProviderTitle",
+            DisabilityOptionsDesc = "Desc6",
+            Website = "website6",
+            Instagram = "insta6",
+            Facebook = "facebook6",
+            Email = "email6@gmail.com",
+            MaxAge = 10,
+            MinAge = 4,
+            //CoverImageId = "image6",
+            ProviderId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
+            InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
+            AddressId = 55,
+            Address = new AddressDto
+            {
+                Id = 55,
+                CATOTTGId = 4970,
+                Street = "Street55",
+                BuildingNumber = "BuildingNumber55",
+                Latitude = 0,
+                Longitude = 0,
+            },
+            Teachers = new List<TeacherDTO>
+        {
+            new TeacherDTO
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Alex",
+                LastName = "Brown",
+                MiddleName = "SomeMiddleName",
+                Description = "Description",
+                //Image = "Image",
+                DateOfBirth = DateTime.Parse("2000-01-01"),
+                WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
+            },
+            new TeacherDTO
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "John",
+                LastName = "Snow",
+                MiddleName = "SomeMiddleName",
+                Description = "Description",
+                //Image = "Image",
+                DateOfBirth = DateTime.Parse("1990-01-01"),
+                WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
+            },
+        },
+            DateTimeRanges = new List<DateTimeRangeDto>()
+        {
+            new DateTimeRangeDto
+            {
+                Id = It.IsAny<long>(),
+                EndTime = It.IsAny<TimeSpan>(),
+                StartTime = It.IsAny<TimeSpan>(),
+                Workdays = new List<DaysBitMask>()
+                {
+                    DaysBitMask.Monday,
+                    DaysBitMask.Thursday,
+                },
+            },
+        },
+            PayRate = PayRateType.Course,
+        };
+    }
+
+    private WorkshopBaseDTO WithWorkshopUpdate()
+    {
+        return new WorkshopBaseDTO()
+        {
+            Id = Guid.NewGuid(),
+            Title = "Title6",
+            Phone = "1111111111",
+            WorkshopDescriptionItems = new[]
+            {
+        WithWorkshopDescriptionItem(),
+        WithWorkshopDescriptionItem(),
+        },
+            Price = 6000,
+            WithDisabilityOptions = true,
+            //Status = WorkshopStatus.Open,
+            ProviderTitle = "ProviderTitle",
+            DisabilityOptionsDesc = "Desc6",
+            Website = "website6",
+            Instagram = "insta6",
+            Facebook = "facebook6",
+            Email = "email6@gmail.com",
+            MaxAge = 10,
+            MinAge = 4,
+            //CoverImageId = "image6",
+            ProviderId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
+            InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
+            AddressId = 55,
+            Address = new AddressDto
+            {
+                Id = 55,
+                CATOTTGId = 4970,
+                Street = "Street55",
+                BuildingNumber = "BuildingNumber55",
+                Latitude = 0,
+                Longitude = 0,
+            },
+            Teachers = new List<TeacherDTO>
+    {
+        new TeacherDTO
+        {
+            Id = Guid.NewGuid(),
+            FirstName = "Alex",
+            LastName = "Brown",
+            MiddleName = "SomeMiddleName",
+            Description = "Description",
+            //Image = "Image",
+            DateOfBirth = DateTime.Parse("2000-01-01"),
+            WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
+        },
+        new TeacherDTO
+        {
+            Id = Guid.NewGuid(),
+            FirstName = "John",
+            LastName = "Snow",
+            MiddleName = "SomeMiddleName",
+            Description = "Description",
+            //Image = "Image",
+            DateOfBirth = DateTime.Parse("1990-01-01"),
+            WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
+        },
+    },
+            DateTimeRanges = new List<DateTimeRangeDto>()
+    {
+        new DateTimeRangeDto
+        {
+            Id = It.IsAny<long>(),
+            EndTime = It.IsAny<TimeSpan>(),
+            StartTime = It.IsAny<TimeSpan>(),
+            Workdays = new List<DaysBitMask>()
+            {
+                DaysBitMask.Monday,
+                DaysBitMask.Thursday,
+            },
+        },
+    },
+            PayRate = PayRateType.Course,
+        };
+    }
+
+    private List<WorkshopV2DTO> WithWorkshops()
+    {
+        return new List<WorkshopV2DTO>()
+        {
+            new WorkshopV2DTO()
             {
                 Id = Guid.NewGuid(),
                 Title = "Title1",
@@ -769,7 +931,7 @@ public class WorkshopControllerTests
                     CATOTTGId = 4970,
                 },
             },
-            new WorkshopDTO()
+            new WorkshopV2DTO()
             {
                 Id = Guid.NewGuid(),
                 Title = "Title2",
@@ -798,7 +960,7 @@ public class WorkshopControllerTests
                     CATOTTGId = 4970,
                 },
             },
-            new WorkshopDTO()
+            new WorkshopV2DTO()
             {
                 Id = Guid.NewGuid(),
                 Title = "Title3",
@@ -823,7 +985,7 @@ public class WorkshopControllerTests
                 CoverImageId = "image3",
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
             },
-            new WorkshopDTO()
+            new WorkshopV2DTO()
             {
                 Id = Guid.NewGuid(),
                 Title = "Title4",
@@ -847,7 +1009,7 @@ public class WorkshopControllerTests
                 CoverImageId = "image4",
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
             },
-            new WorkshopDTO()
+            new WorkshopV2DTO()
             {
                 Id = Guid.NewGuid(),
                 Title = "Title5",
@@ -913,10 +1075,10 @@ public class WorkshopControllerTests
         }).ToList();
     }
 
-    private WorkshopDescriptionItemDto WithWorkshopDescriptionItem()
+    private WorkshopDescriptionItemDTO WithWorkshopDescriptionItem()
     {
         var id = Guid.NewGuid();
-        return new WorkshopDescriptionItemDto
+        return new WorkshopDescriptionItemDTO
         {
             Id = id,
             SectionName = "test heading",
@@ -924,9 +1086,9 @@ public class WorkshopControllerTests
         };
     }
 
-    private WorkshopStatusDto WithWorkshopStatusDto(Guid workshopDtoId, WorkshopStatus workshopStatus)
+    private WorkshopStatusDTO WithWorkshopStatusDto(Guid workshopDtoId, WorkshopStatus workshopStatus)
     {
-        return new WorkshopStatusDto()
+        return new WorkshopStatusDTO()
         {
             WorkshopId = workshopDtoId,
             Status = workshopStatus,

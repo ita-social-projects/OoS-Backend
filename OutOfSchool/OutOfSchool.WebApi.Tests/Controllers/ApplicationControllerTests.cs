@@ -42,7 +42,7 @@ public class ApplicationControllerTests
     private IEnumerable<WorkshopCard> workshops;
     private ParentDTO parent;
     private ProviderDto provider;
-    private WorkshopDTO workshopDto;
+    private WorkshopV2DTO workshopDto;
 
     [SetUp]
     public void Setup()
@@ -553,9 +553,9 @@ public class ApplicationControllerTests
         Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
     }
 
-    private WorkshopDTO FakeWorkshop()
+    private WorkshopV2DTO FakeWorkshop()
     {
-        return new WorkshopDTO()
+        return new WorkshopV2DTO()
         {
             Id = Guid.NewGuid(),
             Title = "Title6",
@@ -617,11 +617,11 @@ public class ApplicationControllerTests
         };
     }
 
-    private List<WorkshopDTO> FakeWorkshops()
+    private List<WorkshopV2DTO> FakeWorkshops()
     {
-        return new List<WorkshopDTO>()
+        return new List<WorkshopV2DTO>()
         {
-            new WorkshopDTO()
+            new WorkshopV2DTO()
             {
                 Id = Guid.NewGuid(),
                 Title = "Title1",
@@ -649,7 +649,7 @@ public class ApplicationControllerTests
                     CATOTTGId = 4970,
                 },
             },
-            new WorkshopDTO()
+            new WorkshopV2DTO()
             {
                 Id = Guid.NewGuid(),
                 Title = "Title2",
@@ -676,7 +676,7 @@ public class ApplicationControllerTests
                     CATOTTGId = 4970,
                 },
             },
-            new WorkshopDTO()
+            new WorkshopV2DTO()
             {
                 Id = Guid.NewGuid(),
                 Title = "Title3",
@@ -701,7 +701,7 @@ public class ApplicationControllerTests
                 CoverImageId = "image3",
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
             },
-            new WorkshopDTO()
+            new WorkshopV2DTO()
             {
                 Id = Guid.NewGuid(),
                 Title = "Title4",
@@ -725,7 +725,7 @@ public class ApplicationControllerTests
                 CoverImageId = "image4",
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
             },
-            new WorkshopDTO()
+            new WorkshopV2DTO()
             {
                 Id = Guid.NewGuid(),
                 Title = "Title5",
@@ -782,10 +782,10 @@ public class ApplicationControllerTests
         }).ToList();
     }
 
-    private WorkshopDescriptionItemDto FakeWorkshopDescriptionItem()
+    private WorkshopDescriptionItemDTO FakeWorkshopDescriptionItem()
     {
         var id = Guid.NewGuid();
-        return new WorkshopDescriptionItemDto
+        return new WorkshopDescriptionItemDTO
         {
             Id = id,
             SectionName = "test heading",

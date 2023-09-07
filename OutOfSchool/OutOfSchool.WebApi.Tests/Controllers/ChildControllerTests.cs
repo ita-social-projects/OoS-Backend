@@ -246,14 +246,14 @@ public class ChildControllerTests
     {
         // Arrange
         ChildDto child = children.First();
-        WorkshopDTO existingWorkshop = new WorkshopDTO()
+        WorkshopV2DTO existingWorkshop = new WorkshopV2DTO()
         {
             Id = Guid.NewGuid(),
             Title = "Title1",
             Phone = "1111111111",
             WorkshopDescriptionItems = new[]
                 {
-                    new WorkshopDescriptionItemDto
+                    new WorkshopDescriptionItemDTO
                     {
                         Id = Guid.NewGuid(),
                         SectionName = "test heading",

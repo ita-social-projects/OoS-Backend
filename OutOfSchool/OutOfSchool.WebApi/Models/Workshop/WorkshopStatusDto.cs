@@ -3,7 +3,7 @@ using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.WebApi.Models.Workshop;
 
-public class WorkshopStatusDto
+public class WorkshopStatusDTO
 {
     [Required]
     public Guid WorkshopId { get; set; }

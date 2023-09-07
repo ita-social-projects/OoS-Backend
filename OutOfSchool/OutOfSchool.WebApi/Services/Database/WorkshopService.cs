@@ -75,8 +75,8 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
-    /// <exception cref="ArgumentNullException">If <see cref="WorkshopDTO"/> is null.</exception>
-    public async Task<WorkshopDTO> Create(WorkshopDTO dto)
+    /// <exception cref="ArgumentNullException">If <see cref="WorkshopBaseDTO"/> is null.</exception>
+    public async Task<WorkshopBaseDTO> Create(WorkshopBaseDTO dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
@@ -99,14 +99,14 @@ public class WorkshopService : IWorkshopService
 
         logger.LogInformation($"Workshop with Id = {newWorkshop?.Id} created successfully.");
 
-        return mapper.Map<WorkshopDTO>(newWorkshop);
+        return mapper.Map<WorkshopBaseDTO>(newWorkshop);
     }
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentNullException">If <see cref="WorkshopDTO"/> is null.</exception>
     /// <exception cref="InvalidOperationException">If unreal to map teachers.</exception>
     /// <exception cref="DbUpdateException">If unreal to update entity.</exception>
-    public async Task<WorkshopCreationResultDto> CreateV2(WorkshopDTO dto)
+    public async Task<WorkshopResultDTO> CreateV2(WorkshopV2DTO dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
@@ -152,9 +152,9 @@ public class WorkshopService : IWorkshopService
 
         logger.LogInformation($"Workshop with Id = {newWorkshop.Id} created successfully.");
 
-        return new WorkshopCreationResultDto
+        return new WorkshopResultDTO
         {
-            Workshop = mapper.Map<WorkshopDTO>(newWorkshop),
+            Workshop = mapper.Map<WorkshopV2DTO>(newWorkshop),
             UploadingCoverImageResult = coverImageUploadResult?.OperationResult,
             UploadingImagesResults = imagesUploadResult?.MultipleKeyValueOperationResult,
         };
@@ -291,9 +291,9 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
-    /// <exception cref="ArgumentNullException">If <see cref="WorkshopDTO"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">If <see cref="WorkshopBaseDTO"/> is null.</exception>
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-    public async Task<WorkshopDTO> Update(WorkshopDTO dto)
+    public async Task<WorkshopBaseDTO> Update(WorkshopBaseDTO dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation($"Updating Workshop with Id = {dto?.Id} started.");
@@ -319,11 +319,11 @@ public class WorkshopService : IWorkshopService
         var updatedWorkshop = await workshopRepository
             .RunInTransaction(UpdateWorkshopLocally).ConfigureAwait(false);
 
-        return mapper.Map<WorkshopDTO>(updatedWorkshop);
+        return mapper.Map<WorkshopBaseDTO>(updatedWorkshop);
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopStatusWithTitleDto> UpdateStatus(WorkshopStatusDto dto)
+    public async Task<WorkshopStatusWithTitleDTO> UpdateStatus(WorkshopStatusDTO dto)
     {
         logger.LogInformation($"Updating Workshop status with Id = {dto.WorkshopId} started.");
 
@@ -362,7 +362,7 @@ public class WorkshopService : IWorkshopService
             }
         }
 
-        var dtoWithTitle = mapper.Map<WorkshopStatusWithTitleDto>(dto);
+        var dtoWithTitle = mapper.Map<WorkshopStatusWithTitleDTO>(dto);
         dtoWithTitle.Title = currentWorkshop.Title;
 
         return dtoWithTitle;
@@ -370,7 +370,7 @@ public class WorkshopService : IWorkshopService
 
     /// <inheritdoc/>
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-    public async Task<WorkshopUpdateResultDto> UpdateV2(WorkshopDTO dto)
+    public async Task<WorkshopResultDTO> UpdateV2(WorkshopV2DTO dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation($"Updating {nameof(Workshop)} with Id = {dto.Id} started.");
@@ -405,9 +405,9 @@ public class WorkshopService : IWorkshopService
         var (updatedWorkshop, multipleImageChangeResult, changeCoverImageResult) = await workshopRepository
             .RunInTransaction(UpdateWorkshopWithDependencies).ConfigureAwait(false);
 
-        return new WorkshopUpdateResultDto
+        return new WorkshopResultDTO
         {
-            Workshop = mapper.Map<WorkshopDTO>(updatedWorkshop),
+            Workshop = mapper.Map<WorkshopV2DTO>(updatedWorkshop),
             UploadingCoverImageResult = changeCoverImageResult?.UploadingResult?.OperationResult,
             UploadingImagesResults = multipleImageChangeResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult,
         };
@@ -622,7 +622,7 @@ public class WorkshopService : IWorkshopService
     {
         var predicate = PredicateBuilder.True<Workshop>();
 
-        if (filter is WorkshopBySettlementsFilter settlementsFilter)
+        if (filter is WorkshopFilterWithSettlements settlementsFilter)
         {
             if (settlementsFilter.InstitutionId != Guid.Empty)
             {

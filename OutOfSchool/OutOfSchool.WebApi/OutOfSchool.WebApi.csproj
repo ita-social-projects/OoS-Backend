@@ -13,11 +13,14 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
     <ItemGroup>
+      <Compile Remove="Models\Workshop\WorkshopUpdateDTO.cs" />
+    </ItemGroup>
+    <ItemGroup>
         <PackageReference Include="CsvHelper" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
         <Protobuf Include="..\OutOfSchool.GRPC\Protos\ProviderAdmin.proto" GrpcServices="Client" />
         <PackageReference Include="AutoMapper" />
-        <PackageReference Include="Google.Protobuf"/>
+        <PackageReference Include="Google.Protobuf" />
         <PackageReference Include="Grpc.Net.Client" />
         <PackageReference Include="Grpc.Tools">
             <PrivateAssets>all</PrivateAssets>
@@ -36,8 +39,8 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
-        <PackageReference Include="OpenIddict.Validation.AspNetCore"/>
-        <PackageReference Include="OpenIddict.Validation.SystemNetHttp"/>
+        <PackageReference Include="OpenIddict.Validation.AspNetCore" />
+        <PackageReference Include="OpenIddict.Validation.SystemNetHttp" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -47,13 +50,13 @@
         <PackageReference Include="Microsoft.FeatureManagement.AspNetCore" />
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" />
         <PackageReference Include="MySql.Data" />
-        <PackageReference Include="Newtonsoft.Json"/>
+        <PackageReference Include="Newtonsoft.Json" />
         <PackageReference Include="JsonSubTypes" />
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
         <PackageReference Include="Quartz.AspNetCore" />
         <PackageReference Include="Quartz.Extensions.DependencyInjection" />
-        <PackageReference Include="Quartz.Plugins.TimeZoneConverter"/>
-        <PackageReference Include="Quartz.Serialization.Json"  />
+        <PackageReference Include="Quartz.Plugins.TimeZoneConverter" />
+        <PackageReference Include="Quartz.Serialization.Json" />
         <PackageReference Include="Serilog.AspNetCore" />
         <PackageReference Include="Serilog.Enrichers.GlobalLogContext" />
         <PackageReference Include="Serilog.Exceptions" />
@@ -63,7 +66,7 @@
         <PackageReference Include="Serilog.Sinks.File" />
         <PackageReference Include="Serilog.Expressions" />
         <PackageReference Include="SkiaSharp" />
-        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies"/>
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
         <PackageReference Include="StyleCop.Analyzers">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

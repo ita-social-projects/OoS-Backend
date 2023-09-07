@@ -53,7 +53,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopDTO> Create(WorkshopDTO dto)
+    public async Task<WorkshopBaseDTO> Create(WorkshopBaseDTO dto)
     {
         var workshop = await workshopService.Create(dto).ConfigureAwait(false);
 
@@ -75,7 +75,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopDTO> Update(WorkshopDTO dto)
+    public async Task<WorkshopBaseDTO> Update(WorkshopBaseDTO dto)
     {
         var workshop = await workshopService.Update(dto).ConfigureAwait(false);
 
@@ -89,7 +89,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopStatusDto> UpdateStatus(WorkshopStatusDto dto)
+    public async Task<WorkshopStatusDTO> UpdateStatus(WorkshopStatusDTO dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
 
@@ -197,7 +197,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
             return new SearchResult<WorkshopCard> { TotalAmount = 0, Entities = new List<WorkshopCard>() };
         }
 
-        var settlementsFilter = mapper.Map<WorkshopBySettlementsFilter>(filter);
+        var settlementsFilter = mapper.Map<WorkshopFilterWithSettlements>(filter);
 
         if (currentUserService.IsMinistryAdmin())
         {

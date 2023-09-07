@@ -3,6 +3,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Codeficator;
+using OutOfSchool.WebApi.Models.Workshop;
 using Profile = AutoMapper.Profile;
 
 namespace OutOfSchool.WebApi.Util.Mapping;
@@ -11,7 +12,7 @@ public class ElasticProfile : Profile
 {
     public ElasticProfile()
     {
-        CreateMap<WorkshopDTO, WorkshopES>()
+        CreateMap<WorkshopBaseDTO, WorkshopES>()
             .ForMember(
                 dest => dest.Keywords,
                 opt =>
@@ -24,7 +25,23 @@ public class ElasticProfile : Profile
                     opt.MapFrom(src =>
                         src.WorkshopDescriptionItems
                             .Aggregate(string.Empty, (accumulator, wdi) =>
-                                $"{accumulator}{wdi.SectionName}{Constants.MappingSeparator}{wdi.Description}{Constants.MappingSeparator}")));
+                                $"{accumulator}{wdi.SectionName}{Constants.MappingSeparator}{wdi.Description}{Constants.MappingSeparator}")))
+            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
+            .ForMember(dest => dest.Status, opt => opt.Ignore())
+            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore())
+            .ForMember(dest => dest.Rating, opt => opt.Ignore())
+            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderStatus, opt => opt.Ignore())
+            .ForMember(dest => dest.Status, opt => opt.Ignore())
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore());
+
+        CreateMap<WorkshopDTO, WorkshopES>()
+            .IncludeBase<WorkshopBaseDTO, WorkshopES>();
+
+        CreateMap<WorkshopV2DTO, WorkshopES>()
+        .IncludeBase<WorkshopDTO, WorkshopES>();
 
         CreateMap<AddressDto, AddressES>()
             .ForMember(

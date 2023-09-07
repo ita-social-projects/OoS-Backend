@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Models.Workshop;
 
 namespace OutOfSchool.WebApi.Models;
 

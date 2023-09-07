@@ -758,13 +758,13 @@ public class ApplicationService : IApplicationService, INotificationReciever
         if (isIncreaseTakenSeats && countTakenSeats == workshop.AvailableSeats &&
             workshop.Status != WorkshopStatus.Closed)
         {
-            _ = await combinedWorkshopService.UpdateStatus(new Models.Workshop.WorkshopStatusDto
+            _ = await combinedWorkshopService.UpdateStatus(new Models.Workshop.WorkshopStatusDTO
                 { WorkshopId = workshopId, Status = WorkshopStatus.Closed });
         }
         else if (!isIncreaseTakenSeats && countTakenSeats == workshop.AvailableSeats - 1 &&
                  workshop.Status != WorkshopStatus.Open)
         {
-            _ = await combinedWorkshopService.UpdateStatus(new Models.Workshop.WorkshopStatusDto
+            _ = await combinedWorkshopService.UpdateStatus(new Models.Workshop.WorkshopStatusDTO
                 { WorkshopId = workshopId, Status = WorkshopStatus.Open });
         }
     }

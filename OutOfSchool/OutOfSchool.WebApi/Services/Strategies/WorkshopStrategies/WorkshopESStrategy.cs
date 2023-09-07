@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 
 namespace OutOfSchool.WebApi.Services.Strategies.WorkshopStrategies;

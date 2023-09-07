@@ -1,9 +1,8 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models.Workshop;
 
-public class WorkshopDescriptionItemDto
+public class WorkshopDescriptionItemDTO
 {
     public Guid Id { get; set; }
 
