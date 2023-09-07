@@ -468,8 +468,8 @@ public class MappingProfile : Profile
                    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
                    .ForMember(dest => dest.CATOTTGCategory, opt => opt.MapFrom(src => src.CATOTTG.Category))
                    .ForMember(dest => dest.CATOTTGName, opt => opt.MapFrom(src => src.CATOTTG.Name))
-                   .ForMember(dest => dest.RegionId, opt => opt.MapFrom(src => src.CATOTTG.Parent.Parent.Id))
-                   .ForMember(dest => dest.RegionName, opt => opt.MapFrom(src => src.CATOTTG.Parent.Parent.Name))
+                   .ForMember(dest => dest.RegionId, opt => opt.MapFrom(src => src.CATOTTG != null ? src.CATOTTG.Parent != null ? src.CATOTTG.Parent.Parent != null ? src.CATOTTG.Parent.Parent.Id :0 :0 :0))
+                   .ForMember(dest => dest.RegionName, opt => opt.MapFrom(src => src.CATOTTG != null ? src.CATOTTG.Parent != null ? src.CATOTTG.Parent.Parent != null ? src.CATOTTG.Parent.Parent.Name :String.Empty :String.Empty :String.Empty))
                    .ForMember(
                        dest => dest.AccountStatus,
                        opt => opt.MapFrom(src =>
