@@ -18,4 +18,8 @@ public class AreaAdminDto : BaseUserDto
     public string CATOTTGCategory { get; set; }
 
     public string CATOTTGName { get; set; }
+
+    public long RegionId { get; set; }
+
+    public string RegionName { get; set; }
 }

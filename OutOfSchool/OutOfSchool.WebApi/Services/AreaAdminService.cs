@@ -182,7 +182,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: "Institution,User,CATOTTG",
+                includeProperties: "Institution,User,CATOTTG.Parent.Parent",
                 whereExpression: filterPredicate,
                 orderBy: sortExpression,
                 asNoTracking: true)
