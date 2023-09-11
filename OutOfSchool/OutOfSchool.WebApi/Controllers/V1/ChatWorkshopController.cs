@@ -296,6 +296,22 @@ public class ChatWorkshopController : ControllerBase
         return await HandleOperationAsync(Operation);
     }
 
+    /// <summary>
+    /// Get chat room for current provider by parentId and workshopId. If there is no chat at the specified Id`s, it creates a new one.
+    /// </summary>
+    /// <param name="parentId">Parent's Id.</param>
+    /// <param name="workshopId">Workshop's Id.</param>
+    /// <returns>ChatRoom that was found or new ChatRoom.</returns>
+    [HttpGet("provider/chatroomforparentandworkshop/parent/{parentId}/workshop/{workshopId}")]
+    [Authorize(Roles = "provider")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomWorkshopDto))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public Task<IActionResult> GetProvidersRoomByParentAndWorkshopAsync(Guid parentId, Guid workshopId)
+        => GetProviderRoomByParentIdAndWorkshopIdAsync(parentId, workshopId);
+
     private async Task<bool> IsParentAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
     {
         var userId = GettingUserProperties.GetUserId(HttpContext);
@@ -415,6 +431,23 @@ public class ChatWorkshopController : ControllerBase
                 {
                     return Ok(chatRoom);
                 }
+            }
+
+            return NoContent();
+        }
+
+        return await HandleOperationAsync(Operation);
+    }
+
+    private async Task<IActionResult> GetProviderRoomByParentIdAndWorkshopIdAsync(Guid parentId, Guid workshopId)
+    {
+        async Task<IActionResult> Operation()
+        {
+            var chatRoom = await roomService.CreateOrReturnExistingAsync(workshopId, parentId).ConfigureAwait(false);
+
+            if (chatRoom is not null)
+            {
+                return Ok(chatRoom);
             }
 
             return NoContent();
