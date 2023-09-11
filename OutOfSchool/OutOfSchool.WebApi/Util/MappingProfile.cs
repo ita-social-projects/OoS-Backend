@@ -506,15 +506,18 @@ public class MappingProfile : Profile
         CreateMap<Achievement, AchievementDto>();
 
         CreateMap<AchievementDto, Achievement>()
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
             .ForMember(dest => dest.Workshop, opt => opt.Ignore())
             .ForMember(dest => dest.AchievementType, opt => opt.Ignore());
 
         CreateMap<AchievementTeacher, AchievementTeacherDto>();
 
         CreateMap<AchievementTeacherDto, AchievementTeacher>()
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
             .ForMember(dest => dest.Achievement, opt => opt.Ignore());
 
         CreateMap<AchievementCreateDTO, Achievement>()
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
             .ForMember(dest => dest.Children, opt => opt.Ignore())
             .ForMember(dest => dest.Workshop, opt => opt.Ignore())
             .ForMember(dest => dest.AchievementType, opt => opt.Ignore())

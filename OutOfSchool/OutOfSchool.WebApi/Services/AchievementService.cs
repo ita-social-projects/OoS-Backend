@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
+using NuGet.Protocol.Core.Types;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Achievement;
 
@@ -36,7 +37,8 @@ public class AchievementService : IAchievementService
     {
         logger.LogInformation($"Getting Achievement by Id started. Looking Id = {id}.");
 
-        var achievement = await achievementRepository.GetById(id).ConfigureAwait(false);
+        var achievements = await achievementRepository.GetByFilter(x => x.Id == id && !x.AchievementType.IsDeleted).ConfigureAwait(false);
+        var achievement = achievements.SingleOrDefault();
 
         if (achievement == null)
         {
@@ -64,6 +66,8 @@ public class AchievementService : IAchievementService
         {
             predicate = predicate.And(a => a.WorkshopId == filter.WorkshopId);
         }
+
+        predicate = predicate.And(a => !a.AchievementType.IsDeleted);
 
         int count = await achievementRepository.Count(predicate).ConfigureAwait(false);
 

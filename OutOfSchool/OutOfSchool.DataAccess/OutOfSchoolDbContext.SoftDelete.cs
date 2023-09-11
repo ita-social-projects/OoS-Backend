@@ -44,9 +44,6 @@ public partial class OutOfSchoolDbContext
     {
         builder
             .ApplySoftDelete<User>()
-            .ApplySoftDelete<Achievement>()
-            .ApplySoftDelete<AchievementTeacher>()
-            .ApplySoftDelete<AchievementType>()
             .ApplySoftDelete<Address>()
             .ApplySoftDelete<Application>()
             .ApplySoftDelete<AverageRating>()

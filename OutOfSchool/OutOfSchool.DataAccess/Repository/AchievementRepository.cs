@@ -10,7 +10,7 @@ namespace OutOfSchool.Services.Repository;
 /// <summary>
 /// Repository for accessing the Achievement table in database.
 /// </summary>
-public class AchievementRepository : EntityRepositoryBase<Guid, Achievement>, IAchievementRepository
+public class AchievementRepository : EntityRepositorySoftDeleted<Guid, Achievement>, IAchievementRepository
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AchievementRepository"/> class.
@@ -28,7 +28,7 @@ public class AchievementRepository : EntityRepositoryBase<Guid, Achievement>, IA
     /// /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     public async Task<IEnumerable<Achievement>> GetByWorkshopId(Guid workshopId)
     {
-        var achievements = dbSet.Where(a => a.WorkshopId == workshopId);
+        var achievements = dbSet.Where(a => a.WorkshopId == workshopId && !a.IsDeleted);
 
         return await Task.FromResult(achievements);
     }
