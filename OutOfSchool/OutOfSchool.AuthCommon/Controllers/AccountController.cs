@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.AuthCommon.Config;
+using OutOfSchool.AuthCommon.Extensions;
 using OutOfSchool.AuthCommon.ViewModels;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 
@@ -153,7 +154,7 @@ public class AccountController : Controller
                 "{Path} Changing email was failed for User(id): {UserId}. {Errors}",
                 path,
                 user.Id,
-                string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
+                result.ErrorMessages());
 
             return BadRequest();
         }
@@ -165,7 +166,7 @@ public class AccountController : Controller
                 "{Path} Setting username was failed for User(id): {UserId}. {Errors}",
                 path,
                 userId,
-                string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
+                result.ErrorMessages());
 
             return BadRequest();
         }
@@ -229,7 +230,7 @@ public class AccountController : Controller
                 "{Path} Email сonfirmation was failed for User(id): {UserId}. {Errors}",
                 path,
                 user.Id,
-                string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
+                result.ErrorMessages());
 
             return BadRequest();
         }
@@ -380,7 +381,7 @@ public class AccountController : Controller
             "{Path} Reset password was failed. User(id): {UserId}. {Errors}",
             path,
             userId,
-            string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
+            result.ErrorMessages());
 
         return View("Password/ResetPasswordFailed", localizer["Change password failed"]);
     }
@@ -420,7 +421,7 @@ public class AccountController : Controller
             "{Path} Changing password was failed for User(id): {UserId}. {Errors}",
             path,
             userId,
-            string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
+            result.ErrorMessages());
 
         ModelState.AddModelError(string.Empty, localizer["Change password failed"]);
         return View("Password/ChangePassword");

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Config.ExternalUriModels;
+using OutOfSchool.AuthCommon.Extensions;
 using OutOfSchool.AuthCommon.Services.Password;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
@@ -93,7 +94,7 @@ public class ProviderAdminService : IProviderAdminService
                     logger.LogError(
                         "Error happened while creation ProviderAdmin. User(id): {UserId}. {Errors}",
                         userId,
-                        string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
+                        result.ErrorMessages());
 
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.BadRequest;
@@ -115,7 +116,7 @@ public class ProviderAdminService : IProviderAdminService
                     logger.LogError(
                         "Error happened while adding role to user. User(id): {UserId}. {Errors}",
                         userId,
-                        string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
+                        result.ErrorMessages());
 
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -353,7 +354,7 @@ public class ProviderAdminService : IProviderAdminService
                     logger.LogError(
                         "Error happened while deleting ProviderAdmin. User(id): {UserId}. {Errors}",
                         userId,
-                        string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
+                        result.ErrorMessages());
 
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -569,7 +570,7 @@ public class ProviderAdminService : IProviderAdminService
                     logger.LogError(
                         "Error happened while updating ProviderAdmin. User(id): {UserId}. {Errors}",
                         userId,
-                        string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
+                        result.ErrorMessages());
 
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.InternalServerError;

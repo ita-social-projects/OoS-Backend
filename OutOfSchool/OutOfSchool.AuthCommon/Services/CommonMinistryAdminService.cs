@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.AuthCommon.Extensions;
 using OutOfSchool.AuthCommon.Services.Password;
 using OutOfSchool.Common.Models;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
@@ -90,7 +91,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                     logger.LogError(
                         "Error happened while creation MinistryAdmin. User(id): {UserId}. {Error}",
                         userId,
-                        string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
+                        result.ErrorMessages());
 
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.BadRequest;
@@ -112,7 +113,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                     logger.LogError(
                         "Error happened while adding role to user. User(id): {UserId}. {Error}",
                         userId,
-                        string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
+                        result.ErrorMessages());
 
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -199,7 +200,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                     logger.LogError(
                         "Error happened while deleting MinistryAdmin. User(id): {UserId}. {Error}",
                         userId,
-                        string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
+                        result.ErrorMessages());
 
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -489,7 +490,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                     logger.LogError(
                         "Error happened while reinviting MinistryAdmin. User(id): {UserId}. {Errors}",
                         userId,
-                        string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
+                        result.ErrorMessages());
 
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.InternalServerError;
