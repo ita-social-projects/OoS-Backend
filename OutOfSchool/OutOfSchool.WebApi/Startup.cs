@@ -140,7 +140,6 @@ public static class Startup
         // Image options
         services.Configure<GcpStorageImagesSourceConfig>(configuration.GetSection(GcpStorageConfigConstants.GcpStorageImagesConfig));
         services.Configure<ExternalImageSourceConfig>(configuration.GetSection(ExternalImageSourceConfig.Name));
-        //services.AddSingleton<MongoDb>();
         services.Configure<ImageOptions<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
         services.Configure<ImageOptions<Teacher>>(configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
         services.Configure<ImageOptions<Provider>>(configuration.GetSection($"Images:{nameof(Provider)}:Specs"));

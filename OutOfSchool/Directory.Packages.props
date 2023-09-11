@@ -113,7 +113,5 @@
         <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(EFCoreVersion)"/>
         <PackageVersion Include="MockQueryable.Moq" Version="6.0.1"/>
         <PackageVersion Include="Bogus" Version="34.0.2"/>
-        <!--TODO: Remove this eventually-->
-        <PackageVersion Include="MongoDB.Driver.GridFS" Version="2.13.2"/>
     </ItemGroup>
 </Project>

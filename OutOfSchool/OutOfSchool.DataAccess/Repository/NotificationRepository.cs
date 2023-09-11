@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 

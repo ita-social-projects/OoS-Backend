@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MongoDB.Bson.IO;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.Images;
 using Swashbuckle.AspNetCore.SwaggerGen;
