@@ -10,16 +10,13 @@ using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
-using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -32,11 +29,11 @@ public class WorkshopControllerTests
     private const int BadRequest = 400;
     private const int Forbidden = 403;
 
-    private static List<WorkshopV2DTO> workshops;
+    private static List<WorkshopDto> workshops;
     private static List<WorkshopCard> workshopCards;
-    private static WorkshopDTO workshop;
-    private static WorkshopBaseDTO workshopCreateDto;
-    private static WorkshopBaseDTO workshopUpdateDto;
+    private static WorkshopDto workshop;
+    private static WorkshopBaseDto workshopCreateDto;
+    private static WorkshopBaseDto workshopUpdateDto;
     private static ProviderDto provider;
     private static Mock<IOptions<AppDefaultsConfig>> options;
 
@@ -63,15 +60,15 @@ public class WorkshopControllerTests
         httpContextMoq.Setup(x => x.User.IsInRole("provider"))
             .Returns(true);
 
-        workshops = WithWorkshops();
-        workshop = WithWorkshop();
-        workshopCreateDto = WithWorkshopCreate();
-        workshopUpdateDto = WithWorkshopUpdate();
-        provider = WithProvider();
-        workshopCards = WithWorkshopCards();
+        workshops = WorkshopDtoGenerator.Generate(5);
+        workshop = WorkshopDtoGenerator.Generate();
+        workshopCreateDto = WorkshopBaseDtoGenerator.Generate();
+        workshopUpdateDto = WorkshopBaseDtoGenerator.Generate();
+        provider = ProviderDtoGenerator.Generate();
+        workshopCards = WorkshopCardGenerator.Generate(5);
         workshopBaseCards = WorkshopBaseCardGenerator.Generate(5);
         workshopShortEntitiesList = ShortEntityDtoGenerator.Generate(10);
-        workshopProviderViewCardList = WithWorkshopProviderViewCards();
+        workshopProviderViewCardList = WorkshopProviderViewCardGenerator.Generate(5);
 
         var config = new AppDefaultsConfig();
         config.City = "Київ";
@@ -121,7 +118,7 @@ public class WorkshopControllerTests
     public async Task GetWorkshopById_WhenThereIsNoWorkshopWithId_ShouldReturnNoContent()
     {
         // Arrange
-        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync((WorkshopDTO)null);
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync((WorkshopDto)null);
 
         // Act
         var result = await controller.GetById(workshop.Id).ConfigureAwait(false) as NoContentResult;
@@ -425,6 +422,8 @@ public class WorkshopControllerTests
     public async Task CreateWorkshop_WhenModelIsValid_ShouldReturnCreatedAtActionResult()
     {
         // Arrange
+        workshopCreateDto.ProviderId = provider.Id;
+        providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
         workshopServiceMoq.Setup(x => x.Create(workshopCreateDto)).ReturnsAsync(workshopCreateDto);
 
@@ -477,6 +476,8 @@ public class WorkshopControllerTests
     public async Task UpdateWorkshop_WhenModelIsValid_ShouldReturnOkObjectResult()
     {
         // Arrange
+        workshopUpdateDto.ProviderId = provider.Id;
+        providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
         workshopServiceMoq.Setup(x => x.Update(workshopUpdateDto)).ReturnsAsync(workshopUpdateDto);
 
@@ -499,7 +500,7 @@ public class WorkshopControllerTests
         var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert
-        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopBaseDTO>()), Times.Never);
+        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopBaseDto>()), Times.Never);
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(BadRequest, result.StatusCode);
     }
@@ -516,7 +517,7 @@ public class WorkshopControllerTests
 
         // Assert
         providerServiceMoq.VerifyAll();
-        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopBaseDTO>()), Times.Never);
+        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopBaseDto>()), Times.Never);
         Assert.IsNotNull(result);
         Assert.AreEqual(Forbidden, result.StatusCode);
     }
@@ -527,6 +528,8 @@ public class WorkshopControllerTests
     public async Task UpdateStatus_WhenModelIsValid_ShouldReturnOkObjectResult()
     {
         // Arrange
+        workshop.ProviderId = provider.Id;
+
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
 
         var updateRequest = WithWorkshopStatusDto(workshop.Id, WorkshopStatus.Open);
@@ -554,7 +557,7 @@ public class WorkshopControllerTests
         var updateRequest = WithWorkshopStatusDto(nonExistentId, WorkshopStatus.Open);
 
         workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId))
-            .ReturnsAsync(null as WorkshopDTO);
+            .ReturnsAsync(null as WorkshopDto);
 
         // Act
         var result = await controller.UpdateStatus(updateRequest).ConfigureAwait(false) as NotFoundObjectResult;
@@ -570,6 +573,7 @@ public class WorkshopControllerTests
         // Arrange
         var updateRequest = WithWorkshopStatusDto(workshop.Id, WorkshopStatus.Closed);
 
+        workshop.ProviderId = provider.Id;
         workshop.ProviderOwnership = OwnershipType.Common;
 
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
@@ -612,8 +616,10 @@ public class WorkshopControllerTests
     public async Task DeleteWorkshop_WhenIdIsValid_ShouldReturnNoContentResult()
     {
         // Arrange
+        workshop.ProviderId = provider.Id;
         workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
+        providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
         workshopServiceMoq.Setup(x => x.Delete(workshop.Id)).Returns(Task.CompletedTask);
 
         // Act
@@ -663,462 +669,12 @@ public class WorkshopControllerTests
     }
     #endregion
 
-    private WorkshopV2DTO WithWorkshop()
+    private WorkshopStatusDto WithWorkshopStatusDto(Guid workshopDtoId, WorkshopStatus workshopStatus)
     {
-        return new WorkshopV2DTO()
-        {
-            Id = Guid.NewGuid(),
-            Title = "Title6",
-            Phone = "1111111111",
-            WorkshopDescriptionItems = new[]
-            {
-                WithWorkshopDescriptionItem(),
-                WithWorkshopDescriptionItem(),
-            },
-            Price = 6000,
-            WithDisabilityOptions = true,
-            Status = WorkshopStatus.Open,
-            ProviderTitle = "ProviderTitle",
-            DisabilityOptionsDesc = "Desc6",
-            Website = "website6",
-            Instagram = "insta6",
-            Facebook = "facebook6",
-            Email = "email6@gmail.com",
-            MaxAge = 10,
-            MinAge = 4,
-            CoverImageId = "image6",
-            ProviderId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
-            InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-            AddressId = 55,
-            Address = new AddressDto
-            {
-                Id = 55,
-                CATOTTGId = 4970,
-                Street = "Street55",
-                BuildingNumber = "BuildingNumber55",
-                Latitude = 0,
-                Longitude = 0,
-            },
-            Teachers = new List<TeacherDTO>
-            {
-                new TeacherDTO
-                {
-                    Id = Guid.NewGuid(),
-                    FirstName = "Alex",
-                    LastName = "Brown",
-                    MiddleName = "SomeMiddleName",
-                    Description = "Description",
-                    //Image = "Image",
-                    DateOfBirth = DateTime.Parse("2000-01-01"),
-                    WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
-                },
-                new TeacherDTO
-                {
-                    Id = Guid.NewGuid(),
-                    FirstName = "John",
-                    LastName = "Snow",
-                    MiddleName = "SomeMiddleName",
-                    Description = "Description",
-                    //Image = "Image",
-                    DateOfBirth = DateTime.Parse("1990-01-01"),
-                    WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
-                },
-            },
-            DateTimeRanges = new List<DateTimeRangeDto>()
-            {
-                new DateTimeRangeDto
-                {
-                    Id = It.IsAny<long>(),
-                    EndTime = It.IsAny<TimeSpan>(),
-                    StartTime = It.IsAny<TimeSpan>(),
-                    Workdays = new List<DaysBitMask>()
-                    {
-                        DaysBitMask.Monday,
-                        DaysBitMask.Thursday,
-                    },
-                },
-            },
-            PayRate = PayRateType.Course,
-        };
-    }
-
-    private WorkshopBaseDTO WithWorkshopCreate()
-    {
-        return new WorkshopBaseDTO()
-        {
-            Id = Guid.NewGuid(),
-            Title = "Title6",
-            Phone = "1111111111",
-            WorkshopDescriptionItems = new[]
-            {
-            WithWorkshopDescriptionItem(),
-            WithWorkshopDescriptionItem(),
-            },
-            Price = 6000,
-            WithDisabilityOptions = true,
-            //Status = WorkshopStatus.Open,
-            ProviderTitle = "ProviderTitle",
-            DisabilityOptionsDesc = "Desc6",
-            Website = "website6",
-            Instagram = "insta6",
-            Facebook = "facebook6",
-            Email = "email6@gmail.com",
-            MaxAge = 10,
-            MinAge = 4,
-            //CoverImageId = "image6",
-            ProviderId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
-            InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-            AddressId = 55,
-            Address = new AddressDto
-            {
-                Id = 55,
-                CATOTTGId = 4970,
-                Street = "Street55",
-                BuildingNumber = "BuildingNumber55",
-                Latitude = 0,
-                Longitude = 0,
-            },
-            Teachers = new List<TeacherDTO>
-        {
-            new TeacherDTO
-            {
-                Id = Guid.NewGuid(),
-                FirstName = "Alex",
-                LastName = "Brown",
-                MiddleName = "SomeMiddleName",
-                Description = "Description",
-                //Image = "Image",
-                DateOfBirth = DateTime.Parse("2000-01-01"),
-                WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
-            },
-            new TeacherDTO
-            {
-                Id = Guid.NewGuid(),
-                FirstName = "John",
-                LastName = "Snow",
-                MiddleName = "SomeMiddleName",
-                Description = "Description",
-                //Image = "Image",
-                DateOfBirth = DateTime.Parse("1990-01-01"),
-                WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
-            },
-        },
-            DateTimeRanges = new List<DateTimeRangeDto>()
-        {
-            new DateTimeRangeDto
-            {
-                Id = It.IsAny<long>(),
-                EndTime = It.IsAny<TimeSpan>(),
-                StartTime = It.IsAny<TimeSpan>(),
-                Workdays = new List<DaysBitMask>()
-                {
-                    DaysBitMask.Monday,
-                    DaysBitMask.Thursday,
-                },
-            },
-        },
-            PayRate = PayRateType.Course,
-        };
-    }
-
-    private WorkshopBaseDTO WithWorkshopUpdate()
-    {
-        return new WorkshopBaseDTO()
-        {
-            Id = Guid.NewGuid(),
-            Title = "Title6",
-            Phone = "1111111111",
-            WorkshopDescriptionItems = new[]
-            {
-        WithWorkshopDescriptionItem(),
-        WithWorkshopDescriptionItem(),
-        },
-            Price = 6000,
-            WithDisabilityOptions = true,
-            //Status = WorkshopStatus.Open,
-            ProviderTitle = "ProviderTitle",
-            DisabilityOptionsDesc = "Desc6",
-            Website = "website6",
-            Instagram = "insta6",
-            Facebook = "facebook6",
-            Email = "email6@gmail.com",
-            MaxAge = 10,
-            MinAge = 4,
-            //CoverImageId = "image6",
-            ProviderId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
-            InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-            AddressId = 55,
-            Address = new AddressDto
-            {
-                Id = 55,
-                CATOTTGId = 4970,
-                Street = "Street55",
-                BuildingNumber = "BuildingNumber55",
-                Latitude = 0,
-                Longitude = 0,
-            },
-            Teachers = new List<TeacherDTO>
-    {
-        new TeacherDTO
-        {
-            Id = Guid.NewGuid(),
-            FirstName = "Alex",
-            LastName = "Brown",
-            MiddleName = "SomeMiddleName",
-            Description = "Description",
-            //Image = "Image",
-            DateOfBirth = DateTime.Parse("2000-01-01"),
-            WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
-        },
-        new TeacherDTO
-        {
-            Id = Guid.NewGuid(),
-            FirstName = "John",
-            LastName = "Snow",
-            MiddleName = "SomeMiddleName",
-            Description = "Description",
-            //Image = "Image",
-            DateOfBirth = DateTime.Parse("1990-01-01"),
-            WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
-        },
-    },
-            DateTimeRanges = new List<DateTimeRangeDto>()
-    {
-        new DateTimeRangeDto
-        {
-            Id = It.IsAny<long>(),
-            EndTime = It.IsAny<TimeSpan>(),
-            StartTime = It.IsAny<TimeSpan>(),
-            Workdays = new List<DaysBitMask>()
-            {
-                DaysBitMask.Monday,
-                DaysBitMask.Thursday,
-            },
-        },
-    },
-            PayRate = PayRateType.Course,
-        };
-    }
-
-    private List<WorkshopV2DTO> WithWorkshops()
-    {
-        return new List<WorkshopV2DTO>()
-        {
-            new WorkshopV2DTO()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Title1",
-                Phone = "1111111111",
-                WorkshopDescriptionItems = new[]
-                {
-                    WithWorkshopDescriptionItem(),
-                },
-                Price = 1000,
-                WithDisabilityOptions = true,
-                ProviderId = Guid.NewGuid(),
-                ProviderTitle = "ProviderTitle",
-                DisabilityOptionsDesc = "Desc1",
-                Website = "website1",
-                Instagram = "insta1",
-                Facebook = "facebook1",
-                Email = "email1@gmail.com",
-                MaxAge = 10,
-                MinAge = 4,
-                CoverImageId = "image1",
-                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                Address = new AddressDto
-                {
-                    CATOTTGId = 4970,
-                },
-            },
-            new WorkshopV2DTO()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Title2",
-                Phone = "1111111111",
-                WorkshopDescriptionItems = new[]
-                {
-                    WithWorkshopDescriptionItem(),
-                    WithWorkshopDescriptionItem(),
-                    WithWorkshopDescriptionItem(),
-                },
-                Price = 2000,
-                WithDisabilityOptions = true,
-                ProviderId = Guid.NewGuid(),
-                ProviderTitle = "ProviderTitle",
-                DisabilityOptionsDesc = "Desc2",
-                Website = "website2",
-                Instagram = "insta2",
-                Facebook = "facebook2",
-                Email = "email2@gmail.com",
-                MaxAge = 10,
-                MinAge = 4,
-                CoverImageId = "image2",
-                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                Address = new AddressDto
-                {
-                    CATOTTGId = 4970,
-                },
-            },
-            new WorkshopV2DTO()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Title3",
-                Phone = "1111111111",
-                WorkshopDescriptionItems = new[]
-                {
-                    WithWorkshopDescriptionItem(),
-                    WithWorkshopDescriptionItem(),
-                    WithWorkshopDescriptionItem(),
-                },
-                Price = 3000,
-                WithDisabilityOptions = true,
-                ProviderId = Guid.NewGuid(),
-                ProviderTitle = "ProviderTitleNew",
-                DisabilityOptionsDesc = "Desc3",
-                Website = "website3",
-                Instagram = "insta3",
-                Facebook = "facebook3",
-                Email = "email3@gmail.com",
-                MaxAge = 10,
-                MinAge = 4,
-                CoverImageId = "image3",
-                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-            },
-            new WorkshopV2DTO()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Title4",
-                Phone = "1111111111",
-                WorkshopDescriptionItems = new[]
-                {
-                    WithWorkshopDescriptionItem(),
-                    WithWorkshopDescriptionItem(),
-                },
-                Price = 4000,
-                WithDisabilityOptions = true,
-                ProviderId = Guid.NewGuid(),
-                ProviderTitle = "ProviderTitleNew",
-                DisabilityOptionsDesc = "Desc4",
-                Website = "website4",
-                Instagram = "insta4",
-                Facebook = "facebook4",
-                Email = "email4@gmail.com",
-                MaxAge = 10,
-                MinAge = 4,
-                CoverImageId = "image4",
-                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-            },
-            new WorkshopV2DTO()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Title5",
-                Phone = "1111111111",
-                WorkshopDescriptionItems = new[]
-                {
-                    WithWorkshopDescriptionItem(),
-                },
-                Price = 5000,
-                WithDisabilityOptions = true,
-                ProviderId = Guid.NewGuid(),
-                ProviderTitle = "ProviderTitleNew",
-                DisabilityOptionsDesc = "Desc5",
-                Website = "website5",
-                Instagram = "insta5",
-                Facebook = "facebook5",
-                Email = "email5@gmail.com",
-                MaxAge = 10,
-                MinAge = 4,
-                CoverImageId = "image5",
-                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                Address = new AddressDto
-                {
-                    CATOTTGId = 4970,
-                },
-            },
-        };
-    }
-
-    private ProviderDto WithProvider()
-    {
-        return new ProviderDto()
-        {
-            UserId = userId,
-            Id = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
-        };
-    }
-
-    private List<WorkshopCard> WithWorkshopCards()
-    {
-        return WithWorkshops().Select(w => new WorkshopCard
-        {
-            WorkshopId = w.Id,
-            ProviderTitle = w.ProviderTitle,
-            ProviderOwnership = w.ProviderOwnership,
-            Title = w.Title,
-            PayRate = w.PayRate,
-            CoverImageId = w.CoverImageId,
-            MinAge = w.MinAge,
-            MaxAge = w.MaxAge,
-            Price = w.Price,
-            DirectionIds = w.DirectionIds,
-            ProviderId = w.ProviderId,
-            Address = w.Address,
-            WithDisabilityOptions = w.WithDisabilityOptions,
-            Rating = w.Rating,
-            ProviderLicenseStatus = w.ProviderLicenseStatus,
-            InstitutionHierarchyId = w.InstitutionHierarchyId,
-            InstitutionId = w.InstitutionId,
-            Institution = w.Institution,
-            AvailableSeats = w.AvailableSeats,
-            TakenSeats = w.TakenSeats,
-        }).ToList();
-    }
-
-    private WorkshopDescriptionItemDTO WithWorkshopDescriptionItem()
-    {
-        var id = Guid.NewGuid();
-        return new WorkshopDescriptionItemDTO
-        {
-            Id = id,
-            SectionName = "test heading",
-            Description = $"test description text sentence for id: {id.ToString()}",
-        };
-    }
-
-    private WorkshopStatusDTO WithWorkshopStatusDto(Guid workshopDtoId, WorkshopStatus workshopStatus)
-    {
-        return new WorkshopStatusDTO()
+        return new WorkshopStatusDto()
         {
             WorkshopId = workshopDtoId,
             Status = workshopStatus,
-        };
-    }
-
-    private List<WorkshopProviderViewCard> WithWorkshopProviderViewCards()
-    {
-        return new List<WorkshopProviderViewCard>()
-        {
-            new WorkshopProviderViewCard()
-            {
-                Title = "Title1",
-            },
-            new WorkshopProviderViewCard()
-            {
-                Title = "Title2",
-            },
-            new WorkshopProviderViewCard()
-            {
-                Title = "Title3",
-            },
-            new WorkshopProviderViewCard()
-            {
-                Title = "Title4",
-            },
-            new WorkshopProviderViewCard()
-            {
-                Title = "Title5",
-            },
         };
     }
 }

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services;
@@ -18,8 +18,8 @@ public interface IWorkshopServicesCombiner
     /// Add entity to the database.
     /// </summary>
     /// <param name="dto">Entity to add.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopBaseDTO"/>.</returns>
-    Task<WorkshopBaseDTO> Create(WorkshopBaseDTO dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopBaseDto"/>.</returns>
+    Task<WorkshopBaseDto> Create(WorkshopBaseDto dto);
 
     /// <summary>
     /// Get all workshop cards (Id, Title) with the specified provider's Id.
@@ -43,21 +43,21 @@ public interface IWorkshopServicesCombiner
     /// <param name="id">Key in the table.</param>
     /// <returns>A <see cref="Task{TEntity}"/> representing the result of the asynchronous operation.
     /// The task result contains the entity that was found, or null.</returns>
-    Task<WorkshopDTO> GetById(Guid id);
+    Task<WorkshopDto> GetById(Guid id);
 
     /// <summary>
     /// Update existing entity in the database.
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopBaseDTO"/>.</returns>
-    Task<WorkshopBaseDTO> Update(WorkshopBaseDTO dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopBaseDto"/>.</returns>
+    Task<WorkshopBaseDto> Update(WorkshopBaseDto dto);
 
     /// <summary>
     /// Update status field for existing entity in the database.
     /// </summary>
     /// <param name="dto">Workshop to update.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopStatusDTO"/>.</returns>
-    Task<WorkshopStatusDTO> UpdateStatus(WorkshopStatusDTO dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopStatusDto"/>.</returns>
+    Task<WorkshopStatusDto> UpdateStatus(WorkshopStatusDto dto);
 
     /// <summary>
     ///  Delete entity.

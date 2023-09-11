@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common.Enums;
 
-namespace OutOfSchool.WebApi.Models.Workshop;
+namespace OutOfSchool.WebApi.Models.Workshops;
 
 public class WorkshopBaseCard
 {

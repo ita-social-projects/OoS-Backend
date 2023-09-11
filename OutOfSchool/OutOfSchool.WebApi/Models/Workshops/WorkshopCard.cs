@@ -1,4 +1,4 @@
-﻿namespace OutOfSchool.WebApi.Models.Workshop;
+﻿namespace OutOfSchool.WebApi.Models.Workshops;
 
 public class WorkshopCard : WorkshopBaseCard
 {

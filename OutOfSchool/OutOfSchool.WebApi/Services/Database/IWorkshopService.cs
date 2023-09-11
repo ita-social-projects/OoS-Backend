@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services;
@@ -18,15 +18,15 @@ public interface IWorkshopService
     /// Add entity to the database.
     /// </summary>
     /// <param name="dto">Entity to add.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopDTO"/>.</returns>
-    Task<WorkshopBaseDTO> Create(WorkshopBaseDTO dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopDto"/>.</returns>
+    Task<WorkshopBaseDto> Create(WorkshopBaseDto dto);
 
     /// <summary>
     /// Add entity to the database.
     /// </summary>
     /// <param name="dto">Entity to add.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopResultDTO"/>.</returns>
-    Task<WorkshopResultDTO> CreateV2(WorkshopV2DTO dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopResultDto"/>.</returns>
+    Task<WorkshopResultDto> CreateV2(WorkshopV2Dto dto);
 
     /// <summary>
     /// Get entity by it's key.
@@ -34,28 +34,28 @@ public interface IWorkshopService
     /// <param name="id">Key in the table.</param>
     /// <returns>A <see cref="Task{TEntity}"/> representing the result of the asynchronous operation.
     /// The task result contains the entity that was found, or null.</returns>
-    Task<WorkshopDTO> GetById(Guid id);
+    Task<WorkshopDto> GetById(Guid id);
 
     /// <summary>
     /// Update existing entity in the database.
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopDTO"/>.</returns>
-    Task<WorkshopBaseDTO> Update(WorkshopBaseDTO dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopDto"/>.</returns>
+    Task<WorkshopBaseDto> Update(WorkshopBaseDto dto);
 
     /// <summary>
     /// Update existing entity in the database.
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopResultDTO"/>.</returns>
-    Task<WorkshopResultDTO> UpdateV2(WorkshopV2DTO dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopResultDto"/>.</returns>
+    Task<WorkshopResultDto> UpdateV2(WorkshopV2Dto dto);
 
     /// <summary>
     /// Update status field for existing entity in the database.
     /// </summary>
     /// <param name="dto">Workshop id and status to update.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopStatusWithTitleDTO"/>.</returns>
-    Task<WorkshopStatusWithTitleDTO> UpdateStatus(WorkshopStatusDTO dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopStatusWithTitleDto"/>.</returns>
+    Task<WorkshopStatusWithTitleDto> UpdateStatus(WorkshopStatusDto dto);
 
     /// <summary>
     ///  Delete entity.
@@ -77,7 +77,7 @@ public interface IWorkshopService
     /// <param name="offsetFilter">Filter to get a certain portion of all entities.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains the <see cref="SearchResult{TEntity}"/> that contains found elements.</returns>
-    Task<SearchResult<WorkshopDTO>> GetAll(OffsetFilter offsetFilter);
+    Task<SearchResult<WorkshopDto>> GetAll(OffsetFilter offsetFilter);
 
     /// <summary>
     /// Get all workshops (Id, Title) by provider Id.

@@ -5,7 +5,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Util.JsonTools;
 
-namespace OutOfSchool.WebApi.Models.Workshop;
+namespace OutOfSchool.WebApi.Models.Workshops;
 
 /// <inheritdoc/>>
 public class WorkshopFilter : OffsetFilter

@@ -15,7 +15,7 @@ using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
-using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Models.SocialGroup;
@@ -42,7 +42,7 @@ public class ApplicationControllerTests
     private IEnumerable<WorkshopCard> workshops;
     private ParentDTO parent;
     private ProviderDto provider;
-    private WorkshopV2DTO workshopDto;
+    private WorkshopV2Dto workshopDto;
 
     [SetUp]
     public void Setup()
@@ -290,7 +290,7 @@ public class ApplicationControllerTests
         var filter = new ApplicationFilter ();
 
         var newProvider = new ProviderDto { Id = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666"), UserId = userId };
-        var newWorkshop = new WorkshopDTO { Id = new Guid("94b81fa7-180f-4965-8aac-908a9f3ecb8d"), ProviderId = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666") };
+        var newWorkshop = new WorkshopDto { Id = new Guid("94b81fa7-180f-4965-8aac-908a9f3ecb8d"), ProviderId = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666") };
 
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
@@ -320,7 +320,7 @@ public class ApplicationControllerTests
         var filter = new ApplicationFilter ();
 
         var newProvider = new ProviderDto { Id = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666"), UserId = userId };
-        var newWorkshop = new WorkshopDTO { Id = new Guid("94b81fa7-180f-4965-8aac-908a9f3ecb8d"), ProviderId = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666") };
+        var newWorkshop = new WorkshopDto { Id = new Guid("94b81fa7-180f-4965-8aac-908a9f3ecb8d"), ProviderId = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666") };
 
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
@@ -351,7 +351,7 @@ public class ApplicationControllerTests
 
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
-        workshopService.Setup(s => s.GetById(id)).ReturnsAsync(new WorkshopDTO());
+        workshopService.Setup(s => s.GetById(id)).ReturnsAsync(new WorkshopDto());
         applicationService.Setup(s => s.GetAllByWorkshop(id, It.IsAny<Guid>(), filter))
             .ThrowsAsync(new UnauthorizedAccessException());
 
@@ -484,7 +484,7 @@ public class ApplicationControllerTests
         };
 
         applicationService.Setup(s => s.Update(It.IsAny<ApplicationUpdate>(), It.IsAny<Guid>())).ReturnsAsync(Result<ApplicationDto>.Success(applications.First()));
-        workshopService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(new WorkshopDTO());
+        workshopService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(new WorkshopDto());
 
         // Act
         var result = await controller.Update(shortApplication).ConfigureAwait(false);
@@ -527,7 +527,7 @@ public class ApplicationControllerTests
 
         applicationService.Setup(s => s.Update(shortApplication, It.IsAny<Guid>()))
             .ThrowsAsync(new UnauthorizedAccessException());
-        workshopService.Setup(s => s.GetById(shortApplication.WorkshopId)).ReturnsAsync(new WorkshopDTO());
+        workshopService.Setup(s => s.GetById(shortApplication.WorkshopId)).ReturnsAsync(new WorkshopDto());
 
         // Act & Assert
         Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await controller.Update(shortApplication));
@@ -553,9 +553,9 @@ public class ApplicationControllerTests
         Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
     }
 
-    private WorkshopV2DTO FakeWorkshop()
+    private WorkshopV2Dto FakeWorkshop()
     {
-        return new WorkshopV2DTO()
+        return new WorkshopV2Dto()
         {
             Id = Guid.NewGuid(),
             Title = "Title6",
@@ -617,11 +617,11 @@ public class ApplicationControllerTests
         };
     }
 
-    private List<WorkshopV2DTO> FakeWorkshops()
+    private List<WorkshopV2Dto> FakeWorkshops()
     {
-        return new List<WorkshopV2DTO>()
+        return new List<WorkshopV2Dto>()
         {
-            new WorkshopV2DTO()
+            new WorkshopV2Dto()
             {
                 Id = Guid.NewGuid(),
                 Title = "Title1",
@@ -649,7 +649,7 @@ public class ApplicationControllerTests
                     CATOTTGId = 4970,
                 },
             },
-            new WorkshopV2DTO()
+            new WorkshopV2Dto()
             {
                 Id = Guid.NewGuid(),
                 Title = "Title2",
@@ -676,7 +676,7 @@ public class ApplicationControllerTests
                     CATOTTGId = 4970,
                 },
             },
-            new WorkshopV2DTO()
+            new WorkshopV2Dto()
             {
                 Id = Guid.NewGuid(),
                 Title = "Title3",
@@ -701,7 +701,7 @@ public class ApplicationControllerTests
                 CoverImageId = "image3",
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
             },
-            new WorkshopV2DTO()
+            new WorkshopV2Dto()
             {
                 Id = Guid.NewGuid(),
                 Title = "Title4",
@@ -725,7 +725,7 @@ public class ApplicationControllerTests
                 CoverImageId = "image4",
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
             },
-            new WorkshopV2DTO()
+            new WorkshopV2Dto()
             {
                 Id = Guid.NewGuid(),
                 Title = "Title5",
@@ -782,10 +782,10 @@ public class ApplicationControllerTests
         }).ToList();
     }
 
-    private WorkshopDescriptionItemDTO FakeWorkshopDescriptionItem()
+    private WorkshopDescriptionItemDto FakeWorkshopDescriptionItem()
     {
         var id = Guid.NewGuid();
-        return new WorkshopDescriptionItemDTO
+        return new WorkshopDescriptionItemDto
         {
             Id = id,
             SectionName = "test heading",

@@ -3,7 +3,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Codeficator;
-using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Workshops;
 using Profile = AutoMapper.Profile;
 
 namespace OutOfSchool.WebApi.Util.Mapping;
@@ -12,7 +12,7 @@ public class ElasticProfile : Profile
 {
     public ElasticProfile()
     {
-        CreateMap<WorkshopBaseDTO, WorkshopES>()
+        CreateMap<WorkshopBaseDto, WorkshopES>()
             .ForMember(
                 dest => dest.Keywords,
                 opt =>
@@ -37,11 +37,11 @@ public class ElasticProfile : Profile
             .ForMember(dest => dest.Status, opt => opt.Ignore())
             .ForMember(dest => dest.TakenSeats, opt => opt.Ignore());
 
-        CreateMap<WorkshopDTO, WorkshopES>()
-            .IncludeBase<WorkshopBaseDTO, WorkshopES>();
+        CreateMap<WorkshopDto, WorkshopES>()
+            .IncludeBase<WorkshopBaseDto, WorkshopES>();
 
-        CreateMap<WorkshopV2DTO, WorkshopES>()
-        .IncludeBase<WorkshopDTO, WorkshopES>();
+        CreateMap<WorkshopV2Dto, WorkshopES>()
+        .IncludeBase<WorkshopDto, WorkshopES>();
 
         CreateMap<AddressDto, AddressES>()
             .ForMember(

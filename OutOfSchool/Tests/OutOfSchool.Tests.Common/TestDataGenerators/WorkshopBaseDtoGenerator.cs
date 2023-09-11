@@ -8,9 +8,9 @@ using System.Collections.Generic;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
-public static class WorkshopDtoGenerator
+public static class WorkshopBaseDtoGenerator
 {
-    private static readonly Faker<WorkshopDto> Faker = new Faker<WorkshopDto>()
+    private static readonly Faker<WorkshopBaseDto> Faker = new Faker<WorkshopBaseDto>()
         .RuleForType(typeof(int), f => f.Random.Int())
         .RuleForType(typeof(Guid), f => f.Random.Guid())
         .RuleForType(typeof(long), f => f.Random.Long(0, long.MaxValue))
@@ -61,16 +61,9 @@ public static class WorkshopDtoGenerator
         .RuleFor(x => x.Teachers, f => f.Make(new Random().Next(1, 3), () => new TeacherDTO()))
         .RuleFor(x => x.ProviderId, f => f.Random.Guid())
         .RuleFor(x => x.ProviderTitle, f => f.Company.CompanyName())
-        .RuleFor(x => x.ProviderLicenseStatus, f => f.PickRandom<ProviderLicenseStatus>())
-        .RuleFor(x => x.TakenSeats, f => f.Random.UInt(0, 5))
-        .RuleFor(x => x.Rating, f => f.Random.Float(0, 5))
-        .RuleFor(x => x.NumberOfRatings, f => f.Random.Int(0))
-        .RuleFor(x => x.Status, f => f.PickRandom<WorkshopStatus>())
-        .RuleFor(x => x.IsBlocked, f => f.Random.Bool())
-        .RuleFor(x => x.ProviderOwnership, f => f.PickRandom<OwnershipType>())
-        .RuleFor(x => x.ProviderStatus, f => f.PickRandom<ProviderStatus>());
+        .RuleFor(x => x.ProviderLicenseStatus, f => f.PickRandom<ProviderLicenseStatus>());
 
-    public static WorkshopDto Generate() => Faker.Generate();
+    public static WorkshopBaseDto Generate() => Faker.Generate();
 
-    public static List<WorkshopDto> Generate(int count) => Faker.Generate(count);
+    public static List<WorkshopBaseDto> Generate(int count) => Faker.Generate(count);
 }

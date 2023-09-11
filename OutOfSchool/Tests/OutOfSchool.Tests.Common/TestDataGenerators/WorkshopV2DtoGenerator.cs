@@ -1,16 +1,16 @@
-﻿using Bogus;
+﻿using System;
+using System.Collections.Generic;
+using Bogus;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshops;
-using System;
-using System.Collections.Generic;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
-public static class WorkshopDtoGenerator
+public static class WorkshopV2DtoGenerator
 {
-    private static readonly Faker<WorkshopDto> Faker = new Faker<WorkshopDto>()
+    private static readonly Faker<WorkshopV2Dto> Faker = new Faker<WorkshopV2Dto>()
         .RuleForType(typeof(int), f => f.Random.Int())
         .RuleForType(typeof(Guid), f => f.Random.Guid())
         .RuleForType(typeof(long), f => f.Random.Long(0, long.MaxValue))
@@ -68,9 +68,11 @@ public static class WorkshopDtoGenerator
         .RuleFor(x => x.Status, f => f.PickRandom<WorkshopStatus>())
         .RuleFor(x => x.IsBlocked, f => f.Random.Bool())
         .RuleFor(x => x.ProviderOwnership, f => f.PickRandom<OwnershipType>())
-        .RuleFor(x => x.ProviderStatus, f => f.PickRandom<ProviderStatus>());
+        .RuleFor(x => x.ProviderStatus, f => f.PickRandom<ProviderStatus>())
+        .RuleFor(x => x.CoverImageId, f => f.Image.LoremFlickrUrl())
+        .RuleFor(x => x.ImageIds, _ => new List<string>());
 
-    public static WorkshopDto Generate() => Faker.Generate();
+    public static WorkshopV2Dto Generate() => Faker.Generate();
 
-    public static List<WorkshopDto> Generate(int count) => Faker.Generate(count);
+    public static List<WorkshopV2Dto> Generate(int count) => Faker.Generate(count);
 }

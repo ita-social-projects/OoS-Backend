@@ -19,7 +19,7 @@ using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Models.SocialGroup;
-using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
@@ -246,14 +246,14 @@ public class ChildControllerTests
     {
         // Arrange
         ChildDto child = children.First();
-        WorkshopV2DTO existingWorkshop = new WorkshopV2DTO()
+        WorkshopV2Dto existingWorkshop = new WorkshopV2Dto()
         {
             Id = Guid.NewGuid(),
             Title = "Title1",
             Phone = "1111111111",
             WorkshopDescriptionItems = new[]
                 {
-                    new WorkshopDescriptionItemDTO
+                    new WorkshopDescriptionItemDto
                     {
                         Id = Guid.NewGuid(),
                         SectionName = "test heading",

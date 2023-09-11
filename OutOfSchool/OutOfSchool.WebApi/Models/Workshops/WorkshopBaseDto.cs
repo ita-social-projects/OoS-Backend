@@ -8,9 +8,9 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Util.CustomValidation;
 using OutOfSchool.WebApi.Util.JsonTools;
 
-namespace OutOfSchool.WebApi.Models.Workshop;
+namespace OutOfSchool.WebApi.Models.Workshops;
 
-public class WorkshopBaseDTO : IValidatableObject
+public class WorkshopBaseDto : IValidatableObject
 {
     public Guid Id { get; set; }
 
@@ -74,7 +74,7 @@ public class WorkshopBaseDTO : IValidatableObject
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     [CollectionNotEmpty(ErrorMessage = "At least one description is required")]
-    public IEnumerable<WorkshopDescriptionItemDTO> WorkshopDescriptionItems { get; set; }
+    public IEnumerable<WorkshopDescriptionItemDto> WorkshopDescriptionItems { get; set; }
 
     public bool WithDisabilityOptions { get; set; } = default;
 

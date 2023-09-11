@@ -1,6 +1,6 @@
 ﻿using OutOfSchool.Common.Enums;
 
-namespace OutOfSchool.WebApi.Models.Workshop;
+namespace OutOfSchool.WebApi.Models.Workshops;
 
 public class WorkshopProviderViewCard : WorkshopBaseCard
 {

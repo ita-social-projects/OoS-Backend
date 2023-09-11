@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using OutOfSchool.WebApi.Util.JsonTools;
 
-namespace OutOfSchool.WebApi.Models.Workshop;
+namespace OutOfSchool.WebApi.Models.Workshops;
 
-public class WorkshopV2DTO : WorkshopDTO
+public class WorkshopV2Dto : WorkshopDto
 {
     [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;

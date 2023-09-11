@@ -4,7 +4,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 
 namespace OutOfSchool.WebApi.Services;
@@ -53,7 +53,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopBaseDTO> Create(WorkshopBaseDTO dto)
+    public async Task<WorkshopBaseDto> Create(WorkshopBaseDto dto)
     {
         var workshop = await workshopService.Create(dto).ConfigureAwait(false);
 
@@ -67,7 +67,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopDTO> GetById(Guid id)
+    public async Task<WorkshopDto> GetById(Guid id)
     {
         var workshop = await workshopService.GetById(id).ConfigureAwait(false);
 
@@ -75,7 +75,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopBaseDTO> Update(WorkshopBaseDTO dto)
+    public async Task<WorkshopBaseDto> Update(WorkshopBaseDto dto)
     {
         var workshop = await workshopService.Update(dto).ConfigureAwait(false);
 
@@ -89,7 +89,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopStatusDTO> UpdateStatus(WorkshopStatusDTO dto)
+    public async Task<WorkshopStatusDto> UpdateStatus(WorkshopStatusDto dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
 
@@ -290,7 +290,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     private async Task SendNotification(
-        WorkshopDTO workshop,
+        WorkshopDto workshop,
         NotificationAction notificationAction,
         bool addStatusData)
     {

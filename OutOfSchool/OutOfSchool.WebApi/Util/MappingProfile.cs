@@ -18,7 +18,7 @@ using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Models.SocialGroup;
 using OutOfSchool.WebApi.Models.StatisticReports;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
-using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Util.CustomComparers;
 
 namespace OutOfSchool.WebApi.Util;
@@ -27,7 +27,7 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<Workshop, WorkshopBaseDTO>()
+        CreateMap<Workshop, WorkshopBaseDto>()
             .ForMember(
                 dest => dest.Keywords,
                 opt => opt.MapFrom(src => src.Keywords.Split(Constants.MappingSeparator, StringSplitOptions.None)))
@@ -39,7 +39,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
             .ForMember(dest => dest.ProviderLicenseStatus, opt => opt.MapFrom(src => src.Provider.LicenseStatus));
 
-        CreateMap<WorkshopBaseDTO, Workshop>()
+        CreateMap<WorkshopBaseDto, Workshop>()
             .ForMember(
                 dest => dest.Keywords,
                 opt => opt.MapFrom(src => string.Join(Constants.MappingSeparator, src.Keywords.Distinct())))
@@ -75,8 +75,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore());
 
-        CreateMap<Workshop, WorkshopDTO>()
-            .IncludeBase<Workshop, WorkshopBaseDTO>()
+        CreateMap<Workshop, WorkshopDto>()
+            .IncludeBase<Workshop, WorkshopBaseDto>()
             .ForMember(dest => dest.TakenSeats, opt =>
                 opt.MapFrom(src =>
                     src.Applications.Count(x =>
@@ -87,24 +87,24 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.IsBlocked, opt => opt.MapFrom(src => src.Provider.IsBlocked))
             .ForMember(dest => dest.ProviderStatus, opt => opt.MapFrom(src => src.Provider.Status));
 
-        CreateMap<WorkshopDTO, Workshop>()
-            .IncludeBase<WorkshopBaseDTO, Workshop>();
+        CreateMap<WorkshopDto, Workshop>()
+            .IncludeBase<WorkshopBaseDto, Workshop>();
 
-        CreateMap<Workshop, WorkshopV2DTO>()
-            .IncludeBase<Workshop, WorkshopDTO>()
+        CreateMap<Workshop, WorkshopV2Dto>()
+            .IncludeBase<Workshop, WorkshopDto>()
             .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
             .ForMember(dest => dest.ImageFiles, opt => opt.Ignore());
 
-        CreateMap<WorkshopV2DTO, Workshop>()
-            .IncludeBase<WorkshopDTO, Workshop>();
+        CreateMap<WorkshopV2Dto, Workshop>()
+            .IncludeBase<WorkshopDto, Workshop>();
 
-        CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDTO>().ReverseMap();
+        CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>().ReverseMap();
 
-        CreateMap<WorkshopStatusDTO, WorkshopStatusWithTitleDTO>()
+        CreateMap<WorkshopStatusDto, WorkshopStatusWithTitleDto>()
             .ForMember(dest => dest.Title, opt => opt.Ignore());
 
-        CreateMap<WorkshopStatusWithTitleDTO, WorkshopStatusDTO>();
+        CreateMap<WorkshopStatusWithTitleDto, WorkshopStatusDto>();
 
         CreateMap<Address, AddressDto>()
             .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));

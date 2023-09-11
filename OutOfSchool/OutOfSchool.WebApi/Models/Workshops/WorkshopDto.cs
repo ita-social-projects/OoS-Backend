@@ -2,9 +2,9 @@
 using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;
 
-namespace OutOfSchool.WebApi.Models.Workshop;
+namespace OutOfSchool.WebApi.Models.Workshops;
 
-public class WorkshopDTO : WorkshopBaseDTO
+public class WorkshopDto : WorkshopBaseDto
 {
     public uint TakenSeats { get; set; } = 0;
 
