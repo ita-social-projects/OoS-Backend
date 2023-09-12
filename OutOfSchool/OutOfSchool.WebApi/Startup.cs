@@ -1,7 +1,9 @@
 using System.Text.Json.Serialization;
 using AutoMapper;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HeaderPropagation;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Services.AverageRatings;
@@ -60,6 +62,8 @@ public static class Startup
 
         app.UseAuthentication();
         app.UseAuthorization();
+
+        app.UseHeaderPropagation();
 
         app.MapHealthChecks("/healthz/ready", new HealthCheckOptions
             {
@@ -124,7 +128,8 @@ public static class Startup
                 new HttpClientHandler()
                 {
                     AutomaticDecompression = DecompressionMethods.GZip,
-                });
+                })
+            .AddHeaderPropagation();
 
         services.AddHttpContextAccessor();
         services.AddScoped<IProviderAdminService, ProviderAdminService>();
@@ -391,5 +396,14 @@ public static class Startup
             .AddDbContextCheck<OutOfSchoolDbContext>(
                 "Database",
                 tags: new[] { "readiness" });
+
+        Func<HeaderPropagationContext, StringValues> defaultHeaderDelegate = context =>
+            StringValues.IsNullOrEmpty(context.HeaderValue) ? Guid.NewGuid().ToString() : context.HeaderValue;
+
+        services.AddHeaderPropagation(options =>
+        {
+            options.Headers.Add("Request-Id", defaultHeaderDelegate);
+            options.Headers.Add("X-Request-Id", defaultHeaderDelegate);
+        });
     }
 }

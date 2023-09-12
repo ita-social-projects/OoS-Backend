@@ -53,9 +53,6 @@ public class CommunicationService : ICommunicationService
                     = new AuthenticationHeaderValue("Bearer", request.Token);
             }
 
-            httpClient.DefaultRequestHeaders
-                .Add("X-Request-ID", request.RequestId.ToString());
-
             using var requestMessage = new HttpRequestMessage();
 
             requestMessage.Headers

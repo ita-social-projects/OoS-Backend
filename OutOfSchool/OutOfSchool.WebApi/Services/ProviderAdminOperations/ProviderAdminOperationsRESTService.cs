@@ -40,13 +40,11 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
             Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.CreateProviderAdmin),
             Token = token,
             Data = providerAdminDto,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 

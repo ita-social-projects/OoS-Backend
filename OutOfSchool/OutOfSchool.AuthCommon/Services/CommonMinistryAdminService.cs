@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.AuthCommon.Extensions;
 using OutOfSchool.AuthCommon.Services.Password;
 using OutOfSchool.Common.Models;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
@@ -55,13 +56,11 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
         TDto ministryAdminBaseDto,
         Role role,
         IUrlHelper url,
-        string userId,
-        string requestId)
+        string userId)
     {
         ArgumentNullException.ThrowIfNull(ministryAdminBaseDto);
         ArgumentNullException.ThrowIfNull(url);
         ArgumentNullException.ThrowIfNull(userId);
-        ArgumentNullException.ThrowIfNull(requestId);
 
         var user = mapper.Map<User>(ministryAdminBaseDto);
 
@@ -90,9 +89,9 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                     await transaction.RollbackAsync();
 
                     logger.LogError(
-                        $"Error happened while creation MinistryAdmin. Request(id): {requestId}" +
-                        $"User(id): {userId}" +
-                        $"{string.Join(Environment.NewLine, result.Errors.Select(e => e.Description))}");
+                        "Error happened while creation MinistryAdmin. User(id): {UserId}. {Error}",
+                        userId,
+                        result.ErrorMessages());
 
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.BadRequest;
@@ -112,9 +111,9 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                     await transaction.RollbackAsync();
 
                     logger.LogError(
-                        $"Error happened while adding role to user. Request(id): {requestId}" +
-                        $"User(id): {userId}" +
-                        $"{string.Join(Environment.NewLine, result.Errors.Select(e => e.Description))}");
+                        "Error happened while adding role to user. User(id): {UserId}. {Error}",
+                        userId,
+                        result.ErrorMessages());
 
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -129,8 +128,9 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                     .ConfigureAwait(false);
 
                 logger.LogInformation(
-                    $"MinistryAdmin(id):{ministryAdminBaseDto.UserId} was successfully created by " +
-                    $"User(id): {userId}. Request(id): {requestId}");
+                    "MinistryAdmin(id):{Id} was successfully created by User(id): {UserId}",
+                    ministryAdminBaseDto.UserId,
+                    userId);
 
                 await this.SendInvitationEmail(user, url, password);
 
@@ -147,7 +147,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
             {
                 await transaction.RollbackAsync();
 
-                logger.LogError($"{ex.Message} User(id): {userId}.");
+                logger.LogError(ex, "Error occured for User(id): {UserId}", userId);
 
                 response.IsSuccess = false;
                 response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -159,12 +159,10 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
 
     public async Task<ResponseDto> DeleteMinistryAdminAsync(
         string ministryAdminId,
-        string userId,
-        string requestId)
+        string userId)
     {
         ArgumentNullException.ThrowIfNull(ministryAdminId);
         ArgumentNullException.ThrowIfNull(userId);
-        ArgumentNullException.ThrowIfNull(requestId);
 
         var executionStrategy = context.Database.CreateExecutionStrategy();
         return await executionStrategy.Execute(DeleteMinistryAdminOperation).ConfigureAwait(false);
@@ -182,9 +180,10 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.NotFound;
 
-                    logger.LogError($"MinistryAdmin(id) {ministryAdminId} not found. " +
-                                    $"Request(id): {requestId}" +
-                                    $"User(id): {userId}");
+                    logger.LogError(
+                        "MinistryAdmin(id) {MinistryAdminId} not found. User(id): {UserId}",
+                        ministryAdminId,
+                        userId);
 
                     return response;
                 }
@@ -198,9 +197,10 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                 {
                     await transaction.RollbackAsync();
 
-                    logger.LogError($"Error happened while deleting MinistryAdmin. Request(id): {requestId}" +
-                                    $"User(id): {userId}" +
-                                    $"{string.Join(Environment.NewLine, result.Errors.Select(e => e.Description))}");
+                    logger.LogError(
+                        "Error happened while deleting MinistryAdmin. User(id): {UserId}. {Error}",
+                        userId,
+                        result.ErrorMessages());
 
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -212,8 +212,10 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                 response.IsSuccess = true;
                 response.HttpStatusCode = HttpStatusCode.OK;
 
-                logger.LogInformation($"MinistryAdmin(id):{ministryAdminId} was successfully deleted by " +
-                                      $"User(id): {userId}. Request(id): {requestId}");
+                logger.LogInformation(
+                    "MinistryAdmin(id):{MinistryAdminId} was successfully deleted by User(id): {UserId}",
+                    ministryAdminId,
+                    userId);
 
                 return response;
             }
@@ -221,8 +223,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
             {
                 await transaction.RollbackAsync();
 
-                logger.LogError($"Error happened while deleting MinistryAdmin. Request(id): {requestId}" +
-                                $"User(id): {userId} {ex.Message}");
+                logger.LogError(ex, "Error happened while deleting MinistryAdmin. User(id): {UserId}", userId);
 
                 response.IsSuccess = false;
                 response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -235,12 +236,10 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
     public async Task<ResponseDto> BlockMinistryAdminAsync(
         string ministryAdminId,
         string userId,
-        string requestId,
         bool isBlocked)
     {
         ArgumentNullException.ThrowIfNull(ministryAdminId);
         ArgumentNullException.ThrowIfNull(userId);
-        ArgumentNullException.ThrowIfNull(requestId);
 
         var response = new ResponseDto();
 
@@ -251,9 +250,10 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
             response.IsSuccess = false;
             response.HttpStatusCode = HttpStatusCode.NotFound;
 
-            logger.LogError($"ProviderAdmin(id) {ministryAdminId} not found. " +
-                            $"Request(id): {requestId}" +
-                            $"User(id): {userId}");
+            logger.LogError(
+                "MinistryAdmin(id) {MinistryAdminId} not found. User(id): {UserId}",
+                ministryAdminId,
+                userId);
 
             return response;
         }
@@ -275,9 +275,10 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                 {
                     await transaction.RollbackAsync().ConfigureAwait(false);
 
-                    logger.LogError($"Error happened while blocking ProviderAdmin. Request(id): {requestId}" +
-                                    $"User(id): {userId}" +
-                                    $"{string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description))}");
+                    logger.LogError(
+                        "Error happened while blocking ProviderAdmin. User(id): {UserId}. {Error}",
+                        userId,
+                        string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description)));
 
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -291,9 +292,10 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                 {
                     await transaction.RollbackAsync().ConfigureAwait(false);
 
-                    logger.LogError($"Error happened while updating security stamp. ProviderAdmin. Request(id): {requestId}" +
-                                    $"User(id): {userId}" +
-                                    $"{string.Join(Environment.NewLine, updateSecurityStamp.Errors.Select(e => e.Description))}");
+                    logger.LogError(
+                        "Error happened while updating security stamp. ProviderAdmin. User(id): {UserId}. {Error}",
+                        userId,
+                        string.Join(Environment.NewLine, updateSecurityStamp.Errors.Select(e => e.Description)));
 
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -303,8 +305,10 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
 
                 await transaction.CommitAsync().ConfigureAwait(false);
 
-                logger.LogInformation($"ProviderAdmin(id):{ministryAdminId} was successfully blocked by " +
-                                      $"User(id): {userId}. Request(id): {requestId}");
+                logger.LogInformation(
+                    "MinistryAdmin(id):{MinistryAdminId} was successfully blocked by User(id): {UserId}",
+                    ministryAdminId,
+                    userId);
 
                 response.IsSuccess = true;
                 response.HttpStatusCode = HttpStatusCode.OK;
@@ -315,8 +319,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
             {
                 await transaction.RollbackAsync().ConfigureAwait(false);
 
-                logger.LogError($"Error happened while blocking ProviderAdmin. Request(id): {requestId}" +
-                                $"User(id): {userId} {ex.Message}");
+                logger.LogError(ex, "Error happened while blocking ministryAdmin. User(id): {UserId}", userId);
 
                 response.IsSuccess = false;
                 response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -328,17 +331,16 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
 
     public async Task<ResponseDto> UpdateMinistryAdminAsync(
         TDto updateMinistryAdminDto,
-        string userId,
-        string requestId)
+        string userId)
     {
         _ = updateMinistryAdminDto ?? throw new ArgumentNullException(nameof(updateMinistryAdminDto));
 
         var response = new ResponseDto();
 
         if (await context.Users.AnyAsync(x => x.Email == updateMinistryAdminDto.Email
-            && x.Id != updateMinistryAdminDto.UserId).ConfigureAwait(false))
+                                              && x.Id != updateMinistryAdminDto.UserId).ConfigureAwait(false))
         {
-            logger.LogError("Cant update ministry admin with duplicate email: {email}", updateMinistryAdminDto.Email);
+            logger.LogError("Cant update ministry admin with duplicate email: {Email}", updateMinistryAdminDto.Email);
             response.IsSuccess = false;
             response.HttpStatusCode = HttpStatusCode.BadRequest;
             response.Message = $"Cant update provider admin with duplicate email: {updateMinistryAdminDto.Email}";
@@ -354,11 +356,8 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
             response.HttpStatusCode = HttpStatusCode.NotFound;
 
             logger.LogError(
-                "MinistryAdmin(id) {ministryAdminUpdateDto.Id} not found. " +
-                "Request(id): {requestId}" +
-                "User(id): {userId}",
+                "MinistryAdmin(id) {Id} not found. User(id): {UserId}",
                 updateMinistryAdminDto.UserId,
-                requestId,
                 userId);
 
             return response;
@@ -367,7 +366,8 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
         var user = await userManager.FindByIdAsync(updateMinistryAdminDto.UserId);
 
         var executionStrategy = context.Database.CreateExecutionStrategy();
-        return await executionStrategy.Execute(updateMinistryAdminDto, UpdateMinistryAdminOperation).ConfigureAwait(false);
+        return await executionStrategy.Execute(updateMinistryAdminDto, UpdateMinistryAdminOperation)
+            .ConfigureAwait(false);
 
         async Task<ResponseDto> UpdateMinistryAdminOperation(MinistryAdminBaseDto ministryAdminUpdateDto)
         {
@@ -388,10 +388,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                     await transaction.RollbackAsync().ConfigureAwait(false);
 
                     logger.LogError(
-                        "Error happened while updating MinistryAdmin. Request(id): {requestId}" +
-                        "User(id): {userId}" +
-                        "{Errors}",
-                        requestId,
+                        "Error happened while updating MinistryAdmin. User(id): {UserId}. {Errors}",
                         userId,
                         string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description)));
 
@@ -408,10 +405,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                     await transaction.RollbackAsync().ConfigureAwait(false);
 
                     logger.LogError(
-                        "Error happened while updating security stamp. MinistryAdmin. Request(id): {requestId}" +
-                        "User(id): {userId}" +
-                        "{Errors}",
-                        requestId,
+                        "Error happened while updating security stamp. MinistryAdmin. User(id): {UserId}. {Errors}",
                         userId,
                         string.Join(Environment.NewLine, updateSecurityStamp.Errors.Select(e => e.Description)));
 
@@ -430,11 +424,9 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                 await transaction.CommitAsync().ConfigureAwait(false);
 
                 logger.LogInformation(
-                    "MinistryAdmin(id):{ministryAdminUpdateDto.UserId} was successfully updated by " +
-                    "User(id): {userId}. Request(id): {requestId}",
+                    "MinistryAdmin(id):{Id} was successfully updated by User(id): {UserId}",
                     ministryAdminUpdateDto.UserId,
-                    userId,
-                    requestId);
+                    userId);
 
                 response.IsSuccess = true;
                 response.HttpStatusCode = HttpStatusCode.OK;
@@ -447,11 +439,9 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                 await transaction.RollbackAsync().ConfigureAwait(false);
 
                 logger.LogError(
-                    "Error happened while updating MinistryAdmin. Request(id): {requestId}" +
-                    "User(id): {userId} {ex.Message}",
-                    requestId,
-                    userId,
-                    ex.Message);
+                    ex,
+                    "Error happened while updating MinistryAdmin. User(id): {UserId}",
+                    userId);
 
                 response.IsSuccess = false;
                 response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -464,8 +454,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
     public async Task<ResponseDto> ReinviteMinistryAdminAsync(
         string ministryAdminId,
         string userId,
-        IUrlHelper url,
-        string requestId)
+        IUrlHelper url)
     {
         var executionStrategy = context.Database.CreateExecutionStrategy();
         var result = await executionStrategy.Execute(async () =>
@@ -481,9 +470,10 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.NotFound;
 
-                    logger.LogError($"MinistryAdmin(id) {ministryAdminId} not found. " +
-                                    $"Request(id): {requestId}" +
-                                    $"User(id): {userId}");
+                    logger.LogError(
+                        "MinistryAdmin(id) {MinistryAdminId} not found. User(id): {UserId}",
+                        ministryAdminId,
+                        userId);
 
                     return response;
                 }
@@ -497,9 +487,10 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                 {
                     await transaction.RollbackAsync();
 
-                    logger.LogError($"Error happened while reinviting MinistryAdmin. Request(id): {requestId}" +
-                                    $"User(id): {userId}" +
-                                    $"{string.Join(Environment.NewLine, result.Errors.Select(e => e.Description))}");
+                    logger.LogError(
+                        "Error happened while reinviting MinistryAdmin. User(id): {UserId}. {Errors}",
+                        userId,
+                        result.ErrorMessages());
 
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -513,8 +504,10 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                 response.IsSuccess = true;
                 response.HttpStatusCode = HttpStatusCode.OK;
 
-                logger.LogInformation($"MinistryAdmin(id):{ministryAdminId} was successfully reinvited by " +
-                                      $"User(id): {userId}. Request(id): {requestId}");
+                logger.LogInformation(
+                    "MinistryAdmin(id):{MinistryAdminId} was successfully reinvited by User(id): {UserId}",
+                    ministryAdminId,
+                    userId);
 
                 return response;
             }
@@ -522,8 +515,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
             {
                 await transaction.RollbackAsync();
 
-                logger.LogError($"Error happened while reinviting MinistryAdmin. Request(id): {requestId}" +
-                                $"User(id): {userId} {ex.Message}");
+                logger.LogError(ex, "Error happened while reinviting MinistryAdmin. User(id): {UserId}", userId);
 
                 response.IsSuccess = false;
                 response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -540,7 +532,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
         var confirmationLink = url.Action(
             "EmailConfirmation",
             "Account",
-            new { email = user.Email, token },
+            new {email = user.Email, token},
             "https");
         var subject = localizer["Confirm email"];
         var adminInvitationViewModel = new AdminInvitationViewModel
@@ -549,7 +541,8 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
             Email = user.Email,
             Password = password,
         };
-        var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.NewAdminInvitation, adminInvitationViewModel);
+        var content =
+            await renderer.GetHtmlPlainStringAsync(RazorTemplates.NewAdminInvitation, adminInvitationViewModel);
 
         await emailSender.SendAsync(user.Email, subject, content);
     }

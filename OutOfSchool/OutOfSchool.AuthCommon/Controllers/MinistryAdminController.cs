@@ -13,7 +13,6 @@ public class MinistryAdminController : Controller
     private readonly ILogger<MinistryAdminController> logger;
     private readonly ICommonMinistryAdminService<MinistryAdminBaseDto> ministryAdminService;
 
-    private string path;
     private string userId;
 
     public MinistryAdminController(
@@ -28,7 +27,6 @@ public class MinistryAdminController : Controller
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        path = $"{context.HttpContext.Request.Path.Value}[{context.HttpContext.Request.Method}]";
         userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
     }
 
@@ -37,8 +35,7 @@ public class MinistryAdminController : Controller
     public async Task<ResponseDto> Create(MinistryAdminBaseDto ministryAdminBaseDto)
     {
         logger.LogDebug(
-            "Received request {RequestHeader}. {Path} started. User(id): {UserId}",
-            Request.Headers["X-Request-ID"], path, userId);
+            "Operation initiated by User(id): {UserId}", userId);
 
         if (!ModelState.IsValid)
         {
@@ -52,22 +49,17 @@ public class MinistryAdminController : Controller
         }
 
         return await ministryAdminService
-            .CreateMinistryAdminAsync(ministryAdminBaseDto, Role.MinistryAdmin, Url, userId, Request.Headers["X-Request-ID"]);
+            .CreateMinistryAdminAsync(ministryAdminBaseDto, Role.MinistryAdmin, Url, userId);
     }
 
     [HttpPut("{ministryAdminId}")]
     [HasPermission(Permissions.MinistryAdminEdit)]
     public async Task<ResponseDto> Update(string ministryAdminId, MinistryAdminBaseDto updateMinistryAdminDto)
     {
-        logger.LogDebug(
-            "Received request " +
-            "{Headers}. {path} started. User(id): {userId}",
-            Request.Headers["X-Request-ID"],
-            path,
-            userId);
+        logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
         return await ministryAdminService
-            .UpdateMinistryAdminAsync(updateMinistryAdminDto, userId, Request.Headers["X-Request-ID"]);
+            .UpdateMinistryAdminAsync(updateMinistryAdminDto, userId);
     }
 
     [HttpDelete("{ministryAdminId}")]
@@ -76,34 +68,29 @@ public class MinistryAdminController : Controller
     {
         ArgumentNullException.ThrowIfNull(ministryAdminId);
 
-        logger.LogDebug(
-            "Received request {RequestHeader}. {Path} started. User(id): {UserId}",
-            Request.Headers["X-Request-ID"], path, userId);
+        logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
         return await ministryAdminService
-            .DeleteMinistryAdminAsync(ministryAdminId, userId, Request.Headers["X-Request-ID"]);
+            .DeleteMinistryAdminAsync(ministryAdminId, userId);
     }
 
     [HttpPut("{ministryAdminId}/{isBlocked}")]
     [HasPermission(Permissions.MinistryAdminEdit)]
     public async Task<ResponseDto> Block(string ministryAdminId, bool isBlocked)
     {
-        logger.LogDebug(
-            "Received request {RequestHeader}. {Path} started. User(id): {UserId}",
-            Request.Headers["X-Request-ID"], path, userId);
+        logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
         return await ministryAdminService
-            .BlockMinistryAdminAsync(ministryAdminId, userId, Request.Headers["X-Request-ID"], isBlocked);
+            .BlockMinistryAdminAsync(ministryAdminId, userId, isBlocked);
     }
 
     [HttpPut("{ministryAdminId}")]
     [HasPermission(Permissions.MinistryAdminEdit)]
     public async Task<ResponseDto> Reinvite(string ministryAdminId)
     {
-        logger.LogDebug($"Received request " +
-                        $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
+        logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
         return await ministryAdminService
-            .ReinviteMinistryAdminAsync(ministryAdminId, userId, Url, Request.Headers["X-Request-ID"]);
+            .ReinviteMinistryAdminAsync(ministryAdminId, userId, Url);
     }
 }

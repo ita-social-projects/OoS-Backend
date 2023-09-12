@@ -20,9 +20,8 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
     private readonly IRegionAdminService regionAdminService;
-    private IAreaAdminService areaAdminServiceImplementation;
-    private ICodeficatorRepository codeficatorRepository;
     private readonly ICodeficatorService codeficatorService;
+    private ICodeficatorRepository codeficatorRepository;
 
 
     public AreaAdminService(
@@ -91,8 +90,10 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         return mapper.Map<AreaAdminDto>(areaAdmin);
     }
 
-    public async Task<Either<ErrorResponse, AreaAdminBaseDto>> CreateAreaAdminAsync(string userId,
-        AreaAdminBaseDto areaAdminBaseDto, string token)
+    public async Task<Either<ErrorResponse, AreaAdminBaseDto>> CreateAreaAdminAsync(
+        string userId,
+        AreaAdminBaseDto areaAdminBaseDto,
+        string token)
     {
         Logger.LogDebug("RegionAdmin creating was started. User(id): {UserId}", userId);
 
@@ -100,7 +101,8 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
 
         if (await IsSuchEmailExisted(areaAdminBaseDto.Email))
         {
-            Logger.LogDebug("AreaAdmin creating is not possible. Username {Email} is already taken",
+            Logger.LogDebug(
+                "AreaAdmin creating is not possible. Username {Email} is already taken",
                 areaAdminBaseDto.Email);
             throw new InvalidOperationException($"Username {areaAdminBaseDto.Email} is already taken.");
         }
@@ -108,7 +110,8 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         bool isValidCatottg = await IsValidCatottg(areaAdminBaseDto.CATOTTGId);
         if (!isValidCatottg)
         {
-            Logger.LogDebug("AreaAdmin creating is not possible. Catottg with Id {CatottgId} does not contain to area",
+            Logger.LogDebug(
+                "AreaAdmin creating is not possible. Catottg with Id {CatottgId} does not contain to area",
                 areaAdminBaseDto.CATOTTGId);
             throw new InvalidOperationException(
                 $"Catottg with Id {areaAdminBaseDto.CATOTTGId} does not contain to area.");
@@ -120,13 +123,11 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
             Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.CreateAreaAdmin),
             Token = token,
             Data = areaAdminBaseDto,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -192,11 +193,12 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         if (otgAdmins.Any())
         {
             Logger.LogInformation(
-                $"All {otgAdmins.Count} records were successfully received from the AreaAdmins table");
+                "All {Count} records were successfully received from the AreaAdmins table",
+                otgAdmins.Count);
         }
         else
         {
-            Logger.LogInformation("AreaAdmins table is empty.");
+            Logger.LogInformation("AreaAdmins table is empty");
         }
 
         var otgAdminsDto = otgAdmins.Select(admin => mapper.Map<AreaAdminDto>(admin)).ToList();
@@ -218,7 +220,9 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
     {
         _ = updateAreaAdminDto ?? throw new ArgumentNullException(nameof(updateAreaAdminDto));
 
-        Logger.LogDebug("AreaAdmin(id): {AreaAdminDto} updating was started. User(id): {UserId}", updateAreaAdminDto.Id,
+        Logger.LogDebug(
+            "AreaAdmin(id): {AreaAdminDto} updating was started. User(id): {UserId}",
+            updateAreaAdminDto.Id,
             userId);
 
         var regionAdmin = await areaAdminRepository.GetByIdAsync(updateAreaAdminDto.Id)
@@ -226,7 +230,9 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
 
         if (regionAdmin is null)
         {
-            Logger.LogError("AreaAdmin(id) {AreaAdminDto} not found. User(id): {UserId}", updateAreaAdminDto.Id,
+            Logger.LogError(
+                "AreaAdmin(id) {AreaAdminDto} not found. User(id): {UserId}",
+                updateAreaAdminDto.Id,
                 userId);
 
             return new ErrorResponse
@@ -238,17 +244,16 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(authorizationServerConfig.Authority,
+            Url = new Uri(
+                authorizationServerConfig.Authority,
                 CommunicationConstants.UpdateAreaAdmin + updateAreaAdminDto.Id),
             Token = token,
             Data = mapper.Map<AreaAdminBaseDto>(updateAreaAdminDto),
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -268,7 +273,9 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
                 : null);
     }
 
-    public async Task<Either<ErrorResponse, ActionResult>> DeleteAreaAdminAsync(string areaAdminId, string userId,
+    public async Task<Either<ErrorResponse, ActionResult>> DeleteAreaAdminAsync(
+        string areaAdminId,
+        string userId,
         string token)
     {
         Logger.LogDebug("AreaAdmin(id): {AreaAdminId} deleting was started. User(id): {UserId}", areaAdminId, userId);
@@ -291,13 +298,11 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
             HttpMethodType = HttpMethodType.Delete,
             Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.DeleteAreaAdmin + areaAdminId),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -318,8 +323,11 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
                 : null);
     }
 
-    public async Task<Either<ErrorResponse, ActionResult>> BlockAreaAdminAsync(string areaAdminId, string userId,
-        string token, bool isBlocked)
+    public async Task<Either<ErrorResponse, ActionResult>> BlockAreaAdminAsync(
+        string areaAdminId,
+        string userId,
+        string token,
+        bool isBlocked)
     {
         Logger.LogDebug("AreaAdmin(id): {AreaAdminId} blocking was started. User(id): {UserId}", areaAdminId, userId);
 
@@ -345,13 +353,11 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
                 "/",
                 isBlocked)),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -412,13 +418,11 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
                 areaAdminId,
                 new PathString("/"))),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -465,7 +469,6 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
     {
         _ = ministryAdminUserId ?? throw new ArgumentNullException(nameof(ministryAdminUserId));
         var ministryAdmin = await ministryAdminService.GetByIdAsync(ministryAdminUserId).ConfigureAwait(false);
-
 
         return ministryAdmin.InstitutionId == institutionId;
     }

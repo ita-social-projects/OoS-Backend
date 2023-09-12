@@ -96,13 +96,11 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.CreateRegionAdmin),
             Token = token,
             Data = regionAdminBaseDto,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{request.HttpMethodType} Request was sent. User(id): {UserId}. Url: {request.Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -248,13 +246,11 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.UpdateRegionAdmin + updateRegionAdminDto.Id),
             Token = token,
             Data = mapper.Map<RegionAdminBaseDto>(updateRegionAdminDto),
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{request.HttpMethodType} Request was sent. User(id): {UserId}. Url: {request.Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -296,13 +292,11 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             HttpMethodType = HttpMethodType.Delete,
             Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.DeleteRegionAdmin + regionAdminId),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{request.HttpMethodType} Request was sent. User(id): {UserId}. Url: {request.Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -349,13 +343,11 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
                 "/",
                 isBlocked)),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{request.HttpMethodType} Request was sent. User(id): {UserId}. Url: {request.Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -416,13 +408,11 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
                 regionAdminId,
                 new PathString("/"))),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{request.HttpMethodType} Request was sent. User(id): {UserId}. Url: {request.Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 

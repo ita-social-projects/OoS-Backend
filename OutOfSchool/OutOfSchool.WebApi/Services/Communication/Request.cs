@@ -2,8 +2,6 @@
 
 public class Request
 {
-    public Guid RequestId { get; set; }
-
     public object Data { get; set; }
 
     public Uri Url { get; set; }

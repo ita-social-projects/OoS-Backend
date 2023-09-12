@@ -73,7 +73,10 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
 
         if (numberProviderAdminsLessThanMax >= providerAdminConfig.MaxNumberAdmins)
         {
-            Logger.LogError("Admin was not created by User(id): {UserId}. Limit on the number of admins has been exceeded for the Provider(id): {providerAdminDto.ProviderId}", userId, providerAdminDto.ProviderId);
+            Logger.LogError(
+                "Admin was not created by User(id): {UserId}. Limit on the number of admins has been exceeded for the Provider(id): {ProviderId}",
+                userId,
+                providerAdminDto.ProviderId);
 
             return new ErrorResponse
             {
@@ -128,13 +131,11 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.UpdateProviderAdmin + providerAdminModel.Id),
             Token = token,
             Data = providerAdminModel,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -194,13 +195,11 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             HttpMethodType = HttpMethodType.Delete,
             Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.DeleteProviderAdmin + providerAdminId),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -268,13 +267,11 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
                 new PathString("/"),
                 isBlocked)),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -323,7 +320,6 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
                 new PathString("/"),
                 isBlocked)),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         var response = await SendRequest<ResponseDto>(request)
@@ -374,7 +370,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     {
         var providersAdmins = await providerAdminRepository.GetByFilter(p => p.UserId == userId && !p.IsDeputy)
             .ConfigureAwait(false);
-        return providersAdmins.SelectMany(admin => admin.ManagedWorkshops, (admin, workshops) => new { workshops })
+        return providersAdmins.SelectMany(admin => admin.ManagedWorkshops, (_, workshops) => new { workshops })
             .Select(x => x.workshops.Id);
     }
 
@@ -625,13 +621,11 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
                 providerAdminId,
                 new PathString("/"))),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 

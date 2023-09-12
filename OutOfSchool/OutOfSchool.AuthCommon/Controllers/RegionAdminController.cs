@@ -13,7 +13,6 @@ public class RegionAdminController : Controller
     private readonly ILogger<RegionAdminController> logger;
     private readonly ICommonMinistryAdminService<RegionAdminBaseDto> regionAdminService;
 
-    private string path;
     private string currentUserId;
 
     public RegionAdminController(
@@ -28,7 +27,6 @@ public class RegionAdminController : Controller
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        path = $"{context.HttpContext.Request.Path.Value}[{context.HttpContext.Request.Method}]";
         currentUserId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
     }
 
@@ -36,15 +34,11 @@ public class RegionAdminController : Controller
     [HttpPost]
     public async Task<ResponseDto> Create(RegionAdminBaseDto regionAdminBaseDto)
     {
-        logger.LogDebug(
-            "Received request {RequestHeader}. {Path} started. User(id): {UserId}",
-            Request.Headers["X-Request-ID"],
-            path,
-            currentUserId);
+        logger.LogDebug("Operation initiated by User(id): {UserId}", currentUserId);
 
         if (!ModelState.IsValid)
         {
-            logger.LogError($"Input data was not valid for User(id): {currentUserId}");
+            logger.LogError("Input data was not valid for User(id): {UserId}", currentUserId);
 
             return new ResponseDto()
             {
@@ -54,7 +48,7 @@ public class RegionAdminController : Controller
         }
 
         return await regionAdminService
-            .CreateMinistryAdminAsync(regionAdminBaseDto, Role.RegionAdmin, Url, currentUserId, Request.Headers["X-Request-ID"]);
+            .CreateMinistryAdminAsync(regionAdminBaseDto, Role.RegionAdmin, Url, currentUserId);
     }
 
     [HttpPut("{regionAdminId}")]
@@ -62,13 +56,11 @@ public class RegionAdminController : Controller
     public async Task<ResponseDto> Update(string regionAdminId, RegionAdminBaseDto updateRegionAdminDto)
     {
         logger.LogDebug(
-            "Received request {Headers}. {path} started. User(id): {userId}",
-            Request.Headers["X-Request-ID"],
-            path,
+            "Operation initiated by User(id): {UserId}",
             currentUserId);
 
         return await regionAdminService
-            .UpdateMinistryAdminAsync(updateRegionAdminDto, currentUserId, Request.Headers["X-Request-ID"]);
+            .UpdateMinistryAdminAsync(updateRegionAdminDto, currentUserId);
     }
 
     [HttpDelete("{regionAdminId}")]
@@ -78,13 +70,11 @@ public class RegionAdminController : Controller
         _ = regionAdminId ?? throw new ArgumentNullException(nameof(regionAdminId));
 
         logger.LogDebug(
-            "Received request {RequestHeader}. {Path} started. User(id): {UserId}",
-            Request.Headers["X-Request-ID"],
-            path,
+            "Operation initiated by User(id): {UserId}",
             currentUserId);
 
         return await regionAdminService
-            .DeleteMinistryAdminAsync(regionAdminId, currentUserId, Request.Headers["X-Request-ID"]);
+            .DeleteMinistryAdminAsync(regionAdminId, currentUserId);
     }
 
     [HttpPut("{regionAdminId}/{isBlocked}")]
@@ -92,22 +82,19 @@ public class RegionAdminController : Controller
     public async Task<ResponseDto> Block(string regionAdminId, bool isBlocked)
     {
         logger.LogDebug(
-            "Received request {RequestHeader}. {Path} started. User(id): {UserId}",
-            Request.Headers["X-Request-ID"],
-            path,
+            "Operation initiated by User(id): {UserId}",
             currentUserId);
 
         return await regionAdminService
-            .BlockMinistryAdminAsync(regionAdminId, currentUserId, Request.Headers["X-Request-ID"], isBlocked);
+            .BlockMinistryAdminAsync(regionAdminId, currentUserId, isBlocked);
     }
 
     [HttpPut("{regionAdminId}")]
     [HasPermission(Permissions.RegionAdminEdit)]
     public async Task<ResponseDto> Reinvite(string regionAdminId)
     {
-        logger.LogDebug($"Received request " +
-                        $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {currentUserId}");
+        logger.LogDebug("Operation initiated by User(id): {UserId}", currentUserId);
         return await regionAdminService
-            .ReinviteMinistryAdminAsync(regionAdminId, currentUserId, Url, Request.Headers["X-Request-ID"]);
+            .ReinviteMinistryAdminAsync(regionAdminId, currentUserId, Url);
     }
 }

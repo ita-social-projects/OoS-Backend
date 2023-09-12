@@ -11,28 +11,23 @@ public interface ICommonMinistryAdminService<TDto>
         TDto ministryAdminBaseDto,
         Role role,
         IUrlHelper url,
-        string userId,
-        string requestId);
+        string userId);
 
     Task<ResponseDto> UpdateMinistryAdminAsync(
         TDto updateMinistryAdminDto,
-        string userId,
-        string requestId);
+        string userId);
 
     Task<ResponseDto> DeleteMinistryAdminAsync(
         string ministryAdminId,
-        string userId,
-        string requestId);
+        string userId);
 
     Task<ResponseDto> BlockMinistryAdminAsync(
         string ministryAdminId,
         string userId,
-        string requestId,
         bool isBlocked);
 
     Task<ResponseDto> ReinviteMinistryAdminAsync(
         string ministryAdminId,
         string userId,
-        IUrlHelper url,
-        string requestId);
+        IUrlHelper url);
 }

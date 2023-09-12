@@ -12,7 +12,6 @@ public class ProviderAdminController : Controller
     private readonly ILogger<ProviderAdminController> logger;
     private readonly IProviderAdminService providerAdminService;
 
-    private string path;
     private string userId;
 
     public ProviderAdminController(
@@ -25,7 +24,6 @@ public class ProviderAdminController : Controller
 
     public override void OnActionExecuting(ActionExecutingContext context)
     {
-        path = $"{context.HttpContext.Request.Path.Value}[{context.HttpContext.Request.Method}]";
         userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
     }
 
@@ -33,11 +31,10 @@ public class ProviderAdminController : Controller
     [HasPermission(Permissions.ProviderAdmins)]
     public async Task<ResponseDto> Create(CreateProviderAdminDto providerAdminDto)
     {
-        logger.LogDebug($"Received request " +
-                        $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
+        logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
         return await providerAdminService
-            .CreateProviderAdminAsync(providerAdminDto, Url, userId, Request.Headers["X-Request-ID"]);
+            .CreateProviderAdminAsync(providerAdminDto, Url, userId);
     }
 
     [HttpPut("{providerAdminId}")]
@@ -45,14 +42,11 @@ public class ProviderAdminController : Controller
     public async Task<ResponseDto> Update(string providerAdminId, UpdateProviderAdminDto providerAdminUpdateDto)
     {
         logger.LogDebug(
-            "Received request " +
-            "{Headers}. {path} started. User(id): {userId}",
-            Request.Headers["X-Request-ID"],
-            path,
+            "Operation initiated by User(id): {UserId}",
             userId);
 
         return await providerAdminService
-            .UpdateProviderAdminAsync(providerAdminUpdateDto, userId, Request.Headers["X-Request-ID"]);
+            .UpdateProviderAdminAsync(providerAdminUpdateDto, userId);
     }
 
     [HttpDelete("{providerAdminId}")]
@@ -64,43 +58,39 @@ public class ProviderAdminController : Controller
             throw new ArgumentNullException(nameof(providerAdminId));
         }
 
-        logger.LogDebug($"Received request " +
-                        $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
+        logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
         return await providerAdminService
-            .DeleteProviderAdminAsync(providerAdminId, userId, Request.Headers["X-Request-ID"]);
+            .DeleteProviderAdminAsync(providerAdminId, userId);
     }
 
     [HttpPut("{providerAdminId}/{isBlocked}")]
     [HasPermission(Permissions.ProviderRemove)]
     public async Task<ResponseDto> Block(string providerAdminId, bool isBlocked)
     {
-        logger.LogDebug($"Received request " +
-                        $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
+        logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
         return await providerAdminService
-            .BlockProviderAdminAsync(providerAdminId, userId, Request.Headers["X-Request-ID"], isBlocked);
+            .BlockProviderAdminAsync(providerAdminId, userId, isBlocked);
     }
 
     [HttpPut("{providerId}/{isBlocked}")]
     [HasPermission(Permissions.ProviderBlock)]
     public async Task<ResponseDto> BlockByProvider(Guid providerId, bool isBlocked)
     {
-        logger.LogDebug($"Received request " +
-                        $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
+        logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
         return await providerAdminService
-            .BlockProviderAdminsAndDeputiesByProviderAsync(providerId, userId, Request.Headers["X-Request-ID"], isBlocked);
+            .BlockProviderAdminsAndDeputiesByProviderAsync(providerId, userId, isBlocked);
     }
 
     [HttpPut("{providerAdminId}")]
     [HasPermission(Permissions.ProviderRemove)]
     public async Task<ResponseDto> Reinvite(string providerAdminId)
     {
-        logger.LogDebug($"Received request " +
-                        $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
+        logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
         return await providerAdminService
-            .ReinviteProviderAdminAsync(providerAdminId, userId, Url, Request.Headers["X-Request-ID"]);
+            .ReinviteProviderAdminAsync(providerAdminId, userId, Url);
     }
 }
