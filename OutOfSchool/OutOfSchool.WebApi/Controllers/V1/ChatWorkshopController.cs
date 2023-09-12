@@ -422,7 +422,7 @@ public class ChatWorkshopController : ControllerBase
 
             if (chatRoom is null)
             {
-                var messageToLog = $"User with userId:{GettingUserProperties.GetUserId(HttpContext)} is trying to get messages from not existing chat room: {nameof(chatRoom.Id)}={chatRoom.Id}.";
+                var messageToLog = $"User with userId:{GettingUserProperties.GetUserId(HttpContext)} is trying to get messages from not existing chat room with {nameof(parentId)}={parentId} and {nameof(workshopId)}={workshopId}.";
                 logger.LogInformation(messageToLog);
 
                 return NoContent();
@@ -443,7 +443,7 @@ public class ChatWorkshopController : ControllerBase
         return await HandleOperationAsync(Operation);
     }
 
-	private async Task<IActionResult> GetParentRoomByWorkshopIdAsync(Guid workshopId, bool withMessages)
+    private async Task<IActionResult> GetParentRoomByWorkshopIdAsync(Guid workshopId, bool withMessages)
     {
         async Task<IActionResult> Operation()
         {
