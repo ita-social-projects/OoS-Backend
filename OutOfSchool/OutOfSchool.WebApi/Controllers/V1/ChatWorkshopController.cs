@@ -162,11 +162,29 @@ public class ChatWorkshopController : ControllerBase
         => this.GetMessagesByRoomIdAsync(id, offsetFilter, this.IsProviderAChatRoomParticipantAsync);
 
     /// <summary>
-    /// Gets a portion of chat messages for Ministry Admin if it has related provider participants by specified chat room id.
+    /// Get a portion of chat messages for provider's chat room by workshopId and parentId.
+    /// Set read current date and time in UTC format in messages that are not read by the provider.
     /// </summary>
-    /// <param name="id">ChatRoom's Id.</param>
+    /// <param name="parentId">Parent's Id.</param>
+    /// <param name="workshopId">Workshop's Id.</param>
     /// <param name="offsetFilter">Filter to get specified portion of messages in the chat room.</param>
     /// <returns>User's chat room's messages that were found.</returns>
+    [HttpGet("provider/parent/{parentId}/workshop/{workshopId}/messages")]
+    [Authorize(Roles = "provider")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ChatMessageWorkshopDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public Task<IActionResult> GetMessagesForProviderByParentIdAndWorkshopIdAsync(Guid parentId, Guid workshopId, [FromQuery] OffsetFilter offsetFilter)
+        => this.GetMessagesForProviderByParentIdAndWorkshopIdAsync(parentId, workshopId, offsetFilter, this.IsProviderAChatRoomParticipantAsync);
+
+    /// <summary>
+	/// Gets a portion of chat messages for Ministry Admin if it has related provider participants by specified chat room id.
+	/// </summary>
+	/// <param name="id">ChatRoom's Id.</param>
+	/// <param name="offsetFilter">Filter to get specified portion of messages in the chat room.</param>
+	/// <returns>User's chat room's messages that were found.</returns>
     [HttpGet("ministryadmin/chatrooms/{id}/messages")]
     [Authorize(Roles = "ministryadmin")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ChatMessageWorkshopDto>))]
@@ -396,7 +414,36 @@ public class ChatWorkshopController : ControllerBase
         return await HandleOperationAsync(Operation);
     }
 
-    private async Task<IActionResult> GetParentRoomByWorkshopIdAsync(Guid workshopId, bool withMessages)
+    private async Task<IActionResult> GetMessagesForProviderByParentIdAndWorkshopIdAsync(Guid parentId, Guid workshopId, OffsetFilter offsetFilter, Func<ChatRoomWorkshopDto, Task<bool>> userHasRights)
+    {
+        async Task<IActionResult> Operation()
+        {
+            var chatRoom = await roomService.GetByParentIdWorkshopIdAsync(parentId, workshopId).ConfigureAwait(false);
+
+            if (chatRoom is null)
+            {
+                var messageToLog = $"User with userId:{GettingUserProperties.GetUserId(HttpContext)} is trying to get messages from not existing chat room: {nameof(chatRoom.Id)}={chatRoom.Id}.";
+                logger.LogInformation(messageToLog);
+
+                return NoContent();
+            }
+
+            var isChatRoomValid = await userHasRights(chatRoom).ConfigureAwait(false);
+
+            if (isChatRoomValid)
+            {
+                var messages = await messageService.GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(chatRoom.Id, offsetFilter, GettingUserProperties.GetUserRole(HttpContext)).ConfigureAwait(false);
+
+                return messages.Any() ? Ok(messages) : NoContent();
+            }
+
+            return NoContent();
+        }
+
+        return await HandleOperationAsync(Operation);
+    }
+
+	private async Task<IActionResult> GetParentRoomByWorkshopIdAsync(Guid workshopId, bool withMessages)
     {
         async Task<IActionResult> Operation()
         {
