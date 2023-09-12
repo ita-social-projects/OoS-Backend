@@ -348,6 +348,7 @@ public class ProviderService : IProviderService, INotificationReciever
 
         provider.IsBlocked = providerBlockDto.IsBlocked;
         provider.BlockReason = providerBlockDto.IsBlocked ? providerBlockDto.BlockReason : null;
+        provider.BlockPhoneNumber = providerBlockDto.IsBlocked ? providerBlockDto.BlockPhoneNumber : null;
 
         await providerRepository.RunInTransaction(async () =>
         {
