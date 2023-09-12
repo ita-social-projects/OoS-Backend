@@ -37,7 +37,8 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
         IRegionAdminService regionAdminService,
         ICodeficatorService codeficatorService,
         IRegionAdminRepository regionAdminRepository,
-        IAverageRatingService averageRatingService)
+        IAverageRatingService averageRatingService,
+        IAreaAdminService areaAdminService)
         : base(
               providerRepository,
               usersRepository,
@@ -57,7 +58,8 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
               regionAdminService,
               codeficatorService,
               regionAdminRepository,
-              averageRatingService)
+              averageRatingService, 
+              areaAdminService)
     {
     }
 

@@ -108,7 +108,7 @@ public static class PermissionsSeeder
         Permissions.ImpersonalDataRead, Permissions.LogDataRead,
         Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
         Permissions.ApplicationRead,
-        Permissions.ProviderRead, Permissions.ProviderRemove, Permissions.ProviderApprove,
+        Permissions.ProviderRead, Permissions.ProviderRemove, Permissions.ProviderApprove, Permissions.ProviderBlock,
         Permissions.ParentRead,
         Permissions.ChildRead,
         Permissions.UserRead, Permissions.UserEdit,
