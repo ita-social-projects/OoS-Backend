@@ -34,7 +34,6 @@
       </PackageReference>
       <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
       <PackageReference Include="Newtonsoft.Json" />
-      <PackageReference Include="MongoDB.Driver.GridFS" />
       <PackageReference Include="StyleCop.Analyzers">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
