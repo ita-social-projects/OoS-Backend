@@ -5,7 +5,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public interface IAchievementRepository : IEntityRepositoryBase<Guid, Achievement>
+public interface IAchievementRepository : IEntityRepositorySoftDeleted<Guid, Achievement>
 {
     Task<IEnumerable<Achievement>> GetByWorkshopId(Guid workshopId);
 

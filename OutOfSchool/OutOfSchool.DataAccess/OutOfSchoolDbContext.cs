@@ -123,6 +123,8 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
             .HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "EndTime >= StartTime");
 
         builder.ApplyConfiguration(new AchievementConfiguration());
+        builder.ApplyConfiguration(new AchievementTeacherConfiguration());
+        builder.ApplyConfiguration(new AchievementTypeConfiguration());
         builder.ApplyConfiguration(new AddressConfiguration());
         builder.ApplyConfiguration(new ApplicationConfiguration());
         builder.ApplyConfiguration(new AverageRatingConfiguration());
