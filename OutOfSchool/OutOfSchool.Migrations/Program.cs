@@ -51,6 +51,13 @@ var host = Host.CreateDefaultBuilder(args)
                     serverVersion,
                     optionsBuilder =>
                         optionsBuilder
+                            .MigrationsAssembly(migrationsAssembly)))
+            .AddDbContext<CertificateDbContext>(options => options
+                .UseMySql(
+                    connectionString,
+                    serverVersion,
+                    optionsBuilder =>
+                        optionsBuilder
                             .MigrationsAssembly(migrationsAssembly)));
     })
     .Build();
