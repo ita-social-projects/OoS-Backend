@@ -36,6 +36,15 @@ public static class ChatMessagesGenerator
         return chatMessage;
     }
 
+    public static List<ChatMessageWorkshop> WithSenderRoleIsProvider(this List<ChatMessageWorkshop> chatMessages, bool isProvider)
+    {
+        _ = chatMessages ?? throw new ArgumentNullException(nameof(chatMessages));
+
+        chatMessages.ForEach(x => x.WithSenderRoleIsProvider(isProvider));
+
+        return chatMessages;
+    }
+
     public static List<ChatMessageWorkshop> WithUser(this List<ChatMessageWorkshop> chatMessages, bool isProvider)
     {
         _ = chatMessages ?? throw new ArgumentNullException(nameof(chatMessages));
@@ -59,6 +68,24 @@ public static class ChatMessagesGenerator
     {
         _ = chatMessages ?? throw new ArgumentNullException(nameof(chatMessages));
         chatMessages.ForEach(x => x.WithChatRoom(chatRoom));
+
+        return chatMessages;
+    }
+
+    public static ChatMessageWorkshop WithReadDateTime(this ChatMessageWorkshop chatMessage, DateTimeOffset? readDateTime)
+    {
+        _ = chatMessage ?? throw new ArgumentNullException(nameof(chatMessage));
+
+        chatMessage.ReadDateTime = readDateTime;
+
+        return chatMessage;
+    }
+
+    public static List<ChatMessageWorkshop> WithReadDateTime(this List<ChatMessageWorkshop> chatMessages, DateTimeOffset? readDateTime)
+    {
+        _ = chatMessages ?? throw new ArgumentNullException(nameof(chatMessages));
+
+        chatMessages.ForEach(x => x.WithReadDateTime(readDateTime));
 
         return chatMessages;
     }

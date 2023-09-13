@@ -356,11 +356,10 @@ public class WorkshopService : IWorkshopService
             ? $"There aren't Workshops for Provider with Id = {id}."
             : $"From Workshop table were successfully received {workshopProviderViewCards.Count()} records.");
 
-        var workshopBaseCards = mapper.Map<List<WorkshopProviderViewCard>>(workshopProviderViewCards).ToList();
         var result = new SearchResult<WorkshopProviderViewCard>()
         {
             TotalAmount = workshopBaseCardsCount,
-            Entities = await GetWorkshopsWithAverageRating(workshopBaseCards).ConfigureAwait(false),
+            Entities = await GetWorkshopsWithAverageRating(workshopProviderViewCards.ToList()).ConfigureAwait(false),
         };
 
         return result;
