@@ -571,7 +571,9 @@ public class MappingProfile : Profile
         CreateMap<Rating, RatingDto>()
             .ForMember(dest => dest.FirstName, opt => opt.Ignore())
             .ForMember(dest => dest.LastName, opt => opt.Ignore());
+
         CreateMap<RatingDto, Rating>()
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
             .ForMember(dest => dest.Parent, opt => opt.Ignore());
 
         CreateMap<AverageRating, AverageRatingDto>();

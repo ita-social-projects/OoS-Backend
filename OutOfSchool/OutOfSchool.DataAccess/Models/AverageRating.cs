@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models;
 
-public class AverageRating : IKeyedEntity<long>
+public class AverageRating : IKeyedEntity<long>, ISoftDeleted
 {
     public long Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     public float Rate { get; set; }
 

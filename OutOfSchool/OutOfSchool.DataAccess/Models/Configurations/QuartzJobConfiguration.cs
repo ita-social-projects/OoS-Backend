@@ -1,15 +1,12 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace OutOfSchool.Services.Models.Configurations;
 
-internal class AverageRatingConfiguration : IEntityTypeConfiguration<AverageRating>
+internal class QuartzJobConfiguration : IEntityTypeConfiguration<QuartzJob>
 {
-    public void Configure(EntityTypeBuilder<AverageRating> builder)
+    public void Configure(EntityTypeBuilder<QuartzJob> builder)
     {
-        builder.HasIndex(x => x.EntityId);
-
         builder.HasKey(x => x.Id);
 
         builder.HasIndex(x => x.IsDeleted);

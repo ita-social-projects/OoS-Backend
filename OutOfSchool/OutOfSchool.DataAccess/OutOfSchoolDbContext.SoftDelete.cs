@@ -46,7 +46,6 @@ public partial class OutOfSchoolDbContext
             .ApplySoftDelete<User>()
             .ApplySoftDelete<Address>()
             .ApplySoftDelete<Application>()
-            .ApplySoftDelete<AverageRating>()
             .ApplySoftDelete<BlockedProviderParent>()
             .ApplySoftDelete<ChatMessageWorkshop>()
             .ApplySoftDelete<ChatRoomWorkshop>()
@@ -59,11 +58,9 @@ public partial class OutOfSchoolDbContext
             .ApplySoftDelete<Provider>()
             .ApplySoftDelete<ProviderAdmin>()
             .ApplySoftDelete<ProviderSectionItem>()
-            .ApplySoftDelete<Rating>()
             .ApplySoftDelete<RegionAdmin>()
             .ApplySoftDelete<SocialGroup>()
             .ApplySoftDelete<Workshop>()
-            .ApplySoftDelete<WorkshopDescriptionItem>()
-            .ApplySoftDelete<QuartzJob>();
+            .ApplySoftDelete<WorkshopDescriptionItem>();
     }
 }

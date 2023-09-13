@@ -1,13 +1,13 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-using OutOfSchool.Services.Enums;
-
 namespace OutOfSchool.Services.Models;
 
-public class Rating : IKeyedEntity<long>
+public class Rating : IKeyedEntity<long>, ISoftDeleted
 {
     public long Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     [Range(1, 5)]
     public int Rate { get; set; }

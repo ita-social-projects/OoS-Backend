@@ -1,17 +1,8 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore.Storage;
-using Nest;
 using NuGet.Packaging;
-using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common.QuartzConstants;
 using OutOfSchool.WebApi.Models;
-using System.Collections.Generic;
-using System.Drawing.Text;
-using System.Linq;
-using System.Net.WebSockets;
 
 namespace OutOfSchool.WebApi.Services.AverageRatings;
 
@@ -19,21 +10,21 @@ public class AverageRatingService : IAverageRatingService
 {
     private readonly ILogger<AverageRatingService> logger;
     private readonly IMapper mapper;
-    private readonly IEntityRepository<long, AverageRating> averageRatingRepository;
+    private readonly IEntityRepositorySoftDeleted<long, AverageRating> averageRatingRepository;
     private readonly IRatingService ratingService;
     private readonly IWorkshopRepository workshopRepository;
-    private readonly IEntityRepository<long, Rating> ratingRepository;
-    private readonly IEntityRepository<long, QuartzJob> quartzJobRepository;
+    private readonly IEntityRepositorySoftDeleted<long, Rating> ratingRepository;
+    private readonly IEntityRepositorySoftDeleted<long, QuartzJob> quartzJobRepository;
     private readonly IOperationWithObjectService operationWithObjectService;
 
     public AverageRatingService(
         ILogger<AverageRatingService> logger,
         IMapper mapper,
-        IEntityRepository<long, AverageRating> averageRatingRepository,
+        IEntityRepositorySoftDeleted<long, AverageRating> averageRatingRepository,
         IRatingService ratingService,
         IWorkshopRepository workshopRepository,
-        IEntityRepository<long, Rating> ratingRepository,
-        IEntityRepository<long, QuartzJob> quartzJobRepository,
+        IEntityRepositorySoftDeleted<long, Rating> ratingRepository,
+        IEntityRepositorySoftDeleted<long, QuartzJob> quartzJobRepository,
         IOperationWithObjectService operationWithObjectService)
     {
         this.logger = logger;
