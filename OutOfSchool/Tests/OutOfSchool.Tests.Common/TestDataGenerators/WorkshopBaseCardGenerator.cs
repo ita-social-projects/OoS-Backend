@@ -18,10 +18,12 @@ public static class WorkshopBaseCardGenerator
         .RuleFor(x => x.ProviderTitle, f => f.Company.CompanyName())
         .RuleFor(x => x.ProviderOwnership, f => f.PickRandom<OwnershipType>())
         .RuleFor(x => x.PayRate, f => f.PickRandom<PayRateType>())
-        .RuleFor(x => x.ProviderId, _ => Guid.NewGuid())
-        .RuleFor(x => x.WorkshopId, _=> Guid.NewGuid());
+        .RuleFor(x => x.ProviderId, f => Guid.NewGuid())
+        .RuleFor(x => x.WorkshopId, f => Guid.NewGuid());
 
     public static WorkshopBaseCard Generate() => Faker.Generate();
 
     public static List<WorkshopBaseCard> Generate(int count) => Faker.Generate(count);
+
+    public static void Populate(WorkshopBaseCard card) => Faker.Populate(card);
 }

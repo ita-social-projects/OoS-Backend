@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
-using AutoMapper.Internal;
 using Bogus;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Nest;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
