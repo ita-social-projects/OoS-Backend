@@ -272,9 +272,12 @@ public class WorkshopService : IWorkshopService
                     ? (x.ProviderId == id)
                     : (x.ProviderId == id && x.Id != filter.ExcludedId));
 
+        Expression<Func<ChatRoomWorkshop, bool>> whereExpression = x =>
+            x.ChatMessages.Any(message => message.ReadDateTime == null && !message.SenderRoleIsProvider);
+
         var chatrooms = roomRepository.Get(
             includeProperties: $"{nameof(ChatRoomWorkshop.ChatMessages)}",
-            where: x => x.ChatMessages.Where(x => x.ReadDateTime == null && !x.SenderRoleIsProvider).Any());
+            where: whereExpression);
 
         var query = from w in workshops
                     join c in chatrooms
