@@ -40,6 +40,7 @@ public class WorkshopService : IWorkshopService
     /// </summary>
     /// <param name="workshopRepository">Repository for Workshop entity.</param>
     /// <param name="dateTimeRangeRepository">Repository for DateTimeRange entity.</param>
+    /// <param name="roomRepository">Repository for ChatRoomWorkshop entity.</param>
     /// <param name="teacherService">Teacher service.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Automapper DI service.</param>
@@ -272,9 +273,12 @@ public class WorkshopService : IWorkshopService
                     ? (x.ProviderId == id)
                     : (x.ProviderId == id && x.Id != filter.ExcludedId));
 
+        Expression<Func<ChatRoomWorkshop, bool>> whereExpression = x =>
+            x.ChatMessages.Where(message => message.ReadDateTime == null && !message.SenderRoleIsProvider).Any();
+
         var chatrooms = roomRepository.Get(
             includeProperties: $"{nameof(ChatRoomWorkshop.ChatMessages)}",
-            where: x => x.ChatMessages.Where(x => x.ReadDateTime == null && !x.SenderRoleIsProvider).Any());
+            where: whereExpression);
 
         var query = from w in workshops
                     join c in chatrooms
