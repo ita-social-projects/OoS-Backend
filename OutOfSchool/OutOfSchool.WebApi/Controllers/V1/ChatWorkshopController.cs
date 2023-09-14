@@ -445,12 +445,7 @@ public class ChatWorkshopController : ControllerBase
         {
             var chatRoom = await roomService.CreateOrReturnExistingAsync(workshopId, parentId).ConfigureAwait(false);
 
-            if (chatRoom is not null)
-            {
-                return Ok(chatRoom);
-            }
-
-            return NoContent();
+            return Ok(chatRoom);
         }
 
         return await HandleOperationAsync(Operation);
