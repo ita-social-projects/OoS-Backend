@@ -272,8 +272,10 @@ public class WorkshopService : IWorkshopService
                     ? (x.ProviderId == id)
                     : (x.ProviderId == id && x.Id != filter.ExcludedId));
 
-        var chatrooms = roomRepository.Get(0, 0,
-            "ChatMessages",
+        var chatrooms = roomRepository.Get(
+            skip: 0,
+            take: 0,
+            includeProperties: "ChatMessages",
             x => x.ChatMessages.Any(x => x.ReadDateTime == null && !x.SenderRoleIsProvider));
 
         var query = from w in workshops
