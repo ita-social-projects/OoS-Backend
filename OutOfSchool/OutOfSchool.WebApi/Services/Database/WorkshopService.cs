@@ -264,13 +264,13 @@ public class WorkshopService : IWorkshopService
                 ? (x.ProviderId == id)
                 : (x.ProviderId == id && x.Id != filter.ExcludedId)).ConfigureAwait(false);
 
-        var workshops = workshopRepository.Get(
+        var workshops = await workshopRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: includingPropertiesForMappingDtoModel,
                 whereExpression: x => filter.ExcludedId == null
                     ? (x.ProviderId == id)
-                    : (x.ProviderId == id && x.Id != filter.ExcludedId));
+                    : (x.ProviderId == id && x.Id != filter.ExcludedId)).ToListAsync().ConfigureAwait(false);
 
         var chatrooms = roomRepository.Get(
             skip: 0,
@@ -278,80 +278,25 @@ public class WorkshopService : IWorkshopService
             includeProperties: "ChatMessages",
             x => x.ChatMessages.Any(x => x.ReadDateTime == null && !x.SenderRoleIsProvider));
 
-        var query = from w in workshops
-                    join c in chatrooms
-                    on w.Id equals c.WorkshopId
-                    into g
-                    from cg in g.DefaultIfEmpty()
-                    select new
-                    {
-                        w.Id,
-                        w.Title,
-                        w.Phone,
-                        w.Email,
-                        w.Website,
-                        w.Facebook,
-                        w.Instagram,
-                        w.MinAge,
-                        w.MaxAge,
-                        w.CompetitiveSelection,
-                        w.CompetitiveSelectionDescription,
-                        w.Price,
-                        w.WorkshopDescriptionItems,
-                        w.WithDisabilityOptions,
-                        w.DisabilityOptionsDesc,
-                        w.CoverImageId,
-                        w.ProviderTitle,
-                        w.ProviderOwnership,
-                        w.Keywords,
-                        w.PayRate,
-                        w.ProviderId,
-                        w.AddressId,
-                        w.InstitutionHierarchyId,
-                        w.Status,
-                        w.AvailableSeats,
-                        w.Provider,
-                        w.InstitutionHierarchy,
-                        w.Address,
-                        w.ProviderAdmins,
-                        w.Teachers,
-                        w.Applications,
-                        w.DateTimeRanges,
-                        ChatRooms = cg,
-                        w.Images,
-                        w.IsBlocked,
-                        UnreadMessages = cg != null ? cg.ChatMessages.Count : 0,
-                    };
+        var workshopProviderViewCards = mapper.Map<List<WorkshopProviderViewCard>>(workshops);
 
-        var workshopsWithUnreadMessages = await query.ToListAsync().ConfigureAwait(false);
-
-        var workshopProviderViewCards = workshopsWithUnreadMessages.Select(
-            data => new WorkshopProviderViewCard
+        var query = chatrooms
+            .SelectMany(room => room.ChatMessages, (room, message) => new { room, message })
+            .Where(entry => entry.message.ReadDateTime == null && !entry.message.SenderRoleIsProvider)
+            .GroupBy(entry => entry.room.WorkshopId)
+            .Select(group => new
             {
-                WorkshopId = data.Id,
-                ProviderTitle = data.ProviderTitle,
-                ProviderOwnership = data.ProviderOwnership,
-                Title = data.Title,
-                PayRate = data.PayRate,
-                CoverImageId = data.CoverImageId,
-                MinAge = data.MinAge,
-                MaxAge = data.MaxAge,
-                CompetitiveSelection = data.CompetitiveSelection,
-                Price = data.Price,
-                DirectionIds = data.InstitutionHierarchy.Directions.Select(x => x.Id).ToList(),
-                ProviderId = data.ProviderId,
-                Address = mapper.Map<AddressDto>(data.Address),
-                WithDisabilityOptions = data.WithDisabilityOptions,
-                ProviderLicenseStatus = data.Provider.LicenseStatus,
-                AvailableSeats = data.AvailableSeats,
-                TakenSeats = (uint)data.Applications.Count(x =>
-                    x.Status == ApplicationStatus.Approved
-                    || x.Status == ApplicationStatus.StudyingForYears),
-                AmountOfPendingApplications = data.Applications.Count(x =>
-                    x.Status == ApplicationStatus.Pending),
-                Status = data.Status,
-                UnreadMessages = data.UnreadMessages,
+                WorkshopId = group.Key,
+                UnreadMessageCount = group.Count(),
             });
+
+        var unreadMessages = await query.ToListAsync().ConfigureAwait(false);
+
+        workshopProviderViewCards.ForEach(workshop =>
+        {
+            var matchingItem = unreadMessages.FirstOrDefault(item => item.WorkshopId == workshop.WorkshopId);
+            workshop.UnreadMessages = matchingItem?.UnreadMessageCount ?? 0;
+        });
 
         logger.LogInformation(!workshopProviderViewCards.Any()
             ? $"There aren't Workshops for Provider with Id = {id}."
