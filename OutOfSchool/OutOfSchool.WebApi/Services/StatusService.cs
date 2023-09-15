@@ -47,8 +47,7 @@ public class StatusService : IStatusService
             ? "InstitutionStatus table is empty."
             : $"All {institutionStatuses.Count()} records were successfully received from the InstitutionStatus table");
 
-        return institutionStatuses.Select(institutionStatus =>
-        new InstitutionStatusDTO
+        return institutionStatuses.Select(institutionStatus => new InstitutionStatusDTO
         {
             Id = institutionStatus.Id,
             Name = localization == LocalizationType.En ? institutionStatus.NameEn : institutionStatus.Name,
