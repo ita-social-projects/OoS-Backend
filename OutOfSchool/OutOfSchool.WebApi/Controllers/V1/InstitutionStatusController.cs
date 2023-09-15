@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Common.PermissionsModule;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -34,6 +35,7 @@ public class InstitutionStatusController : ControllerBase
     /// <summary>
     /// Get all Institution Statuses from the database.
     /// </summary>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <returns>List of all Institution Statuses.</returns>
     [HasPermission(Permissions.ImpersonalDataRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<InstitutionStatusDTO>))]
@@ -41,9 +43,9 @@ public class InstitutionStatusController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
-    public async Task<IActionResult> Get()
+    public async Task<IActionResult> Get(LocalizationType localization = LocalizationType.Ua)
     {
-        var institutionStatuses = await service.GetAll().ConfigureAwait(false);
+        var institutionStatuses = await service.GetAll(localization).ConfigureAwait(false);
 
         if (!institutionStatuses.Any())
         {
