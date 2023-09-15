@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -36,9 +37,9 @@ public class StatusService : IStatusService
 
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<InstitutionStatusDTO>> GetAll()
+    public async Task<IEnumerable<InstitutionStatusDTO>> GetAll(LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogInformation("Getting all Institution Statuses started.");
+        logger.LogInformation($"Getting all Institution Statuses, {localization} localization, started.");
 
         var institutionStatuses = await repository.GetAll().ConfigureAwait(false);
 
@@ -46,7 +47,12 @@ public class StatusService : IStatusService
             ? "InstitutionStatus table is empty."
             : $"All {institutionStatuses.Count()} records were successfully received from the InstitutionStatus table");
 
-        return institutionStatuses.Select(institutionStatus => mapper.Map<InstitutionStatusDTO>(institutionStatus)).ToList();
+        return institutionStatuses.Select(institutionStatus =>
+        new InstitutionStatusDTO
+        {
+            Id = institutionStatus.Id,
+            Name = localization == LocalizationType.En ? institutionStatus.NameEn : institutionStatus.Name,
+        }).ToList();
     }
 
     /// <inheritdoc/>

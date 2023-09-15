@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -11,8 +12,9 @@ public interface IStatusService
     /// <summary>
     /// Get all entities.
     /// </summary>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <returns>List of all InstitutionStatuses.</returns>
-    Task<IEnumerable<InstitutionStatusDTO>> GetAll();
+    Task<IEnumerable<InstitutionStatusDTO>> GetAll(LocalizationType localization = LocalizationType.Ua);
 
     /// <summary>
     /// Get entity by it's key.
