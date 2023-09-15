@@ -55,9 +55,9 @@ public class StatusService : IStatusService
     }
 
     /// <inheritdoc/>
-    public async Task<InstitutionStatusDTO> GetById(long id)
+    public async Task<InstitutionStatusDTO> GetById(long id, LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogInformation($"Getting InstitutionStatus by Id started. Looking Id = {id}.");
+        logger.LogInformation($"Getting InstitutionStatus by Id started, {localization} localization. Looking Id = {id}.");
 
         var institutionStatus = await repository.GetById(id).ConfigureAwait(false);
 
@@ -70,7 +70,11 @@ public class StatusService : IStatusService
 
         logger.LogInformation($"Successfully got a institutionStatus with Id = {id}.");
 
-        return mapper.Map<InstitutionStatusDTO>(institutionStatus);
+        return new InstitutionStatusDTO
+        {
+            Id = institutionStatus.Id,
+            Name = localization == LocalizationType.En ? institutionStatus.NameEn : institutionStatus.Name,
+        };
     }
 
     /// <inheritdoc/>
@@ -88,27 +92,38 @@ public class StatusService : IStatusService
     }
 
     /// <inheritdoc/>
-    public async Task<InstitutionStatusDTO> Update(InstitutionStatusDTO dto)
+    public async Task<InstitutionStatusDTO> Update(InstitutionStatusDTO dto, LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogInformation($"Updating InstitutionStatus with Id = {dto?.Id} started.");
+        logger.LogInformation($"Updating InstitutionStatus with Id = {dto?.Id}, {localization} localization started.");
 
         ArgumentNullException.ThrowIfNull(dto);
 
-        var institutionStatus = await repository.GetById(dto.Id).ConfigureAwait(false);
+        var institutionStatusLocalized = await repository.GetById(dto.Id).ConfigureAwait(false);
 
-        if (institutionStatus is null)
+        if (institutionStatusLocalized is null)
         {
-            var message = $"Updating failed. InstitutionStatus with Id = {dto.Id} doesn't exist in the system.";
-            logger.LogError(message);
-            throw new DbUpdateConcurrencyException(message);
+            logger.LogError($"Updating failed. InstitutionStatus with Id = {dto.Id} doesn't exist in the system.");
+            return null;
         }
 
-        mapper.Map(dto, institutionStatus);
-        institutionStatus = await repository.Update(institutionStatus).ConfigureAwait(false);
+        if (localization == LocalizationType.En)
+        {
+            institutionStatusLocalized.NameEn = dto.Name;
+        }
+        else
+        {
+            institutionStatusLocalized.Name = dto.Name;
+        }
+
+        var institutionStatus = await repository.Update(institutionStatusLocalized).ConfigureAwait(false);
 
         logger.LogInformation($"InstitutionStatus with Id = {institutionStatus?.Id} updated succesfully.");
 
-        return mapper.Map<InstitutionStatusDTO>(institutionStatus);
+        return new InstitutionStatusDTO
+        {
+            Id = institutionStatus.Id,
+            Name = localization == LocalizationType.En ? institutionStatus.NameEn : institutionStatus.Name,
+        };
     }
 
     /// <inheritdoc/>

@@ -20,8 +20,9 @@ public interface IStatusService
     /// Get entity by it's key.
     /// </summary>
     /// <param name="id">Key in the table.</param>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <returns>InstitutionStatus.</returns>
-    Task<InstitutionStatusDTO> GetById(long id);
+    Task<InstitutionStatusDTO> GetById(long id, LocalizationType localization = LocalizationType.Ua);
 
     /// <summary>
     /// Add entity.
@@ -34,8 +35,9 @@ public interface IStatusService
     /// Update entity.
     /// </summary>
     /// <param name="dto">InstitutionStatus entity to add.</param>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<InstitutionStatusDTO> Update(InstitutionStatusDTO dto);
+    Task<InstitutionStatusDTO> Update(InstitutionStatusDTO dto, LocalizationType localization = LocalizationType.Ua);
 
     /// <summary>
     ///  Delete entity.
