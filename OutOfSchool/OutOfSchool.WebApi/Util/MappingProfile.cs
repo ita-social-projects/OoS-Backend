@@ -175,13 +175,12 @@ public class MappingProfile : Profile
 
         CreateMap<ProviderDto, ProviderUpdateDto>();
 
-        CreateMap<TeacherDTO, Teacher>()
+        CreateSoftDeletedMap<TeacherDTO, Teacher>()
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.WorkshopId, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore())
             .ForMember(dest => dest.Workshop, opt => opt.Ignore())
-            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty))
-            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
         CreateMap<Teacher, TeacherDTO>()
             .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
@@ -305,9 +304,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber.Right(Constants.PhoneShortLength)))
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
-        CreateMap<DirectionDto, Direction>()
-            .ForMember(dest => dest.InstitutionHierarchies, opt => opt.Ignore())
-            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
+        CreateSoftDeletedMap<DirectionDto, Direction>()
+            .ForMember(dest => dest.InstitutionHierarchies, opt => opt.Ignore());
 
         CreateMap<Direction, DirectionDto>()
             .ForMember(dest => dest.WorkshopsCount, opt => opt.Ignore());
@@ -509,19 +507,16 @@ public class MappingProfile : Profile
 
         CreateMap<Achievement, AchievementDto>();
 
-        CreateMap<AchievementDto, Achievement>()
-            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+        CreateSoftDeletedMap<AchievementDto, Achievement>()
             .ForMember(dest => dest.Workshop, opt => opt.Ignore())
             .ForMember(dest => dest.AchievementType, opt => opt.Ignore());
 
         CreateMap<AchievementTeacher, AchievementTeacherDto>();
 
-        CreateMap<AchievementTeacherDto, AchievementTeacher>()
-            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+        CreateSoftDeletedMap<AchievementTeacherDto, AchievementTeacher>()
             .ForMember(dest => dest.Achievement, opt => opt.Ignore());
 
-        CreateMap<AchievementCreateDTO, Achievement>()
-            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+        CreateSoftDeletedMap<AchievementCreateDTO, Achievement>()
             .ForMember(dest => dest.Children, opt => opt.Ignore())
             .ForMember(dest => dest.Workshop, opt => opt.Ignore())
             .ForMember(dest => dest.AchievementType, opt => opt.Ignore())
@@ -572,8 +567,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.FirstName, opt => opt.Ignore())
             .ForMember(dest => dest.LastName, opt => opt.Ignore());
 
-        CreateMap<RatingDto, Rating>()
-            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+        CreateSoftDeletedMap<RatingDto, Rating>()
             .ForMember(dest => dest.Parent, opt => opt.Ignore());
 
         CreateMap<AverageRating, AverageRatingDto>();
@@ -646,9 +640,15 @@ public class MappingProfile : Profile
             .ForMember(
                 dest => dest.StatusReason,
                 opt =>
-                    opt.MapFrom(src => String.Empty));
+                    opt.MapFrom(src => string.Empty));
 
         CreateMap<WorkshopFilter, WorkshopBySettlementsFilter>()
             .ForMember(dest => dest.SettlementsIds, opt => opt.Ignore());
     }
+
+    private IMappingExpression<TSource, TDestination> CreateSoftDeletedMap<TSource, TDestination>()
+        where TSource : class
+        where TDestination : class, ISoftDeleted
+        => CreateMap<TSource, TDestination>()
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 }
