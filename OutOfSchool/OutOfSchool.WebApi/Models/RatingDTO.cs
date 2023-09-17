@@ -1,10 +1,8 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using OutOfSchool.Services.Enums;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models;
 
-public class RatingDto
+public class RatingDto : IKeyedEntity<long>
 {
     public long Id { get; set; }
 

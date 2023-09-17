@@ -171,6 +171,22 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         return entity;
     }
 
+    public async Task<TEntity> ReadAndUpdateWith<TDto>(TDto dto, Func<TDto, TEntity, TEntity> map)
+        where TDto : IKeyedEntity<TKey>
+    {
+        ArgumentNullException.ThrowIfNull(dto);
+
+        var entity = await GetById(dto.Id).ConfigureAwait(false);
+
+        if (entity is null)
+        {
+            var name = typeof(TEntity).Name;
+            throw new DbUpdateConcurrencyException($"Updating failed. {name} with Id = {dto.Id} doesn't exist in the system.");
+        }
+
+        return await Update(map(dto, entity)).ConfigureAwait(false);
+    }
+
     /// <inheritdoc/>
     public virtual Task<int> Count(Expression<Func<TEntity, bool>> whereExpression = null)
     {

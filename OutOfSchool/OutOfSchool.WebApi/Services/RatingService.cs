@@ -199,9 +199,7 @@ public class RatingService : IRatingService
 
         if (await CheckRatingUpdate(dto).ConfigureAwait(false))
         {
-            var rating = await ratingRepository.GetById(dto.Id).ConfigureAwait(false);
-            mapper.Map(dto, rating);
-            rating = await ratingRepository.Update(rating).ConfigureAwait(false);
+            var rating = await ratingRepository.ReadAndUpdateWith<RatingDto>(dto, mapper.Map).ConfigureAwait(false);
 
             logger.LogInformation($"Rating with Id = {rating?.Id} updated succesfully.");
 
