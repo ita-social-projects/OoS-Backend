@@ -192,9 +192,11 @@ public class WorkshopServiceTests
     public async Task GetByProviderId_WhenThereIsNoEntityWithId_ShouldReturnEmptyList()
     {
         // Arrange
-        var emptyListWorkshopBaseCards = new List<WorkshopProviderViewCard>();
+        var emptyListWorkshopProviderViewCards = new List<WorkshopProviderViewCard>();
         SetupGetRepositoryCount(0);
         SetupGetByProviderById(new List<Workshop>(), new List<ChatRoomWorkshop>());
+        mapperMock.Setup(m => m.Map<List<WorkshopProviderViewCard>>(It.IsAny<List<Workshop>>()))
+            .Returns(emptyListWorkshopProviderViewCards);
 
         // Act
         var result = await workshopService.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()).ConfigureAwait(false);
@@ -213,23 +215,30 @@ public class WorkshopServiceTests
         var numberOfWorkshops = 10;
         var numberOfChatMessages = 5;
         var directions = InstitutionHierarchyGenerator.Generate();
-        var workshops = WorkshopGenerator.Generate(numberOfWorkshops).WithProvider().WithApplications().WithInstitutionHierarchy(directions);
+        var workshops = WorkshopGenerator.Generate(numberOfWorkshops).WithProvider().WithApplications()
+            .WithInstitutionHierarchy(directions);
+        var workshopsProviderViewCards = mapper.Map<List<WorkshopProviderViewCard>>(workshops);
+
         var chatrooms = new List<ChatRoomWorkshop>()
         {
             new ChatRoomWorkshop
             {
                 Id = Guid.NewGuid(),
-                WorkshopId = workshops[1].Id,
+                WorkshopId = workshops[workshops.Count > 1 ? 1 : 0].Id,
             },
         };
         var chatmessages = ChatMessagesGenerator.Generate(numberOfChatMessages).WithSenderRoleIsProvider(false)
             .WithReadDateTime(null).WithChatRoom(chatrooms[0]);
+        chatmessages[chatmessages.Count > 1 ? 1 : 0].SenderRoleIsProvider = true;
         chatrooms[0].ChatMessages = chatmessages;
 
         var expectedUnreadMessages = workshops.Select(d => chatmessages.Count(m =>
             m.ChatRoom.WorkshopId == d.Id &&
             m.ReadDateTime == null &&
             !m.SenderRoleIsProvider)).ToList();
+
+        mapperMock.Setup(m => m.Map<List<WorkshopProviderViewCard>>(It.IsAny<List<Workshop>>()))
+            .Returns(workshopsProviderViewCards);
 
         SetupGetRepositoryCount(workshops.Count);
         SetupGetByProviderById(workshops, chatrooms);
