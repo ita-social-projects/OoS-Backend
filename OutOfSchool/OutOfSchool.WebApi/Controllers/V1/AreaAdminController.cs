@@ -137,7 +137,7 @@ public class AreaAdminController : Controller
         }
 
         if (currentUserRole == nameof(Role.MinistryAdmin).ToLower()
-             && !await areaAdminService.IsAreaAdminSubordinateMinistryCreateAsync(currentUserId, areaAdminBase.InstitutionId))
+             && await areaAdminService.IsAreaAdminSubordinateMinistryCreateAsync(currentUserId, areaAdminBase.InstitutionId))
         {
             logger.LogDebug("Forbidden to create AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
             return StatusCode(403,
@@ -145,7 +145,7 @@ public class AreaAdminController : Controller
         }
 
         if (currentUserRole == nameof(Role.RegionAdmin).ToLower()
-             && !await areaAdminService.IsAreaAdminSubordinateRegionCreateAsync(currentUserId, areaAdminBase.InstitutionId, areaAdminBase.CATOTTGId))
+             && await areaAdminService.IsAreaAdminSubordinateRegionCreateAsync(currentUserId, areaAdminBase.InstitutionId, areaAdminBase.CATOTTGId))
         {
             logger.LogDebug("Forbidden to create AreaAdmin. AreaAdmin doesn't subordinate to RegionAdmin.");
             return StatusCode(403,
@@ -202,9 +202,9 @@ public class AreaAdminController : Controller
             }
 
             if ((currentUserRole == nameof(Role.MinistryAdmin).ToLower()
-                && !await areaAdminService.IsAreaAdminSubordinateMinistryAsync(currentUserId, updateAreaAdminDto.Id)) ||
+                && await areaAdminService.IsAreaAdminSubordinateMinistryAsync(currentUserId, updateAreaAdminDto.Id)) ||
                 (currentUserRole == nameof(Role.RegionAdmin).ToLower()
-                 && !await areaAdminService.IsAreaAdminSubordinateRegionAsync(currentUserId, updateAreaAdminDto.Id)))
+                 && await areaAdminService.IsAreaAdminSubordinateRegionAsync(currentUserId, updateAreaAdminDto.Id)))
             {
                 logger.LogDebug("Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
                 return StatusCode(403,
@@ -261,9 +261,9 @@ public class AreaAdminController : Controller
         logger.LogDebug($"User(id): {currentUserId}.");
 
         if ((currentUserRole == nameof(Role.MinistryAdmin).ToLower()
-             && !await areaAdminService.IsAreaAdminSubordinateMinistryAsync(currentUserId, areaAdminId)) ||
+             && await areaAdminService.IsAreaAdminSubordinateMinistryAsync(currentUserId, areaAdminId)) ||
             (currentUserRole == nameof(Role.RegionAdmin).ToLower()
-             && !await areaAdminService.IsAreaAdminSubordinateRegionAsync(currentUserId, areaAdminId)))
+             && await areaAdminService.IsAreaAdminSubordinateRegionAsync(currentUserId, areaAdminId)))
         {
             logger.LogDebug("Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
             return StatusCode(403,
@@ -298,9 +298,9 @@ public class AreaAdminController : Controller
         logger.LogDebug($"User(id): {currentUserId}.");
 
         if ((currentUserRole == nameof(Role.MinistryAdmin).ToLower()
-             && !await areaAdminService.IsAreaAdminSubordinateMinistryAsync(currentUserId, areaAdminId)) ||
+             && await areaAdminService.IsAreaAdminSubordinateMinistryAsync(currentUserId, areaAdminId)) ||
             (currentUserRole == nameof(Role.RegionAdmin).ToLower()
-             && !await areaAdminService.IsAreaAdminSubordinateRegionAsync(currentUserId, areaAdminId)))
+             && await areaAdminService.IsAreaAdminSubordinateRegionAsync(currentUserId, areaAdminId)))
         {
             logger.LogDebug("Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
             return StatusCode(403,
