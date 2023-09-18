@@ -275,8 +275,7 @@ public class WorkshopService : IWorkshopService
         var chatrooms = roomRepository.Get(
             skip: 0,
             take: 0,
-            includeProperties: "ChatMessages",
-            x => x.ChatMessages.Any(x => x.ReadDateTime == null && !x.SenderRoleIsProvider));
+            includeProperties: "ChatMessages");
 
         var workshopProviderViewCards = mapper.Map<List<WorkshopProviderViewCard>>(workshops);
 
