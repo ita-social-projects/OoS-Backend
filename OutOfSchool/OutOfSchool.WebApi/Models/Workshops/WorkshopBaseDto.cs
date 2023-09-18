@@ -5,13 +5,12 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Util.CustomValidation;
 using OutOfSchool.WebApi.Util.JsonTools;
 
-namespace OutOfSchool.WebApi.Models;
+namespace OutOfSchool.WebApi.Models.Workshops;
 
-public class WorkshopDTO : IValidatableObject
+public class WorkshopBaseDto : IValidatableObject
 {
     public Guid Id { get; set; }
 
@@ -54,14 +53,24 @@ public class WorkshopDTO : IValidatableObject
     [Range(0, 120, ErrorMessage = "Max age should be a number from 0 to 120")]
     public int MaxAge { get; set; }
 
-    public bool CompetitiveSelection { get; set; }
-
-    [MaxLength(500)]
-    public string CompetitiveSelectionDescription { get; set; }
+    [Required]
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    public List<DateTimeRangeDto> DateTimeRanges { get; set; }
 
     [Column(TypeName = "decimal(18,2)")]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
     public decimal Price { get; set; } = default;
+
+    [Required]
+    [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
+    public PayRateType PayRate { get; set; } = PayRateType.Classes;
+
+    public uint AvailableSeats { get; set; } = uint.MaxValue;
+
+    public bool CompetitiveSelection { get; set; }
+
+    [MaxLength(500)]
+    public string CompetitiveSelectionDescription { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     [CollectionNotEmpty(ErrorMessage = "At least one description is required")]
@@ -72,53 +81,21 @@ public class WorkshopDTO : IValidatableObject
     [MaxLength(200)]
     public string DisabilityOptionsDesc { get; set; } = string.Empty;
 
-    [MaxLength(256)]
-    public string CoverImageId { get; set; } = string.Empty;
+    public Guid? InstitutionId { get; set; }
 
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public IFormFile CoverImage { get; set; }
-
-    [Required]
-    [MaxLength(120)]
-    public string ProviderTitle { get; set; } = string.Empty;
-
-    [EnumDataType(typeof(OwnershipType), ErrorMessage = Constants.EnumErrorMessage)]
-    public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;
-
-    [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    public IEnumerable<string> Keywords { get; set; } = default;
-
-    [Required]
-    [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
-    public PayRateType PayRate { get; set; } = PayRateType.Classes;
-
-    public float Rating { get; set; }
-
-    public int NumberOfRatings { get; set; }
-
-    [EnumDataType(typeof(WorkshopStatus), ErrorMessage = Constants.EnumErrorMessage)]
-    public WorkshopStatus Status { get; set; } = WorkshopStatus.Open;
-
-    public uint AvailableSeats { get; set; } = uint.MaxValue;
-
-    public uint TakenSeats { get; set; } = 0;
-
-    [Required]
-    public Guid ProviderId { get; set; }
-
-    [EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]
-    public ProviderStatus ProviderStatus { get; set; } = ProviderStatus.Pending;
-
-    [Required]
-    public long AddressId { get; set; }
+    public string Institution { get; set; }
 
     public Guid? InstitutionHierarchyId { get; set; }
 
     public string InstitutionHierarchy { get; set; }
 
-    public Guid? InstitutionId { get; set; }
+    public List<long> DirectionIds { get; set; }
 
-    public string Institution { get; set; }
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    public IEnumerable<string> Keywords { get; set; } = default;
+
+    [Required]
+    public long AddressId { get; set; }
 
     [Required]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
@@ -127,22 +104,14 @@ public class WorkshopDTO : IValidatableObject
     public List<TeacherDTO> Teachers { get; set; }
 
     [Required]
-    [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    public List<DateTimeRangeDto> DateTimeRanges { get; set; }
+    public Guid ProviderId { get; set; }
 
-    [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    public IList<string> ImageIds { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public List<IFormFile> ImageFiles { get; set; }
-
-    public List<long> DirectionIds { get; set; }
+    [Required]
+    [MaxLength(120)]
+    public string ProviderTitle { get; set; } = string.Empty;
 
     [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus ProviderLicenseStatus { get; set; } = ProviderLicenseStatus.NotProvided;
-
-    [JsonIgnore]
-    public bool IsBlocked { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

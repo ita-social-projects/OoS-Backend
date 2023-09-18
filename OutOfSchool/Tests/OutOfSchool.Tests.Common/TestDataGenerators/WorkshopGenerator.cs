@@ -20,13 +20,7 @@ public static class WorkshopGenerator
         .RuleFor(x => x.Instagram, f => f.Internet.Url())
         .RuleFor(x => x.MinAge, f => f.Random.Number(1, 18))
         .RuleFor(x => x.Price, f => f.Random.Decimal())
-        .RuleFor(x => x.WorkshopDescriptionItems, f => f.Make(new Random().Next(1, 4), () =>
-            new WorkshopDescriptionItem()
-            {
-                Id = Guid.NewGuid(),
-                SectionName = f.Lorem.Sentence(),
-                Description = f.Lorem.Paragraph(),
-            }))
+        .RuleFor(x => x.WorkshopDescriptionItems, f => WorkshopDescriptionItemGenerator.Generate(4))
         .RuleFor(x => x.WithDisabilityOptions, f => f.Random.Bool())
         .RuleFor(x => x.DisabilityOptionsDesc, f => f.Lorem.Sentence())
         .RuleFor(x => x.CoverImageId, f => f.Image.LoremFlickrUrl())

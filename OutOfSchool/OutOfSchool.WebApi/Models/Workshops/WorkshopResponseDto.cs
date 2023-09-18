@@ -1,10 +1,10 @@
 ﻿using OutOfSchool.WebApi.Models.Images;
 
-namespace OutOfSchool.WebApi.Models.Workshop;
+namespace OutOfSchool.WebApi.Models.Workshops;
 
-public class WorkshopCreationResponse
+public class WorkshopResponseDto
 {
-    public WorkshopDTO Workshop { get; set; }
+    public WorkshopV2Dto Workshop { get; set; }
 
     public SingleImageUploadingResponse UploadingCoverImageResult { get; set; }
 

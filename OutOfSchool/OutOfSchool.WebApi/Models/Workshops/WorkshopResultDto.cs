@@ -1,11 +1,10 @@
 ﻿using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models.Images;
 
-namespace OutOfSchool.WebApi.Models.Workshop;
+namespace OutOfSchool.WebApi.Models.Workshops;
 
-public class WorkshopCreationResultDto
+public class WorkshopResultDto
 {
-    public WorkshopDTO Workshop { get; set; }
+    public WorkshopV2Dto Workshop { get; set; }
 
     public OperationResult UploadingCoverImageResult { get; set; }
 

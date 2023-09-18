@@ -2,20 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common.Enums;
 
-namespace OutOfSchool.WebApi.Models;
-
-public class WorkshopCard : WorkshopBaseCard
-{
-    public Guid? InstitutionHierarchyId { get; set; }
-
-    public Guid? InstitutionId { get; set; }
-
-    public string Institution { get; set; }
-
-    public uint AvailableSeats { get; set; } = uint.MaxValue;
-
-    public uint TakenSeats { get; set; } = 0;
-}
+namespace OutOfSchool.WebApi.Models.Workshops;
 
 public class WorkshopBaseCard
 {
@@ -67,15 +54,4 @@ public class WorkshopBaseCard
 
     [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus ProviderLicenseStatus { get; set; } = ProviderLicenseStatus.NotProvided;
-}
-
-public class WorkshopProviderViewCard : WorkshopBaseCard
-{
-    public uint AvailableSeats { get; set; } = uint.MaxValue;
-
-    public uint TakenSeats { get; set; } = 0;
-
-    public int AmountOfPendingApplications { get; set; }
-
-    public WorkshopStatus Status { get; set; }
 }
