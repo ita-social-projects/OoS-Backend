@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -460,9 +461,9 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         _ = areaAdminId ?? throw new ArgumentNullException(nameof(areaAdminId));
 
         var regionAdmin = await regionAdminService.GetByIdAsync(regionAdminUserId).ConfigureAwait(false);
-        var areaAdmin = await areaAdminRepository.GetByIdAsync(areaAdminId).ConfigureAwait(false);
+        var areaAdmin = await GetByIdAsync(areaAdminId).ConfigureAwait(false);
 
-        return regionAdmin.InstitutionId == areaAdmin.InstitutionId && regionAdmin.CATOTTGId == areaAdmin.CATOTTGId;
+        return regionAdmin.InstitutionId == areaAdmin.InstitutionId && regionAdmin.CATOTTGId == areaAdmin.RegionId;
     }
 
     public async Task<bool> IsAreaAdminSubordinateMinistryCreateAsync(string ministryAdminUserId, Guid institutionId)
