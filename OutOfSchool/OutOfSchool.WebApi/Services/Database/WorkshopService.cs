@@ -279,9 +279,13 @@ public class WorkshopService : IWorkshopService
 
         var workshopProviderViewCards = mapper.Map<List<WorkshopProviderViewCard>>(workshops);
 
+        var workshopsIds = workshops.Select(x => x.Id).ToList();
+
         var query = chatrooms
             .SelectMany(room => room.ChatMessages, (room, message) => new { room, message })
-            .Where(entry => entry.message.ReadDateTime == null && !entry.message.SenderRoleIsProvider)
+            .Where(entry => entry.message.ReadDateTime == null
+                        && !entry.message.SenderRoleIsProvider
+                        && workshopsIds.Any(x => x == entry.room.WorkshopId))
             .GroupBy(entry => entry.room.WorkshopId)
             .Select(group => new
             {
