@@ -79,11 +79,9 @@ public interface IWorkshopServicesCombiner
     /// </summary>
     /// <param name="id">Provider's key.</param>
     /// <param name="filter">Filter to get a certain portion of all entities or exclude some entities by excluded ids.</param>
-    /// <typeparam name="T">Type of entity that must be return.</typeparam>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-    /// The task result contains a <see cref="List{WorkshopBaseCard}"/> that contains elements from the input sequence.</returns>
-    Task<SearchResult<T>> GetByProviderId<T>(Guid id, ExcludeIdFilter filter)
-        where T : WorkshopBaseCard;
+    /// The task result contains a <see cref="List{WorkshopProviderViewCard}"/> that contains elements from the input sequence.</returns>
+    Task<SearchResult<WorkshopProviderViewCard>> GetByProviderId(Guid id, ExcludeIdFilter filter);
 
     /// <summary>
     /// Get all entities that matches filter's parameters.

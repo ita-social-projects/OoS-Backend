@@ -26,6 +26,7 @@ public class WorkshopService : IWorkshopService
 
     private readonly IWorkshopRepository workshopRepository;
     private readonly IEntityRepository<long, DateTimeRange> dateTimeRangeRepository;
+    private readonly IEntityRepository<Guid, ChatRoomWorkshop> roomRepository;
     private readonly ITeacherService teacherService;
     private readonly ILogger<WorkshopService> logger;
     private readonly IMapper mapper;
@@ -50,6 +51,7 @@ public class WorkshopService : IWorkshopService
     public WorkshopService(
         IWorkshopRepository workshopRepository,
         IEntityRepository<long, DateTimeRange> dateTimeRangeRepository,
+        IEntityRepository<Guid, ChatRoomWorkshop> roomRepository,
         ITeacherService teacherService,
         ILogger<WorkshopService> logger,
         IMapper mapper,
@@ -60,6 +62,7 @@ public class WorkshopService : IWorkshopService
     {
         this.workshopRepository = workshopRepository;
         this.dateTimeRangeRepository = dateTimeRangeRepository;
+        this.roomRepository = roomRepository;
         this.teacherService = teacherService;
         this.logger = logger;
         this.mapper = mapper;
@@ -249,8 +252,7 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<T>> GetByProviderId<T>(Guid id, ExcludeIdFilter filter)
-        where T : WorkshopBaseCard
+    public async Task<SearchResult<WorkshopProviderViewCard>> GetByProviderId(Guid id, ExcludeIdFilter filter)
     {
         logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
@@ -261,25 +263,52 @@ public class WorkshopService : IWorkshopService
             filter.ExcludedId == null
                 ? (x.ProviderId == id)
                 : (x.ProviderId == id && x.Id != filter.ExcludedId)).ConfigureAwait(false);
+
         var workshops = await workshopRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: includingPropertiesForMappingDtoModel,
                 whereExpression: x => filter.ExcludedId == null
                     ? (x.ProviderId == id)
-                    : (x.ProviderId == id && x.Id != filter.ExcludedId))
-            .ToListAsync()
-            .ConfigureAwait(false);
+                    : (x.ProviderId == id && x.Id != filter.ExcludedId)).ToListAsync().ConfigureAwait(false);
 
-        logger.LogInformation(!workshops.Any()
+        var chatrooms = roomRepository.Get(
+            skip: 0,
+            take: 0,
+            includeProperties: "ChatMessages");
+
+        var workshopProviderViewCards = mapper.Map<List<WorkshopProviderViewCard>>(workshops);
+
+        var workshopsIds = workshops.Select(x => x.Id).ToList();
+
+        var query = chatrooms
+            .SelectMany(room => room.ChatMessages, (room, message) => new { room, message })
+            .Where(entry => entry.message.ReadDateTime == null
+                        && !entry.message.SenderRoleIsProvider
+                        && workshopsIds.Contains(entry.room.WorkshopId))
+            .GroupBy(entry => entry.room.WorkshopId)
+            .Select(group => new
+            {
+                WorkshopId = group.Key,
+                UnreadMessageCount = group.Count(),
+            });
+
+        var unreadMessages = await query.ToListAsync().ConfigureAwait(false);
+
+        workshopProviderViewCards.ForEach(workshop =>
+        {
+            var matchingItem = unreadMessages.FirstOrDefault(item => item.WorkshopId == workshop.WorkshopId);
+            workshop.UnreadMessages = matchingItem?.UnreadMessageCount ?? 0;
+        });
+
+        logger.LogInformation(!workshopProviderViewCards.Any()
             ? $"There aren't Workshops for Provider with Id = {id}."
-            : $"From Workshop table were successfully received {workshops.Count} records.");
+            : $"From Workshop table were successfully received {workshopProviderViewCards.Count()} records.");
 
-        var workshopBaseCards = mapper.Map<List<T>>(workshops).ToList();
-        var result = new SearchResult<T>()
+        var result = new SearchResult<WorkshopProviderViewCard>()
         {
             TotalAmount = workshopBaseCardsCount,
-            Entities = await GetWorkshopsWithAverageRating(workshopBaseCards).ConfigureAwait(false),
+            Entities = await GetWorkshopsWithAverageRating(workshopProviderViewCards.ToList()).ConfigureAwait(false),
         };
 
         return result;
