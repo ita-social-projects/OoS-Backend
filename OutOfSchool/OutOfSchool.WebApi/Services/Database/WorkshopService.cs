@@ -285,7 +285,7 @@ public class WorkshopService : IWorkshopService
             .SelectMany(room => room.ChatMessages, (room, message) => new { room, message })
             .Where(entry => entry.message.ReadDateTime == null
                         && !entry.message.SenderRoleIsProvider
-                        && workshopsIds.Any(x => x == entry.room.WorkshopId))
+                        && workshopsIds.Contains(entry.room.WorkshopId))
             .GroupBy(entry => entry.room.WorkshopId)
             .Select(group => new
             {
