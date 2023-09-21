@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.WebApi.Models;
 
-public class RatingDto : IKeyedEntity<long>
+public class RatingDto : IDto<Rating, long>
 {
     public long Id { get; set; }
 

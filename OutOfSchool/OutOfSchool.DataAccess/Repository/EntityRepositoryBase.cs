@@ -172,7 +172,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     }
 
     public async Task<TEntity> ReadAndUpdateWith<TDto>(TDto dto, Func<TDto, TEntity, TEntity> map)
-        where TDto : IKeyedEntity<TKey>
+        where TDto : IDto<TEntity, TKey>
     {
         ArgumentNullException.ThrowIfNull(dto);
 

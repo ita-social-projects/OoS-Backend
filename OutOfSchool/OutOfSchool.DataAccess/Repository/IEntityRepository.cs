@@ -60,7 +60,7 @@ public interface IEntityRepositoryBase<TKey, TEntity>
     /// <exception cref="DbUpdateException">An exception that is thrown when an error is encountered while saving to the database.</exception>
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
     Task<TEntity> ReadAndUpdateWith<TDto>(TDto dto, Func<TDto, TEntity, TEntity> map)
-        where TDto : IKeyedEntity<TKey>;
+        where TDto : IDto<TEntity, TKey>;
 
     /// <summary>
     /// Update information about element.
