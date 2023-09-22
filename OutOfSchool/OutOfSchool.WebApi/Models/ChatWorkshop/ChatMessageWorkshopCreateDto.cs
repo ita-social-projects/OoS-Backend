@@ -7,7 +7,7 @@ namespace OutOfSchool.WebApi.Models.ChatWorkshop;
 public class ChatMessageWorkshopCreateDto
 {
     [Required]
-    [JsonProperty("ChatRoomId", Required = Required.Always)]
+    [JsonProperty("WorkshopId", Required = Required.Always)]
     public Guid WorkshopId { get; set; }
 
     [Required]

@@ -187,9 +187,12 @@ public class ChatWorkshopHubTests
 
         var validWorkshopId = Guid.NewGuid();
         var validParentId = Guid.NewGuid();
-        var validNewMessage = $"{{'workshopId':'{validWorkshopId}', 'parentId':'{validParentId}', 'text':'hi', 'senderRoleIsProvider':true}}";
+        var validChatRoomId = Guid.NewGuid();
+        var validNewMessage = $"{{'workshopId':'{validWorkshopId}', 'parentId':'{validParentId}', 'chatRoomId':'{validChatRoomId}', 'text':'hi', 'senderRoleIsProvider':true}}";
 
         validationServiceMock.Setup(x => x.UserIsWorkshopOwnerAsync(UserId, validWorkshopId, Subrole.None)).ReturnsAsync(true);
+
+        roomServiceMock.Setup(x => x.GetByIdAsync(validChatRoomId)).ReturnsAsync(new ChatRoomWorkshopDto());
 
         var validCreatedMessage = new ChatMessageWorkshopDto()
         {
