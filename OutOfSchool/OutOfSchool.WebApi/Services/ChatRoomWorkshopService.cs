@@ -49,7 +49,8 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
             {
                 var newChatRoom = await this.CreateAsync(workshopId, parentId).ConfigureAwait(false);
                 logger.LogDebug($"{nameof(ChatRoomWorkshop)} id:{newChatRoom.Id} was saved to DB.");
-                return mapper.Map<ChatRoomWorkshopDto>(newChatRoom);
+                var chatRoomDto = await roomRepository.GetById(newChatRoom.Id).ConfigureAwait(false);
+                return mapper.Map<ChatRoomWorkshopDto>(chatRoomDto);
             }
             else
             {
