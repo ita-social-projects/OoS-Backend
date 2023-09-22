@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-
+using OutOfSchool.WebApi.Validators;
 namespace OutOfSchool.WebApi.Models.Providers;
 
 public class ProviderBlockDto
@@ -16,7 +16,7 @@ public class ProviderBlockDto
        ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
     [MaxLength(Constants.UnifiedPhoneLength)]
-    [Required(ErrorMessage = "PhoneNumber is required")]
+    [RequiredIf("IsBlocked", true, ErrorMessage = "PhoneNumber is required")]
     public string BlockPhoneNumber { get; set; } = string.Empty;
 
     [MaxLength(500)]
