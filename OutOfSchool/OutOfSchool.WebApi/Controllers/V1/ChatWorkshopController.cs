@@ -1,9 +1,11 @@
 ﻿using System.Security.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Nest;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
@@ -25,6 +27,7 @@ public class ChatWorkshopController : ControllerBase
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly ILogger<ChatWorkshopController> logger;
     private readonly IProviderAdminService providerAdminService;
+    private readonly IApplicationService applicationService;
 
     // TODO: figure out why we have ministry admin here :)
     private readonly IMinistryAdminService ministryAdminService;
@@ -39,6 +42,7 @@ public class ChatWorkshopController : ControllerBase
     /// <param name="logger">Logger.</param>
     /// <param name="providerAdminService">Service for Provider's admins.</param>
     /// <param name="ministryAdminService">Service for Ministry admins.</param>
+    /// <param name="applicationService">Service for Applications.</param>
     public ChatWorkshopController(
         IChatMessageWorkshopService messageService,
         IChatRoomWorkshopService roomService,
@@ -46,7 +50,8 @@ public class ChatWorkshopController : ControllerBase
         IStringLocalizer<SharedResource> localizer,
         ILogger<ChatWorkshopController> logger,
         IProviderAdminService providerAdminService,
-        IMinistryAdminService ministryAdminService)
+        IMinistryAdminService ministryAdminService,
+        IApplicationService applicationService)
     {
         this.messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
         this.roomService = roomService ?? throw new ArgumentNullException(nameof(roomService));
@@ -55,6 +60,7 @@ public class ChatWorkshopController : ControllerBase
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.providerAdminService = providerAdminService ?? throw new ArgumentNullException(nameof(providerAdminService));
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
+        this.applicationService = applicationService ?? throw new ArgumentNullException(nameof(applicationService));
     }
 
     /// <summary>
@@ -71,6 +77,21 @@ public class ChatWorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public Task<IActionResult> GetRoomForParentByRoomIdAsync(Guid id)
         => this.GetRoomByIdAsync(id, this.IsParentAChatRoomParticipantAsync);
+
+    /// <summary>
+    /// Get existing or create new chat room.
+    /// </summary>
+    /// <param name="applicationId">Application Id.</param>
+    /// <returns>Existiong or new chat room.</returns>
+    [HttpGet("chatrooms/application/{applicationId}")]
+    [Authorize(Roles = "parent,provider")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomWorkshopDto))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public Task<IActionResult> GetRoomByApplicationIdAsync(Guid applicationId)
+        => this.GetOrCreateRoomByApplicationIdAsync(applicationId);
 
     /// <summary>
     /// Get provider's chat room with information about Parent and Workshop.
@@ -294,6 +315,51 @@ public class ChatWorkshopController : ControllerBase
         }
 
         return await HandleOperationAsync(Operation);
+    }
+
+    private async Task<IActionResult> GetOrCreateRoomByApplicationIdAsync(Guid applicationId)
+    {
+        logger.LogInformation($"User {GettingUserProperties.GetUserId(HttpContext)} is trying to get chat room by {nameof(applicationId)} = {applicationId}");
+        var application = await applicationService.GetById(applicationId);
+
+        if (application is null)
+        {
+            logger.LogWarning($"User {GettingUserProperties.GetUserId(HttpContext)} is trying to get chat room by {nameof(applicationId)} = {applicationId} but it is not exist");
+            return BadRequest();
+        }
+
+        var userHasRights = await IsUserHasRightsForApplicationAsync(application);
+
+        if (!userHasRights)
+        {
+            logger.LogWarning($"User {GettingUserProperties.GetUserId(HttpContext)} is trying to get chat room by {nameof(applicationId)} = {applicationId} with no rights");
+            return BadRequest();
+        }
+
+        var chatroom = roomService.CreateOrReturnExistingAsync(application.WorkshopId, application.ParentId);
+
+        if (chatroom is null)
+        {
+            logger.LogWarning($"User {GettingUserProperties.GetUserId(HttpContext)} is trying to get chat room by {nameof(applicationId)} = {applicationId} but get null");
+            return BadRequest();
+        }
+
+        return Ok(chatroom);
+    }
+
+    private async Task<bool> IsUserHasRightsForApplicationAsync(ApplicationDto application)
+    {
+        var userId = GettingUserProperties.GetUserId(HttpContext);
+        var userRole = GettingUserProperties.GetUserRole(HttpContext);
+
+        if (userRole == Role.Parent)
+        {
+            return application.ParentId.ToString() == userId;
+        }
+
+        var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
+
+        return await validationService.UserIsWorkshopOwnerAsync(userId, application.WorkshopId, userSubrole);
     }
 
     private async Task<bool> IsParentAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
