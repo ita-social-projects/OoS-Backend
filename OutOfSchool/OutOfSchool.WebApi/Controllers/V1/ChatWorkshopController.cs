@@ -16,7 +16,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(Roles = "provider,parent,ministryadmin")]
+[Authorize(Roles = "provider,parent")]
 public class ChatWorkshopController : ControllerBase
 {
     // TODO: define the algorithm of logging information and warnings  in the solution
@@ -29,9 +29,6 @@ public class ChatWorkshopController : ControllerBase
     private readonly IProviderAdminService providerAdminService;
     private readonly IApplicationService applicationService;
 
-    // TODO: figure out why we have ministry admin here :)
-    private readonly IMinistryAdminService ministryAdminService;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatWorkshopController"/> class.
     /// </summary>
@@ -41,7 +38,6 @@ public class ChatWorkshopController : ControllerBase
     /// <param name="localizer">Localizer.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="providerAdminService">Service for Provider's admins.</param>
-    /// <param name="ministryAdminService">Service for Ministry admins.</param>
     /// <param name="applicationService">Service for Applications.</param>
     public ChatWorkshopController(
         IChatMessageWorkshopService messageService,
@@ -50,7 +46,6 @@ public class ChatWorkshopController : ControllerBase
         IStringLocalizer<SharedResource> localizer,
         ILogger<ChatWorkshopController> logger,
         IProviderAdminService providerAdminService,
-        IMinistryAdminService ministryAdminService,
         IApplicationService applicationService)
     {
         this.messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
@@ -59,7 +54,6 @@ public class ChatWorkshopController : ControllerBase
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.providerAdminService = providerAdminService ?? throw new ArgumentNullException(nameof(providerAdminService));
-        this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
         this.applicationService = applicationService ?? throw new ArgumentNullException(nameof(applicationService));
     }
 
@@ -183,22 +177,6 @@ public class ChatWorkshopController : ControllerBase
         => this.GetMessagesByRoomIdAsync(id, offsetFilter, this.IsProviderAChatRoomParticipantAsync);
 
     /// <summary>
-    /// Gets a portion of chat messages for Ministry Admin if it has related provider participants by specified chat room id.
-    /// </summary>
-    /// <param name="id">ChatRoom's Id.</param>
-    /// <param name="offsetFilter">Filter to get specified portion of messages in the chat room.</param>
-    /// <returns>User's chat room's messages that were found.</returns>
-    [HttpGet("ministryadmin/chatrooms/{id}/messages")]
-    [Authorize(Roles = "ministryadmin")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ChatMessageWorkshopDto>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public Task<IActionResult> GetMessagesForMinistryAdminByRoomIdAsync(Guid id, [FromQuery] OffsetFilter offsetFilter)
-        => this.GetMessagesByRoomIdAsync(id, offsetFilter, IsMinistryAdminAbleToBeSeeChatRoomMessagesAsync);
-
-    /// <summary>
     /// Get a list of chat rooms for current parent.
     /// </summary>
     /// <returns>List of ChatRooms with last message and number of not read messages.</returns>
@@ -285,37 +263,6 @@ public class ChatWorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public Task<IActionResult> GetProvidersRoomsWithMessagesByParentAsync(Guid parentId)
         => GetProvidersRoomsByParentIdAsync(parentId, true);
-
-    /// <summary>
-    /// Get a list of chat rooms for the ministry admin by specific provider id.
-    /// </summary>
-    /// <param name="providerId">Provider Id.</param>
-    /// <returns>List of ChatRooms with last message and number of not read messages.</returns>
-    [HttpGet("ministryadmin/chatrooms")]
-    [Authorize(Roles = "ministryadmin")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ChatRoomWorkshopDtoWithLastMessage>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetRoomsForMinistryAdminByProviderIdAsync([FromQuery] Guid providerId)
-    {
-        async Task<IActionResult> Operation()
-        {
-            var userId = GettingUserProperties.GetUserId(HttpContext);
-
-            var isProviderSubordinate = await ministryAdminService.IsProviderSubordinateAsync(userId, providerId);
-            if (!isProviderSubordinate)
-            {
-                return Forbid();
-            }
-
-            var chatRooms = await roomService.GetByProviderIdAsync(providerId);
-            return chatRooms.Any() ? Ok(chatRooms) : NoContent();
-        }
-
-        return await HandleOperationAsync(Operation);
-    }
 
     private async Task<IActionResult> GetOrCreateRoomByApplicationIdAsync(Guid applicationId)
     {
