@@ -209,7 +209,7 @@ public class ChatWorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public Task<IActionResult> GetParentsRoomsAsync([FromQuery]ChatWorkshopFilter filter = null)
+    public Task<IActionResult> GetParentsRoomsAsync([FromQuery] ChatWorkshopFilter filter = null)
         => this.GetUsersRoomsAsync(parentId => roomService.GetByParentIdAsync(parentId), filter);
 
     /// <summary>
@@ -319,32 +319,36 @@ public class ChatWorkshopController : ControllerBase
 
     private async Task<IActionResult> GetOrCreateRoomByApplicationIdAsync(Guid applicationId)
     {
-        logger.LogInformation($"User {GettingUserProperties.GetUserId(HttpContext)} is trying to get chat room by {nameof(applicationId)} = {applicationId}");
-        var application = await applicationService.GetById(applicationId);
-
-        if (application is null)
+        async Task<IActionResult> Operation()
         {
-            logger.LogWarning($"User {GettingUserProperties.GetUserId(HttpContext)} is trying to get chat room by {nameof(applicationId)} = {applicationId} but it is not exist");
-            return BadRequest();
+            logger.LogInformation($"User {GettingUserProperties.GetUserId(HttpContext)} is trying to get chat room by {nameof(applicationId)} = {applicationId}");
+            var application = await applicationService.GetById(applicationId);
+
+            if (application is null)
+            {
+                return NoContent();
+            }
+
+            var userHasRights = await IsUserHasRightsForApplicationAsync(application);
+
+            if (!userHasRights)
+            {
+                logger.LogWarning($"User {GettingUserProperties.GetUserId(HttpContext)} is trying to get chat room by {nameof(applicationId)} = {applicationId} with no rights");
+                return BadRequest();
+            }
+
+            var chatroom = roomService.CreateOrReturnExistingAsync(application.WorkshopId, application.ParentId);
+
+            if (chatroom is null)
+            {
+                logger.LogWarning($"User {GettingUserProperties.GetUserId(HttpContext)} is trying to get chat room by {nameof(applicationId)} = {applicationId} but get null");
+                return BadRequest();
+            }
+
+            return Ok(chatroom);
         }
 
-        var userHasRights = await IsUserHasRightsForApplicationAsync(application);
-
-        if (!userHasRights)
-        {
-            logger.LogWarning($"User {GettingUserProperties.GetUserId(HttpContext)} is trying to get chat room by {nameof(applicationId)} = {applicationId} with no rights");
-            return BadRequest();
-        }
-
-        var chatroom = roomService.CreateOrReturnExistingAsync(application.WorkshopId, application.ParentId);
-
-        if (chatroom is null)
-        {
-            logger.LogWarning($"User {GettingUserProperties.GetUserId(HttpContext)} is trying to get chat room by {nameof(applicationId)} = {applicationId} but get null");
-            return BadRequest();
-        }
-
-        return Ok(chatroom);
+        return await HandleOperationAsync(Operation);
     }
 
     private async Task<bool> IsUserHasRightsForApplicationAsync(ApplicationDto application)
