@@ -398,8 +398,7 @@ Login: {0}
   </data>
   <data name="Check the entered data. This field DateOfBirth is required." xml:space="preserve">
     <value>Перевірте введені дані. Це поле є обов'язковим.</value>
-  </data>
   <data name="Remember me?" xml:space="preserve">
     <value>Запам'ятати мене?</value>
-  </data>
+  </data></data>
 </root>
