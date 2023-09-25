@@ -2,11 +2,9 @@
 
 namespace OutOfSchool.Services.Models;
 
-public class QuartzJob : IKeyedEntity<long>, ISoftDeleted
+public class QuartzJob : IKeyedEntity<long>
 {
     public long Id { get; set; }
-
-    public bool IsDeleted { get; set; }
 
     public string Name { get; set; }
 

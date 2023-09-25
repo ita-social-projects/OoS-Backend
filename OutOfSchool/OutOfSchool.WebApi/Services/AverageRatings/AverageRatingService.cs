@@ -14,7 +14,7 @@ public class AverageRatingService : IAverageRatingService
     private readonly IRatingService ratingService;
     private readonly IWorkshopRepository workshopRepository;
     private readonly IEntityRepositorySoftDeleted<long, Rating> ratingRepository;
-    private readonly IEntityRepositorySoftDeleted<long, QuartzJob> quartzJobRepository;
+    private readonly IEntityRepository<long, QuartzJob> quartzJobRepository;
     private readonly IOperationWithObjectService operationWithObjectService;
 
     public AverageRatingService(
@@ -24,7 +24,7 @@ public class AverageRatingService : IAverageRatingService
         IRatingService ratingService,
         IWorkshopRepository workshopRepository,
         IEntityRepositorySoftDeleted<long, Rating> ratingRepository,
-        IEntityRepositorySoftDeleted<long, QuartzJob> quartzJobRepository,
+        IEntityRepository<long, QuartzJob> quartzJobRepository,
         IOperationWithObjectService operationWithObjectService)
     {
         this.logger = logger;
@@ -241,7 +241,7 @@ public class AverageRatingService : IAverageRatingService
     {
         var filter = new OperationWithObjectFilter()
         {
-            OperationType = OperationWithObjectOperationType.RecalculateAverageRating
+            OperationType = OperationWithObjectOperationType.RecalculateAverageRating,
         };
 
         return await operationWithObjectService.Exists(filter);
