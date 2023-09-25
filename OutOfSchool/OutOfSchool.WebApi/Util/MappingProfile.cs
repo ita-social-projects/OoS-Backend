@@ -165,7 +165,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Status, opt => opt.Ignore())
             .ForMember(dest => dest.StatusReason, opt => opt.Ignore())
             .ForMember(dest => dest.LicenseStatus, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore());
+            .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
+            .ForMember(dest => dest.BlockPhoneNumber, opt => opt.Ignore());
 
         CreateMap<Provider, ProviderUpdateDto>()
             .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
