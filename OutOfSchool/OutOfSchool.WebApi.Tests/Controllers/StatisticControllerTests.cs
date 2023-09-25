@@ -8,6 +8,7 @@ using NUnit.Framework;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Services;
 using Range = Moq.Range;
 

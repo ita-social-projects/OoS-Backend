@@ -35,6 +35,7 @@ public class ChangesLogServiceTests
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
+    private Mock<IAreaAdminService> areaAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
 
     private User user;
@@ -72,6 +73,7 @@ public class ChangesLogServiceTests
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock= new Mock<IRegionAdminService>();
+        areaAdminServiceMock = new Mock<IAreaAdminService>();
         codeficatorServiceMock= new Mock<ICodeficatorService>();
     }
 
@@ -557,5 +559,6 @@ public class ChangesLogServiceTests
             currentUserServiceMock.Object,
             ministryAdminServiceMock.Object,
             regionAdminServiceMock.Object,
+            areaAdminServiceMock.Object,
             codeficatorServiceMock.Object);
 }

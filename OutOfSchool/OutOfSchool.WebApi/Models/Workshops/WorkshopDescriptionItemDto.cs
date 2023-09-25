@@ -1,7 +1,6 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.WebApi.Models.Workshop;
+namespace OutOfSchool.WebApi.Models.Workshops;
 
 public class WorkshopDescriptionItemDto
 {

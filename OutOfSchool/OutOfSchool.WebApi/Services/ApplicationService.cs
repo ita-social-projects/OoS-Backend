@@ -10,6 +10,7 @@ using OutOfSchool.WebApi.Common.StatusPermissions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -758,13 +759,13 @@ public class ApplicationService : IApplicationService, INotificationReciever
         if (isIncreaseTakenSeats && countTakenSeats == workshop.AvailableSeats &&
             workshop.Status != WorkshopStatus.Closed)
         {
-            _ = await combinedWorkshopService.UpdateStatus(new Models.Workshop.WorkshopStatusDto
+            _ = await combinedWorkshopService.UpdateStatus(new WorkshopStatusDto
                 { WorkshopId = workshopId, Status = WorkshopStatus.Closed });
         }
         else if (!isIncreaseTakenSeats && countTakenSeats == workshop.AvailableSeats - 1 &&
                  workshop.Status != WorkshopStatus.Open)
         {
-            _ = await combinedWorkshopService.UpdateStatus(new Models.Workshop.WorkshopStatusDto
+            _ = await combinedWorkshopService.UpdateStatus(new WorkshopStatusDto
                 { WorkshopId = workshopId, Status = WorkshopStatus.Open });
         }
     }

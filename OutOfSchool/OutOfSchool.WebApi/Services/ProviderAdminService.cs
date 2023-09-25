@@ -7,6 +7,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -405,7 +406,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             }
 
             var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
-            return await workshopService.GetByProviderId<WorkshopProviderViewCard>(providerAdmin.ProviderId, filter).ConfigureAwait(false);
+            return await workshopService.GetByProviderId(providerAdmin.ProviderId, filter).ConfigureAwait(false);
         }
 
         var pa = providersAdmins.SingleOrDefault();

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services;
@@ -18,8 +18,8 @@ public interface IWorkshopServicesCombiner
     /// Add entity to the database.
     /// </summary>
     /// <param name="dto">Entity to add.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopCreationResultDto"/>.</returns>
-    Task<WorkshopDTO> Create(WorkshopDTO dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopBaseDto"/>.</returns>
+    Task<WorkshopBaseDto> Create(WorkshopBaseDto dto);
 
     /// <summary>
     /// Get all workshop cards (Id, Title) with the specified provider's Id.
@@ -43,14 +43,14 @@ public interface IWorkshopServicesCombiner
     /// <param name="id">Key in the table.</param>
     /// <returns>A <see cref="Task{TEntity}"/> representing the result of the asynchronous operation.
     /// The task result contains the entity that was found, or null.</returns>
-    Task<WorkshopDTO> GetById(Guid id);
+    Task<WorkshopDto> GetById(Guid id);
 
     /// <summary>
     /// Update existing entity in the database.
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopUpdateResultDto"/>.</returns>
-    Task<WorkshopDTO> Update(WorkshopDTO dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopBaseDto"/>.</returns>
+    Task<WorkshopBaseDto> Update(WorkshopBaseDto dto);
 
     /// <summary>
     /// Update status field for existing entity in the database.
@@ -79,11 +79,9 @@ public interface IWorkshopServicesCombiner
     /// </summary>
     /// <param name="id">Provider's key.</param>
     /// <param name="filter">Filter to get a certain portion of all entities or exclude some entities by excluded ids.</param>
-    /// <typeparam name="T">Type of entity that must be return.</typeparam>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-    /// The task result contains a <see cref="List{WorkshopBaseCard}"/> that contains elements from the input sequence.</returns>
-    Task<SearchResult<T>> GetByProviderId<T>(Guid id, ExcludeIdFilter filter)
-        where T : WorkshopBaseCard;
+    /// The task result contains a <see cref="List{WorkshopProviderViewCard}"/> that contains elements from the input sequence.</returns>
+    Task<SearchResult<WorkshopProviderViewCard>> GetByProviderId(Guid id, ExcludeIdFilter filter);
 
     /// <summary>
     /// Get all entities that matches filter's parameters.

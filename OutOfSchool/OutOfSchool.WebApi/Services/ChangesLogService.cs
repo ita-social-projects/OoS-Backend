@@ -12,7 +12,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Changes;
-using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services;
@@ -30,6 +30,7 @@ public class ChangesLogService : IChangesLogService
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
     private readonly IRegionAdminService regionAdminService;
+    private readonly IAreaAdminService areaAdminService;
     private readonly ICodeficatorService codeficatorService;
 
     public ChangesLogService(
@@ -44,6 +45,7 @@ public class ChangesLogService : IChangesLogService
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService,
+        IAreaAdminService areaAdminService,
         ICodeficatorService codeficatorService)
     {
         this.config = config;
@@ -57,6 +59,7 @@ public class ChangesLogService : IChangesLogService
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
         this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
+        this.areaAdminService = areaAdminService ?? throw new ArgumentNullException(nameof(areaAdminService));
         this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
     }
 
@@ -110,6 +113,17 @@ public class ChangesLogService : IChangesLogService
 
                 predicate = predicate.And(tempPredicate);
             }
+        }
+
+        if (currentUserService.IsAreaAdmin())
+        {
+            var areaAdmin = await areaAdminService.GetByUserId(currentUserService.UserId);
+            predicate = predicate.And(p => p.InstitutionId == areaAdmin.InstitutionId);
+
+            var subSettlementsIds = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
+
+            predicate = predicate.And(x => subSettlementsIds.Contains(x.LegalAddress.CATOTTGId));
         }
 
         var changesLog = await GetChangesLogAsync(changeLogFilter).ConfigureAwait(false);
@@ -175,6 +189,17 @@ public class ChangesLogService : IChangesLogService
 
                 predicate = predicate.And(tempPredicate);
             }
+        }
+
+        if (currentUserService.IsAreaAdmin())
+        {
+            var areaAdmin = await areaAdminService.GetByUserId(currentUserService.UserId);
+            predicate = predicate.And(a => a.Workshop.Provider.InstitutionId == areaAdmin.InstitutionId);
+
+            var subSettlementsIds = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
+
+            predicate = predicate.And(a => subSettlementsIds.Contains(a.Workshop.Provider.LegalAddress.CATOTTGId));
         }
 
         var changesLog = await GetChangesLogAsync(changeLogFilter).ConfigureAwait(false);

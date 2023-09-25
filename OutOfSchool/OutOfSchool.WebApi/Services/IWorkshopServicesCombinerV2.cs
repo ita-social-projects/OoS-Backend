@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -11,15 +11,15 @@ public interface IWorkshopServicesCombinerV2 : IWorkshopServicesCombiner
     /// Add entity to the database.
     /// </summary>
     /// <param name="dto">Entity to add.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopCreationResultDto"/>.</returns>
-    new Task<WorkshopCreationResultDto> Create(WorkshopDTO dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopResultDto"/>.</returns>
+    new Task<WorkshopResultDto> Create(WorkshopV2Dto dto);
 
     /// <summary>
     /// Update existing entity in the database.
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopUpdateResultDto"/>.</returns>
-    new Task<WorkshopUpdateResultDto> Update(WorkshopDTO dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopResultDto"/>.</returns>
+    new Task<WorkshopResultDto> Update(WorkshopV2Dto dto);
 
     /// <summary>
     ///  Delete entity.

@@ -94,6 +94,15 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
 
     public bool IsBlocked { get; set; } = false;
 
+    [DataType(DataType.PhoneNumber)]
+    [RegularExpression(
+       Constants.PhoneNumberRegexModel,
+       ErrorMessage = Constants.PhoneErrorMessage)]
+    [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
+    [MaxLength(Constants.UnifiedPhoneLength)]
+    [Required(ErrorMessage = "PhoneNumber is required")]
+    public string BlockPhoneNumber { get; set; } = string.Empty;
+
     [MaxLength(500)]
     public string BlockReason { get; set; }
 

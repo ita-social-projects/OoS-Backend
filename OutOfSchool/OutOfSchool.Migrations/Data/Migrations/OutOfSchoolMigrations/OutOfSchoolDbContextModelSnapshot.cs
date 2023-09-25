@@ -303,42 +303,49 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         new
                         {
                             Id = 1L,
+                            IsDeleted = false,
                             Title = "Переможці міжнародних та всеукраїнських спортивних змагань (індивідуальних та командних)",
                             TitleEn = "Winners of international and all-Ukrainian sports competitions (individual and team)"
                         },
                         new
                         {
                             Id = 2L,
+                            IsDeleted = false,
                             Title = "Призери та учасники міжнародних, всеукраїнських та призери регіональних конкурсів і виставок наукових, технічних, дослідницьких, інноваційних, ІТ проектів",
                             TitleEn = "Winners and participants of international, all-Ukrainian and regional contests and exhibitions of scientific, technical, research, innovation, IT projects"
                         },
                         new
                         {
                             Id = 3L,
+                            IsDeleted = false,
                             Title = "Реципієнти міжнародних грантів",
                             TitleEn = "Recipients of international grants"
                         },
                         new
                         {
                             Id = 4L,
+                            IsDeleted = false,
                             Title = "Призери міжнародних культурних конкурсів та фестивалів",
                             TitleEn = "Winners of international cultural competitions and festivals"
                         },
                         new
                         {
                             Id = 5L,
+                            IsDeleted = false,
                             Title = "Соціально активні категорії учнів",
                             TitleEn = "Socially active categories of students"
                         },
                         new
                         {
                             Id = 6L,
+                            IsDeleted = false,
                             Title = "Цифрові інструменти Google для закладів вищої та фахової передвищої освіти",
                             TitleEn = "Google digital tools for institutions of higher and professional pre-higher education"
                         },
                         new
                         {
                             Id = 7L,
+                            IsDeleted = false,
                             Title = "Переможці та учасники олімпіад міжнародного та всеукраїнського рівнів",
                             TitleEn = "Winners and participants of olympiads at the international and all-Ukrainian levels"
                         });
@@ -1213,6 +1220,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<long?>("ActualAddressId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("BlockPhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("varchar(15)");
 
                     b.Property<string>("BlockReason")
                         .HasMaxLength(500)

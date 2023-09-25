@@ -24,6 +24,7 @@ using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
+using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -556,7 +557,7 @@ public class ApplicationServiceTests
 
         workshopServiceCombinerMock.Setup(c =>
                 c.GetById(It.Is<Guid>(i => i == update.WorkshopId)))
-            .ReturnsAsync(new WorkshopDTO()
+            .ReturnsAsync(new WorkshopDto()
             {
                 Id = update.WorkshopId,
                 AvailableSeats = uint.MaxValue,
@@ -613,7 +614,7 @@ public class ApplicationServiceTests
 
         workshopServiceCombinerMock.Setup(c =>
                 c.GetById(It.Is<Guid>(i => i == update.WorkshopId)))
-            .ReturnsAsync(new WorkshopDTO()
+            .ReturnsAsync(new WorkshopDto()
             {
                 Id = update.WorkshopId,
                 AvailableSeats = 5,
@@ -684,7 +685,7 @@ public class ApplicationServiceTests
 
         workshopServiceCombinerMock.Setup(c =>
                 c.GetById(It.Is<Guid>(i => i == update.WorkshopId)))
-            .ReturnsAsync(new WorkshopDTO()
+            .ReturnsAsync(new WorkshopDto()
             {
                 Id = update.WorkshopId,
                 AvailableSeats = 0,
@@ -744,7 +745,7 @@ public class ApplicationServiceTests
 
         workshopServiceCombinerMock.Setup(c =>
                 c.GetById(It.Is<Guid>(i => i == update.WorkshopId)))
-            .ReturnsAsync(new WorkshopDTO()
+            .ReturnsAsync(new WorkshopDto()
             {
                 Id = update.WorkshopId,
                 AvailableSeats = 0,
@@ -796,7 +797,7 @@ public class ApplicationServiceTests
     private void SetupCreate(Application application)
     {
         // var workshopMock = WithWorkshopsList().FirstOrDefault(x => x.Id == application.WorkshopId);
-        var workshopMock = new WorkshopDTO
+        var workshopMock = new WorkshopDto
         {
             Status = WorkshopStatus.Open,
         };

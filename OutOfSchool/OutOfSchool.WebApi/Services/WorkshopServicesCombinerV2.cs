@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 
 namespace OutOfSchool.WebApi.Services;
@@ -37,7 +37,7 @@ public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopSer
     {
     }
 
-    public new async Task<WorkshopCreationResultDto> Create(WorkshopDTO dto)
+    public new async Task<WorkshopResultDto> Create(WorkshopV2Dto dto)
     {
         var creationResult = await workshopService.CreateV2(dto).ConfigureAwait(false);
 
@@ -50,7 +50,7 @@ public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopSer
         return creationResult;
     }
 
-    public new async Task<WorkshopUpdateResultDto> Update(WorkshopDTO dto)
+    public new async Task<WorkshopResultDto> Update(WorkshopV2Dto dto)
     {
         var workshop = await workshopService.UpdateV2(dto).ConfigureAwait(false);
 

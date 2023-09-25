@@ -1,20 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using AutoMapper;
-using Castle.Core.Internal;
 using H3Lib;
 using H3Lib.Extensions;
-using Nest;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Images;
-using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Services.AverageRatings;
 
 namespace OutOfSchool.WebApi.Services;
@@ -31,6 +26,7 @@ public class WorkshopService : IWorkshopService
 
     private readonly IWorkshopRepository workshopRepository;
     private readonly IEntityRepository<long, DateTimeRange> dateTimeRangeRepository;
+    private readonly IEntityRepository<Guid, ChatRoomWorkshop> roomRepository;
     private readonly ITeacherService teacherService;
     private readonly ILogger<WorkshopService> logger;
     private readonly IMapper mapper;
@@ -55,6 +51,7 @@ public class WorkshopService : IWorkshopService
     public WorkshopService(
         IWorkshopRepository workshopRepository,
         IEntityRepository<long, DateTimeRange> dateTimeRangeRepository,
+        IEntityRepository<Guid, ChatRoomWorkshop> roomRepository,
         ITeacherService teacherService,
         ILogger<WorkshopService> logger,
         IMapper mapper,
@@ -65,6 +62,7 @@ public class WorkshopService : IWorkshopService
     {
         this.workshopRepository = workshopRepository;
         this.dateTimeRangeRepository = dateTimeRangeRepository;
+        this.roomRepository = roomRepository;
         this.teacherService = teacherService;
         this.logger = logger;
         this.mapper = mapper;
@@ -75,8 +73,8 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
-    /// <exception cref="ArgumentNullException">If <see cref="WorkshopDTO"/> is null.</exception>
-    public async Task<WorkshopDTO> Create(WorkshopDTO dto)
+    /// <exception cref="ArgumentNullException">If <see cref="WorkshopBaseDto"/> is null.</exception>
+    public async Task<WorkshopBaseDto> Create(WorkshopBaseDto dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
@@ -99,14 +97,14 @@ public class WorkshopService : IWorkshopService
 
         logger.LogInformation($"Workshop with Id = {newWorkshop?.Id} created successfully.");
 
-        return mapper.Map<WorkshopDTO>(newWorkshop);
+        return mapper.Map<WorkshopBaseDto>(newWorkshop);
     }
 
     /// <inheritdoc/>
-    /// <exception cref="ArgumentNullException">If <see cref="WorkshopDTO"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">If <see cref="WorkshopDto"/> is null.</exception>
     /// <exception cref="InvalidOperationException">If unreal to map teachers.</exception>
     /// <exception cref="DbUpdateException">If unreal to update entity.</exception>
-    public async Task<WorkshopCreationResultDto> CreateV2(WorkshopDTO dto)
+    public async Task<WorkshopResultDto> CreateV2(WorkshopV2Dto dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
@@ -152,16 +150,16 @@ public class WorkshopService : IWorkshopService
 
         logger.LogInformation($"Workshop with Id = {newWorkshop.Id} created successfully.");
 
-        return new WorkshopCreationResultDto
+        return new WorkshopResultDto
         {
-            Workshop = mapper.Map<WorkshopDTO>(newWorkshop),
+            Workshop = mapper.Map<WorkshopV2Dto>(newWorkshop),
             UploadingCoverImageResult = coverImageUploadResult?.OperationResult,
             UploadingImagesResults = imagesUploadResult?.MultipleKeyValueOperationResult,
         };
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<WorkshopDTO>> GetAll(OffsetFilter offsetFilter)
+    public async Task<SearchResult<WorkshopDto>> GetAll(OffsetFilter offsetFilter)
     {
         logger.LogInformation("Getting all Workshops started.");
 
@@ -185,13 +183,13 @@ public class WorkshopService : IWorkshopService
             ? "Workshop table is empty."
             : $"All {workshops.Count} records were successfully received from the Workshop table");
 
-        var dtos = mapper.Map<List<WorkshopDTO>>(workshops);
+        var dtos = mapper.Map<List<WorkshopDto>>(workshops);
         var workshopsWithRating = await GetWorkshopsWithAverageRating(dtos).ConfigureAwait(false);
-        return new SearchResult<WorkshopDTO>() { TotalAmount = count, Entities = workshopsWithRating };
+        return new SearchResult<WorkshopDto>() { TotalAmount = count, Entities = workshopsWithRating };
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopDTO> GetById(Guid id)
+    public async Task<WorkshopDto> GetById(Guid id)
     {
         logger.LogInformation($"Getting Workshop by Id started. Looking Id = {id}.");
 
@@ -204,7 +202,7 @@ public class WorkshopService : IWorkshopService
 
         logger.LogInformation($"Successfully got a Workshop with Id = {id}.");
 
-        var workshopDTO = mapper.Map<WorkshopDTO>(workshop);
+        var workshopDTO = mapper.Map<WorkshopDto>(workshop);
 
         var rating = await averageRatingService.GetByEntityIdAsync(workshopDTO.Id).ConfigureAwait(false);
 
@@ -254,8 +252,7 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<T>> GetByProviderId<T>(Guid id, ExcludeIdFilter filter)
-        where T : WorkshopBaseCard
+    public async Task<SearchResult<WorkshopProviderViewCard>> GetByProviderId(Guid id, ExcludeIdFilter filter)
     {
         logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
@@ -266,34 +263,61 @@ public class WorkshopService : IWorkshopService
             filter.ExcludedId == null
                 ? (x.ProviderId == id)
                 : (x.ProviderId == id && x.Id != filter.ExcludedId)).ConfigureAwait(false);
+
         var workshops = await workshopRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: includingPropertiesForMappingDtoModel,
                 whereExpression: x => filter.ExcludedId == null
                     ? (x.ProviderId == id)
-                    : (x.ProviderId == id && x.Id != filter.ExcludedId))
-            .ToListAsync()
-            .ConfigureAwait(false);
+                    : (x.ProviderId == id && x.Id != filter.ExcludedId)).ToListAsync().ConfigureAwait(false);
 
-        logger.LogInformation(!workshops.Any()
+        var chatrooms = roomRepository.Get(
+            skip: 0,
+            take: 0,
+            includeProperties: "ChatMessages");
+
+        var workshopProviderViewCards = mapper.Map<List<WorkshopProviderViewCard>>(workshops);
+
+        var workshopsIds = workshops.Select(x => x.Id).ToList();
+
+        var query = chatrooms
+            .SelectMany(room => room.ChatMessages, (room, message) => new { room, message })
+            .Where(entry => entry.message.ReadDateTime == null
+                        && !entry.message.SenderRoleIsProvider
+                        && workshopsIds.Contains(entry.room.WorkshopId))
+            .GroupBy(entry => entry.room.WorkshopId)
+            .Select(group => new
+            {
+                WorkshopId = group.Key,
+                UnreadMessageCount = group.Count(),
+            });
+
+        var unreadMessages = await query.ToListAsync().ConfigureAwait(false);
+
+        workshopProviderViewCards.ForEach(workshop =>
+        {
+            var matchingItem = unreadMessages.FirstOrDefault(item => item.WorkshopId == workshop.WorkshopId);
+            workshop.UnreadMessages = matchingItem?.UnreadMessageCount ?? 0;
+        });
+
+        logger.LogInformation(!workshopProviderViewCards.Any()
             ? $"There aren't Workshops for Provider with Id = {id}."
-            : $"From Workshop table were successfully received {workshops.Count} records.");
+            : $"From Workshop table were successfully received {workshopProviderViewCards.Count()} records.");
 
-        var workshopBaseCards = mapper.Map<List<T>>(workshops).ToList();
-        var result = new SearchResult<T>()
+        var result = new SearchResult<WorkshopProviderViewCard>()
         {
             TotalAmount = workshopBaseCardsCount,
-            Entities = await GetWorkshopsWithAverageRating(workshopBaseCards).ConfigureAwait(false),
+            Entities = await GetWorkshopsWithAverageRating(workshopProviderViewCards.ToList()).ConfigureAwait(false),
         };
 
         return result;
     }
 
     /// <inheritdoc/>
-    /// <exception cref="ArgumentNullException">If <see cref="WorkshopDTO"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">If <see cref="WorkshopBaseDto"/> is null.</exception>
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-    public async Task<WorkshopDTO> Update(WorkshopDTO dto)
+    public async Task<WorkshopBaseDto> Update(WorkshopBaseDto dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation($"Updating Workshop with Id = {dto?.Id} started.");
@@ -319,7 +343,7 @@ public class WorkshopService : IWorkshopService
         var updatedWorkshop = await workshopRepository
             .RunInTransaction(UpdateWorkshopLocally).ConfigureAwait(false);
 
-        return mapper.Map<WorkshopDTO>(updatedWorkshop);
+        return mapper.Map<WorkshopBaseDto>(updatedWorkshop);
     }
 
     /// <inheritdoc/>
@@ -370,7 +394,7 @@ public class WorkshopService : IWorkshopService
 
     /// <inheritdoc/>
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-    public async Task<WorkshopUpdateResultDto> UpdateV2(WorkshopDTO dto)
+    public async Task<WorkshopResultDto> UpdateV2(WorkshopV2Dto dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation($"Updating {nameof(Workshop)} with Id = {dto.Id} started.");
@@ -405,9 +429,9 @@ public class WorkshopService : IWorkshopService
         var (updatedWorkshop, multipleImageChangeResult, changeCoverImageResult) = await workshopRepository
             .RunInTransaction(UpdateWorkshopWithDependencies).ConfigureAwait(false);
 
-        return new WorkshopUpdateResultDto
+        return new WorkshopResultDto
         {
-            Workshop = mapper.Map<WorkshopDTO>(updatedWorkshop),
+            Workshop = mapper.Map<WorkshopV2Dto>(updatedWorkshop),
             UploadingCoverImageResult = changeCoverImageResult?.UploadingResult?.OperationResult,
             UploadingImagesResults = multipleImageChangeResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult,
         };
@@ -622,7 +646,7 @@ public class WorkshopService : IWorkshopService
     {
         var predicate = PredicateBuilder.True<Workshop>();
 
-        if (filter is WorkshopBySettlementsFilter settlementsFilter)
+        if (filter is WorkshopFilterWithSettlements settlementsFilter)
         {
             if (settlementsFilter.InstitutionId != Guid.Empty)
             {
@@ -783,7 +807,7 @@ public class WorkshopService : IWorkshopService
         return workshops;
     }
 
-    private async Task<List<WorkshopDTO>> GetWorkshopsWithAverageRating(List<WorkshopDTO> workshops)
+    private async Task<List<WorkshopDto>> GetWorkshopsWithAverageRating(List<WorkshopDto> workshops)
     {
         var averageRatings = await averageRatingService.GetByEntityIdsAsync(workshops.Select(p => p.Id)).ConfigureAwait(false);
 

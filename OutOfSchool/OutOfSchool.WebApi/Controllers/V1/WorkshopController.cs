@@ -4,8 +4,7 @@ using Microsoft.Extensions.Options;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.BlockedProviderParent;
-using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -53,13 +52,13 @@ public class WorkshopController : ControllerBase
     /// Get workshop by it's id.
     /// </summary>
     /// <param name="id">Workshop's id.</param>
-    /// <returns><see cref="WorkshopDTO"/>, or no content.</returns>
+    /// <returns><see cref="WorkshopDto"/>, or no content.</returns>
     /// <response code="200">The entity was found by given Id.</response>
     /// <response code="204">No entity with given Id was found.</response>
     /// <response code="500">If any server error occures. For example: Id was less than one.</response>
     [AllowAnonymous]
     [HttpGet("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDTO))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDto))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetById(Guid id)
@@ -140,14 +139,14 @@ public class WorkshopController : ControllerBase
     /// <param name="id">Provider's id.</param>
     /// <param name="filter">Filter to get specified portion of workshop view cards for specified provider.
     /// Id of the excluded workshop could be specified.</param>
-    /// <returns><see cref="SearchResult{WorkshopBaseCard}"/>, or no content.</returns>
+    /// <returns><see cref="SearchResult{WorkshopProviderViewCard}"/>, or no content.</returns>
     /// <response code="200">The list of found entities by given Id.</response>
     /// <response code="204">No entity with given Id was found.</response>
     /// <response code="400">Provider id is empty.</response>
     /// <response code="500">If any server error occures. For example: Id was less than one.</response>
     [AllowAnonymous]
     [HttpGet("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopBaseCard>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopProviderViewCard>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -158,7 +157,7 @@ public class WorkshopController : ControllerBase
             return BadRequest("Provider id is empty.");
         }
 
-        var workshopCards = await combinedWorkshopService.GetByProviderId<WorkshopBaseCard>(id, filter)
+        var workshopCards = await combinedWorkshopService.GetByProviderId(id, filter)
             .ConfigureAwait(false);
 
         if (workshopCards.TotalAmount == 0)
@@ -188,7 +187,7 @@ public class WorkshopController : ControllerBase
             return BadRequest("Provider id is empty.");
         }
 
-        var workshopProviderViewCards = await combinedWorkshopService.GetByProviderId<WorkshopProviderViewCard>(id, filter).ConfigureAwait(false);
+        var workshopProviderViewCards = await combinedWorkshopService.GetByProviderId(id, filter).ConfigureAwait(false);
 
         if (workshopProviderViewCards.TotalAmount == 0)
         {
@@ -237,20 +236,20 @@ public class WorkshopController : ControllerBase
     /// Add new workshop to the database.
     /// </summary>
     /// <param name="dto">Entity to add.</param>
-    /// <returns>Created <see cref="WorkshopDTO"/>.</returns>
+    /// <returns>Created <see cref="WorkshopDto"/>.</returns>
     /// <response code="201">Entity was created and returned with Id.</response>
     /// <response code="400">If the model is invalid, some properties are not set etc.</response>
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden.</response>
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopAddNew)]
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopDTO))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopBaseDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(WorkshopDTO dto)
+    public async Task<IActionResult> Create(WorkshopBaseDto dto)
     {
         if (dto == null)
         {
@@ -316,20 +315,20 @@ public class WorkshopController : ControllerBase
     /// Update info about workshop entity.
     /// </summary>
     /// <param name="dto">Workshop to update.</param>
-    /// <returns>Updated <see cref="WorkshopDTO"/>.</returns>
+    /// <returns>Updated <see cref="WorkshopDto"/>.</returns>
     /// <response code="200">Entity was updated and returned.</response>
     /// <response code="400">If the model is invalid, some properties are not set etc.</response>
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden to change.</response>
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopEdit)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDTO))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopBaseDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(WorkshopDTO dto)
+    public async Task<IActionResult> Update(WorkshopBaseDto dto)
     {
         if (dto == null)
         {

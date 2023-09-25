@@ -8,4 +8,6 @@ public class ProviderDto : ProviderBaseDto
     [Required]
     [EnumDataType(typeof(OwnershipType), ErrorMessage = Constants.EnumErrorMessage)]
     public OwnershipType Ownership { get; set; }
+
+    public string BlockPhoneNumber { get; set; } = string.Empty;
 }

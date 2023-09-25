@@ -5,7 +5,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Util.JsonTools;
 
-namespace OutOfSchool.WebApi.Models;
+namespace OutOfSchool.WebApi.Models.Workshops;
 
 /// <inheritdoc/>>
 public class WorkshopFilter : OffsetFilter
@@ -58,7 +58,7 @@ public class WorkshopFilter : OffsetFilter
 
     public bool IsStrictWorkdays { get; set; } = false;
 
-    public long CATOTTGId { get; set; } = default(long);
+    public long CATOTTGId { get; set; } = default;
 
     [Range(2, 10, ErrorMessage = "Field value should be in a range from 2 to 10")]
     public int RadiusKm { get; set; } = 5;
