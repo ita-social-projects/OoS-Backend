@@ -342,15 +342,6 @@ public class ChatWorkshopController : ControllerBase
         return result;
     }
 
-    private async Task<bool> IsMinistryAdminAbleToBeSeeChatRoomMessagesAsync(ChatRoomWorkshopDto chatRoom)
-    {
-        var userId = GettingUserProperties.GetUserId(HttpContext);
-
-        return await ministryAdminService.IsProviderSubordinateAsync(
-            userId,
-            chatRoom.Workshop?.ProviderId ?? throw new InvalidOperationException($"Unable to retrieve workshop data from chatRoom with id = {chatRoom.Id}"));
-    }
-
     private void LogWarningAboutUsersTryingToGetNotOwnChatRoom(Guid chatRoomId, string userId)
     {
         var messageToLog = $"User with {nameof(userId)}:{userId} is trying to get not his own chat room: {nameof(chatRoomId)}={chatRoomId}.";
