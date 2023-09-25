@@ -77,7 +77,7 @@ public class ChatWorkshopController : ControllerBase
     /// </summary>
     /// <param name="applicationId">Application Id.</param>
     /// <returns>Existiong or new chat room.</returns>
-    [HttpGet("chatrooms/application/{applicationId}")]
+    [HttpGet("chatrooms/applications/{applicationId}")]
     [Authorize(Roles = "parent,provider")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomWorkshopDto))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
