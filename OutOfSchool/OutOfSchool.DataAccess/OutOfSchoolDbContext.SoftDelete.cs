@@ -47,8 +47,6 @@ public partial class OutOfSchoolDbContext
             .ApplySoftDelete<Address>()
             .ApplySoftDelete<Application>()
             .ApplySoftDelete<BlockedProviderParent>()
-            .ApplySoftDelete<ChatMessageWorkshop>()
-            .ApplySoftDelete<ChatRoomWorkshop>()
             .ApplySoftDelete<Child>()
             .ApplySoftDelete<CATOTTG>()
             .ApplySoftDelete<CompanyInformation>()

@@ -11,6 +11,10 @@ internal class ChatRoomWorkshopConfiguration : IEntityTypeConfiguration<ChatRoom
     {
         builder.HasKey(x => x.Id);
 
+        builder.HasIndex(x => x.IsDeleted);
+
+        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
+
         builder
             .HasOne(r => r.Parent)
             .WithMany(p => p.ChatRooms)

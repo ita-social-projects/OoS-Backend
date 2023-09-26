@@ -4,9 +4,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models.ChatWorkshop;
 
-public class ChatRoomWorkshop : IKeyedEntity<Guid>
+public class ChatRoomWorkshop : IKeyedEntity<Guid>, ISoftDeleted
 {
     public Guid Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     [Required]
     public Guid WorkshopId { get; set; }

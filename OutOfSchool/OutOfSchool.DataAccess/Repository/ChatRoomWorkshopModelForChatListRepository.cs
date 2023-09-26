@@ -79,6 +79,7 @@ public class ChatRoomWorkshopModelForChatListRepository : IChatRoomWorkshopModel
     {
         var query = dbSet
             .Where(condition)
+            .Where(x => !x.IsDeleted)
             .Select(item => new ChatRoomWorkshopForChatList()
             {
                 Id = item.Id,
@@ -102,7 +103,7 @@ public class ChatRoomWorkshopModelForChatListRepository : IChatRoomWorkshopModel
                     Email = item.Parent.User.Email,
                     PhoneNumber = item.Parent.User.PhoneNumber,
                 },
-                LastMessage = item.ChatMessages.Where(mess => mess.CreatedDateTime == item.ChatMessages.Max(m => m.CreatedDateTime))
+                LastMessage = item.ChatMessages.Where(mess => !mess.IsDeleted && mess.CreatedDateTime == item.ChatMessages.Where(m => !m.IsDeleted).Max(m => m.CreatedDateTime))
                     .Select(message => new ChatMessageInfoForChatList()
                     {
                         Id = message.Id,
@@ -113,7 +114,7 @@ public class ChatRoomWorkshopModelForChatListRepository : IChatRoomWorkshopModel
                         ReadDateTime = message.ReadDateTime,
                     })
                     .FirstOrDefault(),
-                NotReadByCurrentUserMessagesCount = item.ChatMessages.Count(mess => mess.ReadDateTime == null && (mess.SenderRoleIsProvider != searchMessagesForProvider)),
+                NotReadByCurrentUserMessagesCount = item.ChatMessages.Count(mess => !mess.IsDeleted && mess.ReadDateTime == null && (mess.SenderRoleIsProvider != searchMessagesForProvider)),
             })
             .OrderByDescending(x => x.LastMessage.CreatedDateTime);
         return query.ToListAsync();

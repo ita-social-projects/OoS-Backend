@@ -26,7 +26,7 @@ public class WorkshopService : IWorkshopService
 
     private readonly IWorkshopRepository workshopRepository;
     private readonly IEntityRepository<long, DateTimeRange> dateTimeRangeRepository;
-    private readonly IEntityRepository<Guid, ChatRoomWorkshop> roomRepository;
+    private readonly IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository;
     private readonly ITeacherService teacherService;
     private readonly ILogger<WorkshopService> logger;
     private readonly IMapper mapper;
@@ -51,7 +51,7 @@ public class WorkshopService : IWorkshopService
     public WorkshopService(
         IWorkshopRepository workshopRepository,
         IEntityRepository<long, DateTimeRange> dateTimeRangeRepository,
-        IEntityRepository<Guid, ChatRoomWorkshop> roomRepository,
+        IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository,
         ITeacherService teacherService,
         ILogger<WorkshopService> logger,
         IMapper mapper,
