@@ -32,4 +32,14 @@ public class ProviderAdminChangesLog : IKeyedEntity<long>
     public string UserId { get; set; }
 
     public virtual User User { get; set; }
+
+    [Required]
+    [MaxLength(128)]
+    public string PropertyName { get; set; }
+
+    [MaxLength(500)]
+    public string OldValue { get; set; }
+
+    [MaxLength(500)]
+    public string NewValue { get; set; }
 }
