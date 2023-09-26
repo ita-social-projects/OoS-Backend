@@ -1,15 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models.SocialGroup;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -58,8 +50,8 @@ public class SocialGroupController : ControllerBase
     /// <summary>
     /// Get Social Group by it's id.
     /// </summary>
-    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <param name="id">Social Group id.</param>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <returns>Social Group.</returns>
     [HasPermission(Permissions.ImpersonalDataRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SocialGroupDto))]

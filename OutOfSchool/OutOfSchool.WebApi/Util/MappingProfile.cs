@@ -248,7 +248,8 @@ public class MappingProfile : Profile
         CreateMap<SocialGroup, SocialGroupCreate>().ReverseMap();
 
         CreateMap<Child, ChildDto>()
-            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty))
+            .ForMember(dest => dest.SocialGroups, opt => opt.MapFrom(src => src.SocialGroups.Where(x => !x.IsDeleted)));
 
         CreateMap<ChildDto, Child>()
             .ForMember(c => c.Parent, m => m.Ignore())

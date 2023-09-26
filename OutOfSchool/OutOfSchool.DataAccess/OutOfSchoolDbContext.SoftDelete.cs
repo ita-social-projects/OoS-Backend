@@ -57,7 +57,6 @@ public partial class OutOfSchoolDbContext
             .ApplySoftDelete<ProviderAdmin>()
             .ApplySoftDelete<ProviderSectionItem>()
             .ApplySoftDelete<RegionAdmin>()
-            .ApplySoftDelete<SocialGroup>()
             .ApplySoftDelete<Workshop>()
             .ApplySoftDelete<WorkshopDescriptionItem>();
     }

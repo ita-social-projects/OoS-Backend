@@ -24,7 +24,7 @@ public class SocialGroupServiceTests
 {
     private ISocialGroupService service;
     private OutOfSchoolDbContext context;
-    private IEntityRepository<long, SocialGroup> repository;
+    private IEntityRepositorySoftDeleted<long, SocialGroup> repository;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<SocialGroupService>> logger;
     private DbContextOptions<OutOfSchoolDbContext> options;
@@ -40,7 +40,7 @@ public class SocialGroupServiceTests
         options = builder.Options;
         context = new OutOfSchoolDbContext(options);
         localizer = new Mock<IStringLocalizer<SharedResource>>();
-        repository = new EntityRepository<long, SocialGroup>(context);
+        repository = new EntityRepositorySoftDeleted<long, SocialGroup>(context);
         logger = new Mock<ILogger<SocialGroupService>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         service = new SocialGroupService(repository, logger.Object, localizer.Object, mapper);
