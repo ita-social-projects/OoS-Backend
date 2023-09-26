@@ -284,6 +284,9 @@ public class ChangesLogService : IChangesLogService
                 User = mapper.Map<ShortUserDto>(x.User),
                 InstitutionTitle = x.Provider.Institution == null
                     ? null : x.Provider.Institution.Title,
+                PropertyName = x.PropertyName,
+                OldValue = x.OldValue,
+                NewValue = x.NewValue,
             })
             .IgnoreQueryFilters();
 
