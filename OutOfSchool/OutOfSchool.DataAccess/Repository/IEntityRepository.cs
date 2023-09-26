@@ -51,6 +51,18 @@ public interface IEntityRepositoryBase<TKey, TEntity>
     Task RunInTransaction(Func<Task> operation);
 
     /// <summary>
+    /// Read element from database by id and update information.
+    /// </summary>
+    /// <param name="dto">New data with information.</param>
+    /// <param name="map">Method that represents mapping operation.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The task result contains the entity that was updated.</returns>
+    /// <exception cref="DbUpdateException">An exception that is thrown when an error is encountered while saving to the database.</exception>
+    /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
+    Task<TEntity> ReadAndUpdateWith<TDto>(TDto dto, Func<TDto, TEntity, TEntity> map)
+        where TDto : IDto<TEntity, TKey>;
+
+    /// <summary>
     /// Update information about element.
     /// </summary>
     /// <param name="entity">Entity to update.</param>

@@ -9,5 +9,9 @@ internal class AverageRatingConfiguration : IEntityTypeConfiguration<AverageRati
     public void Configure(EntityTypeBuilder<AverageRating> builder)
     {
         builder.HasIndex(x => x.EntityId);
+
+        builder.HasIndex(x => x.IsDeleted);
+
+        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
     }
 }
