@@ -241,7 +241,6 @@ public class MappingProfile : Profile
                 src.Applications.Count(x =>
                     x.Status == ApplicationStatus.Approved
                     || x.Status == ApplicationStatus.StudyingForYears)))
-            .ForMember(dest => dest.Address, opt => opt.Ignore())
             .ForMember(dest => dest.UnreadMessages, opt => opt.Ignore());
 
         CreateMap<SocialGroup, SocialGroupDto>().ReverseMap();
