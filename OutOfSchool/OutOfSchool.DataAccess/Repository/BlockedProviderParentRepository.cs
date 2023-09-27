@@ -6,7 +6,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public class BlockedProviderParentRepository : SensitiveEntityRepository<BlockedProviderParent>, IBlockedProviderParentRepository
+public class BlockedProviderParentRepository : SensitiveEntityRepositorySoftDeleted<BlockedProviderParent>, IBlockedProviderParentRepository
 {
     private readonly OutOfSchoolDbContext db;
 

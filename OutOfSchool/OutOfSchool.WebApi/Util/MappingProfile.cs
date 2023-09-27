@@ -113,7 +113,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CATOTTG, opt => opt.Ignore())
             .ForMember(dest => dest.GeoHash, opt => opt.Ignore());
 
-        CreateMap<BlockedProviderParentBlockDto, BlockedProviderParent>()
+        CreateSoftDeletedMap<BlockedProviderParentBlockDto, BlockedProviderParent>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.UserIdBlock, opt => opt.Ignore())
             .ForMember(dest => dest.UserIdUnblock, opt => opt.Ignore())
