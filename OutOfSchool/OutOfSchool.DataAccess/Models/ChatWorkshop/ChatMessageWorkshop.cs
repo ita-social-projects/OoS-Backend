@@ -1,13 +1,14 @@
-﻿using OutOfSchool.Common;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Reflection.Metadata;
+using OutOfSchool.Common;
 
 namespace OutOfSchool.Services.Models.ChatWorkshop;
 
-public class ChatMessageWorkshop : IKeyedEntity<Guid>
+public class ChatMessageWorkshop : IKeyedEntity<Guid>, ISoftDeleted
 {
     public Guid Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     [Required]
     public Guid ChatRoomId { get; set; }

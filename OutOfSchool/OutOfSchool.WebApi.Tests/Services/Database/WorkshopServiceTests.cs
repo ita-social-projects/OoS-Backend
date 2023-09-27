@@ -32,7 +32,7 @@ public class WorkshopServiceTests
     private IWorkshopService workshopService;
     private Mock<IWorkshopRepository> workshopRepository;
     private Mock<IEntityRepository<long, DateTimeRange>> dateTimeRangeRepository;
-    private Mock<IEntityRepository<Guid, ChatRoomWorkshop>> roomRepository;
+    private Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>> roomRepository;
     private Mock<ITeacherService> teacherService;
     private Mock<ILogger<WorkshopService>> logger;
     private Mock<IMapper> mapperMock;
@@ -47,7 +47,7 @@ public class WorkshopServiceTests
     {
         workshopRepository = new Mock<IWorkshopRepository>();
         dateTimeRangeRepository = new Mock<IEntityRepository<long, DateTimeRange>>();
-        roomRepository = new Mock<IEntityRepository<Guid, ChatRoomWorkshop>>();
+        roomRepository = new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>();
         teacherService = new Mock<ITeacherService>();
         logger = new Mock<ILogger<WorkshopService>>();
         mapperMock = new Mock<IMapper>();

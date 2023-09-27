@@ -113,7 +113,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CATOTTG, opt => opt.Ignore())
             .ForMember(dest => dest.GeoHash, opt => opt.Ignore());
 
-        CreateMap<BlockedProviderParentBlockDto, BlockedProviderParent>()
+        CreateSoftDeletedMap<BlockedProviderParentBlockDto, BlockedProviderParent>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.UserIdBlock, opt => opt.Ignore())
             .ForMember(dest => dest.UserIdUnblock, opt => opt.Ignore())
@@ -248,7 +248,8 @@ public class MappingProfile : Profile
         CreateMap<SocialGroup, SocialGroupCreate>().ReverseMap();
 
         CreateMap<Child, ChildDto>()
-            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty))
+            .ForMember(dest => dest.SocialGroups, opt => opt.MapFrom(src => src.SocialGroups.Where(x => !x.IsDeleted)));
 
         CreateMap<ChildDto, Child>()
             .ForMember(c => c.Parent, m => m.Ignore())
