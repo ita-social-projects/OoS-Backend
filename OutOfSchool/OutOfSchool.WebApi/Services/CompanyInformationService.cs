@@ -20,7 +20,7 @@ public class CompanyInformationService : ICompanyInformationService
 {
     private const int LimitOfItems = 10;
     private const int MainLimit = 1;
-    private readonly ISensitiveEntityRepositorySoftDeleted<CompanyInformation> companyInformationRepository;
+    private readonly ISensitiveEntityRepository<CompanyInformation> companyInformationRepository;
     private readonly ILogger<CompanyInformationService> logger;
     private readonly IMapper mapper;
 
@@ -31,7 +31,7 @@ public class CompanyInformationService : ICompanyInformationService
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Mapper.</param>
     public CompanyInformationService(
-        ISensitiveEntityRepositorySoftDeleted<CompanyInformation> companyInformationRepository,
+        ISensitiveEntityRepository<CompanyInformation> companyInformationRepository,
         ILogger<CompanyInformationService> logger,
         IMapper mapper)
     {

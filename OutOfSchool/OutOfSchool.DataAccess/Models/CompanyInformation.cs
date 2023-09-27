@@ -5,11 +5,9 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models;
 
-public class CompanyInformation : IKeyedEntity<Guid>, ISoftDeleted
+public class CompanyInformation : IKeyedEntity<Guid>
 {
     public Guid Id { get; set; }
-
-    public bool IsDeleted { get; set; }
 
     [MaxLength(200)]
     public string Title { get; set; }
