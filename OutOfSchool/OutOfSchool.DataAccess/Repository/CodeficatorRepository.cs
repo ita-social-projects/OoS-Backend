@@ -10,7 +10,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public class CodeficatorRepository : EntityRepository<long, CATOTTG>, ICodeficatorRepository
+public class CodeficatorRepository : EntityRepositorySoftDeleted<long, CATOTTG>, ICodeficatorRepository
 {
     private readonly OutOfSchoolDbContext db;
 

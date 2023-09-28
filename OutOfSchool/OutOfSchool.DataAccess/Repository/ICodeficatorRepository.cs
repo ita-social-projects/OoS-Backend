@@ -7,7 +7,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public interface ICodeficatorRepository : IEntityRepository<long, CATOTTG>
+public interface ICodeficatorRepository : IEntityRepositorySoftDeleted<long, CATOTTG>
 {
     /// <summary>
     /// Get elements pair values (Id, Name) by a specific filter.
