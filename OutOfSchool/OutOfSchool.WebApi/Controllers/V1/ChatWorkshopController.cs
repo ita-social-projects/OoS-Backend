@@ -321,7 +321,7 @@ public class ChatWorkshopController : ControllerBase
 
         if (userRole == Role.Parent)
         {
-            return application.ParentId.ToString() == userId;
+            return await validationService.UserIsParentOwnerAsync(userId, application.ParentId);
         }
 
         var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
