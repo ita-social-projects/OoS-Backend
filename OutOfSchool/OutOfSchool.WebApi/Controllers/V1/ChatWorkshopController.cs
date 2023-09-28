@@ -1,4 +1,5 @@
-﻿using System.Security.Authentication;
+﻿using System;
+using System.Security.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Nest;
@@ -209,6 +210,21 @@ public class ChatWorkshopController : ControllerBase
     /// </summary>
     /// <param name="workshopId">WorkShop's Id.</param>
     /// <returns>ChatRoom that was found.</returns>
+    [HttpGet("parent/chatrooms/workshop/{workshopId}")]
+    [Authorize(Roles = "parent")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomWorkshopDto))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public Task<IActionResult> GetParentsRoomByWorkshopIdAsync(Guid workshopId)
+        => GetParentRoomByWorkshopIdAsync(workshopId);
+
+    /// <summary>
+    /// Get a chat room for current parent and workshopId.
+    /// </summary>
+    /// <param name="workshopId">WorkShop's Id.</param>
+    /// <returns>ChatRoom that was found.</returns>
     [HttpGet("parent/chatroomforworkshop/{workshopId}")]
     [Authorize(Roles = "parent")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomWorkshopDto))]
@@ -284,7 +300,7 @@ public class ChatWorkshopController : ControllerBase
                 return BadRequest();
             }
 
-            var chatroom = roomService.CreateOrReturnExistingAsync(application.WorkshopId, application.ParentId);
+            var chatroom = await roomService.CreateOrReturnExistingAsync(application.WorkshopId, application.ParentId);
 
             if (chatroom is null)
             {
@@ -399,6 +415,37 @@ public class ChatWorkshopController : ControllerBase
             }
 
             return NoContent();
+        }
+
+        return await HandleOperationAsync(Operation);
+    }
+
+    private async Task<IActionResult> GetParentRoomByWorkshopIdAsync(Guid workshopId)
+    {
+        async Task<IActionResult> Operation()
+        {
+            logger.LogInformation($"User {GettingUserProperties.GetUserId(HttpContext)} is trying to get chat room by {nameof(workshopId)} = {workshopId}");
+            var userId = GettingUserProperties.GetUserId(HttpContext);
+            var userRole = Role.Parent;
+
+            var parentId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
+
+            if (parentId != Guid.Empty)
+            {
+                logger.LogWarning($"User {userId} is trying to get chat room but has no rights");
+
+                var chatRoom = await roomService.CreateOrReturnExistingAsync(workshopId, parentId).ConfigureAwait(false);
+
+                if (chatRoom is not null)
+                {
+                    return Ok(chatRoom);
+                }
+            }
+
+            logger.LogWarning($"User {userId} is trying to get chat room by {nameof(workshopId)} = {workshopId} but get null");
+
+            return BadRequest();
+
         }
 
         return await HandleOperationAsync(Operation);
