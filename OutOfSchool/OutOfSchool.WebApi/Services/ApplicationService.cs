@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.Extensions.Options;
-using Nest;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
@@ -9,7 +8,6 @@ using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.StatusPermissions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
-using OutOfSchool.WebApi.Util;
 using OutOfSchool.WebApi.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Services;
@@ -392,7 +390,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
     {
         logger.LogInformation("Getting Application by Id started. Looking Id = {Id}", id);
 
-        Expression<Func<Application, bool>> filter = a => a.Id == id && !a.Child.IsDeleted;
+        Expression<Func<Application, bool>> filter = a => a.Id == id && !a.Child.IsDeleted && !a.Parent.IsDeleted;
 
         var applications =
             await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
@@ -564,7 +562,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
             predicate = PredicateBuilder.True<Application>();
         }
 
-        predicate = predicate.And(a => !a.Child.IsDeleted);
+        predicate = predicate.And(a => !a.Child.IsDeleted && !a.Parent.IsDeleted);
 
         if (filter.Statuses != null)
         {

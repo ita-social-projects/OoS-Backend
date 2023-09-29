@@ -143,6 +143,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new InstitutionStatusConfiguration());
         builder.ApplyConfiguration(new NotificationConfiguration());
         builder.ApplyConfiguration(new OperationWithObjectConfiguration());
+        builder.ApplyConfiguration(new ParentConfiguration());
         builder.ApplyConfiguration(new ProviderConfiguration());
         builder.ApplyConfiguration(new ProviderAdminConfiguration());
         builder.ApplyConfiguration(new QuartzJobConfiguration());

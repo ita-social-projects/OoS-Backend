@@ -8,7 +8,7 @@ using OutOfSchool.Services.Models.ChatWorkshop;
 
 namespace OutOfSchool.Services.Models;
 
-public class Parent : IKeyedEntity<Guid>
+public class Parent : IKeyedEntity<Guid>, ISoftDeleted
 {
     public Parent()
     {
@@ -16,6 +16,8 @@ public class Parent : IKeyedEntity<Guid>
     }
 
     public Guid Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     public virtual IReadOnlyCollection<Child> Children { get; set; }
 
