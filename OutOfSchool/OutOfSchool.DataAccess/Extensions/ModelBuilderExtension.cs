@@ -51,7 +51,7 @@ public static class ModelBuilderExtension
             {
                 Id = 1,
                 Name = "Працює",
-                NameEn = "Works",
+                NameEn = "Active",
             },
             new InstitutionStatus
             {
@@ -63,13 +63,13 @@ public static class ModelBuilderExtension
             {
                 Id = 3,
                 Name = "Має намір на реорганізацію",
-                NameEn = "Intends to reorganize",
+                NameEn = "Waiting for reorganization",
             },
             new InstitutionStatus
             {
                 Id = 4,
-                Name = "Відсутній",
-                NameEn = "Not available",
+                Name = "Відсутній статус",
+                NameEn = "Without status",
             });
 
         // default seed permissions.
