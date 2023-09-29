@@ -11,7 +11,13 @@ public class ProviderAdminChangesLogService : IProviderAdminChangesLogService
         this.providerAdminChangesLogRepository = providerAdminChangesLogRepository;
     }
 
-    public async Task<int> SaveChangesLogAsync(ProviderAdmin entity, string userId, OperationType operationType)
+    public async Task<int> SaveChangesLogAsync(
+        ProviderAdmin entity,
+        string userId,
+        OperationType operationType,
+        string propertyName,
+        string oldValue,
+        string newValue)
     {
         _ = entity ?? throw new ArgumentNullException(nameof(entity));
 
@@ -22,6 +28,9 @@ public class ProviderAdminChangesLogService : IProviderAdminChangesLogService
                 entity.ProviderId,
                 operationType,
                 userId,
+                propertyName,
+                oldValue,
+                newValue,
                 x.Id));
 
             var result = await providerAdminChangesLogRepository.Create(logRecords);
@@ -34,7 +43,10 @@ public class ProviderAdminChangesLogService : IProviderAdminChangesLogService
                 entity.UserId,
                 entity.ProviderId,
                 operationType,
-                userId);
+                userId,
+                propertyName,
+                oldValue,
+                newValue);
 
             var result = await providerAdminChangesLogRepository.Create(logRecord);
 
@@ -47,6 +59,9 @@ public class ProviderAdminChangesLogService : IProviderAdminChangesLogService
         Guid providerId,
         OperationType operationType,
         string userId,
+        string propertyName,
+        string oldValue,
+        string newValue,
         Guid? workshopId = null)
         => new ProviderAdminChangesLog
         {
@@ -56,5 +71,8 @@ public class ProviderAdminChangesLogService : IProviderAdminChangesLogService
             OperationType = operationType,
             OperationDate = DateTime.Now,
             UserId = userId,
+            PropertyName = propertyName,
+            OldValue = oldValue,
+            NewValue = newValue,
         };
 }

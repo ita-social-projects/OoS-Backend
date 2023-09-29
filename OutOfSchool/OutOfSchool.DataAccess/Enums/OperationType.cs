@@ -10,4 +10,5 @@ public enum OperationType
     Delete,
     Block,
     Update,
+    Reinvite,
 }
