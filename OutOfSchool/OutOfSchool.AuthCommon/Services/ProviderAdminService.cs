@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using IdentityModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OutOfSchool.AuthCommon.Config;
@@ -10,7 +9,6 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.AuthCommon.Services;
 
@@ -22,20 +20,12 @@ public class ProviderAdminService : IProviderAdminService
     private readonly IProviderAdminRepository providerAdminRepository;
     private readonly GRPCConfig gPRCConfig;
     private readonly AngularClientScopeExternalUrisConfig externalUrisConfig;
+    private readonly ChangesLogConfig changesLogConfig;
 
     private readonly UserManager<User> userManager;
     private readonly OutOfSchoolDbContext context;
     private readonly IRazorViewToStringRenderer renderer;
     private readonly IProviderAdminChangesLogService providerAdminChangesLogService;
-
-    private readonly List<string> trackedProperties = new()
-    {
-        "FirstName",
-        "LastName",
-        "MiddleName",
-        "Email",
-        "PhoneNumber",
-    };
 
     public ProviderAdminService(
         IMapper mapper,
@@ -47,7 +37,8 @@ public class ProviderAdminService : IProviderAdminService
         IRazorViewToStringRenderer renderer,
         IProviderAdminChangesLogService providerAdminChangesLogService,
         IOptions<GRPCConfig> gRPCConfig,
-        IOptions<AngularClientScopeExternalUrisConfig> externalUrisConfig)
+        IOptions<AngularClientScopeExternalUrisConfig> externalUrisConfig,
+        IOptions<ChangesLogConfig> changesLogConfig)
     {
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
@@ -60,6 +51,7 @@ public class ProviderAdminService : IProviderAdminService
         this.gPRCConfig = gRPCConfig?.Value ?? throw new ArgumentNullException(nameof(gRPCConfig));
         this.externalUrisConfig =
             externalUrisConfig?.Value ?? throw new ArgumentNullException(nameof(externalUrisConfig));
+        this.changesLogConfig = changesLogConfig?.Value ?? throw new ArgumentNullException(nameof(changesLogConfig));
     }
 
     public async Task<ResponseDto> CreateProviderAdminAsync(
@@ -302,11 +294,40 @@ public class ProviderAdminService : IProviderAdminService
                     return response;
                 }
 
+                var oldWorkshopsIds = providerAdmin.ManagedWorkshops.Select(x => x.Id).ToList();
+
                 providerAdmin.ManagedWorkshops = !providerAdmin.IsDeputy
                     ? context.Workshops.Where(w => updateDto.ManagedWorkshopIds.Contains(w.Id)).ToList()
                     : new List<Workshop>();
 
                 await providerAdminRepository.Update(providerAdmin).ConfigureAwait(false);
+                var newWorkshopsIds = providerAdmin.ManagedWorkshops.Select(x => x.Id).ToList();
+                var addedWorkshopsIds = newWorkshopsIds.Except(oldWorkshopsIds).ToList();
+                var removedWorkshopsIds = oldWorkshopsIds.Except(newWorkshopsIds).ToList();
+
+                foreach (var addedId in addedWorkshopsIds)
+                {
+                    await providerAdminChangesLogService.SaveChangesLogAsync(
+                        providerAdmin,
+                        userId,
+                        OperationType.Update,
+                        "WorkshopId",
+                        string.Empty,
+                        addedId.ToString())
+                        .ConfigureAwait(false);
+                }
+
+                foreach (var removedId in removedWorkshopsIds)
+                {
+                    await providerAdminChangesLogService.SaveChangesLogAsync(
+                        providerAdmin,
+                        userId,
+                        OperationType.Update,
+                        "WorkshopId",
+                        removedId.ToString(),
+                        string.Empty)
+                        .ConfigureAwait(false);
+                }
 
                 foreach (var (propertyName, newValue) in newPropertiesValues)
                 {
@@ -678,13 +699,20 @@ public class ProviderAdminService : IProviderAdminService
 
     private List<(string Name, string Value)> GetTrackedUserProperties(User user)
     {
-        if (user != null)
+        if (user != null && changesLogConfig.TrackedProperties.TryGetValue("ProviderAdmin", out var trackedProperties))
         {
             List<(string, string)> result = new();
             foreach (var propertyName in trackedProperties)
             {
-                var propertyValue = user.GetType().GetProperty(propertyName).GetValue(user).ToString();
-                result.Add((propertyName, propertyValue));
+                var property = user.GetType().GetProperty(propertyName);
+                if (property != null)
+                {
+                    var propertyValue = property.GetValue(user)?.ToString();
+                    if (propertyValue != null)
+                    {
+                        result.Add((propertyName, propertyValue));
+                    }
+                }
             }
 
             return result;

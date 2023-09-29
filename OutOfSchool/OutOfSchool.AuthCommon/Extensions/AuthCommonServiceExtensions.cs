@@ -33,6 +33,8 @@ public static class AuthCommonServiceExtensions
             mailConfig.SendGridKey,
             builder => builder.Bind(config.GetSection(EmailOptions.SectionName)));
 
+        services.Configure<ChangesLogConfig>(config.GetSection(ChangesLogConfig.Name));
+
         services.AddControllersWithViews()
             .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
             .AddDataAnnotationsLocalization(options =>

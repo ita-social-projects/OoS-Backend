@@ -21,37 +21,18 @@ public class ProviderAdminChangesLogService : IProviderAdminChangesLogService
     {
         _ = entity ?? throw new ArgumentNullException(nameof(entity));
 
-        if (entity.ManagedWorkshops?.Count > 0)
-        {
-            var logRecords = entity.ManagedWorkshops.Select(x => this.CreateChangesLogRecord(
-                entity.UserId,
-                entity.ProviderId,
-                operationType,
-                userId,
-                propertyName,
-                oldValue,
-                newValue,
-                x.Id));
+        var logRecord = this.CreateChangesLogRecord(
+            entity.UserId,
+            entity.ProviderId,
+            operationType,
+            userId,
+            propertyName,
+            oldValue,
+            newValue);
 
-            var result = await providerAdminChangesLogRepository.Create(logRecords);
+        var result = await providerAdminChangesLogRepository.Create(logRecord);
 
-            return result.Count();
-        }
-        else
-        {
-            var logRecord = this.CreateChangesLogRecord(
-                entity.UserId,
-                entity.ProviderId,
-                operationType,
-                userId,
-                propertyName,
-                oldValue,
-                newValue);
-
-            var result = await providerAdminChangesLogRepository.Create(logRecord);
-
-            return result == null ? 0 : 1;
-        }
+        return result == null ? 0 : 1;
     }
 
     private ProviderAdminChangesLog CreateChangesLogRecord(
