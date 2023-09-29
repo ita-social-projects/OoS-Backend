@@ -110,6 +110,7 @@ public class ChatWorkshopController : ControllerBase
     /// <param name="id">Workshop's Id.</param>
     /// <param name="offsetFilter">Filter to get specified portion of messages in the chat room.</param>
     /// <returns>User's chat room's messages that were found.</returns>
+    [Obsolete("Become unused")]
     [HttpGet("parent/workshops/{id}/messages")]
     [Authorize(Roles = "parent")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ChatMessageWorkshopDto>))]
@@ -225,6 +226,7 @@ public class ChatWorkshopController : ControllerBase
     /// </summary>
     /// <param name="workshopId">WorkShop's Id.</param>
     /// <returns>ChatRoom that was found.</returns>
+    [Obsolete("Was not used")]
     [HttpGet("parent/chatroomforworkshop/{workshopId}")]
     [Authorize(Roles = "parent")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomWorkshopDto))]
@@ -240,6 +242,7 @@ public class ChatWorkshopController : ControllerBase
     /// </summary>
     /// <param name="workshopId">WorkShop's Id.</param>
     /// <returns>ChatRoom that was found.</returns>
+    [Obsolete("Was not used")]
     [HttpGet("parent/chatroomwithmessagesforworkshop/{workshopId}")]
     [Authorize(Roles = "parent")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomWorkshopDtoWithLastMessage))]
@@ -255,6 +258,7 @@ public class ChatWorkshopController : ControllerBase
     /// </summary>
     /// <param name="parentId">Parent's Id.</param>
     /// <returns>ChatRoom that was found.</returns>
+    [Obsolete("Was not used")]
     [HttpGet("provider/chatroomsforparent/{parentId}")]
     [Authorize(Roles = "provider")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ChatRoomWorkshopDto>))]
@@ -270,6 +274,7 @@ public class ChatWorkshopController : ControllerBase
     /// </summary>
     /// <param name="parentId">Parent's Id.</param>
     /// <returns>ChatRoom that was found.</returns>
+    [Obsolete("Was not used")]
     [HttpGet("provider/chatroomswithmessagesforparent/{parentId}")]
     [Authorize(Roles = "provider")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ChatRoomWorkshopDtoWithLastMessage>))]
@@ -451,6 +456,7 @@ public class ChatWorkshopController : ControllerBase
         return await HandleOperationAsync(Operation);
     }
 
+    [Obsolete("Was not used")]
     private async Task<IActionResult> GetParentRoomByWorkshopIdAsync(Guid workshopId, bool withMessages)
     {
         async Task<IActionResult> Operation()
@@ -478,6 +484,7 @@ public class ChatWorkshopController : ControllerBase
         return await HandleOperationAsync(Operation);
     }
 
+    [Obsolete("Was not used")]
     private async Task<IActionResult> GetProvidersRoomsByParentIdAsync(Guid parentId, bool withMessages)
     {
         async Task<IActionResult> Operation()
