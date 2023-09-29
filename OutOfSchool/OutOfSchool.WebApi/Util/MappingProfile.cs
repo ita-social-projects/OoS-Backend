@@ -37,9 +37,11 @@ public class MappingProfile : Profile
                 opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Id)))
             .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
-            .ForMember(dest => dest.ProviderLicenseStatus, opt => opt.MapFrom(src => src.Provider.LicenseStatus));
+            .ForMember(dest => dest.ProviderLicenseStatus, opt => opt.MapFrom(src => src.Provider.LicenseStatus))
+            .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src => src.Teachers.Where(x => !x.IsDeleted)))
+            .ForMember(dest => dest.WorkshopDescriptionItems, opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)));
 
-        CreateMap<WorkshopBaseDto, Workshop>()
+        CreateSoftDeletedMap<WorkshopBaseDto, Workshop>()
             .ForMember(
                 dest => dest.Keywords,
                 opt => opt.MapFrom(src => string.Join(Constants.MappingSeparator, src.Keywords.Distinct())))
@@ -207,7 +209,8 @@ public class MappingProfile : Profile
                 WorkshopId = src.WorkshopId,
             });
 
-        CreateMap<ApplicationDto, Application>().ForMember(dest => dest.Workshop, opt => opt.Ignore());
+        CreateSoftDeletedMap<ApplicationDto, Application>()
+            .ForMember(dest => dest.Workshop, opt => opt.Ignore());
 
         CreateMap<Workshop, WorkshopCard>()
             .IncludeBase<Workshop, WorkshopBaseCard>()
@@ -218,8 +221,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.TakenSeats, opt =>
                 opt.MapFrom(src =>
                     src.Applications.Count(x =>
-                        x.Status == ApplicationStatus.Approved
-                        || x.Status == ApplicationStatus.StudyingForYears)));
+                        !x.IsDeleted && (x.Status == ApplicationStatus.Approved
+                        || x.Status == ApplicationStatus.StudyingForYears))));
 
         CreateMap<Workshop, WorkshopBaseCard>()
             .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
@@ -513,7 +516,8 @@ public class MappingProfile : Profile
         CreateMap<AchievementType, AchievementTypeDto>();
 
         CreateMap<Achievement, AchievementDto>()
-            .ForMember(dest => dest.Children, opt => opt.MapFrom(src => src.Children.Where(x => !x.IsDeleted)));
+            .ForMember(dest => dest.Children, opt => opt.MapFrom(src => src.Children.Where(x => !x.IsDeleted)))
+            .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src => src.Teachers.Where(x => !x.IsDeleted)));
 
         CreateSoftDeletedMap<AchievementDto, Achievement>()
             .ForMember(dest => dest.Workshop, opt => opt.Ignore())

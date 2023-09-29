@@ -151,6 +151,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new SocialGroupConfiguration());
         builder.ApplyConfiguration(new TeacherConfiguration());
         builder.ApplyConfiguration(new WorkshopConfiguration());
+        builder.ApplyConfiguration(new WorkshopDescriptionItemConfiguration());
 
         ApplySoftDelete(builder);
 

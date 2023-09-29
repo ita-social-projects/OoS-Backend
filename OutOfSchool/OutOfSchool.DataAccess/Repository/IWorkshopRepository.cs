@@ -5,7 +5,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public interface IWorkshopRepository : IEntityRepositoryBase<Guid, Workshop>
+public interface IWorkshopRepository : IEntityRepositorySoftDeleted<Guid, Workshop>
 {
     Task<Workshop> GetWithNavigations(Guid id);
 

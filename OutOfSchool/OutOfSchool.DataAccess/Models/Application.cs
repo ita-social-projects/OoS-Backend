@@ -6,9 +6,11 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models;
 
-public class Application : IKeyedEntity<Guid>
+public class Application : IKeyedEntity<Guid>, ISoftDeleted
 {
     public Guid Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     public ApplicationStatus Status { get; set; }
 

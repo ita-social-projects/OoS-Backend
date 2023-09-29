@@ -7,7 +7,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public class WorkshopRepository : SensitiveEntityRepository<Workshop>, IWorkshopRepository
+public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>, IWorkshopRepository
 {
     private readonly OutOfSchoolDbContext db;
 

@@ -45,13 +45,10 @@ public partial class OutOfSchoolDbContext
         builder
             .ApplySoftDelete<User>()
             .ApplySoftDelete<Address>()
-            .ApplySoftDelete<Application>()
             .ApplySoftDelete<DateTimeRange>()
             .ApplySoftDelete<Provider>()
             .ApplySoftDelete<ProviderAdmin>()
             .ApplySoftDelete<ProviderSectionItem>()
-            .ApplySoftDelete<RegionAdmin>()
-            .ApplySoftDelete<Workshop>()
-            .ApplySoftDelete<WorkshopDescriptionItem>();
+            .ApplySoftDelete<RegionAdmin>();
     }
 }

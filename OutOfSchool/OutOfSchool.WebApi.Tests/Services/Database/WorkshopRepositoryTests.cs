@@ -44,10 +44,10 @@ public class WorkshopRepositoryTests
         // Arrange
         using var context = GetContext();
         var workshopRepository = GetWorkshopRepository(context);
-        var initialWorkshopsCount = context.Workshops.Count();
+        var initialWorkshopsCount = context.Workshops.Count(x => !x.IsDeleted);
         var workshop = context.Workshops.First();
         var expectedWorkshopsCount = initialWorkshopsCount - 1;
-        var expectedApplicationsCount = context.Applications.Count() - workshop.Applications.Count;
+        var expectedApplicationsCount = context.Applications.Count(x => !x.IsDeleted) - workshop.Applications.Count;
         var expectedTeachersCount = context.Teachers.Count(x => !x.IsDeleted) - workshop.Teachers.Count;
         var expectedImagesCount = context.WorkshopImages.Count() - workshop.Images.Count;
         var expectedAddressesCount = context.Addresses.Count() - 1;
@@ -56,12 +56,12 @@ public class WorkshopRepositoryTests
         await workshopRepository.Delete(workshop);
         var applications = context.Applications
             .IgnoreQueryFilters()
-            .Where(x => x.WorkshopId == workshop.Id)
+            .Where(x => !x.IsDeleted && x.WorkshopId == workshop.Id)
             .Select(x => context.Entry(x))
             .ToList();
         var teachers = context.Teachers
             .IgnoreQueryFilters()
-            .Where(x => x.WorkshopId == workshop.Id)
+            .Where(x => !x.IsDeleted && x.WorkshopId == workshop.Id)
             .Select(x => context.Entry(x))
             .ToList();
         var images = context.WorkshopImages
@@ -71,16 +71,16 @@ public class WorkshopRepositoryTests
 
         // Assert
         Assert.AreEqual(initialWorkshopsCount, context.Workshops.IgnoreQueryFilters().Count());
-        Assert.AreEqual(expectedWorkshopsCount, context.Workshops.Count());
+        Assert.AreEqual(expectedWorkshopsCount, context.Workshops.Count(x => !x.IsDeleted));
         Assert.NotZero(expectedApplicationsCount);
         Assert.NotZero(expectedTeachersCount);
         Assert.NotZero(expectedImagesCount);
         Assert.NotZero(expectedAddressesCount);
-        Assert.AreEqual(expectedApplicationsCount, context.Applications.Count());
+        Assert.AreEqual(expectedApplicationsCount, context.Applications.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedTeachersCount, context.Teachers.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedImagesCount, context.WorkshopImages.Count());
         Assert.AreEqual(expectedAddressesCount, context.Addresses.Count());
-        Assert.False(context.Workshops.Any(x => x.Id == workshop.Id));
+        Assert.False(context.Workshops.Any(x => !x.IsDeleted && x.Id == workshop.Id));
         Assert.True(context.Workshops.IgnoreQueryFilters().Any(x => x.Id == workshop.Id));
         Assert.AreEqual(EntityState.Unchanged, context.Entry(workshop).State);
         Assert.AreEqual(true, context.Entry(workshop).CurrentValues["IsDeleted"]);

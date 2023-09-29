@@ -10,7 +10,7 @@ namespace OutOfSchool.Services.Repository;
 /// <summary>
 /// Repository for accessing the Application table in database.
 /// </summary>
-public class ApplicationRepository : EntityRepositoryBase<Guid, Application>, IApplicationRepository
+public class ApplicationRepository : EntityRepositorySoftDeleted<Guid, Application>, IApplicationRepository
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationRepository"/> class.
