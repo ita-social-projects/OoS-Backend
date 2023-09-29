@@ -1,14 +1,10 @@
 ﻿using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MySqlConnector;
 using OutOfSchool.AuthorizationServer;
 using OutOfSchool.Common;
-using OutOfSchool.Common.Config;
-using OutOfSchool.Common.Extensions;
-using OutOfSchool.Common.Extensions.Startup;
-using OutOfSchool.AuthorizationServer.KeyManagement;
 using OutOfSchool.Services;
 
 var host = Host.CreateDefaultBuilder(args)
@@ -23,17 +19,7 @@ var host = Host.CreateDefaultBuilder(args)
             throw new Exception("MySQL Server version should be 8 or higher.");
         }
 
-        var connectionString = config.GetMySqlConnectionString<MySqlGuidConnectionOptions>(
-            "DefaultConnection",
-            options => new MySqlConnectionStringBuilder
-            {
-                Server = options.Server,
-                Port = options.Port,
-                UserID = options.UserId,
-                Password = options.Password,
-                Database = options.Database,
-                GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
-            });
+        var connectionString = config.GetConnectionString("DefaultConnection");
 
         var migrationsAssembly = typeof(Program).GetTypeInfo().Assembly.GetName().Name;
 
@@ -51,19 +37,11 @@ var host = Host.CreateDefaultBuilder(args)
                     serverVersion,
                     optionsBuilder =>
                         optionsBuilder
-                            .MigrationsAssembly(migrationsAssembly)))
-            .AddDbContext<CertificateDbContext>(options => options
-                .UseMySql(
-                    connectionString,
-                    serverVersion,
-                    optionsBuilder =>
-                        optionsBuilder
                             .MigrationsAssembly(migrationsAssembly)));
     })
     .Build();
 
 using var scope = host.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
 
-scope.ServiceProvider.GetRequiredService<CertificateDbContext>().Database.Migrate();
 scope.ServiceProvider.GetRequiredService<OutOfSchoolDbContext>().Database.Migrate();
 scope.ServiceProvider.GetRequiredService<OpenIdDictDbContext>().Database.Migrate();

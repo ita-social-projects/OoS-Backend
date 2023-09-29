@@ -16,7 +16,6 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="OpenIddict.AspNetCore" />
-        <PackageReference Include="OpenIddict.EntityFrameworkCore" />
         <PackageReference Include="OpenIddict.Quartz" />
         <PackageReference Include="LazyCache.AspNetCore" />
         <PackageReference Include="Newtonsoft.Json" />
