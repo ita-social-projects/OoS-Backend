@@ -12,6 +12,10 @@ internal class ChildConfiguration : IEntityTypeConfiguration<Child>
     {
         builder.HasKey(x => x.Id);
 
+        builder.HasIndex(x => x.IsDeleted);
+
+        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
+
         builder.Property(x => x.FirstName)
             .IsRequired()
             .HasMaxLength(Constants.NameMaxLength);

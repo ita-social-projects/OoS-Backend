@@ -392,7 +392,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
     {
         logger.LogInformation("Getting Application by Id started. Looking Id = {Id}", id);
 
-        Expression<Func<Application, bool>> filter = a => a.Id == id;
+        Expression<Func<Application, bool>> filter = a => a.Id == id && !a.Child.IsDeleted;
 
         var applications =
             await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
@@ -563,6 +563,8 @@ public class ApplicationService : IApplicationService, INotificationReciever
         {
             predicate = PredicateBuilder.True<Application>();
         }
+
+        predicate = predicate.And(a => !a.Child.IsDeleted);
 
         if (filter.Statuses != null)
         {

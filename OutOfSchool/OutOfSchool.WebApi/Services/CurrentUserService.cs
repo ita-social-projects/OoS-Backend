@@ -15,7 +15,7 @@ public class CurrentUserService : ICurrentUserService
 {
     private readonly ClaimsPrincipal? user;
     private readonly IParentRepository parentRepository;
-    private readonly IEntityRepository<Guid, Child> childRepository;
+    private readonly IEntityRepositorySoftDeleted<Guid, Child> childRepository;
     private readonly IProviderRepository providerRepository;
     private readonly IProviderAdminRepository providerAdminRepository;
     private readonly ILogger<CurrentUserService> logger;
@@ -28,7 +28,7 @@ public class CurrentUserService : ICurrentUserService
         IProviderRepository providerRepository,
         IProviderAdminRepository providerAdminRepository,
         IParentRepository parentRepository,
-        IEntityRepository<Guid, Child> childRepository,
+        IEntityRepositorySoftDeleted<Guid, Child> childRepository,
         ILogger<CurrentUserService> logger,
         ICacheService cache,
         IOptions<AppDefaultsConfig> options,
@@ -59,7 +59,7 @@ public class CurrentUserService : ICurrentUserService
         Role.MinistryAdmin => user?.IsInRole("ministryadmin") ?? false,
         Role.RegionAdmin => user?.IsInRole("regionadmin") ?? false,
         Role.AreaAdmin => user?.IsInRole("areaadmin") ?? false,
-        _ => throw new NotImplementedException("Role not handled")
+        _ => throw new NotImplementedException("Role not handled"),
     };
 
     public bool IsDeputyOrProviderAdmin() =>
@@ -136,7 +136,7 @@ public class CurrentUserService : ICurrentUserService
             ProviderRights provider => ProviderHasRights(provider.providerId),
             ProviderDeputyRights providerDeputy => ProviderDeputyHasRights(providerDeputy.providerId),
             null => Task.FromResult(false),
-            _ => throw new NotImplementedException("Unknown user rights type")
+            _ => throw new NotImplementedException("Unknown user rights type"),
         };
 
     private async Task<bool> ParentHasRights(Guid parentId, Guid childId)
