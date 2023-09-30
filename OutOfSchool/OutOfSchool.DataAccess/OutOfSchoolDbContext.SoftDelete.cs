@@ -44,7 +44,6 @@ public partial class OutOfSchoolDbContext
     {
         builder
             .ApplySoftDelete<User>()
-            .ApplySoftDelete<Address>()
             .ApplySoftDelete<DateTimeRange>()
             .ApplySoftDelete<ProviderAdmin>()
             .ApplySoftDelete<ProviderSectionItem>()

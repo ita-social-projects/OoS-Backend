@@ -6,9 +6,11 @@ using OutOfSchool.Common;
 
 namespace OutOfSchool.Services.Models;
 
-public class Address : IKeyedEntity<long>
+public class Address : IKeyedEntity<long>, ISoftDeleted
 {
     public long Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     [Required(ErrorMessage = "Street is required")]
     [MaxLength(60)]

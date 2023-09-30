@@ -79,7 +79,7 @@ public class WorkshopRepositoryTests
         Assert.AreEqual(expectedApplicationsCount, context.Applications.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedTeachersCount, context.Teachers.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedImagesCount, context.WorkshopImages.Count());
-        Assert.AreEqual(expectedAddressesCount, context.Addresses.Count());
+        Assert.AreEqual(expectedAddressesCount, context.Addresses.Count(x => !x.IsDeleted));
         Assert.False(context.Workshops.Any(x => !x.IsDeleted && x.Id == workshop.Id));
         Assert.True(context.Workshops.IgnoreQueryFilters().Any(x => x.Id == workshop.Id));
         Assert.AreEqual(EntityState.Unchanged, context.Entry(workshop).State);

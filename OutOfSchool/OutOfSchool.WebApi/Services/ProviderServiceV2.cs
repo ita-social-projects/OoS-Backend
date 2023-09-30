@@ -24,7 +24,7 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
         ILogger<ProviderServiceV2> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper,
-        IEntityRepository<long, Address> addressRepository,
+        IEntityRepositorySoftDeleted<long, Address> addressRepository,
         IWorkshopServicesCombiner workshopServiceCombiner,
         IProviderAdminRepository providerAdminRepository,
         IImageDependentEntityImagesInteractionService<Provider> providerImagesService,

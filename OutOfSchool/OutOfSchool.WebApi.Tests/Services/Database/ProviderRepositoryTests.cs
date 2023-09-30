@@ -66,7 +66,7 @@ public class ProviderRepositoryTests
         // Assert
         Assert.AreEqual(initialProvidersCount, context.Providers.IgnoreQueryFilters().Count());
         Assert.AreEqual(expectedProvidersCount, context.Providers.Count(x => !x.IsDeleted));
-        Assert.AreEqual(expectedAddressesCount, context.Addresses.Count());
+        Assert.AreEqual(expectedAddressesCount, context.Addresses.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedWorkshopsCount, context.Workshops.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedProviderAdminsCount, context.ProviderAdmins.Count());
         Assert.False(context.Workshops.Any(x => !x.IsDeleted && x.ProviderId == provider.Id));

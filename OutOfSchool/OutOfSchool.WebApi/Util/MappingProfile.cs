@@ -111,7 +111,7 @@ public class MappingProfile : Profile
         CreateMap<Address, AddressDto>()
             .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
 
-        CreateMap<AddressDto, Address>()
+        CreateSoftDeletedMap<AddressDto, Address>()
             .ForMember(dest => dest.CATOTTG, opt => opt.Ignore())
             .ForMember(dest => dest.GeoHash, opt => opt.Ignore());
 

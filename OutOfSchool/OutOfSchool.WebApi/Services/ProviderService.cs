@@ -35,7 +35,7 @@ public class ProviderService : IProviderService, INotificationReciever
     private readonly ILogger<ProviderService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
-    private readonly IEntityRepository<long, Address> addressRepository;
+    private readonly IEntityRepositorySoftDeleted<long, Address> addressRepository;
     private readonly IWorkshopServicesCombiner workshopServiceCombiner;
     private readonly IChangesLogService changesLogService;
     private readonly INotificationService notificationService;
@@ -82,7 +82,7 @@ public class ProviderService : IProviderService, INotificationReciever
         ILogger<ProviderService> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper,
-        IEntityRepository<long, Address> addressRepository,
+        IEntityRepositorySoftDeleted<long, Address> addressRepository,
         IWorkshopServicesCombiner workshopServiceCombiner,
         IProviderAdminRepository providerAdminRepository,
         IImageDependentEntityImagesInteractionService<Provider> providerImagesService,

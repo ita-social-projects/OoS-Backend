@@ -46,7 +46,7 @@ public class ProviderServiceUpdate
 
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderService>>();
-        var addressRepository = new Mock<IEntityRepository<long, Address>>();
+        var addressRepository = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
         var providerRepository = new ProviderRepository(GetContext());
         var providerAdminRepository = new Mock<IProviderAdminRepository>();
         var userRepository = new Mock<IEntityRepository<string, User>>();
