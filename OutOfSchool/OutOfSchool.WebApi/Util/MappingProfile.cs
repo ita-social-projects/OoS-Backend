@@ -133,8 +133,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Name, opt => opt.MapFrom(psi => psi.SectionName))
             .ForMember(dest => dest.Provider, opt => opt.Ignore());
 
-        CreateMap<ProviderType, ProviderTypeDto>()
-            .ReverseMap();
+        CreateMap<ProviderType, ProviderTypeDto>().ReverseMap();
+
         CreateMap<Provider, ProviderDto>()
             .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
             .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
