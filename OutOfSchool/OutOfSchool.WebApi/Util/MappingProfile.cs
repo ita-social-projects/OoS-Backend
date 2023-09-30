@@ -129,7 +129,7 @@ public class MappingProfile : Profile
         CreateMap<ProviderSectionItem, ProviderSectionItemDto>()
             .ForMember(dest => dest.SectionName, opt => opt.MapFrom(psi => psi.Name));
 
-        CreateMap<ProviderSectionItemDto, ProviderSectionItem>()
+        CreateSoftDeletedMap<ProviderSectionItemDto, ProviderSectionItem>()
             .ForMember(dest => dest.Name, opt => opt.MapFrom(psi => psi.SectionName))
             .ForMember(dest => dest.Provider, opt => opt.Ignore());
 
@@ -143,7 +143,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
             .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
             .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
-            .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)));
+            .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
+            .ForMember(dest => dest.ProviderSectionItems, opt => opt.MapFrom(src => src.ProviderSectionItems.Where(x => !x.IsDeleted)));
 
         CreateSoftDeletedMap<ProviderDto, Provider>()
             .ForMember(dest => dest.Workshops, opt => opt.Ignore())
