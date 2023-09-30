@@ -39,6 +39,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
             .ForMember(dest => dest.ProviderLicenseStatus, opt => opt.MapFrom(src => src.Provider.LicenseStatus))
             .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src => src.Teachers.Where(x => !x.IsDeleted)))
+            .ForMember(dest => dest.DateTimeRanges, opt => opt.MapFrom(src => src.DateTimeRanges.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.WorkshopDescriptionItems, opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)));
 
         CreateSoftDeletedMap<WorkshopBaseDto, Workshop>()
@@ -197,7 +198,7 @@ public class MappingProfile : Profile
         CreateMap<DateTimeRange, DateTimeRangeDto>()
             .ForMember(dtr => dtr.Workdays, cfg => cfg.MapFrom(dtr => dtr.Workdays.ToDaysBitMaskEnumerable().ToList()));
 
-        CreateMap<DateTimeRangeDto, DateTimeRange>()
+        CreateSoftDeletedMap<DateTimeRangeDto, DateTimeRange>()
             .ForMember(dtr => dtr.Workdays, cfg => cfg.MapFrom(dtr => dtr.Workdays.ToDaysBitMask()))
             .ForMember(dest => dest.WorkshopId, opt => opt.Ignore());
 

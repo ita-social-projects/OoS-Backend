@@ -25,7 +25,7 @@ public class WorkshopService : IWorkshopService
     private readonly string includingPropertiesForMappingWorkShopCard = $"{nameof(Workshop.Address)}";
 
     private readonly IWorkshopRepository workshopRepository;
-    private readonly IEntityRepository<long, DateTimeRange> dateTimeRangeRepository;
+    private readonly IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository;
     private readonly IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository;
     private readonly ITeacherService teacherService;
     private readonly ILogger<WorkshopService> logger;
@@ -50,7 +50,7 @@ public class WorkshopService : IWorkshopService
 
     public WorkshopService(
         IWorkshopRepository workshopRepository,
-        IEntityRepository<long, DateTimeRange> dateTimeRangeRepository,
+        IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository,
         IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository,
         ITeacherService teacherService,
         ILogger<WorkshopService> logger,
