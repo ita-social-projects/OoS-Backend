@@ -145,7 +145,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)));
 
-        CreateMap<ProviderDto, Provider>()
+        CreateSoftDeletedMap<ProviderDto, Provider>()
             .ForMember(dest => dest.Workshops, opt => opt.Ignore())
             .ForMember(dest => dest.User, opt => opt.Ignore())
             .ForMember(dest => dest.Institution, opt => opt.Ignore())
@@ -156,7 +156,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.LicenseStatus, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore());
 
-        CreateMap<ProviderUpdateDto, Provider>()
+        CreateSoftDeletedMap<ProviderUpdateDto, Provider>()
             .ForMember(dest => dest.Ownership, opt => opt.Ignore())
             .ForMember(dest => dest.Workshops, opt => opt.Ignore())
             .ForMember(dest => dest.User, opt => opt.Ignore())

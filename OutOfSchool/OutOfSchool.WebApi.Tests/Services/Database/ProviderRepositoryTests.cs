@@ -43,7 +43,7 @@ public class ProviderRepositoryTests
         // Arrange
         using var context = GetContext();
         var providerRepository = GetProviderRepository(context);
-        var initialProvidersCount = context.Providers.Count();
+        var initialProvidersCount = context.Providers.Count(x => !x.IsDeleted);
         var provider = context.Providers.First();
         var expectedProvidersCount = initialProvidersCount - 1;
         var expectedWorkshopsCount = context.Workshops.Count(x => !x.IsDeleted) - provider.Workshops.Count;
@@ -65,7 +65,7 @@ public class ProviderRepositoryTests
 
         // Assert
         Assert.AreEqual(initialProvidersCount, context.Providers.IgnoreQueryFilters().Count());
-        Assert.AreEqual(expectedProvidersCount, context.Providers.Count());
+        Assert.AreEqual(expectedProvidersCount, context.Providers.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedAddressesCount, context.Addresses.Count());
         Assert.AreEqual(expectedWorkshopsCount, context.Workshops.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedProviderAdminsCount, context.ProviderAdmins.Count());

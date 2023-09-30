@@ -34,7 +34,7 @@ public class ProviderAdminRepository : EntityRepository<(string, Guid), Provider
     public async Task<bool> IsExistProviderWithUserIdAsync(string userId)
     {
         var provider = await db.Providers
-            .SingleOrDefaultAsync(p => p.UserId == userId);
+            .SingleOrDefaultAsync(p => p.UserId == userId && !p.IsDeleted);
 
         return provider != null;
     }
@@ -42,7 +42,7 @@ public class ProviderAdminRepository : EntityRepository<(string, Guid), Provider
     public async Task<Provider> GetProviderWithUserIdAsync(string userId)
     {
         var provider = await db.Providers
-            .SingleOrDefaultAsync(p => p.UserId == userId);
+            .SingleOrDefaultAsync(p => p.UserId == userId && !p.IsDeleted);
 
         return provider;
     }

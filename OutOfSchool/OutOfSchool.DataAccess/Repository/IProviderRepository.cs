@@ -4,7 +4,7 @@ using System;
 
 namespace OutOfSchool.Services.Repository;
 
-public interface IProviderRepository : ISensitiveEntityRepository<Provider>, IExistable<Provider>
+public interface IProviderRepository : ISensitiveEntityRepositorySoftDeleted<Provider>, IExistable<Provider>
 {
     bool ExistsUserId(string id);
 
