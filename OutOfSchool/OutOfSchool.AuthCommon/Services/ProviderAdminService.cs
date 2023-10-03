@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Options;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Config.ExternalUriModels;
@@ -162,6 +163,18 @@ public class ProviderAdminService : IProviderAdminService
                         propertyName,
                         string.Empty,
                         propertyValue)
+                    .ConfigureAwait(false);
+                }
+
+                foreach (var workshop in providerAdmin.ManagedWorkshops)
+                {
+                    await providerAdminChangesLogService.SaveChangesLogAsync(
+                        providerAdmin,
+                        userId,
+                        OperationType.Create,
+                        "WorkshopId",
+                        string.Empty,
+                        workshop.Id.ToString())
                     .ConfigureAwait(false);
                 }
 
