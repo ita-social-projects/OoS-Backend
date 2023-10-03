@@ -343,7 +343,7 @@ public class ProviderAdminService : IProviderAdminService
 
                 foreach (var (propertyName, newValue) in newPropertiesValues)
                 {
-                    var oldValue = oldPropertiesValues.Where(x => x.Name == propertyName).FirstOrDefault().Value;
+                    var oldValue = oldPropertiesValues.FirstOrDefault(x => x.Name == propertyName).Value;
                     if (newValue != oldValue)
                     {
                         await providerAdminChangesLogService.SaveChangesLogAsync(
