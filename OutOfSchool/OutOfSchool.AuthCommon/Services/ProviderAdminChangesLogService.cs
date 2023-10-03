@@ -21,34 +21,11 @@ public class ProviderAdminChangesLogService : IProviderAdminChangesLogService
     {
         _ = entity ?? throw new ArgumentNullException(nameof(entity));
 
-        var logRecord = this.CreateChangesLogRecord(
-            entity.UserId,
-            entity.ProviderId,
-            operationType,
-            userId,
-            propertyName,
-            oldValue,
-            newValue);
-
-        var result = await providerAdminChangesLogRepository.Create(logRecord);
-
-        return result == null ? 0 : 1;
-    }
-
-    private ProviderAdminChangesLog CreateChangesLogRecord(
-        string providerAdminId,
-        Guid providerId,
-        OperationType operationType,
-        string userId,
-        string propertyName,
-        string oldValue,
-        string newValue,
-        Guid? workshopId = null)
-        => new ProviderAdminChangesLog
+        var logRecord = new ProviderAdminChangesLog
         {
-            ProviderAdminUserId = providerAdminId,
-            ProviderId = providerId,
-            ManagedWorkshopId = workshopId,
+            ProviderAdminUserId = entity.UserId,
+            ProviderId = entity.ProviderId,
+            ManagedWorkshopId = null,
             OperationType = operationType,
             OperationDate = DateTime.Now,
             UserId = userId,
@@ -56,4 +33,9 @@ public class ProviderAdminChangesLogService : IProviderAdminChangesLogService
             OldValue = oldValue,
             NewValue = newValue,
         };
+
+        var result = await providerAdminChangesLogRepository.Create(logRecord);
+
+        return result == null ? 0 : 1;
+    }
 }
