@@ -68,10 +68,10 @@ public class ProviderRepositoryTests
         Assert.AreEqual(expectedProvidersCount, context.Providers.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedAddressesCount, context.Addresses.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedWorkshopsCount, context.Workshops.Count(x => !x.IsDeleted));
-        Assert.AreEqual(expectedProviderAdminsCount, context.ProviderAdmins.Count());
+        Assert.AreEqual(expectedProviderAdminsCount, context.ProviderAdmins.Count(x => !x.IsDeleted));
         Assert.False(context.Workshops.Any(x => !x.IsDeleted && x.ProviderId == provider.Id));
         Assert.True(context.Workshops.IgnoreQueryFilters().Any(x => x.ProviderId == provider.Id));
-        Assert.False(context.ProviderAdmins.Any(x => x.ProviderId == provider.Id));
+        Assert.False(context.ProviderAdmins.Any(x => !x.IsDeleted && x.ProviderId == provider.Id));
         Assert.True(context.ProviderAdmins.IgnoreQueryFilters().Any(x => x.ProviderId == provider.Id));
         Assert.AreEqual(EntityState.Unchanged, context.Entry(provider).State);
         Assert.AreEqual(true, context.Entry(provider).CurrentValues["IsDeleted"]);

@@ -1,13 +1,15 @@
-﻿using OutOfSchool.Common.Enums;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.Services.Models;
 
-public class ProviderAdmin : IKeyedEntity<(string, Guid)>
+public class ProviderAdmin : IKeyedEntity<(string, Guid)>, ISoftDeleted
 {
     public string UserId { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     public Guid ProviderId { get; set; }
 
