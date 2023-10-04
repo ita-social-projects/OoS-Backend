@@ -26,6 +26,7 @@ public class ProviderAdminService : IProviderAdminService
     private readonly OutOfSchoolDbContext context;
     private readonly IRazorViewToStringRenderer renderer;
     private readonly IProviderAdminChangesLogService providerAdminChangesLogService;
+    private readonly string[] trackedProperties;
 
     public ProviderAdminService(
         IMapper mapper,
@@ -52,6 +53,10 @@ public class ProviderAdminService : IProviderAdminService
         this.externalUrisConfig =
             externalUrisConfig?.Value ?? throw new ArgumentNullException(nameof(externalUrisConfig));
         this.changesLogConfig = changesLogConfig?.Value ?? throw new ArgumentNullException(nameof(changesLogConfig));
+        this.trackedProperties =
+            this.changesLogConfig.TrackedProperties.TryGetValue("ProviderAdmin", out var trackedProperties)
+            ? trackedProperties
+            : Array.Empty<string>();
     }
 
     public async Task<ResponseDto> CreateProviderAdminAsync(
@@ -711,24 +716,19 @@ public class ProviderAdminService : IProviderAdminService
 
     private Dictionary<string, string?> GetTrackedUserProperties(User user)
     {
-        if (user != null && changesLogConfig.TrackedProperties.TryGetValue("ProviderAdmin", out var trackedProperties))
-        {
-            Dictionary<string, string?> result = new();
-            foreach (var propertyName in trackedProperties)
-            {
-                var property = user.GetType().GetProperty(propertyName);
-                if (property != null)
-                {
-                    result.Add(propertyName, property.GetValue(user)?.ToString());
-                }
-            }
-
-            return result;
-        }
-        else
+        if (user == null || !trackedProperties.Any())
         {
             return new Dictionary<string, string?> { };
         }
+
+        Dictionary<string, string?> result = new();
+        foreach (var propertyName in trackedProperties)
+        {
+            var property = user.GetType().GetProperty(propertyName);
+            result.Add(propertyName, property?.GetValue(user)?.ToString());
+        }
+
+        return result;
     }
 
     private async Task SendInvitationEmail(User user, IUrlHelper url, string password)
