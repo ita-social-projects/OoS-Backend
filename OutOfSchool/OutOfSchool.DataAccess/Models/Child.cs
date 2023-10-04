@@ -7,9 +7,11 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models;
 
-public class Child : IKeyedEntity<Guid>
+public class Child : IKeyedEntity<Guid>, ISoftDeleted
 {
     public Guid Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     [MaxLength(Constants.NameMaxLength)]
     public string FirstName { get; set; } = string.Empty;

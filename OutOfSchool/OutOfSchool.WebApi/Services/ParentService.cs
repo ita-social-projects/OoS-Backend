@@ -28,7 +28,7 @@ public class ParentService : IParentService
     private readonly IParentRepository repositoryParent;
     private readonly ICurrentUserService currentUserService;
     private readonly ILogger<ParentService> logger;
-    private readonly IEntityRepository<Guid, Child> repositoryChild;
+    private readonly IEntityRepositorySoftDeleted<Guid, Child> repositoryChild;
     private readonly IMapper mapper;
 
     /// <summary>
@@ -43,7 +43,7 @@ public class ParentService : IParentService
         IParentRepository repositoryParent,
         ICurrentUserService currentUserService,
         ILogger<ParentService> logger,
-        IEntityRepository<Guid, Child> repositoryChild,
+        IEntityRepositorySoftDeleted<Guid, Child> repositoryChild,
         IMapper mapper)
     {
         this.repositoryParent = repositoryParent ?? throw new ArgumentNullException(nameof(repositoryParent));

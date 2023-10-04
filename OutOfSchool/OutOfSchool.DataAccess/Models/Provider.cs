@@ -10,9 +10,11 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models;
 
-public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
+public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISoftDeleted
 {
     public Guid Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     [Required(ErrorMessage = "Full Title is required")]
     [DataType(DataType.Text)]

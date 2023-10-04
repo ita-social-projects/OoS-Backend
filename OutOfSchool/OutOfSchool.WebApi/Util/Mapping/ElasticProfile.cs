@@ -168,7 +168,7 @@ public class ElasticProfile : Profile
                 dest => dest.Description,
                 opt =>
                     opt.MapFrom(src =>
-                        src.WorkshopDescriptionItems
+                        src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)
                             .Aggregate(string.Empty, (accumulator, wdi) =>
                                 $"{accumulator}{wdi.SectionName}{Constants.MappingSeparator}{wdi.Description}{Constants.MappingSeparator}")))
 
@@ -176,7 +176,7 @@ public class ElasticProfile : Profile
             .ForMember(dest => dest.TakenSeats, opt =>
                 opt.MapFrom(src =>
                     src.Applications.Count(x =>
-                        x.Status == ApplicationStatus.Approved
-                        || x.Status == ApplicationStatus.StudyingForYears)));
+                        !x.IsDeleted && (x.Status == ApplicationStatus.Approved
+                        || x.Status == ApplicationStatus.StudyingForYears))));
     }
 }

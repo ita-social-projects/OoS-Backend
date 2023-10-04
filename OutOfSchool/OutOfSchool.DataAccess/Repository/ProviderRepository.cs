@@ -6,7 +6,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public class ProviderRepository : SensitiveEntityRepository<Provider>, IProviderRepository
+public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>, IProviderRepository
 {
     private readonly OutOfSchoolDbContext db;
 
@@ -21,14 +21,14 @@ public class ProviderRepository : SensitiveEntityRepository<Provider>, IProvider
     /// </summary>
     /// <param name="entity">Entity.</param>
     /// <returns>Bool.</returns>
-    public bool SameExists(Provider entity) => db.Providers.Any(x => x.EdrpouIpn == entity.EdrpouIpn || x.Email == entity.Email);
+    public bool SameExists(Provider entity) => db.Providers.Any(x => !x.IsDeleted && (x.EdrpouIpn == entity.EdrpouIpn || x.Email == entity.Email));
 
     /// <summary>
     /// Checks if the user is trying to create second account.
     /// </summary>
     /// <param name="id">User id.</param>
     /// <returns>Bool.</returns>
-    public bool ExistsUserId(string id) => db.Providers.Any(x => x.UserId == id);
+    public bool ExistsUserId(string id) => db.Providers.Any(x => !x.IsDeleted && x.UserId == id);
 
     /// <summary>
     /// Tries to insert a new <see cref="Provider"/> entity with all related objects into the database.
@@ -78,6 +78,6 @@ public class ProviderRepository : SensitiveEntityRepository<Provider>, IProvider
          .Include(x => x.LegalAddress) // TODO: Doesn't work softDelete using Include, only using loop below in Delete() method
          .Include(x => x.Workshops)
          .ThenInclude(w => w.Applications)
-         .SingleOrDefaultAsync(provider => provider.Id == id);
+         .SingleOrDefaultAsync(provider => !provider.IsDeleted && provider.Id == id);
     }
 }

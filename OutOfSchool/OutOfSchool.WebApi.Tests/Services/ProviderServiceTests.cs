@@ -61,7 +61,7 @@ public class ProviderServiceTests
         // TODO: configure mock and writer tests for provider admins
         providerAdminRepositoryMock = new Mock<IProviderAdminRepository>();
         usersRepositoryMock = CreateUsersRepositoryMock(fakeUser);
-        var addressRepo = new Mock<IEntityRepository<long, Address>>();
+        var addressRepo = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderService>>();
         var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();

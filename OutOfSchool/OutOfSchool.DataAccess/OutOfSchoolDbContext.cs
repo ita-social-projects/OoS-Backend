@@ -133,6 +133,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new ChatRoomWorkshopConfiguration());
         builder.ApplyConfiguration(new ChildConfiguration());
         builder.ApplyConfiguration(new CodeficatorConfiguration());
+        builder.ApplyConfiguration(new DateTimeRangeConfiguration());
         builder.ApplyConfiguration(new DirectionConfiguration());
         builder.ApplyConfiguration(new EntityImagesConfiguration<Provider>());
         builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
@@ -143,13 +144,16 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new InstitutionStatusConfiguration());
         builder.ApplyConfiguration(new NotificationConfiguration());
         builder.ApplyConfiguration(new OperationWithObjectConfiguration());
-        builder.ApplyConfiguration(new ProviderConfiguration());
+        builder.ApplyConfiguration(new ParentConfiguration());
         builder.ApplyConfiguration(new ProviderAdminConfiguration());
+        builder.ApplyConfiguration(new ProviderConfiguration());
+        builder.ApplyConfiguration(new ProviderSectionItemConfiguration());
         builder.ApplyConfiguration(new QuartzJobConfiguration());
         builder.ApplyConfiguration(new RatingConfiguration());
         builder.ApplyConfiguration(new SocialGroupConfiguration());
         builder.ApplyConfiguration(new TeacherConfiguration());
         builder.ApplyConfiguration(new WorkshopConfiguration());
+        builder.ApplyConfiguration(new WorkshopDescriptionItemConfiguration());
 
         ApplySoftDelete(builder);
 

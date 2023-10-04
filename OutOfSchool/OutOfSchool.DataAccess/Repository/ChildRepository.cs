@@ -4,7 +4,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public class ChildRepository : EntityRepository<Guid, Child>, IEntityRepository<Guid, Child>
+public class ChildRepository : EntityRepositorySoftDeleted<Guid, Child>, IEntityRepository<Guid, Child>
 {
     private readonly OutOfSchoolDbContext db;
 

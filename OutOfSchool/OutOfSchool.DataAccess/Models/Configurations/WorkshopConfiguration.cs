@@ -11,6 +11,10 @@ internal class WorkshopConfiguration : IEntityTypeConfiguration<Workshop>
     {
         builder.HasKey(x => x.Id);
 
+        builder.HasIndex(x => x.IsDeleted);
+
+        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
+
         builder.HasMany(x => x.ProviderAdmins)
             .WithMany(x => x.ManagedWorkshops);
         builder.HasMany(x => x.Teachers)

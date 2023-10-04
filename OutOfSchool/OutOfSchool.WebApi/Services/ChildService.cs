@@ -25,7 +25,7 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class ChildService : IChildService
 {
-    private readonly IEntityRepository<Guid, Child> childRepository;
+    private readonly IEntityRepositorySoftDeleted<Guid, Child> childRepository;
     private readonly IParentRepository parentRepository;
     private readonly IApplicationRepository applicationRepository;
     private readonly IEntityRepositorySoftDeleted<long, SocialGroup> socialGroupRepository;
@@ -43,7 +43,7 @@ public class ChildService : IChildService
     /// <param name="mapper">Automapper DI service.</param>
     /// <param name="parentConfig">Parent configuration.</param>
     public ChildService(
-        IEntityRepository<Guid, Child> childRepository,
+        IEntityRepositorySoftDeleted<Guid, Child> childRepository,
         IParentRepository parentRepository,
         IEntityRepositorySoftDeleted<long, SocialGroup> socialGroupRepository,
         ILogger<ChildService> logger,
