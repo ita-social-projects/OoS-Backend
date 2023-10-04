@@ -16,8 +16,8 @@ public class ProviderAdminChangesLogService : IProviderAdminChangesLogService
         string userId,
         OperationType operationType,
         string propertyName,
-        string oldValue,
-        string newValue)
+        string? oldValue,
+        string? newValue)
     {
         _ = entity ?? throw new ArgumentNullException(nameof(entity));
 

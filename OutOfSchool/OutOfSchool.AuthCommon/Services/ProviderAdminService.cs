@@ -153,15 +153,15 @@ public class ProviderAdminService : IProviderAdminService
 
                 var newPropertiesValues = GetTrackedUserProperties(user);
 
-                foreach (var (propertyName, propertyValue) in newPropertiesValues)
+                foreach (var newProperty in newPropertiesValues)
                 {
                     await providerAdminChangesLogService.SaveChangesLogAsync(
                         providerAdmin,
                         userId,
                         OperationType.Create,
-                        propertyName,
+                        newProperty.Key,
                         string.Empty,
-                        propertyValue)
+                        newProperty.Value)
                     .ConfigureAwait(false);
                 }
 
@@ -341,18 +341,18 @@ public class ProviderAdminService : IProviderAdminService
                         .ConfigureAwait(false);
                 }
 
-                foreach (var (propertyName, newValue) in newPropertiesValues)
+                foreach (var newProperty in newPropertiesValues)
                 {
-                    var oldValue = oldPropertiesValues.FirstOrDefault(x => x.Name == propertyName).Value;
-                    if (newValue != oldValue)
+                    oldPropertiesValues.TryGetValue(newProperty.Key, out var oldValue);
+                    if (newProperty.Value != oldValue)
                     {
                         await providerAdminChangesLogService.SaveChangesLogAsync(
                             providerAdmin,
                             userId,
                             OperationType.Update,
-                            propertyName,
+                            newProperty.Key,
                             oldValue,
-                            newValue)
+                            newProperty.Value)
                             .ConfigureAwait(false);
                     }
                 }
@@ -433,16 +433,16 @@ public class ProviderAdminService : IProviderAdminService
                     return response;
                 }
 
-                var oldValues = GetTrackedUserProperties(user);
+                var oldPropertiesValues = GetTrackedUserProperties(user);
 
-                foreach (var (propertyName, propertyValue) in oldValues)
+                foreach (var oldProperty in oldPropertiesValues)
                 {
                     await providerAdminChangesLogService.SaveChangesLogAsync(
                         providerAdmin,
                         userId,
                         OperationType.Delete,
-                        propertyName,
-                        propertyValue,
+                        oldProperty.Key,
+                        oldProperty.Value,
                         string.Empty)
                     .ConfigureAwait(false);
                 }
@@ -709,17 +709,17 @@ public class ProviderAdminService : IProviderAdminService
         return result;
     }
 
-    private List<(string Name, string? Value)> GetTrackedUserProperties(User user)
+    private Dictionary<string, string?> GetTrackedUserProperties(User user)
     {
         if (user != null && changesLogConfig.TrackedProperties.TryGetValue("ProviderAdmin", out var trackedProperties))
         {
-            List<(string, string?)> result = new();
+            Dictionary<string, string?> result = new();
             foreach (var propertyName in trackedProperties)
             {
                 var property = user.GetType().GetProperty(propertyName);
                 if (property != null)
                 {
-                    result.Add((propertyName, property.GetValue(user)?.ToString()));
+                    result.Add(propertyName, property.GetValue(user)?.ToString());
                 }
             }
 
@@ -727,7 +727,7 @@ public class ProviderAdminService : IProviderAdminService
         }
         else
         {
-            return new List<(string, string?)> { };
+            return new Dictionary<string, string?> { };
         }
     }
 
