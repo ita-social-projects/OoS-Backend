@@ -128,6 +128,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new AddressConfiguration());
         builder.ApplyConfiguration(new ApplicationConfiguration());
         builder.ApplyConfiguration(new AverageRatingConfiguration());
+        builder.ApplyConfiguration(new BlockedProviderParentConfiguration());
         builder.ApplyConfiguration(new ChatMessageWorkshopConfiguration());
         builder.ApplyConfiguration(new ChatRoomWorkshopConfiguration());
         builder.ApplyConfiguration(new ChildConfiguration());
@@ -146,6 +147,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new ProviderAdminConfiguration());
         builder.ApplyConfiguration(new QuartzJobConfiguration());
         builder.ApplyConfiguration(new RatingConfiguration());
+        builder.ApplyConfiguration(new SocialGroupConfiguration());
         builder.ApplyConfiguration(new TeacherConfiguration());
         builder.ApplyConfiguration(new WorkshopConfiguration());
 

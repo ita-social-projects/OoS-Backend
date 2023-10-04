@@ -3,7 +3,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public interface IBlockedProviderParentRepository : ISensitiveEntityRepository<BlockedProviderParent>
+public interface IBlockedProviderParentRepository : ISensitiveEntityRepositorySoftDeleted<BlockedProviderParent>
 {
     /// <summary>
     /// Create entity BlockedProviderParent. Update dependent entities (IsBlocked = true).

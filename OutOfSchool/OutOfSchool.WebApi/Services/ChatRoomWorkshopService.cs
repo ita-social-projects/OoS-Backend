@@ -13,7 +13,7 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class ChatRoomWorkshopService : IChatRoomWorkshopService
 {
-    private readonly IEntityRepository<Guid, ChatRoomWorkshop> roomRepository;
+    private readonly IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository;
     private readonly IChatRoomWorkshopModelForChatListRepository roomWorkshopWithLastMessageRepository;
     private readonly ILogger<ChatRoomWorkshopService> logger;
     private readonly IMapper mapper;
@@ -25,7 +25,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Mapper.</param>
     public ChatRoomWorkshopService(
-        IEntityRepository<Guid, ChatRoomWorkshop> chatRoomRepository,
+        IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> chatRoomRepository,
         ILogger<ChatRoomWorkshopService> logger,
         IChatRoomWorkshopModelForChatListRepository roomWorkshopWithLastMessageRepository,
         IMapper mapper)

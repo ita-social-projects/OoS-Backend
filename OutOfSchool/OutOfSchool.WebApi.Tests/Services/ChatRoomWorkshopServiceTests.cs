@@ -34,7 +34,7 @@ public class ChatRoomWorkshopServiceTests
 
     private static ChatRoomWorkshop[] rooms;
 
-    private IEntityRepository<Guid, ChatRoomWorkshop> roomRepository;
+    private IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository;
     private Mock<IChatRoomWorkshopModelForChatListRepository> roomWithSpecialModelRepositoryMock;
     private Mock<ILogger<ChatRoomWorkshopService>> loggerMock;
     private IMapper mapper;
@@ -84,7 +84,7 @@ public class ChatRoomWorkshopServiceTests
         options = builder.Options;
         dbContext = new OutOfSchoolDbContext(options);
 
-        roomRepository = new EntityRepository<Guid, ChatRoomWorkshop>(dbContext);
+        roomRepository = new EntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>(dbContext);
         roomWithSpecialModelRepositoryMock = new Mock<IChatRoomWorkshopModelForChatListRepository>();
         loggerMock = new Mock<ILogger<ChatRoomWorkshopService>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
@@ -142,13 +142,13 @@ public class ChatRoomWorkshopServiceTests
     {
         // Arrange
         var existingId = rooms[0].Id;
-        var roomCount = dbContext.ChatRoomWorkshops.Count();
+        var roomCount = dbContext.ChatRoomWorkshops.Count(x => !x.IsDeleted);
 
         // Act
         await roomService.DeleteAsync(existingId).ConfigureAwait(false);
 
         // Assert
-        Assert.AreEqual(roomCount - 1, dbContext.ChatRoomWorkshops.Count());
+        Assert.AreEqual(roomCount - 1, dbContext.ChatRoomWorkshops.Count(x => !x.IsDeleted));
     }
 
     [Test]

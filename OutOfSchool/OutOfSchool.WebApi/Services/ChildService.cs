@@ -28,7 +28,7 @@ public class ChildService : IChildService
     private readonly IEntityRepository<Guid, Child> childRepository;
     private readonly IParentRepository parentRepository;
     private readonly IApplicationRepository applicationRepository;
-    private readonly IEntityRepository<long, SocialGroup> socialGroupRepository;
+    private readonly IEntityRepositorySoftDeleted<long, SocialGroup> socialGroupRepository;
     private readonly ILogger<ChildService> logger;
     private readonly IMapper mapper;
     private readonly IOptions<ParentConfig> parentConfig;
@@ -45,7 +45,7 @@ public class ChildService : IChildService
     public ChildService(
         IEntityRepository<Guid, Child> childRepository,
         IParentRepository parentRepository,
-        IEntityRepository<long, SocialGroup> socialGroupRepository,
+        IEntityRepositorySoftDeleted<long, SocialGroup> socialGroupRepository,
         ILogger<ChildService> logger,
         IMapper mapper,
         IApplicationRepository applicationRepository,
