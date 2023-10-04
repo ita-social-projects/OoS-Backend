@@ -15,7 +15,7 @@ public interface IProviderService
     /// </summary>
     /// <param name="providerDto">Provider entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<ProviderDto> Create(ProviderDto providerDto);
+    Task<ProviderDto> Create(ProviderCreateDto providerDto);
 
     /// <summary>
     /// Get entities from the database that match filter's parameters.

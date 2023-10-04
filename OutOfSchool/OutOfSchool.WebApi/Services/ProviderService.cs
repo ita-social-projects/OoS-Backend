@@ -123,7 +123,7 @@ public class ProviderService : IProviderService, INotificationReciever
     private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
 
     /// <inheritdoc/>
-    public async Task<ProviderDto> Create(ProviderDto providerDto)
+    public async Task<ProviderDto> Create(ProviderCreateDto providerDto)
         => await CreateProviderWithActionAfterAsync(providerDto).ConfigureAwait(false);
 
     /// <inheritdoc/>
@@ -500,7 +500,7 @@ public class ProviderService : IProviderService, INotificationReciever
         return recipientIds.Distinct();
     }
 
-    private protected async Task<ProviderDto> CreateProviderWithActionAfterAsync(ProviderDto providerDto, Func<Provider, Task> actionAfterCreation = null)
+    private protected async Task<ProviderDto> CreateProviderWithActionAfterAsync(ProviderCreateDto providerDto, Func<Provider, Task> actionAfterCreation = null)
     {
         _ = providerDto ?? throw new ArgumentNullException(nameof(providerDto));
 

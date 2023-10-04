@@ -64,7 +64,7 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
     }
 
     /// <inheritdoc cref="IProviderServiceV2" />
-    public new async Task<ProviderDto> Create(ProviderDto providerDto)
+    public new async Task<ProviderDto> Create(ProviderCreateDto providerDto)
     {
         async Task AfterCreationAction(Provider provider)
         {
