@@ -709,21 +709,17 @@ public class ProviderAdminService : IProviderAdminService
         return result;
     }
 
-    private List<(string Name, string Value)> GetTrackedUserProperties(User user)
+    private List<(string Name, string? Value)> GetTrackedUserProperties(User user)
     {
         if (user != null && changesLogConfig.TrackedProperties.TryGetValue("ProviderAdmin", out var trackedProperties))
         {
-            List<(string, string)> result = new();
+            List<(string, string?)> result = new();
             foreach (var propertyName in trackedProperties)
             {
                 var property = user.GetType().GetProperty(propertyName);
                 if (property != null)
                 {
-                    var propertyValue = property.GetValue(user)?.ToString();
-                    if (propertyValue != null)
-                    {
-                        result.Add((propertyName, propertyValue));
-                    }
+                    result.Add((propertyName, property.GetValue(user)?.ToString()));
                 }
             }
 
@@ -731,7 +727,7 @@ public class ProviderAdminService : IProviderAdminService
         }
         else
         {
-            return new List<(string, string)> { };
+            return new List<(string, string?)> { };
         }
     }
 
