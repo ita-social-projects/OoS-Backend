@@ -51,7 +51,7 @@ public class ProviderService : IProviderService, INotificationReciever
 
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
-    private readonly IEntityRepository<string, User> usersRepository;
+    private readonly IEntityRepositorySoftDeleted<string, User> usersRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProviderService"/> class.
@@ -78,7 +78,7 @@ public class ProviderService : IProviderService, INotificationReciever
     /// <param name="areaAdminService">Service for manage area admin.</param>
     public ProviderService(
         IProviderRepository providerRepository,
-        IEntityRepository<string, User> usersRepository,
+        IEntityRepositorySoftDeleted<string, User> usersRepository,
         ILogger<ProviderService> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper,

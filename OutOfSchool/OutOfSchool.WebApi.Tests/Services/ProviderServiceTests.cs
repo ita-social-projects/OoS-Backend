@@ -34,7 +34,7 @@ public class ProviderServiceTests
 
     private Mock<IProviderRepository> providersRepositoryMock;
     private Mock<IProviderAdminRepository> providerAdminRepositoryMock;
-    private Mock<IEntityRepository<string, User>> usersRepositoryMock;
+    private Mock<IEntityRepositorySoftDeleted<string, User>> usersRepositoryMock;
     private IMapper mapper;
     private Mock<INotificationService> notificationService;
     private Mock<IProviderAdminService> providerAdminService;
@@ -1248,9 +1248,9 @@ public class ProviderServiceTests
 
     #endregion
 
-    private static Mock<IEntityRepository<string, User>> CreateUsersRepositoryMock(User fakeUser)
+    private static Mock<IEntityRepositorySoftDeleted<string, User>> CreateUsersRepositoryMock(User fakeUser)
     {
-        var usersRepository = new Mock<IEntityRepository<string, User>>();
+        var usersRepository = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         usersRepository.Setup(r => r.GetAll()).Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
         usersRepository.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), string.Empty)).Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
 

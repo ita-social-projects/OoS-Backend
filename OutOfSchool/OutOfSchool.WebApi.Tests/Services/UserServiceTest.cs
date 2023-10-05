@@ -25,7 +25,7 @@ public class UserServiceTest
 {
     private DbContextOptions<OutOfSchoolDbContext> options;
     private OutOfSchoolDbContext context;
-    private IEntityRepository<string, User> repo;
+    private IEntityRepositorySoftDeleted<string, User> repo;
     private IUserService service;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<UserService>> logger;
@@ -41,7 +41,7 @@ public class UserServiceTest
         options = builder.Options;
         context = new OutOfSchoolDbContext(options);
         localizer = new Mock<IStringLocalizer<SharedResource>>();
-        repo = new EntityRepository<string, User>(context);
+        repo = new EntityRepositorySoftDeleted<string, User>(context);
         logger = new Mock<ILogger<UserService>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         service = new UserService(repo, logger.Object, localizer.Object, mapper);

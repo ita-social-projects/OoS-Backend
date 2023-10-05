@@ -358,7 +358,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.DateOfBirth, opt => opt.Ignore())
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
-        CreateMap<ShortUserDto, User>()
+        CreateSoftDeletedMap<ShortUserDto, User>()
             .ForMember(dest => dest.IsRegistered, opt => opt.Ignore())
             .ForMember(dest => dest.Role, opt => opt.Ignore())
             .ForMember(dest => dest.Email, opt => opt.Ignore())
@@ -392,7 +392,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber.Right(Constants.PhoneShortLength)))
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName));
 
-        CreateMap<BaseUserDto, User>()
+        CreateSoftDeletedMap<BaseUserDto, User>()
             .ForMember(dest => dest.CreatingTime, m => m.Ignore())
             .ForMember(dest => dest.LastLogin, m => m.Ignore())
             .ForMember(dest => dest.IsBlocked, m => m.Ignore())

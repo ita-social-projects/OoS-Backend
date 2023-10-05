@@ -17,7 +17,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
 {
     private readonly AuthorizationServerConfig authorizationServerConfig;
     private readonly IInstitutionAdminRepository institutionAdminRepository;
-    private readonly IEntityRepository<string, User> userRepository;
+    private readonly IEntityRepositorySoftDeleted<string, User> userRepository;
     private readonly IMapper mapper;
     private readonly ICurrentUserService currentUserService;
 
@@ -27,7 +27,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         IOptions<CommunicationConfig> communicationConfig,
         IInstitutionAdminRepository institutionAdminRepository,
         ILogger<MinistryAdminService> logger,
-        IEntityRepository<string, User> userRepository,
+        IEntityRepositorySoftDeleted<string, User> userRepository,
         IMapper mapper,
         ICurrentUserService currentUserService)
         : base(httpClientFactory, communicationConfig?.Value, logger)

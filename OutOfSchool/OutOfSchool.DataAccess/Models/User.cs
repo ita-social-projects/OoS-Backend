@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Identity;
 
 namespace OutOfSchool.Services.Models;
 
-public class User : IdentityUser, IKeyedEntity<string>
+public class User : IdentityUser, IKeyedEntity<string>, ISoftDeleted
 {
+    public bool IsDeleted { get; set; }
+
     [DataType(DataType.DateTime)]
     public DateTimeOffset CreatingTime { get; set; }
 

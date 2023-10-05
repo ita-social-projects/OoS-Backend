@@ -49,7 +49,7 @@ public class ProviderServiceUpdate
         var addressRepository = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
         var providerRepository = new ProviderRepository(GetContext());
         var providerAdminRepository = new Mock<IProviderAdminRepository>();
-        var userRepository = new Mock<IEntityRepository<string, User>>();
+        var userRepository = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
         var providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
         var changesLogService = new Mock<IChangesLogService>();

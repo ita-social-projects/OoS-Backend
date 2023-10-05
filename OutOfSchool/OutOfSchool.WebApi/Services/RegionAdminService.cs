@@ -14,7 +14,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
 {
     private readonly AuthorizationServerConfig authorizationServerConfig;
     private readonly IRegionAdminRepository regionAdminRepository;
-    private readonly IEntityRepository<string, User> userRepository;
+    private readonly IEntityRepositorySoftDeleted<string, User> userRepository;
     private readonly IMapper mapper;
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
@@ -25,7 +25,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         IOptions<CommunicationConfig> communicationConfig,
         IRegionAdminRepository regionAdminRepository,
         ILogger<RegionAdminService> logger,
-        IEntityRepository<string, User> userRepository,
+        IEntityRepositorySoftDeleted<string, User> userRepository,
         IMapper mapper,
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService)
