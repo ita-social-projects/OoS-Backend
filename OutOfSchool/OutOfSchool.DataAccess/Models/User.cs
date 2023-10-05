@@ -2,7 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 
 using Microsoft.AspNetCore.Identity;
-using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models;
 

@@ -6,7 +6,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-    public class AreaAdminRepository : EntityRepository<(string, long), AreaAdmin>, IAreaAdminRepository
+    public class AreaAdminRepository : EntityRepositorySoftDeleted<(string, long), AreaAdmin>, IAreaAdminRepository
     {
         private readonly OutOfSchoolDbContext db;
 
