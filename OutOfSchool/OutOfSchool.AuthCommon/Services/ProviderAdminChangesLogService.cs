@@ -4,9 +4,9 @@ namespace OutOfSchool.AuthCommon.Services;
 
 public class ProviderAdminChangesLogService : IProviderAdminChangesLogService
 {
-    private readonly IEntityRepository<long, ProviderAdminChangesLog> providerAdminChangesLogRepository;
+    private readonly IEntityAddOnlyRepository<long, ProviderAdminChangesLog> providerAdminChangesLogRepository;
 
-    public ProviderAdminChangesLogService(IEntityRepository<long, ProviderAdminChangesLog> providerAdminChangesLogRepository)
+    public ProviderAdminChangesLogService(IEntityAddOnlyRepository<long, ProviderAdminChangesLog> providerAdminChangesLogRepository)
     {
         this.providerAdminChangesLogRepository = providerAdminChangesLogRepository;
     }
