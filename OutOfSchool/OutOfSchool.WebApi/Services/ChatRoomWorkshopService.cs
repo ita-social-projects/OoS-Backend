@@ -121,6 +121,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     }
 
     /// <inheritdoc/>
+    [Obsolete("Was not used")]
     public async Task<IEnumerable<ChatRoomWorkshopDto>> GetByParentIdProviderIdAsync(Guid parentId, Guid providerId)
     {
         logger.LogDebug("Process of getting ChatRooms with parentId:{parentId} and providerId:{providerId} was started.", parentId, providerId);
@@ -155,6 +156,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     }
 
     /// <inheritdoc/>
+    [Obsolete("Was not used")]
     public async Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetWithMessagesByParentIdProviderIdAsync(Guid parentId, Guid providerId)
     {
         logger.LogDebug("Process of getting ChatRoomWorkshopDtoWithLastMessage with parentId:{parentId} and providerId:{providerId} was started.", parentId, providerId);
@@ -188,6 +190,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     }
 
     /// <inheritdoc/>
+    [Obsolete("Become unused")]
     public async Task<ChatRoomWorkshopDto> GetByParentIdWorkshopIdAsync(Guid parentId, Guid workshopId)
     {
         logger.LogDebug("Process of getting ChatRoom with parentId:{parentId} and workshopId:{workshopId} was started.", parentId, workshopId);
@@ -222,6 +225,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     }
 
     /// <inheritdoc/>
+    [Obsolete("Was not used")]
     public async Task<ChatRoomWorkshopDtoWithLastMessage> GetWithMessagesByParentIdWorkshopIdAsync(Guid parentId, Guid workshopId)
     {
         logger.LogDebug(
@@ -298,6 +302,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     }
 
     /// <inheritdoc/>
+    [Obsolete("Unused")]
     public async Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetByWorkshopIdAsync(Guid workshopId)
     {
         logger.LogDebug($"Process of getting  {nameof(ChatRoomWorkshopDtoWithLastMessage)}(s/es) with {nameof(workshopId)}:{workshopId} was started.");
@@ -318,6 +323,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     }
 
     /// <inheritdoc/>
+    [Obsolete("Unused")]
     public async Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetByWorkshopIdsAsync(IEnumerable<Guid> workshopIds)
     {
         string workshopIdsStr = $"{nameof(workshopIds)}:{string.Join(", ", workshopIds)}";

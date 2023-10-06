@@ -82,6 +82,7 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
     }
 
     /// <inheritdoc/>
+    [Obsolete("Unused")]
     public async Task<List<ChatMessageWorkshopDto>> GetMessagesForChatRoomAsync(Guid chatRoomId, OffsetFilter offsetFilter)
     {
         try
