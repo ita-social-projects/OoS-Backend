@@ -163,9 +163,11 @@ public class ChatWorkshopHubTests
 
         var invalidParentId = Guid.NewGuid();
 
-        var chatNewMessage = $"{{'workshopId':'{Guid.NewGuid()}', 'parentId':'{invalidParentId}', 'text':'hi', 'senderRoleIsProvider':false}}";
+        var chatNewMessage = $"{{'workshopId':'{Guid.NewGuid()}', 'parentId':'{invalidParentId}', 'chatRoomId':'{Guid.NewGuid()}', 'text':'hi', 'senderRoleIsProvider':false}}";
 
         validationServiceMock.Setup(x => x.UserIsParentOwnerAsync(UserId, invalidParentId)).ReturnsAsync(false);
+
+        roomServiceMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new ChatRoomWorkshopDto());
 
         clientsMock.Setup(clients => clients.Caller).Returns(clientProxyMock.Object);
 
