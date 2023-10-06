@@ -42,7 +42,10 @@ public static class AuthCommonServiceExtensions
             });
         services.AddRazorPages();
         services.AddAutoMapper(typeof(MappingProfile));
+        
         services.AddTransient(typeof(IEntityRepository<,>), typeof(EntityRepository<,>));
+        services.AddTransient(typeof(IEntityRepositorySoftDeleted<,>), typeof(EntityRepositorySoftDeleted<,>));
+
         services.AddTransient<IParentRepository, ParentRepository>();
         services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
         services.AddTransient<IProviderAdminService, ProviderAdminService>();

@@ -15,7 +15,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
 {
     private readonly AuthorizationServerConfig authorizationServerConfig;
     private readonly IAreaAdminRepository areaAdminRepository;
-    private readonly IEntityRepository<string, User> userRepository;
+    private readonly IEntityRepositorySoftDeleted<string, User> userRepository;
     private readonly IMapper mapper;
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
@@ -32,7 +32,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         IOptions<CommunicationConfig> communicationConfig,
         IAreaAdminRepository areaAdminRepository,
         ILogger<AreaAdminService> logger,
-        IEntityRepository<string, User> userRepository,
+        IEntityRepositorySoftDeleted<string, User> userRepository,
         IMapper mapper,
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,

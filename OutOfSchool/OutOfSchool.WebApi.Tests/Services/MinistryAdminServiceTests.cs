@@ -30,7 +30,7 @@ public class MinistryAdminServiceTests
     private Mock<IOptions<AuthorizationServerConfig>> identityServerConfig;
     private Mock<IOptions<CommunicationConfig>> communicationConfig;
     private Mock<IInstitutionAdminRepository> institutionAdminRepositoryMock;
-    private Mock<IEntityRepository<string, User>> userRepositoryMock;
+    private Mock<IEntityRepositorySoftDeleted<string, User>> userRepositoryMock;
     private IMapper mapper;
     private Mock<ICurrentUserService> currentUserServiceMock;
 
@@ -64,7 +64,7 @@ public class MinistryAdminServiceTests
         institutionAdminRepositoryMock = new Mock<IInstitutionAdminRepository>();
         var logger = new Mock<ILogger<MinistryAdminService>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
-        userRepositoryMock = new Mock<IEntityRepository<string, User>>();
+        userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
 
         ministryAdminService = new MinistryAdminService(

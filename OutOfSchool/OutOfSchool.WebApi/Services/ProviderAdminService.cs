@@ -17,7 +17,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
 
     private readonly AuthorizationServerConfig authorizationServerConfig;
     private readonly ProviderAdminConfig providerAdminConfig;
-    private readonly IEntityRepository<string, User> userRepository;
+    private readonly IEntityRepositorySoftDeleted<string, User> userRepository;
     private readonly IProviderAdminRepository providerAdminRepository;
     private readonly IMapper mapper;
     private readonly IProviderAdminOperationsService providerAdminOperationsService;
@@ -30,7 +30,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         IOptions<ProviderAdminConfig> providerAdminConfig,
         IOptions<CommunicationConfig> communicationConfig,
         IProviderAdminRepository providerAdminRepository,
-        IEntityRepository<string, User> userRepository,
+        IEntityRepositorySoftDeleted<string, User> userRepository,
         IMapper mapper,
         ILogger<ProviderAdminService> logger,
         IProviderAdminOperationsService providerAdminOperationsService,

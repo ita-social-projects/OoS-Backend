@@ -6,7 +6,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public class InstitutionAdminRepository : EntityRepository<(string, Guid), InstitutionAdmin>, IInstitutionAdminRepository
+public class InstitutionAdminRepository : EntityRepositorySoftDeleted<(string, Guid), InstitutionAdmin>, IInstitutionAdminRepository
 {
     private readonly OutOfSchoolDbContext db;
 

@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace OutOfSchool.Services.Models.Configurations;
 
-internal class WorkshopDescriptionItemConfiguration : IEntityTypeConfiguration<WorkshopDescriptionItem>
+internal class UserConfiguration : IEntityTypeConfiguration<User>
 {
-    public void Configure(EntityTypeBuilder<WorkshopDescriptionItem> builder)
+    public void Configure(EntityTypeBuilder<User> builder)
     {
         builder.HasIndex(x => x.IsDeleted);
 

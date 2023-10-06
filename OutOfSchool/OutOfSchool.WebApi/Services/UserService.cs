@@ -1,16 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
+﻿using System.Data;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -20,7 +11,7 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class UserService : IUserService
 {
-    private readonly IEntityRepository<string, User> repository;
+    private readonly IEntityRepositorySoftDeleted<string, User> repository;
     private readonly ILogger<UserService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
@@ -33,8 +24,7 @@ public class UserService : IUserService
     /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
     public UserService(
-        IEntityRepository<string,
-        User> repository,
+        IEntityRepositorySoftDeleted<string, User> repository,
         ILogger<UserService> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper)

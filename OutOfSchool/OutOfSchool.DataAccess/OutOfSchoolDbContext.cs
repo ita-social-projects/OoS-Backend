@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
@@ -127,6 +128,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new AchievementTypeConfiguration());
         builder.ApplyConfiguration(new AddressConfiguration());
         builder.ApplyConfiguration(new ApplicationConfiguration());
+        builder.ApplyConfiguration(new AreaAdminConfiguration());
         builder.ApplyConfiguration(new AverageRatingConfiguration());
         builder.ApplyConfiguration(new BlockedProviderParentConfiguration());
         builder.ApplyConfiguration(new ChatMessageWorkshopConfiguration());
@@ -138,6 +140,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new EntityImagesConfiguration<Provider>());
         builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
         builder.ApplyConfiguration(new FavoriteConfiguration());
+        builder.ApplyConfiguration(new InstitutionAdminConfiguration());
         builder.ApplyConfiguration(new InstitutionConfiguration());
         builder.ApplyConfiguration(new InstitutionFieldDescriptionConfiguration());
         builder.ApplyConfiguration(new InstitutionHierarchyConfiguration());
@@ -150,12 +153,12 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new ProviderSectionItemConfiguration());
         builder.ApplyConfiguration(new QuartzJobConfiguration());
         builder.ApplyConfiguration(new RatingConfiguration());
+        builder.ApplyConfiguration(new RegionAdminConfiguration());
         builder.ApplyConfiguration(new SocialGroupConfiguration());
         builder.ApplyConfiguration(new TeacherConfiguration());
+        builder.ApplyConfiguration(new UserConfiguration());
         builder.ApplyConfiguration(new WorkshopConfiguration());
         builder.ApplyConfiguration(new WorkshopDescriptionItemConfiguration());
-
-        ApplySoftDelete(builder);
 
         builder.Seed();
         builder.UpdateIdentityTables();

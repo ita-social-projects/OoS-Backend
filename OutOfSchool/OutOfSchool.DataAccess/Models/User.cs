@@ -2,12 +2,13 @@
 using System.ComponentModel.DataAnnotations;
 
 using Microsoft.AspNetCore.Identity;
-using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models;
 
-public class User : IdentityUser, IKeyedEntity<string>
+public class User : IdentityUser, IKeyedEntity<string>, ISoftDeleted
 {
+    public bool IsDeleted { get; set; }
+
     [DataType(DataType.DateTime)]
     public DateTimeOffset CreatingTime { get; set; }
 

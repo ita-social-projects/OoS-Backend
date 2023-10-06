@@ -39,11 +39,4 @@ public partial class OutOfSchoolDbContext
             }
         }
     }
-
-    private void ApplySoftDelete(ModelBuilder builder)
-    {
-        builder
-            .ApplySoftDelete<User>()
-            .ApplySoftDelete<RegionAdmin>();
-    }
 }

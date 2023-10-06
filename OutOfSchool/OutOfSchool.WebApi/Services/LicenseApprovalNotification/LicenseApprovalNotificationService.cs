@@ -1,7 +1,4 @@
-﻿using System.Drawing.Text;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Repository;
-using Microsoft.AspNetCore.Builder;
+﻿using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Services.LicenseApprovalNotification;
 
@@ -9,11 +6,11 @@ public class LicenseApprovalNotificationService : ILicenseApprovalNotificationSe
 {
     private readonly INotificationService notificationService;
     private readonly ILogger<LicenseApprovalNotificationService> logger;
-    private readonly IEntityRepository<string, User> userRepository;
+    private readonly IEntityRepositorySoftDeleted<string, User> userRepository;
 
     public LicenseApprovalNotificationService(INotificationService notificationService,
                                               ILogger<LicenseApprovalNotificationService> logger,
-                                              IEntityRepository<string, User> userRepository)
+                                              IEntityRepositorySoftDeleted<string, User> userRepository)
     {
         this.notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));

@@ -1,18 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.AverageRatings;
-using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -20,7 +10,7 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
 {
     public ProviderServiceV2(
         IProviderRepository providerRepository,
-        IEntityRepository<string, User> usersRepository,
+        IEntityRepositorySoftDeleted<string, User> usersRepository,
         ILogger<ProviderServiceV2> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper,
