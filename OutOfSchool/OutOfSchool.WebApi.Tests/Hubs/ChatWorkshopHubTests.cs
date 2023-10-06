@@ -230,4 +230,22 @@ public class ChatWorkshopHubTests
         messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopCreateDto>(), It.IsAny<Role>()), Times.Once);
         clientsMock.Verify(clients => clients.Group(It.IsAny<string>()), Times.Once);
     }
+
+    [Test]
+    public async Task SendMessageToOthersInGroup_WhenChatRoomDoesNotExist_ShouldWriteMessageToCallerWithException()
+    {
+        // Arrange
+        var chatNewMessage = $"{{'workshopId':'{Guid.NewGuid()}', 'parentId':'{Guid.NewGuid()}', 'chatRoomId':'{Guid.NewGuid()}', 'text':'hi', 'senderRoleIsProvider':false}}";
+
+        roomServiceMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(null as ChatRoomWorkshopDto);
+
+        clientsMock.Setup(clients => clients.Caller).Returns(clientProxyMock.Object);
+
+        // Act
+        await chatHub.SendMessageToOthersInGroupAsync(chatNewMessage).ConfigureAwait(false);
+
+        // Assert
+        clientsMock.Verify(clients => clients.Caller, Times.Once);
+        clientsMock.Verify(clients => clients.Group(It.IsAny<string>()), Times.Never);
+    }
 }
