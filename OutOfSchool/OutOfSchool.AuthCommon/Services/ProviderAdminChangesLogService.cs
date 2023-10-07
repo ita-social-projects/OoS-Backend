@@ -25,7 +25,6 @@ public class ProviderAdminChangesLogService : IProviderAdminChangesLogService
         {
             ProviderAdminUserId = entity.UserId,
             ProviderId = entity.ProviderId,
-            ManagedWorkshopId = null,
             OperationType = operationType,
             OperationDate = DateTime.Now,
             UserId = userId,
