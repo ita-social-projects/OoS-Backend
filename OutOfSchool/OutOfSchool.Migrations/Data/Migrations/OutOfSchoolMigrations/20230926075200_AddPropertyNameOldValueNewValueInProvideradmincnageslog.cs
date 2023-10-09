@@ -30,4 +30,16 @@ public partial class AddPropertyNameOldValueNewValueInProvideradmincnageslog : M
             nullable: true)
             .Annotation("MySql:CharSet", "utf8mb4");
     }
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropColumn(
+            name: "PropertyName",
+            table: "ProviderAdminChangesLog");
+        migrationBuilder.DropColumn(
+            name: "OldValue",
+            table: "ProviderAdminChangesLog");
+        migrationBuilder.DropColumn(
+            name: "NewValue",
+            table: "ProviderAdminChangesLog");
+    }
 }
