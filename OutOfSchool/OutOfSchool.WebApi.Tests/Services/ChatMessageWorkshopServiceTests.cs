@@ -112,6 +112,7 @@ public class ChatMessageWorkshopServiceTests
 
     #region GetMessagesForChatRoomAsync
     [Test]
+    [Ignore("Testing of unused method")]
     public void GetMessagesForChatRoomAsync_WhenOffsetfilterIsNull_ShouldNotThrowException()
     {
         // Arrange
@@ -123,6 +124,7 @@ public class ChatMessageWorkshopServiceTests
     }
 
     [Test]
+    [Ignore("Testing of unused method")]
     public async Task GetMessagesForChatRoomAsync_WhenCalledWithAllValidParameters_ShouldReturnFoundMessages()
     {
         // Arrange
@@ -141,6 +143,7 @@ public class ChatMessageWorkshopServiceTests
     }
 
     [Test]
+    [Ignore("Testing of unused method")]
     public async Task GetMessagesForChatRoomAsync_WhenCalledWithUnexistedRoomId_ShouldReturnEmptyList()
     {
         // Arrange

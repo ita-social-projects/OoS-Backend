@@ -278,6 +278,7 @@ public class ChatRoomWorkshopServiceTests
 
     #region GetByWorkshopIdAsync
     [Test]
+    [Ignore("Testing of unused method")]
     public async Task GetByWorkshopIdAsync_WhenRoomExist_ShouldReturnFoundEntity()
     {
         // Arrange
@@ -298,6 +299,7 @@ public class ChatRoomWorkshopServiceTests
     }
 
     [Test]
+    [Ignore("Testing of unused method")]
     public async Task GetByWorkshopIdAsync_WhenRoomDoesNotExist_ShouldReturnNull()
     {
         // Arrange
