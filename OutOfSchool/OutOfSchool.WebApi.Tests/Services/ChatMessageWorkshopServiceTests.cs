@@ -196,6 +196,19 @@ public class ChatMessageWorkshopServiceTests
             Assert.AreEqual(existingChatRoomId, result.FirstOrDefault()?.ChatRoomId);
         });
     }
+
+    [Test]
+    public async Task GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync_WhenCalledWithInValidParameters_ShouldReturnEmptyList()
+    {
+        // Arrange
+        var invalidChatRoomId = Guid.NewGuid();
+
+        // Act
+        var result = await messageService.GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(invalidChatRoomId, new OffsetFilter(), Role.Provider).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsEmpty(result);
+    }
     #endregion
 
     private void SeedDatabase()
