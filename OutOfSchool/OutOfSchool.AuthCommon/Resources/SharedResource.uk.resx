@@ -133,7 +133,7 @@
     <value>Повторити пароль</value>
   </data>
   <data name="Email" xml:space="preserve">
-    <value>Емейл</value>
+    <value>Імейл</value>
   </data>
   <data name="Entrance to Extracurricular activities" xml:space="preserve">
     <value>Вхід в Позашкілля</value>
@@ -205,22 +205,22 @@
     <value>Зверніть увагу, що після зміни паролю ви не матимете змоги увійти у систему зі старим паролем</value>
   </data>
   <data name="Old email" xml:space="preserve">
-    <value>Старий емейл</value>
+    <value>Старий імейл</value>
   </data>
   <data name="New email" xml:space="preserve">
-    <value>Новий емейл</value>
+    <value>Новий імейл</value>
   </data>
   <data name="Change email" xml:space="preserve">
-    <value>Змінити емейл</value>
+    <value>Змінити імейл</value>
   </data>
   <data name="Enter new email message" xml:space="preserve">
-    <value>Введіть ваш новий емейл на який буде надіслана інструкція по зміні емейлу</value>
+    <value>Введіть ваш новий імейл на який буде надіслана інструкція по зміні імейлу</value>
   </data>
   <data name="Change email alert" xml:space="preserve">
-    <value>Зверніть увагу, що після зміни емейлу ви не матимете змоги увійти у систему зі старим емейлом</value>
+    <value>Зверніть увагу, що після зміни імейлу ви не матимете змоги увійти у систему зі старим імейлом</value>
   </data>
   <data name="Confirm email change" xml:space="preserve">
-    <value>Підтвердіть зміну емейлу</value>
+    <value>Підтвердіть зміну імейлу</value>
     <comment>Confirm email change</comment>
   </data>
   <data name="Change password" xml:space="preserve">
@@ -242,11 +242,11 @@
     <value>Ваш пароль було змінено</value>
   </data>
   <data name="Enter email to change password" xml:space="preserve">
-    <value>Введіть ваш емейл на який буде надіслано інструкцію для скидання пароля</value>
+    <value>Введіть ваш імейл на який буде надіслано інструкцію для скидання пароля</value>
   </data>
   <data name="Check your email for instructions" xml:space="preserve">
-    <value>Інструкція з відновлення паролю була надіслана на ваш емейл.
-Зайдіть на емейл і виконайте дії вказані в листі.</value>
+    <value>Інструкція з відновлення паролю була надіслана на ваш імейл.
+Зайдіть на імейл і виконайте дії вказані в листі.</value>
   </data>
   <data name="Reset password confirmation" xml:space="preserve">
     <value>Підтвердження зміни паролю</value>
@@ -261,7 +261,7 @@
     <value>Забули пароль?</value>
   </data>
   <data name="Confirm email" xml:space="preserve">
-    <value>Підтвердження емейлу</value>
+    <value>Підтвердження імейлу</value>
   </data>
   <data name="Error! Something happened on the server!" xml:space="preserve">
     <value>Помилка! Щось сталося на сервері!</value>
@@ -318,7 +318,7 @@
     <value>Зберегти</value>
   </data>
   <data name="Change email {0} sent" xml:space="preserve">
-    <value>Інструкція по зміні емейлу була надіслана на {0}. Зайдіть на емейл і виконайте дії вказані в листі.</value>
+    <value>Інструкція по зміні імейлу була надіслана на {0}. Зайдіть на імейл і виконайте дії вказані в листі.</value>
   </data>
   <data name="Cancel" xml:space="preserve">
     <value>Скасувати</value>
@@ -370,10 +370,10 @@ Login: {0}
     <value>Token не пройшов перевірку</value>
   </data>
   <data name="Confirm email {0} sent" xml:space="preserve">
-    <value>Інструкція підтвердження емейлу була надіслана на {0}. Зайдіть на емейл і виконайте дії вказані в листі.</value>
+    <value>Інструкція підтвердження імейлу була надіслана на {0}. Зайдіть на імейл і виконайте дії вказані в листі.</value>
   </data>
   <data name="Enter your email to send password recovery instructions" xml:space="preserve">
-    <value>Введіть ваш емейл на який буде надіслана інструкція по відновленню паролю</value>
+    <value>Введіть ваш імейл на який буде надіслана інструкція по відновленню паролю</value>
   </data>
   <data name="Date of birth" xml:space="preserve">
     <value>Дата народження</value>
@@ -398,7 +398,8 @@ Login: {0}
   </data>
   <data name="Check the entered data. This field DateOfBirth is required." xml:space="preserve">
     <value>Перевірте введені дані. Це поле є обов'язковим.</value>
+  </data>
   <data name="Remember me?" xml:space="preserve">
     <value>Запам'ятати мене?</value>
-  </data></data>
+  </data>
 </root>
