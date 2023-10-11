@@ -300,7 +300,7 @@ public class ApplicationServiceTests
     }
 
     [Test]
-    public void CreateApplication_WhenLimitIsExceeded_ShouldThrowArgumentException()
+    public async Task CreateApplication_WhenLimitIsExceeded_ShouldThrowArgumentException()
     {
         // Arrange
         var application = new ApplicationCreate()
@@ -308,8 +308,25 @@ public class ApplicationServiceTests
             WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
         };
 
-        // Act and Assert
-        service.Invoking(w => w.Create(application)).Should().ThrowAsync<ArgumentException>();
+        currentUserServiceMock.Setup(x => x.UserHasRights(It.IsAny<ParentRights>())).Returns(() => Task.FromResult(true));
+
+        workshopServiceCombinerMock.Setup(x => x.GetById(application.WorkshopId)).Returns(Task.FromResult(new WorkshopDto()));
+
+        var applications = new List<Application>
+        {
+            new Application(),
+            new Application(),
+            new Application(),
+        };
+
+        applicationRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Application, bool>>>(), It.IsAny<string>())).ReturnsAsync(applications.AsEnumerable());
+
+        // Act
+        var result = await service.Create(application);
+
+        // Assert
+        Assert.That(result.Model is null);
+        Assert.That(result.Description != string.Empty);
     }
 
     [Test]
