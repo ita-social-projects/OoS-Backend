@@ -9,7 +9,6 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.AuthCommon.Services;
 
@@ -21,11 +20,13 @@ public class ProviderAdminService : IProviderAdminService
     private readonly IProviderAdminRepository providerAdminRepository;
     private readonly GRPCConfig gPRCConfig;
     private readonly AngularClientScopeExternalUrisConfig externalUrisConfig;
+    private readonly ChangesLogConfig changesLogConfig;
 
     private readonly UserManager<User> userManager;
     private readonly OutOfSchoolDbContext context;
     private readonly IRazorViewToStringRenderer renderer;
     private readonly IProviderAdminChangesLogService providerAdminChangesLogService;
+    private readonly string[] trackedProperties;
 
     public ProviderAdminService(
         IMapper mapper,
@@ -37,7 +38,8 @@ public class ProviderAdminService : IProviderAdminService
         IRazorViewToStringRenderer renderer,
         IProviderAdminChangesLogService providerAdminChangesLogService,
         IOptions<GRPCConfig> gRPCConfig,
-        IOptions<AngularClientScopeExternalUrisConfig> externalUrisConfig)
+        IOptions<AngularClientScopeExternalUrisConfig> externalUrisConfig,
+        IOptions<ChangesLogConfig> changesLogConfig)
     {
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
@@ -50,6 +52,11 @@ public class ProviderAdminService : IProviderAdminService
         this.gPRCConfig = gRPCConfig?.Value ?? throw new ArgumentNullException(nameof(gRPCConfig));
         this.externalUrisConfig =
             externalUrisConfig?.Value ?? throw new ArgumentNullException(nameof(externalUrisConfig));
+        this.changesLogConfig = changesLogConfig?.Value ?? throw new ArgumentNullException(nameof(changesLogConfig));
+        this.trackedProperties =
+            this.changesLogConfig.TrackedProperties.TryGetValue("ProviderAdmin", out var trackedProperties)
+            ? trackedProperties
+            : Array.Empty<string>();
     }
 
     public async Task<ResponseDto> CreateProviderAdminAsync(
@@ -149,8 +156,31 @@ public class ProviderAdminService : IProviderAdminService
                 await providerAdminRepository.Create(providerAdmin)
                     .ConfigureAwait(false);
 
-                await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Create)
+                var newPropertiesValues = GetTrackedUserProperties(user);
+
+                foreach (var newProperty in newPropertiesValues)
+                {
+                    await providerAdminChangesLogService.SaveChangesLogAsync(
+                        providerAdmin,
+                        userId,
+                        OperationType.Create,
+                        newProperty.Key,
+                        string.Empty,
+                        newProperty.Value)
                     .ConfigureAwait(false);
+                }
+
+                foreach (var workshop in providerAdmin.ManagedWorkshops)
+                {
+                    await providerAdminChangesLogService.SaveChangesLogAsync(
+                        providerAdmin,
+                        userId,
+                        OperationType.Create,
+                        "WorkshopId",
+                        string.Empty,
+                        workshop.Id.ToString())
+                    .ConfigureAwait(false);
+                }
 
                 logger.LogInformation(
                     "ProviderAdmin(id):{Id} was successfully created by User(id): {UserId}",
@@ -237,11 +267,15 @@ public class ProviderAdminService : IProviderAdminService
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
             try
             {
+                var oldPropertiesValues = GetTrackedUserProperties(user);
+
                 user.FirstName = updateDto.FirstName;
                 user.LastName = updateDto.LastName;
                 user.MiddleName = updateDto.MiddleName;
                 user.Email = updateDto.Email;
                 user.PhoneNumber = Constants.PhonePrefix + updateDto.PhoneNumber;
+
+                var newPropertiesValues = GetTrackedUserProperties(user);
 
                 var updateResult = await userManager.UpdateAsync(user);
 
@@ -277,14 +311,56 @@ public class ProviderAdminService : IProviderAdminService
                     return response;
                 }
 
+                var oldWorkshopsIds = providerAdmin.ManagedWorkshops.Select(x => x.Id).ToList();
+
                 providerAdmin.ManagedWorkshops = !providerAdmin.IsDeputy
                     ? context.Workshops.Where(w => updateDto.ManagedWorkshopIds.Contains(w.Id)).ToList()
                     : new List<Workshop>();
 
                 await providerAdminRepository.Update(providerAdmin).ConfigureAwait(false);
+                var newWorkshopsIds = providerAdmin.ManagedWorkshops.Select(x => x.Id).ToList();
+                var addedWorkshopsIds = newWorkshopsIds.Except(oldWorkshopsIds).ToList();
+                var removedWorkshopsIds = oldWorkshopsIds.Except(newWorkshopsIds).ToList();
 
-                await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Update)
-                    .ConfigureAwait(false);
+                foreach (var addedId in addedWorkshopsIds)
+                {
+                    await providerAdminChangesLogService.SaveChangesLogAsync(
+                        providerAdmin,
+                        userId,
+                        OperationType.Update,
+                        "WorkshopId",
+                        string.Empty,
+                        addedId.ToString())
+                        .ConfigureAwait(false);
+                }
+
+                foreach (var removedId in removedWorkshopsIds)
+                {
+                    await providerAdminChangesLogService.SaveChangesLogAsync(
+                        providerAdmin,
+                        userId,
+                        OperationType.Update,
+                        "WorkshopId",
+                        removedId.ToString(),
+                        string.Empty)
+                        .ConfigureAwait(false);
+                }
+
+                foreach (var newProperty in newPropertiesValues)
+                {
+                    oldPropertiesValues.TryGetValue(newProperty.Key, out var oldValue);
+                    if (newProperty.Value != oldValue)
+                    {
+                        await providerAdminChangesLogService.SaveChangesLogAsync(
+                            providerAdmin,
+                            userId,
+                            OperationType.Update,
+                            newProperty.Key,
+                            oldValue,
+                            newProperty.Value)
+                            .ConfigureAwait(false);
+                    }
+                }
 
                 await transaction.CommitAsync().ConfigureAwait(false);
 
@@ -362,8 +438,19 @@ public class ProviderAdminService : IProviderAdminService
                     return response;
                 }
 
-                await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Delete)
+                var oldPropertiesValues = GetTrackedUserProperties(user);
+
+                foreach (var oldProperty in oldPropertiesValues)
+                {
+                    await providerAdminChangesLogService.SaveChangesLogAsync(
+                        providerAdmin,
+                        userId,
+                        OperationType.Delete,
+                        oldProperty.Key,
+                        oldProperty.Value,
+                        string.Empty)
                     .ConfigureAwait(false);
+                }
 
                 await transaction.CommitAsync();
                 response.IsSuccess = true;
@@ -418,6 +505,8 @@ public class ProviderAdminService : IProviderAdminService
 
         var user = await userManager.FindByIdAsync(providerAdminId);
 
+        var oldUserIsBlockedValue = user.IsBlocked;
+
         var executionStrategy = context.Database.CreateExecutionStrategy();
         return await executionStrategy.Execute(BlockProviderAdminOperation).ConfigureAwait(false);
 
@@ -427,6 +516,7 @@ public class ProviderAdminService : IProviderAdminService
             try
             {
                 user.IsBlocked = isBlocked;
+                var newUserIsBlockedValue = user.IsBlocked;
                 var updateResult = await userManager.UpdateAsync(user);
 
                 if (!updateResult.Succeeded)
@@ -461,8 +551,14 @@ public class ProviderAdminService : IProviderAdminService
                     return response;
                 }
 
-                await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Block)
-                    .ConfigureAwait(false);
+                await providerAdminChangesLogService.SaveChangesLogAsync(
+                    providerAdmin,
+                    userId,
+                    OperationType.Block,
+                    "IsBlocked",
+                    oldUserIsBlockedValue ? "1" : "0",
+                    newUserIsBlockedValue ? "1" : "0")
+                .ConfigureAwait(false);
 
                 await transaction.CommitAsync().ConfigureAwait(false);
 
@@ -580,8 +676,14 @@ public class ProviderAdminService : IProviderAdminService
 
                 await this.SendInvitationEmail(user, url, password);
 
-                await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Update)
-                    .ConfigureAwait(false);
+                await providerAdminChangesLogService.SaveChangesLogAsync(
+                    providerAdmin,
+                    userId,
+                    OperationType.Reinvite,
+                    string.Empty,
+                    string.Empty,
+                    string.Empty)
+                .ConfigureAwait(false);
 
                 await transaction.CommitAsync();
                 response.IsSuccess = true;
@@ -609,6 +711,23 @@ public class ProviderAdminService : IProviderAdminService
                 return response;
             }
         });
+        return result;
+    }
+
+    private Dictionary<string, string?> GetTrackedUserProperties(User user)
+    {
+        if (user == null || !trackedProperties.Any())
+        {
+            return new Dictionary<string, string?> { };
+        }
+
+        Dictionary<string, string?> result = new();
+        foreach (var propertyName in trackedProperties)
+        {
+            var property = user.GetType().GetProperty(propertyName);
+            result.Add(propertyName, property?.GetValue(user)?.ToString());
+        }
+
         return result;
     }
 

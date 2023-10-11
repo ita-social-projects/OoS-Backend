@@ -278,12 +278,15 @@ public class ChangesLogService : IChangesLogService
                 ProviderAdminFullName = $"{x.ProviderAdminUser.LastName} {x.ProviderAdminUser.FirstName} {x.ProviderAdminUser.MiddleName}".TrimEnd(),
                 ProviderTitle = x.Provider.FullTitle,
                 WorkshopTitle = x.ManagedWorkshop.Title,
-                WorkshopCity = x.ManagedWorkshop.Address.CATOTTG.Name,
+                WorkshopCity = x.Provider.LegalAddress.CATOTTG.Name,
                 OperationType = x.OperationType,
                 OperationDate = x.OperationDate,
                 User = mapper.Map<ShortUserDto>(x.User),
                 InstitutionTitle = x.Provider.Institution == null
                     ? null : x.Provider.Institution.Title,
+                PropertyName = x.PropertyName,
+                OldValue = x.OldValue,
+                NewValue = x.NewValue,
             })
             .IgnoreQueryFilters();
 

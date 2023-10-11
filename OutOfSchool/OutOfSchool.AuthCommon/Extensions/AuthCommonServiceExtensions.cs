@@ -33,6 +33,8 @@ public static class AuthCommonServiceExtensions
             mailConfig.SendGridKey,
             builder => builder.Bind(config.GetSection(EmailOptions.SectionName)));
 
+        services.Configure<ChangesLogConfig>(config.GetSection(ChangesLogConfig.Name));
+
         services.AddControllersWithViews()
             .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
             .AddDataAnnotationsLocalization(options =>
@@ -42,7 +44,7 @@ public static class AuthCommonServiceExtensions
             });
         services.AddRazorPages();
         services.AddAutoMapper(typeof(MappingProfile));
-        
+        services.AddTransient(typeof(IEntityAddOnlyRepository<,>), typeof(EntityRepository<,>));
         services.AddTransient(typeof(IEntityRepository<,>), typeof(EntityRepository<,>));
         services.AddTransient(typeof(IEntityRepositorySoftDeleted<,>), typeof(EntityRepositorySoftDeleted<,>));
 
