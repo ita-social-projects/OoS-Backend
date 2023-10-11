@@ -59,11 +59,10 @@ public class WorkshopBaseDto : IValidatableObject
 
     [Column(TypeName = "decimal(18,2)")]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
-    public decimal Price { get; set; } = default;
+    public decimal? Price { get; set; } = default;
 
-    [Required]
     [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
-    public PayRateType PayRate { get; set; } = PayRateType.Classes;
+    public PayRateType? PayRate { get; set; } = PayRateType.Classes;
 
     public uint AvailableSeats { get; set; } = uint.MaxValue;
 
