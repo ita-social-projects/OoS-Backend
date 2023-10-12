@@ -406,6 +406,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         await currentUserService.UserHasRights(
             new ParentRights(application.ParentId),
+            new ProviderRights(application.Workshop.ProviderId),
             new ProviderAdminWorkshopRights(application.Workshop.ProviderId, application.Workshop.Id));
 
         return mapper.Map<ApplicationDto>(application);

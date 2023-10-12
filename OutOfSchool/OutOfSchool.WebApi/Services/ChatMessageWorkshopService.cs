@@ -55,9 +55,6 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
         {
             var userRoleIsProvider = userRole != Role.Parent;
 
-            // find or create new chat room and then set it's Id to the Message model
-            var chatRoomDto = await roomService.CreateOrReturnExistingAsync(chatMessageCreateDto.WorkshopId, chatMessageCreateDto.ParentId).ConfigureAwait(false);
-
             // create new dto object that will be saved to the database
             var chatMessageDtoThatWillBeSaved = new ChatMessageWorkshop()
             {
@@ -65,12 +62,17 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
                 Text = chatMessageCreateDto.Text,
                 CreatedDateTime = DateTimeOffset.UtcNow,
                 ReadDateTime = null,
-                ChatRoomId = chatRoomDto.Id,
+                ChatRoomId = chatMessageCreateDto.ChatRoomId,
             };
 
             var chatMessage = await messageRepository.Create(chatMessageDtoThatWillBeSaved).ConfigureAwait(false);
             logger.LogDebug($"{nameof(ChatMessageWorkshop)} id:{chatMessage.Id} was saved to DB.");
             return mapper.Map<ChatMessageWorkshopDto>(chatMessage);
+        }
+        catch (ArgumentNullException exception)
+        {
+            logger.LogError($"{nameof(ChatRoomWorkshopDto)} not exist. Exception: {exception.Message}");
+            throw;
         }
         catch (DbUpdateException exception)
         {
@@ -80,6 +82,7 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
     }
 
     /// <inheritdoc/>
+    [Obsolete("Unused")]
     public async Task<List<ChatMessageWorkshopDto>> GetMessagesForChatRoomAsync(Guid chatRoomId, OffsetFilter offsetFilter)
     {
         try

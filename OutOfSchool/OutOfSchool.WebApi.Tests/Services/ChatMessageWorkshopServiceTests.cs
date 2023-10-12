@@ -112,6 +112,7 @@ public class ChatMessageWorkshopServiceTests
 
     #region GetMessagesForChatRoomAsync
     [Test]
+    [Ignore("Testing of unused method")]
     public void GetMessagesForChatRoomAsync_WhenOffsetfilterIsNull_ShouldNotThrowException()
     {
         // Arrange
@@ -123,6 +124,7 @@ public class ChatMessageWorkshopServiceTests
     }
 
     [Test]
+    [Ignore("Testing of unused method")]
     public async Task GetMessagesForChatRoomAsync_WhenCalledWithAllValidParameters_ShouldReturnFoundMessages()
     {
         // Arrange
@@ -141,6 +143,7 @@ public class ChatMessageWorkshopServiceTests
     }
 
     [Test]
+    [Ignore("Testing of unused method")]
     public async Task GetMessagesForChatRoomAsync_WhenCalledWithUnexistedRoomId_ShouldReturnEmptyList()
     {
         // Arrange
@@ -192,6 +195,19 @@ public class ChatMessageWorkshopServiceTests
             Assert.AreEqual(offsetFilter.Size, result.Count);
             Assert.AreEqual(existingChatRoomId, result.FirstOrDefault()?.ChatRoomId);
         });
+    }
+
+    [Test]
+    public async Task GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync_WhenCalledWithInValidParameters_ShouldReturnEmptyList()
+    {
+        // Arrange
+        var invalidChatRoomId = Guid.NewGuid();
+
+        // Act
+        var result = await messageService.GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(invalidChatRoomId, new OffsetFilter(), Role.Provider).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsEmpty(result);
     }
     #endregion
 

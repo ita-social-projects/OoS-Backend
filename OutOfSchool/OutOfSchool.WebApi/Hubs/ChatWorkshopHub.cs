@@ -130,6 +130,17 @@ public class ChatWorkshopHub : Hub
             // Deserialize from string to Object
             var chatMessageWorkshopCreateDto = JsonConvert.DeserializeObject<ChatMessageWorkshopCreateDto>(chatNewMessage);
 
+            var chatRoomExists = await roomService.GetByIdAsync(chatMessageWorkshopCreateDto.ChatRoomId).ConfigureAwait(false) is not null;
+
+            if (!chatRoomExists)
+            {
+                logger.LogWarning($"{GettingUserProperties.GetUserRole(Context.User)} with UserId:{GettingUserProperties.GetUserId(Context.User)} is trying to send message to not existing chatRoom");
+
+                var messageForUser = localizer["Some of the message parameters were wrong. Please check your message and try again."];
+                await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", messageForUser).ConfigureAwait(false);
+                return;
+            }
+
             var userHasRights = await this.UserHasRigtsForChatRoomAsync(chatMessageWorkshopCreateDto.WorkshopId, chatMessageWorkshopCreateDto.ParentId).ConfigureAwait(false);
 
             if (!userHasRights)

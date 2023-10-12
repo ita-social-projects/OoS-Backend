@@ -106,7 +106,7 @@ public class ApplicationServiceTests
         var result = await service.GetAll(new ApplicationFilter());
 
         // Assert
-        Assert.AreEqual(result.Entities.Count, application.Count());
+        Assert.AreEqual(result.Entities.Count, application.Count);
     }
 
     [Test]
@@ -300,7 +300,7 @@ public class ApplicationServiceTests
     }
 
     [Test]
-    public void CreateApplication_WhenLimitIsExceeded_ShouldThrowArgumentException()
+    public async Task CreateApplication_WhenLimitIsExceeded_ShouldThrowArgumentException()
     {
         // Arrange
         var application = new ApplicationCreate()
@@ -308,8 +308,25 @@ public class ApplicationServiceTests
             WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
         };
 
-        // Act and Assert
-        service.Invoking(w => w.Create(application)).Should().ThrowAsync<ArgumentException>();
+        currentUserServiceMock.Setup(x => x.UserHasRights(It.IsAny<ParentRights>())).Returns(() => Task.FromResult(true));
+
+        workshopServiceCombinerMock.Setup(x => x.GetById(application.WorkshopId)).Returns(Task.FromResult(new WorkshopDto()));
+
+        var applications = new List<Application>
+        {
+            new Application(),
+            new Application(),
+            new Application(),
+        };
+
+        applicationRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Application, bool>>>(), It.IsAny<string>())).ReturnsAsync(applications.AsEnumerable());
+
+        // Act
+        var result = await service.Create(application);
+
+        // Assert
+        Assert.That(result.Model is null);
+        Assert.That(result.Description != string.Empty);
     }
 
     [Test]
@@ -519,14 +536,12 @@ public class ApplicationServiceTests
         Assert.That(result, Is.Null);
     }
 
-
     [Test]
     public async Task UpdateApplication_WhenIdIsValid_ShouldReturnApplication()
     {
         // Arrange
         var id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd");
         var changedEntity = WithApplication(id);
-        var userId = Guid.NewGuid().ToString();
 
         var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
 
@@ -587,7 +602,6 @@ public class ApplicationServiceTests
         var id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd");
         var entity = WithApplication(id);
         var changedEntity = WithApplication(id, ApplicationStatus.Approved);
-        var userId = Guid.NewGuid().ToString();
         var workshop = WithWorkshop(new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"));
 
         applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>()))
@@ -627,7 +641,7 @@ public class ApplicationServiceTests
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
 
         currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
-        currentUserServiceMock.Setup(c => c.UserSubRole).Returns("");
+        currentUserServiceMock.Setup(c => c.UserSubRole).Returns(string.Empty);
 
         // Act
         var result = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
@@ -640,7 +654,6 @@ public class ApplicationServiceTests
     public async Task UpdateApplication_WhenThereIsNoApplicationWithId_ShouldReturnNotSucceeded()
     {
         // Arrange
-        var userId = Guid.NewGuid().ToString();
         var application = new ApplicationUpdate()
         {
             Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd"),
@@ -659,7 +672,6 @@ public class ApplicationServiceTests
         var id = new Guid("08da8609-a211-4d74-82c0-dc89ea1fb2a7");
         var entity = WithApplication(id);
         var changedEntity = WithApplication(id, ApplicationStatus.Approved);
-        var userId = Guid.NewGuid().ToString();
         var workshop = WithWorkshop(new Guid("08da85ea-5b3c-4991-8416-2673d9421ca9"));
 
         applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>()))
@@ -674,7 +686,6 @@ public class ApplicationServiceTests
         mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto()
             {Id = id, Status = ApplicationStatus.Approved});
 
-        var expected = new ApplicationDto() {Id = id, Status = ApplicationStatus.Approved};
         var update = new ApplicationUpdate
         {
             Id = id,
@@ -704,7 +715,7 @@ public class ApplicationServiceTests
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
 
         currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
-        currentUserServiceMock.Setup(c => c.UserSubRole).Returns("");
+        currentUserServiceMock.Setup(c => c.UserSubRole).Returns(string.Empty);
 
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
 
@@ -719,7 +730,6 @@ public class ApplicationServiceTests
         var id = new Guid("08da8609-a211-4d74-82c0-dc89ea1fb2a7");
         var entity = WithApplication(id);
         var changedEntity = WithApplication(id, ApplicationStatus.Approved);
-        var userId = Guid.NewGuid().ToString();
         var workshop = WithWorkshop(new Guid("08da85ea-5b3c-4991-8416-2673d9421ca9"));
 
         applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>()))
@@ -734,7 +744,6 @@ public class ApplicationServiceTests
         mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto()
             {Id = id, Status = ApplicationStatus.Approved});
 
-        var expected = new ApplicationDto() {Id = id, Status = ApplicationStatus.Approved};
         var update = new ApplicationUpdate
         {
             Id = id,
@@ -764,7 +773,7 @@ public class ApplicationServiceTests
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
 
         currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
-        currentUserServiceMock.Setup(c => c.UserSubRole).Returns("");
+        currentUserServiceMock.Setup(c => c.UserSubRole).Returns(string.Empty);
 
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MinValue);
 
@@ -776,7 +785,6 @@ public class ApplicationServiceTests
     public void UpdateApplication_WhenModelIsNull_ShouldThrowArgumentException()
     {
         // Act and Assert
-        var userId = Guid.NewGuid().ToString();
         service.Invoking(s => s.Update(null, Guid.NewGuid())).Should().ThrowAsync<ArgumentException>();
     }
 
@@ -814,7 +822,7 @@ public class ApplicationServiceTests
         mapper.Setup(m => m.Map<Application>(It.IsAny<ApplicationCreate>()))
             .Returns(application);
         mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>()))
-            .Returns(new ApplicationDto() {Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd")});
+            .Returns(new ApplicationDto() {Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd") });
     }
 
     private void SetupGetAll(List<Application> apps)
@@ -824,8 +832,8 @@ public class ApplicationServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
-                It.IsAny<Expression<Func<Application,bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application,object>>,SortDirection>>(),
+                It.IsAny<Expression<Func<Application, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
             .Returns(new List<Application> { apps.First() }.AsTestAsyncEnumerableQuery());
         mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
@@ -861,7 +869,7 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(a => a.GetByFilter(
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<string>()))
-            .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> {apps.First()}));
+            .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> {apps.First() }));
         mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
     }
 
@@ -871,7 +879,7 @@ public class ApplicationServiceTests
         var mappedDtos = apps.Select(a => new ApplicationDto() {Id = a.Id}).ToList();
 
         currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(false);
-        currentUserServiceMock.Setup(c => c.UserHasRights(new IUserRights[] {new ProviderRights(apps.First().Workshop.ProviderId)}))
+        currentUserServiceMock.Setup(c => c.UserHasRights(new IUserRights[] {new ProviderRights(apps.First().Workshop.ProviderId) }))
             .Verifiable();
 
         applicationRepositoryMock.Setup(r => r.Get(
@@ -1073,8 +1081,6 @@ public class ApplicationServiceTests
             },
         };
     }
-
-
 
     private Application WithApplication(Guid id, ApplicationStatus status = ApplicationStatus.Pending)
     {

@@ -278,6 +278,7 @@ public class ChatRoomWorkshopServiceTests
 
     #region GetByWorkshopIdAsync
     [Test]
+    [Ignore("Testing of unused method")]
     public async Task GetByWorkshopIdAsync_WhenRoomExist_ShouldReturnFoundEntity()
     {
         // Arrange
@@ -298,6 +299,7 @@ public class ChatRoomWorkshopServiceTests
     }
 
     [Test]
+    [Ignore("Testing of unused method")]
     public async Task GetByWorkshopIdAsync_WhenRoomDoesNotExist_ShouldReturnNull()
     {
         // Arrange
@@ -372,6 +374,38 @@ public class ChatRoomWorkshopServiceTests
 
         // Act
         var result = await roomService.GetChatRoomIdsByProviderIdAsync(notExistingProvidertId).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<IEnumerable<Guid>>(result);
+        Assert.IsNotNull(result);
+        Assert.IsFalse(result.Any());
+    }
+    #endregion
+
+    #region GetChatRoomIdsByWorkshopIdsAsync
+    [Test]
+    public async Task GetChatRoomIdsByWorkshopIdsAsync_WhenRoomExist_ShouldReturnFoundEntity()
+    {
+        // Arrange
+        var existingworkshopIds = workshops.Select(x => x.Id);
+
+        // Act
+        var result = await roomService.GetChatRoomIdsByWorkshopIdsAsync(existingworkshopIds).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<IEnumerable<Guid>>(result);
+        Assert.IsNotNull(result);
+        Assert.IsTrue(result.Any());
+    }
+
+    [Test]
+    public async Task GetChatRoomIdsByWorkshopIdsAsync_WhenRoomDoesNotExist_ShouldReturnNull()
+    {
+        // Arrange
+        var notExistingWorkshopIds = new Guid[] { Guid.NewGuid(), Guid.NewGuid() };
+
+        // Act
+        var result = await roomService.GetChatRoomIdsByWorkshopIdsAsync(notExistingWorkshopIds).ConfigureAwait(false);
 
         // Assert
         Assert.IsInstanceOf<IEnumerable<Guid>>(result);
