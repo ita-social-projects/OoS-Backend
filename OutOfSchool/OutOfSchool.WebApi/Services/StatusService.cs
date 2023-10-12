@@ -102,8 +102,9 @@ public class StatusService : IStatusService
 
         if (institutionStatusLocalized is null)
         {
-            logger.LogError($"Updating failed. InstitutionStatus with Id = {dto.Id} doesn't exist in the system.");
-            return null;
+            var message = $"Updating failed. InstitutionStatus with Id = {dto.Id} doesn't exist in the system.";
+            logger.LogError(message);
+            throw new DbUpdateConcurrencyException(message);
         }
 
         if (localization == LocalizationType.En)
