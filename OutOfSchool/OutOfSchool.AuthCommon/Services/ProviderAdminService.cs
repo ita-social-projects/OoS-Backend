@@ -72,16 +72,12 @@ public class ProviderAdminService : IProviderAdminService
         var executionStrategy = context.Database.CreateExecutionStrategy();
         var result = await executionStrategy.Execute(async () =>
         {
-            var response = new ResponseDto();
-
             if (await context.Users.AnyAsync(x => x.Email == providerAdminDto.Email).ConfigureAwait(false))
             {
                 logger.LogError("Cant create provider admin with duplicate email: {Email}", providerAdminDto.Email);
-                response.IsSuccess = false;
-                response.HttpStatusCode = HttpStatusCode.BadRequest;
-                response.Message = $"Cant create provider admin with duplicate email: {providerAdminDto.Email}";
-
-                return response;
+                return CreateResponseDto(
+                    HttpStatusCode.BadRequest,
+                    $"Cant create provider admin with duplicate email: {providerAdminDto.Email}");
             }
 
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
@@ -103,15 +99,10 @@ public class ProviderAdminService : IProviderAdminService
                         userId,
                         result.ErrorMessages());
 
-                    response.IsSuccess = false;
-                    response.HttpStatusCode = HttpStatusCode.BadRequest;
-
                     // TODO: Don't leak all the errors eventually
-                    response.Message = string.Join(
-                        Environment.NewLine,
-                        result.Errors.Select(e => e.Description));
-
-                    return response;
+                    return CreateResponseDto(
+                        HttpStatusCode.BadRequest,
+                        string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
                 }
 
                 var roleAssignResult = await userManager.AddToRoleAsync(user, user.Role);
@@ -125,10 +116,7 @@ public class ProviderAdminService : IProviderAdminService
                         userId,
                         result.ErrorMessages());
 
-                    response.IsSuccess = false;
-                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
-
-                    return response;
+                    return CreateResponseDto(HttpStatusCode.InternalServerError);
                 }
 
                 providerAdminDto.UserId = user.Id;
@@ -145,12 +133,9 @@ public class ProviderAdminService : IProviderAdminService
                 {
                     await transaction.RollbackAsync();
                     logger.LogError($"Cant create assistant provider admin without related workshops");
-                    response.IsSuccess = false;
-                    response.HttpStatusCode = HttpStatusCode.BadRequest;
-                    response.Message =
-                        "You have to specify related workshops to be able to create workshop admin";
-
-                    return response;
+                    return CreateResponseDto(
+                        HttpStatusCode.BadRequest,
+                        "You have to specify related workshops to be able to create workshop admin");
                 }
 
                 await providerAdminRepository.Create(providerAdmin)
@@ -193,11 +178,8 @@ public class ProviderAdminService : IProviderAdminService
                 // and needs to be re-created
                 // TODO: +1 need Endpoint with sending new password
                 await transaction.CommitAsync();
-                response.IsSuccess = true;
-                response.HttpStatusCode = HttpStatusCode.OK;
-                response.Result = providerAdminDto;
 
-                return response;
+                return CreateResponseDto(HttpStatusCode.OK, null, providerAdminDto);
             }
             catch (Exception ex)
             {
@@ -205,10 +187,7 @@ public class ProviderAdminService : IProviderAdminService
 
                 logger.LogError(ex, "Operation failed for User(id): {UserId}", userId);
 
-                response.IsSuccess = false;
-                response.HttpStatusCode = HttpStatusCode.InternalServerError;
-
-                return response;
+                return CreateResponseDto(HttpStatusCode.InternalServerError);
             }
         });
         return result;
@@ -220,41 +199,30 @@ public class ProviderAdminService : IProviderAdminService
     {
         _ = providerAdminUpdateDto ?? throw new ArgumentNullException(nameof(providerAdminUpdateDto));
 
-        var response = new ResponseDto();
-
         if (await context.Users.AnyAsync(x => x.Email == providerAdminUpdateDto.Email
             && x.Id != providerAdminUpdateDto.Id).ConfigureAwait(false))
         {
             logger.LogError("Cant update provider admin with duplicate email: {Email}", providerAdminUpdateDto.Email);
-            response.IsSuccess = false;
-            response.HttpStatusCode = HttpStatusCode.BadRequest;
-            response.Message = $"Cant update provider admin with duplicate email: {providerAdminUpdateDto.Email}";
-
-            return response;
+            return CreateResponseDto(
+                HttpStatusCode.BadRequest,
+                $"Cant update provider admin with duplicate email: {providerAdminUpdateDto.Email}");
         }
 
         var providerAdmin = this.GetProviderAdmin(providerAdminUpdateDto.Id);
 
         if (providerAdmin is null)
         {
-            response.IsSuccess = false;
-            response.HttpStatusCode = HttpStatusCode.NotFound;
-
             logger.LogError(
                 "ProviderAdmin(id) {Id} not found. User(id): {UserId}",
                 providerAdminUpdateDto.Id,
                 userId);
-
-            return response;
+            return CreateResponseDto(HttpStatusCode.NotFound);
         }
 
         if (!providerAdmin.IsDeputy && !providerAdminUpdateDto.ManagedWorkshopIds.Any())
         {
             logger.LogError("Cant update assistant provider admin without related workshops");
-            response.IsSuccess = false;
-            response.HttpStatusCode = HttpStatusCode.BadRequest;
-
-            return response;
+            return CreateResponseDto(HttpStatusCode.BadRequest);
         }
 
         var user = await userManager.FindByIdAsync(providerAdminUpdateDto.Id);
@@ -287,11 +255,7 @@ public class ProviderAdminService : IProviderAdminService
                         "Error happened while updating ProviderAdmin. User(id): {UserId}. {Errors}",
                         userId,
                         string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description)));
-
-                    response.IsSuccess = false;
-                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
-
-                    return response;
+                    return CreateResponseDto(HttpStatusCode.InternalServerError);
                 }
 
                 var updateSecurityStamp = await userManager.UpdateSecurityStampAsync(user);
@@ -304,11 +268,7 @@ public class ProviderAdminService : IProviderAdminService
                         "Error happened while updating security stamp. ProviderAdmin. User(id): {UserId}. {Errors}",
                         userId,
                         string.Join(Environment.NewLine, updateSecurityStamp.Errors.Select(e => e.Description)));
-
-                    response.IsSuccess = false;
-                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
-
-                    return response;
+                    return CreateResponseDto(HttpStatusCode.InternalServerError);
                 }
 
                 var oldWorkshopsIds = providerAdmin.ManagedWorkshops.Select(x => x.Id).ToList();
@@ -369,11 +329,7 @@ public class ProviderAdminService : IProviderAdminService
                     updateDto.Id,
                     userId);
 
-                response.IsSuccess = true;
-                response.HttpStatusCode = HttpStatusCode.OK;
-                response.Result = updateDto;
-
-                return response;
+                return CreateResponseDto(HttpStatusCode.OK, null, updateDto);
             }
             catch (Exception ex)
             {
@@ -384,10 +340,7 @@ public class ProviderAdminService : IProviderAdminService
                     "Error happened while updating ProviderAdmin. User(id): {UserId}",
                     userId);
 
-                response.IsSuccess = false;
-                response.HttpStatusCode = HttpStatusCode.InternalServerError;
-
-                return response;
+                return CreateResponseDto(HttpStatusCode.InternalServerError);
             }
         }
     }
@@ -399,7 +352,6 @@ public class ProviderAdminService : IProviderAdminService
         var executionStrategy = context.Database.CreateExecutionStrategy();
         var result = await executionStrategy.Execute(async () =>
         {
-            var response = new ResponseDto();
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
             try
             {
@@ -407,15 +359,12 @@ public class ProviderAdminService : IProviderAdminService
 
                 if (providerAdmin is null)
                 {
-                    response.IsSuccess = false;
-                    response.HttpStatusCode = HttpStatusCode.NotFound;
-
                     logger.LogError(
                         "ProviderAdmin(id) {ProviderAdminId} not found. User(id): {UserId}",
                         providerAdminId,
                         userId);
 
-                    return response;
+                    return CreateResponseDto(HttpStatusCode.NotFound);
                 }
 
                 context.ProviderAdmins.Remove(providerAdmin);
@@ -432,10 +381,7 @@ public class ProviderAdminService : IProviderAdminService
                         userId,
                         result.ErrorMessages());
 
-                    response.IsSuccess = false;
-                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
-
-                    return response;
+                    return CreateResponseDto(HttpStatusCode.InternalServerError);
                 }
 
                 var oldPropertiesValues = GetTrackedUserProperties(user);
@@ -453,15 +399,13 @@ public class ProviderAdminService : IProviderAdminService
                 }
 
                 await transaction.CommitAsync();
-                response.IsSuccess = true;
-                response.HttpStatusCode = HttpStatusCode.OK;
 
                 logger.LogInformation(
                     "ProviderAdmin(id):{ProviderAdminId} was successfully deleted by User(id): {UserId}",
                     providerAdminId,
                     userId);
 
-                return response;
+                return CreateResponseDto(HttpStatusCode.OK);
             }
             catch (Exception ex)
             {
@@ -472,10 +416,7 @@ public class ProviderAdminService : IProviderAdminService
                     "Error happened while deleting ProviderAdmin. User(id): {UserId}",
                     userId);
 
-                response.IsSuccess = false;
-                response.HttpStatusCode = HttpStatusCode.InternalServerError;
-
-                return response;
+                return CreateResponseDto(HttpStatusCode.InternalServerError);
             }
         });
         return result;
@@ -486,21 +427,16 @@ public class ProviderAdminService : IProviderAdminService
         string userId,
         bool isBlocked)
     {
-        var response = new ResponseDto();
-
         var providerAdmin = this.GetProviderAdmin(providerAdminId);
 
         if (providerAdmin is null)
         {
-            response.IsSuccess = false;
-            response.HttpStatusCode = HttpStatusCode.NotFound;
-
             logger.LogError(
                 "ProviderAdmin(id) {ProviderAdminId} not found. User(id): {UserId}",
                 providerAdminId,
                 userId);
 
-            return response;
+            return CreateResponseDto(HttpStatusCode.NotFound);
         }
 
         var user = await userManager.FindByIdAsync(providerAdminId);
@@ -528,10 +464,7 @@ public class ProviderAdminService : IProviderAdminService
                         userId,
                         string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description)));
 
-                    response.IsSuccess = false;
-                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
-
-                    return response;
+                    return CreateResponseDto(HttpStatusCode.InternalServerError);
                 }
 
                 var updateSecurityStamp = await userManager.UpdateSecurityStampAsync(user);
@@ -545,10 +478,7 @@ public class ProviderAdminService : IProviderAdminService
                         userId,
                         string.Join(Environment.NewLine, updateSecurityStamp.Errors.Select(e => e.Description)));
 
-                    response.IsSuccess = false;
-                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
-
-                    return response;
+                    return CreateResponseDto(HttpStatusCode.InternalServerError);
                 }
 
                 await providerAdminChangesLogService.SaveChangesLogAsync(
@@ -567,10 +497,7 @@ public class ProviderAdminService : IProviderAdminService
                     providerAdminId,
                     userId);
 
-                response.IsSuccess = true;
-                response.HttpStatusCode = HttpStatusCode.OK;
-
-                return response;
+                return CreateResponseDto(HttpStatusCode.OK);
             }
             catch (Exception ex)
             {
@@ -581,10 +508,7 @@ public class ProviderAdminService : IProviderAdminService
                     "Error happened while blocking ProviderAdmin. User(id): {UserId}",
                     userId);
 
-                response.IsSuccess = false;
-                response.HttpStatusCode = HttpStatusCode.InternalServerError;
-
-                return response;
+                return CreateResponseDto(HttpStatusCode.InternalServerError);
             }
         }
     }
@@ -635,7 +559,6 @@ public class ProviderAdminService : IProviderAdminService
         var executionStrategy = context.Database.CreateExecutionStrategy();
         var result = await executionStrategy.Execute(async () =>
         {
-            var response = new ResponseDto();
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
             try
             {
@@ -643,15 +566,11 @@ public class ProviderAdminService : IProviderAdminService
 
                 if (providerAdmin is null)
                 {
-                    response.IsSuccess = false;
-                    response.HttpStatusCode = HttpStatusCode.NotFound;
-
                     logger.LogError(
                         "ProviderAdmin(id) {ProviderAdminId} not found.  User(id): {UserId}",
                         providerAdminId,
                         userId);
-
-                    return response;
+                    return CreateResponseDto(HttpStatusCode.NotFound);
                 }
 
                 var user = await userManager.FindByIdAsync(providerAdminId);
@@ -668,10 +587,7 @@ public class ProviderAdminService : IProviderAdminService
                         userId,
                         result.ErrorMessages());
 
-                    response.IsSuccess = false;
-                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
-
-                    return response;
+                    return CreateResponseDto(HttpStatusCode.InternalServerError);
                 }
 
                 await this.SendInvitationEmail(user, url, password);
@@ -686,15 +602,13 @@ public class ProviderAdminService : IProviderAdminService
                 .ConfigureAwait(false);
 
                 await transaction.CommitAsync();
-                response.IsSuccess = true;
-                response.HttpStatusCode = HttpStatusCode.OK;
 
                 logger.LogInformation(
                     "ProviderAdmin(id):{ProviderAdminId} was successfully updated by User(id): {UserId}",
                     providerAdminId,
                     userId);
 
-                return response;
+                return CreateResponseDto(HttpStatusCode.OK);
             }
             catch (Exception ex)
             {
@@ -705,10 +619,7 @@ public class ProviderAdminService : IProviderAdminService
                     "Error happened while updating ProviderAdmin. User(id): {UserId}",
                     userId);
 
-                response.IsSuccess = false;
-                response.HttpStatusCode = HttpStatusCode.InternalServerError;
-
-                return response;
+                return CreateResponseDto(HttpStatusCode.InternalServerError);
             }
         });
         return result;
@@ -758,4 +669,25 @@ public class ProviderAdminService : IProviderAdminService
 
     private ProviderAdmin GetProviderAdmin(string providerAdminId)
         => context.ProviderAdmins.Include(x => x.ManagedWorkshops).SingleOrDefault(pa => pa.UserId == providerAdminId);
+
+    private ResponseDto CreateResponseDto(HttpStatusCode statusCode, string? message = null, object? result = null)
+    {
+        if (statusCode == HttpStatusCode.OK)
+        {
+            return new ResponseDto()
+            {
+                IsSuccess = true,
+                HttpStatusCode = statusCode,
+                Message = message,
+                Result = result,
+            };
+        }
+
+        return new ResponseDto()
+        {
+            IsSuccess = false,
+            HttpStatusCode = statusCode,
+            Message = message,
+        };
+    }
 }
