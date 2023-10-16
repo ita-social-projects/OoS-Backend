@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Common.PermissionsModule;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -34,6 +35,7 @@ public class InstitutionStatusController : ControllerBase
     /// <summary>
     /// Get all Institution Statuses from the database.
     /// </summary>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <returns>List of all Institution Statuses.</returns>
     [HasPermission(Permissions.ImpersonalDataRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<InstitutionStatusDTO>))]
@@ -41,9 +43,9 @@ public class InstitutionStatusController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
-    public async Task<IActionResult> Get()
+    public async Task<IActionResult> Get(LocalizationType localization = LocalizationType.Ua)
     {
-        var institutionStatuses = await service.GetAll().ConfigureAwait(false);
+        var institutionStatuses = await service.GetAll(localization).ConfigureAwait(false);
 
         if (!institutionStatuses.Any())
         {
@@ -57,6 +59,7 @@ public class InstitutionStatusController : ControllerBase
     /// Get Institution Status by it's id.
     /// </summary>
     /// <param name="id">Institution Status id.</param>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <returns>Institution Status.</returns>
     [HasPermission(Permissions.ImpersonalDataRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InstitutionStatusDTO))]
@@ -64,7 +67,7 @@ public class InstitutionStatusController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(long id)
+    public async Task<IActionResult> GetById(long id, LocalizationType localization = LocalizationType.Ua)
     {
         try
         {
@@ -103,6 +106,7 @@ public class InstitutionStatusController : ControllerBase
     /// Update info about a Institution Status in the database.
     /// </summary>
     /// <param name="dto">Institution Status to update.</param>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <returns>Institution Status.</returns>
     [HasPermission(Permissions.SystemManagement)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InstitutionStatusDTO))]
@@ -110,9 +114,16 @@ public class InstitutionStatusController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(InstitutionStatusDTO dto)
+    public async Task<IActionResult> Update(InstitutionStatusDTO dto, LocalizationType localization = LocalizationType.Ua)
     {
-        return Ok(await service.Update(dto).ConfigureAwait(false));
+        var institutionStatus = await service.Update(dto).ConfigureAwait(false);
+
+        if (institutionStatus is null)
+        {
+            return BadRequest(institutionStatus);
+        }
+
+        return Ok(institutionStatus);
     }
 
     /// <summary>

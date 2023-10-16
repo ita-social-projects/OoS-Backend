@@ -58,7 +58,6 @@ public class StatusServiceTests
         TestHelper.AssertTwoCollectionsEqualByValues(expected, result);
     }
 
-
     [Test]
     public async Task GetById_WhenIdIsValid_ReturnsInstitutionStatus()
     {
@@ -85,7 +84,6 @@ public class StatusServiceTests
         Assert.ThrowsAsync<ArgumentOutOfRangeException>(
             async () => await service.GetById(notExistingId).ConfigureAwait(false));
     }
-
 
     // research why test is failing from time to time
     [Test]
