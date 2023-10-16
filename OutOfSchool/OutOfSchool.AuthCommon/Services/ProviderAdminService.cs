@@ -70,14 +70,16 @@ public class ProviderAdminService : IProviderAdminService
             .GenerateRandomPassword(userManager.Options.Password);
 
         var executionStrategy = context.Database.CreateExecutionStrategy();
-        var result = await executionStrategy.Execute(async () =>
+        return await executionStrategy.Execute(providerAdminDto, CreateProviderAdminOperation).ConfigureAwait(false);
+
+        async Task<ResponseDto> CreateProviderAdminOperation(CreateProviderAdminDto createDto)
         {
-            if (await context.Users.AnyAsync(x => x.Email == providerAdminDto.Email).ConfigureAwait(false))
+            if (await context.Users.AnyAsync(x => x.Email == createDto.Email).ConfigureAwait(false))
             {
-                logger.LogError("Cant create provider admin with duplicate email: {Email}", providerAdminDto.Email);
+                logger.LogError("Cant create provider admin with duplicate email: {Email}", createDto.Email);
                 return CreateResponseDto(
                     HttpStatusCode.BadRequest,
-                    $"Cant create provider admin with duplicate email: {providerAdminDto.Email}");
+                    $"Cant create provider admin with duplicate email: {createDto.Email}");
             }
 
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
@@ -119,11 +121,11 @@ public class ProviderAdminService : IProviderAdminService
                     return CreateResponseDto(HttpStatusCode.InternalServerError);
                 }
 
-                providerAdminDto.UserId = user.Id;
+                createDto.UserId = user.Id;
 
-                var providerAdmin = mapper.Map<ProviderAdmin>(providerAdminDto);
+                var providerAdmin = mapper.Map<ProviderAdmin>(createDto);
                 providerAdmin.ManagedWorkshops = !providerAdmin.IsDeputy
-                    ? context.Workshops.Where(w => providerAdminDto.ManagedWorkshopIds.Contains(w.Id))
+                    ? context.Workshops.Where(w => createDto.ManagedWorkshopIds.Contains(w.Id))
                         .ToList()
                     :
 
@@ -138,8 +140,7 @@ public class ProviderAdminService : IProviderAdminService
                         "You have to specify related workshops to be able to create workshop admin");
                 }
 
-                await providerAdminRepository.Create(providerAdmin)
-                    .ConfigureAwait(false);
+                await providerAdminRepository.Create(providerAdmin).ConfigureAwait(false);
 
                 var newPropertiesValues = GetTrackedUserProperties(user);
 
@@ -169,7 +170,7 @@ public class ProviderAdminService : IProviderAdminService
 
                 logger.LogInformation(
                     "ProviderAdmin(id):{Id} was successfully created by User(id): {UserId}",
-                    providerAdminDto.UserId,
+                    createDto.UserId,
                     userId);
 
                 await this.SendInvitationEmail(user, url, password);
@@ -179,7 +180,7 @@ public class ProviderAdminService : IProviderAdminService
                 // TODO: +1 need Endpoint with sending new password
                 await transaction.CommitAsync();
 
-                return CreateResponseDto(HttpStatusCode.OK, null, providerAdminDto);
+                return CreateResponseDto(HttpStatusCode.OK, null, createDto);
             }
             catch (Exception ex)
             {
@@ -189,8 +190,7 @@ public class ProviderAdminService : IProviderAdminService
 
                 return CreateResponseDto(HttpStatusCode.InternalServerError);
             }
-        });
-        return result;
+        }
     }
 
     public async Task<ResponseDto> UpdateProviderAdminAsync(
@@ -672,22 +672,12 @@ public class ProviderAdminService : IProviderAdminService
 
     private ResponseDto CreateResponseDto(HttpStatusCode statusCode, string? message = null, object? result = null)
     {
-        if (statusCode == HttpStatusCode.OK)
-        {
-            return new ResponseDto()
-            {
-                IsSuccess = true,
-                HttpStatusCode = statusCode,
-                Message = message,
-                Result = result,
-            };
-        }
-
         return new ResponseDto()
         {
-            IsSuccess = false,
+            IsSuccess = statusCode == HttpStatusCode.OK,
             HttpStatusCode = statusCode,
             Message = message,
+            Result = result,
         };
     }
 }
