@@ -116,7 +116,7 @@ public class ProviderAdminService : IProviderAdminService
                     logger.LogError(
                         "Error happened while adding role to user. User(id): {UserId}. {Errors}",
                         userId,
-                        result.ErrorMessages());
+                        roleAssignResult.ErrorMessages());
 
                     return CreateResponseDto(HttpStatusCode.InternalServerError);
                 }
@@ -180,7 +180,7 @@ public class ProviderAdminService : IProviderAdminService
                 // TODO: +1 need Endpoint with sending new password
                 await transaction.CommitAsync();
 
-                return CreateResponseDto(HttpStatusCode.OK, null, createDto);
+                return CreateResponseDto(HttpStatusCode.Created, null, createDto);
             }
             catch (Exception ex)
             {
