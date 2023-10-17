@@ -47,31 +47,6 @@ public class ApplicationController : ControllerBase
     }
 
     /// <summary>
-    /// Get all applications from the database.
-    /// </summary>
-    /// <param name="filter">Application filter.</param>
-    /// <returns>List of all applications.</returns>
-    /// <response code="200">All entities were found.</response>
-    /// <response code="204">No entity was found.</response>
-    /// <response code="500">If any server error occurs.</response>
-    [HasPermission(Permissions.ApplicationRead)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ApplicationDto>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] ApplicationFilter filter)
-    {
-        var applications = await applicationService.GetAll(filter).ConfigureAwait(false);
-
-        if (!applications.Entities.Any())
-        {
-            return NoContent();
-        }
-
-        return Ok(applications);
-    }
-
-    /// <summary>
     /// Get application by it's id.
     /// </summary>
     /// <param name="id">The key in the database.</param>

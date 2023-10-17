@@ -51,13 +51,6 @@ public interface IApplicationService
     Task<SearchResult<ApplicationDto>> GetAllByProviderAdmin(string userId, ApplicationFilter filter, Guid providerId = default, bool isDeputy = false);
 
     /// <summary>
-    /// Get applications for admin.
-    /// </summary>
-    /// <param name="filter">Application filter.</param>
-    /// <returns>List of applications.</returns>
-    Task<SearchResult<ApplicationDto>> GetAll(ApplicationFilter filter);
-
-    /// <summary>
     /// Get applications by parent id.
     /// </summary>
     /// <param name="id">Key in the table.</param>

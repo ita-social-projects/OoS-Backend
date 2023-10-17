@@ -34,47 +34,6 @@ public class ProviderController : ControllerBase
     }
 
     /// <summary>
-    /// Get Providers that match filter's parameters.
-    /// </summary>
-    /// <param name="filter">Entity that represents searching parameters.</param>
-    /// <returns><see cref="SearchResult{ProviderDto}"/>, or no content.</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet]
-    [AllowAnonymous]
-    public async Task<IActionResult> Get([FromQuery] ProviderFilter filter)
-    {
-        var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
-
-        if (providers.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(providers);
-    }
-
-    /// <summary>
-    /// Get all Providers from the database.
-    /// </summary>
-    /// <param name="filter">Filter to get a part of all providers that were found.</param>
-    /// <returns>The result is a <see cref="SearchResult{ProviderDto}"/> that contains the count of all found providers and a list of providers that were received.</returns>
-    [HasPermission(Permissions.ProviderRead)]
-    [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByFilter([FromQuery] ProviderFilter filter)
-    {
-        var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
-
-        return Ok(providers);
-    }
-
-    /// <summary>
     /// Get Provider by it's Id.
     /// </summary>
     /// <param name="providerId">Provider's id.</param>
@@ -212,40 +171,6 @@ public class ProviderController : ControllerBase
     }
 
     /// <summary>
-    /// Block/unblock Provider.
-    /// </summary>
-    /// <param name="providerBlockDto">Entity to update.</param>
-    /// <returns>Block Provider.</returns>
-    [HasPermission(Permissions.ProviderBlock)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderBlockDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpPut]
-    public async Task<ActionResult> Block([FromBody] ProviderBlockDto providerBlockDto)
-    {
-        var result = await providerService.Block(
-            providerBlockDto,
-            await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false));
-
-        if (!result.IsSuccess)
-        {
-            switch (result.HttpStatusCode)
-            {
-                case HttpStatusCode.Forbidden:
-                    return Forbid();
-                case HttpStatusCode.NotFound:
-                    return NotFound(result.Message);
-                default:
-                    return NotFound(result.Message);
-            }
-        }
-
-        return Ok(result.Result);
-    }
-
-    /// <summary>
     /// Delete a specific Provider from the database.
     /// </summary>
     /// <param name="uid">Provider's key.</param>
@@ -272,7 +197,7 @@ public class ProviderController : ControllerBase
     }
 
     /// <summary>
-    /// Get Providers that match filter's parameters.
+    /// Get Provider status by providerId.
     /// </summary>
     /// <param name="providerId">Id of provider.</param>
     /// <returns><see cref="SearchResult{ProviderStatusDto}"/>, or no content.</returns>

@@ -40,12 +40,12 @@ public class InstitutionController : Controller
     public async Task<IActionResult> GetAll([FromQuery] bool filterNonGovernment = false)
     {
         var institutions = await service.GetAll(filterNonGovernment).ConfigureAwait(false);
-
+    
         if (!institutions.Any())
         {
             return NoContent();
         }
-
+    
         return Ok(institutions);
     }
 }

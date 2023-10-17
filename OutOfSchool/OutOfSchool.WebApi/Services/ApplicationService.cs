@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for Application entity.
 /// </summary>
-public class ApplicationService : IApplicationService, INotificationReciever
+public class ApplicationService : IApplicationService, INotificationReciever, ISensitiveApplicationService
 {
     public const string UaMaleEnding = "ий";
     public const string UaFemaleEnding = "а";

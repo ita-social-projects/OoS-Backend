@@ -68,14 +68,6 @@ public interface IMinistryAdminService
     Task<bool> IsProviderSubordinateAsync(string ministryAdminUserId, Guid providerId);
 
     /// <summary>
-    /// Get Ministry Admins from the database that match filter's parameters.
-    /// </summary>
-    /// <param name="filter">Filter with specified searching parameters.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-    /// The task result contains the <see cref="SearchResult{MinistryAdminDto}"/> that contains found elements.</returns>
-    Task<SearchResult<MinistryAdminDto>> GetByFilter(MinistryAdminFilter filter);
-
-    /// <summary>
     /// Reinvite Ministry Admin.
     /// </summary>
     /// <param name="ministryAdminId">Id of ministry admin.</param>

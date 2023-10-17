@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
-
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common;
@@ -22,7 +21,6 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.ProviderServices;
 using OutOfSchool.WebApi.Util;
@@ -80,40 +78,6 @@ public class ProviderControllerTests
 
         // Assert
         result.AssertResponseOkResultAndValidateValue(expected);
-    }
-
-    [Test]
-    public async Task GetProviders_WhenCalled_ReturnsOkResultObject_WithExpectedCollectionDtos()
-    {
-        // Arrange
-        var expected = new SearchResult<ProviderDto>
-        {
-            TotalAmount = 10,
-            Entities = providers.Select(x => mapper.Map<ProviderDto>(x)).ToList(),
-        };
-
-        providerService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
-            .ReturnsAsync(expected);
-
-        // Act
-        var result = await providerController.Get(new ProviderFilter()).ConfigureAwait(false);
-
-        // Assert
-        result.AssertResponseOkResultAndValidateValue(expected);
-    }
-
-    [Test]
-    public async Task GetProviders_WhenNoRecordsInDB_ReturnsNoContentResult()
-    {
-        // Arrange
-        providerService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
-            .ReturnsAsync(new SearchResult<ProviderDto> { TotalAmount = 0, Entities = new List<ProviderDto>() });
-
-        // Act
-        var result = await providerController.Get(new ProviderFilter()).ConfigureAwait(false);
-
-        // Assert
-        Assert.IsInstanceOf<NoContentResult>(result);
     }
 
     [Test]
@@ -286,80 +250,13 @@ public class ProviderControllerTests
         Assert.AreEqual(errorMessage, (result as ObjectResult).Value);
     }
 
-    [Test]
-    [Ignore("Until mock HttpContext.GetTokenAsync()")]
-    public async Task Block_ReturnsProviderBlockDto_IfProviderExist()
-    {
-        // TODO: it's nessesary to mock HttpContext.GetTokenAsync() to run this test.
-
-        // Arrange
-        var providerBlockDto = new ProviderBlockDto()
-        {
-            Id = provider.Id,
-            IsBlocked = true,
-            BlockReason = "Test reason",
-        };
-
-        var responseDto = new ResponseDto()
-        {
-            Result = providerBlockDto,
-            Message = It.IsAny<string>(),
-            HttpStatusCode = HttpStatusCode.OK,
-            IsSuccess = true,
-        };
-
-        providerService.Setup(x => x.Block(providerBlockDto, It.IsAny<string>()))
-            .ReturnsAsync(responseDto);
-
-        // Act
-        var result = await providerController.Block(providerBlockDto).ConfigureAwait(false);
-
-        // Assert
-        result.AssertResponseOkResultAndValidateValue(responseDto.Result);
-    }
-
-    [Test]
-    [Ignore("Until mock HttpContext.GetTokenAsync()")]
-    public async Task Block_ReturnsNotFoundResult_IfIdDoesNotExist()
-    {
-        // TODO: it's needed to mock HttpContext.GetTokenAsync() to run this test.
-
-        // Arrange
-        var nonExistentProviderId = Guid.NewGuid();
-        var providerBlockDto = new ProviderBlockDto()
-        {
-            Id = nonExistentProviderId,
-            IsBlocked = true,
-            BlockReason = "Test reason",
-        };
-
-        var responseDto = new ResponseDto()
-        {
-            Result = null,
-            Message = $"There is no Provider in DB with Id - {providerBlockDto.Id}",
-            HttpStatusCode = HttpStatusCode.NotFound,
-            IsSuccess = false,
-        };
-
-        var expected = new NotFoundObjectResult(responseDto.Message);
-
-        providerService.Setup(x => x.Block(providerBlockDto, It.IsAny<string>()))
-            .ReturnsAsync(responseDto);
-
-        // Act
-        var result = await providerController.Block(providerBlockDto).ConfigureAwait(false);
-
-        // Assert
-        result.AssertExpectedResponseTypeAndCheckDataInside<NotFoundObjectResult>(expected);
-    }
-
     private HttpContext GetFakeHttpContext()
     {
         var authProps = new AuthenticationProperties();
 
         authProps.StoreTokens(new List<AuthenticationToken>
         {
-            new AuthenticationToken{ Name = "access_token", Value = "accessTokenValue"},
+            new() { Name = "access_token", Value = "accessTokenValue"},
         });
 
         var authResult = AuthenticateResult
@@ -378,13 +275,13 @@ public class ProviderControllerTests
             .Returns(authenticationServiceMock.Object);
 
         var user = new ClaimsPrincipal(
-                    new ClaimsIdentity(
-                        new Claim[]
-                        {
-                            new Claim(IdentityResourceClaimsTypes.Sub, userId),
-                            new Claim(IdentityResourceClaimsTypes.Role, Role.Provider.ToString()),
-                        },
-                        IdentityResourceClaimsTypes.Sub));
+            new ClaimsIdentity(
+                new Claim[]
+                {
+                    new(IdentityResourceClaimsTypes.Sub, userId),
+                    new(IdentityResourceClaimsTypes.Role, Role.Provider.ToString()),
+                },
+                IdentityResourceClaimsTypes.Sub));
 
         var context = new DefaultHttpContext()
         {
