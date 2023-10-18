@@ -340,10 +340,11 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
         if (await context.Users.AnyAsync(x => x.Email == updateMinistryAdminDto.Email
                                               && x.Id != updateMinistryAdminDto.UserId).ConfigureAwait(false))
         {
-            logger.LogError("Cant update admin with duplicate email: {Email}", updateMinistryAdminDto.Email);
+            var message = $"Cant update admin with duplicate email: {updateMinistryAdminDto.Email}";
+            logger.LogError(message);
             response.IsSuccess = false;
             response.HttpStatusCode = HttpStatusCode.BadRequest;
-            response.Message = $"Cant update admin with duplicate email: {updateMinistryAdminDto.Email}";
+            response.Message = message;
 
             return response;
         }
@@ -415,16 +416,11 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                     return response;
                 }
 
-                // TODO How handle if such InstitutionId doesn't exist
-                ministryAdmin.InstitutionId = updateMinistryAdminDto.InstitutionId;
-
-                await institutionAdminRepository.Update(ministryAdmin).ConfigureAwait(false);
-
                 // TODO Add write changeslog
                 await transaction.CommitAsync().ConfigureAwait(false);
 
                 logger.LogInformation(
-                    "MinistryAdmin(id):{Id} was successfully updated by User(id): {UserId}",
+                    "Admin(id):{Id} was successfully updated by User(id): {UserId}",
                     ministryAdminUpdateDto.UserId,
                     userId);
 
