@@ -91,6 +91,7 @@ public class ProviderAdminService : IProviderAdminService
                 user.Role = nameof(Role.Provider).ToLower();
 
                 var result = await userManager.CreateAsync(user, password);
+                var errorMessages = result.ErrorMessages();
 
                 if (!result.Succeeded)
                 {
@@ -99,12 +100,12 @@ public class ProviderAdminService : IProviderAdminService
                     logger.LogError(
                         "Error happened while creation ProviderAdmin. User(id): {UserId}. {Errors}",
                         userId,
-                        result.ErrorMessages());
+                        errorMessages);
 
                     // TODO: Don't leak all the errors eventually
                     return CreateResponseDto(
                         HttpStatusCode.BadRequest,
-                        result.ErrorMessages());
+                        errorMessages);
                 }
 
                 var roleAssignResult = await userManager.AddToRoleAsync(user, user.Role);
