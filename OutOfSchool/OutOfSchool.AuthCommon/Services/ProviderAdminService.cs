@@ -104,7 +104,7 @@ public class ProviderAdminService : IProviderAdminService
                     // TODO: Don't leak all the errors eventually
                     return CreateResponseDto(
                         HttpStatusCode.BadRequest,
-                        string.Join(Environment.NewLine, result.Errors.Select(e => e.Description)));
+                        result.ErrorMessages());
                 }
 
                 var roleAssignResult = await userManager.AddToRoleAsync(user, user.Role);
@@ -254,7 +254,8 @@ public class ProviderAdminService : IProviderAdminService
                     logger.LogError(
                         "Error happened while updating ProviderAdmin. User(id): {UserId}. {Errors}",
                         userId,
-                        string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description)));
+                        updateResult.ErrorMessages());
+
                     return CreateResponseDto(HttpStatusCode.InternalServerError);
                 }
 
@@ -267,7 +268,7 @@ public class ProviderAdminService : IProviderAdminService
                     logger.LogError(
                         "Error happened while updating security stamp. ProviderAdmin. User(id): {UserId}. {Errors}",
                         userId,
-                        string.Join(Environment.NewLine, updateSecurityStamp.Errors.Select(e => e.Description)));
+                        updateSecurityStamp.ErrorMessages());
                     return CreateResponseDto(HttpStatusCode.InternalServerError);
                 }
 
@@ -462,7 +463,7 @@ public class ProviderAdminService : IProviderAdminService
                     logger.LogError(
                         "Error happened while blocking ProviderAdmin. User(id): {UserId}. {Errors}",
                         userId,
-                        string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description)));
+                        updateResult.ErrorMessages());
 
                     return CreateResponseDto(HttpStatusCode.InternalServerError);
                 }
@@ -476,7 +477,7 @@ public class ProviderAdminService : IProviderAdminService
                     logger.LogError(
                         "Error happened while updating security stamp. ProviderAdmin. User(id): {UserId}. {Errors}",
                         userId,
-                        string.Join(Environment.NewLine, updateSecurityStamp.Errors.Select(e => e.Description)));
+                        updateSecurityStamp.ErrorMessages());
 
                     return CreateResponseDto(HttpStatusCode.InternalServerError);
                 }
