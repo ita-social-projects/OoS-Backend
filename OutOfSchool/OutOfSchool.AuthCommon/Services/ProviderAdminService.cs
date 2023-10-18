@@ -351,24 +351,26 @@ public class ProviderAdminService : IProviderAdminService
         string providerAdminId,
         string userId)
     {
+        var providerAdmin = this.GetProviderAdmin(providerAdminId);
+
+        if (providerAdmin is null)
+        {
+            logger.LogError(
+                "ProviderAdmin(id) {ProviderAdminId} not found. User(id): {UserId}",
+                providerAdminId,
+                userId);
+
+            return CreateResponseDto(HttpStatusCode.NotFound);
+        }
+
         var executionStrategy = context.Database.CreateExecutionStrategy();
-        var result = await executionStrategy.Execute(async () =>
+        return await executionStrategy.Execute(DeleteProviderAdminOperation).ConfigureAwait(false);
+
+        async Task<ResponseDto> DeleteProviderAdminOperation()
         {
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
             try
             {
-                var providerAdmin = this.GetProviderAdmin(providerAdminId);
-
-                if (providerAdmin is null)
-                {
-                    logger.LogError(
-                        "ProviderAdmin(id) {ProviderAdminId} not found. User(id): {UserId}",
-                        providerAdminId,
-                        userId);
-
-                    return CreateResponseDto(HttpStatusCode.NotFound);
-                }
-
                 context.ProviderAdmins.Remove(providerAdmin);
 
                 var user = await userManager.FindByIdAsync(providerAdminId);
@@ -420,8 +422,7 @@ public class ProviderAdminService : IProviderAdminService
 
                 return CreateResponseDto(HttpStatusCode.InternalServerError);
             }
-        });
-        return result;
+        }
     }
 
     public async Task<ResponseDto> BlockProviderAdminAsync(
