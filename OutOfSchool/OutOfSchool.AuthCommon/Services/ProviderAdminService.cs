@@ -91,11 +91,11 @@ public class ProviderAdminService : IProviderAdminService
                 user.Role = nameof(Role.Provider).ToLower();
 
                 var result = await userManager.CreateAsync(user, password);
-                var errorMessages = result.ErrorMessages();
 
                 if (!result.Succeeded)
                 {
                     await transaction.RollbackAsync();
+                    var errorMessages = result.ErrorMessages();
 
                     logger.LogError(
                         "Error happened while creation ProviderAdmin. User(id): {UserId}. {Errors}",
