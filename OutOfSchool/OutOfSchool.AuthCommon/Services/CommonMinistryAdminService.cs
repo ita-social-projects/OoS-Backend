@@ -340,10 +340,10 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
         if (await context.Users.AnyAsync(x => x.Email == updateMinistryAdminDto.Email
                                               && x.Id != updateMinistryAdminDto.UserId).ConfigureAwait(false))
         {
-            logger.LogError("Cant update ministry admin with duplicate email: {Email}", updateMinistryAdminDto.Email);
+            logger.LogError("Cant update admin with duplicate email: {Email}", updateMinistryAdminDto.Email);
             response.IsSuccess = false;
             response.HttpStatusCode = HttpStatusCode.BadRequest;
-            response.Message = $"Cant update provider admin with duplicate email: {updateMinistryAdminDto.Email}";
+            response.Message = $"Cant update admin with duplicate email: {updateMinistryAdminDto.Email}";
 
             return response;
         }

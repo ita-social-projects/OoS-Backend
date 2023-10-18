@@ -197,8 +197,7 @@ public class AreaAdminController : Controller
                   currentUserRole == nameof(Role.MinistryAdmin).ToLower()))
             {
                 logger.LogDebug("Forbidden to update another user if you don't have TechAdmin or MinistryAdmin role.");
-                return StatusCode(403,
-                    "Forbidden to update another user if you don't have TechAdmin or MinistryAdmin role.");
+                return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin or MinistryAdmin role.");
             }
 
             if ((currentUserRole == nameof(Role.MinistryAdmin).ToLower()
@@ -207,8 +206,7 @@ public class AreaAdminController : Controller
                  && !await areaAdminService.IsAreaAdminSubordinateRegionAsync(currentUserId, updateAreaAdminDto.Id)))
             {
                 logger.LogDebug("Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
-                return StatusCode(403,
-                    "Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
+                return StatusCode(403, "Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
             }
 
             var updatedRegionAdmin = await areaAdminService.GetByIdAsync(updateAreaAdminDto.Id);
