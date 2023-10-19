@@ -42,7 +42,6 @@ public interface IAreaAdminService
     /// <summary>
     /// Delete Area Admin.
     /// </summary>
-    /// 
     /// <param name="areaAdminId">Id of area admin.</param>
     /// <param name="userId">Id of user.</param>
     /// <param name="token">Valid token with AreaAdminEdit permissions.</param>
@@ -52,7 +51,7 @@ public interface IAreaAdminService
     /// <summary>
     /// Block Area Admin.
     /// </summary>
-    /// <param name="regionAreaId">Id of ministry admin.</param>
+    /// <param name="areaAdminId">Id of area admin.</param>
     /// <param name="userId">Id of user.</param>
     /// <param name="token">Valid token with AreaAdminEdit permissions.</param>
     /// <param name="isBlocked">Block/unblock flag.</param>
@@ -81,7 +80,7 @@ public interface IAreaAdminService
     /// Determines whether area admin is subordinate of the ministry admin to be created.
     /// </summary>
     /// <param name="ministryAdminUserId">Ministry admin user id.</param>
-    /// <param name="areaAdminId">AreaAdmin id.</param>
+    /// <param name="institutionId">Institution id.</param>
     /// <returns>The task result contains <see langword="true" /> if area admin is subordinate of the ministry admin to be created
     /// filter; otherwise, <see langword="false" />.</returns>
     Task<bool> IsAreaAdminSubordinateMinistryCreateAsync(string ministryAdminUserId, Guid institutionId);
@@ -90,7 +89,8 @@ public interface IAreaAdminService
     /// Determines whether area admin is subordinate of the region admin to be created.
     /// </summary>
     /// <param name="regionAdminUserId">Region admin user id.</param>
-    /// <param name="areaAdminId">AreaAdmin id.</param>
+    /// <param name="institutionId">Institution id.</param>
+    /// <param name="catottgId">CATOTTG id.</param>
     /// <returns>The task result contains <see langword="true" /> if area admin is subordinate of the region admin to be created
     /// filter; otherwise, <see langword="false" />.</returns>
     Task<bool> IsAreaAdminSubordinateRegionCreateAsync(string regionAdminUserId, Guid institutionId, long catottgId);
@@ -106,7 +106,7 @@ public interface IAreaAdminService
     /// <summary>
     /// Reinvite Area Admin.
     /// </summary>
-    /// <param name="areaAdminId">Id of region admin.</param>
+    /// <param name="areaAdminId">Id of area admin.</param>
     /// <param name="userId">Id of current user.</param>
     /// <param name="token">Valid token with RegionAdminEdit permissions.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>

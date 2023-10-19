@@ -23,7 +23,6 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
     private readonly ICodeficatorService codeficatorService;
     private ICodeficatorRepository codeficatorRepository;
 
-
     public AreaAdminService(
         ICodeficatorRepository codeficatorRepository,
         ICodeficatorService codeficatorService,

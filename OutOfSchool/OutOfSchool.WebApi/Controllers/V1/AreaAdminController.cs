@@ -140,16 +140,14 @@ public class AreaAdminController : Controller
              && !await areaAdminService.IsAreaAdminSubordinateMinistryCreateAsync(currentUserId, areaAdminBase.InstitutionId))
         {
             logger.LogDebug("Forbidden to create AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
-            return StatusCode(403,
-                "Forbidden to create AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
+            return StatusCode(403, "Forbidden to create AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
         }
 
         if (currentUserRole == nameof(Role.RegionAdmin).ToLower()
              && !await areaAdminService.IsAreaAdminSubordinateRegionCreateAsync(currentUserId, areaAdminBase.InstitutionId, areaAdminBase.CATOTTGId))
         {
             logger.LogDebug("Forbidden to create AreaAdmin. AreaAdmin doesn't subordinate to RegionAdmin.");
-            return StatusCode(403,
-                "Forbidden to create AreaAdmin. AreaAdmin doesn't subordinate to RegionAdmin.");
+            return StatusCode(403, "Forbidden to create AreaAdmin. AreaAdmin doesn't subordinate to RegionAdmin.");
         }
 
         var response = await areaAdminService.CreateAreaAdminAsync(
@@ -162,8 +160,10 @@ public class AreaAdminController : Controller
             error => StatusCode((int)error.HttpStatusCode, error.Message),
             result =>
             {
-                logger.LogInformation("Successfully created AreaAdmin(id): {result.UserId} by User(id): {UserId}",
-                    result.UserId, currentUserId);
+                logger.LogInformation(
+                    "Successfully created AreaAdmin(id): {result.UserId} by User(id): {UserId}",
+                    result.UserId,
+                    currentUserId);
                 return Ok(result);
             });
     }
@@ -264,8 +264,7 @@ public class AreaAdminController : Controller
              && !await areaAdminService.IsAreaAdminSubordinateRegionAsync(currentUserId, areaAdminId)))
         {
             logger.LogDebug("Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
-            return StatusCode(403,
-                "Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
+            return StatusCode(403, "Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
         }
 
         var response = await areaAdminService.DeleteAreaAdminAsync(
@@ -301,8 +300,7 @@ public class AreaAdminController : Controller
              && !await areaAdminService.IsAreaAdminSubordinateRegionAsync(currentUserId, areaAdminId)))
         {
             logger.LogDebug("Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
-            return StatusCode(403,
-                "Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
+            return StatusCode(403, "Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
         }
 
         if (isBlocked is null)
@@ -331,7 +329,7 @@ public class AreaAdminController : Controller
     /// <summary>
     /// Send new invitation to AreaAdmin.
     /// </summary>
-    /// <param name="AreaAdminId">AreaAdmin's id.</param>
+    /// <param name="areaAdminId">AreaAdmin's id.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
