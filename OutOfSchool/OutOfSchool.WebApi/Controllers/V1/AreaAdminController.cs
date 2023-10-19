@@ -171,7 +171,7 @@ public class AreaAdminController : Controller
     /// <summary>
     /// To update AreaAdmin entity that already exists.
     /// </summary>
-    /// <param name="updateAreaAdminDto">AreaAdminDto object with new properties.</param>
+    /// <param name="updateAreaAdminDto">BaseUserDto object with new properties.</param>
     /// <returns>AreaAdmin's key.</returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AreaAdminDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -179,7 +179,7 @@ public class AreaAdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HasPermission(Permissions.AreaAdminEdit)]
     [HttpPut]
-    public async Task<ActionResult> Update(UpdateAdminBaseDto updateAreaAdminDto)
+    public async Task<ActionResult> Update(BaseUserDto updateAreaAdminDto)
     {
         if (updateAreaAdminDto == null)
         {
@@ -191,7 +191,7 @@ public class AreaAdminController : Controller
             return BadRequest(ModelState);
         }
 
-        if (currentUserId != updateAreaAdminDto.UserId)
+        if (currentUserId != updateAreaAdminDto.Id)
         {
             if (!(currentUserRole == nameof(Role.TechAdmin).ToLower() ||
                   currentUserRole == nameof(Role.MinistryAdmin).ToLower()))
@@ -201,15 +201,15 @@ public class AreaAdminController : Controller
             }
 
             if ((currentUserRole == nameof(Role.MinistryAdmin).ToLower()
-                && !await areaAdminService.IsAreaAdminSubordinateMinistryAsync(currentUserId, updateAreaAdminDto.UserId)) ||
+                && !await areaAdminService.IsAreaAdminSubordinateMinistryAsync(currentUserId, updateAreaAdminDto.Id)) ||
                 (currentUserRole == nameof(Role.RegionAdmin).ToLower()
-                 && !await areaAdminService.IsAreaAdminSubordinateRegionAsync(currentUserId, updateAreaAdminDto.UserId)))
+                 && !await areaAdminService.IsAreaAdminSubordinateRegionAsync(currentUserId, updateAreaAdminDto.Id)))
             {
                 logger.LogDebug("Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
                 return StatusCode(403, "Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
             }
 
-            var updatedRegionAdmin = await areaAdminService.GetByIdAsync(updateAreaAdminDto.UserId);
+            var updatedRegionAdmin = await areaAdminService.GetByIdAsync(updateAreaAdminDto.Id);
             if (updatedRegionAdmin.AccountStatus == AccountStatus.Accepted)
             {
                 logger.LogDebug("Forbidden to update accepted user.");
