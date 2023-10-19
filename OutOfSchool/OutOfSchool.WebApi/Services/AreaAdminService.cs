@@ -214,24 +214,24 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
     /// <inheritdoc/>
     public async Task<Either<ErrorResponse, AreaAdminDto>> UpdateAreaAdminAsync(
         string userId,
-        AreaAdminDto updateAreaAdminDto,
+        UpdateAdminBaseDto updateAreaAdminDto,
         string token)
     {
         _ = updateAreaAdminDto ?? throw new ArgumentNullException(nameof(updateAreaAdminDto));
 
         Logger.LogDebug(
             "AreaAdmin(id): {AreaAdminDto} updating was started. User(id): {UserId}",
-            updateAreaAdminDto.Id,
+            updateAreaAdminDto.UserId,
             userId);
 
-        var regionAdmin = await areaAdminRepository.GetByIdAsync(updateAreaAdminDto.Id)
+        var regionAdmin = await areaAdminRepository.GetByIdAsync(updateAreaAdminDto.UserId)
             .ConfigureAwait(false);
 
         if (regionAdmin is null)
         {
             Logger.LogError(
                 "AreaAdmin(id) {AreaAdminDto} not found. User(id): {UserId}",
-                updateAreaAdminDto.Id,
+                updateAreaAdminDto.UserId,
                 userId);
 
             return new ErrorResponse
@@ -245,9 +245,9 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
             HttpMethodType = HttpMethodType.Put,
             Url = new Uri(
                 authorizationServerConfig.Authority,
-                CommunicationConstants.UpdateAreaAdmin + updateAreaAdminDto.Id),
+                CommunicationConstants.UpdateAreaAdmin + updateAreaAdminDto.UserId),
             Token = token,
-            Data = mapper.Map<AreaAdminBaseDto>(updateAreaAdminDto),
+            Data = updateAreaAdminDto,
         };
 
         Logger.LogDebug(
@@ -268,7 +268,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? mapper.Map<AreaAdminDto>(JsonConvert.DeserializeObject<AreaAdminBaseDto>(result.Result.ToString()))
+                ? mapper.Map<AreaAdminDto>(JsonConvert.DeserializeObject<UpdateAdminBaseDto>(result.Result.ToString()))
                 : null);
     }
 

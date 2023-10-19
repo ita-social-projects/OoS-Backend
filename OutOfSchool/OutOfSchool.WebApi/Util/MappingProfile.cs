@@ -503,6 +503,9 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.RegionId, opt => opt.Ignore())
             .ForMember(dest => dest.RegionName, opt => opt.Ignore());
 
+        CreateMap<UpdateAdminBaseDto, AreaAdminDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId));
+
         CreateMap<ProviderChangesLogRequest, ChangesLogFilter>()
             .ForMember(dest => dest.EntityType, opt => opt.Ignore())
             .ForMember(dest => dest.From, opt => opt.Ignore())

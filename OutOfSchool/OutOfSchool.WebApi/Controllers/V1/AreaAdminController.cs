@@ -179,7 +179,7 @@ public class AreaAdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HasPermission(Permissions.AreaAdminEdit)]
     [HttpPut]
-    public async Task<ActionResult> Update(AreaAdminDto updateAreaAdminDto)
+    public async Task<ActionResult> Update(UpdateAdminBaseDto updateAreaAdminDto)
     {
         if (updateAreaAdminDto == null)
         {
@@ -191,7 +191,7 @@ public class AreaAdminController : Controller
             return BadRequest(ModelState);
         }
 
-        if (currentUserId != updateAreaAdminDto.Id)
+        if (currentUserId != updateAreaAdminDto.UserId)
         {
             if (!(currentUserRole == nameof(Role.TechAdmin).ToLower() ||
                   currentUserRole == nameof(Role.MinistryAdmin).ToLower()))
@@ -201,15 +201,15 @@ public class AreaAdminController : Controller
             }
 
             if ((currentUserRole == nameof(Role.MinistryAdmin).ToLower()
-                && !await areaAdminService.IsAreaAdminSubordinateMinistryAsync(currentUserId, updateAreaAdminDto.Id)) ||
+                && !await areaAdminService.IsAreaAdminSubordinateMinistryAsync(currentUserId, updateAreaAdminDto.UserId)) ||
                 (currentUserRole == nameof(Role.RegionAdmin).ToLower()
-                 && !await areaAdminService.IsAreaAdminSubordinateRegionAsync(currentUserId, updateAreaAdminDto.Id)))
+                 && !await areaAdminService.IsAreaAdminSubordinateRegionAsync(currentUserId, updateAreaAdminDto.UserId)))
             {
                 logger.LogDebug("Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
                 return StatusCode(403, "Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
             }
 
-            var updatedRegionAdmin = await areaAdminService.GetByIdAsync(updateAreaAdminDto.Id);
+            var updatedRegionAdmin = await areaAdminService.GetByIdAsync(updateAreaAdminDto.UserId);
             if (updatedRegionAdmin.AccountStatus == AccountStatus.Accepted)
             {
                 logger.LogDebug("Forbidden to update accepted user.");

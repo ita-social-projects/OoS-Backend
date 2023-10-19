@@ -37,7 +37,7 @@ public interface IAreaAdminService
     /// <param name="updateAreaAdminDto">Entity to update.</param>
     /// <param name="token">Valid token with AreaAdminUpdate permissions.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<Either<ErrorResponse, AreaAdminDto>> UpdateAreaAdminAsync(string userId, AreaAdminDto updateAreaAdminDto, string token);
+    Task<Either<ErrorResponse, AreaAdminDto>> UpdateAreaAdminAsync(string userId, UpdateAdminBaseDto updateAreaAdminDto, string token);
 
     /// <summary>
     /// Delete Area Admin.
