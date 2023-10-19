@@ -184,14 +184,13 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
     /// <inheritdoc/>
     public async Task<Either<ErrorResponse, MinistryAdminDto>> UpdateMinistryAdminAsync(
         string userId,
-        MinistryAdminDto updateMinistryAdminDto,
+        BaseUserDto updateMinistryAdminDto,
         string token)
     {
         _ = updateMinistryAdminDto ?? throw new ArgumentNullException(nameof(updateMinistryAdminDto));
 
-        Logger.LogDebug("ProviderAdmin(id): {MinistryAdminId} updating was started. User(id): {UserId}", updateMinistryAdminDto.Id, userId);
+        Logger.LogDebug("MinistryAdmin(id): {MinistryAdminId} updating was started. User(id): {UserId}", updateMinistryAdminDto.Id, userId);
 
-        // TODO Add checking if ministry Admin belongs to Institution and is exist MinistryAdmin with such UserId
         var ministryAdmin = await institutionAdminRepository.GetByIdAsync(updateMinistryAdminDto.Id)
             .ConfigureAwait(false);
 

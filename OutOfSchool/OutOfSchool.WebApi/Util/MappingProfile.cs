@@ -503,8 +503,22 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.RegionId, opt => opt.Ignore())
             .ForMember(dest => dest.RegionName, opt => opt.Ignore());
 
-        CreateMap<UpdateAdminBaseDto, AreaAdminDto>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId));
+        CreateMap<BaseUserDto, AreaAdminBaseDto>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore())
+            .ForMember(dest => dest.CATOTTGId, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore());
+
+        CreateMap<BaseUserDto, RegionAdminBaseDto>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore())
+            .ForMember(dest => dest.CATOTTGId, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore());
+
+        CreateMap<BaseUserDto, MinistryAdminBaseDto>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore());
 
         CreateMap<ProviderChangesLogRequest, ChangesLogFilter>()
             .ForMember(dest => dest.EntityType, opt => opt.Ignore())

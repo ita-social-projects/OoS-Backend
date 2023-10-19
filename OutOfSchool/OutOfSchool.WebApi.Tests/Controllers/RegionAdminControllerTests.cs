@@ -199,7 +199,7 @@ public class RegionAdminControllerTests
     public async Task Update_WithInvalidModel_ReturnsRequestObjectResult()
     {
         // Arrange
-        var updateRegionAdminDto = new RegionAdminDto();
+        var updateRegionAdminDto = new BaseUserDto();
         regionAdminController.ModelState.AddModelError("fakeKey", "Model is invalid");
 
         // Act
@@ -214,13 +214,13 @@ public class RegionAdminControllerTests
     public async Task Update_WithValidModel_ReturnsOkResult()
     {
         // Arrange
-        var updateRegionAdminDto = new RegionAdminDto();
+        var updateRegionAdminDto = new BaseUserDto();
 
         var token = await fakeHttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
 
         regionAdminServiceMock
             .Setup(x => x.UpdateRegionAdminAsync(It.IsAny<string>(), updateRegionAdminDto, token))
-            .ReturnsAsync(updateRegionAdminDto);
+            .ReturnsAsync(new RegionAdminDto());
 
         regionAdminController.ModelState.Clear();
 
@@ -236,7 +236,7 @@ public class RegionAdminControllerTests
     public async Task Update_WithErrorResponse_ReturnsStatusCodeResult()
     {
         // Arrange
-        var updateRegionAdminDto = new RegionAdminDto();
+        var updateRegionAdminDto = new BaseUserDto();
         var errorResponse = new ErrorResponse();
 
         var token = await fakeHttpContext.GetTokenAsync("access_token").ConfigureAwait(false);

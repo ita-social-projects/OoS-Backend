@@ -157,7 +157,7 @@ public class RegionAdminController : Controller
     /// <summary>
     /// To update RegionAdmin entity that already exists.
     /// </summary>
-    /// <param name="updateRegionAdminDto">RegionAdminDto object with new properties.</param>
+    /// <param name="updateRegionAdminDto">BaseUserDto object with new properties.</param>
     /// <returns>RegionAdmin's key.</returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RegionAdminDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -165,7 +165,7 @@ public class RegionAdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HasPermission(Permissions.RegionAdminEdit)]
     [HttpPut]
-    public async Task<ActionResult> Update(RegionAdminDto updateRegionAdminDto)
+    public async Task<ActionResult> Update(BaseUserDto updateRegionAdminDto)
     {
         if (updateRegionAdminDto == null)
         {
