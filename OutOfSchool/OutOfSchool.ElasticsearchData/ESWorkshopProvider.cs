@@ -67,14 +67,13 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
 
         if (!string.IsNullOrWhiteSpace(filter.SearchText))
         {
-            queryContainer &= new MultiMatchQuery()
+            queryContainer &= new QueryStringQuery()
             {
                 Fields = Infer.Field<WorkshopES>(w => w.Title)
-                    .And(Infer.Field<WorkshopES>(w => w.ProviderTitle))
-                    .And(Infer.Field<WorkshopES>(w => w.Keywords))
-                    .And(Infer.Field<WorkshopES>(w => w.Description)),
-                Query = filter.SearchText,
-                Fuzziness = Fuzziness.Auto,
+                        .And(Infer.Field<WorkshopES>(w => w.ProviderTitle))
+                        .And(Infer.Field<WorkshopES>(w => w.Keywords))
+                        .And(Infer.Field<WorkshopES>(w => w.Description)),
+                Query = $"{filter.SearchText}* OR {filter.SearchText}~",
             };
         }
 
