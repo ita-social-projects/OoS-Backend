@@ -166,6 +166,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         {
             var regionAdminDto = await regionAdminService.GetByUserId(currentUserService.UserId).ConfigureAwait(false);
             filter.InstitutionId = regionAdminDto.InstitutionId;
+            filter.CATOTTGId = regionAdminDto.CATOTTGId;
             var childrenIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId);
             catottgs = childrenIds.ToList();
         }
