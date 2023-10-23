@@ -83,7 +83,7 @@ public class CacheService : ICacheService, IDisposable
             var options = new DistributedCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? redisConfig.AbsoluteExpirationRelativeToNowInterval,
-                SlidingExpiration = slidingExpirationInterval ?? redisConfig.SlidingExpirationInterval
+                SlidingExpiration = slidingExpirationInterval ?? redisConfig.SlidingExpirationInterval,
             };
 
             cacheLock.EnterWriteLock();

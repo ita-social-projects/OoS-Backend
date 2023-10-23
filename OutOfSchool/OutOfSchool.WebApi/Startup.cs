@@ -92,6 +92,8 @@ public static class Startup
         services.Configure<GeocodingConfig>(configuration.GetSection(GeocodingConfig.Name));
         services.Configure<ParentConfig>(configuration.GetSection(ParentConfig.Name));
 
+        services.AddMemoryCache();
+
         services.AddLocalization(options => options.ResourcesPath = "Resources");
 
         services.AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
@@ -315,6 +317,11 @@ public static class Startup
             .Bind(configuration.GetSection(RedisConfig.Name))
             .ValidateDataAnnotations();
 
+        // MemoryCache options
+        services.AddOptions<MemoryCacheConfig>()
+            .Bind(configuration.GetSection(MemoryCacheConfig.Name))
+            .ValidateDataAnnotations();
+
         // StatisticReports
         var statisticReportsConfig = configuration.GetSection(StatisticReportConfig.Name).Get<StatisticReportConfig>();
         if (statisticReportsConfig.UseExternalStorage)
@@ -392,6 +399,7 @@ public static class Startup
         });
 
         services.AddSingleton<ICacheService, CacheService>();
+        services.AddSingleton<IMultiLayerCacheService, MultiLayerCache>();
 
         services.AddHealthChecks()
             .AddDbContextCheck<OutOfSchoolDbContext>(
