@@ -105,4 +105,30 @@ public class UserService : IUserService
 
         return user.IsBlocked;
     }
+
+    public async Task Delete(string id)
+    {
+        logger.LogInformation($"Started deleting of user by Id = {id}");
+
+        var user = await repository.GetById(id).ConfigureAwait(false);
+
+        if (user is null)
+        {
+            var message = $"There is no User in the Db with such an id = {id}";
+            logger.LogError(message);
+            throw new ArgumentException(message, nameof(id));
+        }
+
+        try
+        {
+            await repository.Delete(user);
+
+            logger.LogInformation("User is succesfully deleted from database");
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            logger.LogError($"Deleting user with id = {id} - failed");
+            throw;
+        }
+    }
 }
