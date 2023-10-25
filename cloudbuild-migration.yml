@@ -1,0 +1,12 @@
+steps:
+# Build .Net Migrations Bundle as container image
+- name: gcr.io/kaniko-project/executor:latest
+  args:
+  - --dockerfile=OutOfSchool/OutOfSchool.Migrations/Dockerfile
+  - --context=dir://OutOfSchool
+  - --destination=${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-migrations:$SHORT_SHA
+  - --cache=true
+  - --cache-repo=${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/kaniko-cache
+  - --reproducible
+  # Use experimental flag to minimize build speeds
+  - --use-new-run
