@@ -24,5 +24,5 @@ public interface IProviderServiceV2 : IProviderService
     /// </summary>
     /// <param name="id">Key in the table.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    new Task Delete(Guid id);
+    new Task<ResponseDto> Delete(Guid id);
 }

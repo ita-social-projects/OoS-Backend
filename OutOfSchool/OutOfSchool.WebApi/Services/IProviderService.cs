@@ -58,7 +58,7 @@ public interface IProviderService
     /// </summary>
     /// <param name="id">Provider's key.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task Delete(Guid id);
+    Task<ResponseDto> Delete(Guid id);
 
     /// <summary>
     ///  Gets Id of Provider, which owns a Workshop with specified Id.

@@ -262,17 +262,17 @@ public class ProviderControllerTests
     }
 
     [Test]
-    public async Task DeleteProvider_WhenIdIsValid_ReturnsNoContentResult()
+    public async Task DeleteProvider_WhenIdIsValid_ReturnsOkResult()
     {
         // Arrange
         var existingProviderGuid = providers.Select(p => p.Id).FirstOrDefault();
-        providerService.Setup(x => x.Delete(existingProviderGuid));
+        providerService.Setup(x => x.Delete(existingProviderGuid)).ReturnsAsync(new ResponseDto() { HttpStatusCode = HttpStatusCode.OK, IsSuccess = true });
 
         // Act
         var result = await providerController.Delete(existingProviderGuid);
 
         // Assert
-        Assert.IsInstanceOf<NoContentResult>(result);
+        Assert.IsInstanceOf<OkResult>(result);
     }
 
     [Test]
@@ -280,8 +280,9 @@ public class ProviderControllerTests
     {
         // Arrange
         var guid = Guid.NewGuid();
-        var expected = new BadRequestObjectResult(TestDataHelper.GetRandomWords());
-        providerService.Setup(x => x.Delete(guid)).ThrowsAsync(new ArgumentNullException());
+        var errorMessage = TestDataHelper.GetRandomWords();
+        var expected = new BadRequestObjectResult(errorMessage);
+        providerService.Setup(x => x.Delete(guid)).ReturnsAsync(new ResponseDto() { HttpStatusCode = HttpStatusCode.NotFound, IsSuccess = false, Message = errorMessage});
 
         // Act
         var result = await providerController.Delete(guid).ConfigureAwait(false);

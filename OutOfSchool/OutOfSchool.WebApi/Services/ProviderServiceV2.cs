@@ -28,7 +28,8 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
         ICodeficatorService codeficatorService,
         IRegionAdminRepository regionAdminRepository,
         IAverageRatingService averageRatingService,
-        IAreaAdminService areaAdminService)
+        IAreaAdminService areaAdminService,
+        IUserService userService)
         : base(
               providerRepository,
               usersRepository,
@@ -48,8 +49,9 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
               regionAdminService,
               codeficatorService,
               regionAdminRepository,
-              averageRatingService, 
-              areaAdminService)
+              averageRatingService,
+              areaAdminService,
+              userService)
     {
     }
 
@@ -89,7 +91,7 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
             .ConfigureAwait(false);
     }
 
-    public new async Task Delete(Guid id)
+    public new async Task<ResponseDto> Delete(Guid id)
     {
         async Task BeforeDeleteAction(Provider provider)
         {
@@ -104,6 +106,6 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
             }
         }
 
-        await DeleteProviderWithActionBefore(id, BeforeDeleteAction).ConfigureAwait(false);
+        return await DeleteProviderWithActionBefore(id, BeforeDeleteAction).ConfigureAwait(false);
     }
 }

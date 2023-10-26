@@ -33,6 +33,7 @@ public class ProviderService : IProviderService, INotificationReciever
     private readonly IRegionAdminRepository regionAdminRepository;
     private readonly IAverageRatingService averageRatingService;
     private readonly IAreaAdminService areaAdminService;
+    private readonly IUserService userService;
 
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
@@ -61,6 +62,7 @@ public class ProviderService : IProviderService, INotificationReciever
     /// <param name="regionAdminRepository">RegionAdminRepository</param>
     /// <param name="averageRatingService">Average rating service.</param>
     /// <param name="areaAdminService">Service for manage area admin.</param>
+    /// <param name="userService">Service for manage users.</param>
     public ProviderService(
         IProviderRepository providerRepository,
         IEntityRepositorySoftDeleted<string, User> usersRepository,
@@ -81,7 +83,8 @@ public class ProviderService : IProviderService, INotificationReciever
         ICodeficatorService codeficatorService,
         IRegionAdminRepository regionAdminRepository,
         IAverageRatingService averageRatingService,
-        IAreaAdminService areaAdminService)
+        IAreaAdminService areaAdminService,
+        IUserService userService)
     {
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -103,6 +106,7 @@ public class ProviderService : IProviderService, INotificationReciever
         this.regionAdminRepository = regionAdminRepository;
         this.averageRatingService = averageRatingService ?? throw new ArgumentNullException(nameof(averageRatingService));
         this.areaAdminService = areaAdminService ?? throw new ArgumentNullException(nameof(areaAdminService));
+        this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
     }
 
     private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
@@ -261,7 +265,7 @@ public class ProviderService : IProviderService, INotificationReciever
         => await UpdateProviderWithActionBeforeSavingChanges(providerUpdateDto, userId).ConfigureAwait(false);
 
     /// <inheritdoc/>
-    public async Task Delete(Guid id) => await DeleteProviderWithActionBefore(id).ConfigureAwait(false);
+    public async Task<ResponseDto> Delete(Guid id) => await DeleteProviderWithActionBefore(id).ConfigureAwait(false);
 
     /// <inheritdoc/>
     public async Task<Guid> GetProviderIdForWorkshopById(Guid workshopId) =>
@@ -667,35 +671,87 @@ public class ProviderService : IProviderService, INotificationReciever
         }
     }
 
-    private protected async Task DeleteProviderWithActionBefore(Guid id, Func<Provider, Task> actionBeforeDeleting = null)
+    private protected async Task<ResponseDto> DeleteProviderWithActionBefore(Guid id, Func<Provider, Task> actionBeforeDeleting = null)
     {
-        // BUG: Possible bug with deleting provider not owned by the user itself.
-        // TODO: add unit tests to check ownership functionality
         logger.LogInformation("Deleting Provider with Id = {Id} started", id);
 
-        try
-        {
-            var entity = await providerRepository.GetWithNavigations(id).ConfigureAwait(false);
+        var entity = await providerRepository.GetWithNavigations(id).ConfigureAwait(false);
 
-            if (entity is null)
+        if (entity is null)
+        {
+            var message = $"There is no Provider with Id = {id}";
+            logger.LogError(message);
+            return new ResponseDto()
             {
-                throw new ArgumentException($"There is no Provider in DB with Id - {id}");
+                Message = message,
+                HttpStatusCode = HttpStatusCode.NotFound,
+                IsSuccess = false,
+            };
+        }
+
+        if (!(await IsUserHasRightsAsync(currentUserService.UserId, entity)))
+        {
+            var message = $"User with userId = {currentUserService.UserId} has no rights to delete user with id = {entity.UserId}";
+            logger.LogError(message);
+            return new ResponseDto()
+            {
+                Message = message,
+                HttpStatusCode = HttpStatusCode.Forbidden,
+                IsSuccess = false,
+            };
+        }
+
+        if (actionBeforeDeleting != null)
+        {
+            await actionBeforeDeleting(entity).ConfigureAwait(false);
+        }
+
+        await providerRepository.Delete(entity).ConfigureAwait(false);
+
+        logger.LogInformation("Provider with Id = {Id} successfully deleted", id);
+
+        await userService.Delete(entity.UserId);
+
+        logger.LogInformation("User with Id = {entity.UserId} successfully deleted", entity.UserId);
+
+        return new ResponseDto()
+        {
+            HttpStatusCode = HttpStatusCode.OK,
+            IsSuccess = true,
+            Message = "Provider and user was successfully deleted",
+        };
+    }
+
+    private async Task<bool> IsUserHasRightsAsync(string currentUserId, Provider user)
+    {
+        if (currentUserService.IsAdmin())
+        {
+            if (currentUserService.IsMinistryAdmin())
+            {
+                var minAdmin = await ministryAdminService.GetByIdAsync(currentUserId).ConfigureAwait(false);
+                return minAdmin.InstitutionId == user.InstitutionId;
             }
 
-            if (actionBeforeDeleting != null)
+            if (currentUserService.IsRegionAdmin())
             {
-                await actionBeforeDeleting(entity).ConfigureAwait(false);
+                var regionAdmin = await regionAdminService.GetByIdAsync(currentUserId).ConfigureAwait(false);
+                var legalAddress = await addressRepository.GetById(user.LegalAddressId).ConfigureAwait(false);
+                var listOfCATOTTG = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+                return regionAdmin.InstitutionId == user.InstitutionId && listOfCATOTTG.Contains(legalAddress.CATOTTGId);
             }
 
-            await providerRepository.Delete(entity).ConfigureAwait(false);
+            if (currentUserService.IsAreaAdmin())
+            {
+                var areaAdmin = await areaAdminService.GetByIdAsync(currentUserId).ConfigureAwait(false);
+                var legalAddress = await addressRepository.GetById(user.LegalAddressId).ConfigureAwait(false);
+                var listOfCATOTTG = await codeficatorService.GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
+                return areaAdmin.InstitutionId == user.InstitutionId && listOfCATOTTG.Contains(legalAddress.CATOTTGId);
+            }
 
-            logger.LogInformation("Provider with Id = {Id} successfully deleted", id);
+            return true;
         }
-        catch (ArgumentNullException ex)
-        {
-            logger.LogError(ex, "Deleting failed. Provider with Id = {Id} doesn't exist in the system", id);
-            throw;
-        }
+
+        return currentUserId == user.UserId;
     }
 
     private static bool IsNeedInRelatedWorkshopsUpdating(ProviderUpdateDto providerDto, Provider checkProvider)

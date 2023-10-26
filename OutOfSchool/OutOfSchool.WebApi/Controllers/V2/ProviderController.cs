@@ -185,15 +185,18 @@ public class ProviderController : ControllerBase
     [HttpDelete("{uid:guid}")]
     public async Task<IActionResult> Delete(Guid uid)
     {
-        try
+        var result = await providerService.Delete(uid).ConfigureAwait(false);
+
+        if (!result.IsSuccess)
         {
-            await providerService.Delete(uid).ConfigureAwait(false);
-        }
-        catch (ArgumentNullException ex)
-        {
-            return BadRequest(ex.Message);
+            return result.HttpStatusCode switch
+            {
+                HttpStatusCode.Forbidden => Forbid(),
+                HttpStatusCode.NotFound => BadRequest(result.Message),
+                _ => BadRequest(),
+            };
         }
 
-        return NoContent();
+        return Ok();
     }
 }

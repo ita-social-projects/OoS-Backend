@@ -44,6 +44,7 @@ public class ProviderServiceTests
     private Mock<IRegionAdminRepository> regionAdminRepositoryMock;
     private Mock<IAverageRatingService> averageRatingServiceMock;
     private Mock<IAreaAdminService> areaAdminServiceMock;
+    private Mock<IUserService> userServiceMock;
 
     private List<Provider> fakeProviders;
     private User fakeUser;
@@ -75,7 +76,7 @@ public class ProviderServiceTests
         regionAdminRepositoryMock = new Mock<IRegionAdminRepository>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
         areaAdminServiceMock = new Mock<IAreaAdminService>();
-
+        userServiceMock = new Mock<IUserService>();
 
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
 
@@ -99,7 +100,8 @@ public class ProviderServiceTests
             codeficatorServiceMock.Object,
             regionAdminRepositoryMock.Object,
             averageRatingServiceMock.Object,
-            areaAdminServiceMock.Object);
+            areaAdminServiceMock.Object,
+            userServiceMock.Object);
     }
 
     #region Create
@@ -695,35 +697,53 @@ public class ProviderServiceTests
         // Arrange
         var providerToDeleteDto = mapper.Map<ProviderDto>(fakeProviders.RandomItem());//fakeProviders.RandomItem().ToModel();
         var deleteMethodArguments = new List<Provider>();
+        var deleteUserArguments = new List<string>();
         providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(fakeProviders.Single(p => p.Id == providerToDeleteDto.Id));
         providersRepositoryMock.Setup(r => r.Delete(Capture.In(deleteMethodArguments)));
+        userServiceMock.Setup(r => r.Delete(Capture.In(deleteUserArguments)));
+        currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(true);
 
         // Act
         await providerService.Delete(providerToDeleteDto.Id).ConfigureAwait(false);
+        var userToDeleteId = deleteUserArguments.Single();
         var result = mapper.Map<ProviderDto>(deleteMethodArguments.Single());//deleteMethodArguments.Single().ToModel();
 
         // Assert
         TestHelper.AssertDtosAreEqual(providerToDeleteDto, result);
+        Assert.AreEqual(providerToDeleteDto.UserId, userToDeleteId);
     }
 
-    // TODO: providerService.Delete method should be fixed before
-
     [Test]
-    public void Delete_WhenIdIsInvalid_ThrowsArgumentNullException()
+    public async Task Delete_WhenIdIsInvalid_ThrowsArgumentNullException()
     {
         // Arrange
         var fakeProviderInvalidId = Guid.NewGuid();
-        var provider = new Provider()
-        {
-            Id = fakeProviderInvalidId,
-        };
-        providersRepositoryMock.Setup(p => p.Delete(provider)).Returns(Task.CompletedTask);
-        providersRepositoryMock.Setup(p => p.GetWithNavigations(provider.Id)).ThrowsAsync(new ArgumentNullException());
 
-        // Act and Assert
-        Assert.ThrowsAsync<ArgumentNullException>(
-            async () => await providerService.Delete(fakeProviderInvalidId).ConfigureAwait(false));
+        // Act
+        var result = await providerService.Delete(fakeProviderInvalidId).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result.IsSuccess, Is.False);
+        Assert.AreEqual(HttpStatusCode.NotFound, result.HttpStatusCode);
+    }
+
+    [Test]
+    public async Task Delete_WhenUserHasNoRights_ThrowsUnauthorizedAccessException()
+    {
+        // Arrange
+        Guid providerToDeleteId = Guid.NewGuid();
+        string providerToDeleteUserId = fakeUser.Id;
+        providersRepositoryMock.Setup(p => p.GetWithNavigations(providerToDeleteId)).ReturnsAsync(new Provider() { UserId = providerToDeleteUserId });
+        currentUserServiceMock.Setup(p => p.UserId).Returns(string.Empty);
+        currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(false);
+
+        // Act
+        var result = await providerService.Delete(providerToDeleteId).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result.IsSuccess, Is.False);
+        Assert.AreEqual(HttpStatusCode.Forbidden, result.HttpStatusCode);
     }
 
     #endregion
