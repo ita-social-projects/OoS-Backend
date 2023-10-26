@@ -101,7 +101,6 @@ public sealed class MultiLayerCache : IMultiLayerCacheService, IDisposable
                     SlidingExpiration = slidingExpirationInterval ?? memoryCacheConfig.SlidingExpirationInterval,
                     AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? memoryCacheConfig.AbsoluteExpirationRelativeToNowInterval,
                     Priority = CacheItemPriority.Normal,
-                    Size = 1024,
                 };
 
                 _memoryCache.Set(key, value, cacheEntryOptions);
