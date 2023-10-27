@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using AutoMapper;
@@ -267,6 +268,17 @@ public class ChangesLogService : IChangesLogService
 
                 where = where.And(tempPredicate);
             }
+        }
+
+        if (currentUserService.IsAreaAdmin())
+        {
+            var areaAdmin = await areaAdminService.GetByUserId(currentUserService.UserId);
+            where = where.And(p => p.Provider.InstitutionId == areaAdmin.InstitutionId);
+
+            var subSettlementsIds = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
+
+            where = where.And(a => subSettlementsIds.Contains(a.Provider.LegalAddress.CATOTTGId));
         }
 
         var count = await providerAdminChangesLogRepository.Count(where).ConfigureAwait(false);

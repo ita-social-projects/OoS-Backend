@@ -535,6 +535,71 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.All(x => x.InstitutionTitle == provider.Institution.Title));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
     }
+
+    [Test]
+    public async Task GetProviderAdminChangesLog_WhenAreaAdminCalled_ReturnsSearchResult()
+    {
+        // Arange
+        var institutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4");
+        long catottgId = 31737;
+        var subCatottgIds = new List<long> { 31738, 31739, 31740 };
+        var changesLogService = GetChangesLogService();
+        var request = new ProviderAdminChangesLogRequest();
+        provider = provider.WithInstitutionId(institutionId);
+
+        currentUserServiceMock.Setup(x => x.IsAreaAdmin()).Returns(true);
+        areaAdminServiceMock
+            .Setup(x => x.GetByUserId(It.IsAny<string>()))
+            .Returns(Task.FromResult<AreaAdminDto>(new AreaAdminDto()
+            {
+                InstitutionId = institutionId,
+                CATOTTGId = catottgId,
+            }));
+        codeficatorServiceMock
+            .Setup(x => x.GetAllChildrenIdsByParentIdAsync(It.IsAny<long>()))
+            .Returns(Task.FromResult<IEnumerable<long>>(subCatottgIds));
+
+        var totalAmount = 3;
+        var entitiesCount = 3;
+        var providerAdminChangesLogs = Enumerable.Range(1, entitiesCount)
+            .Select(x => new ProviderAdminChangesLog
+            {
+                Id = x,
+                ProviderId = provider.Id,
+                ProviderAdminUser = UserGenerator.Generate(),
+                User = user,
+                Provider = provider,
+                ManagedWorkshop = workshop,
+            })
+            .AsQueryable()
+            .BuildMock();
+
+        providerAdminChangesLogRepository
+            .Setup(repo => repo.Count(It.IsAny<Expression<Func<ProviderAdminChangesLog, bool>>>()))
+            .Returns(Task.FromResult(totalAmount));
+        mapper.Setup(m => m.Map<ShortUserDto>(user))
+            .Returns(new ShortUserDto { Id = user.Id });
+        providerAdminChangesLogRepository
+            .Setup(repo => repo.Get(
+                request.From,
+                request.Size,
+                string.Empty,
+                It.IsAny<Expression<Func<ProviderAdminChangesLog, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<ProviderAdminChangesLog, object>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(providerAdminChangesLogs);
+
+        // Act
+        var result = await changesLogService.GetProviderAdminChangesLogAsync(request);
+
+        // Assert
+        Assert.AreEqual(totalAmount, result.TotalAmount);
+        Assert.AreEqual(entitiesCount, result.Entities.Count);
+        Assert.True(result.Entities.All(x => x.ProviderTitle == provider.FullTitle));
+        Assert.True(result.Entities.All(x => x.InstitutionTitle == provider.Institution.Title));
+        Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        currentUserServiceMock.Verify(x => x.IsRegionAdmin(), Times.Once);
+    }
     #endregion
 
     private IOptions<ChangesLogConfig> CreateChangesLogOptions() =>
