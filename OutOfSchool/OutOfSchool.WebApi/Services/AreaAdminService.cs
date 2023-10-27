@@ -166,7 +166,27 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         {
             var regionAdminDto = await regionAdminService.GetByUserId(currentUserService.UserId).ConfigureAwait(false);
             filter.InstitutionId = regionAdminDto.InstitutionId;
-            filter.CATOTTGId = regionAdminDto.CATOTTGId;
+            if (filter.CATOTTGId != 0)
+            {
+                var childrensIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId);
+                if (!childrensIds.Contains(regionAdminDto.CATOTTGId))
+                {
+                    childrensIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdminDto.CATOTTGId);
+                    if (!childrensIds.Contains(filter.CATOTTGId))
+                    {
+                        filter.CATOTTGId = regionAdminDto.CATOTTGId;
+                    }
+                }
+                else
+                {
+                    filter.CATOTTGId = regionAdminDto.CATOTTGId;
+                }
+            }
+            else
+            {
+                filter.CATOTTGId = regionAdminDto.CATOTTGId;
+            }
+
             var childrenIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId);
             catottgs = childrenIds.ToList();
         }
