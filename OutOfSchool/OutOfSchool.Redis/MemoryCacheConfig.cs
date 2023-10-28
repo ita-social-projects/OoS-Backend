@@ -12,7 +12,4 @@ public class MemoryCacheConfig
 
     [Required]
     public TimeSpan SlidingExpirationInterval { get; set; }
-
-    [Required]
-    public int Size { get; set; }
 }

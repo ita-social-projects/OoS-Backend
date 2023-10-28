@@ -93,10 +93,7 @@ public static class Startup
         services.Configure<GeocodingConfig>(configuration.GetSection(GeocodingConfig.Name));
         services.Configure<ParentConfig>(configuration.GetSection(ParentConfig.Name));
 
-        services.AddMemoryCache(options =>
-        {
-            options.SizeLimit = configuration.GetSection(MemoryCacheConfig.Name).Get<MemoryCacheConfig>().Size;
-        });
+        services.AddMemoryCache();
 
         services.AddLocalization(options => options.ResourcesPath = "Resources");
 

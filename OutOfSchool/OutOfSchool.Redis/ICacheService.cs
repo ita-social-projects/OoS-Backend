@@ -11,13 +11,7 @@ public interface ICacheService
         TimeSpan? absoluteExpirationRelativeToNowInterval = null,
         TimeSpan? slidingExpirationInterval = null);
 
-    Task SetAsync<T>(
-        string key,
-        T value,
-        TimeSpan? absoluteExpirationRelativeToNowInterval = null,
-        TimeSpan? slidingExpirationInterval = null);
-
-    Task ClearCacheAsync(string key);
+    Task RemoveAsync(string key);
 
     Task RefreshAsync(string key);
 }

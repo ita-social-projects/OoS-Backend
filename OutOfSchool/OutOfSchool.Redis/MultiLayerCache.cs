@@ -25,15 +25,15 @@ public sealed class MultiLayerCache : IMultiLayerCacheService, IDisposable
         this.memoryCacheConfig = memoryCacheConfig.Value;
     }
 
-    public Task ClearCacheAsync(string key)
+    public async Task RemoveAsync(string key)
     {
-        return ExecuteMultipleAsync(() =>
+        await ExecuteCacheMethod(async () =>
         {
             cacheLock.EnterWriteLock();
             try
             {
                 _memoryCache.Remove(key);
-                _cacheService.ClearCacheAsync(key);
+                await _cacheService.RemoveAsync(key);
             }
             finally
             {
@@ -46,7 +46,7 @@ public sealed class MultiLayerCache : IMultiLayerCacheService, IDisposable
     {
         T returnValue = default;
 
-        await ExecuteMultipleAsync(() =>
+        await ExecuteCacheMethod(() =>
         {
             cacheLock.EnterReadLock();
             
@@ -72,25 +72,24 @@ public sealed class MultiLayerCache : IMultiLayerCacheService, IDisposable
         return returnValue;
     }
 
-    public Task RefreshAsync(string key)
+    public async Task RefreshAsync(string key)
     {
-        return ExecuteMultipleAsync(() =>
-        {
-            cacheLock.EnterWriteLock();
-            try
-            {
-                _cacheService.RefreshAsync(key);
-            }
-            finally
-            {
-                cacheLock.ExitWriteLock();
-            }
-        });
+        await _cacheService.RefreshAsync(key);
+    }
+    
+    public void Dispose()
+    {
+        cacheLock?.Dispose();
     }
 
-    public Task SetAsync<T>(string key, T value, TimeSpan? absoluteExpirationRelativeToNowInterval = null, TimeSpan? slidingExpirationInterval = null)
+    private Task ExecuteCacheMethod(Action operation)
     {
-        return ExecuteMultipleAsync(() =>
+        return Task.Run(operation);
+    }
+
+    private async Task SetAsync<T>(string key, T value, TimeSpan? absoluteExpirationRelativeToNowInterval = null, TimeSpan? slidingExpirationInterval = null)
+    {
+        await ExecuteCacheMethod(() =>
         {
             cacheLock.EnterWriteLock();
 
@@ -110,15 +109,5 @@ public sealed class MultiLayerCache : IMultiLayerCacheService, IDisposable
                 cacheLock.ExitWriteLock();
             }
         });
-    }
-
-    public void Dispose()
-    {
-        cacheLock?.Dispose();
-    }
-
-    private Task ExecuteMultipleAsync(Action operation)
-    {
-        return Task.Run(operation);
     }
 }
