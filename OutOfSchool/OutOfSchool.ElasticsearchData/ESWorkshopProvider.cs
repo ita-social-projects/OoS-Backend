@@ -74,6 +74,7 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
                         .And(Infer.Field<WorkshopES>(w => w.Keywords))
                         .And(Infer.Field<WorkshopES>(w => w.Description)),
                 Query = $"{filter.SearchText}* OR {filter.SearchText}~",
+                AllowLeadingWildcard = false,
             };
         }
 
