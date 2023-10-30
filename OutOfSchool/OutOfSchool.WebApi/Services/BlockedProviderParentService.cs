@@ -115,7 +115,7 @@ public class BlockedProviderParentService : IBlockedProviderParentService
         return mapper.Map<BlockedProviderParentDto>(currentBlock.FirstOrDefault());
     }
 
-    private async Task<bool> IsBlocked(Guid parentId, Guid providerId)
+    public async Task<bool> IsBlocked(Guid parentId, Guid providerId)
     {
         var currentBlock = await blockedProviderParentRepository.GetByFilter(
             b => b.ParentId == parentId

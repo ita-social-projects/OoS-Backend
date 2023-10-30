@@ -20,6 +20,7 @@ public class ApplicationController : ControllerBase
     private readonly IProviderAdminService providerAdminService;
     private readonly IWorkshopService workshopService;
     private readonly IUserService userService;
+    private readonly IBlockedProviderParentService blockedProviderParentService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationController"/> class.
@@ -34,13 +35,15 @@ public class ApplicationController : ControllerBase
         IProviderService providerService,
         IProviderAdminService providerAdminService,
         IWorkshopService workshopService,
-        IUserService userService)
+        IUserService userService,
+        IBlockedProviderParentService blockedProviderParentService)
     {
         this.applicationService = applicationService;
         this.providerService = providerService;
         this.providerAdminService = providerAdminService;
         this.workshopService = workshopService;
         this.userService = userService;
+        this.blockedProviderParentService = blockedProviderParentService;
     }
 
     /// <summary>
@@ -272,6 +275,20 @@ public class ApplicationController : ControllerBase
         if (await IsCurrentUserBlocked())
         {
             return StatusCode(403, "Forbidden to create the application by the blocked user.");
+        }
+
+        var workshop = await workshopService.GetById(applicationDto.WorkshopId);
+
+        if (workshop is null)
+        {
+            return BadRequest("Workshop does not exist.");
+        }
+
+        bool isBlockedParent = await blockedProviderParentService.IsBlocked(applicationDto.ParentId, workshop.ProviderId).ConfigureAwait(false);
+
+        if (isBlockedParent)
+        {
+            return StatusCode(403, "Forbidden to create the application by the blocked parent.");
         }
 
         if (!ModelState.IsValid)
