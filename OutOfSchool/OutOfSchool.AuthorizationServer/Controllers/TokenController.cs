@@ -270,38 +270,13 @@ public class TokenController : Controller
     // to redirect the user agent to the client application using the appropriate response_mode.
     public IActionResult Deny() => Forbid(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
 
-    [HttpGet("~/connect/openidlogout")]
-    [Obsolete("Use simple GET logout flow as we did with IS4")]
-    public IActionResult OldLogout() => View();
-
-    [ActionName(nameof(OldLogout))]
-    [HttpPost("~/connect/openidlogout")]
-    [ValidateAntiForgeryToken]
-    [Obsolete("Use simple GET logout flow as we did with IS4")]
-    public async Task<IActionResult> DoLogout()
-    {
-        // logger.LogDebug($"{path} started. User(id): {userId}.");
-        // Ask ASP.NET Core Identity to delete the local and external cookies created
-        // when the user agent is redirected from the external identity provider
-        // after a successful authentication flow (e.g Google or Facebook).
-        await _signInManager.SignOutAsync();
-
-        // Returning a SignOutResult will ask OpenIddict to redirect the user agent
-        // to the post_logout_redirect_uri specified by the client application or to
-        // the RedirectUri specified in the authentication properties if none was set.
-
-        // logger.LogInformation($"{path} Successfully logged out. User(id): {userId}");
-        return SignOut(
-            authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-            properties: new AuthenticationProperties
-            {
-                RedirectUri = authorizationServerConfig.RedirectToStartPageUrl,
-            });
-    }
-
     [HttpGet("~/connect/logout")]
+    public IActionResult Logout() => View();
+
+    [ActionName(nameof(Logout))]
+    [HttpPost("~/connect/logout")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Logout()
+    public async Task<IActionResult> DoLogout()
     {
         // logger.LogDebug($"{path} started. User(id): {userId}.");
         // Ask ASP.NET Core Identity to delete the local and external cookies created
