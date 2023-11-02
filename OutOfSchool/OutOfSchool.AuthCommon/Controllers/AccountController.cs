@@ -5,6 +5,7 @@ using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Extensions;
 using OutOfSchool.AuthCommon.ViewModels;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
+using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.AuthCommon.Controllers;
 
@@ -18,6 +19,7 @@ public class AccountController : Controller
     private readonly IRazorViewToStringRenderer renderer;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly AuthServerConfig identityServerConfig;
+    private readonly IUserService userService;
 
     public AccountController(
         SignInManager<User> signInManager,
@@ -26,7 +28,8 @@ public class AccountController : Controller
         ILogger<AccountController> logger,
         IRazorViewToStringRenderer renderer,
         IStringLocalizer<SharedResource> localizer,
-        IOptions<AuthServerConfig> identityServerConfig)
+        IOptions<AuthServerConfig> identityServerConfig,
+        IUserService userService)
     {
         this.signInManager = signInManager;
         this.userManager = userManager;
@@ -36,6 +39,7 @@ public class AccountController : Controller
         this.renderer = renderer;
         this.localizer = localizer;
         this.identityServerConfig = identityServerConfig.Value;
+        this.userService = userService;
     }
 
     [HttpGet]
@@ -423,6 +427,21 @@ public class AccountController : Controller
 
         ModelState.AddModelError(string.Empty, localizer["Change password failed"]);
         return View("Password/ChangePassword");
+    }
+
+    [HttpDelete("{userId}")]
+    [HasPermission(Permissions.UserRemove)]
+    public async Task<ResponseDto> DeleteUser(string userId) // додати шлях?
+    {
+        if (userId is null)
+        {
+            throw new ArgumentNullException(nameof(userId));
+        }
+
+        logger.LogInformation($"Deleting of user with Id = {userId} started");
+
+        return await userService.DeleteUserById(userId);
+
     }
 
     private async Task<IActionResult> SendConfirmEmailProcess(string action, User user, string razorTemplate, object passedData)
