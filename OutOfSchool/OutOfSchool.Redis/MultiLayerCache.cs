@@ -7,12 +7,11 @@ using System.Threading.Tasks;
 
 namespace OutOfSchool.Redis;
 
-public sealed class MultiLayerCache : IMultiLayerCacheService, IDisposable
+public sealed class MultiLayerCache : IMultiLayerCacheService
 {
-    private readonly ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim();
     private readonly IMemoryCache _memoryCache;
     private readonly ICacheService _cacheService;
-    private readonly MemoryCacheConfig memoryCacheConfig;
+    private readonly MemoryCacheConfig _memoryCacheConfig;
 
     public MultiLayerCache(
         ICacheService externalCache,
@@ -20,48 +19,25 @@ public sealed class MultiLayerCache : IMultiLayerCacheService, IDisposable
         IOptions<MemoryCacheConfig> memoryCacheConfig
     )
     {
-        this._memoryCache = inMemoryCache;
-        this._cacheService = externalCache;
-        this.memoryCacheConfig = memoryCacheConfig.Value;
+        _memoryCache = inMemoryCache;
+        _cacheService = externalCache;
+        _memoryCacheConfig = memoryCacheConfig.Value;
     }
 
     public async Task RemoveAsync(string key)
     {
-        await ExecuteCacheMethod(async () =>
-        {
-            cacheLock.EnterWriteLock();
-            try
-            {
-                _memoryCache.Remove(key);
-                await _cacheService.RemoveAsync(key);
-            }
-            finally
-            {
-                cacheLock.ExitWriteLock();
-            }
-        });
+        _memoryCache.Remove(key);
+        await _cacheService.RemoveAsync(key);
     }
 
     public async Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> newValueFactory, TimeSpan? absoluteExpirationRelativeToNowInterval = null, TimeSpan? slidingExpirationInterval = null)
     {
         T returnValue = default;
 
-        await ExecuteCacheMethod(() =>
+        if (_memoryCache.TryGetValue(key, out T value))
         {
-            cacheLock.EnterReadLock();
-            
-            try
-            {
-                if (_memoryCache.TryGetValue(key, out T value))
-                {
-                    returnValue = value;
-                }
-            }
-            finally
-            {
-                cacheLock.ExitReadLock();
-            }
-        });
+            returnValue = value;
+        }
 
         if (EqualityComparer<T>.Default.Equals(returnValue, default))
         {
@@ -72,42 +48,16 @@ public sealed class MultiLayerCache : IMultiLayerCacheService, IDisposable
         return returnValue;
     }
 
-    public async Task RefreshAsync(string key)
-    {
-        await _cacheService.RefreshAsync(key);
-    }
-    
-    public void Dispose()
-    {
-        cacheLock?.Dispose();
-    }
-
-    private Task ExecuteCacheMethod(Action operation)
-    {
-        return Task.Run(operation);
-    }
-
-    private async Task SetAsync<T>(string key, T value, TimeSpan? absoluteExpirationRelativeToNowInterval = null, TimeSpan? slidingExpirationInterval = null)
-    {
-        await ExecuteCacheMethod(() =>
+    private Task SetAsync<T>(string key, T value, TimeSpan? absoluteExpirationRelativeToNowInterval = null, TimeSpan? slidingExpirationInterval = null)
+        => Task.Run(() =>
         {
-            cacheLock.EnterWriteLock();
-
-            try
+            var cacheEntryOptions = new MemoryCacheEntryOptions()
             {
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                {
-                    SlidingExpiration = slidingExpirationInterval ?? memoryCacheConfig.SlidingExpirationInterval,
-                    AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? memoryCacheConfig.AbsoluteExpirationRelativeToNowInterval,
-                    Priority = CacheItemPriority.Normal,
-                };
+                SlidingExpiration = slidingExpirationInterval ?? _memoryCacheConfig.SlidingExpirationInterval,
+                AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? _memoryCacheConfig.AbsoluteExpirationRelativeToNowInterval,
+                Priority = CacheItemPriority.Normal,
+            };
 
-                _memoryCache.Set(key, value, cacheEntryOptions);
-            }
-            finally
-            {
-                cacheLock.ExitWriteLock();
-            }
+            _memoryCache.Set(key, value, cacheEntryOptions);
         });
-    }
 }

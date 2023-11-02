@@ -12,8 +12,6 @@ public interface ICacheService
         TimeSpan? slidingExpirationInterval = null);
 
     Task RemoveAsync(string key);
-
-    Task RefreshAsync(string key);
 }
 
 public interface IMultiLayerCacheService : ICacheService

@@ -74,25 +74,12 @@ public class CacheService : ICacheService, IDisposable
         return returnValue;
     }
 
-    public async Task RemoveAsync(string key)
-        => await ExecuteRedisMethod(async () => {
+    public Task RemoveAsync(string key)
+        => ExecuteRedisMethod(async () => {
             cacheLock.EnterWriteLock();
             try
             {
                 await cache.RemoveAsync(key);
-            }
-            finally
-            {
-                cacheLock.ExitWriteLock();
-            }
-        });
-
-    public async Task RefreshAsync(string key)
-        => await ExecuteRedisMethod(async () => {
-            cacheLock.EnterWriteLock();
-            try
-            {
-                await cache.RefreshAsync(key);
             }
             finally
             {
@@ -148,12 +135,12 @@ public class CacheService : ICacheService, IDisposable
         }
     }
 
-    private async Task SetAsync<T>(
+    private Task SetAsync<T>(
         string key,
         T value,
         TimeSpan? absoluteExpirationRelativeToNowInterval = null,
         TimeSpan? slidingExpirationInterval = null)
-        => await ExecuteRedisMethod(async () => {
+        => ExecuteRedisMethod(async () => {
             var options = new DistributedCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? redisConfig.AbsoluteExpirationRelativeToNowInterval,
