@@ -166,28 +166,20 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         {
             var regionAdminDto = await regionAdminService.GetByUserId(currentUserService.UserId).ConfigureAwait(false);
             filter.InstitutionId = regionAdminDto.InstitutionId;
+            var childrenIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdminDto.CATOTTGId);
             if (filter.CATOTTGId != 0)
             {
-                var childrensIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId);
-                if (!childrensIds.Contains(regionAdminDto.CATOTTGId))
+                if (childrenIds.Contains(filter.CATOTTGId))
                 {
-                    childrensIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdminDto.CATOTTGId);
-                    if (!childrensIds.Contains(filter.CATOTTGId))
-                    {
-                        filter.CATOTTGId = regionAdminDto.CATOTTGId;
-                    }
+                    childrenIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId);
                 }
                 else
                 {
-                    filter.CATOTTGId = regionAdminDto.CATOTTGId;
+                    Logger.LogError($"Region admin with id = {currentUserService.UserId} tries to get list of AreaAdmins from other region");
+                    throw new UnauthorizedAccessException();
                 }
             }
-            else
-            {
-                filter.CATOTTGId = regionAdminDto.CATOTTGId;
-            }
 
-            var childrenIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId);
             catottgs = childrenIds.ToList();
         }
 
