@@ -167,7 +167,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
             var regionAdminDto = await regionAdminService.GetByUserId(currentUserService.UserId).ConfigureAwait(false);
             filter.InstitutionId = regionAdminDto.InstitutionId;
             var childrenIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdminDto.CATOTTGId);
-            if (filter.CATOTTGId != 0)
+            if (filter.CATOTTGId != 0 && filter.CATOTTGId != regionAdminDto.CATOTTGId)
             {
                 if (childrenIds.Contains(filter.CATOTTGId))
                 {
