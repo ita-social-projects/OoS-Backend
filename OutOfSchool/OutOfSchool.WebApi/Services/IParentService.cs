@@ -41,4 +41,18 @@ public interface IParentService
     /// <param name="id">Key in table.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     Task Delete(Guid id);
+
+    /// <summary>
+    /// To block user by id.
+    /// </summary>
+    /// <param name="id">Key in table.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+    Task Block(Guid id);
+
+    /// <summary>
+    /// To block user by id.
+    /// </summary>
+    /// <param name="id">Key in table.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+    Task UnBlock(Guid id);
 }
