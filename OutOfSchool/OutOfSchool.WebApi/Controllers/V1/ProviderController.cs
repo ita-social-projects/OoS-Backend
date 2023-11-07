@@ -274,64 +274,6 @@ public class ProviderController : ControllerBase
     }
 
     /// <summary>
-    /// Update Provider status.
-    /// </summary>
-    /// <param name="request">Provider ID and status to update.</param>
-    /// <returns><see cref="ProviderStatusDto"/>.</returns>
-    [HttpPut]
-    [HasPermission(Permissions.ProviderApprove)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderStatusDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> StatusUpdate([FromBody] ProviderStatusDto request)
-    {
-        var result = await providerService.UpdateStatus(request, GettingUserProperties.GetUserId(User))
-            .ConfigureAwait(false);
-
-        if (result is null)
-        {
-            return NotFound($"There is no Provider in DB with Id - {request.ProviderId}");
-        }
-
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Update Provider license status.
-    /// </summary>
-    /// <param name="request">Provider ID and license status to update.</param>
-    /// <returns><see cref="ProviderLicenseStatusDto"/>.</returns>
-    [HttpPut]
-    [HasPermission(Permissions.ProviderApprove)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderLicenseStatusDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> LicenseStatusUpdate([FromBody] ProviderLicenseStatusDto request)
-    {
-        try
-        {
-            var result = await providerService.UpdateLicenseStatus(request, GettingUserProperties.GetUserId(User))
-                .ConfigureAwait(false);
-
-            if (result is null)
-            {
-                return NotFound($"There is no Provider in DB with Id - {request.ProviderId}");
-            }
-
-            return Ok(result);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-    }
-    /// <summary>
     /// Get Providers that match filter's parameters.
     /// </summary>
     /// <param name="filter">Entity that represents searching parameters.</param>

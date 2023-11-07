@@ -282,33 +282,6 @@ public class ProviderService : IProviderService, INotificationReciever
     public async Task<Guid> GetProviderIdForWorkshopById(Guid workshopId) =>
         await workshopServiceCombiner.GetWorkshopProviderId(workshopId).ConfigureAwait(false);
 
-    public async Task<ProviderStatusDto> UpdateStatus(ProviderStatusDto dto, string userId)
-    {
-        _ = dto ?? throw new ArgumentNullException(nameof(dto));
-
-        var provider = await providerRepository.GetById(dto.ProviderId).ConfigureAwait(false);
-
-        if (provider is null)
-        {
-            logger.LogInformation($"Provider(id) {dto.ProviderId} not found. User(id): {userId}");
-
-            return null;
-        }
-
-        // TODO: validate if current user has permission to update the provider status
-        provider.Status = dto.Status;
-        provider.StatusReason = dto.StatusReason;
-        await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
-
-        logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.Status}");
-
-        await UpdateWorkshopsProviderStatus(dto.ProviderId, dto.Status).ConfigureAwait(false);
-
-        await SendNotification(provider, NotificationAction.Update, true, false).ConfigureAwait(false);
-
-        return dto;
-    }
-
     /// <inheritdoc/>
     public async Task<ResponseDto> Block(ProviderBlockDto providerBlockDto, string token = default)
     {
@@ -395,43 +368,6 @@ public class ProviderService : IProviderService, INotificationReciever
     public async Task<bool> IsBlocked(Guid providerId)
     {
         return (await providerRepository.GetById(providerId).ConfigureAwait(false)).IsBlocked;
-    }
-
-    public async Task<ProviderLicenseStatusDto> UpdateLicenseStatus(ProviderLicenseStatusDto dto, string userId)
-    {
-        _ = dto ?? throw new ArgumentNullException(nameof(dto));
-
-        var provider = await providerRepository.GetById(dto.ProviderId).ConfigureAwait(false);
-
-        if (provider is null)
-        {
-            logger.LogInformation($"Provider(id) {dto.ProviderId} not found. User(id): {userId}");
-
-            return null;
-        }
-
-        if (string.IsNullOrEmpty(provider.License) && dto.LicenseStatus != ProviderLicenseStatus.NotProvided)
-        {
-            logger.LogInformation($"Provider(id) {provider.Id} license is not provided. It cannot be approved. UserId: {userId}");
-            throw new ArgumentException("Provider license is not provided. It cannot be approved.");
-        }
-
-        if (!string.IsNullOrEmpty(provider.License) && dto.LicenseStatus == ProviderLicenseStatus.NotProvided)
-        {
-            logger.LogInformation("Cannot set NotProvided license status when license is provided. " +
-                                  $"Provider: {provider.Id}. License: {provider.License}. UserId: {userId}");
-            throw new ArgumentException("Cannot set NotProvided license status when license is provided.");
-        }
-
-        // TODO: validate if current user has permission to update the provider status
-        provider.LicenseStatus = dto.LicenseStatus;
-        await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
-
-        logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.LicenseStatus}");
-
-        await SendNotification(provider, NotificationAction.Update, false, true).ConfigureAwait(false);
-
-        return dto;
     }
 
     async Task<IEnumerable<string>> INotificationReciever.GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
@@ -799,7 +735,7 @@ public class ProviderService : IProviderService, INotificationReciever
         }
     }
 
-    private async Task SendNotification(
+    protected async Task SendNotification(
         Provider provider,
         NotificationAction notificationAction,
         bool addStatusData,
@@ -864,7 +800,7 @@ public class ProviderService : IProviderService, INotificationReciever
         return regionAdminsIds;
     }
 
-    private async Task UpdateWorkshopsProviderStatus(Guid providerId, ProviderStatus providerStatus)
+    protected async Task UpdateWorkshopsProviderStatus(Guid providerId, ProviderStatus providerStatus)
     {
         var workshops = await workshopServiceCombiner.UpdateProviderStatus(providerId, providerStatus)
            .ConfigureAwait(false);
