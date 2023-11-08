@@ -125,7 +125,7 @@ public class ParentService : IParentService
     /// <inheritdoc/>
     public async Task Block(Guid id)
     {
-        var parent = (await repositoryParent.GetByFilter(x => x.Id == id)).FirstOrDefault();
+        var parent = await repositoryParent.GetById(id).ConfigureAwait(false);
         if (parent is null)
         {
             throw new ArgumentException("Parent with this id not found");
@@ -138,7 +138,7 @@ public class ParentService : IParentService
     /// <inheritdoc/>
     public async Task UnBlock(Guid id)
     {
-        var parent = (await repositoryParent.GetByFilter(x => x.Id == id)).FirstOrDefault();
+        var parent = await repositoryParent.GetById(id).ConfigureAwait(false);
         if (parent is null)
         {
             throw new ArgumentException("Parent with this id not found");
