@@ -65,36 +65,30 @@ public class ParentController : ControllerBase
     /// <summary>
     /// Block Parent entity.
     /// </summary>
-    /// <param name="id">The key in table.</param>
+    /// <param name="id">The key of the Parent entity in the table.</param>
+    /// <param name="isBlocked">A boolean value indicating whether to block the Parent entity (true) or not (false).</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.SystemManagement)]
-    [HttpPost("block")]
+    [HttpPost("BlockParent")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Block(Guid id)
+    public async Task<ActionResult> BlockParent(Guid id, bool isBlocked)
     {
-        await serviceParent.Block(id).ConfigureAwait(false);
+        var result = await serviceParent.BlockParent(id, isBlocked).ConfigureAwait(false);
+
+        if (!result.Succeeded)
+        {
+            if (result.OperationResult.Errors.Any(x => x.Code == "404"))
+            {
+                return NotFound(result.OperationResult);
+            }
+
+            return BadRequest(result.OperationResult);
+        }
 
         return NoContent();
     }
-
-    /// <summary>
-    /// Unblock Parent entity.
-    /// </summary>
-    /// <param name="id">The key in table.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    [HasPermission(Permissions.SystemManagement)]
-    [HttpPost("unblock")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> UnBlock(Guid id)
-    {
-        await serviceParent.UnBlock(id).ConfigureAwait(false);
-
-        return NoContent();
-    }
-}
+ }

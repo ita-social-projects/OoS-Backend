@@ -12,6 +12,7 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
@@ -123,29 +124,31 @@ public class ParentService : IParentService
     }
 
     /// <inheritdoc/>
-    public async Task Block(Guid id)
+    public async Task<Result<bool>> BlockParent(Guid id, bool isBlocked)
     {
         var parent = await repositoryParent.GetById(id).ConfigureAwait(false);
         if (parent is null)
         {
-            throw new ArgumentException("Parent with this id not found");
+            return Result<bool>.Failed(new OperationError
+            {
+                Code = "404",
+                Description = $"ParentId not found: {id}.",
+            });
         }
 
-        parent.User.IsBlocked = true;
-        await repositoryParent.UnitOfWork.CompleteAsync();
-    }
-
-    /// <inheritdoc/>
-    public async Task UnBlock(Guid id)
-    {
-        var parent = await repositoryParent.GetById(id).ConfigureAwait(false);
-        if (parent is null)
+        if (parent.User.IsBlocked == isBlocked)
         {
-            throw new ArgumentException("Parent with this id not found");
+            return Result<bool>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = isBlocked ? $"Block exists for ParentId: {parent.Id}."
+                                        : $"Block not exists for ParentId: {parent.Id}.",
+            });
         }
 
-        parent.User.IsBlocked = false;
+        parent.User.IsBlocked = isBlocked;
         await repositoryParent.UnitOfWork.CompleteAsync();
+        return Result<bool>.Success(true);
     }
 
     private async Task<ShortUserDto> ExecuteUpdate(ShortUserDto dto)

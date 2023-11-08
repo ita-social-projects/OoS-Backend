@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshops;
 
@@ -43,16 +44,10 @@ public interface IParentService
     Task Delete(Guid id);
 
     /// <summary>
-    /// To block user by id.
+    /// To block Parent by id.
     /// </summary>
-    /// <param name="id">Key in table.</param>
+    /// <param name="id">Parent id.</param>
+    /// <param name="isBlocked">True to block, false to unblock.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task Block(Guid id);
-
-    /// <summary>
-    /// To block user by id.
-    /// </summary>
-    /// <param name="id">Key in table.</param>
-    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task UnBlock(Guid id);
+    Task<Result<bool>> BlockParent(Guid id, bool isBlocked);
 }
