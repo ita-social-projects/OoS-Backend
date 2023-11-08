@@ -122,6 +122,32 @@ public class ParentService : IParentService
         return ExecuteUpdate(dto);
     }
 
+    /// <inheritdoc/>
+    public async Task Block(Guid id)
+    {
+        var parent = (await repositoryParent.GetByFilter(x => x.Id == id)).FirstOrDefault();
+        if (parent is null)
+        {
+            throw new ArgumentException("Parent with this id not found");
+        }
+
+        parent.User.IsBlocked = true;
+        await repositoryParent.UnitOfWork.CompleteAsync();
+    }
+
+    /// <inheritdoc/>
+    public async Task UnBlock(Guid id)
+    {
+        var parent = (await repositoryParent.GetByFilter(x => x.Id == id)).FirstOrDefault();
+        if (parent is null)
+        {
+            throw new ArgumentException("Parent with this id not found");
+        }
+
+        parent.User.IsBlocked = false;
+        await repositoryParent.UnitOfWork.CompleteAsync();
+    }
+
     private async Task<ShortUserDto> ExecuteUpdate(ShortUserDto dto)
     {
         logger.LogDebug("Updating Parent with User Id = {UserId} started", dto.Id);

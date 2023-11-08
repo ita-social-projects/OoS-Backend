@@ -16,21 +16,16 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 public class ParentController : ControllerBase
 {
     private readonly IParentService serviceParent;
-    private readonly IUserService userService;
-    private readonly ICurrentUserService currentUserService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ParentController"/> class.
     /// Initialization of ParentController.
     /// </summary>
     /// <param name="serviceParent">Parent service for ParentController.</param>
-    /// <param name="currentUserService">Service for operations with current user.</param>
     public ParentController(
-        IParentService serviceParent,
-        ICurrentUserService currentUserService)
+        IParentService serviceParent)
     {
         this.serviceParent = serviceParent ?? throw new ArgumentNullException(nameof(serviceParent));
-        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
     }
 
     /// <summary>
@@ -73,32 +68,32 @@ public class ParentController : ControllerBase
     /// <param name="id">The key in table.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.SystemManagement)]
-    [HttpPost]
+    [HttpPost("block")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> Block(Guid id)
     {
-        await serviceParent.Block(id, currentUserService.UserId).ConfigureAwait(false);
+        await serviceParent.Block(id).ConfigureAwait(false);
 
         return NoContent();
     }
 
     /// <summary>
-    /// Block Parent entity.
+    /// Unblock Parent entity.
     /// </summary>
     /// <param name="id">The key in table.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.SystemManagement)]
-    [HttpPost]
+    [HttpPost("unblock")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> UnBlock(Guid id)
     {
-        await serviceParent.UnBlock(id, currentUserService.UserId).ConfigureAwait(false);
+        await serviceParent.UnBlock(id).ConfigureAwait(false);
 
         return NoContent();
     }
