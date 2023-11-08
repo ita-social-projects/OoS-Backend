@@ -44,10 +44,10 @@ public interface IParentService
     Task Delete(Guid id);
 
     /// <summary>
-    /// To block Parent by id.
+    /// Block or unblock Parent entity.
     /// </summary>
-    /// <param name="id">Parent id.</param>
-    /// <param name="isBlocked">True to block, false to unblock.</param>
+    /// <param name="id">The key of the Parent entity in the table.</param>
+    /// <param name="isBlocked">A boolean value indicating whether to block the Parent entity (true) or not (false).</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     Task<Result<bool>> BlockParent(Guid id, bool isBlocked);
 }
