@@ -63,7 +63,7 @@ public class ParentController : ControllerBase
     }
 
     /// <summary>
-    /// Block Parent entity.
+    /// Block or unblock Parent entity.
     /// </summary>
     /// <param name="id">The key of the Parent entity in the table.</param>
     /// <param name="isBlocked">A boolean value indicating whether to block the Parent entity (true) or not (false).</param>
@@ -79,16 +79,16 @@ public class ParentController : ControllerBase
     {
         var result = await serviceParent.BlockParent(id, isBlocked).ConfigureAwait(false);
 
-        if (!result.Succeeded)
+        if (result.Succeeded)
         {
-            if (result.OperationResult.Errors.Any(x => x.Code == "404"))
-            {
-                return NotFound(result.OperationResult);
-            }
-
-            return BadRequest(result.OperationResult);
+            return NoContent();
         }
 
-        return NoContent();
+        if (result.OperationResult.Errors.Any(x => x.Code == "404"))
+        {
+            return NotFound(result.OperationResult);
+        }
+
+        return BadRequest(result.OperationResult);
     }
  }

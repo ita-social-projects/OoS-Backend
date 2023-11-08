@@ -141,8 +141,7 @@ public class ParentService : IParentService
             return Result<bool>.Failed(new OperationError
             {
                 Code = "400",
-                Description = isBlocked ? $"Block exists for ParentId: {parent.Id}."
-                                        : $"Block not exists for ParentId: {parent.Id}.",
+                Description = $"ParentId is already {(isBlocked ? "blocked" : "unblocked")}: {parent.Id}.",
             });
         }
 
