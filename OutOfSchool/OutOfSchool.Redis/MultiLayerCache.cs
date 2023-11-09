@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace OutOfSchool.Redis;
@@ -24,7 +23,7 @@ public sealed class MultiLayerCache : IMultiLayerCacheService
         _memoryCacheConfig = memoryCacheConfig.Value;
     }
 
-    public async Task RemoveAsync(string key)
+    public Task RemoveAsync(string key)
     {
         _memoryCache.Remove(key);
         await _cacheService.RemoveAsync(key);
