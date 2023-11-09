@@ -162,6 +162,19 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     public virtual Task<TEntity> GetById(TKey id) => dbSet.FirstOrDefaultAsync(x => x.Id.Equals(id));
 
     /// <inheritdoc/>
+    public virtual Task<TEntity> GetByIdWithDetails(TKey id, string includeProperties = "")
+    {
+        var query = dbSet.Where(x => x.Id.Equals(id));
+        foreach (var includeProperty in includeProperties.Split(
+             new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            query = query.Include(includeProperty);
+        }
+
+        return query.FirstOrDefaultAsync();
+    }
+
+    /// <inheritdoc/>
     public virtual async Task<TEntity> Update(TEntity entity)
     {
         dbContext.Entry(entity).State = EntityState.Modified;

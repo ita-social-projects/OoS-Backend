@@ -66,6 +66,19 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
     public override Task<TEntity> GetById(TKey id) => dbSet.FirstOrDefaultAsync(x => !x.IsDeleted && x.Id.Equals(id));
 
     /// <inheritdoc/>
+    public override Task<TEntity> GetByIdWithDetails(TKey id, string includeProperties = "")
+    {
+        var query = dbSet.Where(x => !x.IsDeleted && x.Id.Equals(id));
+        foreach (var includeProperty in includeProperties.Split(
+             new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            query = query.Include(includeProperty);
+        }
+
+        return query.FirstOrDefaultAsync();
+    }
+
+    /// <inheritdoc/>
     public override Task<int> Count(Expression<Func<TEntity, bool>> whereExpression = null)
     {
         return base.Count(GetWhereExpression(whereExpression));
