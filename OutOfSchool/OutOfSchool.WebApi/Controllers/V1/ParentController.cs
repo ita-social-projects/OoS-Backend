@@ -68,7 +68,7 @@ public class ParentController : ControllerBase
     /// <param name="id">The key of the Parent entity in the table.</param>
     /// <param name="isBlocked">A boolean value indicating whether to block the Parent entity (true) or not (false).</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    [HasPermission(Permissions.SystemManagement)]
+    [HasPermission(Permissions.ParentBlock)]
     [HttpPost("BlockParent")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
