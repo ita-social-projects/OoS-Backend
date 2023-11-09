@@ -126,7 +126,8 @@ public class ParentService : IParentService
     /// <inheritdoc/>
     public async Task<Result<bool>> BlockParent(Guid id, bool isBlocked)
     {
-        var parent = await repositoryParent.GetById(id).ConfigureAwait(false);
+        logger.LogInformation("Changing Block status of Parent by ParentId started. Looking ParentId is {Id}", id);
+        var parent = await repositoryParent.GetByIdWithDetails(id, "User").ConfigureAwait(false);
         if (parent is null)
         {
             return Result<bool>.Failed(new OperationError
@@ -147,6 +148,7 @@ public class ParentService : IParentService
 
         parent.User.IsBlocked = isBlocked;
         await repositoryParent.UnitOfWork.CompleteAsync();
+        logger.LogInformation("Successfully changed Block status of Parent with ParentId = {Id}", id);
         return Result<bool>.Success(true);
     }
 
