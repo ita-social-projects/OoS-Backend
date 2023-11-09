@@ -31,32 +31,22 @@ public sealed class MultiLayerCache : IMultiLayerCacheService
 
     public async Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> newValueFactory, TimeSpan? absoluteExpirationRelativeToNowInterval = null, TimeSpan? slidingExpirationInterval = null)
     {
-        T returnValue = default;
-
         if (_memoryCache.TryGetValue(key, out T value))
         {
-            returnValue = value;
+            return value;
         }
 
-        if (EqualityComparer<T>.Default.Equals(returnValue, default))
+        value = await _cacheService.GetOrAddAsync(key, newValueFactory, absoluteExpirationRelativeToNowInterval, slidingExpirationInterval);
+
+        var cacheEntryOptions = new MemoryCacheEntryOptions()
         {
-            returnValue = await _cacheService.GetOrAddAsync(key, newValueFactory, absoluteExpirationRelativeToNowInterval, slidingExpirationInterval);
-            await SetAsync(key, returnValue, absoluteExpirationRelativeToNowInterval, slidingExpirationInterval);
-        }
+            SlidingExpiration = slidingExpirationInterval ?? _memoryCacheConfig.SlidingExpirationInterval,
+            AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? _memoryCacheConfig.AbsoluteExpirationRelativeToNowInterval,
+            Priority = CacheItemPriority.Normal,
+        };
 
-        return returnValue;
+        _memoryCache.Set(key, value, cacheEntryOptions);
+
+        return value;
     }
-
-    private Task SetAsync<T>(string key, T value, TimeSpan? absoluteExpirationRelativeToNowInterval = null, TimeSpan? slidingExpirationInterval = null)
-        => Task.Run(() =>
-        {
-            var cacheEntryOptions = new MemoryCacheEntryOptions()
-            {
-                SlidingExpiration = slidingExpirationInterval ?? _memoryCacheConfig.SlidingExpirationInterval,
-                AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? _memoryCacheConfig.AbsoluteExpirationRelativeToNowInterval,
-                Priority = CacheItemPriority.Normal,
-            };
-
-            _memoryCache.Set(key, value, cacheEntryOptions);
-        });
 }
