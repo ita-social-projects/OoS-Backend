@@ -26,7 +26,7 @@ public sealed class MultiLayerCache : IMultiLayerCacheService
     public Task RemoveAsync(string key)
     {
         _memoryCache.Remove(key);
-        await _cacheService.RemoveAsync(key);
+        return _cacheService.RemoveAsync(key);
     }
 
     public async Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> newValueFactory, TimeSpan? absoluteExpirationRelativeToNowInterval = null, TimeSpan? slidingExpirationInterval = null)
