@@ -111,7 +111,7 @@ public class ProviderServiceTests
     public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity(string license, ProviderLicenseStatus expectedLicenseStatus)
     {
         // Arrange
-        var dto = ProviderDtoGenerator.Generate();
+        var dto = ProviderCreateDtoGenerator.Generate();
         dto.License = license;
         dto.Status = ProviderStatus.Approved;
 
@@ -155,7 +155,7 @@ public class ProviderServiceTests
     public async Task Create_ValidEntity_UpdatesOwnerIsRegisteredField()
     {
         // Arrange
-        var provider = ProviderDtoGenerator.Generate();
+        var provider = ProviderCreateDtoGenerator.Generate();
         provider.UserId = fakeUser.Id;
         fakeUser.IsRegistered = false;
 
@@ -177,7 +177,7 @@ public class ProviderServiceTests
     public void Create_WhenUserIdExists_ThrowsInvalidOperationException()
     {
         // Arrange
-        var providerToBeCreated = ProviderDtoGenerator.Generate();
+        var providerToBeCreated = ProviderCreateDtoGenerator.Generate();
         fakeProviders.RandomItem().UserId = providerToBeCreated.UserId;
 
         // Act and Assert
@@ -189,7 +189,7 @@ public class ProviderServiceTests
     public async Task Create_WhenActualAddressIsTheSameAsLegal_ActualAddressIsCleared()
     {
         // Arrange
-        var expectedEntity = ProviderDtoGenerator.Generate();
+        var expectedEntity = ProviderCreateDtoGenerator.Generate();
         expectedEntity.ActualAddress = expectedEntity.LegalAddress;
         Provider receivedProvider = default;
         providersRepositoryMock.Setup(x => x.Create(It.IsAny<Provider>())).
@@ -214,7 +214,7 @@ public class ProviderServiceTests
         providersRepositoryMock.Setup(x => x.Create(It.IsAny<Provider>())).Callback<Provider>(p => receivedProvider = p);
 
         // Act
-        await providerService.Create(mapper.Map<ProviderDto>(expectedEntity));// expectedEntity.ToModel());
+        await providerService.Create(mapper.Map<ProviderCreateDto>(expectedEntity));// expectedEntity.ToModel());
 
         // Assert
         Assert.That(receivedProvider.ActualAddress, Is.Not.Null);
@@ -226,7 +226,7 @@ public class ProviderServiceTests
     {
         // Arrange
         providersRepositoryMock.Setup(r => r.SameExists(It.IsAny<Provider>())).Returns(true);
-        var randomProvider = mapper.Map<ProviderDto>(fakeProviders.RandomItem());// fakeProviders.RandomItem().ToModel();
+        var randomProvider = mapper.Map<ProviderCreateDto>(fakeProviders.RandomItem());// fakeProviders.RandomItem().ToModel();
 
         // Act & Assert
         Assert.ThrowsAsync<InvalidOperationException>(async () => await providerService.Create(randomProvider));
