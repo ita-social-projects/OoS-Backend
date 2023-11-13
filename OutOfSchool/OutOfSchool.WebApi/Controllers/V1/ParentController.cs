@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
+using OutOfSchool.WebApi.Models.Parent;
 using OutOfSchool.WebApi.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
@@ -63,10 +64,10 @@ public class ParentController : ControllerBase
     }
 
     /// <summary>
-    /// Block or unblock Parent entity.
+    /// Block or unblock Parent entity based on the provided information.
     /// </summary>
-    /// <param name="id">The key of the Parent entity in the table.</param>
-    /// <param name="isBlocked">A boolean value indicating whether to block the Parent entity (true) or not (false).</param>
+    /// <param name="parentBlockByAdmin">A DTO containing the necessary information to block or unblock a parent,
+    /// including the ParentId, the desired block status, and a reason.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.ParentBlock)]
     [HttpPost("BlockParent")]
@@ -75,9 +76,9 @@ public class ParentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> BlockParent(Guid id, bool isBlocked)
+    public async Task<ActionResult> BlockParent(ParentBlockByAdminDto parentBlockByAdmin)
     {
-        var result = await serviceParent.BlockParent(id, isBlocked).ConfigureAwait(false);
+        var result = await serviceParent.BlockParent(parentBlockByAdmin).ConfigureAwait(false);
 
         if (result.Succeeded)
         {

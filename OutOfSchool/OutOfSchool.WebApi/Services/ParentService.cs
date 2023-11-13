@@ -15,6 +15,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Parent;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Util;
@@ -124,31 +125,31 @@ public class ParentService : IParentService
     }
 
     /// <inheritdoc/>
-    public async Task<Result<bool>> BlockParent(Guid id, bool isBlocked)
+    public async Task<Result<bool>> BlockParent(ParentBlockByAdminDto parentBlock)
     {
-        logger.LogInformation("Changing Block status of Parent by ParentId started. Looking ParentId is {Id}", id);
-        var parent = await repositoryParent.GetByIdWithDetails(id, "User").ConfigureAwait(false);
+        logger.LogInformation("Changing Block status of Parent by ParentId started. Looking ParentId is {Id}", parentBlock.ParentId);
+        var parent = await repositoryParent.GetByIdWithDetails(parentBlock.ParentId, "User").ConfigureAwait(false);
         if (parent is null)
         {
             return Result<bool>.Failed(new OperationError
             {
                 Code = "404",
-                Description = $"ParentId not found: {id}.",
+                Description = $"ParentId not found: {parentBlock.ParentId}.",
             });
         }
 
-        if (parent.User.IsBlocked == isBlocked)
+        if (parent.User.IsBlocked == parentBlock.IsBlocked)
         {
             return Result<bool>.Failed(new OperationError
             {
                 Code = "400",
-                Description = $"ParentId is already {(isBlocked ? "blocked" : "unblocked")}: {parent.Id}.",
+                Description = $"ParentId is already {(parentBlock.IsBlocked ? "blocked" : "unblocked")}: {parent.Id}.",
             });
         }
 
-        parent.User.IsBlocked = isBlocked;
+        parent.User.IsBlocked = parentBlock.IsBlocked;
         await repositoryParent.UnitOfWork.CompleteAsync();
-        logger.LogInformation("Successfully changed Block status of Parent with ParentId = {Id}", id);
+        logger.LogInformation("Successfully changed Block status of Parent with ParentId = {Id}", parentBlock.ParentId);
         return Result<bool>.Success(true);
     }
 

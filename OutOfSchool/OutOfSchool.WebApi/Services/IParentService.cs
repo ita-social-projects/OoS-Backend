@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Parent;
 using OutOfSchool.WebApi.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Services;
@@ -44,10 +45,10 @@ public interface IParentService
     Task Delete(Guid id);
 
     /// <summary>
-    /// Block or unblock Parent entity.
+    /// Block or unblock Parent entity based on the provided information.
     /// </summary>
-    /// <param name="id">The key of the Parent entity in the table.</param>
-    /// <param name="isBlocked">A boolean value indicating whether to block the Parent entity (true) or not (false).</param>
+    /// <param name="parentBlockByAdmin">A DTO containing the necessary information to block or unblock a parent,
+    /// including the ParentId, the desired block status, and a reason.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task<Result<bool>> BlockParent(Guid id, bool isBlocked);
+    Task<Result<bool>> BlockParent(ParentBlockByAdminDto parentBlockByAdmin);
 }
