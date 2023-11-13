@@ -39,7 +39,7 @@ public class ParentService : IParentService
     /// </summary>
     /// <param name="repositoryParent">Repository for parent entity.</param>
     /// <param name="currentUserService">Service for managing current user rights.</param>
-    /// <param name="parentBlockedByAdminLogService"></param>
+    /// <param name="parentBlockedByAdminLogService">Service for logging parent blocking by an administrator.</param>
     /// <param name="repositoryChild">Repository for child entity.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Mapper.</param>

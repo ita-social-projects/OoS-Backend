@@ -49,6 +49,7 @@ public interface IParentService
     /// </summary>
     /// <param name="parentBlockByAdmin">A DTO containing the necessary information to block or unblock a parent,
     /// including the ParentId, the desired block status, and a reason.</param>
-    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+    /// The result contains a boolean indicating the success or failure of the operation.</returns>
     Task<Result<bool>> BlockParent(ParentBlockByAdminDto parentBlockByAdmin);
 }
