@@ -29,6 +29,7 @@ public class ParentService : IParentService
 {
     private readonly IParentRepository repositoryParent;
     private readonly ICurrentUserService currentUserService;
+    private readonly IParentBlockedByAdminLogService parentBlockedByAdminLogService;
     private readonly ILogger<ParentService> logger;
     private readonly IEntityRepositorySoftDeleted<Guid, Child> repositoryChild;
     private readonly IMapper mapper;
@@ -38,12 +39,14 @@ public class ParentService : IParentService
     /// </summary>
     /// <param name="repositoryParent">Repository for parent entity.</param>
     /// <param name="currentUserService">Service for managing current user rights.</param>
+    /// <param name="parentBlockedByAdminLogService"></param>
     /// <param name="repositoryChild">Repository for child entity.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Mapper.</param>
     public ParentService(
         IParentRepository repositoryParent,
         ICurrentUserService currentUserService,
+        IParentBlockedByAdminLogService parentBlockedByAdminLogService,
         ILogger<ParentService> logger,
         IEntityRepositorySoftDeleted<Guid, Child> repositoryChild,
         IMapper mapper)
@@ -53,6 +56,8 @@ public class ParentService : IParentService
         this.repositoryChild = repositoryChild ?? throw new ArgumentNullException(nameof(repositoryChild));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
+        this.parentBlockedByAdminLogService = parentBlockedByAdminLogService
+            ?? throw new ArgumentNullException(nameof(parentBlockedByAdminLogService));
     }
 
     /// <inheritdoc/>
@@ -149,6 +154,11 @@ public class ParentService : IParentService
 
         parent.User.IsBlocked = parentBlock.IsBlocked;
         await repositoryParent.UnitOfWork.CompleteAsync();
+        await parentBlockedByAdminLogService.SaveChangesLogAsync(
+            parent.Id,
+            currentUserService.UserId,
+            parentBlock.Reason,
+            parentBlock.IsBlocked).ConfigureAwait(false);
         logger.LogInformation("Successfully changed Block status of Parent with ParentId = {Id}", parentBlock.ParentId);
         return Result<bool>.Success(true);
     }
