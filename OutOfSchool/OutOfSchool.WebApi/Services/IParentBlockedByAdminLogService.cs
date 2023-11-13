@@ -1,5 +1,8 @@
 ﻿namespace OutOfSchool.WebApi.Services;
 
+/// <summary>
+/// Service interface for logging parent blocking and unblocking actions performed by administrators.
+/// </summary>
 public interface IParentBlockedByAdminLogService
 {
     /// <summary>
