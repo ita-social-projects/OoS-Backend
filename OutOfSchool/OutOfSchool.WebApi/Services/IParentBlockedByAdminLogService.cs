@@ -8,13 +8,11 @@ public interface IParentBlockedByAdminLogService
     /// <param name="parentId"></param>
     /// <param name="userId">ID of user that performs the change.</param>
     /// <param name="reason"></param>
-    /// <param name="oldValue">Old value of the property that is changing.</param>
-    /// <param name="newValue">New value of the property that is changing.</param>
+    /// <param name="isBlocked"></param>
     /// <returns>Number of the added log records.</returns>
     Task<int> SaveChangesLogAsync(
         Guid parentId,
         string userId,
         string reason,
-        string oldValue,
-        string newValue);
+        bool isBlocked);
 }
