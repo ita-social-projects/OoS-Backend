@@ -71,7 +71,7 @@ public class ParentController : ControllerBase
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.ParentBlock)]
     [HttpPost("BlockParent")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -82,7 +82,7 @@ public class ParentController : ControllerBase
 
         if (result.Succeeded)
         {
-            return NoContent();
+            return Ok();
         }
 
         if (result.OperationResult.Errors.Any(x => x.Code == "404"))
