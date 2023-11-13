@@ -1,57 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
+﻿using System.Data;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Common.Extensions;
-using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.AverageRatings;
-using OutOfSchool.WebApi.Services.Images;
-using OutOfSchool.WebApi.Util;
 
-namespace OutOfSchool.WebApi.Services;
+namespace OutOfSchool.WebApi.Services.ProviderServices;
 
 /// <summary>
 /// Implements the interface with CRUD functionality for Provider entity.
 /// </summary>
 public class ProviderService : IProviderService, INotificationReciever
 {
-    private readonly IProviderRepository providerRepository;
-    private readonly IProviderAdminRepository providerAdminRepository;
-    private readonly ILogger<ProviderService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IMapper mapper;
-    private readonly IEntityRepositorySoftDeleted<long, Address> addressRepository;
-    private readonly IWorkshopServicesCombiner workshopServiceCombiner;
-    private readonly IChangesLogService changesLogService;
-    private readonly INotificationService notificationService;
-    private readonly IProviderAdminService providerAdminService;
-    private readonly IInstitutionAdminRepository institutionAdminRepository;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IMinistryAdminService ministryAdminService;
-    private readonly IRegionAdminService regionAdminService;
-    private readonly ICodeficatorService codeficatorService;
-    private readonly IRegionAdminRepository regionAdminRepository;
-    private readonly IAverageRatingService averageRatingService;
-    private readonly IAreaAdminService areaAdminService;
+    private protected readonly IProviderRepository providerRepository;
+    private protected readonly IProviderAdminRepository providerAdminRepository;
+    private protected readonly ILogger<ProviderService> logger;
+    private protected readonly IStringLocalizer<SharedResource> localizer;
+    private protected readonly IMapper mapper;
+    private protected readonly IEntityRepositorySoftDeleted<long, Address> addressRepository;
+    private protected readonly IWorkshopServicesCombiner workshopServiceCombiner;
+    private protected readonly IChangesLogService changesLogService;
+    private protected readonly INotificationService notificationService;
+    private protected readonly IProviderAdminService providerAdminService;
+    private protected readonly IInstitutionAdminRepository institutionAdminRepository;
+    private protected readonly ICurrentUserService currentUserService;
+    private protected readonly IMinistryAdminService ministryAdminService;
+    private protected readonly IRegionAdminService regionAdminService;
+    private protected readonly ICodeficatorService codeficatorService;
+    private protected readonly IRegionAdminRepository regionAdminRepository;
+    private protected readonly IAverageRatingService averageRatingService;
+    private protected readonly IAreaAdminService areaAdminService;
 
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
-    private readonly IEntityRepositorySoftDeleted<string, User> usersRepository;
+    private protected readonly IEntityRepositorySoftDeleted<string, User> usersRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProviderService"/> class.
@@ -436,7 +421,37 @@ public class ProviderService : IProviderService, INotificationReciever
         return recipientIds.Distinct();
     }
 
-    private protected async Task<ProviderDto> CreateProviderWithActionAfterAsync(ProviderCreateDto providerDto, Func<Provider, Task> actionAfterCreation = null)
+    private protected async Task SendNotification(
+    Provider provider,
+    NotificationAction notificationAction,
+    bool addStatusData,
+    bool addLicenseStatusData)
+    {
+        if (provider != null)
+        {
+            var additionalData = new Dictionary<string, string>();
+
+            if (addStatusData)
+            {
+                additionalData.Add("Status", provider.Status.ToString());
+            }
+
+            if (addLicenseStatusData)
+            {
+                additionalData.Add("LicenseStatus", provider.LicenseStatus.ToString());
+            }
+
+            await notificationService.Create(
+                    NotificationType.Provider,
+                    notificationAction,
+                    provider.Id,
+                    this,
+                    additionalData)
+                .ConfigureAwait(false);
+        }
+    }
+
+    private protected async Task<ProviderDto> CreateProviderWithActionAfterAsync(ProviderDto providerDto, Func<Provider, Task> actionAfterCreation = null)
     {
         _ = providerDto ?? throw new ArgumentNullException(nameof(providerDto));
 
@@ -732,36 +747,6 @@ public class ProviderService : IProviderService, INotificationReciever
             var averageRatingsForProvider = averageRatings?.SingleOrDefault(r => r.EntityId == provider.Id);
             provider.Rating = averageRatingsForProvider?.Rate ?? default;
             provider.NumberOfRatings = averageRatingsForProvider?.RateQuantity ?? default;
-        }
-    }
-
-    protected async Task SendNotification(
-        Provider provider,
-        NotificationAction notificationAction,
-        bool addStatusData,
-        bool addLicenseStatusData)
-    {
-        if (provider != null)
-        {
-            var additionalData = new Dictionary<string, string>();
-
-            if (addStatusData)
-            {
-                additionalData.Add("Status", provider.Status.ToString());
-            }
-
-            if (addLicenseStatusData)
-            {
-                additionalData.Add("LicenseStatus", provider.LicenseStatus.ToString());
-            }
-
-            await notificationService.Create(
-                    NotificationType.Provider,
-                    notificationAction,
-                    provider.Id,
-                    this,
-                    additionalData)
-                .ConfigureAwait(false);
         }
     }
 

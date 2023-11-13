@@ -4,7 +4,7 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.AverageRatings;
 
-namespace OutOfSchool.WebApi.Services;
+namespace OutOfSchool.WebApi.Services.ProviderServices;
 
 public class ProviderServiceV2 : ProviderService, IProviderServiceV2
 {
@@ -48,7 +48,7 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
               regionAdminService,
               codeficatorService,
               regionAdminRepository,
-              averageRatingService, 
+              averageRatingService,
               areaAdminService)
     {
     }

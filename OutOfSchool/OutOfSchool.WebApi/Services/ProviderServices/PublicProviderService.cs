@@ -1,42 +1,19 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.AverageRatings;
+using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Services;
 
 /// <summary>
-/// Implements interface for functionality for Private Provider.
+/// Implements interface for functionality for Public Provider.
 /// </summary>
-public class PrivateProviderService : ProviderService, IPrivateProviderService
+public class PublicProviderService : ProviderService, IPublicProviderService
 {
-    private readonly IProviderRepository providerRepository;
-    private readonly IProviderAdminRepository providerAdminRepository;
-    private readonly ILogger<ProviderService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IMapper mapper;
-    private readonly IEntityRepositorySoftDeleted<long, Address> addressRepository;
-    private readonly IWorkshopServicesCombiner workshopServiceCombiner;
-    private readonly IChangesLogService changesLogService;
-    private readonly INotificationService notificationService;
-    private readonly IProviderAdminService providerAdminService;
-    private readonly IInstitutionAdminRepository institutionAdminRepository;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IMinistryAdminService ministryAdminService;
-    private readonly IRegionAdminService regionAdminService;
-    private readonly ICodeficatorService codeficatorService;
-    private readonly IRegionAdminRepository regionAdminRepository;
-    private readonly IAverageRatingService averageRatingService;
-    private readonly IAreaAdminService areaAdminService;
-
-    // TODO: It should be removed after models revision.
-    //       Temporary instance to fill 'Provider' model 'User' property
-    private readonly IEntityRepositorySoftDeleted<string, User> usersRepository;
-
     /// <summary>
-    /// Initializes a new instance of the <see cref="ProviderService"/> class.
+    /// Initializes a new instance of the <see cref="PublicProviderService"/> class.
     /// </summary>
     /// <param name="providerRepository">Provider repository.</param>
     /// <param name="usersRepository">UsersRepository.</param>
@@ -58,7 +35,7 @@ public class PrivateProviderService : ProviderService, IPrivateProviderService
     /// <param name="regionAdminRepository">RegionAdminRepository</param>
     /// <param name="averageRatingService">Average rating service.</param>
     /// <param name="areaAdminService">Service for manage area admin.</param>
-    public PrivateProviderService(
+    public PublicProviderService(
         IProviderRepository providerRepository,
         IEntityRepositorySoftDeleted<string, User> usersRepository,
         ILogger<ProviderService> logger,
@@ -98,9 +75,10 @@ public class PrivateProviderService : ProviderService, IPrivateProviderService
         codeficatorService,
         regionAdminRepository,
         averageRatingService,
-        areaAdminService) { }
+        areaAdminService)
+    { }
 
-    public async Task<ProviderLicenseStatusDto> UpdateLicenseStatus(ProviderLicenseStatusDto dto, string userId)
+    public async Task<ProviderStatusDto> UpdateStatus(ProviderStatusDto dto, string userId)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
 
@@ -113,26 +91,16 @@ public class PrivateProviderService : ProviderService, IPrivateProviderService
             return null;
         }
 
-        if (string.IsNullOrEmpty(provider.License) && dto.LicenseStatus != ProviderLicenseStatus.NotProvided)
-        {
-            logger.LogInformation($"Provider(id) {provider.Id} license is not provided. It cannot be approved. UserId: {userId}");
-            throw new ArgumentException("Provider license is not provided. It cannot be approved.");
-        }
-
-        if (!string.IsNullOrEmpty(provider.License) && dto.LicenseStatus == ProviderLicenseStatus.NotProvided)
-        {
-            logger.LogInformation("Cannot set NotProvided license status when license is provided. " +
-                                  $"Provider: {provider.Id}. License: {provider.License}. UserId: {userId}");
-            throw new ArgumentException("Cannot set NotProvided license status when license is provided.");
-        }
-
         // TODO: validate if current user has permission to update the provider status
-        provider.LicenseStatus = dto.LicenseStatus;
+        provider.Status = dto.Status;
+        provider.StatusReason = dto.StatusReason;
         await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
 
-        logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.LicenseStatus}");
+        logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.Status}");
 
-        await SendNotification(provider, NotificationAction.Update, false, true).ConfigureAwait(false);
+        await UpdateWorkshopsProviderStatus(dto.ProviderId, dto.Status).ConfigureAwait(false);
+
+        await SendNotification(provider, NotificationAction.Update, true, false).ConfigureAwait(false);
 
         return dto;
     }

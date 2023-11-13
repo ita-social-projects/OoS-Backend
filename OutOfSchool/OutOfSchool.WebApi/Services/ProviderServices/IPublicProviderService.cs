@@ -1,17 +1,17 @@
 ﻿using OutOfSchool.WebApi.Models.Providers;
 
-namespace OutOfSchool.WebApi.Services;
+namespace OutOfSchool.WebApi.Services.ProviderServices;
 
 /// <summary>
-/// Defines interface for functionality for Private Provider.
+/// Defines interface for functionality for Public Provider.
 /// </summary>
-public interface IPrivateProviderService
+public interface IPublicProviderService : IProviderService
 {
     /// <summary>
-    /// Updates Provider LicenseStatus.
+    /// Update Provider Status.
     /// </summary>
     /// <param name="dto">Provider to update.</param>
     /// <param name="userId">Id of user that requests update.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
-    Task<ProviderLicenseStatusDto> UpdateLicenseStatus(ProviderLicenseStatusDto dto, string userId);
+    Task<ProviderStatusDto> UpdateStatus(ProviderStatusDto dto, string userId);
 }

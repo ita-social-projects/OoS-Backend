@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 
-namespace OutOfSchool.WebApi.Services;
+namespace OutOfSchool.WebApi.Services.ProviderServices;
 
 /// <summary>
 /// Defines interface for CRUD functionality for Provider entity.
@@ -38,7 +38,7 @@ public interface IProviderService
     /// <param name="id">Key of the User entity in the table.</param>
     /// <param name="isDeputyOrAdmin">Is user a deputy or delegated provider admin.</param>
     /// <returns>Provider.</returns>
-    Task<ProviderDto?> GetByUserId(string id, bool isDeputyOrAdmin = false);
+    Task<ProviderDto> GetByUserId(string id, bool isDeputyOrAdmin = false);
 
     /// <summary>
     /// Get provider's status.

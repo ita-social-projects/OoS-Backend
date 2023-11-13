@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using OutOfSchool.WebApi.Models.Providers;
 
-namespace OutOfSchool.WebApi.Services;
+namespace OutOfSchool.WebApi.Services.ProviderServices;
 
 public interface IProviderServiceV2 : IProviderService
 {
