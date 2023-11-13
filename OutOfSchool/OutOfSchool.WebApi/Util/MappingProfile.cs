@@ -184,7 +184,7 @@ public class MappingProfile : Profile
 
         CreateMap<ProviderDto, ProviderUpdateDto>();
 
-        CreateMap<ProviderCreateDto, Provider>()
+        CreateSoftDeletedMap<ProviderCreateDto, Provider>()
             .ForMember(dest => dest.Workshops, opt => opt.Ignore())
             .ForMember(dest => dest.User, opt => opt.Ignore())
             .ForMember(dest => dest.Institution, opt => opt.Ignore())

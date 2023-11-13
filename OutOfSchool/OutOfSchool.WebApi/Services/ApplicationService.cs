@@ -606,7 +606,10 @@ public class ApplicationService : IApplicationService, INotificationReciever
             predicate = predicate.And(tempPredicate);
         }
 
-        predicate = predicate.And(a => a.IsBlocked == filter.ShowBlocked);
+        if (filter.ShowBlocked != null)
+        {
+            predicate = predicate.And(a => a.IsBlocked == filter.ShowBlocked);
+        }
 
         return predicate;
     }
@@ -615,6 +618,11 @@ public class ApplicationService : IApplicationService, INotificationReciever
         ApplicationFilter filter)
     {
         var sortExpression = new Dictionary<Expression<Func<Application, object>>, SortDirection>();
+
+        if (filter.ShowBlocked is null)
+        {
+            sortExpression.Add(a => a.IsBlocked, SortDirection.Ascending);
+        }
 
         if (filter.OrderByStatus)
         {
