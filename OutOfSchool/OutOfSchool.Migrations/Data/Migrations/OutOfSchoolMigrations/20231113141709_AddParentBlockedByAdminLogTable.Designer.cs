@@ -11,7 +11,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20231113120219_AddParentBlockedByAdminLogTable")]
+    [Migration("20231113141709_AddParentBlockedByAdminLogTable")]
     partial class AddParentBlockedByAdminLogTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1163,7 +1163,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("binary(16)");
 
                     b.Property<string>("Reason")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
 

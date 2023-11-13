@@ -21,7 +21,6 @@ public class ParentBlockedByAdminLog : IKeyedEntity<long>
     [DataType(DataType.DateTime)]
     public DateTime OperationDate { get; set; }
 
-    [Required]
     [MaxLength(500)]
     public string Reason { get; set; }
 
