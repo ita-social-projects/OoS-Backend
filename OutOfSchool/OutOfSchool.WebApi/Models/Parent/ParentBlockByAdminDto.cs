@@ -1,5 +1,5 @@
-﻿using OutOfSchool.WebApi.Validators;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.WebApi.Validators;
 
 namespace OutOfSchool.WebApi.Models.Parent;
 
