@@ -451,7 +451,7 @@ public class ProviderService : IProviderService, INotificationReciever
         }
     }
 
-    private protected async Task<ProviderDto> CreateProviderWithActionAfterAsync(ProviderDto providerDto, Func<Provider, Task> actionAfterCreation = null)
+    private protected async Task<ProviderDto> CreateProviderWithActionAfterAsync(ProviderCreateDto providerDto, Func<Provider, Task> actionAfterCreation = null)
     {
         _ = providerDto ?? throw new ArgumentNullException(nameof(providerDto));
 
