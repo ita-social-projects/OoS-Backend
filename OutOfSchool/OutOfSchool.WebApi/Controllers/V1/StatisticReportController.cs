@@ -1,10 +1,6 @@
-﻿using Google.Api;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Images;
-using OutOfSchool.WebApi.Models.Notifications;
 using OutOfSchool.WebApi.Models.StatisticReports;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Nest;
 
 namespace OutOfSchool.WebApi.Util.Elasticsearch;

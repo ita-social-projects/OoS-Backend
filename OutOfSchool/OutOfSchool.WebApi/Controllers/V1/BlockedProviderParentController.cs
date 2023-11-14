@@ -1,15 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using OutOfSchool.Common.PermissionsModule;
-using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models.Application;
+﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

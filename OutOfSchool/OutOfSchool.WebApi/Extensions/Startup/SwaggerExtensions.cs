@@ -1,14 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using OutOfSchool.Common.Config;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Extensions.Startup;
 
