@@ -184,7 +184,7 @@ public class MappingProfile : Profile
 
         CreateMap<ProviderDto, ProviderUpdateDto>();
 
-        CreateMap<ProviderCreateDto, Provider>()
+        CreateSoftDeletedMap<ProviderCreateDto, Provider>()
             .ForMember(dest => dest.Workshops, opt => opt.Ignore())
             .ForMember(dest => dest.User, opt => opt.Ignore())
             .ForMember(dest => dest.Institution, opt => opt.Ignore())
@@ -196,8 +196,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.LicenseStatus, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
             .ForMember(dest => dest.BlockPhoneNumber, opt => opt.Ignore())
-            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore()) 
-            .ForMember(dest => dest.BlockReason, opt => opt.Ignore()); 
+            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
+            .ForMember(dest => dest.BlockReason, opt => opt.Ignore());
 
         CreateMap<Provider, ProviderCreateDto>()
             .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
