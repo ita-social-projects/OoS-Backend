@@ -430,18 +430,18 @@ public class AccountController : Controller
     }
 
     [HttpDelete("{userId}")]
+    [Route("account/deleteuser/{userId}")]
     [HasPermission(Permissions.UserRemove)]
-    public async Task<ResponseDto> DeleteUser(string userId) // додати шлях?
+    public async Task<ResponseDto> DeleteUser(string userId)
     {
-        if (userId is null)
+        if (string.IsNullOrEmpty(userId))
         {
-            throw new ArgumentNullException(nameof(userId));
+            throw new ArgumentException(nameof(userId));
         }
 
         logger.LogInformation($"Deleting of user with Id = {userId} started");
 
         return await userService.DeleteUserById(userId);
-
     }
 
     private async Task<IActionResult> SendConfirmEmailProcess(string action, User user, string razorTemplate, object passedData)
