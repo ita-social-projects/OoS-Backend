@@ -1,9 +1,12 @@
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using AutoMapper;
+using Google.Apis.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services;
@@ -11,6 +14,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.AverageRatings;
@@ -64,6 +68,9 @@ public class ProviderServiceUpdate
         var averageRatingService = new Mock<IAverageRatingService>();
         var areaAdminServiceMock = new Mock<IAreaAdminService>();
         var userServiceMock = new Mock<IUserService>();
+        var authorizationServerConfigMock = new Mock<IOptions<AuthorizationServerConfig>>();
+        var communicationConfigMock = new Mock<IOptions<CommunicationConfig>>();
+        var httpClientFactoryMock = new Mock<System.Net.Http.IHttpClientFactory>();
 
         this.providerService = new ProviderService(
             providerRepository,
@@ -86,7 +93,10 @@ public class ProviderServiceUpdate
             regionAdminRepository.Object,
             averageRatingService.Object,
             areaAdminServiceMock.Object,
-            userServiceMock.Object);
+            userServiceMock.Object,
+            authorizationServerConfigMock.Object,
+            communicationConfigMock.Object,
+            httpClientFactoryMock.Object);
     }
 
     [Test]

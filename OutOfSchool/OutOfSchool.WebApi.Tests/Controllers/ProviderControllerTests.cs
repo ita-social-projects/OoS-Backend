@@ -16,6 +16,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
@@ -266,7 +267,7 @@ public class ProviderControllerTests
     {
         // Arrange
         var existingProviderGuid = providers.Select(p => p.Id).FirstOrDefault();
-        providerService.Setup(x => x.Delete(existingProviderGuid)).ReturnsAsync(new ResponseDto() { HttpStatusCode = HttpStatusCode.OK, IsSuccess = true });
+        providerService.Setup(x => x.Delete(existingProviderGuid, It.IsAny<string>())).Returns(new Task<Either<ErrorResponse, ResponseDto>>(new ResponseDto() { HttpStatusCode = HttpStatusCode.OK, IsSuccess = true }));
 
         // Act
         var result = await providerController.Delete(existingProviderGuid);
@@ -282,7 +283,7 @@ public class ProviderControllerTests
         var guid = Guid.NewGuid();
         var errorMessage = TestDataHelper.GetRandomWords();
         var expected = new BadRequestObjectResult(errorMessage);
-        providerService.Setup(x => x.Delete(guid)).ReturnsAsync(new ResponseDto() { HttpStatusCode = HttpStatusCode.NotFound, IsSuccess = false, Message = errorMessage});
+        providerService.Setup(x => x.Delete(guid, It.IsAny<string>())).ReturnsAsync(new ResponseDto() { HttpStatusCode = HttpStatusCode.NotFound, IsSuccess = false, Message = errorMessage});
 
         // Act
         var result = await providerController.Delete(guid).ConfigureAwait(false);

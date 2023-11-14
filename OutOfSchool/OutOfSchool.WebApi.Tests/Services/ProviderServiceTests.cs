@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
@@ -16,6 +18,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
@@ -705,7 +708,7 @@ public class ProviderServiceTests
         currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(true);
 
         // Act
-        await providerService.Delete(providerToDeleteDto.Id).ConfigureAwait(false);
+        await providerService.Delete(providerToDeleteDto.Id, It.IsAny<string>()).ConfigureAwait(false);
         var userToDeleteId = deleteUserArguments.Single();
         var result = mapper.Map<ProviderDto>(deleteMethodArguments.Single());//deleteMethodArguments.Single().ToModel();
 
@@ -721,10 +724,10 @@ public class ProviderServiceTests
         var fakeProviderInvalidId = Guid.NewGuid();
 
         // Act
-        var result = await providerService.Delete(fakeProviderInvalidId).ConfigureAwait(false);
+        var result = await providerService.Delete(fakeProviderInvalidId, It.IsAny<string>()).ConfigureAwait(false);
 
         // Assert
-        Assert.That(result.IsSuccess, Is.False);
+        Assert.That(result, Is.False);
         Assert.AreEqual(HttpStatusCode.NotFound, result.HttpStatusCode);
     }
 
@@ -739,7 +742,7 @@ public class ProviderServiceTests
         currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(false);
 
         // Act
-        var result = await providerService.Delete(providerToDeleteId).ConfigureAwait(false);
+        var result = await providerService.Delete(providerToDeleteId, It.IsAny<string>()).ConfigureAwait(false);
 
         // Assert
         Assert.That(result.IsSuccess, Is.False);

@@ -16,6 +16,7 @@ using OutOfSchool.AuthCommon;
 using OutOfSchool.Common;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.RazorTemplatesData.Services;
+using OutOfSchool.AuthCommon.Services.Interfaces;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
 
@@ -29,6 +30,7 @@ public class AccountControllerTests
     private readonly Mock<IStringLocalizer<SharedResource>> fakeLocalizer;
     private readonly Mock<IRazorViewToStringRenderer> fakeRazorViewToStringRenderer;
     private readonly Mock<IOptions<AuthServerConfig>> fakeIdentityServerConfig;
+    private readonly Mock<IUserService> fakeUserService;
 
     public AccountControllerTests()
     {
@@ -39,6 +41,7 @@ public class AccountControllerTests
         fakeLocalizer = new Mock<IStringLocalizer<SharedResource>>();
         fakeRazorViewToStringRenderer = new Mock<IRazorViewToStringRenderer>();
         fakeIdentityServerConfig = new Mock<IOptions<AuthServerConfig>>();
+        fakeUserService = new Mock<IUserService>();
     }
 
     [SetUp]
@@ -59,7 +62,8 @@ public class AccountControllerTests
             fakeLogger.Object,
             fakeRazorViewToStringRenderer.Object,
             fakeLocalizer.Object,
-            fakeIdentityServerConfig.Object
+            fakeIdentityServerConfig.Object,
+            fakeUserService.Object
         );
         
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
