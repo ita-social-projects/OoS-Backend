@@ -1,6 +1,4 @@
-﻿using Google.Api;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 

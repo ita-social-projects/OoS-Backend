@@ -2,7 +2,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;

@@ -1,6 +1,4 @@
-﻿using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.AuthCommon.Config;
