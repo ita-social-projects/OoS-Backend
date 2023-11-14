@@ -1,23 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.Tests.Common;
-using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Application;
-using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 

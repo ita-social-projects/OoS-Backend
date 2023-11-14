@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
-using Bogus;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
@@ -23,7 +22,6 @@ using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
-using Quartz.Impl.AdoJobStore.Common;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
