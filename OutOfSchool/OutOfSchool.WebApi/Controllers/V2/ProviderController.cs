@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.WebApi.Common;
@@ -185,18 +186,17 @@ public class ProviderController : ControllerBase
     [HttpDelete("{uid:guid}")]
     public async Task<IActionResult> Delete(Guid uid)
     {
-        var result = await providerService.Delete(uid).ConfigureAwait(false);
+        var result = await providerService.Delete(
+            uid,
+            await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
+            .ConfigureAwait(false);
 
-        if (!result.IsSuccess)
-        {
-            return result.HttpStatusCode switch
+        return result.Match<ActionResult>(
+            error => StatusCode((int)error.HttpStatusCode, error.Message),
+            result =>
             {
-                HttpStatusCode.Forbidden => Forbid(),
-                HttpStatusCode.NotFound => BadRequest(result.Message),
-                _ => BadRequest(),
-            };
-        }
-
-        return Ok();
+                logger.LogInformation("Successfully deleted Provider with id: {uid}", uid);
+                return Ok();
+            });
     }
 }

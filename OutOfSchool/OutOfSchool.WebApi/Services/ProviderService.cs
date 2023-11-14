@@ -17,7 +17,6 @@ public class ProviderService : IProviderService, INotificationReciever
 {
     private readonly IProviderRepository providerRepository;
     private readonly IProviderAdminRepository providerAdminRepository;
-    private readonly ILogger<ProviderService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
     private readonly IEntityRepositorySoftDeleted<long, Address> addressRepository;
@@ -34,6 +33,7 @@ public class ProviderService : IProviderService, INotificationReciever
     private readonly IAverageRatingService averageRatingService;
     private readonly IAreaAdminService areaAdminService;
     private readonly IUserService userService;
+    private readonly AuthorizationServerConfig authorizationServerConfig;
 
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
@@ -63,6 +63,8 @@ public class ProviderService : IProviderService, INotificationReciever
     /// <param name="averageRatingService">Average rating service.</param>
     /// <param name="areaAdminService">Service for manage area admin.</param>
     /// <param name="userService">Service for manage users.</param>
+    /// <param name="authorizationServerConfig">Path to authorization server.</param>
+    /// <param name="communicationService">Service for communication.</param>
     public ProviderService(
         IProviderRepository providerRepository,
         IEntityRepositorySoftDeleted<string, User> usersRepository,
@@ -84,14 +86,15 @@ public class ProviderService : IProviderService, INotificationReciever
         IRegionAdminRepository regionAdminRepository,
         IAverageRatingService averageRatingService,
         IAreaAdminService areaAdminService,
-        IUserService userService)
+        IUserService userService,
+        IOptions<AuthorizationServerConfig> authorizationServerConfig,
+        ICommunicationService communicationService))
     {
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.addressRepository = addressRepository ?? throw new ArgumentNullException(nameof(addressRepository));
         this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
         this.usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.workshopServiceCombiner = workshopServiceCombiner ?? throw new ArgumentNullException(nameof(workshopServiceCombiner));
         this.providerAdminRepository = providerAdminRepository ?? throw new ArgumentNullException(nameof(providerAdminRepository));
         ProviderImagesService = providerImagesService ?? throw new ArgumentNullException(nameof(providerImagesService));
@@ -107,6 +110,7 @@ public class ProviderService : IProviderService, INotificationReciever
         this.averageRatingService = averageRatingService ?? throw new ArgumentNullException(nameof(averageRatingService));
         this.areaAdminService = areaAdminService ?? throw new ArgumentNullException(nameof(areaAdminService));
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        this.authorizationServerConfig = authorizationServerConfig.Value ?? throw new ArgumentNullException(nameof(authorizationServerConfig));
     }
 
     private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
@@ -265,7 +269,7 @@ public class ProviderService : IProviderService, INotificationReciever
         => await UpdateProviderWithActionBeforeSavingChanges(providerUpdateDto, userId).ConfigureAwait(false);
 
     /// <inheritdoc/>
-    public async Task<ResponseDto> Delete(Guid id) => await DeleteProviderWithActionBefore(id).ConfigureAwait(false);
+    public async Task<Either<ErrorResponse, ActionResult>> Delete(Guid id, string token) => await DeleteProviderWithActionBefore(id, token).ConfigureAwait(false);
 
     /// <inheritdoc/>
     public async Task<Guid> GetProviderIdForWorkshopById(Guid workshopId) =>
@@ -671,7 +675,7 @@ public class ProviderService : IProviderService, INotificationReciever
         }
     }
 
-    private protected async Task<ResponseDto> DeleteProviderWithActionBefore(Guid id, Func<Provider, Task> actionBeforeDeleting = null)
+    private protected async Task<Either<ErrorResponse, ActionResult>> DeleteProviderWithActionBefore(Guid id, string token, Func<Provider, Task> actionBeforeDeleting = null)
     {
         logger.LogInformation("Deleting Provider with Id = {Id} started", id);
 
@@ -681,11 +685,10 @@ public class ProviderService : IProviderService, INotificationReciever
         {
             var message = $"There is no Provider with Id = {id}";
             logger.LogError(message);
-            return new ResponseDto()
+            return new ErrorResponse()
             {
                 Message = message,
                 HttpStatusCode = HttpStatusCode.NotFound,
-                IsSuccess = false,
             };
         }
 
@@ -693,11 +696,10 @@ public class ProviderService : IProviderService, INotificationReciever
         {
             var message = $"User with userId = {currentUserService.UserId} has no rights to delete user with id = {entity.UserId}";
             logger.LogError(message);
-            return new ResponseDto()
+            return new ErrorResponse()
             {
                 Message = message,
                 HttpStatusCode = HttpStatusCode.Forbidden,
-                IsSuccess = false,
             };
         }
 
@@ -714,12 +716,32 @@ public class ProviderService : IProviderService, INotificationReciever
 
         logger.LogInformation("User with Id = {entity.UserId} successfully deleted", entity.UserId);
 
-        return new ResponseDto()
+        var request = new Request()
         {
-            HttpStatusCode = HttpStatusCode.OK,
-            IsSuccess = true,
-            Message = "Provider and user was successfully deleted",
+            HttpMethodType = HttpMethodType.Delete,
+            Url = new Uri(authorizationServerConfig.Authority, "account/deleteuser/" + entity.UserId),
+            Token = token,
         };
+
+        logger.LogDebug(
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
+            request.HttpMethodType,
+            currentUserService.UserId,
+            request.Url);
+
+        var response = await SendRequest<ResponseDto>(request).ConfigureAwait(false);
+
+        return response
+            .FlatMap<ResponseDto>(r => r.IsSuccess
+            ? r
+            : new ErrorResponse()
+            {
+                HttpStatusCode = r.HttpStatusCode,
+                Message = r.Message,
+            })
+            .Map(r => r.Result is not null
+            ? JsonConvert.DeserializeObject<ActionResult>(r.Result.ToString())
+            : null);
     }
 
     private async Task<bool> IsUserHasRightsAsync(string currentUserId, Provider user)

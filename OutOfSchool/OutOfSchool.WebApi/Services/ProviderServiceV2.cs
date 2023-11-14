@@ -1,5 +1,8 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.AverageRatings;
@@ -29,7 +32,10 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
         IRegionAdminRepository regionAdminRepository,
         IAverageRatingService averageRatingService,
         IAreaAdminService areaAdminService,
-        IUserService userService)
+        IUserService userService,
+        IOptions<AuthorizationServerConfig> authorizationServerConfig,
+        IOptions<CommunicationConfig> communicationConfig,
+        IHttpClientFactory httpClientFactory)
         : base(
               providerRepository,
               usersRepository,
@@ -51,7 +57,10 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
               regionAdminRepository,
               averageRatingService,
               areaAdminService,
-              userService)
+              userService,
+              authorizationServerConfig,
+              communicationConfig,
+              httpClientFactory)
     {
     }
 
@@ -91,7 +100,7 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
             .ConfigureAwait(false);
     }
 
-    public new async Task<ResponseDto> Delete(Guid id)
+    public new async Task<Either<ErrorResponse, ActionResult>> Delete(Guid id, string token)
     {
         async Task BeforeDeleteAction(Provider provider)
         {
@@ -106,6 +115,6 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
             }
         }
 
-        return await DeleteProviderWithActionBefore(id, BeforeDeleteAction).ConfigureAwait(false);
+        return await DeleteProviderWithActionBefore(id, token, BeforeDeleteAction).ConfigureAwait(false);
     }
 }
