@@ -1,9 +1,6 @@
 ﻿using AutoMapper;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
-using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 using System.Linq.Expressions;
 
 namespace OutOfSchool.WebApi.Services;

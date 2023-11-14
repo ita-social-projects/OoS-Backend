@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using AutoMapper;
 using Castle.Core.Internal;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +7,6 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;

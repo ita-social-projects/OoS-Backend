@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using OutOfSchool.WebApi.Models;
+﻿using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Services;

@@ -4,7 +4,6 @@ using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Application;
 
 namespace OutOfSchool.WebApi.Services;
 

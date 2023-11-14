@@ -1,27 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
+﻿using System.Data;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Common.Extensions;
-using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.AverageRatings;
-using OutOfSchool.WebApi.Services.Images;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services;
 
