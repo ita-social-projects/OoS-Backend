@@ -2,15 +2,10 @@
 using OutOfSchool.Common.Enums;
 using OutOfSchool.WebApi.Models.Providers;
 using System;
-using System;
 using System.Collections.Generic;
-
-using Bogus;
-using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 public static class ProviderCreateDtoGenerator

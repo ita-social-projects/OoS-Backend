@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Models;
+﻿using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshops;
-using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services;
 

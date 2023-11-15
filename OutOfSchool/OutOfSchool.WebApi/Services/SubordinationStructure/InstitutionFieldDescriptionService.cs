@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Redis;
-using OutOfSchool.Services.Models.SubordinationStructure;
-using OutOfSchool.Services.Repository;
+﻿using AutoMapper;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
 
 namespace OutOfSchool.WebApi.Services.SubordinationStructure;

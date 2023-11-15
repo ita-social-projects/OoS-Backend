@@ -1,10 +1,5 @@
-﻿using System;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using OutOfSchool.WebApi.Common.QuartzConstants;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Elasticsearch;
 using Quartz;
 

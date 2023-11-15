@@ -11,14 +11,12 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Changes;
 using OutOfSchool.WebApi.Services;
-using static OutOfSchool.WebApi.Tests.Services.Database.ChangesLogRepositoryTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using Grpc.Core;
+﻿using Grpc.Core;
 using Grpc.Net.Client;
 using Grpc.Net.Client.Configuration;
 using Microsoft.Extensions.Options;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Services.GRPC;
 
 namespace OutOfSchool.GRPC;
 

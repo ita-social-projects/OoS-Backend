@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using OutOfSchool.WebApi.Common;
+﻿using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 
 namespace OutOfSchool.WebApi.Services;

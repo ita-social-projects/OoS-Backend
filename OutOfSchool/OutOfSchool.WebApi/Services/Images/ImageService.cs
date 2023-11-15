@@ -1,22 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Services.Common.Exceptions;
-using OutOfSchool.Services.Models;
+﻿using OutOfSchool.Services.Common.Exceptions;
 using OutOfSchool.Services.Models.Images;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Common.Resources;
 using OutOfSchool.WebApi.Common.Resources.Codes;
-using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Images;
 
 namespace OutOfSchool.WebApi.Services.Images;

@@ -196,7 +196,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.LicenseStatus, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
             .ForMember(dest => dest.BlockPhoneNumber, opt => opt.Ignore())
-            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore()) 
+            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.BlockReason, opt => opt.Ignore());
 
         CreateMap<Provider, ProviderCreateDto>()

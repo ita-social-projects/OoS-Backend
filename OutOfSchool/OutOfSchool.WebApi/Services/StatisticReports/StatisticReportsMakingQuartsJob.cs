@@ -1,5 +1,4 @@
-﻿using OutOfSchool.WebApi.Services.Gcp;
-using Quartz;
+﻿using Quartz;
 
 namespace OutOfSchool.WebApi.Services.StatisticReports;
 

@@ -1,6 +1,5 @@
 ﻿using OutOfSchool.WebApi.Common.QuartzConstants;
 using OutOfSchool.WebApi.Services.AverageRatings;
-using OutOfSchool.WebApi.Services.StatisticReports;
 using Quartz;
 
 namespace OutOfSchool.WebApi.Extensions.Startup;
