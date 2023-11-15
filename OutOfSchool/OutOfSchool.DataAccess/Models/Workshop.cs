@@ -120,4 +120,7 @@ public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>, ISo
     public virtual List<Image<Workshop>> Images { get; set; }
 
     public bool IsBlocked { get; set; } = false;
+
+    [DataType(DataType.DateTime)]
+    public DateTime UpdatedAt { get; set; }
 }
