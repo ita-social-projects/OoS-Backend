@@ -82,7 +82,7 @@ public class ParentController : ControllerBase
             return Ok();
         }
 
-        if (result.OperationResult.Errors.Any(x => x.Code == "404"))
+        if (result.OperationResult.Errors.Any(x => x.Code == StatusCodes.Status404NotFound.ToString()))
         {
             return NotFound(result.OperationResult);
         }

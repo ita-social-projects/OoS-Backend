@@ -123,7 +123,7 @@ public class ParentService : IParentService
         {
             return Result<bool>.Failed(new OperationError
             {
-                Code = "404",
+                Code = StatusCodes.Status404NotFound.ToString(),
                 Description = $"ParentId not found: {parentBlockByAdmin.ParentId}.",
             });
         }
@@ -132,7 +132,7 @@ public class ParentService : IParentService
         {
             return Result<bool>.Failed(new OperationError
             {
-                Code = "400",
+                Code = StatusCodes.Status400BadRequest.ToString(),
                 Description = $"ParentId is already {(parentBlockByAdmin.ToggleBlock ? "blocked" : "unblocked")}: {parent.Id}.",
             });
         }
