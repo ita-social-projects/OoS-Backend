@@ -7,6 +7,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.AverageRatings;
+using OutOfSchool.WebApi.Services.Communication.ICommunication;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -34,6 +35,8 @@ public class ProviderService : IProviderService, INotificationReciever
     private readonly IAreaAdminService areaAdminService;
     private readonly IUserService userService;
     private readonly AuthorizationServerConfig authorizationServerConfig;
+    private readonly ICommunicationService communicationService;
+    private readonly ILogger<ProviderService> logger;
 
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
@@ -111,6 +114,8 @@ public class ProviderService : IProviderService, INotificationReciever
         this.areaAdminService = areaAdminService ?? throw new ArgumentNullException(nameof(areaAdminService));
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         this.authorizationServerConfig = authorizationServerConfig.Value ?? throw new ArgumentNullException(nameof(authorizationServerConfig));
+        this.communicationService = communicationService ?? throw new ArgumentNullException(nameof(communicationService));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
@@ -729,7 +734,7 @@ public class ProviderService : IProviderService, INotificationReciever
             currentUserService.UserId,
             request.Url);
 
-        var response = await SendRequest<ResponseDto>(request).ConfigureAwait(false);
+        var response = await communicationService.SendRequest<ResponseDto>(request).ConfigureAwait(false);
 
         return response
             .FlatMap<ResponseDto>(r => r.IsSuccess

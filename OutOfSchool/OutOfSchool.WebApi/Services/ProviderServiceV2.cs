@@ -6,6 +6,7 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.AverageRatings;
+using OutOfSchool.WebApi.Services.Communication.ICommunication;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -34,8 +35,7 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
         IAreaAdminService areaAdminService,
         IUserService userService,
         IOptions<AuthorizationServerConfig> authorizationServerConfig,
-        IOptions<CommunicationConfig> communicationConfig,
-        IHttpClientFactory httpClientFactory)
+        ICommunicationService communicationService)
         : base(
               providerRepository,
               usersRepository,
@@ -59,8 +59,7 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
               areaAdminService,
               userService,
               authorizationServerConfig,
-              communicationConfig,
-              httpClientFactory)
+              communicationService)
     {
     }
 
