@@ -7,6 +7,7 @@ using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Services.AverageRatings;
+using OutOfSchool.WebApi.Services.Communication.ICommunication;
 using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 using OutOfSchool.WebApi.Services.Strategies.WorkshopStrategies;
 using OutOfSchool.WebApi.Util.Mapping;
@@ -136,6 +137,8 @@ public static class Startup
         services.AddScoped<IMinistryAdminService, MinistryAdminService>();
         services.AddScoped<IRegionAdminService, RegionAdminService>();
         services.AddScoped<IAreaAdminService, AreaAdminService>();
+
+        services.AddScoped<ICommunicationService, CommunicationService>();
 
         // Images limits options
         services.Configure<ImagesLimits<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
