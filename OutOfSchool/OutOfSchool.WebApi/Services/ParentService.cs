@@ -128,22 +128,22 @@ public class ParentService : IParentService
             });
         }
 
-        if (parent.User.IsBlocked == parentBlockByAdmin.IsBlocked)
+        if (parent.User.IsBlocked == parentBlockByAdmin.ToggleBlock)
         {
             return Result<bool>.Failed(new OperationError
             {
                 Code = "400",
-                Description = $"ParentId is already {(parentBlockByAdmin.IsBlocked ? "blocked" : "unblocked")}: {parent.Id}.",
+                Description = $"ParentId is already {(parentBlockByAdmin.ToggleBlock ? "blocked" : "unblocked")}: {parent.Id}.",
             });
         }
 
-        parent.User.IsBlocked = parentBlockByAdmin.IsBlocked;
+        parent.User.IsBlocked = parentBlockByAdmin.ToggleBlock;
         await repositoryParent.UnitOfWork.CompleteAsync();
         await parentBlockedByAdminLogService.SaveChangesLogAsync(
             parent.Id,
             currentUserService.UserId,
             parentBlockByAdmin.Reason,
-            parentBlockByAdmin.IsBlocked).ConfigureAwait(false);
+            parentBlockByAdmin.ToggleBlock).ConfigureAwait(false);
         logger.LogInformation("Successfully changed Block status of Parent with ParentId = {Id}", parentBlockByAdmin.ParentId);
         return Result<bool>.Success(true);
     }

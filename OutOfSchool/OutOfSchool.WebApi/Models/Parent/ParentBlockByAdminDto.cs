@@ -9,9 +9,9 @@ public class ParentBlockByAdminDto
     public Guid ParentId { get; set; }
 
     [Required]
-    public bool IsBlocked { get; set; }
+    public bool ToggleBlock { get; set; }
 
     [MaxLength(500)]
-    [RequiredIf("IsBlocked", true, ErrorMessage = "Reason is required")]
+    [RequiredIf("ToggleBlock", true, ErrorMessage = "Reason is required")]
     public string Reason { get; set; }
 }
