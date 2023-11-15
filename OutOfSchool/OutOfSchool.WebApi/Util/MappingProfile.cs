@@ -207,7 +207,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)));
 
-        CreateMap<ProviderDto, ProviderCreateDto>();
 
         CreateMap<ProviderCreateDto, ProviderDto>()
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
