@@ -126,6 +126,7 @@ public class ApplicationServiceMemoryTests
 
         // Assert
         Assert.AreEqual(result.Entities.Count, application.Count);
+        Assert.IsTrue(result.Entities.All(a => a.IsBlocked));
     }
 
     [Test]
@@ -142,6 +143,7 @@ public class ApplicationServiceMemoryTests
 
         // Assert
         Assert.AreEqual(result.Entities.Count, application.Count);
+        Assert.IsTrue(result.Entities.All(a => !a.IsBlocked));
     }
 
     private void SeedDatabase()
