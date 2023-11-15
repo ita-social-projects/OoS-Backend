@@ -5,12 +5,9 @@ using System.Threading.Tasks;
 using H3Lib;
 using H3Lib.Extensions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Logging;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 
 namespace OutOfSchool.Services;
 

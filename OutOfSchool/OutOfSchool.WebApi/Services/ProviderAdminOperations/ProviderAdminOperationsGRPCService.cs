@@ -1,13 +1,7 @@
-﻿using System;
-using System.Net;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Grpc.Core;
 using GrpcService;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
-using OutOfSchool.WebApi.Services.GRPC;
 
 namespace OutOfSchool.WebApi.Services.ProviderAdminOperations;
 

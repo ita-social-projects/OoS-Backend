@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace OutOfSchool.WebApi.Models.Notifications;
+﻿namespace OutOfSchool.WebApi.Models.Notifications;
 
 public class NotificationGroupedAndSingle
 {

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.Common.PermissionsModule;
-using OutOfSchool.ElasticsearchData.Models;
-using OutOfSchool.WebApi.Services;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

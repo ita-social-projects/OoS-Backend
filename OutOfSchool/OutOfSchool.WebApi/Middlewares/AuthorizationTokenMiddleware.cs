@@ -1,9 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-
-namespace OutOfSchool.WebApi.Middlewares;
+﻿namespace OutOfSchool.WebApi.Middlewares;
 
 public class AuthorizationTokenMiddleware
 {
