@@ -1,10 +1,7 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Models.Parent;
-using OutOfSchool.WebApi.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
