@@ -1,6 +1,4 @@
-﻿using OutOfSchool.Services.Repository.Files;
-using OutOfSchool.WebApi.Common.QuartzConstants;
-using OutOfSchool.WebApi.Services.Gcp;
+﻿using OutOfSchool.WebApi.Common.QuartzConstants;
 using OutOfSchool.WebApi.Services.StatisticReports;
 using Quartz;
 

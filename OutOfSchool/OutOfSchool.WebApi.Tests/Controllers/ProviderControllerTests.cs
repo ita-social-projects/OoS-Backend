@@ -21,7 +21,6 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
@@ -164,10 +163,10 @@ public class ProviderControllerTests
             nameof(ProviderController),
             new { providerId = expectedCreated.Id, },
             expectedCreated);
-        providerService.Setup(x => x.Create(It.IsAny<ProviderDto>())).ReturnsAsync(mapper.Map<ProviderDto>(provider));
+        providerService.Setup(x => x.Create(It.IsAny<ProviderCreateDto>())).ReturnsAsync(mapper.Map<ProviderDto>(provider));
 
         // Act
-        var result = await providerController.Create(mapper.Map<ProviderDto>(provider)).ConfigureAwait(false);
+        var result = await providerController.Create(mapper.Map<ProviderCreateDto>(provider)).ConfigureAwait(false);
 
         // Assert
         result.AssertExpectedResponseTypeAndCheckDataInside<CreatedAtActionResult>(expectedResponse);
@@ -183,7 +182,7 @@ public class ProviderControllerTests
         providerController.ModelState.AddModelError("CreateProvider", "Invalid model state.");
 
         // Act
-        var result = await providerController.Create(mapper.Map<ProviderDto>(provider)).ConfigureAwait(false);
+        var result = await providerController.Create(mapper.Map<ProviderCreateDto>(provider)).ConfigureAwait(false);
 
         // Assert
         result.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);

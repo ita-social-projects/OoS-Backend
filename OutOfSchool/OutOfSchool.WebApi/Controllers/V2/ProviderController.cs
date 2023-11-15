@@ -110,7 +110,7 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [HttpPost]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Create([FromForm] ProviderDto providerModel)
+    public async Task<IActionResult> Create([FromForm] ProviderCreateDto providerModel)
     {
         providerModel.Id = default;
         providerModel.LegalAddress.Id = default;

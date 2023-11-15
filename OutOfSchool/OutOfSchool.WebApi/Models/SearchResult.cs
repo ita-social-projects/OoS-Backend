@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace OutOfSchool.WebApi.Models;
+﻿namespace OutOfSchool.WebApi.Models;
 
 public class SearchResult<TEntity>
 {

@@ -1,22 +1,14 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Google;
-using Google.Api.Gax;
-using Google.Apis.Auth.OAuth2;
 using Google.Apis.Storage.v1.Data;
 using Google.Cloud.Storage.V1;
 using OutOfSchool.Services.Common.Exceptions;
 using OutOfSchool.Services.Contexts;
-using OutOfSchool.Services.Contexts.Configuration;
-using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
-using Object = System.Object;
 
 namespace OutOfSchool.Services.Repository.Files;
 
