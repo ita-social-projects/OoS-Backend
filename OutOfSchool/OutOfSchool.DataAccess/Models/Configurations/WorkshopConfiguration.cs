@@ -23,5 +23,7 @@ internal class WorkshopConfiguration : IEntityTypeConfiguration<Workshop>
         builder.HasMany(x => x.WorkshopDescriptionItems)
             .WithOne(x => x.Workshop)
             .HasForeignKey(x => x.WorkshopId);
+        builder.Property(x => x.UpdatedAt)
+            .ValueGeneratedOnAddOrUpdate();
     }
 }
