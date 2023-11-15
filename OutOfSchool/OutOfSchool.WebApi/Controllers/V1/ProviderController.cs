@@ -131,7 +131,7 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [HttpPost]
-    public async Task<IActionResult> Create(ProviderDto providerModel)
+    public async Task<IActionResult> Create(ProviderCreateDto providerModel)
     {
         if (providerModel == null)
         {

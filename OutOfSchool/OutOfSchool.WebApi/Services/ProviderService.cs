@@ -1,27 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
+﻿using System.Data;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Common.Extensions;
-using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.AverageRatings;
-using OutOfSchool.WebApi.Services.Images;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -123,7 +108,7 @@ public class ProviderService : IProviderService, INotificationReciever
     private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
 
     /// <inheritdoc/>
-    public async Task<ProviderDto> Create(ProviderDto providerDto)
+    public async Task<ProviderDto> Create(ProviderCreateDto providerDto)
         => await CreateProviderWithActionAfterAsync(providerDto).ConfigureAwait(false);
 
     /// <inheritdoc/>
@@ -500,7 +485,7 @@ public class ProviderService : IProviderService, INotificationReciever
         return recipientIds.Distinct();
     }
 
-    private protected async Task<ProviderDto> CreateProviderWithActionAfterAsync(ProviderDto providerDto, Func<Provider, Task> actionAfterCreation = null)
+    private protected async Task<ProviderDto> CreateProviderWithActionAfterAsync(ProviderCreateDto providerDto, Func<Provider, Task> actionAfterCreation = null)
     {
         _ = providerDto ?? throw new ArgumentNullException(nameof(providerDto));
 

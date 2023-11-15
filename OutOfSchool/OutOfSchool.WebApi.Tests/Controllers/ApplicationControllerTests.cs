@@ -6,13 +6,11 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Models.Workshops;
@@ -32,6 +30,7 @@ public class ApplicationControllerTests
     private Mock<IProviderService> providerService;
     private Mock<IProviderAdminService> providerAdminService;
     private Mock<IUserService> userService;
+    private Mock<IBlockedProviderParentService> blockedProviderParentService;
 
     private string userId;
     private Guid providerId;
@@ -52,6 +51,7 @@ public class ApplicationControllerTests
         providerService = new Mock<IProviderService>();
         providerAdminService = new Mock<IProviderAdminService>();
         userService = new Mock<IUserService>();
+        blockedProviderParentService = new Mock<IBlockedProviderParentService>();
 
         userId = Guid.NewGuid().ToString();
 
@@ -64,7 +64,8 @@ public class ApplicationControllerTests
             providerService.Object,
             providerAdminService.Object,
             workshopService.Object,
-            userService.Object)
+            userService.Object,
+            blockedProviderParentService.Object)
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContext.Object },
         };
@@ -400,6 +401,12 @@ public class ApplicationControllerTests
             WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
         };
 
+        var workshop = new WorkshopDto();
+        workshopService.Setup(s => s.GetById(app.WorkshopId)).ReturnsAsync(workshop);
+
+        blockedProviderParentService.Setup(s => s.IsBlocked(app.ParentId, workshop.ProviderId))
+        .ReturnsAsync(false);
+
         applicationService.Setup(s => s.Create(app))
             .ReturnsAsync(new ModelWithAdditionalData<ApplicationDto, int>
                 {Model = applications.First(), AdditionalData = 0});
@@ -441,6 +448,63 @@ public class ApplicationControllerTests
     }
 
     [Test]
+    public async Task CreateApplication_WhenParentIsBlocked_ShouldReturnForbidden()
+    {
+        // Arrange
+        var blockedParentId = new Guid("1f91783d-a68f-41fa-9ded-d879f187a94b");
+        var workshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3");
+
+        httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
+
+        var blockedApplication = new ApplicationCreate
+        {
+            ChildId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
+            ParentId = blockedParentId,
+            WorkshopId = workshopId,
+        };
+
+        var workshop = new WorkshopDto();
+
+        workshopService.Setup(s => s.GetById(workshopId)).ReturnsAsync(workshop);
+
+        blockedProviderParentService.Setup(s => s.IsBlocked(blockedParentId, workshop.ProviderId))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await controller.Create(blockedApplication).ConfigureAwait(false) as ObjectResult;
+
+        // Assert
+        result.Should().NotBeNull();
+        result.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
+    }
+
+    [Test]
+    public async Task CreateApplication_WhenWorkshopDoesNotExist_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var nonExistentWorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3");
+        var blockedParentId = new Guid("1f91783d-a68f-41fa-9ded-d879f187a94b");
+
+        httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
+
+        var applicationWithNonExistentWorkshop = new ApplicationCreate
+        {
+            ChildId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
+            ParentId = blockedParentId,
+            WorkshopId = nonExistentWorkshopId,
+        };
+
+        workshopService.Setup(s => s.GetById(nonExistentWorkshopId)).ReturnsAsync((WorkshopDto)null);
+
+        // Act
+        var result = await controller.Create(applicationWithNonExistentWorkshop).ConfigureAwait(false) as BadRequestObjectResult;
+
+        // Assert
+        result.Should().NotBeNull();
+        result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+    }
+
+    [Test]
     public void CreateApplication_WhenParentHasNoRights_ShouldThrowUnauthorizedAccess()
     {
         // Arrange
@@ -451,8 +515,19 @@ public class ApplicationControllerTests
         applicationService.Setup(s => s.Create(It.IsAny<ApplicationCreate>()))
             .ThrowsAsync(new UnauthorizedAccessException());
 
+        var applicationCreate = new ApplicationCreate
+        {
+            WorkshopId = Guid.NewGuid(),
+            ChildId = Guid.NewGuid(),
+            ParentId = anotherParent.Id,
+        };
+
+        workshopService.Setup(s => s.GetById(applicationCreate.WorkshopId)).ReturnsAsync(new WorkshopDto()); 
+
+        blockedProviderParentService.Setup(s => s.IsBlocked(applicationCreate.ParentId, It.IsAny<Guid>())).ReturnsAsync(false);
+
         // Act & Assert
-        Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await controller.Create(new ApplicationCreate()));
+        Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await controller.Create(applicationCreate));
     }
 
     [Test]

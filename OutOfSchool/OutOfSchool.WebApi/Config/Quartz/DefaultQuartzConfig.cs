@@ -1,5 +1,3 @@
-using System.Collections.Specialized;
-
 namespace OutOfSchool.WebApi.Config.Quartz;
 
 public static class DefaultQuartzConfig

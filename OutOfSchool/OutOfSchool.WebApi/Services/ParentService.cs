@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using AutoMapper;
 using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Common;

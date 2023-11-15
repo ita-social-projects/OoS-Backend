@@ -1,12 +1,4 @@
-﻿using CsvHelper.Configuration;
-using CsvHelper;
-using Microsoft.EntityFrameworkCore.Storage;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Repository.Files;
-using OutOfSchool.WebApi.Services.StatisticReports;
-using System.Text;
-
-namespace OutOfSchool.WebApi.Services.NotificationsClearing;
+﻿namespace OutOfSchool.WebApi.Services.NotificationsClearing;
 
 public class NotificationsClearingService : INotificationsClearingService
 {

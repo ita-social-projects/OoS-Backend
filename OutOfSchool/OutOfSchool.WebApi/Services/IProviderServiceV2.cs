@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.WebApi.Services;
@@ -11,7 +9,7 @@ public interface IProviderServiceV2 : IProviderService
     /// </summary>
     /// <param name="dto">Entity to add.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="ProviderDto"/>.</returns>
-    new Task<ProviderDto> Create(ProviderDto dto);
+    new Task<ProviderDto> Create(ProviderCreateDto dto);
 
     /// <summary>
     /// Update existing entity in the database.
