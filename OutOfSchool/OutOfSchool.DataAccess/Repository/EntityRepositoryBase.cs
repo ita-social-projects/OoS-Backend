@@ -118,12 +118,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     public virtual async Task<IEnumerable<TEntity>> GetAllWithDetails(string includeProperties = "")
     {
         IQueryable<TEntity> query = dbSet;
-        foreach (var includeProperty in includeProperties.Split(
-                     new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            query = query.Include(includeProperty);
-        }
-
+        query = IncludePropertiesToQuery(query, includeProperties);
         return await query.ToListAsync();
     }
 
@@ -132,13 +127,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         string includeProperties = "")
     {
         var query = this.dbSet.Where(whereExpression);
-
-        foreach (var includeProperty in includeProperties.Split(
-                     new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            query = query.Include(includeProperty);
-        }
-
+        query = IncludePropertiesToQuery(query, includeProperties);
         return await query.ToListAsync().ConfigureAwait(false);
     }
 
@@ -148,13 +137,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         string includeProperties = "")
     {
         var query = this.dbSet.Where(whereExpression);
-
-        foreach (var includeProperty in includeProperties.Split(
-                     new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            query = query.Include(includeProperty);
-        }
-
+        query = IncludePropertiesToQuery(query, includeProperties);
         return query.AsNoTracking();
     }
 
@@ -165,12 +148,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     public virtual Task<TEntity> GetByIdWithDetails(TKey id, string includeProperties = "")
     {
         var query = dbSet.Where(x => x.Id.Equals(id));
-        foreach (var includeProperty in includeProperties.Split(
-             new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            query = query.Include(includeProperty);
-        }
-
+        query = IncludePropertiesToQuery(query, includeProperties);
         return query.FirstOrDefaultAsync();
     }
 
@@ -257,12 +235,22 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
             query = query.Take(take);
         }
 
-        foreach (var includeProperty in includeProperties.Split(
-                     new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            query = query.Include(includeProperty);
-        }
+        query = IncludePropertiesToQuery(query, includeProperties);
 
         return query.If(asNoTracking, q => q.AsNoTracking());
+    }
+
+    private IQueryable<TEntity> IncludePropertiesToQuery(IQueryable<TEntity> query, string properties)
+    {
+        if (properties != null)
+        {
+            foreach (var property in properties.Split(
+                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(property);
+            }
+        }
+
+        return query;
     }
 }

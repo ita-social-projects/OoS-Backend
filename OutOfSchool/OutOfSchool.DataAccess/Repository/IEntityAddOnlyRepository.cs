@@ -71,7 +71,7 @@ public interface IEntityAddOnlyRepository<TKey, TEntity>
     /// <param name="includeProperties">Name of properties which should be included.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains an entity that was found, or null.</returns>
-    Task<TEntity> GetByIdWithDetails(TKey id, string includeProperties);
+    Task<TEntity> GetByIdWithDetails(TKey id, string includeProperties = "");
 
     /// <summary>
     /// Get all elements with details.
