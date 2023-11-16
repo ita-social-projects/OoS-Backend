@@ -12,7 +12,7 @@ public static class QueryableExtensions
     public static IQueryable<T> IncludeProperties<T>(this IQueryable<T> query, string properties)
         where T : class
     {
-        ArgumentNullException.ThrowIfNull(query, nameof(query));
+        ArgumentNullException.ThrowIfNull(query);
         if (string.IsNullOrWhiteSpace(properties))
         {
             return query;
