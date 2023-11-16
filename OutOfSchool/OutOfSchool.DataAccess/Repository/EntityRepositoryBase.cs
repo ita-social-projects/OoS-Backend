@@ -146,12 +146,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
 
     /// <inheritdoc/>
     public virtual Task<TEntity> GetByIdWithDetails(TKey id, string includeProperties = "")
-    {
-        return dbSet
-            .Where(x => x.Id.Equals(id))
-            .IncludeProperties(includeProperties)
-            .FirstOrDefaultAsync();
-    }
+        => dbSet.Where(x => x.Id.Equals(id)).IncludeProperties(includeProperties).FirstOrDefaultAsync();
 
     /// <inheritdoc/>
     public virtual async Task<TEntity> Update(TEntity entity)
