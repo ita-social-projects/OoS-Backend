@@ -1000,6 +1000,7 @@ public class ApplicationServiceTests
             new Application()
             {
                 Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8db"),
+                IsBlocked = false,
                 Status = ApplicationStatus.Pending,
                 WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
                 ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
@@ -1026,6 +1027,7 @@ public class ApplicationServiceTests
             new Application()
             {
                 Id = new Guid("7c5f8f7c-d850-44d0-8d4e-fd2de99453be"),
+                IsBlocked = false,
                 Status = ApplicationStatus.Rejected,
                 WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
                 ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
@@ -1052,6 +1054,7 @@ public class ApplicationServiceTests
             new Application()
             {
                 Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+                IsBlocked = true,
                 Status = ApplicationStatus.Pending,
                 WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
                 ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),

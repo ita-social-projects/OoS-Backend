@@ -12,7 +12,7 @@ public class ApplicationFilter : SearchStringFilter
 
     public bool OrderByStatus { get; set; } = true;
 
-    public bool ShowBlocked { get; set; } = false;
+    public bool? ShowBlocked { get; set; } = null;
 
     public IEnumerable<Guid> Workshops { get; set; } = null;
 
