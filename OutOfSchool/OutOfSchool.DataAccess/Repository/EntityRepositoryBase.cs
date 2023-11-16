@@ -118,7 +118,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     public virtual async Task<IEnumerable<TEntity>> GetAllWithDetails(string includeProperties = "")
     {
         IQueryable<TEntity> query = dbSet;
-        query = IncludePropertiesToQuery(query, includeProperties);
+        query = query.IncludeProperties(includeProperties);
         return await query.ToListAsync();
     }
 
@@ -127,7 +127,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         string includeProperties = "")
     {
         var query = this.dbSet.Where(whereExpression);
-        query = IncludePropertiesToQuery(query, includeProperties);
+        query = query.IncludeProperties(includeProperties);
         return await query.ToListAsync().ConfigureAwait(false);
     }
 
@@ -137,7 +137,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         string includeProperties = "")
     {
         var query = this.dbSet.Where(whereExpression);
-        query = IncludePropertiesToQuery(query, includeProperties);
+        query = query.IncludeProperties(includeProperties);
         return query.AsNoTracking();
     }
 
@@ -147,9 +147,10 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     /// <inheritdoc/>
     public virtual Task<TEntity> GetByIdWithDetails(TKey id, string includeProperties = "")
     {
-        var query = dbSet.Where(x => x.Id.Equals(id));
-        query = IncludePropertiesToQuery(query, includeProperties);
-        return query.FirstOrDefaultAsync();
+        return dbSet
+            .Where(x => x.Id.Equals(id))
+            .IncludeProperties(includeProperties)
+            .FirstOrDefaultAsync();
     }
 
     /// <inheritdoc/>
@@ -235,22 +236,8 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
             query = query.Take(take);
         }
 
-        query = IncludePropertiesToQuery(query, includeProperties);
+        query = query.IncludeProperties(includeProperties);
 
         return query.If(asNoTracking, q => q.AsNoTracking());
-    }
-
-    private IQueryable<TEntity> IncludePropertiesToQuery(IQueryable<TEntity> query, string properties)
-    {
-        if (properties != null)
-        {
-            foreach (var property in properties.Split(
-                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                query = query.Include(property);
-            }
-        }
-
-        return query;
     }
 }

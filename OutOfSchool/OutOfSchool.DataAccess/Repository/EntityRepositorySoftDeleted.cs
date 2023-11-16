@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
@@ -32,7 +33,7 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
     public override async Task<IEnumerable<TEntity>> GetAllWithDetails(string includeProperties = "")
     {
         IQueryable<TEntity> query = dbSet.Where(x => !x.IsDeleted);
-        query = IncludePropertiesToQuery(query, includeProperties);
+        query = query.IncludeProperties(includeProperties);
         return await query.ToListAsync().ConfigureAwait(false);
     }
 
@@ -60,9 +61,10 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
     /// <inheritdoc/>
     public override Task<TEntity> GetByIdWithDetails(TKey id, string includeProperties = "")
     {
-        var query = dbSet.Where(x => !x.IsDeleted && x.Id.Equals(id));
-        query = IncludePropertiesToQuery(query, includeProperties);
-        return query.FirstOrDefaultAsync();
+        return dbSet
+            .Where(x => !x.IsDeleted && x.Id.Equals(id))
+            .IncludeProperties(includeProperties)
+            .FirstOrDefaultAsync();
     }
 
     /// <inheritdoc/>
@@ -105,20 +107,6 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
         }
 
         return whereExpression;
-    }
-
-    private IQueryable<TEntity> IncludePropertiesToQuery(IQueryable<TEntity> query, string properties)
-    {
-        if (properties != null)
-        {
-            foreach (var property in properties.Split(
-                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                query = query.Include(property);
-            }
-        }
-
-        return query;
     }
 
     private sealed class ExpressionParameterReplacer : ExpressionVisitor
