@@ -32,6 +32,7 @@ public class ChatWorkshopHubTests
     private Mock<IWorkshopRepository> workshopRepositoryMock;
     private Mock<IParentRepository> parentRepositoryMock;
     private Mock<IProviderAdminRepository> providerAdminRepositoryMock;
+    private Mock<IBlockedProviderParentService> blockedProviderParentServiceMock;
 
     private ChatWorkshopHub chatHub;
 
@@ -50,6 +51,7 @@ public class ChatWorkshopHubTests
         validationServiceMock = new Mock<IValidationService>();
         workshopRepositoryMock = new Mock<IWorkshopRepository>();
         parentRepositoryMock = new Mock<IParentRepository>();
+        blockedProviderParentServiceMock = new Mock<IBlockedProviderParentService>();
 
         clientsMock = new Mock<IHubCallerClients>();
         clientProxyMock = new Mock<IClientProxy>();
@@ -66,7 +68,8 @@ public class ChatWorkshopHubTests
             workshopRepositoryMock.Object,
             parentRepositoryMock.Object,
             localizerMock.Object,
-            providerAdminRepositoryMock.Object)
+            providerAdminRepositoryMock.Object,
+            blockedProviderParentServiceMock.Object)
         {
             Clients = clientsMock.Object,
             Context = hubCallerContextMock.Object,
@@ -222,6 +225,14 @@ public class ChatWorkshopHubTests
 
         var validProviderAdmins = new List<ProviderAdmin>();
         providerAdminRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<ProviderAdmin, bool>>>(), It.IsAny<string>())).ReturnsAsync(validProviderAdmins);
+
+        workshopRepositoryMock
+            .Setup(x => x.GetById(validWorkshopId))
+            .ReturnsAsync(new Workshop() { ProviderId = Guid.NewGuid() });
+
+        blockedProviderParentServiceMock
+        .Setup(x => x.IsBlocked(validParentId, It.IsAny<Guid>()))
+        .ReturnsAsync(false);
 
         // Act
         await chatHub.SendMessageToOthersInGroupAsync(validNewMessage).ConfigureAwait(false);
