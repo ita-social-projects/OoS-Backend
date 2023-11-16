@@ -115,36 +115,36 @@ public class ParentService : IParentService
     }
 
     /// <inheritdoc/>
-    public async Task<Result<bool>> BlockParent(ParentBlockByAdminDto parentBlockByAdmin)
+    public async Task<Result<bool>> BlockUnblockParent(BlockUnblockParentDto parentBlockUnblock)
     {
-        logger.LogInformation("Changing Block status of Parent by ParentId started. Looking ParentId is {Id}", parentBlockByAdmin.ParentId);
-        var parent = await repositoryParent.GetByIdWithDetails(parentBlockByAdmin.ParentId, "User").ConfigureAwait(false);
+        logger.LogInformation("Changing Block status of Parent by ParentId started. Looking ParentId is {Id}", parentBlockUnblock.ParentId);
+        var parent = await repositoryParent.GetByIdWithDetails(parentBlockUnblock.ParentId, "User").ConfigureAwait(false);
         if (parent is null)
         {
             return Result<bool>.Failed(new OperationError
             {
                 Code = StatusCodes.Status404NotFound.ToString(),
-                Description = $"ParentId not found: {parentBlockByAdmin.ParentId}.",
+                Description = $"ParentId not found: {parentBlockUnblock.ParentId}.",
             });
         }
 
-        if (parent.User.IsBlocked == parentBlockByAdmin.ToggleBlock)
+        if (parent.User.IsBlocked == parentBlockUnblock.IsBlocked)
         {
             return Result<bool>.Failed(new OperationError
             {
                 Code = StatusCodes.Status400BadRequest.ToString(),
-                Description = $"ParentId is already {(parentBlockByAdmin.ToggleBlock ? "blocked" : "unblocked")}: {parent.Id}.",
+                Description = $"ParentId is already {(parentBlockUnblock.IsBlocked ? "blocked" : "unblocked")}: {parent.Id}.",
             });
         }
 
-        parent.User.IsBlocked = parentBlockByAdmin.ToggleBlock;
+        parent.User.IsBlocked = parentBlockUnblock.IsBlocked;
         await repositoryParent.UnitOfWork.CompleteAsync();
         await parentBlockedByAdminLogService.SaveChangesLogAsync(
             parent.Id,
             currentUserService.UserId,
-            parentBlockByAdmin.Reason,
-            parentBlockByAdmin.ToggleBlock).ConfigureAwait(false);
-        logger.LogInformation("Successfully changed Block status of Parent with ParentId = {Id}", parentBlockByAdmin.ParentId);
+            parentBlockUnblock.Reason,
+            parentBlockUnblock.IsBlocked).ConfigureAwait(false);
+        logger.LogInformation("Successfully changed Block status of Parent with ParentId = {Id}", parentBlockUnblock.ParentId);
         return Result<bool>.Success(true);
     }
 

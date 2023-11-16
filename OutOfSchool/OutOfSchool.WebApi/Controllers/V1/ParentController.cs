@@ -63,19 +63,19 @@ public class ParentController : ControllerBase
     /// <summary>
     /// Block or unblock Parent entity based on the provided information.
     /// </summary>
-    /// <param name="parentBlockByAdmin">A DTO containing the necessary information to block or unblock a parent,
+    /// <param name="parentBlockUnblock">A DTO containing the necessary information to block or unblock a parent,
     /// including the ParentId, the desired block status, and a reason.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.ParentBlock)]
-    [HttpPost("BlockParent")]
+    [HttpPost("BlockUnblockParent")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> BlockParent(ParentBlockByAdminDto parentBlockByAdmin)
+    public async Task<ActionResult> BlockUnblockParent(BlockUnblockParentDto parentBlockUnblock)
     {
-        var result = await serviceParent.BlockParent(parentBlockByAdmin).ConfigureAwait(false);
+        var result = await serviceParent.BlockUnblockParent(parentBlockUnblock).ConfigureAwait(false);
 
         if (result.Succeeded)
         {

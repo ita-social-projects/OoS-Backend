@@ -3,15 +3,15 @@ using OutOfSchool.WebApi.Validators;
 
 namespace OutOfSchool.WebApi.Models.Parent;
 
-public class ParentBlockByAdminDto
+public class BlockUnblockParentDto
 {
     [Required]
     public Guid ParentId { get; set; }
 
     [Required]
-    public bool ToggleBlock { get; set; }
+    public bool IsBlocked { get; set; }
 
     [MaxLength(500)]
-    [RequiredIf("ToggleBlock", true, ErrorMessage = "Reason is required")]
+    [RequiredIf("IsBlocked", true, ErrorMessage = "Reason is required")]
     public string Reason { get; set; }
 }
