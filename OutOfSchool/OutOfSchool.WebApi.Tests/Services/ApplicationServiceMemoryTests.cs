@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Elastic.CommonSchema;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using Org.BouncyCastle.Crypto.Signers;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -100,7 +102,7 @@ public class ApplicationServiceMemoryTests
     public async Task GetApplications_WhenCalled_ShouldReturnAllApplications()
     {
         // Arrange
-        var application = Applications();
+        var application = GetAllFromMemory();
         currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
         currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(false);
         currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(false);
@@ -116,7 +118,7 @@ public class ApplicationServiceMemoryTests
     public async Task GetApplications_WhenCalled_ShouldReturnBlockedApplications()
     {
         // Arrange
-        var application = Applications().Where(a => a.IsBlocked).ToList();
+        var application = GetAllFromMemory().Where(a => a.IsBlocked).ToList();
         currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
         currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(false);
         currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(false);
@@ -133,7 +135,7 @@ public class ApplicationServiceMemoryTests
     public async Task GetApplications_WhenCalled_ShouldReturnUnblockedApplications()
     {
         // Arrange
-        var application = Applications().Where(a => !a.IsBlocked).ToList();
+        var application = GetAllFromMemory().Where(a => !a.IsBlocked).ToList();
         currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
         currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(false);
         currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(false);
@@ -153,100 +155,61 @@ public class ApplicationServiceMemoryTests
             ctx.Database.EnsureDeleted();
             ctx.Database.EnsureCreated();
 
-            ctx.Applications.AddRange(Applications());
+            var workshop = WorkshopGenerator.Generate();
+            ctx.Workshops.Add(workshop);
+
+            var child = ChildGenerator.Generate();
+            ctx.Children.Add(child);
+
+            var user = UserGenerator.Generate();
+            ctx.Users.Add(user);
+
+            var parent = ParentGenerator.Generate();
+            parent.UserId = user.Id;
+            ctx.Parents.Add(parent);
+
+            var applications = new List<Application>()
+            {
+                new Application()
+                {
+                    Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8db"),
+                    IsBlocked = false,
+                    Status = ApplicationStatus.Pending,
+                    WorkshopId = workshop.Id,
+                    ChildId = child.Id,
+                    ParentId = parent.Id,
+                },
+                new Application()
+                {
+                    Id = new Guid("7c5f8f7c-d850-44d0-8d4e-fd2de99453be"),
+                    IsBlocked = false,
+                    Status = ApplicationStatus.Rejected,
+                    WorkshopId = workshop.Id,
+                    ChildId = child.Id,
+                    ParentId = parent.Id,
+                },
+                new Application()
+                {
+                    Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+                    IsBlocked = true,
+                    Status = ApplicationStatus.Pending,
+                    WorkshopId = workshop.Id,
+                    ChildId = child.Id,
+                    ParentId = parent.Id,
+                },
+            };
+
+            ctx.Applications.AddRange(applications);
 
             ctx.SaveChanges();
         }
     }
 
-    private List<Application> Applications()
+    private List<Application> GetAllFromMemory()
     {
-        var workshops = WorkshopGenerator.Generate(3);
-        var children = ChildGenerator.Generate(3);
-
-        return new List<Application>()
+        using var ctx = new OutOfSchoolDbContext(options);
         {
-            new Application()
-            {
-                Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8db"),
-                IsBlocked = false,
-                Status = ApplicationStatus.Pending,
-                WorkshopId = workshops[0].Id,
-                ChildId = children[0].Id,
-                Parent = new Parent
-                {
-                    User = new User
-                    {
-                        Email = "sea@gmail.com",
-                        FirstName = "Арієль",
-                        Id = "08da847c-2f6d-4327-8184-b1a11c8f7008",
-                        LastName = "Русалонька",
-                        MiddleName = "Моряка",
-                        PhoneNumber = "498344943",
-                    },
-                    Gender = Gender.Female,
-                    DateOfBirth = DateTime.Now,
-                    UserId = "06da847c-2f6d-4327-8184-b1a11c8f7008",
-                    Id = new Guid("05da847c-2f6d-4327-8184-b1a11c8f7008"),
-                },
-                ParentId = new Guid("05da847c-2f6d-4327-8184-b1a11c8f7008"),
-                Workshop = workshops[0],
-                Child = children[0],
-            },
-            new Application()
-            {
-                Id = new Guid("7c5f8f7c-d850-44d0-8d4e-fd2de99453be"),
-                IsBlocked = false,
-                Status = ApplicationStatus.Rejected,
-                WorkshopId = workshops[1].Id,
-                ChildId = children[1].Id,
-                Parent = new Parent
-                {
-                    User = new User
-                    {
-                        Email = "sea@gmail.com",
-                        FirstName = "Арієль",
-                        Id = "09da847c-2f6d-5327-8184-b1a11c8f7808",
-                        LastName = "Русалонька",
-                        MiddleName = "Моряка",
-                        PhoneNumber = "498344943",
-                    },
-                    Gender = Gender.Female,
-                    DateOfBirth = DateTime.Now,
-                    UserId = "09da847c-2f6d-5327-8184-b1a11c8f7808",
-                    Id = new Guid("09da847c-2f6d-5327-8184-b1a11c8f7808"),
-                },
-                ParentId = new Guid("09da847c-2f6d-5327-8184-b1a11c8f7808"),
-                Workshop = workshops[1],
-                Child = children[1],
-            },
-            new Application()
-            {
-                Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-                IsBlocked = true,
-                Status = ApplicationStatus.Pending,
-                WorkshopId = workshops[2].Id,
-                ChildId = children[2].Id,
-                Parent = new Parent
-                {
-                    User = new User
-                    {
-                        Email = "sea@gmail.com",
-                        FirstName = "Арієль",
-                        Id = "06da847c-2f6d-4327-8184-b1a11c8f7008",
-                        LastName = "Русалонька",
-                        MiddleName = "Моряка",
-                        PhoneNumber = "498344943",
-                    },
-                    Gender = Gender.Female,
-                    DateOfBirth = DateTime.Now,
-                    UserId = "06da847c-2f6d-4327-8184-b1a11c8f7008",
-                    Id = new Guid("02da847c-2f6d-4327-8184-b1a11c8f7008"),
-                },
-                ParentId = new Guid("02da847c-2f6d-4327-8184-b1a11c8f7008"),
-                Workshop = workshops[2],
-                Child = children[2],
-            },
-        };
+            return ctx.Applications.ToList();
+        }
     }
 }
