@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -23,6 +24,8 @@ using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.AverageRatings;
+using OutOfSchool.WebApi.Services.Communication;
+using OutOfSchool.WebApi.Services.Communication.ICommunication;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
 
@@ -48,6 +51,7 @@ public class ProviderServiceTests
     private Mock<IAverageRatingService> averageRatingServiceMock;
     private Mock<IAreaAdminService> areaAdminServiceMock;
     private Mock<IUserService> userServiceMock;
+    private Mock<ICommunicationService> communicationService;
 
     private List<Provider> fakeProviders;
     private User fakeUser;
@@ -80,7 +84,9 @@ public class ProviderServiceTests
         averageRatingServiceMock = new Mock<IAverageRatingService>();
         areaAdminServiceMock = new Mock<IAreaAdminService>();
         userServiceMock = new Mock<IUserService>();
+        communicationService = new Mock<ICommunicationService>();
 
+        var authorizationServerConfig = Options.Create(new AuthorizationServerConfig { Authority = new Uri("http://test.com") });
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
 
         providerService = new ProviderService(
@@ -104,7 +110,9 @@ public class ProviderServiceTests
             regionAdminRepositoryMock.Object,
             averageRatingServiceMock.Object,
             areaAdminServiceMock.Object,
-            userServiceMock.Object);
+            userServiceMock.Object,
+            authorizationServerConfig,
+            communicationService.Object);
     }
 
     #region Create
@@ -706,6 +714,7 @@ public class ProviderServiceTests
         providersRepositoryMock.Setup(r => r.Delete(Capture.In(deleteMethodArguments)));
         userServiceMock.Setup(r => r.Delete(Capture.In(deleteUserArguments)));
         currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(true);
+        communicationService.Setup(x => x.SendRequest<ResponseDto>(It.IsAny<Request>())).ReturnsAsync(new ResponseDto());
 
         // Act
         await providerService.Delete(providerToDeleteDto.Id, It.IsAny<string>()).ConfigureAwait(false);
@@ -727,8 +736,7 @@ public class ProviderServiceTests
         var result = await providerService.Delete(fakeProviderInvalidId, It.IsAny<string>()).ConfigureAwait(false);
 
         // Assert
-        Assert.That(result, Is.False);
-        Assert.AreEqual(HttpStatusCode.NotFound, result.HttpStatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, result.Match(left => HttpStatusCode.NotFound, right => HttpStatusCode.OK));
     }
 
     [Test]
@@ -745,8 +753,23 @@ public class ProviderServiceTests
         var result = await providerService.Delete(providerToDeleteId, It.IsAny<string>()).ConfigureAwait(false);
 
         // Assert
-        Assert.That(result.IsSuccess, Is.False);
-        Assert.AreEqual(HttpStatusCode.Forbidden, result.HttpStatusCode);
+        Assert.AreEqual(HttpStatusCode.Forbidden, result.Match(left => HttpStatusCode.Forbidden, right => HttpStatusCode.OK));
+    }
+
+    [Test]
+    public async Task Delete_WhenUserHasRightsAndIdIsValid_CommunicationServiceSendsRequest()
+    {
+        // Arrange
+        currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(true);
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
+    .ReturnsAsync(fakeProviders.FirstOrDefault());
+        communicationService.Setup(x => x.SendRequest<ResponseDto>(It.IsAny<Request>())).ReturnsAsync(new ResponseDto());
+
+        // Act
+        await providerService.Delete(It.IsAny<Guid>(), It.IsAny<string>()).ConfigureAwait(false);
+
+        // Assert
+        communicationService.Verify(x => x.SendRequest<ResponseDto>(It.IsAny<Request>()), Times.AtLeastOnce);
     }
 
     #endregion

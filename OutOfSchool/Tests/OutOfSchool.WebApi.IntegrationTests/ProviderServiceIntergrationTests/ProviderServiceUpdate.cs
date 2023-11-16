@@ -18,6 +18,7 @@ using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.AverageRatings;
+using OutOfSchool.WebApi.Services.Communication.ICommunication;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
 
@@ -68,9 +69,8 @@ public class ProviderServiceUpdate
         var averageRatingService = new Mock<IAverageRatingService>();
         var areaAdminServiceMock = new Mock<IAreaAdminService>();
         var userServiceMock = new Mock<IUserService>();
-        var authorizationServerConfigMock = new Mock<IOptions<AuthorizationServerConfig>>();
-        var communicationConfigMock = new Mock<IOptions<CommunicationConfig>>();
-        var httpClientFactoryMock = new Mock<System.Net.Http.IHttpClientFactory>();
+        var authorizationServerConfigMock = Options.Create(new AuthorizationServerConfig());
+        var communicationServiceMock = new Mock<ICommunicationService>();
 
         this.providerService = new ProviderService(
             providerRepository,
@@ -94,9 +94,8 @@ public class ProviderServiceUpdate
             averageRatingService.Object,
             areaAdminServiceMock.Object,
             userServiceMock.Object,
-            authorizationServerConfigMock.Object,
-            communicationConfigMock.Object,
-            httpClientFactoryMock.Object);
+            authorizationServerConfigMock,
+            communicationServiceMock.Object);
     }
 
     [Test]
