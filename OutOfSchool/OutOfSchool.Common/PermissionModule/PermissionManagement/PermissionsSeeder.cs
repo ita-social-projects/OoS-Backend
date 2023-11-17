@@ -17,7 +17,7 @@ public static class PermissionsSeeder
         Permissions.ProviderApprove, Permissions.ProviderBlock,
         Permissions.RatingAddNew, Permissions.RatingEdit, Permissions.RatingRead, Permissions.RatingRemove,
         Permissions.TeacherAddNew, Permissions.TeacherEdit, Permissions.TeacherRemove, Permissions.TeacherRead,
-        Permissions.UserRead, Permissions.UserEdit, Permissions.UserRemove,
+        Permissions.UserRead, Permissions.UserEdit,
         Permissions.WorkshopEdit, Permissions.WorkshopRemove, Permissions.WorkshopAddNew,
         Permissions.MinistryAdmins, Permissions.MinistryAdminAddNew, Permissions.MinistryAdminRemove,
         Permissions.MinistryAdminEdit, Permissions.MinistryAdminRead,

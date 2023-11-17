@@ -431,7 +431,7 @@ public class AccountController : Controller
 
     [HttpDelete("{userId}")]
     [Route("account/deleteuser/{userId}")]
-    [HasPermission(Permissions.UserRemove)]
+    [HasPermission(Permissions.ProviderRemove)]
     public async Task<ResponseDto> DeleteUser(string userId)
     {
         if (string.IsNullOrEmpty(userId))
