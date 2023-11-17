@@ -37,6 +37,7 @@ public class ProviderService : IProviderService, INotificationReciever
     private readonly IRegionAdminRepository regionAdminRepository;
     private readonly IAverageRatingService averageRatingService;
     private readonly IAreaAdminService areaAdminService;
+    private readonly IAreaAdminRepository areaAdminRepository;
     private readonly IUserService userService;
     private readonly AuthorizationServerConfig authorizationServerConfig;
     private readonly ICommunicationService communicationService;
@@ -69,6 +70,7 @@ public class ProviderService : IProviderService, INotificationReciever
     /// <param name="regionAdminRepository">RegionAdminRepository</param>
     /// <param name="averageRatingService">Average rating service.</param>
     /// <param name="areaAdminService">Service for manage area admin.</param>
+    /// <param name="areaAdminRepository">Repository for manage area admin.</param>
     /// <param name="userService">Service for manage users.</param>
     /// <param name="authorizationServerConfig">Path to authorization server.</param>
     /// <param name="communicationService">Service for communication.</param>
@@ -93,6 +95,7 @@ public class ProviderService : IProviderService, INotificationReciever
         IRegionAdminRepository regionAdminRepository,
         IAverageRatingService averageRatingService,
         IAreaAdminService areaAdminService,
+        IAreaAdminRepository areaAdminRepository,
         IUserService userService,
         IOptions<AuthorizationServerConfig> authorizationServerConfig,
         ICommunicationService communicationService)
@@ -116,6 +119,7 @@ public class ProviderService : IProviderService, INotificationReciever
         this.regionAdminRepository = regionAdminRepository;
         this.averageRatingService = averageRatingService ?? throw new ArgumentNullException(nameof(averageRatingService));
         this.areaAdminService = areaAdminService ?? throw new ArgumentNullException(nameof(areaAdminService));
+        this.areaAdminRepository = areaAdminRepository;
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         this.authorizationServerConfig = authorizationServerConfig.Value ?? throw new ArgumentNullException(nameof(authorizationServerConfig));
         this.communicationService = communicationService ?? throw new ArgumentNullException(nameof(communicationService));
@@ -470,6 +474,7 @@ public class ProviderService : IProviderService, INotificationReciever
             recipientIds.AddRange(await GetTechAdminsIds().ConfigureAwait(false));
             recipientIds.AddRange(await GetMinistryAdminsIds(provider.InstitutionId).ConfigureAwait(false));
             recipientIds.AddRange(await GetRegionAdminsIds(provider.LegalAddress).ConfigureAwait(false));
+            recipientIds.AddRange(await GetAreaAdminsIds(provider.LegalAddress).ConfigureAwait(false));
         }
         else if (action == NotificationAction.Update)
         {
@@ -950,6 +955,17 @@ public class ProviderService : IProviderService, INotificationReciever
             .ConfigureAwait(false);
 
         return regionAdminsIds;
+    }
+
+    private async Task<IEnumerable<string>> GetAreaAdminsIds(Address address)
+    {
+        var areaAdminsIds = await areaAdminRepository
+            .GetByFilterNoTracking(a => a.CATOTTGId == address.CATOTTGId)
+            .Select(a => a.UserId)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        return areaAdminsIds;
     }
 
     private async Task UpdateWorkshopsProviderStatus(Guid providerId, ProviderStatus providerStatus)
