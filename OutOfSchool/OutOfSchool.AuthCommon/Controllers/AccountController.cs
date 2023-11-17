@@ -439,7 +439,7 @@ public class AccountController : Controller
             return new ResponseDto() { HttpStatusCode = HttpStatusCode.BadRequest };
         }
 
-        logger.LogInformation($"Deleting of user with Id = {userId} started");
+        logger.LogInformation($"LogOut of user with Id = {userId} started");
 
         return await userService.LogOutUserById(userId);
     }
