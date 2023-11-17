@@ -14,7 +14,7 @@ public class UserService : IUserService
         this.tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
     }
 
-    public async Task<ResponseDto> DeleteUserById(string userId)
+    public async Task<ResponseDto> LogOutUserById(string userId)
     {
         var user = await userManager.FindByIdAsync(userId);
 

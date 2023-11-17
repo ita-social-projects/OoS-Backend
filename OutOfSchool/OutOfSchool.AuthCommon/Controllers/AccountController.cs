@@ -432,7 +432,7 @@ public class AccountController : Controller
     [HttpDelete("{userId}")]
     [Route("account/deleteuser/{userId}")]
     [HasPermission(Permissions.ProviderRemove)]
-    public async Task<ResponseDto> DeleteUser(string userId)
+    public async Task<ResponseDto> LogOutUser(string userId)
     {
         if (string.IsNullOrEmpty(userId))
         {
@@ -441,7 +441,7 @@ public class AccountController : Controller
 
         logger.LogInformation($"Deleting of user with Id = {userId} started");
 
-        return await userService.DeleteUserById(userId);
+        return await userService.LogOutUserById(userId);
     }
 
     private async Task<IActionResult> SendConfirmEmailProcess(string action, User user, string razorTemplate, object passedData)
