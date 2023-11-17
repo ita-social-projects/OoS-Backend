@@ -212,7 +212,7 @@ public static class Startup
         services.AddTransient<IWorkshopServicesCombiner, WorkshopServicesCombiner>();
         services.AddTransient<IChangesLogService, ChangesLogService>();
         services.AddTransient<IValueProjector, ValueProjector>();
-        services.AddTransient<IProviderWorkshopService, ProviderWorkshopService>();
+        services.AddTransient<IExternalExportProviderService, ExternalExportProviderService>();
 
 
         services.AddTransient<IInstitutionHierarchyService, InstitutionHierarchyService>();
