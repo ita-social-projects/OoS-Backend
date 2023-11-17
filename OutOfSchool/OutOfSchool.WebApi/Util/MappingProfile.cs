@@ -15,6 +15,7 @@ using OutOfSchool.WebApi.Models.Codeficator;
 using OutOfSchool.WebApi.Models.Geocoding;
 using OutOfSchool.WebApi.Models.Notifications;
 using OutOfSchool.WebApi.Models.Providers;
+using OutOfSchool.WebApi.Models.ProvidersInfo;
 using OutOfSchool.WebApi.Models.SocialGroup;
 using OutOfSchool.WebApi.Models.StatisticReports;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
@@ -76,7 +77,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
             .ForMember(dest => dest.Status, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore());
+            .ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
         CreateMap<Workshop, WorkshopDto>()
             .IncludeBase<Workshop, WorkshopBaseDto>()
@@ -91,7 +93,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProviderStatus, opt => opt.MapFrom(src => src.Provider.Status));
 
         CreateMap<WorkshopDto, Workshop>()
-            .IncludeBase<WorkshopBaseDto, Workshop>();
+            .IncludeBase<WorkshopBaseDto, Workshop>()
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
         CreateMap<Workshop, WorkshopV2Dto>()
             .IncludeBase<Workshop, WorkshopDto>()
@@ -100,7 +103,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ImageFiles, opt => opt.Ignore());
 
         CreateMap<WorkshopV2Dto, Workshop>()
-            .IncludeBase<WorkshopDto, Workshop>();
+            .IncludeBase<WorkshopDto, Workshop>()
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
         CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>().ReverseMap();
 
@@ -156,7 +160,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.Status, opt => opt.Ignore())
             .ForMember(dest => dest.LicenseStatus, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore());
+            .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
         CreateSoftDeletedMap<ProviderUpdateDto, Provider>()
             .ForMember(dest => dest.Ownership, opt => opt.Ignore())
@@ -172,7 +177,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
             .ForMember(dest => dest.BlockPhoneNumber, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore()) 
-            .ForMember(dest => dest.BlockReason, opt => opt.Ignore()); ;
+            .ForMember(dest => dest.BlockReason, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
         CreateMap<Provider, ProviderUpdateDto>()
             .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
@@ -184,7 +190,7 @@ public class MappingProfile : Profile
 
         CreateMap<ProviderDto, ProviderUpdateDto>();
 
-        CreateMap<ProviderCreateDto, Provider>()
+        CreateSoftDeletedMap<ProviderCreateDto, Provider>()
             .ForMember(dest => dest.Workshops, opt => opt.Ignore())
             .ForMember(dest => dest.User, opt => opt.Ignore())
             .ForMember(dest => dest.Institution, opt => opt.Ignore())
@@ -197,7 +203,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
             .ForMember(dest => dest.BlockPhoneNumber, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore()) 
-            .ForMember(dest => dest.BlockReason, opt => opt.Ignore()); 
+            .ForMember(dest => dest.BlockReason, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore()); 
 
         CreateMap<Provider, ProviderCreateDto>()
             .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
@@ -215,6 +222,31 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.BlockPhoneNumber, opt => opt.Ignore())
             .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
             .ForMember(dest => dest.ImageIds, opt => opt.Ignore());
+
+
+        CreateMap<Workshop, WorkshopInfoBaseDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted));
+
+        CreateMap<Workshop, WorkshopInfoDto>()
+            .IncludeBase<Workshop, WorkshopInfoBaseDto>()
+            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore())
+            .ForMember(dest => dest.Institution, opt => opt.Ignore())
+            .ForMember(dest => dest.DirectionIds, opt => opt.Ignore())
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
+            .ForMember(dest => dest.Rating, opt => opt.Ignore())
+            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
+            .ForMember(dest => dest.Keywords, opt => opt.Ignore()); 
+
+        CreateMap<Provider, ProviderInfoBaseDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted));
+
+        CreateMap<Provider, ProviderInfoDto>()
+            .IncludeBase<Provider, ProviderInfoBaseDto>()
+            .ForMember(dest => dest.Rating, opt => opt.Ignore())
+            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
+            
 
         CreateSoftDeletedMap<TeacherDTO, Teacher>()
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
