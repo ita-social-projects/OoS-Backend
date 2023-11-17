@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 using System.Linq.Expressions;
@@ -432,6 +434,22 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         }
     }
 
+    public async Task<int> GetCurrentUserUnreadMessagesCountAsync(Guid parentOrProviderId, Role userRole)
+    {
+        IEnumerable<ChatRoomWorkshopDtoWithLastMessage> chatrooms = null;
+        if (userRole == Role.Parent)
+        {
+            chatrooms = await GetByParentIdAsync(parentOrProviderId);
+        }
+
+        if (userRole == Role.Provider)
+        {
+            chatrooms = await GetByProviderIdAsync(parentOrProviderId);
+        }
+
+        return chatrooms.Count(chatroom => chatroom.NotReadByCurrentUserMessagesCount != 0);
+    }
+
     /// <summary>
     /// Create new ChatRoom without checking if it exists.
     /// </summary>
@@ -460,7 +478,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         }
     }
 
-    public async Task<SearchResult<ChatRoomWorkshopDtoWithLastMessage>> GetChatRoomByFilter(ChatWorkshopFilter filter, Guid userId)
+    public async Task<SearchResult<ChatRoomWorkshopDtoWithLastMessage>> GetChatRoomByFilter(ChatWorkshopFilter filter, Guid userId, bool searchForProvider = true)
     {
         logger.LogInformation("Getting ChatRoomWorkshops by filter started.");
 
@@ -474,7 +492,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         var roomsCount = rooms.Count();
 
         var chatRoomsWithMessages = (await roomWorkshopWithLastMessageRepository
-                .GetByWorkshopIdsAsync(rooms.Select(x => x.WorkshopId)).ConfigureAwait(false))
+                .GetByWorkshopIdsAsync(rooms.Select(x => x.WorkshopId), searchForProvider).ConfigureAwait(false))
             .Skip(filter.From)
             .Take(filter.Size);
 
