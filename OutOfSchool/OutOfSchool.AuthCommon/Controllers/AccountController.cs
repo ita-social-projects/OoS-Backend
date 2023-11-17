@@ -436,7 +436,7 @@ public class AccountController : Controller
     {
         if (string.IsNullOrEmpty(userId))
         {
-            throw new ArgumentException(nameof(userId));
+            return new ResponseDto() { HttpStatusCode = HttpStatusCode.BadRequest };
         }
 
         logger.LogInformation($"Deleting of user with Id = {userId} started");

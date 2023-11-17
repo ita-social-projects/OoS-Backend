@@ -17,6 +17,7 @@ using OutOfSchool.Common;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.AuthCommon.Services.Interfaces;
+using System.Net;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
 
@@ -225,4 +226,48 @@ public class AccountControllerTests
     }
     #endregion
 
+    #region LogOutUserTests
+
+    [Test]
+    public async Task LogOutUser_WhenIdIsNull_ThrowsArgumentException()
+    {
+        // Arrange
+        var invalidId = null as string;
+
+        // Act
+        var result = await accountController.LogOutUser(invalidId);
+
+        // Assert
+        Assert.AreEqual(HttpStatusCode.BadRequest, result.HttpStatusCode);
+    }
+
+    [Test]
+    public async Task LogOutUser_WhenIdIsEmpty_ThrowsArgumentException()
+    {
+        // Arrange
+        var invalidId = string.Empty;
+
+        // Act
+        var result = await accountController.LogOutUser(invalidId);
+
+        // Assert
+        Assert.AreEqual(HttpStatusCode.BadRequest, result.HttpStatusCode);
+    }
+
+    [Test]
+    public async Task LogOutUser_WhenIdIsValid_ReturnOkResponse()
+    {
+        // Arrange
+        var validId = "fakeValidId";
+        fakeUserService.Setup(x => x.LogOutUserById(It.IsAny<string>())).ReturnsAsync(new ResponseDto { IsSuccess = true, HttpStatusCode = HttpStatusCode.OK });
+
+        // Act
+        var result = await accountController.LogOutUser(validId);
+
+        // Assert
+        Assert.AreEqual(HttpStatusCode.OK, result.HttpStatusCode);
+        Assert.That(result.IsSuccess);
+    }
+
+    #endregion
 }
