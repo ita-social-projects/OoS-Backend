@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
@@ -79,5 +81,18 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
          .Include(x => x.Workshops)
          .ThenInclude(w => w.Applications)
          .SingleOrDefaultAsync(provider => !provider.IsDeleted && provider.Id == id);
+    }
+
+
+    public async Task<IEnumerable<Provider>> GetAllWithDeleted(int? take = null)
+    {
+        IQueryable<Provider> query = db.Providers;
+
+        if (take.HasValue)
+        {
+            query = query.Take(take.Value);
+        }
+
+        return await query.ToListAsync().ConfigureAwait(false);
     }
 }

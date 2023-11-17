@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
@@ -83,5 +84,18 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
         await dbContext.SaveChangesAsync().ConfigureAwait(false);
 
         return await Task.FromResult(workshop).ConfigureAwait(false);
+    }
+
+    public async Task<IEnumerable<Workshop>> GetAllWithDeleted(Expression<Func<Workshop, bool>> whereExpression)
+    {
+        IQueryable<Workshop> query = db.Workshops;
+
+        if (whereExpression != null)
+        {
+            query = query.Where(whereExpression);
+        }
+
+        return await query.ToListAsync().ConfigureAwait(false);
+
     }
 }
