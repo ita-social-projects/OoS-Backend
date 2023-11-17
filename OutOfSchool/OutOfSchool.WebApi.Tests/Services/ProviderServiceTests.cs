@@ -49,6 +49,7 @@ public class ProviderServiceTests
     private Mock<IRegionAdminRepository> regionAdminRepositoryMock;
     private Mock<IAverageRatingService> averageRatingServiceMock;
     private Mock<IAreaAdminService> areaAdminServiceMock;
+    private Mock<IAreaAdminRepository> areaAdminRepositoryMock;
     private Mock<IUserService> userServiceMock;
     private Mock<ICommunicationService> communicationService;
 
@@ -82,6 +83,7 @@ public class ProviderServiceTests
         regionAdminRepositoryMock = new Mock<IRegionAdminRepository>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
         areaAdminServiceMock = new Mock<IAreaAdminService>();
+        areaAdminRepositoryMock = new Mock<IAreaAdminRepository>();
         userServiceMock = new Mock<IUserService>();
         communicationService = new Mock<ICommunicationService>();
 
@@ -109,6 +111,7 @@ public class ProviderServiceTests
             regionAdminRepositoryMock.Object,
             averageRatingServiceMock.Object,
             areaAdminServiceMock.Object,
+            areaAdminRepositoryMock.Object,
             userServiceMock.Object,
             authorizationServerConfig,
             communicationService.Object);
