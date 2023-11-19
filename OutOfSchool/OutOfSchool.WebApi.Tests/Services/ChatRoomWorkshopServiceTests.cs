@@ -448,6 +448,73 @@ public class ChatRoomWorkshopServiceTests
     }
     #endregion
 
+    #region GetCurrentUserUnreadMessagesCountAsync
+    [Test]
+    public async Task GetCurrentUserUnreadMessagesCount_WhenUserRoleIsParent_ShouldReturnCorrectCount()
+    {
+        // Arrange
+        var parentId = parents[0].Id;
+        var role = Role.Parent;
+        var chatRooms = new List<ChatRoomWorkshopForChatList>
+        {
+            new ChatRoomWorkshopForChatList { NotReadByCurrentUserMessagesCount = 1 },
+            new ChatRoomWorkshopForChatList { NotReadByCurrentUserMessagesCount = 1 },
+        };
+
+        roomWithSpecialModelRepositoryMock
+            .Setup(x => x.GetByParentIdAsync(parentId, It.IsAny<bool>()))
+            .ReturnsAsync(chatRooms);
+
+        // Act
+        var result = await roomService.GetCurrentUserUnreadMessagesCountAsync(parentId, role).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<int>(result);
+        Assert.IsNotNull(result);
+        Assert.AreEqual(2, result);
+    }
+
+    [Test]
+    public async Task GetCurrentUserUnreadMessagesCount_WhenUserRoleIsProvider_ShouldReturnCorrectCount()
+    {
+        // Arrange
+        var providerId = providers[0].Id;
+        var role = Role.Provider;
+        var chatRooms = new List<ChatRoomWorkshopForChatList>
+        {
+            new ChatRoomWorkshopForChatList { NotReadByCurrentUserMessagesCount = 1 },
+            new ChatRoomWorkshopForChatList { NotReadByCurrentUserMessagesCount = 1 },
+            new ChatRoomWorkshopForChatList { NotReadByCurrentUserMessagesCount = 1 },
+        };
+
+        roomWithSpecialModelRepositoryMock
+            .Setup(x => x.GetByProviderIdAsync(providerId, It.IsAny<bool>()))
+            .ReturnsAsync(chatRooms);
+
+        // Act
+        var result = await roomService.GetCurrentUserUnreadMessagesCountAsync(providerId, role).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<int>(result);
+        Assert.IsNotNull(result);
+        Assert.AreEqual(3, result);
+    }
+
+    [Test]
+    public void GetCurrentUserUnreadMessagesCount_WhenUserRoleIsNotValid_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        var providerId = providers[0].Id;
+        var role = Role.TechAdmin;
+
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await roomService.GetCurrentUserUnreadMessagesCountAsync(providerId, role).ConfigureAwait(false);
+        });
+    }
+    #endregion
+
     private void SeedDatabase()
     {
         using var context = new OutOfSchoolDbContext(options);
