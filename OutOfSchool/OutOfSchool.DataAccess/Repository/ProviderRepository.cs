@@ -83,16 +83,8 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
          .SingleOrDefaultAsync(provider => !provider.IsDeleted && provider.Id == id);
     }
 
-
-    public async Task<IEnumerable<Provider>> GetAllWithDeleted(int? take = null)
+    public async Task<IEnumerable<Provider>> GetAllWithDeleted()
     {
-        IQueryable<Provider> query = db.Providers;
-
-        if (take.HasValue)
-        {
-            query = query.Take(take.Value);
-        }
-
-        return await query.ToListAsync().ConfigureAwait(false);
+        return await db.Providers.ToListAsync().ConfigureAwait(false);
     }
 }
