@@ -437,7 +437,7 @@ public class AccountController : Controller
             return new ResponseDto() { HttpStatusCode = HttpStatusCode.BadRequest };
         }
 
-        logger.LogInformation($"LogOut of user with Id = {userId} started");
+        logger.LogInformation($"LogOut of user with Id = {id} started");
 
         return await userService.LogOutUserById(userId);
     }
