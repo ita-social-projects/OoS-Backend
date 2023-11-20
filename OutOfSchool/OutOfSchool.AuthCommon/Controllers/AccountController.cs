@@ -5,7 +5,6 @@ using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Extensions;
 using OutOfSchool.AuthCommon.ViewModels;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
-using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.AuthCommon.Controllers;
 
@@ -37,7 +36,6 @@ public class AccountController : Controller
         this.logger = logger;
         this.localizer = localizer;
         this.renderer = renderer;
-        this.localizer = localizer;
         this.identityServerConfig = identityServerConfig.Value;
         this.userService = userService;
     }
