@@ -351,7 +351,7 @@ public class ProviderService : IProviderService, INotificationReciever
             };
         }
 
-        var isUserHasRights = await IsCurrentUserHasRightsToBlockProvider(provider);
+        var isUserHasRights = await IsCurrentUserIsAdminOfDistrictOrMinistryOfProvider(provider);
 
         if (!isUserHasRights)
         {
@@ -719,7 +719,7 @@ public class ProviderService : IProviderService, INotificationReciever
             };
         }
 
-        if (!(await IsUserHasRightsAsync(currentUserService.UserId, entity)))
+        if (currentUserService.UserId != entity.UserId && !await IsCurrentUserIsAdminOfDistrictOrMinistryOfProvider(entity))
         {
             var message = $"User with userId = {currentUserService.UserId} has no rights to delete user with id = {entity.UserId}";
             logger.LogError(message);
@@ -771,36 +771,34 @@ public class ProviderService : IProviderService, INotificationReciever
             : null);
     }
 
-    private async Task<bool> IsUserHasRightsAsync(string currentUserId, Provider user)
+    private async Task<bool> IsCurrentUserIsAdminOfDistrictOrMinistryOfProvider(Provider provider)
     {
-        if (currentUserService.IsAdmin())
+        if (!currentUserService.IsAdmin())
         {
-            if (currentUserService.IsMinistryAdmin())
-            {
-                var minAdmin = await ministryAdminService.GetByIdAsync(currentUserId).ConfigureAwait(false);
-                return minAdmin.InstitutionId == user.InstitutionId;
-            }
-
-            if (currentUserService.IsRegionAdmin())
-            {
-                var regionAdmin = await regionAdminService.GetByIdAsync(currentUserId).ConfigureAwait(false);
-                var legalAddress = await addressRepository.GetById(user.LegalAddressId).ConfigureAwait(false);
-                var listOfCATOTTG = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
-                return regionAdmin.InstitutionId == user.InstitutionId && listOfCATOTTG.Contains(legalAddress.CATOTTGId);
-            }
-
-            if (currentUserService.IsAreaAdmin())
-            {
-                var areaAdmin = await areaAdminService.GetByIdAsync(currentUserId).ConfigureAwait(false);
-                var legalAddress = await addressRepository.GetById(user.LegalAddressId).ConfigureAwait(false);
-                var listOfCATOTTG = await codeficatorService.GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
-                return areaAdmin.InstitutionId == user.InstitutionId && listOfCATOTTG.Contains(legalAddress.CATOTTGId);
-            }
-
-            return true;
+            return false;
         }
 
-        return currentUserId == user.UserId;
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var minAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId).ConfigureAwait(false);
+            return minAdmin.InstitutionId == provider.InstitutionId;
+        }
+
+        if (currentUserService.IsRegionAdmin())
+        {
+            var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId).ConfigureAwait(false);
+            var listOfCATOTTG = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+            return regionAdmin.InstitutionId == provider.InstitutionId && listOfCATOTTG.Contains(provider.LegalAddress.CATOTTGId);
+        }
+
+        if (currentUserService.IsAreaAdmin())
+        {
+            var areaAdmin = await areaAdminService.GetByUserId(currentUserService.UserId).ConfigureAwait(false);            
+            var listOfCATOTTG = await codeficatorService.GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
+            return areaAdmin.InstitutionId == provider.InstitutionId && listOfCATOTTG.Contains(provider.LegalAddress.CATOTTGId);
+        }
+
+        return true;
     }
 
     private static bool IsNeedInRelatedWorkshopsUpdating(ProviderUpdateDto providerDto, Provider checkProvider)
@@ -973,51 +971,5 @@ public class ProviderService : IProviderService, INotificationReciever
             .ConfigureAwait(false);
 
         return providersWithTheSameEdrpouIpn.Any();
-    }
-
-    private async Task<bool> IsCurrentUserHasRightsToBlockProvider(Provider provider)
-    {
-        if (currentUserService.IsAdmin())
-        {
-            if (currentUserService.IsMinistryAdmin())
-            {
-                var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
-
-                if (ministryAdmin.InstitutionId != provider.InstitutionId)
-                {
-                    return false;
-                }
-            }
-
-            if (currentUserService.IsAreaAdmin())
-            {
-                var areaAdmin = await areaAdminService.GetByUserId(currentUserService.UserId);
-                var subSettlementsIds = await codeficatorService
-                    .GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
-                if (areaAdmin.InstitutionId != provider.InstitutionId || !subSettlementsIds.Contains(provider.LegalAddress.CATOTTGId))
-                {
-                    return false;
-                }
-            }
-
-            if (currentUserService.IsRegionAdmin())
-            {
-                var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
-
-                var subSettlementsIds = await codeficatorService
-                    .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
-
-                if (regionAdmin.InstitutionId != provider.InstitutionId || !subSettlementsIds.Contains(provider.LegalAddress.CATOTTGId))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-        else
-        {
-            return false;
-        }
     }
 }
