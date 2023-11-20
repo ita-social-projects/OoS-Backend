@@ -71,22 +71,16 @@ public class ParentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> BlockUnblockParent(BlockUnblockParentDto parentBlockUnblock)
     {
         var result = await serviceParent.BlockUnblockParent(parentBlockUnblock).ConfigureAwait(false);
 
-        if (result.Succeeded)
+        if (!result.Succeeded)
         {
-            return Ok();
+            return BadRequest(result.OperationResult);
         }
 
-        if (result.OperationResult.Errors.Any(x => x.Code == StatusCodes.Status404NotFound.ToString()))
-        {
-            return NotFound(result.OperationResult);
-        }
-
-        return BadRequest(result.OperationResult);
+        return Ok();
     }
  }

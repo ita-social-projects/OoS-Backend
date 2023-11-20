@@ -117,24 +117,14 @@ public class ParentService : IParentService
     /// <inheritdoc/>
     public async Task<Result<bool>> BlockUnblockParent(BlockUnblockParentDto parentBlockUnblock)
     {
+        ArgumentNullException.ThrowIfNull(parentBlockUnblock);
         logger.LogInformation("Changing Block status of Parent by ParentId started. Looking ParentId is {Id}", parentBlockUnblock.ParentId);
         var parent = await repositoryParent.GetByIdWithDetails(parentBlockUnblock.ParentId, "User").ConfigureAwait(false);
-        if (parent is null)
+        if (parent is null || parent.User.IsBlocked == parentBlockUnblock.IsBlocked)
         {
-            return Result<bool>.Failed(new OperationError
-            {
-                Code = StatusCodes.Status404NotFound.ToString(),
-                Description = $"ParentId not found: {parentBlockUnblock.ParentId}.",
-            });
-        }
-
-        if (parent.User.IsBlocked == parentBlockUnblock.IsBlocked)
-        {
-            return Result<bool>.Failed(new OperationError
-            {
-                Code = StatusCodes.Status400BadRequest.ToString(),
-                Description = $"ParentId is already {(parentBlockUnblock.IsBlocked ? "blocked" : "unblocked")}: {parent.Id}.",
-            });
+            logger.LogInformation($"Changing Block status of Parent aborted. " +
+                $"{(parent == null ? "Parent not found." : "Parent already blocked/unblocked.")}");
+            return Result<bool>.Success(true);
         }
 
         parent.User.IsBlocked = parentBlockUnblock.IsBlocked;
