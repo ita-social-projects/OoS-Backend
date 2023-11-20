@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Security.AccessControl;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;

@@ -1,6 +1,4 @@
-﻿using System.Net.Http;
-
-namespace OutOfSchool.WebApi.Services.Communication;
+﻿namespace OutOfSchool.WebApi.Services.Communication;
 
 public enum HttpMethodType
 {

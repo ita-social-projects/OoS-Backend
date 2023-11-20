@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using OutOfSchool.Services;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests;

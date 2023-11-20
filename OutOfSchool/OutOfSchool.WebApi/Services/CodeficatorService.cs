@@ -2,7 +2,6 @@
 using AutoMapper;
 using H3Lib;
 using H3Lib.Extensions;
-using NuGet.Configuration;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Models.Codeficator;

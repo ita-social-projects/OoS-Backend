@@ -1,6 +1,5 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Models;

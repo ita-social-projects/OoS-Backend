@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace OutOfSchool.WebApi.Common;
+﻿namespace OutOfSchool.WebApi.Common;
 
 /// <summary>
 /// Represents the result of an operation.

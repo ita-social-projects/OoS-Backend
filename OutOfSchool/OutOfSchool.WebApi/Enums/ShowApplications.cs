@@ -4,10 +4,9 @@ using Newtonsoft.Json.Converters;
 namespace OutOfSchool.WebApi.Enums;
 
 [JsonConverter(typeof(StringEnumConverter))]
-public enum Feature
+public enum ShowApplications
 {
-    Release1,
-    Release2,
-    Release3,
-    Images,
+    All,
+    Blocked,
+    Unblocked,
 }

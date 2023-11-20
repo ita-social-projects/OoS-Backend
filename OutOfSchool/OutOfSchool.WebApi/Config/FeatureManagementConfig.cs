@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace OutOfSchool.WebApi.Config;
+﻿namespace OutOfSchool.WebApi.Config;
 
 public class FeatureManagementConfig
 {

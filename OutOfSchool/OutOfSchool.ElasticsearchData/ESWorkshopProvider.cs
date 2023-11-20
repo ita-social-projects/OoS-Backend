@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Nest;
-using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData.Enums;
 using OutOfSchool.ElasticsearchData.Models;

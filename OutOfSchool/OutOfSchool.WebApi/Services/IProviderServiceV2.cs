@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.WebApi.Services;

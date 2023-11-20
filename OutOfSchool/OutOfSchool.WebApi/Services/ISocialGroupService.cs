@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using OutOfSchool.WebApi.Enums;
+﻿using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models.SocialGroup;
 
 namespace OutOfSchool.WebApi.Services;

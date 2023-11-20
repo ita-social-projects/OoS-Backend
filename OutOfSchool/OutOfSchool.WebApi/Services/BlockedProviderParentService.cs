@@ -1,11 +1,5 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 
