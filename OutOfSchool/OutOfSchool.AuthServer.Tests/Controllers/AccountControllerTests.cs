@@ -18,6 +18,7 @@ using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.AuthCommon.Services.Interfaces;
 using System.Net;
+using System;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
 
@@ -258,7 +259,7 @@ public class AccountControllerTests
     public async Task LogOutUser_WhenIdIsValid_ReturnOkResponse()
     {
         // Arrange
-        var validId = "fakeValidId";
+        var validId = Guid.NewGuid().ToString();
         fakeUserService.Setup(x => x.LogOutUserById(It.IsAny<string>())).ReturnsAsync(new ResponseDto { IsSuccess = true, HttpStatusCode = HttpStatusCode.OK });
 
         // Act

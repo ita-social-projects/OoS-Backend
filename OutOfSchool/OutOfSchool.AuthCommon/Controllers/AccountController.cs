@@ -34,8 +34,8 @@ public class AccountController : Controller
         this.userManager = userManager;
         this.emailSender = emailSender;
         this.logger = logger;
-        this.localizer = localizer;
         this.renderer = renderer;
+        this.localizer = localizer;
         this.identityServerConfig = identityServerConfig.Value;
         this.userService = userService;
     }
@@ -432,7 +432,7 @@ public class AccountController : Controller
     [HasPermission(Permissions.ProviderRemove)]
     public async Task<ResponseDto> LogOutUser(string userId)
     {
-        if (string.IsNullOrEmpty(userId))
+        if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var id))
         {
             return new ResponseDto() { HttpStatusCode = HttpStatusCode.BadRequest };
         }
