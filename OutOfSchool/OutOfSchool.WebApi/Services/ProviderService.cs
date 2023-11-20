@@ -170,6 +170,24 @@ public class ProviderService : IProviderService, INotificationReciever
             filterPredicate = filterPredicate.And(tempPredicate);
         }
 
+        if (currentUserService.IsAreaAdmin())
+        {
+            var areaAdmin = await areaAdminService.GetByUserId(currentUserService.UserId);
+            filterPredicate = filterPredicate.And(p => p.InstitutionId == areaAdmin.InstitutionId);
+
+            var subSettlementsIds = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
+
+            var tempPredicate = PredicateBuilder.False<Provider>();
+
+            foreach (var item in subSettlementsIds)
+            {
+                tempPredicate = tempPredicate.Or(x => x.LegalAddress.CATOTTGId == item);
+            }
+
+            filterPredicate = filterPredicate.And(tempPredicate);
+        }
+
         int count = await providerRepository.Count(filterPredicate).ConfigureAwait(false);
 
         var sortExpression = new Dictionary<Expression<Func<Provider, object>>, SortDirection>
