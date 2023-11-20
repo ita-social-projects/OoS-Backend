@@ -5,7 +5,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/providers")]
+[Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class ExternalExportProviderController : ControllerBase
 {
     private readonly IExternalExportProviderService externalProviderService;
@@ -25,7 +25,6 @@ public class ExternalExportProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderInfoBaseDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Route("export")]
     public async Task<ActionResult<SearchResult<ProviderInfoBaseDto>>> GetByFilter([FromQuery] DateTime updatedAfter, [FromQuery] SizeFilter sizeFilter)
     {
         try

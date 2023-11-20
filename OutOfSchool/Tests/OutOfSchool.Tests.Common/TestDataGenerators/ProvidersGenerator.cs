@@ -32,8 +32,7 @@ public static class ProvidersGenerator
         .RuleFor(x => x.LegalAddress, _ => AddressGenerator.Generate())
         .RuleFor(x => x.ActualAddress, _ => AddressGenerator.Generate())
         .RuleFor(x => x.InstitutionType, f => f.PickRandom<InstitutionType>())
-        .RuleFor(x => x.IsBlocked, _ => false)
-        .RuleFor(x => x.UpdatedAt, _ =>DateTime.Now);
+        .RuleFor(x => x.IsBlocked, _ => false);
 
     /// <summary>
     /// Creates new instance of the <see cref="Provider"/> class with random data.

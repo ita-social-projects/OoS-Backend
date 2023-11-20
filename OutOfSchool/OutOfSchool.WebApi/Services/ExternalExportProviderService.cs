@@ -4,7 +4,7 @@ using OutOfSchool.WebApi.Models.ProvidersInfo;
 
 namespace OutOfSchool.WebApi.Services;
 
-public class ExternalExportProviderService : IExternalExportProviderService
+public class ExternalExportProviderService: IExternalExportProviderService
 {
     private readonly IProviderRepository providerRepository;
     private readonly IWorkshopRepository workshopRepository;
@@ -17,54 +17,39 @@ public class ExternalExportProviderService : IExternalExportProviderService
         IMapper mapper,
         ILogger<ExternalExportProviderService> logger)
     {
-        this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
-        this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.providerRepository = providerRepository;
+        this.workshopRepository = workshopRepository;
+        this.mapper = mapper;
+        this.logger = logger;
     }
 
     public async Task<SearchResult<ProviderInfoBaseDto>> GetProvidersWithWorkshops(DateTime updatedAfter, SizeFilter sizeFilter)
     {
-        try
+        logger.LogInformation("Getting all updated providers started.");
+        var providers = await GetAllUpdatedProviders(updatedAfter , sizeFilter);
+
+        var providerWorkshopDtos = new List<ProviderInfoBaseDto>();
+
+        foreach (var provider in providers)
         {
-            logger.LogInformation("Getting all updated providers started.");
+            var workshops = await GetWorkshopListByProviderId(provider.Id);
 
-            var providers = await GetAllUpdatedProviders(updatedAfter, sizeFilter);
-
-            if (providers == null)
-            {
-                logger.LogError("Failed to retrieve updated providers. The provider list is null.");
-                return new SearchResult<ProviderInfoBaseDto>();
-            }
-
-            var providerWorkshopDtos = new List<ProviderInfoBaseDto>();
-
-            foreach (var provider in providers)
-            {
-                    var workshops = await GetWorkshopListByProviderId(provider.Id);
-
-                    var providerDto = mapper.Map<ProviderInfoBaseDto>(provider);
-                    providerDto.Workshops = workshops;
-                    providerWorkshopDtos.Add(providerDto);
-            }
-
-            logger.LogInformation(!providerWorkshopDtos.Any()
-                ? "Providers table is empty."
-                : $"All {providerWorkshopDtos.Count} records were successfully received from the Provider table");
-
-            var searchResult = new SearchResult<ProviderInfoBaseDto>
-            {
-                TotalAmount = providerWorkshopDtos.Count,
-                Entities = providerWorkshopDtos,
-            };
-
-            return searchResult;
+            var providerDto = mapper.Map<ProviderInfoBaseDto>(provider);
+            providerDto.Workshops = workshops;
+            providerWorkshopDtos.Add(providerDto);
         }
-        catch (Exception ex)
+
+        logger.LogInformation(!providerWorkshopDtos.Any()
+            ? "Providers table is empty."
+            : $"All {providerWorkshopDtos.Count} records were successfully received from the Provider table");
+
+        var searchResult = new SearchResult<ProviderInfoBaseDto>
         {
-            logger.LogError(ex, "An unexpected error occurred while processing providers.");
-            return new SearchResult<ProviderInfoBaseDto>();
-        }
+            TotalAmount = providerWorkshopDtos.Count,
+            Entities = providerWorkshopDtos,
+        };
+
+        return searchResult;
     }
 
     private async Task<List<WorkshopInfoBaseDto>> GetWorkshopListByProviderId(Guid providerId)
@@ -83,7 +68,7 @@ public class ExternalExportProviderService : IExternalExportProviderService
     {
         sizeFilter ??= new SizeFilter();
         var providers = await providerRepository
-         .GetAllWithDeleted()
+         .GetAllWithDeleted(take: sizeFilter.Size)
          .ConfigureAwait(false);
 
         var filteredProviders = updatedAfter == default
@@ -91,7 +76,6 @@ public class ExternalExportProviderService : IExternalExportProviderService
             : providers.Where(provider => IsProviderUpdated(provider, updatedAfter));
 
         var providersDto = filteredProviders
-            .Take(sizeFilter.Size)
             .Select(provider => MapToInfoProviderDto(provider))
             .ToList();
 
