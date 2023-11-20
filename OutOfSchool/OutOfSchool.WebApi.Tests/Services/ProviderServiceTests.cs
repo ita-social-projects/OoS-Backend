@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Localization;
@@ -727,7 +726,7 @@ public class ProviderServiceTests
     }
 
     [Test]
-    public async Task Delete_WhenIdIsInvalid_ThrowsArgumentNullException()
+    public async Task Delete_WhenIdIsInvalid_ReturnNotFoundErrorResponse()
     {
         // Arrange
         var fakeProviderInvalidId = Guid.NewGuid();
@@ -740,7 +739,7 @@ public class ProviderServiceTests
     }
 
     [Test]
-    public async Task Delete_WhenUserHasNoRights_ThrowsUnauthorizedAccessException()
+    public async Task Delete_WhenUserHasNoRights_ReturnForbiddenErrorResponse()
     {
         // Arrange
         Guid providerToDeleteId = Guid.NewGuid();

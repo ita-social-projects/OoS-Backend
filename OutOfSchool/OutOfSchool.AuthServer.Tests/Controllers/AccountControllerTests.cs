@@ -229,7 +229,7 @@ public class AccountControllerTests
     #region LogOutUserTests
 
     [Test]
-    public async Task LogOutUser_WhenIdIsNull_ThrowsArgumentException()
+    public async Task LogOutUser_WhenIdIsNull_ReturnsBadRequestResponse()
     {
         // Arrange
         var invalidId = null as string;
@@ -242,7 +242,7 @@ public class AccountControllerTests
     }
 
     [Test]
-    public async Task LogOutUser_WhenIdIsEmpty_ThrowsArgumentException()
+    public async Task LogOutUser_WhenIdIsEmpty_ReturnsBadRequestResponse()
     {
         // Arrange
         var invalidId = string.Empty;

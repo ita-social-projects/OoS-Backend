@@ -50,7 +50,7 @@ public class ProviderControllerTests
         providerService = new Mock<IProviderService>();
         providerController = new ProviderController(providerService.Object, localizer.Object, new Mock<ILogger<ProviderController>>().Object);
 
-        providerController.ControllerContext.HttpContext = GetFakeHttpContext(); //new DefaultHttpContext { User = user };
+        providerController.ControllerContext.HttpContext = GetFakeHttpContext();
         providers = ProvidersGenerator.Generate(10);
         provider = ProvidersGenerator.Generate();
     }
@@ -275,12 +275,13 @@ public class ProviderControllerTests
         // Arrange
         var guid = Guid.NewGuid();
         var errorMessage = TestDataHelper.GetRandomWords();
-        providerService.Setup(x => x.Delete(guid, It.IsAny<string>())).ReturnsAsync(new ErrorResponse { HttpStatusCode = HttpStatusCode.NotFound, Message = errorMessage});
+        providerService.Setup(x => x.Delete(guid, It.IsAny<string>())).ReturnsAsync(new ErrorResponse { HttpStatusCode = HttpStatusCode.NotFound, Message = errorMessage });
 
         // Act
         var result = await providerController.Delete(guid).ConfigureAwait(false);
 
         // Assert
+        Assert.IsInstanceOf<ObjectResult>(result);
         Assert.AreEqual((int)HttpStatusCode.NotFound, (result as ObjectResult).StatusCode);
         Assert.AreEqual(errorMessage, (result as ObjectResult).Value);
     }
@@ -483,13 +484,13 @@ public class ProviderControllerTests
             .Returns(authenticationServiceMock.Object);
 
         var user = new ClaimsPrincipal(
-        new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(IdentityResourceClaimsTypes.Sub, userId),
-                new Claim(IdentityResourceClaimsTypes.Role, Role.Provider.ToString()),
-            },
-            IdentityResourceClaimsTypes.Sub));
+                    new ClaimsIdentity(
+                        new Claim[]
+                        {
+                            new Claim(IdentityResourceClaimsTypes.Sub, userId),
+                            new Claim(IdentityResourceClaimsTypes.Role, Role.Provider.ToString()),
+                        },
+                        IdentityResourceClaimsTypes.Sub));
 
         var context = new DefaultHttpContext()
         {

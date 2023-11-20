@@ -1,10 +1,12 @@
 ﻿using System.Data;
 using System.Linq.Expressions;
 using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
@@ -93,7 +95,7 @@ public class ProviderService : IProviderService, INotificationReciever
         IAreaAdminService areaAdminService,
         IUserService userService,
         IOptions<AuthorizationServerConfig> authorizationServerConfig,
-        ICommunicationService communicationService))
+        ICommunicationService communicationService)
     {
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
