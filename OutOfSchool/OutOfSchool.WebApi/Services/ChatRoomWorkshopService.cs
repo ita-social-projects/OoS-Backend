@@ -436,16 +436,12 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
 
     public async Task<int> GetCurrentUserUnreadMessagesCountAsync(Guid parentOrProviderId, Role userRole)
     {
-        IEnumerable<ChatRoomWorkshopDtoWithLastMessage> chatrooms = null;
-        if (userRole == Role.Parent)
+        var chatrooms = userRole switch
         {
-            chatrooms = await GetByParentIdAsync(parentOrProviderId);
-        }
-
-        if (userRole == Role.Provider)
-        {
-            chatrooms = await GetByProviderIdAsync(parentOrProviderId);
-        }
+            Role.Parent => await GetByParentIdAsync(parentOrProviderId),
+            Role.Provider => await GetByProviderIdAsync(parentOrProviderId),
+            _ => throw new ArgumentException(nameof(userRole)),
+        };
 
         return chatrooms.Count(chatroom => chatroom.NotReadByCurrentUserMessagesCount != 0);
     }

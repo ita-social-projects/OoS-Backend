@@ -461,6 +461,8 @@ public class ChatRoomWorkshopServiceTests
             new ChatRoomWorkshopForChatList { NotReadByCurrentUserMessagesCount = 1 },
         };
 
+        var expectedCount = chatRooms.Count(r => r.NotReadByCurrentUserMessagesCount > 0);
+
         roomWithSpecialModelRepositoryMock
             .Setup(x => x.GetByParentIdAsync(parentId, It.IsAny<bool>()))
             .ReturnsAsync(chatRooms);
@@ -469,9 +471,8 @@ public class ChatRoomWorkshopServiceTests
         var result = await roomService.GetCurrentUserUnreadMessagesCountAsync(parentId, role).ConfigureAwait(false);
 
         // Assert
-        Assert.IsInstanceOf<int>(result);
         Assert.IsNotNull(result);
-        Assert.AreEqual(2, result);
+        Assert.AreEqual(expectedCount, result);
     }
 
     [Test]
@@ -487,6 +488,8 @@ public class ChatRoomWorkshopServiceTests
             new ChatRoomWorkshopForChatList { NotReadByCurrentUserMessagesCount = 1 },
         };
 
+        var expectedCount = chatRooms.Count(r => r.NotReadByCurrentUserMessagesCount > 0);
+
         roomWithSpecialModelRepositoryMock
             .Setup(x => x.GetByProviderIdAsync(providerId, It.IsAny<bool>()))
             .ReturnsAsync(chatRooms);
@@ -495,20 +498,19 @@ public class ChatRoomWorkshopServiceTests
         var result = await roomService.GetCurrentUserUnreadMessagesCountAsync(providerId, role).ConfigureAwait(false);
 
         // Assert
-        Assert.IsInstanceOf<int>(result);
         Assert.IsNotNull(result);
-        Assert.AreEqual(3, result);
+        Assert.AreEqual(expectedCount, result);
     }
 
     [Test]
-    public void GetCurrentUserUnreadMessagesCount_WhenUserRoleIsNotValid_ShouldThrowArgumentNullException()
+    public void GetCurrentUserUnreadMessagesCount_WhenUserRoleIsNotValid_ShouldThrowArgumentException()
     {
         // Arrange
         var providerId = providers[0].Id;
         var role = Role.TechAdmin;
 
         // Act and Assert
-        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        Assert.ThrowsAsync<ArgumentException>(async () =>
         {
             await roomService.GetCurrentUserUnreadMessagesCountAsync(providerId, role).ConfigureAwait(false);
         });
