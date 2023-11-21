@@ -471,7 +471,6 @@ public class ChatRoomWorkshopServiceTests
         var result = await roomService.GetCurrentUserUnreadMessagesCountAsync(parentId, role).ConfigureAwait(false);
 
         // Assert
-        Assert.IsNotNull(result);
         Assert.AreEqual(expectedCount, result);
     }
 
@@ -498,7 +497,6 @@ public class ChatRoomWorkshopServiceTests
         var result = await roomService.GetCurrentUserUnreadMessagesCountAsync(providerId, role).ConfigureAwait(false);
 
         // Assert
-        Assert.IsNotNull(result);
         Assert.AreEqual(expectedCount, result);
     }
 
