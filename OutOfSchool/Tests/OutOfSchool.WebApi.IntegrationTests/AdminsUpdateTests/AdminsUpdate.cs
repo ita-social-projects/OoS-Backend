@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Threading.Tasks;
 using AutoMapper;
 using NUnit.Framework;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Util;
 

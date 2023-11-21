@@ -222,6 +222,9 @@ public class RegionAdminControllerTests
         var result = await regionAdminController.Update(updateRegionAdminDto);
 
         // Assert
+        regionAdminServiceMock.Verify(
+            x => x.UpdateRegionAdminAsync(It.IsAny<string>(), It.Is<BaseUserDto>(x => x is BaseUserDto), It.IsAny<string>()),
+            "Method should work only with BaseUserDto, to avoid changing institutionId or CATOTTGId");
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.InstanceOf<OkResult>());
     }
