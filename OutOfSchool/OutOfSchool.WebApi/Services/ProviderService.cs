@@ -1,12 +1,17 @@
 ﻿using System.Data;
 using System.Linq.Expressions;
 using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.AverageRatings;
+using OutOfSchool.WebApi.Services.Communication.ICommunication;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -17,7 +22,6 @@ public class ProviderService : IProviderService, INotificationReciever
 {
     private readonly IProviderRepository providerRepository;
     private readonly IProviderAdminRepository providerAdminRepository;
-    private readonly ILogger<ProviderService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
     private readonly IEntityRepositorySoftDeleted<long, Address> addressRepository;
@@ -33,6 +37,10 @@ public class ProviderService : IProviderService, INotificationReciever
     private readonly IRegionAdminRepository regionAdminRepository;
     private readonly IAverageRatingService averageRatingService;
     private readonly IAreaAdminService areaAdminService;
+    private readonly IUserService userService;
+    private readonly AuthorizationServerConfig authorizationServerConfig;
+    private readonly ICommunicationService communicationService;
+    private readonly ILogger<ProviderService> logger;
 
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
@@ -61,6 +69,9 @@ public class ProviderService : IProviderService, INotificationReciever
     /// <param name="regionAdminRepository">RegionAdminRepository</param>
     /// <param name="averageRatingService">Average rating service.</param>
     /// <param name="areaAdminService">Service for manage area admin.</param>
+    /// <param name="userService">Service for manage users.</param>
+    /// <param name="authorizationServerConfig">Path to authorization server.</param>
+    /// <param name="communicationService">Service for communication.</param>
     public ProviderService(
         IProviderRepository providerRepository,
         IEntityRepositorySoftDeleted<string, User> usersRepository,
@@ -81,14 +92,16 @@ public class ProviderService : IProviderService, INotificationReciever
         ICodeficatorService codeficatorService,
         IRegionAdminRepository regionAdminRepository,
         IAverageRatingService averageRatingService,
-        IAreaAdminService areaAdminService)
+        IAreaAdminService areaAdminService,
+        IUserService userService,
+        IOptions<AuthorizationServerConfig> authorizationServerConfig,
+        ICommunicationService communicationService)
     {
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.addressRepository = addressRepository ?? throw new ArgumentNullException(nameof(addressRepository));
         this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
         this.usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.workshopServiceCombiner = workshopServiceCombiner ?? throw new ArgumentNullException(nameof(workshopServiceCombiner));
         this.providerAdminRepository = providerAdminRepository ?? throw new ArgumentNullException(nameof(providerAdminRepository));
         ProviderImagesService = providerImagesService ?? throw new ArgumentNullException(nameof(providerImagesService));
@@ -103,6 +116,10 @@ public class ProviderService : IProviderService, INotificationReciever
         this.regionAdminRepository = regionAdminRepository;
         this.averageRatingService = averageRatingService ?? throw new ArgumentNullException(nameof(averageRatingService));
         this.areaAdminService = areaAdminService ?? throw new ArgumentNullException(nameof(areaAdminService));
+        this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        this.authorizationServerConfig = authorizationServerConfig.Value ?? throw new ArgumentNullException(nameof(authorizationServerConfig));
+        this.communicationService = communicationService ?? throw new ArgumentNullException(nameof(communicationService));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
@@ -142,6 +159,24 @@ public class ProviderService : IProviderService, INotificationReciever
 
             var subSettlementsIds = await codeficatorService
                 .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+
+            var tempPredicate = PredicateBuilder.False<Provider>();
+
+            foreach (var item in subSettlementsIds)
+            {
+                tempPredicate = tempPredicate.Or(x => x.LegalAddress.CATOTTGId == item);
+            }
+
+            filterPredicate = filterPredicate.And(tempPredicate);
+        }
+
+        if (currentUserService.IsAreaAdmin())
+        {
+            var areaAdmin = await areaAdminService.GetByUserId(currentUserService.UserId);
+            filterPredicate = filterPredicate.And(p => p.InstitutionId == areaAdmin.InstitutionId);
+
+            var subSettlementsIds = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
 
             var tempPredicate = PredicateBuilder.False<Provider>();
 
@@ -261,7 +296,7 @@ public class ProviderService : IProviderService, INotificationReciever
         => await UpdateProviderWithActionBeforeSavingChanges(providerUpdateDto, userId).ConfigureAwait(false);
 
     /// <inheritdoc/>
-    public async Task Delete(Guid id) => await DeleteProviderWithActionBefore(id).ConfigureAwait(false);
+    public async Task<Either<ErrorResponse, ActionResult>> Delete(Guid id, string token) => await DeleteProviderWithActionBefore(id, token).ConfigureAwait(false);
 
     /// <inheritdoc/>
     public async Task<Guid> GetProviderIdForWorkshopById(Guid workshopId) =>
@@ -316,7 +351,7 @@ public class ProviderService : IProviderService, INotificationReciever
             };
         }
 
-        var isUserHasRights = await IsCurrentUserHasRightsToBlockProvider(provider);
+        var isUserHasRights = await IsCurrentUserIsAdminOfDistrictOrMinistryOfProvider(provider);
 
         if (!isUserHasRights)
         {
@@ -667,35 +702,103 @@ public class ProviderService : IProviderService, INotificationReciever
         }
     }
 
-    private protected async Task DeleteProviderWithActionBefore(Guid id, Func<Provider, Task> actionBeforeDeleting = null)
+    private protected async Task<Either<ErrorResponse, ActionResult>> DeleteProviderWithActionBefore(Guid id, string token, Func<Provider, Task> actionBeforeDeleting = null)
     {
-        // BUG: Possible bug with deleting provider not owned by the user itself.
-        // TODO: add unit tests to check ownership functionality
         logger.LogInformation("Deleting Provider with Id = {Id} started", id);
 
-        try
+        var entity = await providerRepository.GetWithNavigations(id).ConfigureAwait(false);
+
+        if (entity is null)
         {
-            var entity = await providerRepository.GetWithNavigations(id).ConfigureAwait(false);
-
-            if (entity is null)
+            var message = $"There is no Provider with Id = {id}";
+            logger.LogError(message);
+            return new ErrorResponse()
             {
-                throw new ArgumentException($"There is no Provider in DB with Id - {id}");
-            }
-
-            if (actionBeforeDeleting != null)
-            {
-                await actionBeforeDeleting(entity).ConfigureAwait(false);
-            }
-
-            await providerRepository.Delete(entity).ConfigureAwait(false);
-
-            logger.LogInformation("Provider with Id = {Id} successfully deleted", id);
+                Message = message,
+                HttpStatusCode = HttpStatusCode.NotFound,
+            };
         }
-        catch (ArgumentNullException ex)
+
+        if (currentUserService.UserId != entity.UserId && !await IsCurrentUserIsAdminOfDistrictOrMinistryOfProvider(entity))
         {
-            logger.LogError(ex, "Deleting failed. Provider with Id = {Id} doesn't exist in the system", id);
-            throw;
+            var message = $"User with userId = {currentUserService.UserId} has no rights to delete user with id = {entity.UserId}";
+            logger.LogError(message);
+            return new ErrorResponse()
+            {
+                Message = message,
+                HttpStatusCode = HttpStatusCode.Forbidden,
+            };
         }
+
+        if (actionBeforeDeleting != null)
+        {
+            await actionBeforeDeleting(entity).ConfigureAwait(false);
+        }
+
+        await providerRepository.Delete(entity).ConfigureAwait(false);
+
+        logger.LogInformation("Provider with Id = {Id} successfully deleted", id);
+
+        await userService.Delete(entity.UserId);
+
+        logger.LogInformation("User with Id = {entity.UserId} successfully deleted", entity.UserId);
+
+        var request = new Request()
+        {
+            HttpMethodType = HttpMethodType.Delete,
+            Url = new Uri(authorizationServerConfig.Authority, "account/deleteuser/" + entity.UserId),
+            Token = token,
+        };
+
+        logger.LogDebug(
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
+            request.HttpMethodType,
+            currentUserService.UserId,
+            request.Url);
+
+        var response = await communicationService.SendRequest<ResponseDto>(request).ConfigureAwait(false);
+
+        return response
+            .FlatMap<ResponseDto>(r => r.IsSuccess
+            ? r
+            : new ErrorResponse()
+            {
+                HttpStatusCode = r.HttpStatusCode,
+                Message = r.Message,
+            })
+            .Map(r => r.Result is not null
+            ? JsonConvert.DeserializeObject<ActionResult>(r.Result.ToString())
+            : null);
+    }
+
+    private async Task<bool> IsCurrentUserIsAdminOfDistrictOrMinistryOfProvider(Provider provider)
+    {
+        if (!currentUserService.IsAdmin())
+        {
+            return false;
+        }
+
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var minAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId).ConfigureAwait(false);
+            return minAdmin.InstitutionId == provider.InstitutionId;
+        }
+
+        if (currentUserService.IsRegionAdmin())
+        {
+            var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId).ConfigureAwait(false);
+            var listOfCATOTTG = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+            return regionAdmin.InstitutionId == provider.InstitutionId && listOfCATOTTG.Contains(provider.LegalAddress.CATOTTGId);
+        }
+
+        if (currentUserService.IsAreaAdmin())
+        {
+            var areaAdmin = await areaAdminService.GetByUserId(currentUserService.UserId).ConfigureAwait(false);            
+            var listOfCATOTTG = await codeficatorService.GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
+            return areaAdmin.InstitutionId == provider.InstitutionId && listOfCATOTTG.Contains(provider.LegalAddress.CATOTTGId);
+        }
+
+        return true;
     }
 
     private static bool IsNeedInRelatedWorkshopsUpdating(ProviderUpdateDto providerDto, Provider checkProvider)
@@ -868,51 +971,5 @@ public class ProviderService : IProviderService, INotificationReciever
             .ConfigureAwait(false);
 
         return providersWithTheSameEdrpouIpn.Any();
-    }
-
-    private async Task<bool> IsCurrentUserHasRightsToBlockProvider(Provider provider)
-    {
-        if (currentUserService.IsAdmin())
-        {
-            if (currentUserService.IsMinistryAdmin())
-            {
-                var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
-
-                if (ministryAdmin.InstitutionId != provider.InstitutionId)
-                {
-                    return false;
-                }
-            }
-
-            if (currentUserService.IsAreaAdmin())
-            {
-                var areaAdmin = await areaAdminService.GetByUserId(currentUserService.UserId);
-                var subSettlementsIds = await codeficatorService
-                    .GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
-                if (areaAdmin.InstitutionId != provider.InstitutionId || !subSettlementsIds.Contains(provider.LegalAddress.CATOTTGId))
-                {
-                    return false;
-                }
-            }
-
-            if (currentUserService.IsRegionAdmin())
-            {
-                var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
-
-                var subSettlementsIds = await codeficatorService
-                    .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
-
-                if (regionAdmin.InstitutionId != provider.InstitutionId || !subSettlementsIds.Contains(provider.LegalAddress.CATOTTGId))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-        else
-        {
-            return false;
-        }
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -130,6 +131,30 @@ public class UserServiceTest
         // Act and Assert
         Assert.ThrowsAsync<DbUpdateConcurrencyException>(
             async () => await service.Update(changedEntity).ConfigureAwait(false));
+    }
+
+    [Test]
+    [TestCase("CVc4a6876a-77fb-4ecnne-9c78-a0880286ae3c")]
+    public async Task Delete_WhenIdIsValid_CalledDeleteMethod(string id)
+    {
+        // Arrange
+        var users = await service.GetAll().ConfigureAwait(false);
+
+        // Act
+        await service.Delete(id);
+
+        // Assert
+        Assert.AreEqual(users.Count() - 1, (await service.GetAll().ConfigureAwait(false)).Count());
+    }
+
+    [Test]
+    public void Delete_WhenIdIsInvalid_ShouldThrowArgumentException()
+    {
+        // Arrange
+        var invalidId = "invalidId";
+
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentException>(() => service.Delete(invalidId));
     }
 
     private void SeedDatabase()

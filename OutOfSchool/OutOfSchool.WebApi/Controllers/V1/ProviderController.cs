@@ -256,21 +256,18 @@ public class ProviderController : ControllerBase
     [HttpDelete("{uid:guid}")]
     public async Task<IActionResult> Delete(Guid uid)
     {
-        try
-        {
-            await providerService.Delete(uid).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            if (ex is ArgumentException || ex is ArgumentNullException)
+        var result = await providerService.Delete(
+            uid,
+            await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
+            .ConfigureAwait(false);
+
+        return result.Match<ActionResult>(
+            error => StatusCode((int)error.HttpStatusCode, error.Message),
+            result =>
             {
-                return BadRequest(ex.Message);
-            }
-
-            throw;
-        }
-
-        return NoContent();
+                logger.LogInformation("Successfully deleted Provider with id: {uid}", uid);
+                return Ok();
+            });
     }
 
     /// <summary>
@@ -331,10 +328,11 @@ public class ProviderController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+
     /// <summary>
-    /// Get Providers that match filter's parameters.
+    /// Get Provider status by providerId.
     /// </summary>
-    /// <param name="filter">Entity that represents searching parameters.</param>
+    /// <param name="providerId">Id of provider.</param>
     /// <returns><see cref="SearchResult{ProviderStatusDto}"/>, or no content.</returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderStatusDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

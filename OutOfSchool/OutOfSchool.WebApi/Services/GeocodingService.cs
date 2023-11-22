@@ -26,7 +26,7 @@ public class GeocodingService : CommunicationService, IGeocodingService
         ICodeficatorService? codeficatorService,
         IMapper? mapper,
         ILogger<GeocodingService> logger)
-        : base(httpClientFactory, communicationConfig.Value, logger)
+        : base(httpClientFactory, communicationConfig, logger)
     {
         config = options?.Value ?? throw new ArgumentNullException(nameof(options));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));

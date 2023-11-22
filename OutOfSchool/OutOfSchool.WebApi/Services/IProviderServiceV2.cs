@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.WebApi.Services;
@@ -23,6 +25,7 @@ public interface IProviderServiceV2 : IProviderService
     ///  Delete entity.
     /// </summary>
     /// <param name="id">Key in the table.</param>
+    /// <param name="token">Current user's token.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    new Task Delete(Guid id);
+    new Task<Either<ErrorResponse, ActionResult>> Delete(Guid id, string token);
 }

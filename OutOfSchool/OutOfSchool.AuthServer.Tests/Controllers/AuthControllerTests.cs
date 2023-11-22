@@ -229,6 +229,23 @@ public class AuthControllerTests
     }
 
     [Test]
+    public async Task Login_WhenUserIsDeleted_ReturnsViewWithError()
+    {
+        // Arrange
+        var user = UserGenerator.Generate();
+        user.IsDeleted = true;
+        var loginViewModel = CreateLoginViewModelFromData(user.UserName);
+        SetupDefaultUserManagerFindByEmailAsync(user);
+
+        // Act
+        var result = await authController.Login(loginViewModel);
+
+        // Assert
+        Assert.IsInstanceOf(typeof(ViewResult), result);
+        Assert.AreEqual(1, authController.ModelState.Count);
+    }
+
+    [Test]
     public async Task Login_WhenUserMustNotChangePasswordAndEmailWithPasswordAreCorrectAndReturnUrlIsEmpty_ReturnsRedirectToLogin()
     {
         // Arrange

@@ -16,6 +16,9 @@ using OutOfSchool.AuthCommon;
 using OutOfSchool.Common;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.RazorTemplatesData.Services;
+using OutOfSchool.AuthCommon.Services.Interfaces;
+using System.Net;
+using System;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
 
@@ -29,6 +32,7 @@ public class AccountControllerTests
     private readonly Mock<IStringLocalizer<SharedResource>> fakeLocalizer;
     private readonly Mock<IRazorViewToStringRenderer> fakeRazorViewToStringRenderer;
     private readonly Mock<IOptions<AuthServerConfig>> fakeIdentityServerConfig;
+    private readonly Mock<IUserService> fakeUserService;
 
     public AccountControllerTests()
     {
@@ -39,6 +43,7 @@ public class AccountControllerTests
         fakeLocalizer = new Mock<IStringLocalizer<SharedResource>>();
         fakeRazorViewToStringRenderer = new Mock<IRazorViewToStringRenderer>();
         fakeIdentityServerConfig = new Mock<IOptions<AuthServerConfig>>();
+        fakeUserService = new Mock<IUserService>();
     }
 
     [SetUp]
@@ -59,7 +64,8 @@ public class AccountControllerTests
             fakeLogger.Object,
             fakeRazorViewToStringRenderer.Object,
             fakeLocalizer.Object,
-            fakeIdentityServerConfig.Object
+            fakeIdentityServerConfig.Object,
+            fakeUserService.Object
         );
         
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
@@ -221,4 +227,48 @@ public class AccountControllerTests
     }
     #endregion
 
+    #region LogOutUserTests
+
+    [Test]
+    public async Task LogOutUser_WhenIdIsNull_ReturnsBadRequestResponse()
+    {
+        // Arrange
+        var invalidId = null as string;
+
+        // Act
+        var result = await accountController.LogOutUser(invalidId);
+
+        // Assert
+        Assert.AreEqual(HttpStatusCode.BadRequest, result.HttpStatusCode);
+    }
+
+    [Test]
+    public async Task LogOutUser_WhenIdIsEmpty_ReturnsBadRequestResponse()
+    {
+        // Arrange
+        var invalidId = string.Empty;
+
+        // Act
+        var result = await accountController.LogOutUser(invalidId);
+
+        // Assert
+        Assert.AreEqual(HttpStatusCode.BadRequest, result.HttpStatusCode);
+    }
+
+    [Test]
+    public async Task LogOutUser_WhenIdIsValid_ReturnOkResponse()
+    {
+        // Arrange
+        var validId = Guid.NewGuid().ToString();
+        fakeUserService.Setup(x => x.LogOutUserById(It.IsAny<string>())).ReturnsAsync(new ResponseDto { IsSuccess = true, HttpStatusCode = HttpStatusCode.OK });
+
+        // Act
+        var result = await accountController.LogOutUser(validId);
+
+        // Assert
+        Assert.AreEqual(HttpStatusCode.OK, result.HttpStatusCode);
+        Assert.That(result.IsSuccess);
+    }
+
+    #endregion
 }

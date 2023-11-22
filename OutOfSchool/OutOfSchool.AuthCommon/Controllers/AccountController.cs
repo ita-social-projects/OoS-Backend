@@ -18,6 +18,7 @@ public class AccountController : Controller
     private readonly IRazorViewToStringRenderer renderer;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly AuthServerConfig identityServerConfig;
+    private readonly IUserService userService;
 
     public AccountController(
         SignInManager<User> signInManager,
@@ -26,16 +27,17 @@ public class AccountController : Controller
         ILogger<AccountController> logger,
         IRazorViewToStringRenderer renderer,
         IStringLocalizer<SharedResource> localizer,
-        IOptions<AuthServerConfig> identityServerConfig)
+        IOptions<AuthServerConfig> identityServerConfig,
+        IUserService userService)
     {
         this.signInManager = signInManager;
         this.userManager = userManager;
         this.emailSender = emailSender;
         this.logger = logger;
-        this.localizer = localizer;
         this.renderer = renderer;
         this.localizer = localizer;
         this.identityServerConfig = identityServerConfig.Value;
+        this.userService = userService;
     }
 
     [HttpGet]
@@ -423,6 +425,21 @@ public class AccountController : Controller
 
         ModelState.AddModelError(string.Empty, localizer["Change password failed"]);
         return View("Password/ChangePassword");
+    }
+
+    [HttpDelete("{userId}")]
+    [Route("account/deleteuser/{userId}")]
+    [HasPermission(Permissions.ProviderRemove)]
+    public async Task<ResponseDto> LogOutUser(string userId)
+    {
+        if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var id))
+        {
+            return new ResponseDto() { HttpStatusCode = HttpStatusCode.BadRequest };
+        }
+
+        logger.LogInformation($"LogOut of user with Id = {id} started");
+
+        return await userService.LogOutUserById(userId);
     }
 
     private async Task<IActionResult> SendConfirmEmailProcess(string action, User user, string razorTemplate, object passedData)

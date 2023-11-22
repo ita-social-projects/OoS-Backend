@@ -5,6 +5,7 @@ using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -16,6 +17,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
@@ -44,19 +46,11 @@ public class ProviderControllerTests
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         userId = Guid.NewGuid().ToString();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
-        var user = new ClaimsPrincipal
-        (new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(IdentityResourceClaimsTypes.Sub, userId),
-                new Claim(IdentityResourceClaimsTypes.Role, Role.Provider.ToString()),
-            },
-            IdentityResourceClaimsTypes.Sub));
 
         providerService = new Mock<IProviderService>();
         providerController = new ProviderController(providerService.Object, localizer.Object, new Mock<ILogger<ProviderController>>().Object);
 
-        providerController.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+        providerController.ControllerContext.HttpContext = GetFakeHttpContext();
         providers = ProvidersGenerator.Generate(10);
         provider = ProvidersGenerator.Generate();
     }
@@ -262,17 +256,17 @@ public class ProviderControllerTests
     }
 
     [Test]
-    public async Task DeleteProvider_WhenIdIsValid_ReturnsNoContentResult()
+    public async Task DeleteProvider_WhenIdIsValid_ReturnsOkResult()
     {
         // Arrange
         var existingProviderGuid = providers.Select(p => p.Id).FirstOrDefault();
-        providerService.Setup(x => x.Delete(existingProviderGuid));
+        providerService.Setup(x => x.Delete(existingProviderGuid, It.IsAny<string>())).ReturnsAsync(new ObjectResult(null));
 
         // Act
         var result = await providerController.Delete(existingProviderGuid);
 
         // Assert
-        Assert.IsInstanceOf<NoContentResult>(result);
+        Assert.IsInstanceOf<OkResult>(result);
     }
 
     [Test]
@@ -280,14 +274,16 @@ public class ProviderControllerTests
     {
         // Arrange
         var guid = Guid.NewGuid();
-        var expected = new BadRequestObjectResult(TestDataHelper.GetRandomWords());
-        providerService.Setup(x => x.Delete(guid)).ThrowsAsync(new ArgumentNullException());
+        var errorMessage = TestDataHelper.GetRandomWords();
+        providerService.Setup(x => x.Delete(guid, It.IsAny<string>())).ReturnsAsync(new ErrorResponse { HttpStatusCode = HttpStatusCode.NotFound, Message = errorMessage });
 
         // Act
         var result = await providerController.Delete(guid).ConfigureAwait(false);
 
         // Assert
-        result.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
+        Assert.IsInstanceOf<ObjectResult>(result);
+        Assert.AreEqual((int)HttpStatusCode.NotFound, (result as ObjectResult).StatusCode);
+        Assert.AreEqual(errorMessage, (result as ObjectResult).Value);
     }
 
     [Test]
@@ -461,5 +457,47 @@ public class ProviderControllerTests
 
         // Assert
         result.AssertExpectedResponseTypeAndCheckDataInside<NotFoundObjectResult>(expected);
+    }
+
+    private HttpContext GetFakeHttpContext()
+    {
+        var authProps = new AuthenticationProperties();
+
+        authProps.StoreTokens(new List<AuthenticationToken>
+        {
+            new AuthenticationToken{ Name = "access_token", Value = "accessTokenValue"},
+        });
+
+        var authResult = AuthenticateResult
+            .Success(new AuthenticationTicket(new ClaimsPrincipal(), authProps, It.IsAny<string>()));
+
+        var authenticationServiceMock = new Mock<IAuthenticationService>();
+
+        authenticationServiceMock
+            .Setup(x => x.AuthenticateAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
+            .ReturnsAsync(authResult);
+
+        var serviceProviderMock = new Mock<IServiceProvider>();
+
+        serviceProviderMock
+            .Setup(s => s.GetService(typeof(IAuthenticationService)))
+            .Returns(authenticationServiceMock.Object);
+
+        var user = new ClaimsPrincipal(
+                    new ClaimsIdentity(
+                        new Claim[]
+                        {
+                            new Claim(IdentityResourceClaimsTypes.Sub, userId),
+                            new Claim(IdentityResourceClaimsTypes.Role, Role.Provider.ToString()),
+                        },
+                        IdentityResourceClaimsTypes.Sub));
+
+        var context = new DefaultHttpContext()
+        {
+            RequestServices = serviceProviderMock.Object,
+            User = user,
+        };
+
+        return context;
     }
 }

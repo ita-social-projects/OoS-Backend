@@ -1,12 +1,12 @@
-namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests;
-
-using OutOfSchool.WebApi.Services.Images;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using AutoMapper;
+using Google.Apis.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services;
@@ -14,10 +14,15 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
 using OutOfSchool.WebApi.Services.AverageRatings;
+using OutOfSchool.WebApi.Services.Communication.ICommunication;
+using OutOfSchool.WebApi.Services.Images;
+using OutOfSchool.WebApi.Util;
+
+namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests;
 
 [TestFixture]
 public class ProviderServiceUpdate
@@ -62,7 +67,10 @@ public class ProviderServiceUpdate
         var codeficatorService = new Mock<ICodeficatorService>();
         var regionAdminRepository = new Mock<IRegionAdminRepository>();
         var averageRatingService = new Mock<IAverageRatingService>();
-        var areaAdminServiceMock=new Mock<IAreaAdminService>();
+        var areaAdminServiceMock = new Mock<IAreaAdminService>();
+        var userServiceMock = new Mock<IUserService>();
+        var authorizationServerConfigMock = Options.Create(new AuthorizationServerConfig());
+        var communicationServiceMock = new Mock<ICommunicationService>();
 
         this.providerService = new ProviderService(
             providerRepository,
@@ -84,7 +92,10 @@ public class ProviderServiceUpdate
             codeficatorService.Object,
             regionAdminRepository.Object,
             averageRatingService.Object,
-            areaAdminServiceMock.Object);
+            areaAdminServiceMock.Object,
+            userServiceMock.Object,
+            authorizationServerConfigMock,
+            communicationServiceMock.Object);
     }
 
     [Test]

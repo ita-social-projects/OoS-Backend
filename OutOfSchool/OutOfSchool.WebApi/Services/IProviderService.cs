@@ -1,4 +1,6 @@
-﻿using OutOfSchool.WebApi.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.Common.Models;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.WebApi.Services;
@@ -57,8 +59,9 @@ public interface IProviderService
     ///  Delete entity.
     /// </summary>
     /// <param name="id">Provider's key.</param>
+    /// <param name="token">Current user's token.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task Delete(Guid id);
+    Task<Either<ErrorResponse, ActionResult>> Delete(Guid id, string token);
 
     /// <summary>
     ///  Gets Id of Provider, which owns a Workshop with specified Id.
@@ -87,6 +90,7 @@ public interface IProviderService
     /// Set block/unblock state.
     /// </summary>
     /// <param name="providerBlockDto">Provider to block/unblock.</param>
+    /// <param name="token">Current user's token.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
     Task<ResponseDto> Block(ProviderBlockDto providerBlockDto, string token = default);
 
