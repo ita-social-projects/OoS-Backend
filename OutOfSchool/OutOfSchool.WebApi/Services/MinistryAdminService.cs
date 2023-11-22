@@ -28,7 +28,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         IEntityRepositorySoftDeleted<string, User> userRepository,
         IMapper mapper,
         ICurrentUserService currentUserService)
-        : base(httpClientFactory, communicationConfig?.Value, logger)
+        : base(httpClientFactory, communicationConfig, logger)
     {
         this.authorizationServerConfig = (authorizationServerConfig ?? throw new ArgumentNullException(nameof(authorizationServerConfig))).Value;
         this.institutionAdminRepository = institutionAdminRepository ?? throw new ArgumentNullException(nameof(institutionAdminRepository));

@@ -18,6 +18,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Config;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
@@ -108,7 +109,7 @@ public class ApplicationServiceMemoryTests
         currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(false);
 
         // Act
-        var result = await service.GetAll(new ApplicationFilter());
+        var result = await service.GetAll(new ApplicationFilter() { Show = ShowApplications.All });
 
         // Assert
         Assert.AreEqual(result.Entities.Count, application.Count);
@@ -124,7 +125,7 @@ public class ApplicationServiceMemoryTests
         currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(false);
 
         // Act
-        var result = await service.GetAll(new ApplicationFilter() { ShowBlocked = true });
+        var result = await service.GetAll(new ApplicationFilter() { Show = ShowApplications.Blocked });
 
         // Assert
         Assert.AreEqual(result.Entities.Count, application.Count);
@@ -141,7 +142,7 @@ public class ApplicationServiceMemoryTests
         currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(false);
 
         // Act
-        var result = await service.GetAll(new ApplicationFilter() { ShowBlocked = false });
+        var result = await service.GetAll(new ApplicationFilter() { Show = ShowApplications.Unblocked });
 
         // Assert
         Assert.AreEqual(result.Entities.Count, application.Count);

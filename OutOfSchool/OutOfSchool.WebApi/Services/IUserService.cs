@@ -30,4 +30,11 @@ public interface IUserService
     /// <param name="id">Key in the table.</param>
     /// <returns><see cref="Task{TResult}"/>.</returns>
     Task<bool> IsBlocked(string id);
+
+    /// <summary>
+    /// Delete entity by id.
+    /// </summary>
+    /// <param name="id">Key in the table.</param>
+    /// <returns><see cref="Task{TResult}"/>.</returns>
+    Task Delete(string id);
 }

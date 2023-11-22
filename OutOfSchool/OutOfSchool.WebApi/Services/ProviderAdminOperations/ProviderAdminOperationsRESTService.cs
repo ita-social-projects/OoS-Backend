@@ -23,7 +23,7 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
         IOptions<AuthorizationServerConfig> authorizationServerConfig,
         IHttpClientFactory httpClientFactory,
         IOptions<CommunicationConfig> communicationConfig)
-        : base(httpClientFactory, communicationConfig.Value, logger)
+        : base(httpClientFactory, communicationConfig, logger)
     {
         this.authorizationServerConfig = authorizationServerConfig.Value;
     }

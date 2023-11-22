@@ -8,7 +8,7 @@ public class InstitutionService : IInstitutionService
     private readonly ISensitiveEntityRepositorySoftDeleted<Institution> repository;
     private readonly ILogger<InstitutionService> logger;
     private readonly IMapper mapper;
-    private readonly ICacheService cache;
+    private readonly IMultiLayerCacheService cache;
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
     private readonly IRegionAdminService regionAdminService;
@@ -27,7 +27,7 @@ public class InstitutionService : IInstitutionService
         ISensitiveEntityRepositorySoftDeleted<Institution> repository,
         ILogger<InstitutionService> logger,
         IMapper mapper,
-        ICacheService cache,
+        IMultiLayerCacheService cache,
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService)

@@ -37,7 +37,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService)
-        : base(httpClientFactory, communicationConfig?.Value, logger)
+        : base(httpClientFactory, communicationConfig, logger)
     {
         ArgumentNullException.ThrowIfNull(authorizationServerConfig);
         ArgumentNullException.ThrowIfNull(areaAdminRepository);

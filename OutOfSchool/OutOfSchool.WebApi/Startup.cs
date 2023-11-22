@@ -7,6 +7,7 @@ using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Services.AverageRatings;
+using OutOfSchool.WebApi.Services.Communication.ICommunication;
 using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 using OutOfSchool.WebApi.Services.Strategies.WorkshopStrategies;
 using OutOfSchool.WebApi.Util.Mapping;
@@ -86,11 +87,14 @@ public static class Startup
         var identityConfig = configuration
             .GetSection(AuthorizationServerConfig.Name)
             .Get<AuthorizationServerConfig>();
+
         services.Configure<AuthorizationServerConfig>(configuration.GetSection(AuthorizationServerConfig.Name));
         services.Configure<ProviderAdminConfig>(configuration.GetSection(ProviderAdminConfig.Name));
         services.Configure<CommunicationConfig>(configuration.GetSection(CommunicationConfig.Name));
         services.Configure<GeocodingConfig>(configuration.GetSection(GeocodingConfig.Name));
         services.Configure<ParentConfig>(configuration.GetSection(ParentConfig.Name));
+
+        services.AddMemoryCache();
 
         services.AddLocalization(options => options.ResourcesPath = "Resources");
 
@@ -136,6 +140,8 @@ public static class Startup
         services.AddScoped<IMinistryAdminService, MinistryAdminService>();
         services.AddScoped<IRegionAdminService, RegionAdminService>();
         services.AddScoped<IAreaAdminService, AreaAdminService>();
+
+        services.AddScoped<ICommunicationService, CommunicationService>();
 
         // Images limits options
         services.Configure<ImagesLimits<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
@@ -315,6 +321,11 @@ public static class Startup
             .Bind(configuration.GetSection(RedisConfig.Name))
             .ValidateDataAnnotations();
 
+        // MemoryCache options
+        services.AddOptions<MemoryCacheConfig>()
+            .Bind(configuration.GetSection(MemoryCacheConfig.Name))
+            .ValidateDataAnnotations();
+
         // StatisticReports
         var statisticReportsConfig = configuration.GetSection(StatisticReportConfig.Name).Get<StatisticReportConfig>();
         if (statisticReportsConfig.UseExternalStorage)
@@ -392,6 +403,7 @@ public static class Startup
         });
 
         services.AddSingleton<ICacheService, CacheService>();
+        services.AddSingleton<IMultiLayerCacheService, MultiLayerCache>();
 
         services.AddHealthChecks()
             .AddDbContextCheck<OutOfSchoolDbContext>(

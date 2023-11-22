@@ -29,7 +29,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         IMapper mapper,
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService)
-        : base(httpClientFactory, communicationConfig?.Value, logger)
+        : base(httpClientFactory, communicationConfig, logger)
     {
         ArgumentNullException.ThrowIfNull(authorizationServerConfig);
         ArgumentNullException.ThrowIfNull(regionAdminRepository);

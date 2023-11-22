@@ -1,4 +1,5 @@
 ﻿using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Models.Application;
 
@@ -12,7 +13,7 @@ public class ApplicationFilter : SearchStringFilter
 
     public bool OrderByStatus { get; set; } = true;
 
-    public bool? ShowBlocked { get; set; } = null;
+    public ShowApplications Show { get; set; } = ShowApplications.All;
 
     public IEnumerable<Guid> Workshops { get; set; } = null;
 
