@@ -34,6 +34,6 @@ public class ParentBlockedByAdminLogService : IParentBlockedByAdminLogService
         };
 
         var result = await parentBlockedByAdminLogRepository.Create(logRecord);
-        return result == null ? 1 : 0;
+        return result == null ? 0 : 1;
     }
 }
