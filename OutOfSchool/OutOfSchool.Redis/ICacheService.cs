@@ -11,13 +11,10 @@ public interface ICacheService
         TimeSpan? absoluteExpirationRelativeToNowInterval = null,
         TimeSpan? slidingExpirationInterval = null);
 
-    Task SetAsync<T>(
-        string key,
-        T value,
-        TimeSpan? absoluteExpirationRelativeToNowInterval = null,
-        TimeSpan? slidingExpirationInterval = null);
+    Task RemoveAsync(string key);
+}
 
-    Task ClearCacheAsync(string key);
+public interface IMultiLayerCacheService : ICacheService
+{
 
-    Task RefreshAsync(string key);
 }
