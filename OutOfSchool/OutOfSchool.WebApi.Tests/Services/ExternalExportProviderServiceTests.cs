@@ -134,4 +134,81 @@ public class ExternalExportProviderServiceTests
         Assert.AreEqual(0, result?.TotalAmount ?? 0);
         Assert.IsEmpty(result?.Entities ?? Enumerable.Empty<ProviderInfoBaseDto>());
     }
+
+    [Test]
+    public void Constructor_NullProviderRepository_ThrowsArgumentNullException()
+    {
+        // Arrange, Act, Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            new ExternalExportProviderService(null, Mock.Of<IWorkshopRepository>(), Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportProviderService>>()));
+    }
+
+    [Test]
+    public void Constructor_NullWorkshopRepository_ThrowsArgumentNullException()
+    {
+        // Arrange, Act, Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            new ExternalExportProviderService(Mock.Of<IProviderRepository>(), null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportProviderService>>()));
+    }
+
+    [Test]
+    public void Constructor_NullMapper_ThrowsArgumentNullException()
+    {
+        // Arrange, Act, Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            new ExternalExportProviderService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), null, Mock.Of<ILogger<ExternalExportProviderService>>()));
+    }
+
+    [Test]
+    public void Constructor_NullLogger_ThrowsArgumentNullException()
+    {
+        // Arrange, Act, Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            new ExternalExportProviderService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IMapper>(), null));
+    }
+
+    [Test]
+    public async Task GetAllUpdatedProviders_DefaultUpdatedAfter_ReturnsNonDeletedProviders()
+    {
+        // Arrange
+        var sizeFilter = new SizeFilter { Size = 10 };
+        var fakeProviders = ProvidersGenerator.Generate(5).WithWorkshops();
+
+        mockProviderRepository
+            .Setup(x => x.GetAllWithDeleted())
+            .ReturnsAsync(fakeProviders);
+
+        // Act
+        var result = await externalExportProviderService.GetProvidersWithWorkshops(default, sizeFilter);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(fakeProviders.Count, result.TotalAmount);
+        Assert.AreEqual(fakeProviders.Count, result.Entities.Count);
+        Assert.IsTrue(result.Entities.All(provider => !provider.IsDeleted));
+    }
+
+    [Test]
+    public async Task GetAllUpdatedProviders_FiltersDeletedProviders_ReturnsNonDeletedProviders()
+    {
+        // Arrange
+        var sizeFilter = new SizeFilter { Size = 10 };
+        var fakeProviders = ProvidersGenerator.Generate(5).WithWorkshops();
+
+        fakeProviders[0].IsDeleted = true;
+        fakeProviders[2].IsDeleted = true;
+
+        mockProviderRepository
+            .Setup(x => x.GetAllWithDeleted())
+            .ReturnsAsync(fakeProviders);
+
+        // Act
+        var result = await externalExportProviderService.GetProvidersWithWorkshops(default, sizeFilter);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(fakeProviders.Count - 2, result.TotalAmount); 
+        Assert.AreEqual(fakeProviders.Count - 2, result.Entities.Count);
+        Assert.IsTrue(result.Entities.All(provider => !provider.IsDeleted));
+    }
 }
