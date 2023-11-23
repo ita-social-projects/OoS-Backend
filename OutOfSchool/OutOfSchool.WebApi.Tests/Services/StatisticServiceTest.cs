@@ -31,7 +31,7 @@ public class StatisticServiceTest
     private Mock<IWorkshopRepository> workshopRepository;
     private Mock<IEntityRepositorySoftDeleted<long, Direction>> directionRepository;
     private Mock<IMapper> mapper;
-    private Mock<IMultiLayerCacheService> cache;
+    private Mock<ICacheService> cache;
     private Mock<IAverageRatingService> averageRatingServiceMock;
 
     [SetUp]
@@ -42,7 +42,7 @@ public class StatisticServiceTest
         directionRepository = new Mock<IEntityRepositorySoftDeleted<long, Direction>>();
         var logger = new Mock<ILogger<StatisticService>>();
         mapper = new Mock<IMapper>();
-        cache = new Mock<IMultiLayerCacheService>();
+        cache = new Mock<ICacheService>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
 
         service = new StatisticService(
