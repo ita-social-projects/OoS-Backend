@@ -118,12 +118,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     public virtual async Task<IEnumerable<TEntity>> GetAllWithDetails(string includeProperties = "")
     {
         IQueryable<TEntity> query = dbSet;
-        foreach (var includeProperty in includeProperties.Split(
-                     new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            query = query.Include(includeProperty);
-        }
-
+        query = query.IncludeProperties(includeProperties);
         return await query.ToListAsync();
     }
 
@@ -132,13 +127,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         string includeProperties = "")
     {
         var query = this.dbSet.Where(whereExpression);
-
-        foreach (var includeProperty in includeProperties.Split(
-                     new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            query = query.Include(includeProperty);
-        }
-
+        query = query.IncludeProperties(includeProperties);
         return await query.ToListAsync().ConfigureAwait(false);
     }
 
@@ -148,18 +137,16 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         string includeProperties = "")
     {
         var query = this.dbSet.Where(whereExpression);
-
-        foreach (var includeProperty in includeProperties.Split(
-                     new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            query = query.Include(includeProperty);
-        }
-
+        query = query.IncludeProperties(includeProperties);
         return query.AsNoTracking();
     }
 
     /// <inheritdoc/>
     public virtual Task<TEntity> GetById(TKey id) => dbSet.FirstOrDefaultAsync(x => x.Id.Equals(id));
+
+    /// <inheritdoc/>
+    public virtual Task<TEntity> GetByIdWithDetails(TKey id, string includeProperties = "")
+        => dbSet.Where(x => x.Id.Equals(id)).IncludeProperties(includeProperties).FirstOrDefaultAsync();
 
     /// <inheritdoc/>
     public virtual async Task<TEntity> Update(TEntity entity)
@@ -244,11 +231,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
             query = query.Take(take);
         }
 
-        foreach (var includeProperty in includeProperties.Split(
-                     new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            query = query.Include(includeProperty);
-        }
+        query = query.IncludeProperties(includeProperties);
 
         return query.If(asNoTracking, q => q.AsNoTracking());
     }

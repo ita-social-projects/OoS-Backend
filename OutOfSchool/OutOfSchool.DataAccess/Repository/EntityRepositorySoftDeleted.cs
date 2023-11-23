@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
@@ -32,13 +33,7 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
     public override async Task<IEnumerable<TEntity>> GetAllWithDetails(string includeProperties = "")
     {
         IQueryable<TEntity> query = dbSet.Where(x => !x.IsDeleted);
-
-        foreach (var includeProperty in includeProperties.Split(
-                     new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            query = query.Include(includeProperty);
-        }
-
+        query = query.IncludeProperties(includeProperties);
         return await query.ToListAsync().ConfigureAwait(false);
     }
 
@@ -62,6 +57,10 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
 
     /// <inheritdoc/>
     public override Task<TEntity> GetById(TKey id) => dbSet.FirstOrDefaultAsync(x => !x.IsDeleted && x.Id.Equals(id));
+
+    /// <inheritdoc/>
+    public override Task<TEntity> GetByIdWithDetails(TKey id, string includeProperties = "")
+        => dbSet.Where(x => !x.IsDeleted && x.Id.Equals(id)).IncludeProperties(includeProperties).FirstOrDefaultAsync();
 
     /// <inheritdoc/>
     public override Task<int> Count(Expression<Func<TEntity, bool>> whereExpression = null)

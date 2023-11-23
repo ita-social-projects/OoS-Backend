@@ -1,23 +1,165 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Linq.Expressions;
-//using System.Threading.Tasks;
-//using FluentAssertions;
-//using Microsoft.EntityFrameworkCore;
-//using Microsoft.EntityFrameworkCore.Diagnostics;
-//using Microsoft.Extensions.Localization;
-//using Microsoft.Extensions.Logging;
-//using Moq;
-//using NUnit.Framework;
-//using OutOfSchool.Services;
-//using OutOfSchool.Services.Models;
-//using OutOfSchool.Services.Repository;
-//using OutOfSchool.WebApi.Extensions;
-//using OutOfSchool.WebApi.Models;
-//using OutOfSchool.WebApi.Services;
+﻿using System;
+using System.Threading.Tasks;
+using AutoMapper;
+using Microsoft.Extensions.Logging;
+using Moq;
+using NUnit.Framework;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Models.Parent;
+using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Util;
 
-//namespace OutOfSchool.WebApi.Tests.Services
+namespace OutOfSchool.WebApi.Tests.Services;
+
+[TestFixture]
+
+public class ParentServiceTests
+{
+    private IParentService parentService;
+    private Mock<IParentRepository> parentRepositoryMock;
+    private Mock<ICurrentUserService> currentUserServiceMock;
+    private Mock<IParentBlockedByAdminLogService> parentBlockedByAdminLogServiceMock;
+    private Mock<ILogger<ParentService>> loggerMock;
+    private Mock<IEntityRepositorySoftDeleted<Guid, Child>> repositoryChildMock;
+    private IMapper mapper;
+
+    [SetUp]
+    public void SetUp()
+    {
+        parentRepositoryMock = new Mock<IParentRepository>();
+        currentUserServiceMock = new Mock<ICurrentUserService>();
+        parentBlockedByAdminLogServiceMock = new Mock<IParentBlockedByAdminLogService>();
+        loggerMock = new Mock<ILogger<ParentService>>();
+        repositoryChildMock = new Mock<IEntityRepositorySoftDeleted<Guid, Child>>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+
+        parentService = new ParentService(
+            parentRepositoryMock.Object,
+            currentUserServiceMock.Object,
+            parentBlockedByAdminLogServiceMock.Object,
+            loggerMock.Object,
+            repositoryChildMock.Object,
+            mapper);
+    }
+
+    #region BlockUblockParent
+    [Test]
+    public async Task BlockUnblockParent_WhenBlockUnblockParentDtoIsValid_ShouldReturnSuccess()
+    {
+        // Arrange
+        var expected = Result<bool>.Success(true);
+
+        BlockUnblockParentDto parentBlockUnblockValid = new()
+        {
+            ParentId = Guid.NewGuid(),
+            IsBlocked = true,
+            Reason = "Reason to block the parent",
+        };
+        User parentUser = UserGenerator.Generate();
+        parentUser.IsBlocked = false;
+        Parent parent = new()
+        {
+            Id = parentBlockUnblockValid.ParentId,
+            UserId = parentUser.Id,
+            User = parentUser,
+            IsDeleted = false,
+        };
+        var resultOfSavingToDb = 1;
+        parentRepositoryMock
+            .Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(parent);
+        parentRepositoryMock
+            .Setup(x => x.UnitOfWork.CompleteAsync())
+            .ReturnsAsync(resultOfSavingToDb);
+        parentBlockedByAdminLogServiceMock
+            .Setup(x => x.SaveChangesLogAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<bool>()))
+            .ReturnsAsync(resultOfSavingToDb);
+
+        // Act
+        var result = await parentService.BlockUnblockParent(parentBlockUnblockValid);
+
+        // Assert
+        Assert.AreEqual(expected.Value, result.Value);
+    }
+
+    [Test]
+    public async Task BlockUnblockParent_WhenParentNotFoundInDb_ShouldReturnSuccess()
+    {
+        // Arrange
+        var expected = Result<bool>.Success(true);
+
+        BlockUnblockParentDto parentBlockUnblockValid = new()
+        {
+            ParentId = Guid.NewGuid(),
+            IsBlocked = true,
+            Reason = "Reason to block the parent",
+        };
+        Parent parent = null;
+
+        parentRepositoryMock
+            .Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(parent);
+
+        // Act
+        var result = await parentService.BlockUnblockParent(parentBlockUnblockValid);
+
+        // Assert
+        Assert.AreEqual(expected.Value, result.Value);
+    }
+
+    [Test]
+    public async Task BlockUnblockParent_WhenParentAlreadyBlockedOrUnblocked_ShouldReturnSuccess()
+    {
+        // Arrange
+        var expected = Result<bool>.Success(true);
+
+        BlockUnblockParentDto parentBlockUnblockValid = new()
+        {
+            ParentId = Guid.NewGuid(),
+            IsBlocked = true,
+            Reason = "Reason to block the parent",
+        };
+        User parentUser = UserGenerator.Generate();
+        parentUser.IsBlocked = true;
+        Parent parent = new()
+        {
+            Id = parentBlockUnblockValid.ParentId,
+            UserId = parentUser.Id,
+            User = parentUser,
+            IsDeleted = false,
+        };
+
+        parentRepositoryMock
+            .Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(parent);
+
+        // Act
+        var result = await parentService.BlockUnblockParent(parentBlockUnblockValid);
+
+        // Assert
+        Assert.AreEqual(expected.Value, result.Value);
+    }
+
+    [Test]
+    public void BlockUnblockParent_WhenBlockUnblockParentDtoIsNull_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        BlockUnblockParentDto parentBlockUnblockValid = null;
+
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await parentService.BlockUnblockParent(parentBlockUnblockValid));
+    }
+    #endregion
+}
+
 //{
 //    [TestFixture]
 //    public class ParentServiceTests

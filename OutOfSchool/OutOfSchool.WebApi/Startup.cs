@@ -203,6 +203,7 @@ public static class Startup
         services.AddTransient<IDirectionService, DirectionService>();
         services.AddTransient<IFavoriteService, FavoriteService>();
         services.AddTransient<IParentService, ParentService>();
+        services.AddTransient<IParentBlockedByAdminLogService, ParentBlockedByAdminLogService>();
         services.AddTransient<IProviderService, ProviderService>();
         services.AddTransient<IProviderTypeService, ProviderTypeService>();
         services.AddTransient<IProviderServiceV2, ProviderServiceV2>();

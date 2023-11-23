@@ -1,4 +1,6 @@
-﻿using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Parent;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -36,4 +38,13 @@ public interface IParentService
     /// <param name="id">Key in table.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     Task Delete(Guid id);
+
+    /// <summary>
+    /// Block or unblock Parent entity based on the provided information.
+    /// </summary>
+    /// <param name="parentBlockUnblock">A DTO containing the necessary information to block or unblock a parent,
+    /// including the ParentId, the desired block status, and a reason.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+    /// The result contains a boolean indicating the success or failure of the operation.</returns>
+    Task<Result<bool>> BlockUnblockParent(BlockUnblockParentDto parentBlockUnblock);
 }

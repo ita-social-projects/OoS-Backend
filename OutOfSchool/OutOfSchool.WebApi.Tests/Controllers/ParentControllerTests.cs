@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Controllers.V1;
+using OutOfSchool.WebApi.Models.Parent;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
@@ -28,8 +30,7 @@ public class ParentControllerTests
         httpContextMoq.Setup(x => x.User.IsInRole("parent"))
             .Returns(true);
 
-        controller = new ParentController(
-            serviceParent.Object)
+        controller = new ParentController(serviceParent.Object)
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
         };
@@ -51,7 +52,6 @@ public class ParentControllerTests
         Assert.AreEqual(result.StatusCode, 204);
     }
 
-
     [Test]
     public void DeleteParent_WhenParentHasNoRights_ShouldReturn403ObjectResult()
     {
@@ -60,6 +60,49 @@ public class ParentControllerTests
 
         // Act & Assert
         Assert.ThrowsAsync<UnauthorizedAccessException>(() => controller.Delete(Guid.NewGuid()));
+    }
+    #endregion
+
+    #region BlockUnblockParent
+    [Test]
+    public async Task BlockUnblockParent_ValidDto_ReturnsOkResult()
+    {
+        // Arrange
+        BlockUnblockParentDto blockUnblockParentDto = new()
+        {
+            ParentId = Guid.NewGuid(),
+            IsBlocked = true,
+            Reason = "Reason for block",
+        };
+        serviceParent.Setup(x => x.BlockUnblockParent(It.IsAny<BlockUnblockParentDto>())).ReturnsAsync(Result<bool>.Success(true));
+
+        // Act
+        var result = await controller.BlockUnblockParent(blockUnblockParentDto);
+
+        // Assert
+        Assert.IsInstanceOf<OkResult>(result);
+    }
+
+    [Test]
+    public async Task BlockUnblockParent_InvalidDto_ReturnsBadRequestResult()
+    {
+        // Arrange
+        var reasonInvalidLength = 501;
+        BlockUnblockParentDto blockUnblockParentDto = new()
+        {
+            ParentId = Guid.NewGuid(),
+            IsBlocked = true,
+            Reason = new string('X', reasonInvalidLength),
+        };
+        serviceParent.Setup(x => x.BlockUnblockParent(It.IsAny<BlockUnblockParentDto>()))
+            .ReturnsAsync(Result<bool>.Failed(new OperationError
+            { Code = StatusCodes.Status400BadRequest.ToString() }));
+
+        // Act
+        var result = await controller.BlockUnblockParent(blockUnblockParentDto);
+
+        // Assert
+        Assert.IsInstanceOf<BadRequestObjectResult>(result);
     }
     #endregion
 }
