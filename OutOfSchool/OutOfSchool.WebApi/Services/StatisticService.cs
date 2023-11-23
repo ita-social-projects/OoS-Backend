@@ -16,6 +16,8 @@ public class StatisticService : IStatisticService
     private readonly IEntityRepositorySoftDeleted<long, Direction> directionRepository;
     private readonly ILogger<StatisticService> logger;
     private readonly IMapper mapper;
+
+    // TODO: Maybe, we have to use an IMemoryCacheService.
     private readonly ICacheService cache;
     private readonly IAverageRatingService averageRatingService;
 

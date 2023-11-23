@@ -44,42 +44,50 @@ public class CacheService : ICacheService, IDisposable
         TimeSpan? slidingExpirationInterval = null)
     {
         T returnValue = default;
+        bool isExists = false;
 
-        await ExecuteRedisMethod(async () =>
+        await ExecuteRedisMethod(() =>
         {
-            cacheLock.EnterUpgradeableReadLock();
+            cacheLock.EnterReadLock();
             try
             {
-                var value = await cache.GetStringAsync(key);
+                var value = cache.GetString(key);
 
                 if (value != null)
                 {
                     returnValue = JsonConvert.DeserializeObject<T>(value);
+                    isExists = true;
                     return;
                 }
+            }
+            finally
+            {
+                cacheLock.ExitReadLock();
+            }
+        });
 
+        if (!isExists)
+        {
+            returnValue = await newValueFactory();
+            await ExecuteRedisMethod(() =>
+            {
                 cacheLock.EnterWriteLock();
                 try
                 {
-                    returnValue = await newValueFactory();
                     var options = new DistributedCacheEntryOptions
                     {
                         AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? redisConfig.AbsoluteExpirationRelativeToNowInterval,
                         SlidingExpiration = slidingExpirationInterval ?? redisConfig.SlidingExpirationInterval,
                     };
 
-                    await cache.SetStringAsync(key, JsonConvert.SerializeObject(returnValue), options);
+                    cache.SetString(key, JsonConvert.SerializeObject(returnValue), options);
                 }
                 finally
                 {
                     cacheLock.ExitWriteLock();
                 }
-            }
-            finally
-            {
-                cacheLock.ExitUpgradeableReadLock();
-            }
-        });
+            });
+        }
 
         return returnValue;
     }
