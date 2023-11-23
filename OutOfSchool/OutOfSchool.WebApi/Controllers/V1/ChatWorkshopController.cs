@@ -204,14 +204,13 @@ public class ChatWorkshopController : ControllerBase
     public Task<IActionResult> GetProvidersRoomsAsync([FromQuery] ChatWorkshopFilter filter = null)
         => this.GetUsersRoomsAsync(providerId => roomService.GetByProviderIdAsync(providerId), filter);
 
-
     /// <summary>
     /// Get amount of unread messages for current user.
     /// </summary>
     /// <returns>Number of unread messages.</returns>
     [HttpGet("user/unreadMessagesCount")]
     [Authorize(Roles = "parent, provider")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ChatRoomWorkshopDtoWithLastMessage>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(int))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
