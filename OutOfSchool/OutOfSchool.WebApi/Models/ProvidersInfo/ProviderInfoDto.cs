@@ -44,7 +44,6 @@ public class ProviderInfoDto : ProviderInfoBaseDto
     [MaxLength(Constants.UnifiedUrlLength)]
     public string Instagram { get; set; } = string.Empty;
 
-    // TODO: validate regex with unit tests
     [Required(ErrorMessage = "EDRPOU/INP code is required")]
     [RegularExpression(
         @"^(\d{8}|\d{10})$",

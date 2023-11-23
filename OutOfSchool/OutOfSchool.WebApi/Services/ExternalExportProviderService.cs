@@ -101,7 +101,7 @@ public class ExternalExportProviderService : IExternalExportProviderService
     private bool IsProviderUpdated(Provider provider, DateTime updatedAfter)
     {
         return provider.UpdatedAt > updatedAfter ||
-                        provider.Workshops.Any(w => w.UpdatedAt > updatedAfter);
+                        provider.Workshops.Exists(w => w.UpdatedAt > updatedAfter);
     }
 
     private ProviderInfoBaseDto MapToInfoProviderDto(Provider provider)
