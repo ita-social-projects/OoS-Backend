@@ -65,4 +65,21 @@ public class ExternalExportProviderControllerTests
         // Assert
         Assert.IsInstanceOf<NoContentResult>(actionResult.Result);
     }
+
+    [Test]
+    public async Task GetByFilter_ExceptionInService_ReturnsInternalServerError()
+    {
+        // Arrange
+        mockExternalProviderService
+            .Setup(x => x.GetProvidersWithWorkshops(It.IsAny<DateTime>(), It.IsAny<SizeFilter>()))
+            .ThrowsAsync(new Exception("Simulated exception"));
+        // Act
+        var actionResult = await controller.GetByFilter(DateTime.UtcNow, new SizeFilter { Size = 10 });
+
+        // Assert
+        Assert.IsInstanceOf<ObjectResult>(actionResult.Result);
+        var objectResult = (ObjectResult)actionResult.Result;
+        Assert.AreEqual(500, objectResult.StatusCode);
+        Assert.AreEqual("An error occurred: Simulated exception", objectResult.Value);
+    }
 }
