@@ -44,18 +44,19 @@ public class CacheService : ICacheService, IDisposable
         TimeSpan? slidingExpirationInterval = null)
     {
         T returnValue = default;
-        string value = null;
+        bool isExists = false;
 
         await ExecuteRedisMethod(() =>
         {
             cacheLock.EnterReadLock();
             try
             {
-                value = cache.GetString(key);
+                var value = cache.GetString(key);
 
                 if (value != null)
                 {
                     returnValue = JsonConvert.DeserializeObject<T>(value);
+                    isExists = true;
                     return;
                 }
             }
@@ -65,7 +66,7 @@ public class CacheService : ICacheService, IDisposable
             }
         });
 
-        if (value == null)
+        if (!isExists)
         {
             returnValue = await newValueFactory();
             await ExecuteRedisMethod(() =>
