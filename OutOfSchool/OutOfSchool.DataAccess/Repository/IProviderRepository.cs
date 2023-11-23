@@ -1,8 +1,7 @@
-using OutOfSchool.Services.Models;
-using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
+using System.Threading.Tasks;
+using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
