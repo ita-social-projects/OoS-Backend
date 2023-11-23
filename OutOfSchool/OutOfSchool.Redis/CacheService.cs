@@ -44,42 +44,49 @@ public class CacheService : ICacheService, IDisposable
         TimeSpan? slidingExpirationInterval = null)
     {
         T returnValue = default;
+        string value = null;
 
-        await ExecuteRedisMethod(async () =>
+        await ExecuteRedisMethod(() =>
         {
-            cacheLock.EnterUpgradeableReadLock();
+            cacheLock.EnterReadLock();
             try
             {
-                var value = await cache.GetStringAsync(key);
+                value = cache.GetString(key);
 
                 if (value != null)
                 {
                     returnValue = JsonConvert.DeserializeObject<T>(value);
                     return;
                 }
+            }
+            finally
+            {
+                cacheLock.ExitReadLock();
+            }
+        });
 
+        if (value == null)
+        {
+            returnValue = await newValueFactory();
+            await ExecuteRedisMethod(() =>
+            {
                 cacheLock.EnterWriteLock();
                 try
                 {
-                    returnValue = await newValueFactory();
                     var options = new DistributedCacheEntryOptions
                     {
                         AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? redisConfig.AbsoluteExpirationRelativeToNowInterval,
                         SlidingExpiration = slidingExpirationInterval ?? redisConfig.SlidingExpirationInterval,
                     };
 
-                    await cache.SetStringAsync(key, JsonConvert.SerializeObject(returnValue), options);
+                    cache.SetString(key, JsonConvert.SerializeObject(returnValue), options);
                 }
                 finally
                 {
                     cacheLock.ExitWriteLock();
                 }
-            }
-            finally
-            {
-                cacheLock.ExitUpgradeableReadLock();
-            }
-        });
+            });
+        }
 
         return returnValue;
     }

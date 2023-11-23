@@ -16,7 +16,7 @@ public class StatisticService : IStatisticService
     private readonly IEntityRepositorySoftDeleted<long, Direction> directionRepository;
     private readonly ILogger<StatisticService> logger;
     private readonly IMapper mapper;
-    private readonly ICacheService cache;
+    private readonly IMultiLayerCacheService cache;
     private readonly IAverageRatingService averageRatingService;
 
     /// <summary>
@@ -35,7 +35,7 @@ public class StatisticService : IStatisticService
         IEntityRepositorySoftDeleted<long, Direction> directionRepository,
         ILogger<StatisticService> logger,
         IMapper mapper,
-        ICacheService cache,
+        IMultiLayerCacheService cache,
         IAverageRatingService averageRatingService)
     {
         this.applicationRepository = applicationRepository;
