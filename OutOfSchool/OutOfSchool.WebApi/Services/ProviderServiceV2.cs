@@ -33,6 +33,7 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
         IRegionAdminRepository regionAdminRepository,
         IAverageRatingService averageRatingService,
         IAreaAdminService areaAdminService,
+        IAreaAdminRepository areaAdminRepository,
         IUserService userService,
         IOptions<AuthorizationServerConfig> authorizationServerConfig,
         ICommunicationService communicationService)
@@ -57,6 +58,7 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
               regionAdminRepository,
               averageRatingService,
               areaAdminService,
+              areaAdminRepository,
               userService,
               authorizationServerConfig,
               communicationService)

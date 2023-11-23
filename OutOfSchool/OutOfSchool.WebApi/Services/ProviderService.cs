@@ -37,6 +37,7 @@ public class ProviderService : IProviderService, INotificationReciever
     private readonly IRegionAdminRepository regionAdminRepository;
     private readonly IAverageRatingService averageRatingService;
     private readonly IAreaAdminService areaAdminService;
+    private readonly IAreaAdminRepository areaAdminRepository;
     private readonly IUserService userService;
     private readonly AuthorizationServerConfig authorizationServerConfig;
     private readonly ICommunicationService communicationService;
@@ -69,6 +70,7 @@ public class ProviderService : IProviderService, INotificationReciever
     /// <param name="regionAdminRepository">RegionAdminRepository</param>
     /// <param name="averageRatingService">Average rating service.</param>
     /// <param name="areaAdminService">Service for manage area admin.</param>
+    /// <param name="areaAdminRepository">Repository for manage area admin.</param>
     /// <param name="userService">Service for manage users.</param>
     /// <param name="authorizationServerConfig">Path to authorization server.</param>
     /// <param name="communicationService">Service for communication.</param>
@@ -93,6 +95,7 @@ public class ProviderService : IProviderService, INotificationReciever
         IRegionAdminRepository regionAdminRepository,
         IAverageRatingService averageRatingService,
         IAreaAdminService areaAdminService,
+        IAreaAdminRepository areaAdminRepository,
         IUserService userService,
         IOptions<AuthorizationServerConfig> authorizationServerConfig,
         ICommunicationService communicationService)
@@ -116,6 +119,7 @@ public class ProviderService : IProviderService, INotificationReciever
         this.regionAdminRepository = regionAdminRepository;
         this.averageRatingService = averageRatingService ?? throw new ArgumentNullException(nameof(averageRatingService));
         this.areaAdminService = areaAdminService ?? throw new ArgumentNullException(nameof(areaAdminService));
+        this.areaAdminRepository = areaAdminRepository;
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         this.authorizationServerConfig = authorizationServerConfig.Value ?? throw new ArgumentNullException(nameof(authorizationServerConfig));
         this.communicationService = communicationService ?? throw new ArgumentNullException(nameof(communicationService));
@@ -467,9 +471,10 @@ public class ProviderService : IProviderService, INotificationReciever
 
         if (action == NotificationAction.Create)
         {
-            recipientIds.AddRange(await GetTechAdminsIds().ConfigureAwait(false));
-            recipientIds.AddRange(await GetMinistryAdminsIds(provider.InstitutionId).ConfigureAwait(false));
-            recipientIds.AddRange(await GetRegionAdminsIds(provider.LegalAddress).ConfigureAwait(false));
+            recipientIds.AddRange(GetTechAdminsIds());
+            recipientIds.AddRange(GetMinistryAdminsIds(provider.InstitutionId));
+            recipientIds.AddRange(GetRegionAdminsIds(provider.LegalAddress));
+            recipientIds.AddRange(GetAreaAdminsIds(provider.LegalAddress));
         }
         else if (action == NotificationAction.Update)
         {
@@ -479,9 +484,9 @@ public class ProviderService : IProviderService, INotificationReciever
             {
                 if (status == ProviderStatus.Recheck)
                 {
-                    recipientIds.AddRange(await GetTechAdminsIds().ConfigureAwait(false));
-                    recipientIds.AddRange(await GetMinistryAdminsIds(provider.InstitutionId).ConfigureAwait(false));
-                    recipientIds.AddRange(await GetRegionAdminsIds(provider.LegalAddress).ConfigureAwait(false));
+                    recipientIds.AddRange(GetTechAdminsIds());
+                    recipientIds.AddRange(GetMinistryAdminsIds(provider.InstitutionId));
+                    recipientIds.AddRange(GetRegionAdminsIds(provider.LegalAddress));
                 }
                 else if (status == ProviderStatus.Editing
                          || status == ProviderStatus.Approved)
@@ -498,8 +503,8 @@ public class ProviderService : IProviderService, INotificationReciever
                 if (licenseStatus == ProviderLicenseStatus.Pending)
                 {
                     // there should be District admin
-                    recipientIds.AddRange(await GetTechAdminsIds().ConfigureAwait(false));
-                    recipientIds.AddRange(await GetMinistryAdminsIds(provider.InstitutionId).ConfigureAwait(false));
+                    recipientIds.AddRange(GetTechAdminsIds());
+                    recipientIds.AddRange(GetMinistryAdminsIds(provider.InstitutionId));
                 }
                 else if (licenseStatus == ProviderLicenseStatus.Approved)
                 {
@@ -917,40 +922,46 @@ public class ProviderService : IProviderService, INotificationReciever
         }
     }
 
-    private async Task<IEnumerable<string>> GetTechAdminsIds()
+    private List<string> GetTechAdminsIds()
     {
-        var techAdminIds = (await usersRepository
+        var techAdminIds = usersRepository
                         .GetByFilter(u => u.Role == nameof(Role.TechAdmin).ToLower())
-                        .ConfigureAwait(false))
-                        .Select(u => u.Id);
+                        .Result
+                        .Select(u => u.Id)
+                        .ToList();
         return techAdminIds;
     }
 
-    private async Task<IEnumerable<string>> GetMinistryAdminsIds(Guid? ministryId)
+    private List<string> GetMinistryAdminsIds(Guid? ministryId)
     {
         if (ministryId == null)
         {
             return new List<string>();
         }
 
-        var ministryAdminsIds = await institutionAdminRepository
+        var ministryAdminsIds = institutionAdminRepository
                         .GetByFilterNoTracking(a => a.InstitutionId == ministryId)
                         .Select(a => a.UserId)
-                        .ToListAsync()
-                        .ConfigureAwait(false);
+                        .ToList();
+
         return ministryAdminsIds;
     }
 
-    private async Task<IEnumerable<string>> GetRegionAdminsIds(Address address)
+    private List<string> GetRegionAdminsIds(Address address)
     {
-        var regionAdminsIds = await regionAdminRepository
+        var regionAdminsIds = regionAdminRepository
             .GetByFilterNoTracking(a => a.CATOTTGId == address.CATOTTGId)
             .Select(a => a.UserId)
-            .ToListAsync()
-            .ConfigureAwait(false);
+            .ToList();
 
         return regionAdminsIds;
     }
+
+    private List<string> GetAreaAdminsIds(Address address)
+        => areaAdminRepository
+            .GetByFilterNoTracking(a => a.CATOTTGId == address.CATOTTGId)
+            .Select(a => a.UserId)
+            .ToList();
 
     private async Task UpdateWorkshopsProviderStatus(Guid providerId, ProviderStatus providerStatus)
     {

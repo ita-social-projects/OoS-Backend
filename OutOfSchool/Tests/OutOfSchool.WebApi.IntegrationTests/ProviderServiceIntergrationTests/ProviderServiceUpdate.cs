@@ -1,8 +1,6 @@
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using AutoMapper;
-using Google.Apis.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -68,6 +66,7 @@ public class ProviderServiceUpdate
         var regionAdminRepository = new Mock<IRegionAdminRepository>();
         var averageRatingService = new Mock<IAverageRatingService>();
         var areaAdminServiceMock = new Mock<IAreaAdminService>();
+        var areaAdminRepositoryMock = new Mock<IAreaAdminRepository>();
         var userServiceMock = new Mock<IUserService>();
         var authorizationServerConfigMock = Options.Create(new AuthorizationServerConfig());
         var communicationServiceMock = new Mock<ICommunicationService>();
@@ -93,6 +92,7 @@ public class ProviderServiceUpdate
             regionAdminRepository.Object,
             averageRatingService.Object,
             areaAdminServiceMock.Object,
+            areaAdminRepositoryMock.Object,
             userServiceMock.Object,
             authorizationServerConfigMock,
             communicationServiceMock.Object);
