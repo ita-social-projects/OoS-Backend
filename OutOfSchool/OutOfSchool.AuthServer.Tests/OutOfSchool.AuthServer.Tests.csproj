@@ -10,6 +10,7 @@
 
     <ItemGroup>
         <PackageReference Include="FluentAssertions" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
         <PackageReference Include="Moq" />
         <PackageReference Include="NUnit" />
         <PackageReference Include="NUnit3TestAdapter" />

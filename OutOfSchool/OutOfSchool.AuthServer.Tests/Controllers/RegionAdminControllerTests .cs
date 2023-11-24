@@ -9,6 +9,21 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.AuthCommon.Controllers;
 using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.Services.Enums;
+using Microsoft.EntityFrameworkCore;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services;
+using System;
+using OutOfSchool.AuthCommon.Services;
+using AutoMapper;
+using OutOfSchool.Services.Repository;
+using Microsoft.AspNetCore.Identity;
+using OutOfSchool.RazorTemplatesData.Services;
+using Microsoft.Extensions.Localization;
+using OutOfSchool.AuthCommon;
+using OutOfSchool.EmailSender;
+using System.Linq;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
 
@@ -19,6 +34,9 @@ public class RegionAdminControllerTests
     private readonly Mock<ILogger<RegionAdminController>> fakeLogger;
     private readonly Mock<ICommonMinistryAdminService<RegionAdminBaseDto>> fakeRegionAdminService;
     private readonly Mock<HttpContext> fakeHttpContext;
+    private RegionAdminController regionAdminControllerWithRealService;
+    private ICommonMinistryAdminService<RegionAdminBaseDto> regionAdminService;
+    private RegionAdminRepository regionAdminRepository;
 
     public RegionAdminControllerTests()
     {
@@ -89,7 +107,30 @@ public class RegionAdminControllerTests
         fakeHttpContext.Setup(s => s.Request.Headers[It.IsAny<string>()]).Returns("Ok");
         
         regionAdminController.ControllerContext.HttpContext = fakeHttpContext.Object;
-    }
+
+        var context = new OutOfSchoolDbContext(
+                new DbContextOptionsBuilder<OutOfSchoolDbContext>()
+                .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
+                .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+                .Options
+                );
+
+        regionAdminRepository = new RegionAdminRepository(context);
+        var userManager = new UserManager<User>(
+            new UserStore<User>(context), null, null, null, null, null, null, null, null);
+
+        regionAdminService = new CommonMinistryAdminService<long, RegionAdmin, RegionAdminBaseDto, RegionAdminRepository>(
+            new Mock<IMapper>().Object,
+            regionAdminRepository,
+            new Mock<ILogger<CommonMinistryAdminService<long, RegionAdmin, RegionAdminBaseDto, RegionAdminRepository>>>().Object,
+            new Mock<IEmailSender>().Object,
+            userManager,
+            context,
+            new Mock<IRazorViewToStringRenderer>().Object,
+            new Mock<IStringLocalizer<SharedResource>>().Object);
+
+        regionAdminControllerWithRealService = new RegionAdminController(fakeLogger.Object, regionAdminService);
+        }
 
     [Test]
     public async Task Create_WithInvalidModel_ReturnsNotSuccessResponseDto()
@@ -132,6 +173,33 @@ public class RegionAdminControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result.IsSuccess, Is.True);
         Assert.That(((RegionAdminBaseDto)result.Result).FirstName, Is.EqualTo("fakeFirstName"));
+    }
+
+    [Test]
+    public async Task Update_WhenModelWithChangedCATOTTGIdAndInstitutionId_ShouldNotChangeCATOTTGIdAndInstitutionId()
+    {
+        // Arrange        
+        var oldInstitutionId = Guid.NewGuid();
+        long oldCAOTTGId = long.MinValue;
+        var userId = string.Empty;
+        RegionAdmin regionAdmin = new RegionAdmin { UserId = userId, InstitutionId = oldInstitutionId, CATOTTGId = oldCAOTTGId };
+        await SeedRegionAdmin(regionAdmin);
+        var regionAdminToUpdate = new RegionAdminBaseDto 
+        { 
+            UserId = userId,
+            FirstName = string.Empty,
+            LastName = string.Empty,
+            InstitutionId = Guid.NewGuid(),
+            CATOTTGId = long.MaxValue 
+        };
+
+        // Act
+        await regionAdminControllerWithRealService.Update(userId, regionAdminToUpdate);
+
+        // Assert
+        var updatedRegionAdmin = regionAdminRepository.GetAll().Result.First();
+        Assert.AreEqual(oldInstitutionId, updatedRegionAdmin.InstitutionId);
+        Assert.AreEqual(oldCAOTTGId, updatedRegionAdmin.CATOTTGId);
     }
 
     [Test]
@@ -186,5 +254,19 @@ public class RegionAdminControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(true, result.IsSuccess);
         Assert.AreEqual("fakeFirstName", ((RegionAdminBaseDto)result.Result).FirstName);
+    }
+    private async Task SeedRegionAdmin(RegionAdmin regionAdmin)
+    {
+        var context = new OutOfSchoolDbContext(
+            new DbContextOptionsBuilder<OutOfSchoolDbContext>()
+            .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
+            .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+            .Options);
+
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
+        context.Add(regionAdmin);
+        context.Add(new User { Id = regionAdmin.UserId, FirstName = string.Empty, LastName = string.Empty });
+        await context.SaveChangesAsync();
     }
 }
