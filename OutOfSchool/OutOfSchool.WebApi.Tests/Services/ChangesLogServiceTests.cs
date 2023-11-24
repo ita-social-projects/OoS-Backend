@@ -29,6 +29,7 @@ public class ChangesLogServiceTests
     private Mock<IProviderRepository> providerRepository;
     private Mock<IApplicationRepository> applicationRepository;
     private Mock<IEntityRepository<long, ProviderAdminChangesLog>> providerAdminChangesLogRepository;
+    private Mock<IEntityAddOnlyRepository<long, ParentBlockedByAdminLog>> parentBlockedByAdminLogRepository;
     private Mock<IValueProjector> valueProjector;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
@@ -67,6 +68,7 @@ public class ChangesLogServiceTests
         providerRepository = new Mock<IProviderRepository>(MockBehavior.Strict);
         applicationRepository = new Mock<IApplicationRepository>(MockBehavior.Strict);
         providerAdminChangesLogRepository = new Mock<IEntityRepository<long, ProviderAdminChangesLog>>(MockBehavior.Strict);
+        parentBlockedByAdminLogRepository = new Mock<IEntityAddOnlyRepository<long, ParentBlockedByAdminLog>>();
         valueProjector = new Mock<IValueProjector>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
@@ -616,6 +618,7 @@ public class ChangesLogServiceTests
             providerRepository.Object,
             applicationRepository.Object,
             providerAdminChangesLogRepository.Object,
+            parentBlockedByAdminLogRepository.Object,
             logger.Object,
             mapper.Object,
             valueProjector.Object,
