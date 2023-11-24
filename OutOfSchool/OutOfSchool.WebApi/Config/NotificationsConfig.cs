@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace OutOfSchool.WebApi.Config;
+﻿namespace OutOfSchool.WebApi.Config;
 
 public class NotificationsConfig
 {

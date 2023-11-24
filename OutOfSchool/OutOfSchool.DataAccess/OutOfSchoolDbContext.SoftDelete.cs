@@ -2,10 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using OutOfSchool.Services.Extensions;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.ChatWorkshop;
-using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services;
 

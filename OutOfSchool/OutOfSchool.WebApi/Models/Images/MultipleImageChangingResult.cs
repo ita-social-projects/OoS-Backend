@@ -1,6 +1,4 @@
-﻿using OutOfSchool.WebApi.Common;
-
-namespace OutOfSchool.WebApi.Models.Images;
+﻿namespace OutOfSchool.WebApi.Models.Images;
 
 public class MultipleImageChangingResult
 {

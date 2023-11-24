@@ -1,5 +1,5 @@
-using System;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.WebApi.Services;
@@ -11,7 +11,7 @@ public interface IProviderServiceV2 : IProviderService
     /// </summary>
     /// <param name="dto">Entity to add.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="ProviderDto"/>.</returns>
-    new Task<ProviderDto> Create(ProviderDto dto);
+    new Task<ProviderDto> Create(ProviderCreateDto dto);
 
     /// <summary>
     /// Update existing entity in the database.
@@ -25,6 +25,7 @@ public interface IProviderServiceV2 : IProviderService
     ///  Delete entity.
     /// </summary>
     /// <param name="id">Key in the table.</param>
+    /// <param name="token">Current user's token.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    new Task Delete(Guid id);
+    new Task<Either<ErrorResponse, ActionResult>> Delete(Guid id, string token);
 }

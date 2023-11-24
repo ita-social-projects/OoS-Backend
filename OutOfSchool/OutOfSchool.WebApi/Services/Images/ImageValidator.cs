@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources.Codes;
 using SkiaSharp;

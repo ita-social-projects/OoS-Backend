@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using OutOfSchool.WebApi.Common;
+﻿using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
 
 namespace OutOfSchool.WebApi.Services.SubordinationStructure;

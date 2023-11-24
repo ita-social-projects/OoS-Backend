@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using FluentValidation;
-using FluentValidation.Results;
+﻿using FluentValidation;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.AuthCommon.ViewModels;
 

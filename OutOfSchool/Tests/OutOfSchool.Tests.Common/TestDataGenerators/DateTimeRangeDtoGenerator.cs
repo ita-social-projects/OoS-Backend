@@ -1,12 +1,8 @@
 ﻿using Bogus;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Workshops;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 

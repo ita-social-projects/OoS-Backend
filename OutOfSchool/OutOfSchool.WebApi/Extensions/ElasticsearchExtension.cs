@@ -1,13 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 using Elasticsearch.Net;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Nest;
-using OutOfSchool.ElasticsearchData.Models;
-using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Config.Elasticsearch;
 
 namespace OutOfSchool.WebApi.Extensions;

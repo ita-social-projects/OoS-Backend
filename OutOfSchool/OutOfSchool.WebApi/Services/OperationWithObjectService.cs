@@ -1,13 +1,6 @@
 ﻿using AutoMapper;
-using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Hubs;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Application;
-using OutOfSchool.WebApi.Models.Notifications;
 using System.Linq.Expressions;
 
 namespace OutOfSchool.WebApi.Services;

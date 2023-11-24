@@ -4,7 +4,7 @@ namespace OutOfSchool.AuthCommon.ViewModels;
 
 public class ChangePasswordViewModel
 {
-    [Required]
+    [Required(ErrorMessage = "Password is required")]
     [DataType(DataType.Password)]
     public string CurrentPassword { get; set; }
 

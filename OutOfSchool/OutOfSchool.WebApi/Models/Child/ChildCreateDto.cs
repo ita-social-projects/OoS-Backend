@@ -1,6 +1,4 @@
-﻿using OutOfSchool.WebApi.Models.SocialGroup;
-
-namespace OutOfSchool.WebApi.Models;
+﻿namespace OutOfSchool.WebApi.Models;
 
 public class ChildCreateDto : ChildBaseDto
 {

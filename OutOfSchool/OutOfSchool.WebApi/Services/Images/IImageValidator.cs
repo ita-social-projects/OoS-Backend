@@ -1,7 +1,4 @@
-﻿using System.IO;
-using OutOfSchool.WebApi.Common;
-
-namespace OutOfSchool.WebApi.Services.Images;
+﻿namespace OutOfSchool.WebApi.Services.Images;
 
 /// <summary>
 /// Provides APIs for validating images by their options.

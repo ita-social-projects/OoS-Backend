@@ -1,18 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Teachers;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

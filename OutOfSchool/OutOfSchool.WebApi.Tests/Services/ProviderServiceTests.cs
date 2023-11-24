@@ -5,25 +5,28 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
-using Bogus;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.AverageRatings;
+using OutOfSchool.WebApi.Services.Communication;
+using OutOfSchool.WebApi.Services.Communication.ICommunication;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
-using Quartz.Impl.AdoJobStore.Common;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -46,6 +49,9 @@ public class ProviderServiceTests
     private Mock<IRegionAdminRepository> regionAdminRepositoryMock;
     private Mock<IAverageRatingService> averageRatingServiceMock;
     private Mock<IAreaAdminService> areaAdminServiceMock;
+    private Mock<IAreaAdminRepository> areaAdminRepositoryMock;
+    private Mock<IUserService> userServiceMock;
+    private Mock<ICommunicationService> communicationService;
 
     private List<Provider> fakeProviders;
     private User fakeUser;
@@ -77,8 +83,11 @@ public class ProviderServiceTests
         regionAdminRepositoryMock = new Mock<IRegionAdminRepository>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
         areaAdminServiceMock = new Mock<IAreaAdminService>();
+        areaAdminRepositoryMock = new Mock<IAreaAdminRepository>();
+        userServiceMock = new Mock<IUserService>();
+        communicationService = new Mock<ICommunicationService>();
 
-
+        var authorizationServerConfig = Options.Create(new AuthorizationServerConfig { Authority = new Uri("http://test.com") });
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
 
         providerService = new ProviderService(
@@ -101,7 +110,11 @@ public class ProviderServiceTests
             codeficatorServiceMock.Object,
             regionAdminRepositoryMock.Object,
             averageRatingServiceMock.Object,
-            areaAdminServiceMock.Object);
+            areaAdminServiceMock.Object,
+            areaAdminRepositoryMock.Object,
+            userServiceMock.Object,
+            authorizationServerConfig,
+            communicationService.Object);
     }
 
     #region Create
@@ -111,7 +124,7 @@ public class ProviderServiceTests
     public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity(string license, ProviderLicenseStatus expectedLicenseStatus)
     {
         // Arrange
-        var dto = ProviderDtoGenerator.Generate();
+        var dto = ProviderCreateDtoGenerator.Generate();
         dto.License = license;
         dto.Status = ProviderStatus.Approved;
 
@@ -155,7 +168,7 @@ public class ProviderServiceTests
     public async Task Create_ValidEntity_UpdatesOwnerIsRegisteredField()
     {
         // Arrange
-        var provider = ProviderDtoGenerator.Generate();
+        var provider = ProviderCreateDtoGenerator.Generate();
         provider.UserId = fakeUser.Id;
         fakeUser.IsRegistered = false;
 
@@ -177,7 +190,7 @@ public class ProviderServiceTests
     public void Create_WhenUserIdExists_ThrowsInvalidOperationException()
     {
         // Arrange
-        var providerToBeCreated = ProviderDtoGenerator.Generate();
+        var providerToBeCreated = ProviderCreateDtoGenerator.Generate();
         fakeProviders.RandomItem().UserId = providerToBeCreated.UserId;
 
         // Act and Assert
@@ -189,7 +202,7 @@ public class ProviderServiceTests
     public async Task Create_WhenActualAddressIsTheSameAsLegal_ActualAddressIsCleared()
     {
         // Arrange
-        var expectedEntity = ProviderDtoGenerator.Generate();
+        var expectedEntity = ProviderCreateDtoGenerator.Generate();
         expectedEntity.ActualAddress = expectedEntity.LegalAddress;
         Provider receivedProvider = default;
         providersRepositoryMock.Setup(x => x.Create(It.IsAny<Provider>())).
@@ -214,7 +227,7 @@ public class ProviderServiceTests
         providersRepositoryMock.Setup(x => x.Create(It.IsAny<Provider>())).Callback<Provider>(p => receivedProvider = p);
 
         // Act
-        await providerService.Create(mapper.Map<ProviderDto>(expectedEntity));// expectedEntity.ToModel());
+        await providerService.Create(mapper.Map<ProviderCreateDto>(expectedEntity));// expectedEntity.ToModel());
 
         // Assert
         Assert.That(receivedProvider.ActualAddress, Is.Not.Null);
@@ -226,7 +239,7 @@ public class ProviderServiceTests
     {
         // Arrange
         providersRepositoryMock.Setup(r => r.SameExists(It.IsAny<Provider>())).Returns(true);
-        var randomProvider = mapper.Map<ProviderDto>(fakeProviders.RandomItem());// fakeProviders.RandomItem().ToModel();
+        var randomProvider = mapper.Map<ProviderCreateDto>(fakeProviders.RandomItem());// fakeProviders.RandomItem().ToModel();
 
         // Act & Assert
         Assert.ThrowsAsync<InvalidOperationException>(async () => await providerService.Create(randomProvider));
@@ -697,35 +710,68 @@ public class ProviderServiceTests
         // Arrange
         var providerToDeleteDto = mapper.Map<ProviderDto>(fakeProviders.RandomItem());//fakeProviders.RandomItem().ToModel();
         var deleteMethodArguments = new List<Provider>();
+        var deleteUserArguments = new List<string>();
         providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(fakeProviders.Single(p => p.Id == providerToDeleteDto.Id));
         providersRepositoryMock.Setup(r => r.Delete(Capture.In(deleteMethodArguments)));
+        userServiceMock.Setup(r => r.Delete(Capture.In(deleteUserArguments)));
+        currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(true);
+        communicationService.Setup(x => x.SendRequest<ResponseDto>(It.IsAny<Request>())).ReturnsAsync(new ResponseDto());
 
         // Act
-        await providerService.Delete(providerToDeleteDto.Id).ConfigureAwait(false);
+        await providerService.Delete(providerToDeleteDto.Id, It.IsAny<string>()).ConfigureAwait(false);
+        var userToDeleteId = deleteUserArguments.Single();
         var result = mapper.Map<ProviderDto>(deleteMethodArguments.Single());//deleteMethodArguments.Single().ToModel();
 
         // Assert
         TestHelper.AssertDtosAreEqual(providerToDeleteDto, result);
+        Assert.AreEqual(providerToDeleteDto.UserId, userToDeleteId);
     }
 
-    // TODO: providerService.Delete method should be fixed before
-
     [Test]
-    public void Delete_WhenIdIsInvalid_ThrowsArgumentNullException()
+    public async Task Delete_WhenIdIsInvalid_ReturnNotFoundErrorResponse()
     {
         // Arrange
         var fakeProviderInvalidId = Guid.NewGuid();
-        var provider = new Provider()
-        {
-            Id = fakeProviderInvalidId,
-        };
-        providersRepositoryMock.Setup(p => p.Delete(provider)).Returns(Task.CompletedTask);
-        providersRepositoryMock.Setup(p => p.GetWithNavigations(provider.Id)).ThrowsAsync(new ArgumentNullException());
 
-        // Act and Assert
-        Assert.ThrowsAsync<ArgumentNullException>(
-            async () => await providerService.Delete(fakeProviderInvalidId).ConfigureAwait(false));
+        // Act
+        var result = await providerService.Delete(fakeProviderInvalidId, It.IsAny<string>()).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(HttpStatusCode.NotFound, result.Match(left => HttpStatusCode.NotFound, right => HttpStatusCode.OK));
+    }
+
+    [Test]
+    public async Task Delete_WhenUserHasNoRights_ReturnForbiddenErrorResponse()
+    {
+        // Arrange
+        Guid providerToDeleteId = Guid.NewGuid();
+        string providerToDeleteUserId = fakeUser.Id;
+        providersRepositoryMock.Setup(p => p.GetWithNavigations(providerToDeleteId)).ReturnsAsync(new Provider() { UserId = providerToDeleteUserId });
+        currentUserServiceMock.Setup(p => p.UserId).Returns(string.Empty);
+        currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(false);
+
+        // Act
+        var result = await providerService.Delete(providerToDeleteId, It.IsAny<string>()).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(HttpStatusCode.Forbidden, result.Match(left => HttpStatusCode.Forbidden, right => HttpStatusCode.OK));
+    }
+
+    [Test]
+    public async Task Delete_WhenUserHasRightsAndIdIsValid_CommunicationServiceSendsRequest()
+    {
+        // Arrange
+        currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(true);
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
+    .ReturnsAsync(fakeProviders.FirstOrDefault());
+        communicationService.Setup(x => x.SendRequest<ResponseDto>(It.IsAny<Request>())).ReturnsAsync(new ResponseDto());
+
+        // Act
+        await providerService.Delete(It.IsAny<Guid>(), It.IsAny<string>()).ConfigureAwait(false);
+
+        // Assert
+        communicationService.Verify(x => x.SendRequest<ResponseDto>(It.IsAny<Request>()), Times.AtLeastOnce);
     }
 
     #endregion

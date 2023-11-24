@@ -36,7 +36,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService)
-        : base(httpClientFactory, communicationConfig?.Value, logger)
+        : base(httpClientFactory, communicationConfig, logger)
     {
         ArgumentNullException.ThrowIfNull(authorizationServerConfig);
         ArgumentNullException.ThrowIfNull(areaAdminRepository);
@@ -165,7 +165,20 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         {
             var regionAdminDto = await regionAdminService.GetByUserId(currentUserService.UserId).ConfigureAwait(false);
             filter.InstitutionId = regionAdminDto.InstitutionId;
-            var childrenIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId);
+            var childrenIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdminDto.CATOTTGId);
+            if (filter.CATOTTGId != 0 && filter.CATOTTGId != regionAdminDto.CATOTTGId)
+            {
+                if (childrenIds.Contains(filter.CATOTTGId))
+                {
+                    childrenIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId);
+                }
+                else
+                {
+                    Logger.LogError($"Region admin with id = {currentUserService.UserId} tries to get list of AreaAdmins from other region");
+                    throw new UnauthorizedAccessException();
+                }
+            }
+
             catottgs = childrenIds.ToList();
         }
 

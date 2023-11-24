@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Quartz;
+﻿using Quartz;
 
 namespace OutOfSchool.WebApi.Services.Elasticsearch;
 

@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Models;
+﻿using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Changes;
 
 namespace OutOfSchool.WebApi.Services;

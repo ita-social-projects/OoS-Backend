@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using OutOfSchool.WebApi.Common;
+﻿using OutOfSchool.WebApi.Common;
 
 namespace OutOfSchool.WebApi.Models.Images;
 

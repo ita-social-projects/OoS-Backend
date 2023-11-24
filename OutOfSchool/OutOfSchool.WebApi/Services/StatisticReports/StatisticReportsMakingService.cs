@@ -2,7 +2,6 @@
 using CsvHelper;
 using CsvHelper.Configuration;
 using Microsoft.EntityFrameworkCore.Storage;
-using Nest;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Files;
 

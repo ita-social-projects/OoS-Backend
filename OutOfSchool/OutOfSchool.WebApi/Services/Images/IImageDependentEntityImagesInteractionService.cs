@@ -1,11 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Reflection.Emit;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.Images;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models.Images;
+﻿using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.WebApi.Services.Images;
 

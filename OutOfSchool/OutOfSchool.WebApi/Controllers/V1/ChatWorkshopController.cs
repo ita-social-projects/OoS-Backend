@@ -1,8 +1,6 @@
-﻿using System;
-using System.Security.Authentication;
+﻿using System.Security.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using Nest;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
@@ -205,6 +203,25 @@ public class ChatWorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public Task<IActionResult> GetProvidersRoomsAsync([FromQuery] ChatWorkshopFilter filter = null)
         => this.GetUsersRoomsAsync(providerId => roomService.GetByProviderIdAsync(providerId), filter);
+
+    /// <summary>
+    /// Get amount of unread messages for current user.
+    /// </summary>
+    /// <returns>Number of unread messages.</returns>
+    [HttpGet("user/unreadMessagesCount")]
+    [Authorize(Roles = "parent, provider")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(int))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetCurrentUserUnreadMessagesCountAsync()
+    {
+        var userId = GettingUserProperties.GetUserId(HttpContext);
+        var userRole = GettingUserProperties.GetUserRole(HttpContext);
+        var parentOrProviderId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
+        var unreadMessagesCount = await roomService.GetCurrentUserUnreadMessagesCountAsync(parentOrProviderId, userRole);
+        return Ok(unreadMessagesCount);
+    }
 
     /// <summary>
     /// Get a chat room for current parent and workshopId.
@@ -450,7 +467,6 @@ public class ChatWorkshopController : ControllerBase
             logger.LogWarning($"User {userId} is trying to get chat room by {nameof(workshopId)} = {workshopId} but get null");
 
             return BadRequest();
-
         }
 
         return await HandleOperationAsync(Operation);
@@ -544,7 +560,8 @@ public class ChatWorkshopController : ControllerBase
                 }
                 else
                 {
-                    var chatroomFiltration = await roomService.GetChatRoomByFilter(filter, providerOrParentId).ConfigureAwait(false);
+                    bool searchForProvider = userRole == Role.Provider;
+                    var chatroomFiltration = await roomService.GetChatRoomByFilter(filter, providerOrParentId, searchForProvider).ConfigureAwait(false);
                     chatRooms = chatroomFiltration.Entities;
                     if (chatRooms.Any())
                     {

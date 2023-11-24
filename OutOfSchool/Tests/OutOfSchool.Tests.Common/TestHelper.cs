@@ -1,11 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NUnit.Framework;
-using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using AutoMapper;
 
 namespace OutOfSchool.Tests.Common;

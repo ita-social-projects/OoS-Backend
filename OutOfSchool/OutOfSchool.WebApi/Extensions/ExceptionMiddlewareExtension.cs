@@ -1,11 +1,5 @@
-﻿using System;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+﻿using System.Text.Json;
 using Microsoft.Extensions.Options;
-using MySqlConnector;
 
 namespace OutOfSchool.WebApi.Extensions;
 

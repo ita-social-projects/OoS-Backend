@@ -6,6 +6,7 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.StatusPermissions;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Models.Workshops;
@@ -606,7 +607,10 @@ public class ApplicationService : IApplicationService, INotificationReciever
             predicate = predicate.And(tempPredicate);
         }
 
-        predicate = predicate.And(a => a.IsBlocked == filter.ShowBlocked);
+        if (filter.Show != ShowApplications.All)
+        {
+            predicate = predicate.And(a => a.IsBlocked == (filter.Show == ShowApplications.Blocked));
+        }
 
         return predicate;
     }
@@ -615,6 +619,11 @@ public class ApplicationService : IApplicationService, INotificationReciever
         ApplicationFilter filter)
     {
         var sortExpression = new Dictionary<Expression<Func<Application, object>>, SortDirection>();
+
+        if (filter.Show == ShowApplications.All)
+        {
+            sortExpression.Add(a => a.IsBlocked, SortDirection.Ascending);
+        }
 
         if (filter.OrderByStatus)
         {

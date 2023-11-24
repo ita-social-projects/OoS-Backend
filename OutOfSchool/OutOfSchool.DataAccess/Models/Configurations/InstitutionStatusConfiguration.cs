@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models.Configurations;
 

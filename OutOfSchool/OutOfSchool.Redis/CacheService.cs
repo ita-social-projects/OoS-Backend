@@ -3,7 +3,6 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -45,77 +44,60 @@ public class CacheService : ICacheService, IDisposable
         TimeSpan? slidingExpirationInterval = null)
     {
         T returnValue = default;
+        bool isExists = false;
 
         await ExecuteRedisMethod(() =>
         {
-            string value = null;
             cacheLock.EnterReadLock();
             try
             {
-                value = cache.GetString(key);
+                var value = cache.GetString(key);
+
+                if (value != null)
+                {
+                    returnValue = JsonConvert.DeserializeObject<T>(value);
+                    isExists = true;
+                    return;
+                }
             }
             finally
             {
                 cacheLock.ExitReadLock();
             }
-
-            if (value != null)
-            {
-                returnValue = JsonConvert.DeserializeObject<T>(value);
-            }
         });
 
-        if (EqualityComparer<T>.Default.Equals(returnValue, default))
+        if (!isExists)
         {
             returnValue = await newValueFactory();
-            await SetAsync(key, returnValue, absoluteExpirationRelativeToNowInterval, slidingExpirationInterval);
+            await ExecuteRedisMethod(() =>
+            {
+                cacheLock.EnterWriteLock();
+                try
+                {
+                    var options = new DistributedCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? redisConfig.AbsoluteExpirationRelativeToNowInterval,
+                        SlidingExpiration = slidingExpirationInterval ?? redisConfig.SlidingExpirationInterval,
+                    };
+
+                    cache.SetString(key, JsonConvert.SerializeObject(returnValue), options);
+                }
+                finally
+                {
+                    cacheLock.ExitWriteLock();
+                }
+            });
         }
 
         return returnValue;
     }
 
-    public Task SetAsync<T>(
-        string key,
-        T value,
-        TimeSpan? absoluteExpirationRelativeToNowInterval = null,
-        TimeSpan? slidingExpirationInterval = null)
-        => ExecuteRedisMethod(() => {
-            var options = new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? redisConfig.AbsoluteExpirationRelativeToNowInterval,
-                SlidingExpiration = slidingExpirationInterval ?? redisConfig.SlidingExpirationInterval
-            };
-
+    public Task RemoveAsync(string key)
+        => ExecuteRedisMethod(async () => {
             cacheLock.EnterWriteLock();
             try
             {
-                cache.SetString(key, JsonConvert.SerializeObject(value), options);
-            }
-            finally
-            {
-                cacheLock.ExitWriteLock();
-            }
-        });
-        
-    public Task ClearCacheAsync(string key)
-        => ExecuteRedisMethod(() => {
-            cacheLock.EnterWriteLock();
-            try
-            {
-                cache.Remove(key);
-            }
-            finally
-            {
-                cacheLock.ExitWriteLock();
-            }
-        });
-
-    public Task RefreshAsync(string key)
-        => ExecuteRedisMethod(() => {
-            cacheLock.EnterWriteLock();
-            try
-            {
-                cache.Refresh(key);
+                await cache.RemoveAsync(key);
             }
             finally
             {

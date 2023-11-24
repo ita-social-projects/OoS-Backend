@@ -164,6 +164,19 @@ public class AuthController : Controller
                 });
             }
 
+            if (user.IsDeleted)
+            {
+                logger.LogInformation("User is deleted. Login was failed");
+
+                ModelState.AddModelError(string.Empty, localizer["Your account is deleted"]);
+
+                return View(new LoginViewModel
+                {
+                    ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                    ReturnUrl = model.ReturnUrl,
+                });
+            }
+
             if (user.MustChangePassword)
             {
                 var checkResult = await signInManager.CheckPasswordSignInAsync(user, model.Password, false);

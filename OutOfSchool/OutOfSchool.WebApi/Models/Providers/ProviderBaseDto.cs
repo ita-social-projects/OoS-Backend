@@ -87,11 +87,6 @@ public class ProviderBaseDto
     [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus LicenseStatus { get; set; }
 
-    public bool IsBlocked { get; set; }
-
-    [MaxLength(500)]
-    public string BlockReason { get; set; }
-
     [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;
 
@@ -103,10 +98,6 @@ public class ProviderBaseDto
 
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public List<IFormFile> ImageFiles { get; set; }
-
-    public float Rating { get; set; }
-
-    public int NumberOfRatings { get; set; }
 
     // TODO: Does not used by front-end, can be removed.
     //       Unit test should be updated

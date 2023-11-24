@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using OutOfSchool.Services.Enums;
+﻿using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;

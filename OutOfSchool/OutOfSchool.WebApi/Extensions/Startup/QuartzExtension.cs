@@ -1,9 +1,3 @@
-using System;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using MySqlConnector;
-using OutOfSchool.Common.Extensions.Startup;
-using OutOfSchool.WebApi.Config.Quartz;
 using Quartz;
 
 namespace OutOfSchool.WebApi.Extensions.Startup;

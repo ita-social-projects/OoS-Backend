@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace OutOfSchool.WebApi.Config.Images;
+﻿namespace OutOfSchool.WebApi.Config.Images;
 
 /// <summary>
 /// Describes image options for some Entity.

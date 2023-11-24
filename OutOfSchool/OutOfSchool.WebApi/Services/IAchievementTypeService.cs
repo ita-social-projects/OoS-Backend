@@ -1,6 +1,5 @@
 ﻿using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Achievement;
 
 namespace OutOfSchool.WebApi.Services;
 

@@ -1,8 +1,6 @@
 ﻿using Bogus;
 using OutOfSchool.Services.Models;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 

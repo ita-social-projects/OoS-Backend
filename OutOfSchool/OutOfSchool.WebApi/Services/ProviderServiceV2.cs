@@ -1,8 +1,12 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.AverageRatings;
+using OutOfSchool.WebApi.Services.Communication.ICommunication;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -28,7 +32,11 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
         ICodeficatorService codeficatorService,
         IRegionAdminRepository regionAdminRepository,
         IAverageRatingService averageRatingService,
-        IAreaAdminService areaAdminService)
+        IAreaAdminService areaAdminService,
+        IAreaAdminRepository areaAdminRepository,
+        IUserService userService,
+        IOptions<AuthorizationServerConfig> authorizationServerConfig,
+        ICommunicationService communicationService)
         : base(
               providerRepository,
               usersRepository,
@@ -48,13 +56,17 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
               regionAdminService,
               codeficatorService,
               regionAdminRepository,
-              averageRatingService, 
-              areaAdminService)
+              averageRatingService,
+              areaAdminService,
+              areaAdminRepository,
+              userService,
+              authorizationServerConfig,
+              communicationService)
     {
     }
 
     /// <inheritdoc cref="IProviderServiceV2" />
-    public new async Task<ProviderDto> Create(ProviderDto providerDto)
+    public new async Task<ProviderDto> Create(ProviderCreateDto providerDto)
     {
         async Task AfterCreationAction(Provider provider)
         {
@@ -89,7 +101,7 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
             .ConfigureAwait(false);
     }
 
-    public new async Task Delete(Guid id)
+    public new async Task<Either<ErrorResponse, ActionResult>> Delete(Guid id, string token)
     {
         async Task BeforeDeleteAction(Provider provider)
         {
@@ -104,6 +116,6 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
             }
         }
 
-        await DeleteProviderWithActionBefore(id, BeforeDeleteAction).ConfigureAwait(false);
+        return await DeleteProviderWithActionBefore(id, token, BeforeDeleteAction).ConfigureAwait(false);
     }
 }

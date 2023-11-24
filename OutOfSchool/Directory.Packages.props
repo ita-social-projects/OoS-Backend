@@ -10,12 +10,13 @@
     </PropertyGroup>
     <ItemGroup>
         <!--Basic Microsoft Packages-->
-        <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(BaseVersion)"/>
-        <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(BaseVersion)"/>
-        <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(BaseVersion)"/>
-        <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(BaseVersion)"/>
-        <PackageVersion Include="Microsoft.Extensions.Options" Version="$(BaseVersion)"/>
-        <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1"/>
+    <PackageVersion Include="Microsoft.AspNet.Identity.Core" Version="2.2.4" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(BaseVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(BaseVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(BaseVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(BaseVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="$(BaseVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
         <PackageVersion Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
         <!--MVC-->
         <!-- TODO: Isn't AspNetCore.Mvc.Core included by default for a Web project?-->
@@ -114,5 +115,6 @@
         <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(EFCoreVersion)"/>
         <PackageVersion Include="MockQueryable.Moq" Version="6.0.1"/>
         <PackageVersion Include="Bogus" Version="34.0.2"/>
+    <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     </ItemGroup>
 </Project>

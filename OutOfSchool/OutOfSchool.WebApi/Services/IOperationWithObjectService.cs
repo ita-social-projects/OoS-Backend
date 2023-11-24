@@ -1,7 +1,5 @@
 ﻿using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Notifications;
-using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Services;
 

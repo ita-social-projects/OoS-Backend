@@ -1,5 +1,4 @@
-﻿using System;
-using OutOfSchool.Services.Enums;
+﻿using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models;
 

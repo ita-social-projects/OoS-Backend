@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Common.PermissionsModule;
 
@@ -60,6 +59,8 @@ public enum Permissions : short
     ParentAddNew = 42,
     [Display(GroupName = "Parent", Name = "Remove", Description = "Can remove Parent data")]
     ParentRemove = 43,
+    [Display(GroupName = "Parent", Name = "Block", Description = "Can block Parent")]
+    ParentBlock = 44,
     #endregion
 
     #region Provider Control permissions #6

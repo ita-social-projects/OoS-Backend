@@ -2,7 +2,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
@@ -103,7 +102,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
     public DbSet<FileInDb> FilesInDb { get; set; }
 
     public DbSet<RegionAdmin> RegionAdmins { get; set; }
-    
+
     public DbSet<AreaAdmin> AreaAdmins { get; set; }
 
     public DbSet<AverageRating> AverageRatings { get; set; }
@@ -111,6 +110,8 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
     public DbSet<OperationWithObject> OperationsWithObjects { get; set; }
 
     public DbSet<QuartzJob> QuartzJobs { get; set; }
+
+    public DbSet<ParentBlockedByAdminLog> ParentBlockedByAdminLog { get; set; }
 
     public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Reflection.Metadata;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
 

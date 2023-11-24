@@ -1,6 +1,4 @@
-﻿using OutOfSchool.WebApi.Common;
-
-namespace OutOfSchool.WebApi.Models;
+﻿namespace OutOfSchool.WebApi.Models;
 
 public class ChildCreationResult
 {

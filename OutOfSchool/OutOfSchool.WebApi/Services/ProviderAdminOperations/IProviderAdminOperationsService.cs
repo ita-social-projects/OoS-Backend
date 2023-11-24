@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-using OutOfSchool.Common;
-using OutOfSchool.Common.Models;
+﻿using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.WebApi.Services.ProviderAdminOperations;
 

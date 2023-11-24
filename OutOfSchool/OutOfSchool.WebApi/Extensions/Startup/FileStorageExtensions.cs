@@ -1,21 +1,9 @@
-using System;
-using Castle.Core.Configuration;
 using Google.Cloud.Storage.V1;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Services.Contexts;
-using OutOfSchool.Services.Contexts.Configuration;
-using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Common.QuartzConstants;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Config.Quartz;
-using OutOfSchool.WebApi.Services.Elasticsearch;
 using OutOfSchool.WebApi.Services.Gcp;
-using OutOfSchool.WebApi.Services.Images;
-using OutOfSchool.WebApi.Util;
 using OutOfSchool.WebApi.Util.FakeImplementations;
 using Quartz;
 

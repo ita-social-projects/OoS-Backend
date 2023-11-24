@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OutOfSchool.WebApi.Models.ChatWorkshop;
+﻿namespace OutOfSchool.WebApi.Models.ChatWorkshop;
 
 public class WorkshopInfoForChatListDto
 {

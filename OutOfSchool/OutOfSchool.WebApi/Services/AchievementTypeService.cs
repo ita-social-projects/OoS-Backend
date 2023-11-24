@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 

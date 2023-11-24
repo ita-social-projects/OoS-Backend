@@ -3,12 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Models.Workshops;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers;
 

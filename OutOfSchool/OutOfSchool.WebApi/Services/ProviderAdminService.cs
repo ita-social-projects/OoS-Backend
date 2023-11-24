@@ -36,7 +36,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         IProviderAdminOperationsService providerAdminOperationsService,
         IWorkshopService workshopService,
         ICurrentUserService currentUserService)
-        : base(httpClientFactory, communicationConfig.Value, logger)
+        : base(httpClientFactory, communicationConfig, logger)
     {
         this.authorizationServerConfig = authorizationServerConfig.Value;
         this.providerAdminConfig = providerAdminConfig.Value;

@@ -1,22 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Google.Apis.Storage.v1.Data;
 using Google.Cloud.Storage.V1;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.Images;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Common.Synchronization;
-using OutOfSchool.WebApi.Models;
-using Object = Google.Apis.Storage.v1.Data.Object;
 
 namespace OutOfSchool.WebApi.Services.Gcp;
 

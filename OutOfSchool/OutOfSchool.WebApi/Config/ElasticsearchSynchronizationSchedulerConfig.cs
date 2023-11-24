@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-
-namespace OutOfSchool.WebApi.Config;
+﻿namespace OutOfSchool.WebApi.Config;
 
 public class ElasticsearchSynchronizationSchedulerConfig
 {

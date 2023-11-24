@@ -1,5 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 
@@ -15,7 +15,7 @@ public interface IProviderService
     /// </summary>
     /// <param name="providerDto">Provider entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<ProviderDto> Create(ProviderDto providerDto);
+    Task<ProviderDto> Create(ProviderCreateDto providerDto);
 
     /// <summary>
     /// Get entities from the database that match filter's parameters.
@@ -59,8 +59,9 @@ public interface IProviderService
     ///  Delete entity.
     /// </summary>
     /// <param name="id">Provider's key.</param>
+    /// <param name="token">Current user's token.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task Delete(Guid id);
+    Task<Either<ErrorResponse, ActionResult>> Delete(Guid id, string token);
 
     /// <summary>
     ///  Gets Id of Provider, which owns a Workshop with specified Id.
@@ -89,6 +90,7 @@ public interface IProviderService
     /// Set block/unblock state.
     /// </summary>
     /// <param name="providerBlockDto">Provider to block/unblock.</param>
+    /// <param name="token">Current user's token.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
     Task<ResponseDto> Block(ProviderBlockDto providerBlockDto, string token = default);
 

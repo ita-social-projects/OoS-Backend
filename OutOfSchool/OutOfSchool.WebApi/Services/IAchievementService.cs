@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models;
+﻿using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Achievement;
 
 namespace OutOfSchool.WebApi.Services;

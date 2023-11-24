@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Workshops;
+﻿using OutOfSchool.WebApi.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Services;
 

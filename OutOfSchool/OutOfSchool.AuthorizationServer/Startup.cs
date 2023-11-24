@@ -5,6 +5,7 @@ using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Extensions;
+using OutOfSchool.AuthCommon.Services;
 using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.AuthorizationServer.Config;
 using OutOfSchool.AuthorizationServer.Extensions;
@@ -213,6 +214,7 @@ public static class Startup
         services.AddAuthCommon(config, builder.Environment.IsDevelopment());
         services.AddTransient<IInteractionService, InteractionService>();
         services.AddTransient<IProfileService, ProfileService>();
+        services.AddScoped<IUserService, UserService>();
 
         services.AddHealthChecks()
             .AddDbContextCheck<OutOfSchoolDbContext>(

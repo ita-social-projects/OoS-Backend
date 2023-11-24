@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Enums;
+﻿using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.WebApi.Models.Providers;
 

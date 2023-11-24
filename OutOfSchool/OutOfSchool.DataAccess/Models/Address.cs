@@ -1,8 +1,5 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using H3Lib;
-using H3Lib.Extensions;
-using OutOfSchool.Common;
 
 namespace OutOfSchool.Services.Models;
 

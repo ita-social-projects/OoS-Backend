@@ -2,6 +2,7 @@
 using System.Net.Mime;
 using System.Text;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Services.Communication.ICommunication;
@@ -15,7 +16,7 @@ public class CommunicationService : ICommunicationService
 
     public CommunicationService(
         IHttpClientFactory httpClientFactory,
-        CommunicationConfig communicationConfig,
+        IOptions<CommunicationConfig> communicationConfig,
         ILogger<CommunicationService> logger)
     {
         ArgumentNullException.ThrowIfNull(communicationConfig);
@@ -23,11 +24,11 @@ public class CommunicationService : ICommunicationService
 
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        httpClient = httpClientFactory.CreateClient(communicationConfig.ClientName);
+        httpClient = httpClientFactory.CreateClient(communicationConfig.Value.ClientName);
         httpClient.DefaultRequestHeaders.Clear();
         httpClient.DefaultRequestHeaders
             .Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
-        httpClient.Timeout = TimeSpan.FromSeconds(communicationConfig.TimeoutInSeconds);
+        httpClient.Timeout = TimeSpan.FromSeconds(communicationConfig.Value.TimeoutInSeconds);
     }
 
     protected ILogger<CommunicationService> Logger => logger;

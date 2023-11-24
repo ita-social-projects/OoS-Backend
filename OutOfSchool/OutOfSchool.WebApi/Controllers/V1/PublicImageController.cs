@@ -1,15 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.StaticFiles;
-using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Services.Images;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

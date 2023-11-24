@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace OutOfSchool.WebApi.Services;
+﻿namespace OutOfSchool.WebApi.Services;
 
 public interface ICRUDService<TEntity, TKey>
     where TEntity : class, new()

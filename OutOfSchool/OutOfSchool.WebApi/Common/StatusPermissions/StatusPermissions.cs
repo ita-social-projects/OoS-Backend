@@ -1,6 +1,4 @@
-﻿using Grpc.Net.Client.Balancer;
-
-namespace OutOfSchool.WebApi.Common.StatusPermissions;
+﻿namespace OutOfSchool.WebApi.Common.StatusPermissions;
 
 public class StatusPermissions<T>
     where T : struct

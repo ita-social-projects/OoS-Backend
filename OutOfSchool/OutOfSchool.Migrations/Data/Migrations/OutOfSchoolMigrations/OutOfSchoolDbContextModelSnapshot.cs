@@ -1145,6 +1145,38 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Parents");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.ParentBlockedByAdminLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime>("OperationDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("ParentId")
+                        .HasColumnType("binary(16)");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ParentBlockedByAdminLog");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.PermissionsForRole", b =>
                 {
                     b.Property<long>("Id")
@@ -1173,7 +1205,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 1L,
                             Description = "techadmin permissions",
-                            PackedPermissions = "def\n\r !()+432578>=<?HGIFPQ[]\\rpqon|z{yx}T",
+                            PackedPermissions = "def\n\r !()+,432578>=<?HGIFPQ[]\\rpqon|z{yx}T",
                             RoleName = "TechAdmin"
                         },
                         new
@@ -1201,7 +1233,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 5L,
                             Description = "ministry admin permissions",
-                            PackedPermissions = "ef\n2578(PQFTn[zxy{}",
+                            PackedPermissions = "ef\n2578(,PQFTn[zxy{}",
                             RoleName = "MinistryAdmin"
                         },
                         new
@@ -2621,6 +2653,25 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.ParentBlockedByAdminLog", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Parent", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Parent");
 
                     b.Navigation("User");
                 });

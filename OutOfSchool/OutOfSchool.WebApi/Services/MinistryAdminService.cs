@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using AutoMapper;
 using Castle.Core.Internal;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +7,6 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -30,7 +28,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         IEntityRepositorySoftDeleted<string, User> userRepository,
         IMapper mapper,
         ICurrentUserService currentUserService)
-        : base(httpClientFactory, communicationConfig?.Value, logger)
+        : base(httpClientFactory, communicationConfig, logger)
     {
         this.authorizationServerConfig = (authorizationServerConfig ?? throw new ArgumentNullException(nameof(authorizationServerConfig))).Value;
         this.institutionAdminRepository = institutionAdminRepository ?? throw new ArgumentNullException(nameof(institutionAdminRepository));

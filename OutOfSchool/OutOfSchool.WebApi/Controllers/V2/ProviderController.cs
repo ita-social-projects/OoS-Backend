@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.WebApi.Common;
@@ -110,7 +111,7 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [HttpPost]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Create([FromForm] ProviderDto providerModel)
+    public async Task<IActionResult> Create([FromForm] ProviderCreateDto providerModel)
     {
         providerModel.Id = default;
         providerModel.LegalAddress.Id = default;
@@ -185,15 +186,17 @@ public class ProviderController : ControllerBase
     [HttpDelete("{uid:guid}")]
     public async Task<IActionResult> Delete(Guid uid)
     {
-        try
-        {
-            await providerService.Delete(uid).ConfigureAwait(false);
-        }
-        catch (ArgumentNullException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        var result = await providerService.Delete(
+            uid,
+            await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
+            .ConfigureAwait(false);
 
-        return NoContent();
+        return result.Match<ActionResult>(
+            error => StatusCode((int)error.HttpStatusCode, error.Message),
+            result =>
+            {
+                logger.LogInformation("Successfully deleted Provider with id: {uid}", uid);
+                return Ok();
+            });
     }
 }

@@ -1,18 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using Moq;
-using NUnit.Framework;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
-
-namespace OutOfSchool.WebApi.Tests.Services;
+﻿namespace OutOfSchool.WebApi.Tests.Services;
 
 //public class ChildServiceTests
 //{

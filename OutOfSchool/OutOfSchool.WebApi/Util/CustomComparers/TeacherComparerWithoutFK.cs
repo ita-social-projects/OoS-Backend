@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using OutOfSchool.Services.Models;
-
 namespace OutOfSchool.WebApi.Util.CustomComparers;
 
 public class TeacherComparerWithoutFK : IEqualityComparer<Teacher>

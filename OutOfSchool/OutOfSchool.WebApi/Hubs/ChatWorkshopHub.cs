@@ -26,6 +26,7 @@ public class ChatWorkshopHub : Hub
     private readonly IParentRepository parentRepository;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IProviderAdminRepository providerAdminRepository;
+    private readonly IBlockedProviderParentService blockedProviderParentService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatWorkshopHub"/> class.
@@ -46,7 +47,8 @@ public class ChatWorkshopHub : Hub
         IWorkshopRepository workshopRepository,
         IParentRepository parentRepository,
         IStringLocalizer<SharedResource> localizer,
-        IProviderAdminRepository providerAdminRepository)
+        IProviderAdminRepository providerAdminRepository,
+        IBlockedProviderParentService blockedProviderParentService)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.messageService = chatMessageService ?? throw new ArgumentNullException(nameof(chatMessageService));
@@ -56,6 +58,7 @@ public class ChatWorkshopHub : Hub
         this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
         this.localizer = localizer;
         this.providerAdminRepository = providerAdminRepository;
+        this.blockedProviderParentService = blockedProviderParentService;
     }
 
     public override async Task OnConnectedAsync()
@@ -239,7 +242,7 @@ public class ChatWorkshopHub : Hub
         }
     }
 
-    private Task<bool> UserHasRigtsForChatRoomAsync(Guid workshopId, Guid parentId)
+    private async Task<bool> UserHasRigtsForChatRoomAsync(Guid workshopId, Guid parentId)
     {
         var userId = GettingUserProperties.GetUserId(Context.User);
         LogErrorThrowExceptionIfPropertyIsNull(userId, nameof(userId));
@@ -249,16 +252,25 @@ public class ChatWorkshopHub : Hub
 
         bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
 
+        var workshop = await workshopRepository.GetById(workshopId);
+
+        bool isParentBlocked = await blockedProviderParentService.IsBlocked(parentId, workshop.ProviderId);
+
+        if (isParentBlocked)
+        {
+            return false;
+        }
+
         if (userRoleIsProvider)
         {
             var userSubroleName = GettingUserProperties.GetUserSubrole(Context.User);
             LogErrorThrowExceptionIfPropertyIsNull(userSubroleName, nameof(userSubroleName));
             Subrole userSubrole = (Subrole)Enum.Parse(typeof(Subrole), userSubroleName, true);
 
-            return validationService.UserIsWorkshopOwnerAsync(userId, workshopId, userSubrole);
+            return await validationService.UserIsWorkshopOwnerAsync(userId, workshopId, userSubrole);
         }
 
-        return validationService.UserIsParentOwnerAsync(userId, parentId);
+        return await validationService.UserIsParentOwnerAsync(userId, parentId);
     }
 
     private void LogErrorThrowExceptionIfPropertyIsNull(string claim, string nameofClaim)

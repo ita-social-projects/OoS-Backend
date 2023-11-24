@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-using OutOfSchool.Common;
-
 namespace OutOfSchool.Services.Models.Configurations;
 
 internal class WorkshopConfiguration : IEntityTypeConfiguration<Workshop>
