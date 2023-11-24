@@ -41,4 +41,12 @@ public interface IChangesLogService
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains the <see cref="SearchResult{ProviderAdminChangesLogDto}"/> that contains found elements.</returns>
     Task<SearchResult<ProviderAdminChangesLogDto>> GetProviderAdminChangesLogAsync(ProviderAdminChangesLogRequest request);
+
+    /// <summary>
+    /// Get ParentBlockedByAdminLog entities that match filter's parameters.
+    /// </summary>
+    /// <param name="request">Filter with specified searching parameters.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The task result contains the <see cref="SearchResult{ParentBlockedByAdminChangesLogDto}"/> that contains found elements.</returns>
+    Task<SearchResult<ParentBlockedByAdminChangesLogDto>> GetParentBlockedByAdminChangesLogAsync(ParentBlockedByAdminChangesLogRequest request);
 }
