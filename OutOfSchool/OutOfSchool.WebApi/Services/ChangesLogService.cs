@@ -454,8 +454,8 @@ public class ChangesLogService : IChangesLogService
         expr = request.ShowParents switch
         {
             ShowParents.All => expr,
-            ShowParents.Blocked => expr.And(x => x.IsBlocked == true),
-            ShowParents.Unblocked => expr.And(x => x.IsBlocked == false),
+            ShowParents.Blocked => expr.And(x => x.IsBlocked),
+            ShowParents.Unblocked => expr.And(x => !x.IsBlocked),
             _ => throw new NotImplementedException(),
         };
 
