@@ -11,6 +11,10 @@ namespace OutOfSchool.WebApi.Services;
 
 public class ChangesLogService : IChangesLogService
 {
+    public const char WORD_SEPARATOR_SPACE = ' ';
+    public const char WORD_SEPARATOR_COMMA = ',';
+    private static char[] wordSplitSymbols = new char[] { WORD_SEPARATOR_SPACE, WORD_SEPARATOR_COMMA };
+
     private readonly IOptions<ChangesLogConfig> config;
     private readonly IChangesLogRepository changesLogRepository;
     private readonly IProviderRepository providerRepository;
@@ -383,7 +387,7 @@ public class ChangesLogService : IChangesLogService
         {
             var tempExpr = PredicateBuilder.False<ChangesLog>();
 
-            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            foreach (var word in filter.SearchString.Split(wordSplitSymbols, StringSplitOptions.RemoveEmptyEntries))
             {
                 tempExpr = tempExpr.Or(
                     x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
@@ -431,7 +435,7 @@ public class ChangesLogService : IChangesLogService
         {
             var tempExpr = PredicateBuilder.False<ProviderAdminChangesLog>();
 
-            foreach (var word in request.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            foreach (var word in request.SearchString.Split(wordSplitSymbols, StringSplitOptions.RemoveEmptyEntries))
             {
                 tempExpr = tempExpr.Or(
                     x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
@@ -473,7 +477,7 @@ public class ChangesLogService : IChangesLogService
         {
             var tempExpr = PredicateBuilder.False<ParentBlockedByAdminLog>();
 
-            foreach (var word in request.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            foreach (var word in request.SearchString.Split(wordSplitSymbols, StringSplitOptions.RemoveEmptyEntries))
             {
                 tempExpr = tempExpr.Or(
                     x => x.Parent.User.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
