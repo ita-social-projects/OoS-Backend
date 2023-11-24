@@ -2,7 +2,7 @@
 
 public class ParentBlockedByAdminChangesLogDto
 {
-    public string ParentId { get; set; }
+    public Guid ParentId { get; set; }
 
     public string ParentFullName { get; set; }
 
