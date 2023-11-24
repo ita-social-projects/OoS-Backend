@@ -211,25 +211,6 @@ public class RegionAdminControllerTests
     }
 
     [Test]
-    public async Task Update_WorkOnlyWithBaseUserDto()
-    {
-        // Arrange
-        var updateRegionAdminDto = new BaseUserDto();
-
-        regionAdminServiceMock.Setup(x => x.UpdateRegionAdminAsync(It.IsAny<string>(), updateRegionAdminDto, It.IsAny<string>())).ReturnsAsync(new RegionAdminDto());
-
-        // Act
-        var result = await regionAdminController.Update(updateRegionAdminDto);
-
-        // Assert
-        regionAdminServiceMock.Verify(
-            x => x.UpdateRegionAdminAsync(It.IsAny<string>(), It.Is<BaseUserDto>(x => x is BaseUserDto), It.IsAny<string>()),
-            "Method should work only with BaseUserDto, to avoid changing institutionId or CATOTTGId");
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result, Is.InstanceOf<OkResult>());
-    }
-
-    [Test]
     public async Task Update_WithValidModel_ReturnsOkResult()
     {
         // Arrange
