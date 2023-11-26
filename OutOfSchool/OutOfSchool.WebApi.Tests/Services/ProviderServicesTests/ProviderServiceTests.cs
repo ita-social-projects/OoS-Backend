@@ -29,7 +29,7 @@ using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Services.ProviderServices;
 using OutOfSchool.WebApi.Util;
 
-namespace OutOfSchool.WebApi.Tests.Services;
+namespace OutOfSchool.WebApi.Tests.Services.ProviderServicesTests;
 
 [TestFixture]
 public class ProviderServiceTests
@@ -63,11 +63,11 @@ public class ProviderServiceTests
         fakeProviders = ProvidersGenerator.Generate(10);
         fakeUser = UserGenerator.Generate();
 
-        providersRepositoryMock = CreateProvidersRepositoryMock(fakeProviders);
+        providersRepositoryMock = ProviderTestsHelper.CreateProvidersRepositoryMock(fakeProviders);
 
         // TODO: configure mock and writer tests for provider admins
         providerAdminRepositoryMock = new Mock<IProviderAdminRepository>();
-        usersRepositoryMock = CreateUsersRepositoryMock(fakeUser);
+        usersRepositoryMock = ProviderTestsHelper.CreateUsersRepositoryMock(fakeUser);
         var addressRepo = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderService>>();
@@ -307,7 +307,7 @@ public class ProviderServiceTests
         currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(true);
         ministryAdminServiceMock
             .Setup(m => m.GetByUserId(It.IsAny<string>()))
-            .Returns(Task.FromResult<MinistryAdminDto>(new MinistryAdminDto()
+            .Returns(Task.FromResult(new MinistryAdminDto()
             {
                 InstitutionId = institutionId,
             }));
@@ -362,7 +362,7 @@ public class ProviderServiceTests
         currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(true);
         regionAdminServiceMock
             .Setup(m => m.GetByUserId(It.IsAny<string>()))
-            .Returns(Task.FromResult<RegionAdminDto>(new RegionAdminDto()
+            .Returns(Task.FromResult(new RegionAdminDto()
             {
                 InstitutionId = institutionId,
                 CATOTTGId = catottgId,
@@ -1122,31 +1122,4 @@ public class ProviderServiceTests
     }
 
     #endregion
-
-    private static Mock<IEntityRepositorySoftDeleted<string, User>> CreateUsersRepositoryMock(User fakeUser)
-    {
-        var usersRepository = new Mock<IEntityRepositorySoftDeleted<string, User>>();
-        usersRepository.Setup(r => r.GetAll()).Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
-        usersRepository.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), string.Empty)).Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
-
-        return usersRepository;
-    }
-
-    private static Mock<IProviderRepository> CreateProvidersRepositoryMock(IEnumerable<Provider> providersCollection)
-    {
-        var providersRepository = new Mock<IProviderRepository>();
-        var userExistsResult = false;
-
-        bool UserExist(string userId)
-        {
-            userExistsResult = providersCollection.Any(p => p.UserId.Equals(userId));
-            return userExistsResult;
-        }
-
-        providersRepository.Setup(r => r.ExistsUserId(It.IsAny<string>()))
-            .Callback<string>(user => UserExist(user))
-            .Returns(() => userExistsResult);
-
-        return providersRepository;
-    }
 }

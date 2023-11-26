@@ -8,6 +8,7 @@ using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Services.Communication.ICommunication;
+using OutOfSchool.WebApi.Services.ProviderServices;
 using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 using OutOfSchool.WebApi.Services.Strategies.WorkshopStrategies;
 using OutOfSchool.WebApi.Util.Mapping;

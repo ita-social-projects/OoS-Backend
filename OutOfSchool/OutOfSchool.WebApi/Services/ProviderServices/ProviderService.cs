@@ -13,7 +13,7 @@ using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Services.Communication.ICommunication;
 
-namespace OutOfSchool.WebApi.Services;
+namespace OutOfSchool.WebApi.Services.ProviderServices;
 
 /// <summary>
 /// Implements the interface with CRUD functionality for Provider entity.
@@ -267,7 +267,7 @@ public class ProviderService : IProviderService, INotificationReciever
     }
 
     /// <inheritdoc/>
-    public async Task<ProviderDto?> GetByUserId(string id, bool isDeputyOrAdmin = false)
+    public async Task<ProviderDto> GetByUserId(string id, bool isDeputyOrAdmin = false)
     {
         logger.LogInformation("Getting Provider by UserId started. Looking UserId is {Id}", id);
         Provider provider = default;
@@ -392,6 +392,45 @@ public class ProviderService : IProviderService, INotificationReciever
     public async Task<bool> IsBlocked(Guid providerId)
     {
         return (await providerRepository.GetById(providerId).ConfigureAwait(false)).IsBlocked;
+    }
+
+    public async Task SendNotification(Provider provider, NotificationAction notificationAction, bool addStatusData, bool addLicenseStatusData)
+    {
+        if (provider == null)
+        {
+            return;
+        }
+        var additionalData = new Dictionary<string, string>();
+
+        if (addStatusData)
+        {
+            additionalData.Add("Status", provider.Status.ToString());
+        }
+
+        if (addLicenseStatusData)
+        {
+            additionalData.Add("LicenseStatus", provider.LicenseStatus.ToString());
+        }
+
+        await notificationService.Create(
+                NotificationType.Provider,
+                notificationAction,
+                provider.Id,
+                this,
+                additionalData)
+            .ConfigureAwait(false);
+    }
+
+    public async Task UpdateWorkshopsProviderStatus(Guid providerId, ProviderStatus providerStatus)
+    {
+        var workshops = await workshopServiceCombiner.UpdateProviderStatus(providerId, providerStatus)
+           .ConfigureAwait(false);
+
+        foreach (var workshop in workshops)
+        {
+            logger.LogInformation($"Provider's status with Id = {providerId} " +
+                                  $"in workshops with Id = {workshop.Id} updated successfully.");
+        }
     }
 
     async Task<IEnumerable<string>> INotificationReciever.GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
@@ -734,7 +773,7 @@ public class ProviderService : IProviderService, INotificationReciever
 
         if (currentUserService.IsAreaAdmin())
         {
-            var areaAdmin = await areaAdminService.GetByUserId(currentUserService.UserId).ConfigureAwait(false);            
+            var areaAdmin = await areaAdminService.GetByUserId(currentUserService.UserId).ConfigureAwait(false);
             var listOfCATOTTG = await codeficatorService.GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
             return areaAdmin.InstitutionId == provider.InstitutionId && listOfCATOTTG.Contains(provider.LegalAddress.CATOTTGId);
         }
@@ -828,36 +867,6 @@ public class ProviderService : IProviderService, INotificationReciever
         }
     }
 
-    protected async Task SendNotification(
-        Provider provider,
-        NotificationAction notificationAction,
-        bool addStatusData,
-        bool addLicenseStatusData)
-    {
-        if (provider != null)
-        {
-            var additionalData = new Dictionary<string, string>();
-
-            if (addStatusData)
-            {
-                additionalData.Add("Status", provider.Status.ToString());
-            }
-
-            if (addLicenseStatusData)
-            {
-                additionalData.Add("LicenseStatus", provider.LicenseStatus.ToString());
-            }
-
-            await notificationService.Create(
-                    NotificationType.Provider,
-                    notificationAction,
-                    provider.Id,
-                    this,
-                    additionalData)
-                .ConfigureAwait(false);
-        }
-    }
-
     private List<string> GetTechAdminsIds()
     {
         var techAdminIds = usersRepository
@@ -893,17 +902,11 @@ public class ProviderService : IProviderService, INotificationReciever
         return regionAdminsIds;
     }
 
-    protected async Task UpdateWorkshopsProviderStatus(Guid providerId, ProviderStatus providerStatus)
-    {
-        var workshops = await workshopServiceCombiner.UpdateProviderStatus(providerId, providerStatus)
-           .ConfigureAwait(false);
-
-        foreach (var workshop in workshops)
-        {
-            logger.LogInformation($"Provider's status with Id = {providerId} " +
-                                  $"in workshops with Id = {workshop.Id} updated successfully.");
-        }
-    }
+    private List<string> GetAreaAdminsIds(Address address)
+        => areaAdminRepository
+            .GetByFilterNoTracking(a => a.CATOTTGId == address.CATOTTGId)
+            .Select(a => a.UserId)
+            .ToList();
 
     private async Task<bool> ExistsAnotherProviderWithTheSameEdrpouIpn(ProviderUpdateDto providerUpdateDto)
     {

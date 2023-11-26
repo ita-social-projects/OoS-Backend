@@ -8,7 +8,7 @@ using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Services.Communication.ICommunication;
 
-namespace OutOfSchool.WebApi.Services;
+namespace OutOfSchool.WebApi.Services.ProviderServices;
 
 public class ProviderServiceV2 : ProviderService, IProviderServiceV2
 {
