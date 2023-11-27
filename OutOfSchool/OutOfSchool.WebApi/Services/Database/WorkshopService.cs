@@ -333,6 +333,8 @@ public class WorkshopService : IWorkshopService
 
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherDTO>()).ConfigureAwait(false);
 
+            dto.AvailableSeats ??= uint.MaxValue;
+
             mapper.Map(dto, currentWorkshop);
 
             await UpdateWorkshop().ConfigureAwait(false);
