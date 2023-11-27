@@ -86,12 +86,7 @@ public class MinistryAdminControllerTests
         
         ministryAdminController.ControllerContext.HttpContext = fakeHttpContext.Object;
 
-        var context = new OutOfSchoolDbContext(
-                new DbContextOptionsBuilder<OutOfSchoolDbContext>()
-                .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
-                .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-                .Options
-                );
+        var context = GetContext();
 
         ministryAdminRepository = new InstitutionAdminRepository(context);
         var userManager = new UserManager<User>(
@@ -206,16 +201,21 @@ public class MinistryAdminControllerTests
 
     private async Task SeedMinistryAdmin(InstitutionAdmin ministryAdmin)
     {
-        var context = new OutOfSchoolDbContext(
-            new DbContextOptionsBuilder<OutOfSchoolDbContext>()
-            .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
-            .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-            .Options);
+        OutOfSchoolDbContext context = GetContext();
 
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
         context.Add(ministryAdmin);
         context.Add(new User { Id = ministryAdmin.UserId, FirstName = string.Empty, LastName = string.Empty });
         await context.SaveChangesAsync();
+    }
+
+    private static OutOfSchoolDbContext GetContext()
+    {
+        return new OutOfSchoolDbContext(
+            new DbContextOptionsBuilder<OutOfSchoolDbContext>()
+            .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
+            .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+            .Options);
     }
 }

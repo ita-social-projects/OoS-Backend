@@ -108,12 +108,7 @@ public class AreaAdminControllerTests
         
         areaAdminController.ControllerContext.HttpContext = fakeHttpContext.Object;
 
-        var context = new OutOfSchoolDbContext(
-                new DbContextOptionsBuilder<OutOfSchoolDbContext>()
-                .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
-                .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-                .Options
-                );
+        var context = GetContext();
 
         areaAdminRepository = new AreaAdminRepository(context);
         var userManager = new UserManager<User>(
@@ -257,16 +252,21 @@ public class AreaAdminControllerTests
     }
     private async Task SeedAreaAdmin(AreaAdmin areaAdmin)
     {
-        var context = new OutOfSchoolDbContext(
-            new DbContextOptionsBuilder<OutOfSchoolDbContext>()
-            .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
-            .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-            .Options);
+        OutOfSchoolDbContext context = GetContext();
 
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
         context.Add(areaAdmin);
         context.Add(new User { Id = areaAdmin.UserId, FirstName = string.Empty, LastName = string.Empty });
         await context.SaveChangesAsync();
+    }
+
+    private static OutOfSchoolDbContext GetContext()
+    {
+        return new OutOfSchoolDbContext(
+            new DbContextOptionsBuilder<OutOfSchoolDbContext>()
+            .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
+            .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+            .Options);
     }
 }
