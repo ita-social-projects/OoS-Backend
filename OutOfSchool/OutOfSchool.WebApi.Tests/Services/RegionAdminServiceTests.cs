@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -197,6 +198,19 @@ public class RegionAdminServiceTests
                 .UpdateRegionAdminAsync(It.IsAny<string>(), It.IsAny<BaseUserDto>(), It.IsAny<string>()))
             .Should()
             .ThrowAsync<ArgumentNullException>();
+    }
+
+    [Test]
+    public async Task Update_WhenAdminNotExist_ReturnsErrorResponse()
+    {
+        // Arrange
+        regionAdminRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(null as RegionAdmin);
+
+        // Act
+        var result = await regionAdminService.UpdateRegionAdminAsync(It.IsAny<string>(), new BaseUserDto(), It.IsAny<string>());
+
+        // Assert
+        Assert.AreEqual(HttpStatusCode.NotFound, result.Match(error => error.HttpStatusCode, null));
     }
 
     [Test]
