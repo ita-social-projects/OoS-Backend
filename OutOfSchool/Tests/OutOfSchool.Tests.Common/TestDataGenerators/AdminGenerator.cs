@@ -48,7 +48,7 @@ public static class AdminGenerator
     public static InstitutionAdmin GenerateInstitutionAdmin() => FakerInstitutionAdmin.Generate();
     public static RegionAdmin GenerateRegionAdmin() => FakerRegionAdmin.Generate();
     public static RegionAdminDto GenerateRegionAdminDto() => FakerRegionAdminDto.Generate();
-    public static AreaAdmin GenerateRegionAreaAdmin() => FakerAreaAdmin.Generate();
+    public static AreaAdmin GenerateAreaAdmin() => FakerAreaAdmin.Generate();
     public static AreaAdminDto GenerateAreaAdminDto() => FakerAreaAdminDto.Generate();
     public static List<MinistryAdminDto> GenerateMinistryAdminsDtos(int count) => Faker.Generate(count);
     public static List<InstitutionAdmin> GenerateInstitutionAdmins(int count) => FakerInstitutionAdmin.Generate(count);
