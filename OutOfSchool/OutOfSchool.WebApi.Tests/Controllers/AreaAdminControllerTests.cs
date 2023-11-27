@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -248,6 +250,43 @@ public class AreaAdminControllerTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.InstanceOf<StatusCodeResult>());
+    }
+
+    [Test]
+    public async Task Update_WhenServiceThrowDbUpdateConcurrencyException_ReturnsBadRequest()
+    {
+        // Arrange
+        var updateAreaAdminDto = new AreaAdminDto();
+
+        areaAdminServiceMock
+            .Setup(x => x.UpdateAreaAdminAsync(It.IsAny<string>(), updateAreaAdminDto, It.IsAny<string>()))
+            .Throws<DbUpdateConcurrencyException>();
+
+        // Act
+        var result = await areaAdminController.Update(updateAreaAdminDto);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
+    }
+
+    [Test]
+    public async Task Update_WhenUserIsNotAdmin_ReturnsForbidenResponse()
+    {
+        // Arrange
+        var updateAreaAdminDto = new AreaAdminDto { Id = string.Empty };
+
+        areaAdminServiceMock
+            .Setup(x => x.UpdateAreaAdminAsync(It.IsAny<string>(), updateAreaAdminDto, It.IsAny<string>()))
+            .Throws<DbUpdateConcurrencyException>();
+
+        // Act
+        var result = await areaAdminController.Update(updateAreaAdminDto);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Is.InstanceOf<ObjectResult>());
+        Assert.AreEqual((int)HttpStatusCode.Forbidden, (result as ObjectResult).StatusCode);
     }
 
     [Test]
