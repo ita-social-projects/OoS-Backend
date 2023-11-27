@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using Elastic.CommonSchema;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
-using Org.BouncyCastle.Crypto.Signers;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -29,7 +27,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class ApplicationServiceMemoryTests
 {
     private DbContextOptions<OutOfSchoolDbContext> options;
-    private OutOfSchoolDbContext context; 
+    private OutOfSchoolDbContext context;
     private IApplicationService service;
     private IApplicationRepository applicationRepository;
     private Mock<IWorkshopRepository> workshopRepositoryMock;

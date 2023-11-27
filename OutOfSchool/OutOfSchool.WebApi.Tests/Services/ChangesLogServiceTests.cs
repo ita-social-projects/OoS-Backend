@@ -12,8 +12,10 @@ using NUnit.Framework;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Config;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Changes;
 using OutOfSchool.WebApi.Services;
@@ -38,6 +40,8 @@ public class ChangesLogServiceTests
     private Mock<ICodeficatorService> codeficatorServiceMock;
 
     private User user;
+    private Parent parent;
+    private User parentUser;
     private Provider provider;
     private Workshop workshop;
     private Application application;
@@ -46,6 +50,9 @@ public class ChangesLogServiceTests
     public void SetUp()
     {
         user = UserGenerator.Generate();
+        parent = ParentGenerator.Generate();
+        parentUser = UserGenerator.Generate();
+        parent.User = parentUser;
         provider = ProvidersGenerator.Generate();
         provider.Institution = InstitutionsGenerator.Generate();
         workshop = WorkshopGenerator.Generate();
@@ -599,6 +606,88 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.All(x => x.InstitutionTitle == provider.Institution.Title));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
         currentUserServiceMock.Verify(x => x.IsRegionAdmin(), Times.Once);
+    }
+
+    [Test]
+    public async Task GetParentBlockedByAdminChangesLogAsync_WithValidRequest_ReturnsExpectedResult()
+    {
+        // Arrange
+        var changesLogService = GetChangesLogService();
+        var request = new ParentBlockedByAdminChangesLogRequest
+        {
+            ShowParents = ShowParents.All,
+            DateFrom = new DateTime(2023, 1, 1),
+            DateTo = DateTime.Now.AddDays(2),
+            SearchString = "Test",
+        };
+ 
+        var fakeData = new List<ParentBlockedByAdminLog>
+        {
+            new()
+            {
+                Id = 1,
+                ParentId = parent.Id,
+                Parent = parent,
+                User = user,
+                UserId = user.Id,
+                OperationDate = new DateTime(2023, 10, 1),
+                Reason = "Test Reason to block",
+                IsBlocked = true,
+            },
+            new()
+            {
+                Id = 2,
+                ParentId = parent.Id,
+                Parent = parent,
+                User = user,
+                UserId = user.Id,
+                OperationDate = DateTime.Now,
+                Reason = "Test Reason to unblock",
+                IsBlocked = false,
+            },
+        };
+
+        mapper.Setup(m => m.Map<ShortUserDto>(user))
+            .Returns(new ShortUserDto { Id = user.Id });
+
+        parentBlockedByAdminLogRepository.Setup(x => x.Count(It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>()))
+            .ReturnsAsync(fakeData.Count);
+
+        parentBlockedByAdminLogRepository.Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<ParentBlockedByAdminLog, dynamic>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(fakeData.AsTestAsyncEnumerableQuery());
+
+         // Act
+        var result = await changesLogService.GetParentBlockedByAdminChangesLogAsync(request);
+
+        // Assert
+        Assert.IsInstanceOf<SearchResult<ParentBlockedByAdminChangesLogDto>>(result);
+        var searchResult = (SearchResult<ParentBlockedByAdminChangesLogDto>)result;
+        Assert.AreEqual(fakeData.Count, searchResult.TotalAmount);
+        Assert.AreEqual(fakeData.Count, searchResult.Entities.Count);
+    }
+
+    [Test]
+    public void GetParentBlockedByAdminChangesLogAsync_WithInvalidShowParentsInRequest_ThrowNotImplementedException()
+    {
+        // Arrange
+        var changesLogService = GetChangesLogService();
+        var request = new ParentBlockedByAdminChangesLogRequest
+        {
+            ShowParents = (ShowParents)100,
+            DateFrom = new DateTime(2023, 1, 1),
+            DateTo = DateTime.Now.AddDays(2),
+            SearchString = "Test",
+        };
+
+        // Act and Assert
+        Assert.ThrowsAsync<NotImplementedException>(
+            async () => await changesLogService.GetParentBlockedByAdminChangesLogAsync(request));
     }
     #endregion
 
