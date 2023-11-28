@@ -37,16 +37,16 @@ public class ExternalExportProviderService : IExternalExportProviderService
                 return new SearchResult<ProviderInfoBaseDto>();
             }
 
-            var providerWorkshopDtos = new List<ProviderInfoBaseDto>();
+            var providerIds = providers.Select(provider => provider.Id).ToList();
 
-            foreach (var provider in providers)
+            var workshops = await GetWorkshopListByProviderIds(providerIds);
+
+            var providerWorkshopDtos = providers.Select(provider =>
             {
-                var workshops = await GetWorkshopListByProviderId(provider.Id);
-
                 var providerDto = mapper.Map<ProviderInfoBaseDto>(provider);
-                providerDto.Workshops = workshops;
-                providerWorkshopDtos.Add(providerDto);
-            }
+                providerDto.Workshops = workshops.Where(w => w.ProviderId == provider.Id).ToList();
+                return providerDto;
+            }).ToList();
 
             logger.LogInformation(!providerWorkshopDtos.Any()
                 ? "Providers table is empty."
@@ -67,10 +67,11 @@ public class ExternalExportProviderService : IExternalExportProviderService
         }
     }
 
-    private async Task<List<WorkshopInfoBaseDto>> GetWorkshopListByProviderId(Guid providerId)
+    private async Task<List<WorkshopInfoBaseDto>> GetWorkshopListByProviderIds(List<Guid> providerIds)
     {
         var workshops = await workshopRepository.GetAllWithDeleted(
-                                             whereExpression: x => x.ProviderId == providerId);
+                                     whereExpression: x => providerIds.Contains(x.ProviderId))
+                                     .ConfigureAwait(false);
 
         var workshopsDto = workshops
             .Select(workshop => MapToInfoWorkshopDto(workshop))
@@ -82,26 +83,16 @@ public class ExternalExportProviderService : IExternalExportProviderService
     private async Task<List<ProviderInfoBaseDto>> GetAllUpdatedProviders(DateTime updatedAfter, SizeFilter sizeFilter)
     {
         sizeFilter ??= new SizeFilter();
+
         var providers = await providerRepository
-         .GetAllWithDeleted()
-         .ConfigureAwait(false);
+                        .GetAllWithDeleted(updatedAfter, sizeFilter.Size)
+                        .ConfigureAwait(false);
 
-        var filteredProviders = updatedAfter == default
-            ? providers.Where(provider => !provider.IsDeleted)
-            : providers.Where(provider => IsProviderUpdated(provider, updatedAfter));
-
-        var providersDto = filteredProviders
-            .Take(sizeFilter.Size)
+        var providersDto = providers
             .Select(provider => MapToInfoProviderDto(provider))
             .ToList();
 
         return providersDto;
-    }
-
-    private bool IsProviderUpdated(Provider provider, DateTime updatedAfter)
-    {
-        return provider.UpdatedAt > updatedAfter ||
-                        provider.Workshops.Exists(w => w.UpdatedAt > updatedAfter);
     }
 
     private ProviderInfoBaseDto MapToInfoProviderDto(Provider provider)

@@ -86,7 +86,7 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
         return await Task.FromResult(workshop).ConfigureAwait(false);
     }
 
-    public async Task<IEnumerable<Workshop>> GetAllWithDeleted(Expression<Func<Workshop, bool>> whereExpression)
+    public Task<List<Workshop>> GetAllWithDeleted(Expression<Func<Workshop, bool>> whereExpression)
     {
         IQueryable<Workshop> query = db.Workshops;
 
@@ -95,7 +95,7 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
             query = query.Where(whereExpression);
         }
 
-        return await query.ToListAsync().ConfigureAwait(false);
+        return query.ToListAsync();
 
     }
 }

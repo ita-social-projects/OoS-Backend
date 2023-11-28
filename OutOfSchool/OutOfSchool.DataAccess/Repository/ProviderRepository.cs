@@ -82,8 +82,14 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
          .SingleOrDefaultAsync(provider => !provider.IsDeleted && provider.Id == id);
     }
 
-    public async Task<IEnumerable<Provider>> GetAllWithDeleted()
+    public Task<List<Provider>> GetAllWithDeleted(DateTime updatedAfter, int size)
     {
-        return await db.Providers.ToListAsync().ConfigureAwait(false);
+        IQueryable<Provider> query = db.Providers;
+
+        query = updatedAfter == default
+            ? query.Where(provider => !provider.IsDeleted)
+            : query.Where(provider => provider.UpdatedAt > updatedAfter || provider.Workshops.Any(w => w.UpdatedAt > updatedAfter));
+
+        return query.Take(size).ToListAsync();
     }
 }

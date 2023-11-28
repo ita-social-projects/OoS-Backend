@@ -93,8 +93,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProviderStatus, opt => opt.MapFrom(src => src.Provider.Status));
 
         CreateMap<WorkshopDto, Workshop>()
-            .IncludeBase<WorkshopBaseDto, Workshop>()
-            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+            .IncludeBase<WorkshopBaseDto, Workshop>();
 
         CreateMap<Workshop, WorkshopV2Dto>()
             .IncludeBase<Workshop, WorkshopDto>()
@@ -103,8 +102,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ImageFiles, opt => opt.Ignore());
 
         CreateMap<WorkshopV2Dto, Workshop>()
-            .IncludeBase<WorkshopDto, Workshop>()
-            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+            .IncludeBase<WorkshopDto, Workshop>();
 
         CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>().ReverseMap();
 
@@ -163,7 +161,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore());
-        
 
         CreateSoftDeletedMap<ProviderUpdateDto, Provider>()
             .ForMember(dest => dest.Ownership, opt => opt.Ignore())
@@ -206,8 +203,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.BlockPhoneNumber, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.BlockReason, opt => opt.Ignore())
-            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore()); 
-
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
         CreateMap<Provider, ProviderCreateDto>()
             .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
@@ -216,7 +212,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
             .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)));
-
 
         CreateMap<ProviderCreateDto, ProviderDto>()
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
@@ -227,10 +222,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
             .ForMember(dest => dest.ImageIds, opt => opt.Ignore());
 
-
-        CreateMap<Workshop, WorkshopInfoBaseDto>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted));
+        CreateMap<Workshop, WorkshopInfoBaseDto>();
 
         CreateMap<Workshop, WorkshopInfoDto>()
             .IncludeBase<Workshop, WorkshopInfoBaseDto>()
@@ -240,17 +232,14 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
-            .ForMember(dest => dest.Keywords, opt => opt.Ignore()); 
+            .ForMember(dest => dest.Keywords, opt => opt.Ignore());
 
-        CreateMap<Provider, ProviderInfoBaseDto>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted));
+        CreateMap<Provider, ProviderInfoBaseDto>();
 
         CreateMap<Provider, ProviderInfoDto>()
             .IncludeBase<Provider, ProviderInfoBaseDto>()
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
-            
 
         CreateSoftDeletedMap<TeacherDTO, Teacher>()
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
