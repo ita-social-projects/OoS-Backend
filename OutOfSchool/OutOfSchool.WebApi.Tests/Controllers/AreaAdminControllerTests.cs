@@ -50,6 +50,7 @@ public class AreaAdminControllerTests
         areaAdminController.ControllerContext.HttpContext = fakeHttpContext;
     }
 
+    #region GetById
     [Test]
     public async Task GetById_WhenIdIsValid_ShouldReturnOkResultObject()
     {
@@ -79,7 +80,9 @@ public class AreaAdminControllerTests
         areaAdminServiceMock.VerifyAll();
         Assert.That(result, Is.InstanceOf<NotFoundObjectResult>());
     }
+    #endregion
 
+    #region GetByFilter
     [Test]
     public async Task GetAreaAdmins_WhenCalled_ReturnsOkResultObject_WithExpectedCollectionDtos()
     {
@@ -115,7 +118,9 @@ public class AreaAdminControllerTests
         areaAdminServiceMock.VerifyAll();
         Assert.That(result, Is.InstanceOf<NoContentResult>());
     }
+    #endregion
 
+    #region Create
     [Test]
     public async Task Create_WithInvalidModel_ReturnsStatusCode422()
     {
@@ -177,7 +182,9 @@ public class AreaAdminControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.InstanceOf<ObjectResult>());
     }
+#endregion
 
+    #region Update
     [Test]
     public async Task Update_WithNullModel_ReturnsBadRequestObjectResult()
     {
@@ -276,10 +283,6 @@ public class AreaAdminControllerTests
         // Arrange
         var updateAreaAdminDto = new AreaAdminDto { Id = string.Empty };
 
-        areaAdminServiceMock
-            .Setup(x => x.UpdateAreaAdminAsync(It.IsAny<string>(), updateAreaAdminDto, It.IsAny<string>()))
-            .Throws<DbUpdateConcurrencyException>();
-
         // Act
         var result = await areaAdminController.Update(updateAreaAdminDto);
 
@@ -288,7 +291,9 @@ public class AreaAdminControllerTests
         Assert.That(result, Is.InstanceOf<ObjectResult>());
         Assert.AreEqual((int)HttpStatusCode.Forbidden, (result as ObjectResult).StatusCode);
     }
+#endregion
 
+    #region Delete
     [Test]
     public async Task Delete_WithValidId_ReturnsOkResult()
     {
@@ -324,7 +329,9 @@ public class AreaAdminControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.InstanceOf<ObjectResult>());
     }
+#endregion
 
+    #region Block
     [Test]
     public async Task Block_WithValidIdAndNullBlocked_ReturnsBadRequestObjectResult()
     {
@@ -378,7 +385,9 @@ public class AreaAdminControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.InstanceOf<ObjectResult>());
     }
+    #endregion
 
+    #region Reinvite
     [Test]
     public async Task Reinvite_WithValidId_ReturnsOkResult()
     {
@@ -396,6 +405,7 @@ public class AreaAdminControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.InstanceOf<OkResult>());
     }
+    #endregion
 
     private HttpContext GetFakeHttpContext()
     {
