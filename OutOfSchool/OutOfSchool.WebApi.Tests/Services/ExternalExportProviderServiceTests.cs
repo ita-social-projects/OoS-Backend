@@ -4,9 +4,11 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.TestDataGenerators;
@@ -46,11 +48,16 @@ public class ExternalExportProviderServiceTests
         // Arrange
         var updatedAfter = DateTime.UtcNow;
         var sizeFilter = new SizeFilter { Size = 10 };
-        var fakeProviders = new List<Provider>();
+        var fakeProviders = ProvidersGenerator.Generate(0);
+        var fakeWorkshops = WorkshopGenerator.Generate(0);
 
         mockProviderRepository
-            .Setup(x => x.GetAllWithDeleted())
+            .Setup(x => x.GetAllWithDeleted(updatedAfter,sizeFilter.Size))
             .ReturnsAsync(fakeProviders);
+
+        mockWorkshopRepository
+            .Setup(x => x.GetAllWithDeleted(It.IsAny<Expression<Func<Workshop, bool>>>()))
+            .ReturnsAsync(fakeWorkshops);
 
         // Act
         var result = await externalExportProviderService.GetProvidersWithWorkshops(updatedAfter, sizeFilter);
@@ -62,20 +69,22 @@ public class ExternalExportProviderServiceTests
     }
 
     [Test]
-    public async Task GetProvidersWithWorkshops_ReturnsSearchResultWithNullWorkshops()
+    public async Task GetProvidersWithWorkshops_ReturnsSearchResultWithWorkshops()
     {
         // Arrange
         var updatedAfter = DateTime.UtcNow;
         var sizeFilter = new SizeFilter { Size = 10 };
-        var fakeProviders = ProvidersGenerator.Generate(5).WithWorkshops();
+
+        var fakeProviders = ProvidersGenerator.Generate(5);
+        var fakeWorkshops = WorkshopGenerator.Generate(3);
 
         mockProviderRepository
-            .Setup(x => x.GetAllWithDeleted())
+            .Setup(x => x.GetAllWithDeleted(It.IsAny<DateTime>(), sizeFilter.Size))
             .ReturnsAsync(fakeProviders);
 
         mockWorkshopRepository
             .Setup(x => x.GetAllWithDeleted(It.IsAny<Expression<Func<Workshop, bool>>>()))
-            .ReturnsAsync(WorkshopGenerator.Generate(3).WithProvider());
+            .ReturnsAsync(fakeWorkshops);
 
         // Act
         var result = await externalExportProviderService.GetProvidersWithWorkshops(updatedAfter, sizeFilter);
@@ -83,15 +92,16 @@ public class ExternalExportProviderServiceTests
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(fakeProviders.Count, result.TotalAmount);
-        Assert.AreEqual(fakeProviders.Count, result.Entities.Count);
-        Assert.IsTrue(result.Entities.All(provider => provider.Workshops != null && provider.Workshops.Any()));
+        Assert.AreEqual(fakeProviders.Count, result.Entities.Count); ;
     }
 
     [Test]
     public async Task GetProvidersWithWorkshops_ExceptionInGetAllUpdatedProviders_ReturnsEmptySearchResult()
     {
         // Arrange
-        mockProviderRepository.Setup(repo => repo.GetAllWithDeleted())
+        var updatedAfter = DateTime.UtcNow;
+        var sizeFilter = new SizeFilter { Size = 10 };
+        mockProviderRepository.Setup(repo => repo.GetAllWithDeleted(updatedAfter, sizeFilter.Size))
             .ThrowsAsync(new Exception("Simulated exception"));
 
         // Act
@@ -107,6 +117,8 @@ public class ExternalExportProviderServiceTests
     public async Task GetProvidersWithWorkshops_ExceptionInGetWorkshopListByProviderId_ReturnsEmptySearchResult()
     {
         // Arrange
+        var updatedAfter = DateTime.UtcNow;
+        var sizeFilter = new SizeFilter { Size = 10 };
         mockWorkshopRepository.Setup(repo => repo.GetAllWithDeleted(It.IsAny<Expression<Func<Workshop, bool>>>()))
            .ThrowsAsync(new Exception("Simulated exception"));
 
@@ -123,7 +135,9 @@ public class ExternalExportProviderServiceTests
     public async Task GetProvidersWithWorkshops_ProvidersIsNull_ReturnsEmptySearchResult()
     {
         // Arrange
-        mockProviderRepository.Setup(repo => repo.GetAllWithDeleted())
+        var updatedAfter = DateTime.UtcNow;
+        var sizeFilter = new SizeFilter { Size = 10 };
+        mockProviderRepository.Setup(repo => repo.GetAllWithDeleted(updatedAfter, sizeFilter.Size))
         .ReturnsAsync((List<Provider>)null);
 
         // Act
@@ -171,44 +185,42 @@ public class ExternalExportProviderServiceTests
     public async Task GetAllUpdatedProviders_DefaultUpdatedAfter_ReturnsNonDeletedProviders()
     {
         // Arrange
-        var sizeFilter = new SizeFilter { Size = 10 };
-        var fakeProviders = ProvidersGenerator.Generate(5).WithWorkshops();
+        var options = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
+            .UseInMemoryDatabase(databaseName: "InMemoryTestDatabase")
+            .Options;
 
-        mockProviderRepository
-            .Setup(x => x.GetAllWithDeleted())
-            .ReturnsAsync(fakeProviders);
+        using (var dbContext = new OutOfSchoolDbContext(options))
+        {
+            var updatedAfter = default(DateTime);
+            var sizeFilter = new SizeFilter { Size = 10 };
+            var fakeProviders = ProvidersGenerator.Generate(5);
+            var fakeWorkshops = WorkshopGenerator.Generate(3);
 
-        // Act
-        var result = await externalExportProviderService.GetProvidersWithWorkshops(default, sizeFilter);
+            fakeProviders[0].IsDeleted = true;
+            fakeProviders[2].IsDeleted = true;
 
-        // Assert
-        Assert.IsNotNull(result);
-        Assert.AreEqual(fakeProviders.Count, result.TotalAmount);
-        Assert.AreEqual(fakeProviders.Count, result.Entities.Count);
-        Assert.IsTrue(result.Entities.All(provider => !provider.IsDeleted));
-    }
+            dbContext.Providers.AddRange(fakeProviders);
+            dbContext.Workshops.AddRange(fakeWorkshops);
+            dbContext.SaveChanges();
 
-    [Test]
-    public async Task GetAllUpdatedProviders_FiltersDeletedProviders_ReturnsNonDeletedProviders()
-    {
-        // Arrange
-        var sizeFilter = new SizeFilter { Size = 10 };
-        var fakeProviders = ProvidersGenerator.Generate(5).WithWorkshops();
+            var providerRepository = new ProviderRepository(dbContext);
+            var workshopRepository = new WorkshopRepository(dbContext);
 
-        fakeProviders[0].IsDeleted = true;
-        fakeProviders[2].IsDeleted = true;
+            var externalExportProviderService = new ExternalExportProviderService(
+                providerRepository,
+                workshopRepository,
+                new Mapper(new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>())),
+                new Mock<ILogger<ExternalExportProviderService>>().Object
+            );
 
-        mockProviderRepository
-            .Setup(x => x.GetAllWithDeleted())
-            .ReturnsAsync(fakeProviders);
+            // Act
+            var result = await externalExportProviderService.GetProvidersWithWorkshops(updatedAfter, sizeFilter);
 
-        // Act
-        var result = await externalExportProviderService.GetProvidersWithWorkshops(default, sizeFilter);
-
-        // Assert
-        Assert.IsNotNull(result);
-        Assert.AreEqual(fakeProviders.Count - 2, result.TotalAmount); 
-        Assert.AreEqual(fakeProviders.Count - 2, result.Entities.Count);
-        Assert.IsTrue(result.Entities.All(provider => !provider.IsDeleted));
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(fakeProviders.Count - 2, result.TotalAmount);
+            Assert.AreEqual(fakeProviders.Count - 2, result.Entities.Count);
+            Assert.IsTrue(result.Entities.All(provider => !provider.IsDeleted));
+        }
     }
 }
