@@ -314,7 +314,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(s => s.User.PhoneNumber.Right(Constants.PhoneShortLength)))
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(s => s.User.LastName))
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(s => s.User.MiddleName ?? string.Empty))
-            .ForMember(dest => dest.FirstName, opt => opt.MapFrom(s => s.User.FirstName));
+            .ForMember(dest => dest.FirstName, opt => opt.MapFrom(s => s.User.FirstName))
+            .ForMember(dest => dest.IsBlocked, opt => opt.MapFrom(s => s.User.IsBlocked));
 
         CreateMap<CompanyInformationItem, CompanyInformationItemDto>().ReverseMap();
         CreateMap<CompanyInformation, CompanyInformationDto>().ReverseMap();
