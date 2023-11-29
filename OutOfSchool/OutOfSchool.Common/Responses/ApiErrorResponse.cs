@@ -7,7 +7,12 @@ public class ApiErrorResponse
 
     public ApiErrorResponse(List<ApiError> apiErrors)
     {
-        apiErrors = new List<ApiError>(apiErrors);
+        this.apiErrors = new List<ApiError>(apiErrors);
+    }
+
+    public ApiErrorResponse()
+    {
+        this.apiErrors = new List<ApiError>();
     }
 
     public List<ApiError> ApiErrors => apiErrors;

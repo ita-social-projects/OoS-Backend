@@ -3,15 +3,18 @@
 namespace OutOfSchool.Common.Responses;
 public abstract class ApiErrorsTypes
 {
-    // Provider Admin, Create
     public abstract class ProviderAdmin
     {
         public abstract class Creation
         {
-            public static ApiError UserDontHavePermission =>
+            public static ApiError UserDontHavePermission(string userId) =>
             new ApiError(
-                "1",
-                "Current user doesn't have permission to create provider admin");
+                "1", // It will be another id later
+                $"User(id): {userId} doesn't have permission to create provider admin");
         }
+
+        // To be continued for another ProviderAdmin service actions
     }
+
+    // To be continued for another entities
 }
