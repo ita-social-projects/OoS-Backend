@@ -667,7 +667,7 @@ public class ChangesLogServiceTests
 
         // Assert
         Assert.IsInstanceOf<SearchResult<ParentBlockedByAdminChangesLogDto>>(result);
-        var searchResult = (SearchResult<ParentBlockedByAdminChangesLogDto>)result;
+        var searchResult = result;
         Assert.AreEqual(fakeData.Count, searchResult.TotalAmount);
         Assert.AreEqual(fakeData.Count, searchResult.Entities.Count);
     }
@@ -688,6 +688,134 @@ public class ChangesLogServiceTests
         // Act and Assert
         Assert.ThrowsAsync<NotImplementedException>(
             async () => await changesLogService.GetParentBlockedByAdminChangesLogAsync(request));
+    }
+
+    [Test]
+    public async Task GetParentBlockedByAdminChangesLogAsync_WithDateToMaxValueInRequest_ReturnsExpectedResult()
+    {
+        // Arrange
+        var changesLogService = GetChangesLogService();
+        var request = new ParentBlockedByAdminChangesLogRequest
+        {
+            ShowParents = ShowParents.All,
+            DateFrom = new DateTime(2023, 1, 1),
+            DateTo = DateTime.MaxValue,
+            SearchString = "Test",
+        };
+
+        var fakeData = new List<ParentBlockedByAdminLog>
+        {
+            new()
+            {
+                Id = 1,
+                ParentId = parent.Id,
+                Parent = parent,
+                User = user,
+                UserId = user.Id,
+                OperationDate = new DateTime(2023, 10, 1),
+                Reason = "Test Reason to block",
+                IsBlocked = true,
+            },
+            new()
+            {
+                Id = 2,
+                ParentId = parent.Id,
+                Parent = parent,
+                User = user,
+                UserId = user.Id,
+                OperationDate = DateTime.Now,
+                Reason = "Test Reason to unblock",
+                IsBlocked = false,
+            },
+        };
+
+        mapper.Setup(m => m.Map<ShortUserDto>(user))
+            .Returns(new ShortUserDto { Id = user.Id });
+
+        parentBlockedByAdminLogRepository.Setup(x => x.Count(It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>()))
+            .ReturnsAsync(fakeData.Count);
+
+        parentBlockedByAdminLogRepository.Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<ParentBlockedByAdminLog, dynamic>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(fakeData.AsTestAsyncEnumerableQuery());
+
+        // Act
+        var result = await changesLogService.GetParentBlockedByAdminChangesLogAsync(request);
+
+        // Assert
+        Assert.IsInstanceOf<SearchResult<ParentBlockedByAdminChangesLogDto>>(result);
+        var searchResult = result;
+        Assert.AreEqual(fakeData.Count, searchResult.TotalAmount);
+        Assert.AreEqual(fakeData.Count, searchResult.Entities.Count);
+    }
+
+    [Test]
+    public async Task GetParentBlockedByAdminChangesLogAsync_WithDateFromMinValueInRequest_ReturnsExpectedResult()
+    {
+        // Arrange
+        var changesLogService = GetChangesLogService();
+        var request = new ParentBlockedByAdminChangesLogRequest
+        {
+            ShowParents = ShowParents.All,
+            DateFrom = DateTime.MinValue,
+            DateTo = DateTime.Now.AddDays(2),
+            SearchString = "Test",
+        };
+
+        var fakeData = new List<ParentBlockedByAdminLog>
+        {
+            new()
+            {
+                Id = 1,
+                ParentId = parent.Id,
+                Parent = parent,
+                User = user,
+                UserId = user.Id,
+                OperationDate = new DateTime(2023, 10, 1),
+                Reason = "Test Reason to block",
+                IsBlocked = true,
+            },
+            new()
+            {
+                Id = 2,
+                ParentId = parent.Id,
+                Parent = parent,
+                User = user,
+                UserId = user.Id,
+                OperationDate = DateTime.Now,
+                Reason = "Test Reason to unblock",
+                IsBlocked = false,
+            },
+        };
+
+        mapper.Setup(m => m.Map<ShortUserDto>(user))
+            .Returns(new ShortUserDto { Id = user.Id });
+
+        parentBlockedByAdminLogRepository.Setup(x => x.Count(It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>()))
+            .ReturnsAsync(fakeData.Count);
+
+        parentBlockedByAdminLogRepository.Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<ParentBlockedByAdminLog, dynamic>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(fakeData.AsTestAsyncEnumerableQuery());
+
+        // Act
+        var result = await changesLogService.GetParentBlockedByAdminChangesLogAsync(request);
+
+        // Assert
+        Assert.IsInstanceOf<SearchResult<ParentBlockedByAdminChangesLogDto>>(result);
+        var searchResult = result;
+        Assert.AreEqual(fakeData.Count, searchResult.TotalAmount);
+        Assert.AreEqual(fakeData.Count, searchResult.Entities.Count);
     }
     #endregion
 
