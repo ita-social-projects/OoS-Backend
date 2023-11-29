@@ -5,9 +5,11 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Responses;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshops;
+using OutOfSchool.WebApi.Services.ApiErrors;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -23,7 +25,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     private readonly IProviderAdminOperationsService providerAdminOperationsService;
     private readonly IWorkshopService workshopService;
     private readonly ICurrentUserService currentUserService;
-
+    private readonly IApiErrorService apiErrorService;
     public ProviderAdminService(
         IHttpClientFactory httpClientFactory,
         IOptions<AuthorizationServerConfig> authorizationServerConfig,
@@ -35,7 +37,8 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         ILogger<ProviderAdminService> logger,
         IProviderAdminOperationsService providerAdminOperationsService,
         IWorkshopService workshopService,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        IApiErrorService apiErrorService)
         : base(httpClientFactory, communicationConfig, logger)
     {
         this.authorizationServerConfig = authorizationServerConfig.Value;
@@ -46,6 +49,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         this.providerAdminOperationsService = providerAdminOperationsService;
         this.workshopService = workshopService;
         this.currentUserService = currentUserService;
+        this.apiErrorService = apiErrorService;
     }
 
     public async Task<Either<ErrorResponse, CreateProviderAdminDto>> CreateProviderAdminAsync(
@@ -61,7 +65,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         if (!hasAccess)
         {
             Logger.LogError("User(id): {UserId} doesn't have permission to create provider admin", userId);
-
+            apiErrorService.AddApiError(ApiErrorsTypes.ProviderAdmin.Creation.UserDontHavePermission);
             return new ErrorResponse
             {
                 HttpStatusCode = HttpStatusCode.Forbidden,
