@@ -39,12 +39,14 @@ public class ExternalExportProviderService : IExternalExportProviderService
 
             var providerIds = providers.Select(provider => provider.Id).ToList();
 
-            var workshops = await GetWorkshopListByProviderIds(providerIds);
+            var providerWorkshopsMap = await GetWorkshopListByProviderIds(providerIds);
 
             var providerWorkshopDtos = providers.Select(provider =>
             {
                 var providerDto = mapper.Map<ProviderInfoBaseDto>(provider);
-                providerDto.Workshops = workshops.Where(w => w.ProviderId == provider.Id).ToList();
+                providerDto.Workshops = providerWorkshopsMap.TryGetValue(provider.Id, out var workshops)
+                    ? workshops
+                    : new List<WorkshopInfoBaseDto>();
                 return providerDto;
             }).ToList();
 
@@ -67,15 +69,16 @@ public class ExternalExportProviderService : IExternalExportProviderService
         }
     }
 
-    private async Task<List<WorkshopInfoBaseDto>> GetWorkshopListByProviderIds(List<Guid> providerIds)
+    private async Task<Dictionary<Guid, List<WorkshopInfoBaseDto>>> GetWorkshopListByProviderIds(List<Guid> providerIds)
     {
         var workshops = await workshopRepository.GetAllWithDeleted(
                                      whereExpression: x => providerIds.Contains(x.ProviderId))
                                      .ConfigureAwait(false);
 
         var workshopsDto = workshops
-            .Select(workshop => MapToInfoWorkshopDto(workshop))
-            .ToList();
+         .GroupBy(w => w.ProviderId)
+         .ToDictionary(group => group.Key, group => group.Select(workshop => MapToInfoWorkshopDto(workshop)).ToList());
+
 
         return workshopsDto;
     }
