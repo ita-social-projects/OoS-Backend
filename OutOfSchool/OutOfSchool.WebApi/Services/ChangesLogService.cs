@@ -14,8 +14,6 @@ public class ChangesLogService : IChangesLogService
     public const char WORD_SEPARATOR_SPACE = ' ';
     public const char WORD_SEPARATOR_COMMA = ',';
 
-    private static readonly TimeSpan TillEndOfDay = new(23, 59, 59);
-
     private static char[] wordSplitSymbols = new char[] { WORD_SEPARATOR_SPACE, WORD_SEPARATOR_COMMA };
 
     private readonly IOptions<ChangesLogConfig> config;
@@ -383,7 +381,7 @@ public class ChangesLogService : IChangesLogService
 
         if (filter.DateTo.HasValue)
         {
-            expr = expr.And(x => x.UpdatedDate < filter.DateTo.Value.Date.Add(TillEndOfDay));
+            expr = expr.And(x => x.UpdatedDate < filter.DateTo.Value.NextDayStart());
         }
 
         if (!string.IsNullOrWhiteSpace(filter.SearchString))
@@ -431,7 +429,7 @@ public class ChangesLogService : IChangesLogService
 
         if (request.DateTo.HasValue)
         {
-            expr = expr.And(x => x.OperationDate < request.DateTo.Value.Date.Add(TillEndOfDay));
+            expr = expr.And(x => x.OperationDate < request.DateTo.Value.NextDayStart());
         }
 
         if (!string.IsNullOrWhiteSpace(request.SearchString))
@@ -473,7 +471,7 @@ public class ChangesLogService : IChangesLogService
 
         if (request.DateTo.HasValue)
         {
-            expr = expr.And(x => x.OperationDate < request.DateTo.Value.Date.Add(TillEndOfDay));
+            expr = expr.And(x => x.OperationDate < request.DateTo.Value.NextDayStart());
         }
 
         if (!string.IsNullOrWhiteSpace(request.SearchString))
