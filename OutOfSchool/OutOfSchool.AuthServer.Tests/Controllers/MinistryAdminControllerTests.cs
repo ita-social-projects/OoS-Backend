@@ -1,14 +1,29 @@
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.AuthCommon.Controllers;
+using OutOfSchool.AuthCommon.Services;
 using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
+using OutOfSchool.RazorTemplatesData.Services;
+using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository;
+using System;
+using OutOfSchool.EmailSender;
+using OutOfSchool.AuthCommon;
+using System.Linq;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
 
@@ -19,6 +34,9 @@ public class MinistryAdminControllerTests
     private readonly Mock<ILogger<MinistryAdminController>> fakeLogger;
     private readonly Mock<ICommonMinistryAdminService<MinistryAdminBaseDto>> fakeMinistryAdminService;
     private readonly Mock<HttpContext> fakehttpContext;
+    private MinistryAdminController ministryAdminControllerWithRealService;
+    private ICommonMinistryAdminService<MinistryAdminBaseDto> ministryAdminService;
+    private InstitutionAdminRepository ministryAdminRepository;
 
     public MinistryAdminControllerTests()
     {
@@ -67,6 +85,24 @@ public class MinistryAdminControllerTests
         fakeHttpContext.Setup(s => s.Request.Headers[It.IsAny<string>()]).Returns("Ok");
         
         ministryAdminController.ControllerContext.HttpContext = fakeHttpContext.Object;
+
+        var context = GetContext();
+
+        ministryAdminRepository = new InstitutionAdminRepository(context);
+        var userManager = new UserManager<User>(
+            new UserStore<User>(context), null, null, null, null, null, null, null, null);
+
+        ministryAdminService = new CommonMinistryAdminService<Guid, InstitutionAdmin, MinistryAdminBaseDto, InstitutionAdminRepository>(
+            new Mock<IMapper>().Object,
+            ministryAdminRepository,
+            new Mock<ILogger<CommonMinistryAdminService<Guid, InstitutionAdmin, MinistryAdminBaseDto, InstitutionAdminRepository>>>().Object,
+        new Mock<IEmailSender>().Object,
+            userManager,
+            context,
+            new Mock<IRazorViewToStringRenderer>().Object,
+            new Mock<IStringLocalizer<SharedResource>>().Object);
+
+        ministryAdminControllerWithRealService = new MinistryAdminController(new Mock<ILogger<MinistryAdminController>>().Object, ministryAdminService);
     }
 
     [Test]
@@ -137,5 +173,49 @@ public class MinistryAdminControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(true, result.IsSuccess);
         Assert.AreEqual("fakeFirstName", ((MinistryAdminBaseDto)result.Result).FirstName);
+    }
+
+    [Test]
+    public async Task Update_WhenModelWithChangedInstitutionId_ShouldNotChangeInstitutionId()
+    {
+        // Arrange        
+        var oldInstitutionId = Guid.NewGuid();
+        var userId = string.Empty;
+        InstitutionAdmin ministryAdmin = new InstitutionAdmin { UserId = userId, InstitutionId = oldInstitutionId };
+        await SeedMinistryAdmin(ministryAdmin);
+        var ministryAdminToUpdate = new MinistryAdminBaseDto
+        {
+            UserId = userId,
+            FirstName = string.Empty,
+            LastName = string.Empty,
+            InstitutionId = Guid.NewGuid()
+        };
+
+        // Act
+        await ministryAdminControllerWithRealService.Update(userId, ministryAdminToUpdate);
+
+        // Assert
+        var updatedRegionAdmin = ministryAdminRepository.GetAll().Result.First();
+        Assert.AreEqual(oldInstitutionId, updatedRegionAdmin.InstitutionId);
+    }
+
+    private async Task SeedMinistryAdmin(InstitutionAdmin ministryAdmin)
+    {
+        OutOfSchoolDbContext context = GetContext();
+
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
+        context.Add(ministryAdmin);
+        context.Add(new User { Id = ministryAdmin.UserId, FirstName = string.Empty, LastName = string.Empty });
+        await context.SaveChangesAsync();
+    }
+
+    private static OutOfSchoolDbContext GetContext()
+    {
+        return new OutOfSchoolDbContext(
+            new DbContextOptionsBuilder<OutOfSchoolDbContext>()
+            .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
+            .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+            .Options);
     }
 }

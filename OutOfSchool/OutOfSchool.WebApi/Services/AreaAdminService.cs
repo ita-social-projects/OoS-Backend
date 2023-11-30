@@ -23,7 +23,6 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
     private readonly ICodeficatorService codeficatorService;
     private ICodeficatorRepository codeficatorRepository;
 
-
     public AreaAdminService(
         ICodeficatorRepository codeficatorRepository,
         ICodeficatorService codeficatorService,
@@ -228,7 +227,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
     /// <inheritdoc/>
     public async Task<Either<ErrorResponse, AreaAdminDto>> UpdateAreaAdminAsync(
         string userId,
-        AreaAdminDto updateAreaAdminDto,
+        BaseUserDto updateAreaAdminDto,
         string token)
     {
         _ = updateAreaAdminDto ?? throw new ArgumentNullException(nameof(updateAreaAdminDto));

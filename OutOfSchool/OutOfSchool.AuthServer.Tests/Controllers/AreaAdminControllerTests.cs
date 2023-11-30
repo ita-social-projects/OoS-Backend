@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -28,34 +28,34 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 namespace OutOfSchool.AuthServer.Tests.Controllers;
 
 [TestFixture]
-public class RegionAdminControllerTests
+public class AreaAdminControllerTests
 {
-    private readonly RegionAdminController regionAdminController;
-    private readonly Mock<ILogger<RegionAdminController>> fakeLogger;
-    private readonly Mock<ICommonMinistryAdminService<RegionAdminBaseDto>> fakeRegionAdminService;
+    private readonly AreaAdminController areaAdminController;
+    private readonly Mock<ILogger<AreaAdminController>> fakeLogger;
+    private readonly Mock<ICommonMinistryAdminService<AreaAdminBaseDto>> fakeAreaAdminService;
     private readonly Mock<HttpContext> fakeHttpContext;
-    private RegionAdminController regionAdminControllerWithRealService;
-    private ICommonMinistryAdminService<RegionAdminBaseDto> regionAdminService;
-    private RegionAdminRepository regionAdminRepository;
+    private AreaAdminController areaAdminControllerWithRealService;
+    private ICommonMinistryAdminService<AreaAdminBaseDto> areaAdminService;
+    private AreaAdminRepository areaAdminRepository;
 
-    public RegionAdminControllerTests()
+    public AreaAdminControllerTests()
     {
-        fakeLogger = new Mock<ILogger<RegionAdminController>>();
-        fakeRegionAdminService = new Mock<ICommonMinistryAdminService<RegionAdminBaseDto>>();
+        fakeLogger = new Mock<ILogger<AreaAdminController>>();
+        fakeAreaAdminService = new Mock<ICommonMinistryAdminService<AreaAdminBaseDto>>();
     
         fakeHttpContext = new Mock<HttpContext>();
         
-        regionAdminController = new RegionAdminController(
+        areaAdminController = new AreaAdminController(
             fakeLogger.Object,
-            fakeRegionAdminService.Object
+            fakeAreaAdminService.Object
         );
-        regionAdminController.ControllerContext.HttpContext = fakeHttpContext.Object;
+        areaAdminController.ControllerContext.HttpContext = fakeHttpContext.Object;
     }
 
     [SetUp]
     public void Setup()
     {
-        var fakeRegionAdminDto = new RegionAdminBaseDto()
+        var fakeAreaAdminDto = new AreaAdminBaseDto()
         {
             FirstName = "fakeFirstName",
             LastName = "fakeLastName",
@@ -66,37 +66,37 @@ public class RegionAdminControllerTests
         var fakeResponseDto = new ResponseDto()
         {
             IsSuccess = true,
-            Result = fakeRegionAdminDto
+            Result = fakeAreaAdminDto
         };
 
-        fakeRegionAdminService.Setup(s => s
+        fakeAreaAdminService.Setup(s => s
             .CreateMinistryAdminAsync(
-                It.IsAny<RegionAdminBaseDto>(),
+                It.IsAny<AreaAdminBaseDto>(),
                 It.IsAny<Role>(),
                 It.IsAny<IUrlHelper>(),
                 It.IsAny<string>()))
             .ReturnsAsync(fakeResponseDto);
 
-        fakeRegionAdminService.Setup(s => s
+        fakeAreaAdminService.Setup(s => s
             .UpdateMinistryAdminAsync(
-                It.IsAny<RegionAdminBaseDto>(),
+                It.IsAny<AreaAdminBaseDto>(),
                 It.IsAny<string>()))
             .ReturnsAsync(fakeResponseDto);
 
-        fakeRegionAdminService.Setup(s => s
+        fakeAreaAdminService.Setup(s => s
             .DeleteMinistryAdminAsync(
                 It.IsAny<string>(),
                 It.IsAny<string>()))
             .ReturnsAsync(fakeResponseDto);
         
-        fakeRegionAdminService.Setup(s => s
+        fakeAreaAdminService.Setup(s => s
             .BlockMinistryAdminAsync(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<bool>()))
             .ReturnsAsync(fakeResponseDto);
 
-        fakeRegionAdminService.Setup(s => s
+        fakeAreaAdminService.Setup(s => s
             .ReinviteMinistryAdminAsync(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
@@ -106,35 +106,35 @@ public class RegionAdminControllerTests
         var fakeHttpContext = new Mock<HttpContext>();
         fakeHttpContext.Setup(s => s.Request.Headers[It.IsAny<string>()]).Returns("Ok");
         
-        regionAdminController.ControllerContext.HttpContext = fakeHttpContext.Object;
+        areaAdminController.ControllerContext.HttpContext = fakeHttpContext.Object;
 
         var context = GetContext();
 
-        regionAdminRepository = new RegionAdminRepository(context);
+        areaAdminRepository = new AreaAdminRepository(context);
         var userManager = new UserManager<User>(
             new UserStore<User>(context), null, null, null, null, null, null, null, null);
 
-        regionAdminService = new CommonMinistryAdminService<long, RegionAdmin, RegionAdminBaseDto, RegionAdminRepository>(
+        areaAdminService = new CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, AreaAdminRepository>(
             new Mock<IMapper>().Object,
-            regionAdminRepository,
-            new Mock<ILogger<CommonMinistryAdminService<long, RegionAdmin, RegionAdminBaseDto, RegionAdminRepository>>>().Object,
+            areaAdminRepository,
+            new Mock<ILogger<CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, AreaAdminRepository>>>().Object,
             new Mock<IEmailSender>().Object,
             userManager,
             context,
             new Mock<IRazorViewToStringRenderer>().Object,
             new Mock<IStringLocalizer<SharedResource>>().Object);
 
-        regionAdminControllerWithRealService = new RegionAdminController(fakeLogger.Object, regionAdminService);
+        areaAdminControllerWithRealService = new AreaAdminController(fakeLogger.Object, areaAdminService);
         }
 
     [Test]
     public async Task Create_WithInvalidModel_ReturnsNotSuccessResponseDto()
     {
         // Arrange
-        regionAdminController.ModelState.AddModelError("fakeKey", "Model is invalid");
+        areaAdminController.ModelState.AddModelError("fakeKey", "Model is invalid");
 
         // Act
-        var result = await regionAdminController.Create(new RegionAdminBaseDto());
+        var result = await areaAdminController.Create(new AreaAdminBaseDto());
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -145,15 +145,15 @@ public class RegionAdminControllerTests
     public async Task Create_WithValidModel_ReturnsSuccessResponseDto()
     {
         // Arrange
-        regionAdminController.ModelState.Clear();
+        areaAdminController.ModelState.Clear();
         
         // Act
-        var result = await regionAdminController.Create(new RegionAdminBaseDto());
+        var result = await areaAdminController.Create(new AreaAdminBaseDto());
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.IsSuccess, Is.True);
-        Assert.That(((RegionAdminBaseDto)result.Result).FirstName, Is.EqualTo("fakeFirstName"));
+        Assert.That(((AreaAdminBaseDto)result.Result).FirstName, Is.EqualTo("fakeFirstName"));
     }
 
     [Test]
@@ -162,12 +162,12 @@ public class RegionAdminControllerTests
         // Arrange
 
         // Act
-        var result = await regionAdminController.Update("fakeAdminId", new RegionAdminBaseDto());
+        var result = await areaAdminController.Update("fakeAdminId", new AreaAdminBaseDto());
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.IsSuccess, Is.True);
-        Assert.That(((RegionAdminBaseDto)result.Result).FirstName, Is.EqualTo("fakeFirstName"));
+        Assert.That(((AreaAdminBaseDto)result.Result).FirstName, Is.EqualTo("fakeFirstName"));
     }
 
     [Test]
@@ -177,9 +177,9 @@ public class RegionAdminControllerTests
         var oldInstitutionId = Guid.NewGuid();
         long oldCAOTTGId = long.MinValue;
         var userId = string.Empty;
-        RegionAdmin regionAdmin = new RegionAdmin { UserId = userId, InstitutionId = oldInstitutionId, CATOTTGId = oldCAOTTGId };
-        await SeedRegionAdmin(regionAdmin);
-        var regionAdminToUpdate = new RegionAdminBaseDto 
+        AreaAdmin areaAdmin = new AreaAdmin { UserId = userId, InstitutionId = oldInstitutionId, CATOTTGId = oldCAOTTGId };
+        await SeedAreaAdmin(areaAdmin);
+        var areaAdminToUpdate = new AreaAdminBaseDto 
         { 
             UserId = userId,
             FirstName = string.Empty,
@@ -189,12 +189,12 @@ public class RegionAdminControllerTests
         };
 
         // Act
-        await regionAdminControllerWithRealService.Update(userId, regionAdminToUpdate);
+        await areaAdminControllerWithRealService.Update(userId, areaAdminToUpdate);
 
         // Assert
-        var updatedRegionAdmin = regionAdminRepository.GetAll().Result.First();
-        Assert.AreEqual(oldInstitutionId, updatedRegionAdmin.InstitutionId);
-        Assert.AreEqual(oldCAOTTGId, updatedRegionAdmin.CATOTTGId);
+        var updatedAreaAdmin = areaAdminRepository.GetAll().Result.First();
+        Assert.AreEqual(oldInstitutionId, updatedAreaAdmin.InstitutionId);
+        Assert.AreEqual(oldCAOTTGId, updatedAreaAdmin.CATOTTGId);
     }
 
     [Test]
@@ -203,18 +203,18 @@ public class RegionAdminControllerTests
         // Arrange
         
         // Act
-        var result = await regionAdminController.Delete("fakeAdminId");
+        var result = await areaAdminController.Delete("fakeAdminId");
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.IsSuccess, Is.True);
-        Assert.That(((RegionAdminBaseDto)result.Result).FirstName, Is.EqualTo("fakeFirstName"));
+        Assert.That(((AreaAdminBaseDto)result.Result).FirstName, Is.EqualTo("fakeFirstName"));
     }
 
     [Test]
     public async Task Delete_WithNullId_ReturnsException()
     {
-        Assert.That(() => regionAdminController.Delete(null), Throws.ArgumentNullException);
+        Assert.That(() => areaAdminController.Delete(null), Throws.ArgumentNullException);
     }
 
     [Test]
@@ -223,18 +223,18 @@ public class RegionAdminControllerTests
         // Arrange
         
         // Act
-        var result = await regionAdminController.Block("fakeAdminId", It.IsAny<bool>());
+        var result = await areaAdminController.Block("fakeAdminId", It.IsAny<bool>());
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.IsSuccess, Is.True);
-        Assert.That(((RegionAdminBaseDto)result.Result).FirstName, Is.EqualTo("fakeFirstName"));
+        Assert.That(((AreaAdminBaseDto)result.Result).FirstName, Is.EqualTo("fakeFirstName"));
     }
 
     [Test]
     public async Task OnActionExecuting_WithNullContext_ReturnsException()
     {
-        Assert.That(() => regionAdminController.OnActionExecuting(null), Throws.ArgumentNullException);
+        Assert.That(() => areaAdminController.OnActionExecuting(null), Throws.ArgumentNullException);
     }
 
     [Test]
@@ -243,21 +243,21 @@ public class RegionAdminControllerTests
         // Arrange
 
         // Act
-        var result = await regionAdminController.Reinvite("fakeAdminId");
+        var result = await areaAdminController.Reinvite("fakeAdminId");
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(true, result.IsSuccess);
-        Assert.AreEqual("fakeFirstName", ((RegionAdminBaseDto)result.Result).FirstName);
+        Assert.AreEqual("fakeFirstName", ((AreaAdminBaseDto)result.Result).FirstName);
     }
-    private async Task SeedRegionAdmin(RegionAdmin regionAdmin)
+    private async Task SeedAreaAdmin(AreaAdmin areaAdmin)
     {
         OutOfSchoolDbContext context = GetContext();
 
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
-        context.Add(regionAdmin);
-        context.Add(new User { Id = regionAdmin.UserId, FirstName = string.Empty, LastName = string.Empty });
+        context.Add(areaAdmin);
+        context.Add(new User { Id = areaAdmin.UserId, FirstName = string.Empty, LastName = string.Empty });
         await context.SaveChangesAsync();
     }
 

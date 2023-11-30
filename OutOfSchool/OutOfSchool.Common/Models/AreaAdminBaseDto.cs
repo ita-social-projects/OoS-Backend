@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+
 namespace OutOfSchool.Common.Models;
 
 public class AreaAdminBaseDto : MinistryAdminBaseDto
