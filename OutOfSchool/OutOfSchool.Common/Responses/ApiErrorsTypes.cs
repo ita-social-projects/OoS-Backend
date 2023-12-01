@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using OutOfSchool.Common.Responces;
 
@@ -32,11 +31,33 @@ public abstract class ApiErrorsTypes
 
     public abstract class ProviderAdmin
     {
+        private static int entityCode = 10;
+
         public abstract class Creation
         {
+            private static int actionCode = 1;
+
             public static ApiError UserDontHavePermission(string userId) =>
             new ApiError(
-                "1", // It will be another id later
+                $"{entityCode}_{actionCode}",
+                $"User(id): {userId} doesn't have permission to create provider admin",
+                GetGroup());
+        }
+
+        // To be continued for another ProviderAdmin service actions
+    }
+
+    public abstract class Provider
+    {
+        private static int entityCode = 20;
+
+        public abstract class Creation
+        {
+            private static int actionCode = 1;
+
+            public static ApiError UserDontHavePermission(string userId) =>
+            new ApiError(
+                $"{entityCode}_{actionCode}",
                 $"User(id): {userId} doesn't have permission to create provider admin",
                 GetGroup());
         }

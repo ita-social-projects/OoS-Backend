@@ -3,7 +3,7 @@
 namespace OutOfSchool.Common.Responces;
 public class ApiErrorResponse
 {
-    private List<ApiError> apiErrors;
+    private readonly List<ApiError> apiErrors;
 
     public ApiErrorResponse(List<ApiError> apiErrors)
     {
