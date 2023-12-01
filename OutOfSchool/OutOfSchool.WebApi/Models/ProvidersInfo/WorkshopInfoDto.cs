@@ -8,6 +8,7 @@ using OutOfSchool.WebApi.Util.JsonTools;
 
 namespace OutOfSchool.WebApi.Models.ProvidersInfo;
 
+#pragma warning disable 102
 public class WorkshopInfoDto : WorkshopInfoBaseDto
 {
     [Required(ErrorMessage = "Workshop title is required")]
@@ -100,5 +101,5 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto
 
     [EnumDataType(typeof(WorkshopStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public WorkshopStatus Status { get; set; } = WorkshopStatus.Open;
-
 }
+#pragma warning restore 102

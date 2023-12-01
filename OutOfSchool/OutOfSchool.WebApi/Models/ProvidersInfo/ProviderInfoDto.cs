@@ -8,6 +8,7 @@ using OutOfSchool.WebApi.Util.JsonTools;
 
 namespace OutOfSchool.WebApi.Models.ProvidersInfo;
 
+#pragma warning disable 102
 public class ProviderInfoDto : ProviderInfoBaseDto
 {
     [Required]
@@ -98,6 +99,5 @@ public class ProviderInfoDto : ProviderInfoBaseDto
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IEnumerable<ProviderSectionItemDto> ProviderSectionItems { get; set; }
-
-
 }
+#pragma warning restore 102
