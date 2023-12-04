@@ -98,4 +98,4 @@ public class ProviderInfoDto : ProviderInfoBaseDto
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IEnumerable<ProviderSectionItemDto> ProviderSectionItems { get; set; }
-}// NOSONAR
+}

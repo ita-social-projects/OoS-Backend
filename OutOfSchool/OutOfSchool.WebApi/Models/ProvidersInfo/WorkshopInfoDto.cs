@@ -100,4 +100,4 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto
 
     [EnumDataType(typeof(WorkshopStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public WorkshopStatus Status { get; set; } = WorkshopStatus.Open;
-}// NOSONAR
+}
