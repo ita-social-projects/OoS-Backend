@@ -348,6 +348,28 @@ public class WorkshopServiceTests
     }
 
     [Test]
+    public async Task Update_WhenEntityIsValidAndAvaliableSeatsZero_ShouldReturnUpdatedEntityWithMaxUintAvaliableSeats([Random(2, 5, 1)] int teachersInWorkshop)
+    {
+        // Arrange
+        var id = new Guid("ca2cc30c-419c-4b00-a344-b23f0cbf18d8");
+        var changedFirstEntity = WithWorkshop(id);
+        var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(changedFirstEntity);
+        var provider = ProvidersGenerator.Generate();
+        changedFirstEntity.Teachers = teachers;
+        changedFirstEntity.DateTimeRanges = new List<DateTimeRange>();
+        changedFirstEntity.Provider = provider;
+        SetupUpdate(changedFirstEntity);
+        var expectedTeachers = teachers.Select(s => mapper.Map<TeacherDTO>(s));
+
+        // Act
+        var result = await workshopService.Update(mapper.Map<WorkshopBaseDto>(changedFirstEntity)).ConfigureAwait(false);
+
+        // Assert
+        result.Teachers.Should().BeEquivalentTo(expectedTeachers);
+        result.AvailableSeats.Should().Be(uint.MaxValue);
+    }
+
+    [Test]
     public void Update_WhenClassIdIsInvalid_ShouldThrowArgumentOutOfRangeException()
     {
         // Arrange
