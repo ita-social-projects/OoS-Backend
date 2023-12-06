@@ -146,4 +146,7 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISo
 
     [NotMapped]
     public static readonly ProviderStatus[] ValidProviderStatuses = { ProviderStatus.Approved, ProviderStatus.Recheck };
+
+    [DataType(DataType.DateTime)]
+    public DateTime UpdatedAt { get; set; }
 }
