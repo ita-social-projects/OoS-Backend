@@ -114,6 +114,12 @@ public class MappingProfile : Profile
         CreateMap<Address, AddressDto>()
             .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
 
+        CreateMap<Address, AddressProviderInfoDto>()
+             .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
+
+        CreateMap<Address, AddressWorkshopInfoDto>()
+             .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
+
         CreateSoftDeletedMap<AddressDto, Address>()
             .ForMember(dest => dest.CATOTTG, opt => opt.Ignore())
             .ForMember(dest => dest.GeoHash, opt => opt.Ignore());
@@ -135,6 +141,9 @@ public class MappingProfile : Profile
         CreateSoftDeletedMap<ProviderSectionItemDto, ProviderSectionItem>()
             .ForMember(dest => dest.Name, opt => opt.MapFrom(psi => psi.SectionName))
             .ForMember(dest => dest.Provider, opt => opt.Ignore());
+
+        CreateMap<ProviderSectionItem, ProviderSectionItemInfoDto>()
+            .ForMember(dest => dest.SectionName, opt => opt.MapFrom(psi => psi.Name));
 
         CreateMap<ProviderType, ProviderTypeDto>().ReverseMap();
 
@@ -226,18 +235,35 @@ public class MappingProfile : Profile
 
         CreateMap<Workshop, WorkshopInfoDto>()
             .IncludeBase<Workshop, WorkshopInfoBaseDto>()
-            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore())
-            .ForMember(dest => dest.Institution, opt => opt.Ignore())
-            .ForMember(dest => dest.DirectionIds, opt => opt.Ignore())
-            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
-            .ForMember(dest => dest.Rating, opt => opt.Ignore())
-            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
-            .ForMember(dest => dest.Keywords, opt => opt.Ignore());
+            .ForMember(
+                dest => dest.Keywords,
+                opt => opt.MapFrom(src => src.Keywords.Split(Constants.MappingSeparator, StringSplitOptions.None)))
+            .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
+            .ForMember(
+                dest => dest.DirectionIds,
+                opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Id)))
+            .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
+            .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
+            .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src => src.Teachers.Where(x => !x.IsDeleted)))
+            .ForMember(dest => dest.DateTimeRanges, opt => opt.MapFrom(src => src.DateTimeRanges.Where(x => !x.IsDeleted)))
+            .ForMember(dest => dest.WorkshopDescriptionItems, opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)))
+            .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price))
+            .ForMember(dest => dest.PayRate, opt => opt.MapFrom(src => src.PayRate))
+            .ForMember(dest => dest.TakenSeats, opt =>
+                    opt.MapFrom(src =>
+                        src.Applications.Count(x =>
+                            x.Status == ApplicationStatus.Approved
+                            || x.Status == ApplicationStatus.StudyingForYears)))
+                .ForMember(dest => dest.Rating, opt => opt.Ignore())
+                .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
 
         CreateMap<Provider, ProviderInfoBaseDto>();
 
         CreateMap<Provider, ProviderInfoDto>()
             .IncludeBase<Provider, ProviderInfoBaseDto>()
+            .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.Institution))
+            .ForMember(dest => dest.LicenseStatus, opt => opt.MapFrom(src => src.LicenseStatus))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
 
@@ -250,6 +276,9 @@ public class MappingProfile : Profile
 
         CreateMap<Teacher, TeacherDTO>()
             .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
+
+        CreateMap<Teacher, TeacherInfoDto>()
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
         CreateMap<DateTimeRange, DateTimeRangeDto>()
@@ -718,6 +747,56 @@ public class MappingProfile : Profile
         CreateMap<CATOTTG, AllAddressPartsDto>()
             .IncludeBase<CATOTTG, CodeficatorAddressDto>()
             .ForMember(dest => dest.AddressParts, opt => opt.MapFrom(src => src));
+
+        CreateMap<CATOTTG, CodeficatorAddressProviderInfoDto>()
+             .ForMember(
+                dest => dest.Settlement,
+                opt => opt.MapFrom(src =>
+                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Name : src.Name))
+            .ForMember(
+                dest => dest.TerritorialCommunity,
+                opt => opt.MapFrom(src =>
+                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Parent.Name : src.Parent.Name))
+            .ForMember(
+                dest => dest.District,
+                opt => opt.MapFrom(src =>
+                    src.Category == CodeficatorCategory.CityDistrict.Name
+                        ? src.Parent.Parent.Parent.Name
+                        : src.Parent.Parent.Name))
+            .ForMember(
+                dest => dest.Region,
+                opt => opt.MapFrom(src =>
+                    src.Category == CodeficatorCategory.CityDistrict.Name
+                        ? src.Parent.Parent.Parent.Parent.Name
+                        : src.Parent.Parent.Parent.Name))
+            .ForMember(
+                dest => dest.CityDistrict,
+                opt => opt.MapFrom(src => src.Category == CodeficatorCategory.CityDistrict.Name ? src.Name : null)); ;
+
+        CreateMap<CATOTTG, CodeficatorAddressWorkshopInfoDto>()
+             .ForMember(
+                dest => dest.Settlement,
+                opt => opt.MapFrom(src =>
+                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Name : src.Name))
+            .ForMember(
+                dest => dest.TerritorialCommunity,
+                opt => opt.MapFrom(src =>
+                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Parent.Name : src.Parent.Name))
+            .ForMember(
+                dest => dest.District,
+                opt => opt.MapFrom(src =>
+                    src.Category == CodeficatorCategory.CityDistrict.Name
+                        ? src.Parent.Parent.Parent.Name
+                        : src.Parent.Parent.Name))
+            .ForMember(
+                dest => dest.Region,
+                opt => opt.MapFrom(src =>
+                    src.Category == CodeficatorCategory.CityDistrict.Name
+                        ? src.Parent.Parent.Parent.Parent.Name
+                        : src.Parent.Parent.Parent.Name))
+            .ForMember(
+                dest => dest.CityDistrict,
+                opt => opt.MapFrom(src => src.Category == CodeficatorCategory.CityDistrict.Name ? src.Name : null));;
 
         CreateMap<Provider, ProviderStatusDto>()
             .ForMember(dest => dest.ProviderId, opt => opt.MapFrom(src => src.Id))
