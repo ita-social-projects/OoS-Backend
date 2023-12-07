@@ -771,7 +771,7 @@ public class MappingProfile : Profile
                         : src.Parent.Parent.Parent.Name))
             .ForMember(
                 dest => dest.CityDistrict,
-                opt => opt.MapFrom(src => src.Category == CodeficatorCategory.CityDistrict.Name ? src.Name : null)); ;
+                opt => opt.MapFrom(src => src.Category == CodeficatorCategory.CityDistrict.Name ? src.Name : null));
 
         CreateMap<CATOTTG, CodeficatorAddressWorkshopInfoDto>()
              .ForMember(
@@ -796,7 +796,7 @@ public class MappingProfile : Profile
                         : src.Parent.Parent.Parent.Name))
             .ForMember(
                 dest => dest.CityDistrict,
-                opt => opt.MapFrom(src => src.Category == CodeficatorCategory.CityDistrict.Name ? src.Name : null));;
+                opt => opt.MapFrom(src => src.Category == CodeficatorCategory.CityDistrict.Name ? src.Name : null));
 
         CreateMap<Provider, ProviderStatusDto>()
             .ForMember(dest => dest.ProviderId, opt => opt.MapFrom(src => src.Id))
