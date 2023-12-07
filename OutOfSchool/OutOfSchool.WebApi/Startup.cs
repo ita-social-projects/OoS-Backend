@@ -121,9 +121,10 @@ public static class Startup
                     .AllowAnyHeader()
                     .AllowCredentials()));
 
-        var cacheProfilesConfig = configuration.GetSection(CacheProfilesConfig.Name).Get<CacheProfilesConfig>();
+        var cacheProfilesConfigSection = configuration.GetSection(CacheProfilesConfig.Name);
+        var cacheProfilesConfig = cacheProfilesConfigSection.Get<CacheProfilesConfig>();
 
-        services.Configure<CacheProfilesConfig>(configuration.GetSection(CacheProfilesConfig.Name));
+        services.Configure<CacheProfilesConfig>(cacheProfilesConfigSection);
 
         services.AddControllers(options =>
             {
