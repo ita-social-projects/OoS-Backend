@@ -23,13 +23,13 @@ public class ExternalExportProviderService : IExternalExportProviderService
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<SearchResult<ProviderInfoBaseDto>> GetProvidersWithWorkshops(DateTime updatedAfter, SizeFilter sizeFilter)
+    public async Task<SearchResult<ProviderInfoBaseDto>> GetProvidersWithWorkshops(DateTime updatedAfter, OffsetFilter offsetFilter)
     {
         try
         {
             logger.LogInformation("Getting all updated providers started.");
 
-            var providers = await GetAllUpdatedProviders(updatedAfter, sizeFilter);
+            var providers = await GetAllUpdatedProviders(updatedAfter, offsetFilter);
 
             if (providers == null)
             {
@@ -83,12 +83,12 @@ public class ExternalExportProviderService : IExternalExportProviderService
         return workshopsDto;
     }
 
-    private async Task<List<ProviderInfoBaseDto>> GetAllUpdatedProviders(DateTime updatedAfter, SizeFilter sizeFilter)
+    private async Task<List<ProviderInfoBaseDto>> GetAllUpdatedProviders(DateTime updatedAfter, OffsetFilter offsetFilter)
     {
-        sizeFilter ??= new SizeFilter();
+        offsetFilter ??= new OffsetFilter();
 
         var providers = await providerRepository
-                        .GetAllWithDeleted(updatedAfter, sizeFilter.Size)
+                        .GetAllWithDeleted(updatedAfter, offsetFilter.From, offsetFilter.Size)
                         .ConfigureAwait(false);
 
         var providersDto = providers

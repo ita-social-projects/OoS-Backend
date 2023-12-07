@@ -20,18 +20,18 @@ public class ExternalExportProviderController : ControllerBase
     /// Get Providers that match filter's parameters.
     /// </summary>
     /// <param name="updatedAfter">The date to filter providers based on their last update.</param>
-    /// <param name="sizeFilter">The size of the page for paginated results.</param>
+    /// <param name="offsetFilter">Filter to get a part of all providers that were found.</param>
     /// <returns><see cref="SearchResult{InfoProviderBaseDto}"/>, or no content.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderInfoBaseDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Route("export")]
-    public async Task<ActionResult<SearchResult<ProviderInfoBaseDto>>> GetByFilter([FromQuery] DateTime updatedAfter, [FromQuery] SizeFilter sizeFilter)
+    public async Task<ActionResult<SearchResult<ProviderInfoBaseDto>>> GetByFilter([FromQuery] DateTime updatedAfter, [FromQuery] OffsetFilter offsetFilter)
     {
         try
         {
-            var result = await externalProviderService.GetProvidersWithWorkshops(updatedAfter, sizeFilter);
+            var result = await externalProviderService.GetProvidersWithWorkshops(updatedAfter, offsetFilter);
 
             if (result.Entities.Any())
             {
