@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ProvidersInfo;
+using OutOfSchool.WebApi.Services.AverageRatings;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -8,17 +9,20 @@ public class ExternalExportProviderService : IExternalExportProviderService
 {
     private readonly IProviderRepository providerRepository;
     private readonly IWorkshopRepository workshopRepository;
+    private readonly IAverageRatingService averageRatingService;
     private readonly IMapper mapper;
     private readonly ILogger<ExternalExportProviderService> logger;
 
     public ExternalExportProviderService(
         IProviderRepository providerRepository,
         IWorkshopRepository workshopRepository,
+        IAverageRatingService averageRatingService,
         IMapper mapper,
         ILogger<ExternalExportProviderService> logger)
     {
         this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
         this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
+        this.averageRatingService = averageRatingService ?? throw new ArgumentNullException(nameof(averageRatingService));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -79,6 +83,7 @@ public class ExternalExportProviderService : IExternalExportProviderService
          .GroupBy(w => w.ProviderId)
          .ToDictionary(group => group.Key, group => group.Select(workshop => MapToInfoWorkshopDto(workshop)).ToList());
 
+        await FillRatingsForWorkshops(workshopsDto);
 
         return workshopsDto;
     }
@@ -95,6 +100,8 @@ public class ExternalExportProviderService : IExternalExportProviderService
             .Select(provider => MapToInfoProviderDto(provider))
             .ToList();
 
+        await FillRatingsForProviders(providersDto).ConfigureAwait(false);
+
         return providersDto;
     }
 
@@ -110,5 +117,41 @@ public class ExternalExportProviderService : IExternalExportProviderService
         return workshop.IsDeleted
             ? mapper.Map<WorkshopInfoBaseDto>(workshop)
             : mapper.Map<WorkshopInfoDto>(workshop);
+    }
+
+    private async Task FillRatingsForProviders(List<ProviderInfoBaseDto> providersDTO)
+    {
+        var providerIds = providersDTO.Select(p => p.Id).ToList();
+        var averageRatings = await averageRatingService.GetByEntityIdsAsync(providerIds).ConfigureAwait(false);
+
+        foreach (var providerDto in providersDTO)
+        {
+            if (providerDto is ProviderInfoDto providerInfoDto)
+            {
+                var averageRatingsForProvider = averageRatings?.SingleOrDefault(r => r.EntityId == providerDto.Id);
+                providerInfoDto.Rating = averageRatingsForProvider?.Rate ?? default;
+                providerInfoDto.NumberOfRatings = averageRatingsForProvider?.RateQuantity ?? default;
+
+            }
+        }
+    }
+
+    private async Task FillRatingsForWorkshops(Dictionary<Guid, List<WorkshopInfoBaseDto>> workshopsDtoMap)
+    {
+        var workshopIds = workshopsDtoMap.SelectMany(kv => kv.Value.Select(w => w.Id)).ToList();
+        var averageRatings = await averageRatingService.GetByEntityIdsAsync(workshopIds).ConfigureAwait(false);
+
+        foreach (var (providerId, workshopsDto) in workshopsDtoMap)
+        {
+            foreach (var workshopDto in workshopsDto)
+            {
+                if (workshopDto is WorkshopInfoDto workshopInfoDto)
+                {
+                    var averageRatingsForWorkshop = averageRatings?.SingleOrDefault(r => r.EntityId == workshopDto.Id);
+                    workshopInfoDto.Rating = averageRatingsForWorkshop?.Rate ?? default;
+                    workshopInfoDto.NumberOfRatings = averageRatingsForWorkshop?.RateQuantity ?? default;
+                }
+            }
+        }
     }
 }
