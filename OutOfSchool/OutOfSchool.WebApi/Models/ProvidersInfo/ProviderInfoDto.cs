@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Util.JsonTools;
 
@@ -77,8 +76,8 @@ public class ProviderInfoDto : ProviderInfoBaseDto
     [EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderStatus Status { get; set; } = ProviderStatus.Pending;
 
-    [MaxLength(30)]
-    public string License { get; set; }
+    [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
+    public ProviderLicenseStatus LicenseStatus { get; set; }
 
     public bool IsBlocked { get; set; }
 
@@ -86,9 +85,9 @@ public class ProviderInfoDto : ProviderInfoBaseDto
 
     public int NumberOfRatings { get; set; }
 
-    public AddressDto LegalAddress { get; set; }
+    public AddressProviderInfoDto LegalAddress { get; set; }
 
-    public AddressDto ActualAddress { get; set; }
+    public AddressProviderInfoDto ActualAddress { get; set; }
 
     public InstitutionDto Institution { get; set; }
 
@@ -97,5 +96,5 @@ public class ProviderInfoDto : ProviderInfoBaseDto
     public InstitutionType InstitutionType { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    public IEnumerable<ProviderSectionItemDto> ProviderSectionItems { get; set; }
+    public IEnumerable<ProviderSectionItemInfoDto> ProviderSectionItems { get; set; }
 }

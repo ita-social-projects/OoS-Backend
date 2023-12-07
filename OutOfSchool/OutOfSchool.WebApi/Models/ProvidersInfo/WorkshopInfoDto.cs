@@ -10,6 +10,15 @@ namespace OutOfSchool.WebApi.Models.ProvidersInfo;
 
 public class WorkshopInfoDto : WorkshopInfoBaseDto
 {
+    public uint TakenSeats { get; set; } = 0;
+
+    public float Rating { get; set; }
+
+    public int NumberOfRatings { get; set; }
+
+    [EnumDataType(typeof(WorkshopStatus), ErrorMessage = Constants.EnumErrorMessage)]
+    public WorkshopStatus Status { get; set; } = WorkshopStatus.Open;
+
     [Required(ErrorMessage = "Workshop title is required")]
     [MinLength(1)]
     [MaxLength(60)]
@@ -88,16 +97,8 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto
 
     [Required]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    public AddressDto Address { get; set; }
+    public AddressWorkshopInfoDto Address { get; set; }
 
-    public List<TeacherDTO> Teachers { get; set; }
+    public List<TeacherInfoDto> Teachers { get; set; }
 
-    public uint TakenSeats { get; set; } = 0;
-
-    public float Rating { get; set; }
-
-    public int NumberOfRatings { get; set; }
-
-    [EnumDataType(typeof(WorkshopStatus), ErrorMessage = Constants.EnumErrorMessage)]
-    public WorkshopStatus Status { get; set; } = WorkshopStatus.Open;
 }
