@@ -37,11 +37,11 @@ public class ExternalExportProviderControllerTests
         var fakeProviders = ProvidersGenerator.Generate(5).WithWorkshops();
 
         _ = mockExternalProviderService
-            .Setup(x => x.GetProvidersWithWorkshops(It.IsAny<DateTime>(), It.IsAny<SizeFilter>()))
+            .Setup(x => x.GetProvidersWithWorkshops(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
             .ReturnsAsync(new SearchResult<ProviderInfoBaseDto> { Entities = mapper.Map<List<ProviderInfoBaseDto>>(fakeProviders) });
 
         // Act
-        var actionResult = await controller.GetByFilter(DateTime.UtcNow, new SizeFilter { Size = 10 });
+        var actionResult = await controller.GetByFilter(DateTime.UtcNow, new OffsetFilter { Size = 10 });
 
         // Assert
         Assert.IsInstanceOf<OkObjectResult>(actionResult.Result);
@@ -56,11 +56,11 @@ public class ExternalExportProviderControllerTests
     {
         // Arrange
         mockExternalProviderService
-            .Setup(x => x.GetProvidersWithWorkshops(It.IsAny<DateTime>(), It.IsAny<SizeFilter>()))
+            .Setup(x => x.GetProvidersWithWorkshops(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
             .ReturnsAsync(new SearchResult<ProviderInfoBaseDto> { Entities = new List<ProviderInfoBaseDto>() });
 
         // Act
-        var actionResult = await controller.GetByFilter(DateTime.UtcNow, new SizeFilter { Size = 10 });
+        var actionResult = await controller.GetByFilter(DateTime.UtcNow, new OffsetFilter { Size = 10 });
 
         // Assert
         Assert.IsInstanceOf<NoContentResult>(actionResult.Result);
@@ -71,10 +71,10 @@ public class ExternalExportProviderControllerTests
     {
         // Arrange
         mockExternalProviderService
-            .Setup(x => x.GetProvidersWithWorkshops(It.IsAny<DateTime>(), It.IsAny<SizeFilter>()))
+            .Setup(x => x.GetProvidersWithWorkshops(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
             .ThrowsAsync(new Exception("Simulated exception"));
         // Act
-        var actionResult = await controller.GetByFilter(DateTime.UtcNow, new SizeFilter { Size = 10 });
+        var actionResult = await controller.GetByFilter(DateTime.UtcNow, new OffsetFilter { Size = 10 });
 
         // Assert
         Assert.IsInstanceOf<ObjectResult>(actionResult.Result);
