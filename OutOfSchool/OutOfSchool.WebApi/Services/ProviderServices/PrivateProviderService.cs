@@ -62,7 +62,7 @@ public class PrivateProviderService : IPrivateProviderService
 
         logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.LicenseStatus}");
 
-        await providerService.SendNotification(provider, NotificationAction.Update, false, true).ConfigureAwait(false);
+        providerService.SendNotification(provider, NotificationAction.Update, false, true);
 
         return dto;
     }

@@ -14,17 +14,9 @@ public static class ProviderTestsHelper
     public static Mock<IProviderRepository> CreateProvidersRepositoryMock(IEnumerable<Provider> providersCollection)
     {
         var providersRepository = new Mock<IProviderRepository>();
-        var userExistsResult = false;
-
-        bool UserExist(string userId)
-        {
-            userExistsResult = providersCollection.Any(p => p.UserId.Equals(userId));
-            return userExistsResult;
-        }
 
         providersRepository.Setup(r => r.ExistsUserId(It.IsAny<string>()))
-            .Callback<string>(user => UserExist(user))
-            .Returns(() => userExistsResult);
+            .Returns<string>((userId) => providersCollection.Any(p => p.UserId.Equals(userId)));
 
         return providersRepository;
     }

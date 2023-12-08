@@ -364,11 +364,7 @@ public class ProviderService : IProviderService, INotificationReciever
             logger.LogInformation($"Provider(id) {providerBlockDto.Id} IsBlocked was changed to {provider.IsBlocked}");
         });
 
-        await SendNotification(
-            provider,
-            providerBlockDto.IsBlocked ? NotificationAction.Block : NotificationAction.Unblock,
-            false,
-            false);
+        SendNotification(provider, providerBlockDto.IsBlocked ? NotificationAction.Block : NotificationAction.Unblock, false, false);
 
         logger.LogInformation("Block/Unblock the particular provider admins and deputy providers belonging to the Provider starts.");
 
@@ -394,7 +390,7 @@ public class ProviderService : IProviderService, INotificationReciever
         return (await providerRepository.GetById(providerId).ConfigureAwait(false)).IsBlocked;
     }
 
-    public async Task SendNotification(Provider provider, NotificationAction notificationAction, bool addStatusData, bool addLicenseStatusData)
+    public void SendNotification(Provider provider, NotificationAction notificationAction, bool addStatusData, bool addLicenseStatusData)
     {
         if (provider == null)
         {
@@ -412,7 +408,7 @@ public class ProviderService : IProviderService, INotificationReciever
             additionalData.Add("LicenseStatus", provider.LicenseStatus.ToString());
         }
 
-        await notificationService.Create(
+        notificationService.Create(
                 NotificationType.Provider,
                 notificationAction,
                 provider.Id,
@@ -544,7 +540,7 @@ public class ProviderService : IProviderService, INotificationReciever
 
         logger.LogDebug("Provider with Id = {ProviderId} created successfully", newProvider?.Id);
 
-        await SendNotification(newProvider, NotificationAction.Create, true, true).ConfigureAwait(false);
+        SendNotification(newProvider, NotificationAction.Create, true, true);
 
         return mapper.Map<ProviderDto>(newProvider);
     }
@@ -644,8 +640,7 @@ public class ProviderService : IProviderService, INotificationReciever
 
             if (statusChanged || licenseChanged)
             {
-                await SendNotification(checkProvider, NotificationAction.Update, statusChanged, licenseChanged)
-                    .ConfigureAwait(false);
+                SendNotification(checkProvider, NotificationAction.Update, statusChanged, licenseChanged);
             }
 
             return mapper.Map<ProviderDto>(checkProvider);

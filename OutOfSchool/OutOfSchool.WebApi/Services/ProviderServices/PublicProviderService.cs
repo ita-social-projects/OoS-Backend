@@ -51,7 +51,7 @@ public class PublicProviderService : IPublicProviderService
 
         await providerService.UpdateWorkshopsProviderStatus(dto.ProviderId, dto.Status).ConfigureAwait(false);
 
-        await providerService.SendNotification(provider, NotificationAction.Update, true, false).ConfigureAwait(false);
+        providerService.SendNotification(provider, NotificationAction.Update, true, false);
 
         return dto;
     }

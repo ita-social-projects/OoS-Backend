@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.TestDataGenerators;
@@ -63,7 +62,6 @@ public class PublicProviderServiceTests
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
             .ReturnsAsync(It.IsAny<int>());
-        providerServiceMock.Setup(p => p.SendNotification(provider, NotificationAction.Update, false, true)).Returns(Task.CompletedTask);
 
         // Act
         var result = await publicProviderService.UpdateStatus(dto, fakeUser.Id).ConfigureAwait(false);
