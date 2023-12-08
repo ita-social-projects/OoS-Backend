@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.WebApi.Models.ProvidersInfo;
 
-public class AddressWorkshopInfoDto
+public class AddressInfoDto
 {
     public long Id { get; set; }
 
@@ -14,5 +14,5 @@ public class AddressWorkshopInfoDto
     [MaxLength(15)]
     public string BuildingNumber { get; set; } = string.Empty;
 
-    public CodeficatorAddressWorkshopInfoDto CodeficatorAddressDto { get; set; }
+    public CodeficatorAddressInfoDto CodeficatorAddressDto { get; set; }
 }

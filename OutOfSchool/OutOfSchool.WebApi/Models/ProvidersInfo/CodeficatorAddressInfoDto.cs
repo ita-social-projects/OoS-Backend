@@ -1,10 +1,8 @@
 ﻿namespace OutOfSchool.WebApi.Models.ProvidersInfo;
 
-public class CodeficatorAddressWorkshopInfoDto
+public class CodeficatorAddressInfoDto
 {
     public int Id { get; set; }
-
-    public string Category { get; set; }
 
     public string Region { get; set; }
 

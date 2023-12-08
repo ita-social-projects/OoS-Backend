@@ -85,9 +85,9 @@ public class ProviderInfoDto : ProviderInfoBaseDto
 
     public int NumberOfRatings { get; set; }
 
-    public AddressProviderInfoDto LegalAddress { get; set; }
+    public AddressInfoDto LegalAddress { get; set; }
 
-    public AddressProviderInfoDto ActualAddress { get; set; }
+    public AddressInfoDto ActualAddress { get; set; }
 
     public InstitutionDto Institution { get; set; }
 

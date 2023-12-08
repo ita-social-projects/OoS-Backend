@@ -124,15 +124,11 @@ public class ExternalExportProviderService : IExternalExportProviderService
         var providerIds = providersDTO.Select(p => p.Id).ToList();
         var averageRatings = await averageRatingService.GetByEntityIdsAsync(providerIds).ConfigureAwait(false);
 
-        foreach (var providerDto in providersDTO)
+        foreach (var providerDto in providersDTO.OfType<ProviderInfoDto>())
         {
-            if (providerDto is ProviderInfoDto providerInfoDto)
-            {
                 var averageRatingsForProvider = averageRatings?.SingleOrDefault(r => r.EntityId == providerDto.Id);
-                providerInfoDto.Rating = averageRatingsForProvider?.Rate ?? default;
-                providerInfoDto.NumberOfRatings = averageRatingsForProvider?.RateQuantity ?? default;
-
-            }
+                providerDto.Rating = averageRatingsForProvider?.Rate ?? default;
+                providerDto.NumberOfRatings = averageRatingsForProvider?.RateQuantity ?? default;
         }
     }
 
@@ -143,14 +139,11 @@ public class ExternalExportProviderService : IExternalExportProviderService
 
         foreach (var (providerId, workshopsDto) in workshopsDtoMap)
         {
-            foreach (var workshopDto in workshopsDto)
+            foreach (var workshopDto in workshopsDto.OfType<WorkshopInfoDto>())
             {
-                if (workshopDto is WorkshopInfoDto workshopInfoDto)
-                {
                     var averageRatingsForWorkshop = averageRatings?.SingleOrDefault(r => r.EntityId == workshopDto.Id);
-                    workshopInfoDto.Rating = averageRatingsForWorkshop?.Rate ?? default;
-                    workshopInfoDto.NumberOfRatings = averageRatingsForWorkshop?.RateQuantity ?? default;
-                }
+                    workshopDto.Rating = averageRatingsForWorkshop?.Rate ?? default;
+                    workshopDto.NumberOfRatings = averageRatingsForWorkshop?.RateQuantity ?? default;
             }
         }
     }

@@ -97,7 +97,7 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto
 
     [Required]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    public AddressWorkshopInfoDto Address { get; set; }
+    public AddressInfoDto Address { get; set; }
 
     public List<TeacherInfoDto> Teachers { get; set; }
 

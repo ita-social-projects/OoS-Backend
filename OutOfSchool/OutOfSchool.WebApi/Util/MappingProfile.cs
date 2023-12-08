@@ -114,10 +114,7 @@ public class MappingProfile : Profile
         CreateMap<Address, AddressDto>()
             .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
 
-        CreateMap<Address, AddressProviderInfoDto>()
-             .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
-
-        CreateMap<Address, AddressWorkshopInfoDto>()
+        CreateMap<Address, AddressInfoDto>()
              .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
 
         CreateSoftDeletedMap<AddressDto, Address>()
@@ -748,32 +745,7 @@ public class MappingProfile : Profile
             .IncludeBase<CATOTTG, CodeficatorAddressDto>()
             .ForMember(dest => dest.AddressParts, opt => opt.MapFrom(src => src));
 
-        CreateMap<CATOTTG, CodeficatorAddressProviderInfoDto>()
-             .ForMember(
-                dest => dest.Settlement,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Name : src.Name))
-            .ForMember(
-                dest => dest.TerritorialCommunity,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Parent.Name : src.Parent.Name))
-            .ForMember(
-                dest => dest.District,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name
-                        ? src.Parent.Parent.Parent.Name
-                        : src.Parent.Parent.Name))
-            .ForMember(
-                dest => dest.Region,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name
-                        ? src.Parent.Parent.Parent.Parent.Name
-                        : src.Parent.Parent.Parent.Name))
-            .ForMember(
-                dest => dest.CityDistrict,
-                opt => opt.MapFrom(src => src.Category == CodeficatorCategory.CityDistrict.Name ? src.Name : null));
-
-        CreateMap<CATOTTG, CodeficatorAddressWorkshopInfoDto>()
+        CreateMap<CATOTTG, CodeficatorAddressInfoDto>()
              .ForMember(
                 dest => dest.Settlement,
                 opt => opt.MapFrom(src =>
