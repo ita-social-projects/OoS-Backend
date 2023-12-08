@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -14,7 +16,7 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Controllers;
+using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
@@ -22,80 +24,83 @@ using OutOfSchool.WebApi.Util;
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
 [TestFixture]
-public class RegionAdminControllerTests
+public class AreaAdminControllerTests
 {
-    private RegionAdminController regionAdminController;
-    private Mock<IRegionAdminService> regionAdminServiceMock;
+    private AreaAdminController areaAdminController;
+    private Mock<IAreaAdminService> areaAdminServiceMock;
     private IMapper mapper;
-    private RegionAdmin regionAdmin;
-    private List<RegionAdmin> regionAdmins;
-    private RegionAdminDto regionAdminDto;
-    private List<RegionAdminDto> regionAdminDtos;
-    private HttpContext fakeHttpContext; 
+    private AreaAdmin areaAdmin;
+    private List<AreaAdmin> areaAdmins;
+    private AreaAdminDto areaAdminDto;
+    private List<AreaAdminDto> areaAdminDtos;
+    private HttpContext fakeHttpContext;
 
     [SetUp]
     public void Setup()
     {
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
-        regionAdminServiceMock = new Mock<IRegionAdminService>();
-        regionAdminController =
-            new RegionAdminController(regionAdminServiceMock.Object, new Mock<ILogger<RegionAdminController>>().Object);
-        regionAdmin = AdminGenerator.GenerateRegionAdmin();
-        regionAdmins = AdminGenerator.GenerateRegionAdmins(10);
-        regionAdminDto = AdminGenerator.GenerateRegionAdminDto();
-        regionAdminDtos = AdminGenerator.GenerateRegionAdminsDtos(10);
+        areaAdminServiceMock = new Mock<IAreaAdminService>();
+        areaAdminController =
+            new AreaAdminController(areaAdminServiceMock.Object, new Mock<ILogger<AreaAdminController>>().Object);
+        areaAdmin = AdminGenerator.GenerateAreaAdmin();
+        areaAdmins = AdminGenerator.GenerateAreaAdmins(10);
+        areaAdminDto = AdminGenerator.GenerateAreaAdminDto();
+        areaAdminDtos = AdminGenerator.GenerateAreaAdminsDtos(10);
         fakeHttpContext = GetFakeHttpContext();
-        regionAdminController.ControllerContext.HttpContext = fakeHttpContext;
+        areaAdminController.ControllerContext.HttpContext = fakeHttpContext;
     }
 
+    #region GetById
     [Test]
     public async Task GetById_WhenIdIsValid_ShouldReturnOkResultObject()
     {
         // Arrange
-        regionAdminServiceMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(regionAdminDto);
+        areaAdminServiceMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(areaAdminDto);
 
         // Act
-        var result = await regionAdminController.GetById(It.IsAny<string>()).ConfigureAwait(false) as OkObjectResult;
+        var result = await areaAdminController.GetById(It.IsAny<string>()).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
-        regionAdminServiceMock.VerifyAll();
+        areaAdminServiceMock.VerifyAll();
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Value, Is.SameAs(regionAdminDto));
+        Assert.That(result.Value, Is.SameAs(areaAdminDto));
         Assert.That(result, Is.InstanceOf<OkObjectResult>());
     }
 
     [Test]
-    public async Task GetById_WhenNoRegionAdminWithSuchId_ReturnsNotFoundResult()
+    public async Task GetById_WhenNoAreaAdminWithSuchId_ReturnsNotFoundResult()
     {
         // Arrange
-        regionAdminServiceMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(null as RegionAdminDto);
+        areaAdminServiceMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(null as AreaAdminDto);
 
         // Act
-        var result = await regionAdminController.GetById(It.IsAny<string>()).ConfigureAwait(false);
+        var result = await areaAdminController.GetById(It.IsAny<string>()).ConfigureAwait(false);
 
         // Assert
-        regionAdminServiceMock.VerifyAll();
+        areaAdminServiceMock.VerifyAll();
         Assert.That(result, Is.InstanceOf<NotFoundObjectResult>());
     }
+    #endregion
 
+    #region GetByFilter
     [Test]
-    public async Task GetRegionAdmins_WhenCalled_ReturnsOkResultObject_WithExpectedCollectionDtos()
+    public async Task GetAreaAdmins_WhenCalled_ReturnsOkResultObject_WithExpectedCollectionDtos()
     {
         // Arrange
-        var expected = new SearchResult<RegionAdminDto>
+        var expected = new SearchResult<AreaAdminDto>
         {
             TotalAmount = 10,
-            Entities = regionAdmins.Select(x => mapper.Map<RegionAdminDto>(x)).ToList(),
+            Entities = areaAdmins.Select(x => mapper.Map<AreaAdminDto>(x)).ToList(),
         };
 
-        regionAdminServiceMock.Setup(x => x.GetByFilter(It.IsAny<RegionAdminFilter>()))
+        areaAdminServiceMock.Setup(x => x.GetByFilter(It.IsAny<AreaAdminFilter>()))
             .ReturnsAsync(expected);
 
         // Act
-        var result = await regionAdminController.GetByFilter(new RegionAdminFilter()).ConfigureAwait(false) as OkObjectResult;
+        var result = await areaAdminController.GetByFilter(new AreaAdminFilter()).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
-        regionAdminServiceMock.VerifyAll();
+        areaAdminServiceMock.VerifyAll();
         result.AssertResponseOkResultAndValidateValue(expected);
     }
 
@@ -103,26 +108,28 @@ public class RegionAdminControllerTests
     public async Task GetByFilter_WhenNoRecordsInDB_ReturnsNoContentResult()
     {
         // Arrange
-        regionAdminServiceMock.Setup(x => x.GetByFilter(It.IsAny<RegionAdminFilter>()))
-            .ReturnsAsync(new SearchResult<RegionAdminDto> { TotalAmount = 0, Entities = new List<RegionAdminDto>() });
+        areaAdminServiceMock.Setup(x => x.GetByFilter(It.IsAny<AreaAdminFilter>()))
+            .ReturnsAsync(new SearchResult<AreaAdminDto> { TotalAmount = 0, Entities = new List<AreaAdminDto>() });
 
         // Act
-        var result = await regionAdminController.GetByFilter(new RegionAdminFilter()).ConfigureAwait(false);
+        var result = await areaAdminController.GetByFilter(new AreaAdminFilter()).ConfigureAwait(false);
 
         // Assert
-        regionAdminServiceMock.VerifyAll();
+        areaAdminServiceMock.VerifyAll();
         Assert.That(result, Is.InstanceOf<NoContentResult>());
     }
+    #endregion
 
+    #region Create
     [Test]
     public async Task Create_WithInvalidModel_ReturnsStatusCode422()
     {
         // Arrange
-        var regionAdminBaseDto = new RegionAdminBaseDto();
-        regionAdminController.ModelState.AddModelError("fakeKey", "Model is invalid");
+        var areaAdminBaseDto = new AreaAdminBaseDto();
+        areaAdminController.ModelState.AddModelError("fakeKey", "Model is invalid");
 
         // Act
-        var result = await regionAdminController.Create(regionAdminBaseDto);
+        var result = await areaAdminController.Create(areaAdminBaseDto);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -134,56 +141,58 @@ public class RegionAdminControllerTests
     public async Task Create_WithValidModel_ReturnsSuccessResponseDto()
     {
         // Arrange
-        var regionAdminBaseDto = new RegionAdminBaseDto();
+        var areaAdminBaseDto = new AreaAdminBaseDto();
 
         var token = await fakeHttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
 
-        regionAdminServiceMock
-            .Setup(x => x.CreateRegionAdminAsync(It.IsAny<string>(), regionAdminBaseDto, token))
-            .ReturnsAsync(regionAdminBaseDto);
+        areaAdminServiceMock
+            .Setup(x => x.CreateAreaAdminAsync(It.IsAny<string>(), areaAdminBaseDto, token))
+            .ReturnsAsync(areaAdminBaseDto);
 
-        regionAdminController.ModelState.Clear();
+        areaAdminController.ModelState.Clear();
 
         // Act
-        var result = await regionAdminController.Create(regionAdminBaseDto);
+        var result = await areaAdminController.Create(areaAdminBaseDto);
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.InstanceOf<OkObjectResult>());
-        Assert.That((result as ObjectResult).Value, Is.InstanceOf<RegionAdminBaseDto>());
+        Assert.That((result as ObjectResult).Value, Is.InstanceOf<AreaAdminBaseDto>());
     }
 
     [Test]
     public async Task Create_WithErrorResponse_ReturnsObjectResult()
     {
         // Arrange
-        var regionAdminBaseDto = new RegionAdminBaseDto();
+        var areaAdminBaseDto = new AreaAdminBaseDto();
         var errorResponse = new ErrorResponse();
 
         var token = await fakeHttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
 
-        regionAdminServiceMock
-            .Setup(x => x.CreateRegionAdminAsync(It.IsAny<string>(), regionAdminBaseDto, token))
+        areaAdminServiceMock
+            .Setup(x => x.CreateAreaAdminAsync(It.IsAny<string>(), areaAdminBaseDto, token))
             .ReturnsAsync(errorResponse);
 
-        regionAdminController.ModelState.Clear();
+        areaAdminController.ModelState.Clear();
 
         // Act
-        var result = await regionAdminController.Create(regionAdminBaseDto);
+        var result = await areaAdminController.Create(areaAdminBaseDto);
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.InstanceOf<ObjectResult>());
     }
+#endregion
 
+    #region Update
     [Test]
     public async Task Update_WithNullModel_ReturnsBadRequestObjectResult()
     {
         // Arrange
-        regionAdminController.ModelState.Clear();
+        areaAdminController.ModelState.Clear();
 
         // Act
-        var result = await regionAdminController.Update(null);
+        var result = await areaAdminController.Update(null);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -194,11 +203,11 @@ public class RegionAdminControllerTests
     public async Task Update_WithInvalidModel_ReturnsRequestObjectResult()
     {
         // Arrange
-        var updateRegionAdminDto = new BaseUserDto();
-        regionAdminController.ModelState.AddModelError("fakeKey", "Model is invalid");
+        var updateAreaAdminDto = new AreaAdminDto();
+        areaAdminController.ModelState.AddModelError("fakeKey", "Model is invalid");
 
         // Act
-        var result = await regionAdminController.Update(updateRegionAdminDto);
+        var result = await areaAdminController.Update(updateAreaAdminDto);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -209,18 +218,18 @@ public class RegionAdminControllerTests
     public async Task Update_WithValidModel_ReturnsOkResult()
     {
         // Arrange
-        var updateRegionAdminDto = new BaseUserDto();
+        var updateAreaAdminDto = new AreaAdminDto();
 
         var token = await fakeHttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
 
-        regionAdminServiceMock
-            .Setup(x => x.UpdateRegionAdminAsync(It.IsAny<string>(), updateRegionAdminDto, token))
-            .ReturnsAsync(new RegionAdminDto());
+        areaAdminServiceMock
+            .Setup(x => x.UpdateAreaAdminAsync(It.IsAny<string>(), updateAreaAdminDto, token))
+            .ReturnsAsync(updateAreaAdminDto);
 
-        regionAdminController.ModelState.Clear();
+        areaAdminController.ModelState.Clear();
 
         // Act
-        var result = await regionAdminController.Update(updateRegionAdminDto);
+        var result = await areaAdminController.Update(updateAreaAdminDto);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -231,19 +240,19 @@ public class RegionAdminControllerTests
     public async Task Update_WithErrorResponse_ReturnsStatusCodeResult()
     {
         // Arrange
-        var updateRegionAdminDto = new BaseUserDto();
+        var updateAreaAdminDto = new AreaAdminDto();
         var errorResponse = new ErrorResponse();
 
         var token = await fakeHttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
 
-        regionAdminServiceMock
-            .Setup(x => x.UpdateRegionAdminAsync(It.IsAny<string>(), updateRegionAdminDto, token))
+        areaAdminServiceMock
+            .Setup(x => x.UpdateAreaAdminAsync(It.IsAny<string>(), updateAreaAdminDto, token))
             .ReturnsAsync(errorResponse);
 
-        regionAdminController.ModelState.Clear();
+        areaAdminController.ModelState.Clear();
 
         // Act
-        var result = await regionAdminController.Update(updateRegionAdminDto);
+        var result = await areaAdminController.Update(updateAreaAdminDto);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -251,17 +260,52 @@ public class RegionAdminControllerTests
     }
 
     [Test]
+    public async Task Update_WhenServiceThrowDbUpdateConcurrencyException_ReturnsBadRequest()
+    {
+        // Arrange
+        var updateAreaAdminDto = new AreaAdminDto();
+
+        areaAdminServiceMock
+            .Setup(x => x.UpdateAreaAdminAsync(It.IsAny<string>(), updateAreaAdminDto, It.IsAny<string>()))
+            .Throws<DbUpdateConcurrencyException>();
+
+        // Act
+        var result = await areaAdminController.Update(updateAreaAdminDto);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
+    }
+
+    [Test]
+    public async Task Update_WhenUserIsNotAdmin_ReturnsForbidenResponse()
+    {
+        // Arrange
+        var updateAreaAdminDto = new AreaAdminDto { Id = string.Empty };
+
+        // Act
+        var result = await areaAdminController.Update(updateAreaAdminDto);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Is.InstanceOf<ObjectResult>());
+        Assert.AreEqual((int)HttpStatusCode.Forbidden, (result as ObjectResult).StatusCode);
+    }
+#endregion
+
+    #region Delete
+    [Test]
     public async Task Delete_WithValidId_ReturnsOkResult()
     {
         // Arrange
         var token = await fakeHttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
 
-        regionAdminServiceMock
-            .Setup(x => x.DeleteRegionAdminAsync(It.IsAny<string>(), It.IsAny<string>(), token))
+        areaAdminServiceMock
+            .Setup(x => x.DeleteAreaAdminAsync(It.IsAny<string>(), It.IsAny<string>(), token))
             .ReturnsAsync(It.IsAny<ActionResult>());
 
         // Act
-        var result = await regionAdminController.Delete(It.IsAny<string>());
+        var result = await areaAdminController.Delete(It.IsAny<string>());
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -274,30 +318,32 @@ public class RegionAdminControllerTests
         // Arrange
         var token = await fakeHttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
 
-        regionAdminServiceMock
-            .Setup(x => x.DeleteRegionAdminAsync(It.IsAny<string>(), It.IsAny<string>(), token))
+        areaAdminServiceMock
+            .Setup(x => x.DeleteAreaAdminAsync(It.IsAny<string>(), It.IsAny<string>(), token))
             .ReturnsAsync(new ErrorResponse());
 
         // Act
-        var result = await regionAdminController.Delete(It.IsAny<string>());
+        var result = await areaAdminController.Delete(It.IsAny<string>());
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.InstanceOf<ObjectResult>());
     }
+#endregion
 
+    #region Block
     [Test]
     public async Task Block_WithValidIdAndNullBlocked_ReturnsBadRequestObjectResult()
     {
         // Arrange
         var token = await fakeHttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
 
-        regionAdminServiceMock
-            .Setup(x => x.BlockRegionAdminAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
+        areaAdminServiceMock
+            .Setup(x => x.BlockAreaAdminAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
             .ReturnsAsync(It.IsAny<ActionResult>());
 
         // Act
-        var result = await regionAdminController.Block(It.IsAny<string>(), null);
+        var result = await areaAdminController.Block(It.IsAny<string>(), null);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -310,12 +356,12 @@ public class RegionAdminControllerTests
         // Arrange
         var token = await fakeHttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
 
-        regionAdminServiceMock
-            .Setup(x => x.BlockRegionAdminAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
+        areaAdminServiceMock
+            .Setup(x => x.BlockAreaAdminAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
             .ReturnsAsync(It.IsAny<ActionResult>());
 
         // Act
-        var result = await regionAdminController.Block(It.IsAny<string>(), It.IsAny<bool>());
+        var result = await areaAdminController.Block(It.IsAny<string>(), It.IsAny<bool>());
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -328,35 +374,38 @@ public class RegionAdminControllerTests
         // Arrange
         var token = await fakeHttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
 
-        regionAdminServiceMock
-            .Setup(x => x.BlockRegionAdminAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
+        areaAdminServiceMock
+            .Setup(x => x.BlockAreaAdminAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
             .ReturnsAsync(new ErrorResponse());
 
         // Act
-        var result = await regionAdminController.Block(It.IsAny<string>(), It.IsAny<bool>());
+        var result = await areaAdminController.Block(It.IsAny<string>(), It.IsAny<bool>());
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.InstanceOf<ObjectResult>());
     }
+    #endregion
 
+    #region Reinvite
     [Test]
     public async Task Reinvite_WithValidId_ReturnsOkResult()
     {
         // Arrange
         var token = await fakeHttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
 
-        regionAdminServiceMock
-            .Setup(x => x.ReinviteRegionAdminAsync(It.IsAny<string>(), It.IsAny<string>(), token))
+        areaAdminServiceMock
+            .Setup(x => x.ReinviteAreaAdminAsync(It.IsAny<string>(), It.IsAny<string>(), token))
             .ReturnsAsync(It.IsAny<ActionResult>());
 
         // Act
-        var result = await regionAdminController.Reinvite(It.IsAny<string>());
+        var result = await areaAdminController.Reinvite(It.IsAny<string>());
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.InstanceOf<OkResult>());
     }
+    #endregion
 
     private HttpContext GetFakeHttpContext()
     {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -79,5 +80,16 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
          .Include(x => x.Workshops)
          .ThenInclude(w => w.Applications)
          .SingleOrDefaultAsync(provider => !provider.IsDeleted && provider.Id == id);
+    }
+
+    public Task<List<Provider>> GetAllWithDeleted(DateTime updatedAfter, int size)
+    {
+        IQueryable<Provider> query = db.Providers;
+
+        query = updatedAfter == default
+            ? query.Where(provider => !provider.IsDeleted)
+            : query.Where(provider => provider.UpdatedAt > updatedAfter || provider.Workshops.Any(w => w.UpdatedAt > updatedAfter));
+
+        return query.Take(size).ToListAsync();
     }
 }

@@ -83,5 +83,8 @@ internal class ProviderConfiguration : IEntityTypeConfiguration<Provider>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(x => x.EdrpouIpn);
+
+        builder.Property(x => x.UpdatedAt)
+                .ValueGeneratedOnAddOrUpdate();
     }
 }

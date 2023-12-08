@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -146,5 +147,29 @@ public class MinistryAdminServiceTests
         // Act
         ministryAdminService.Invoking(x => x.GetByFilter(new MinistryAdminFilter())).Should()
             .ThrowAsync<ArgumentNullException>();
+    }
+
+    [Test]
+    public void Update_WhenNullModel_ReturnsException()
+    {
+        // Act
+        ministryAdminService
+            .Invoking(x => x
+                .UpdateMinistryAdminAsync(It.IsAny<string>(), It.IsAny<BaseUserDto>(), It.IsAny<string>()))
+            .Should()
+            .ThrowAsync<ArgumentNullException>();
+    }
+
+    [Test]
+    public async Task Update_WhenAdminNotExist_ReturnsErrorResponse()
+    {
+        // Arrange
+        institutionAdminRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(null as InstitutionAdmin);
+
+        // Act
+        var result = await ministryAdminService.UpdateMinistryAdminAsync(It.IsAny<string>(), new BaseUserDto(), It.IsAny<string>());
+
+        // Assert
+        Assert.AreEqual(HttpStatusCode.NotFound, result.Match(error => error.HttpStatusCode, null));
     }
 }

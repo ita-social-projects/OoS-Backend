@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Changes;
 
@@ -10,11 +11,17 @@ namespace OutOfSchool.WebApi.Services;
 
 public class ChangesLogService : IChangesLogService
 {
+    public const char WORD_SEPARATOR_SPACE = ' ';
+    public const char WORD_SEPARATOR_COMMA = ',';
+
+    private static char[] wordSplitSymbols = new char[] { WORD_SEPARATOR_SPACE, WORD_SEPARATOR_COMMA };
+
     private readonly IOptions<ChangesLogConfig> config;
     private readonly IChangesLogRepository changesLogRepository;
     private readonly IProviderRepository providerRepository;
     private readonly IApplicationRepository applicationRepository;
     private readonly IEntityRepository<long, ProviderAdminChangesLog> providerAdminChangesLogRepository;
+    private readonly IEntityAddOnlyRepository<long, ParentBlockedByAdminLog> parentBlockedByAdminLogRepository;
     private readonly ILogger<ChangesLogService> logger;
     private readonly IMapper mapper;
     private readonly IValueProjector valueProjector;
@@ -30,6 +37,7 @@ public class ChangesLogService : IChangesLogService
         IProviderRepository providerRepository,
         IApplicationRepository applicationRepository,
         IEntityRepository<long, ProviderAdminChangesLog> providerAdminChangesLogRepository,
+        IEntityAddOnlyRepository<long, ParentBlockedByAdminLog> parentBlockedByAdminLogRepository,
         ILogger<ChangesLogService> logger,
         IMapper mapper,
         IValueProjector valueProjector,
@@ -44,6 +52,7 @@ public class ChangesLogService : IChangesLogService
         this.providerRepository = providerRepository;
         this.applicationRepository = applicationRepository;
         this.providerAdminChangesLogRepository = providerAdminChangesLogRepository;
+        this.parentBlockedByAdminLogRepository = parentBlockedByAdminLogRepository;
         this.logger = logger;
         this.mapper = mapper;
         this.valueProjector = valueProjector;
@@ -301,6 +310,34 @@ public class ChangesLogService : IChangesLogService
         };
     }
 
+    public async Task<SearchResult<ParentBlockedByAdminChangesLogDto>> GetParentBlockedByAdminChangesLogAsync(
+    ParentBlockedByAdminChangesLogRequest request)
+    {
+        ValidateFilter(request);
+        var where = GetQueryFilter(request);
+        var sortExpression = GetParentBlockedByAdminChangesOrderParams();
+        var count = await parentBlockedByAdminLogRepository.Count(where).ConfigureAwait(false);
+        var query = parentBlockedByAdminLogRepository
+            .Get(request.From, request.Size, string.Empty, where, sortExpression, true)
+            .Select(x => new ParentBlockedByAdminChangesLogDto()
+            {
+                ParentId = x.ParentId,
+                ParentFullName = $"{x.Parent.User.LastName} {x.Parent.User.FirstName} {x.Parent.User.MiddleName}".TrimEnd(),
+                User = mapper.Map<ShortUserDto>(x.User),
+                OperationDate = x.OperationDate,
+                Reason = x.Reason,
+                IsBlocked = x.IsBlocked,
+            }).IgnoreQueryFilters();
+
+        var entities = await query.ToListAsync().ConfigureAwait(false);
+
+        return new SearchResult<ParentBlockedByAdminChangesLogDto>
+        {
+            Entities = entities,
+            TotalAmount = count,
+        };
+    }
+
     private async Task<IQueryable<ChangesLog>> GetChangesLogAsync(ChangesLogFilter filter)
     {
         ValidateFilter(filter);
@@ -344,14 +381,14 @@ public class ChangesLogService : IChangesLogService
 
         if (filter.DateTo.HasValue)
         {
-            expr = expr.And(x => x.UpdatedDate < filter.DateTo.Value.Date.AddDays(1));
+            expr = expr.And(x => x.UpdatedDate < filter.DateTo.Value.NextDayStart());
         }
 
         if (!string.IsNullOrWhiteSpace(filter.SearchString))
         {
             var tempExpr = PredicateBuilder.False<ChangesLog>();
 
-            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            foreach (var word in filter.SearchString.Split(wordSplitSymbols, StringSplitOptions.RemoveEmptyEntries))
             {
                 tempExpr = tempExpr.Or(
                     x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
@@ -392,14 +429,14 @@ public class ChangesLogService : IChangesLogService
 
         if (request.DateTo.HasValue)
         {
-            expr = expr.And(x => x.OperationDate < request.DateTo.Value.Date.AddDays(1));
+            expr = expr.And(x => x.OperationDate < request.DateTo.Value.NextDayStart());
         }
 
         if (!string.IsNullOrWhiteSpace(request.SearchString))
         {
             var tempExpr = PredicateBuilder.False<ProviderAdminChangesLog>();
 
-            foreach (var word in request.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            foreach (var word in request.SearchString.Split(wordSplitSymbols, StringSplitOptions.RemoveEmptyEntries))
             {
                 tempExpr = tempExpr.Or(
                     x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
@@ -415,13 +452,57 @@ public class ChangesLogService : IChangesLogService
         return expr;
     }
 
+    private Expression<Func<ParentBlockedByAdminLog, bool>> GetQueryFilter(ParentBlockedByAdminChangesLogRequest request)
+    {
+        Expression<Func<ParentBlockedByAdminLog, bool>> expr = PredicateBuilder.True<ParentBlockedByAdminLog>();
+
+        expr = request.ShowParents switch
+        {
+            ShowParents.All => expr,
+            ShowParents.Blocked => expr.And(x => x.IsBlocked),
+            ShowParents.Unblocked => expr.And(x => !x.IsBlocked),
+            _ => throw new NotImplementedException(),
+        };
+
+        if (request.DateFrom.HasValue)
+        {
+            expr = expr.And(x => x.OperationDate >= request.DateFrom.Value.Date);
+        }
+
+        if (request.DateTo.HasValue)
+        {
+            expr = expr.And(x => x.OperationDate < request.DateTo.Value.NextDayStart());
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.SearchString))
+        {
+            var tempExpr = PredicateBuilder.False<ParentBlockedByAdminLog>();
+
+            foreach (var word in request.SearchString.Split(wordSplitSymbols, StringSplitOptions.RemoveEmptyEntries))
+            {
+                tempExpr = tempExpr.Or(
+                    x => x.Parent.User.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.Parent.User.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.Parent.User.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.User.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.User.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.Reason.Contains(word, StringComparison.InvariantCultureIgnoreCase));
+            }
+
+            expr = expr.And(tempExpr);
+        }
+
+        return expr;
+    }
+
     private Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection> GetOrderParams()
     {
         // Returns default ordering so far...
         var sortExpression = new Dictionary<Expression<Func<ChangesLog, object>>, SortDirection>
-    {
-        { x => x.UpdatedDate, SortDirection.Descending },
-    };
+        {
+            { x => x.UpdatedDate, SortDirection.Descending },
+        };
 
         return sortExpression;
     }
@@ -430,9 +511,19 @@ public class ChangesLogService : IChangesLogService
     {
         // Returns default ordering so far...
         var sortExpression = new Dictionary<Expression<Func<ProviderAdminChangesLog, object>>, SortDirection>
+        {
+            { x => x.OperationDate, SortDirection.Descending },
+        };
+
+        return sortExpression;
+    }
+
+    private Dictionary<Expression<Func<ParentBlockedByAdminLog, dynamic>>, SortDirection> GetParentBlockedByAdminChangesOrderParams()
     {
-        { x => x.OperationDate, SortDirection.Descending },
-    };
+        var sortExpression = new Dictionary<Expression<Func<ParentBlockedByAdminLog, object>>, SortDirection>
+        {
+            { x => x.OperationDate, SortDirection.Descending },
+        };
 
         return sortExpression;
     }

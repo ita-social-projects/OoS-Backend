@@ -220,7 +220,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
     /// <inheritdoc/>
     public async Task<Either<ErrorResponse, RegionAdminDto>> UpdateRegionAdminAsync(
         string userId,
-        RegionAdminDto updateRegionAdminDto,
+        BaseUserDto updateRegionAdminDto,
         string token)
     {
         _ = updateRegionAdminDto ?? throw new ArgumentNullException(nameof(updateRegionAdminDto));
@@ -433,7 +433,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
     /// <inheritdoc/>
     public async Task<bool> IsRegionAdminSubordinateAsync(string ministryAdminUserId, string regionAdminId)
     {
-        _= ministryAdminUserId ?? throw new ArgumentNullException(nameof(ministryAdminUserId));
+        _ = ministryAdminUserId ?? throw new ArgumentNullException(nameof(ministryAdminUserId));
         _ = regionAdminId ?? throw new ArgumentNullException(nameof(regionAdminId));
 
         var ministryAdmin = await ministryAdminService.GetByIdAsync(ministryAdminUserId).ConfigureAwait(false);
