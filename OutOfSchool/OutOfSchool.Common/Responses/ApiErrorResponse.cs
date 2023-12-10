@@ -15,7 +15,7 @@ public class ApiErrorResponse
         this.apiErrors = new List<ApiError>();
     }
 
-    public List<ApiError> ApiErrors => apiErrors;
+    public IReadOnlyList<ApiError> ApiErrors => apiErrors.AsReadOnly();
 
     public void AddApiError(ApiError apiError)
     {

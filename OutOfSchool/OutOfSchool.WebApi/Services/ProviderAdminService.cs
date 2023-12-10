@@ -67,7 +67,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         if (!hasAccess)
         {
             Logger.LogError("User(id): {UserId} doesn't have permission to create provider admin", userId);
-            apiErrorService.AddApiError(ApiErrorsTypes.ProviderAdmin.Creation.UserDontHavePermission(userId));
+            apiErrorService.AddApiError(ApiErrorsTypes.ProviderAdmin.UserDontHavePermissionToCreate(userId));
             return new ErrorResponse
             {
                 HttpStatusCode = HttpStatusCode.Forbidden,
