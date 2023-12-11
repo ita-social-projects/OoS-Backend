@@ -3,7 +3,7 @@
 namespace OutOfSchool.Common.Responces;
 public class ApiError
 {
-    public ApiError(string code, string message, string group)
+    public ApiError(string group, string code, string message)
     {
         if (string.IsNullOrEmpty(code))
         {
@@ -20,14 +20,14 @@ public class ApiError
             throw new ArgumentException(@"Group must be non-empty value", nameof(group));
         }
 
+        Group = group;
         Code = code;
         Message = message;
-        Group = group;
     }
+
+    public string Group { get; }
 
     public string Code { get; }
 
     public string Message { get; }
-
-    public string Group { get; }
 }

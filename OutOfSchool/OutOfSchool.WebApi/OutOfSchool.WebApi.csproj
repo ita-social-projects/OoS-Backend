@@ -15,7 +15,6 @@
     <ItemGroup>
         <PackageReference Include="CsvHelper" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
-        <PackageReference Include="OneOf" />
         <Protobuf Include="..\OutOfSchool.GRPC\Protos\ProviderAdmin.proto" GrpcServices="Client" />
         <PackageReference Include="AutoMapper" />
         <PackageReference Include="Google.Protobuf" />

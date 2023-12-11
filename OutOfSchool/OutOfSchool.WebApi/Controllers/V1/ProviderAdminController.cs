@@ -6,7 +6,6 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshops;
-using OutOfSchool.WebApi.Services.ApiErrors;
 
 namespace OutOfSchool.WebApi.Controllers;
 
@@ -20,7 +19,6 @@ public class ProviderAdminController : Controller
     private readonly IUserService userService;
     private readonly IProviderService providerService;
     private readonly ILogger<ProviderAdminController> logger;
-    private readonly IApiErrorService apiErrorService;
     private string path;
     private string userId;
 
@@ -28,14 +26,12 @@ public class ProviderAdminController : Controller
         IProviderAdminService providerAdminService,
         IUserService userService,
         IProviderService providerService,
-        ILogger<ProviderAdminController> logger,
-        IApiErrorService apiErrorService)
+        ILogger<ProviderAdminController> logger)
     {
         this.providerAdminService = providerAdminService;
         this.userService = userService;
         this.providerService = providerService;
         this.logger = logger;
-        this.apiErrorService = apiErrorService;
     }
 
     public override void OnActionExecuting(ActionExecutingContext context)
@@ -89,7 +85,7 @@ public class ProviderAdminController : Controller
             .ConfigureAwait(false);
 
         return response.Match<ActionResult>(
-            error => StatusCode((int)error.HttpStatusCode, new { error.Message, apiErrorService.ApiErrorResponse.ApiErrors }),
+            error => StatusCode((int)error.HttpStatusCode, new { error.Message, error.ApiErrorResponse }),
             result =>
             {
                 logger.LogInformation("Successfully created ProviderAdmin(id): {result.UserId} by User(id): {UserId}", result.UserId, userId);
