@@ -15,6 +15,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ProvidersInfo;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -24,6 +25,7 @@ public class ExternalExportProviderServiceTests
     private ExternalExportProviderService externalExportProviderService;
     private Mock<IProviderRepository> mockProviderRepository;
     private Mock<IWorkshopRepository> mockWorkshopRepository;
+    private Mock<IAverageRatingService> mockAverageRatingService;
     private IMapper mockMapper;
     private Mock<ILogger<ExternalExportProviderService>> mockLogger;
 
@@ -32,12 +34,14 @@ public class ExternalExportProviderServiceTests
     {
         mockProviderRepository = new Mock<IProviderRepository>();
         mockWorkshopRepository = new Mock<IWorkshopRepository>();
+        mockAverageRatingService = new Mock<IAverageRatingService>();
         mockMapper = OutOfSchool.Tests.Common.TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         mockLogger = new Mock<ILogger<ExternalExportProviderService>>();
 
         externalExportProviderService = new ExternalExportProviderService(
             mockProviderRepository.Object,
             mockWorkshopRepository.Object,
+            mockAverageRatingService.Object,
             mockMapper,
             mockLogger.Object);
     }
@@ -47,12 +51,12 @@ public class ExternalExportProviderServiceTests
     {
         // Arrange
         var updatedAfter = DateTime.UtcNow;
-        var sizeFilter = new SizeFilter { Size = 10 };
+        var offsetFilter = new OffsetFilter { Size = 10 };
         var fakeProviders = ProvidersGenerator.Generate(0);
         var fakeWorkshops = WorkshopGenerator.Generate(0);
 
         mockProviderRepository
-            .Setup(x => x.GetAllWithDeleted(updatedAfter,sizeFilter.Size))
+            .Setup(x => x.GetAllWithDeleted(updatedAfter, offsetFilter.From, offsetFilter.Size))
             .ReturnsAsync(fakeProviders);
 
         mockWorkshopRepository
@@ -60,7 +64,7 @@ public class ExternalExportProviderServiceTests
             .ReturnsAsync(fakeWorkshops);
 
         // Act
-        var result = await externalExportProviderService.GetProvidersWithWorkshops(updatedAfter, sizeFilter);
+        var result = await externalExportProviderService.GetProvidersWithWorkshops(updatedAfter, offsetFilter);
 
         // Assert
         Assert.IsNotNull(result);
@@ -73,13 +77,13 @@ public class ExternalExportProviderServiceTests
     {
         // Arrange
         var updatedAfter = DateTime.UtcNow;
-        var sizeFilter = new SizeFilter { Size = 10 };
+        var offsetFilter = new OffsetFilter { Size = 10 };
 
         var fakeProviders = ProvidersGenerator.Generate(5);
         var fakeWorkshops = WorkshopGenerator.Generate(3);
 
         mockProviderRepository
-            .Setup(x => x.GetAllWithDeleted(It.IsAny<DateTime>(), sizeFilter.Size))
+            .Setup(x => x.GetAllWithDeleted(It.IsAny<DateTime>(), offsetFilter.From, offsetFilter.Size))
             .ReturnsAsync(fakeProviders);
 
         mockWorkshopRepository
@@ -87,7 +91,7 @@ public class ExternalExportProviderServiceTests
             .ReturnsAsync(fakeWorkshops);
 
         // Act
-        var result = await externalExportProviderService.GetProvidersWithWorkshops(updatedAfter, sizeFilter);
+        var result = await externalExportProviderService.GetProvidersWithWorkshops(updatedAfter, offsetFilter);
 
         // Assert
         Assert.IsNotNull(result);
@@ -100,16 +104,16 @@ public class ExternalExportProviderServiceTests
     {
         // Arrange
         var updatedAfter = DateTime.UtcNow;
-        var sizeFilter = new SizeFilter { Size = 10 };
-        mockProviderRepository.Setup(repo => repo.GetAllWithDeleted(updatedAfter, sizeFilter.Size))
+        var offsetFilter = new OffsetFilter { Size = 10 };
+        mockProviderRepository.Setup(repo => repo.GetAllWithDeleted(updatedAfter, offsetFilter.From,  offsetFilter.Size))
             .ThrowsAsync(new Exception("Simulated exception"));
 
         // Act
-        var result = await externalExportProviderService.GetProvidersWithWorkshops(DateTime.Now, new SizeFilter());
+        var result = await externalExportProviderService.GetProvidersWithWorkshops(DateTime.Now, new OffsetFilter());
 
         // Assert
         Assert.NotNull(result);
-        Assert.AreEqual(0, result?.TotalAmount ?? 0); ;
+        Assert.AreEqual(0, result?.TotalAmount ?? 0); 
         Assert.IsEmpty(result?.Entities ?? Enumerable.Empty<ProviderInfoBaseDto>());
     }
 
@@ -118,16 +122,16 @@ public class ExternalExportProviderServiceTests
     {
         // Arrange
         var updatedAfter = DateTime.UtcNow;
-        var sizeFilter = new SizeFilter { Size = 10 };
+        var offsetFilter = new OffsetFilter { Size = 10 };
         mockWorkshopRepository.Setup(repo => repo.GetAllWithDeleted(It.IsAny<Expression<Func<Workshop, bool>>>()))
            .ThrowsAsync(new Exception("Simulated exception"));
 
         // Act
-        var result = await externalExportProviderService.GetProvidersWithWorkshops(DateTime.Now, new SizeFilter());
+        var result = await externalExportProviderService.GetProvidersWithWorkshops(updatedAfter, offsetFilter);
 
         // Assert
         Assert.NotNull(result);
-        Assert.AreEqual(0, result?.TotalAmount ?? 0); ;
+        Assert.AreEqual(0, result?.TotalAmount ?? 0); 
         Assert.IsEmpty(result?.Entities ?? Enumerable.Empty<ProviderInfoBaseDto>());
     }
 
@@ -136,12 +140,12 @@ public class ExternalExportProviderServiceTests
     {
         // Arrange
         var updatedAfter = DateTime.UtcNow;
-        var sizeFilter = new SizeFilter { Size = 10 };
-        mockProviderRepository.Setup(repo => repo.GetAllWithDeleted(updatedAfter, sizeFilter.Size))
+        var offsetFilter = new OffsetFilter { Size = 10 };
+        mockProviderRepository.Setup(repo => repo.GetAllWithDeleted(updatedAfter, offsetFilter.From, offsetFilter.Size))
         .ReturnsAsync((List<Provider>)null);
 
         // Act
-        var result = await externalExportProviderService.GetProvidersWithWorkshops(DateTime.Now, new SizeFilter());
+        var result = await externalExportProviderService.GetProvidersWithWorkshops(DateTime.Now, new OffsetFilter());
 
         // Assert
         Assert.NotNull(result);
@@ -154,7 +158,7 @@ public class ExternalExportProviderServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportProviderService(null, Mock.Of<IWorkshopRepository>(), Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportProviderService>>()));
+            new ExternalExportProviderService(null, Mock.Of<IWorkshopRepository>(), Mock.Of<IAverageRatingService>(), Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportProviderService>>()));
     }
 
     [Test]
@@ -162,7 +166,7 @@ public class ExternalExportProviderServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportProviderService(Mock.Of<IProviderRepository>(), null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportProviderService>>()));
+            new ExternalExportProviderService(Mock.Of<IProviderRepository>(), null, Mock.Of<IAverageRatingService>(), Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportProviderService>>()));
     }
 
     [Test]
@@ -170,7 +174,7 @@ public class ExternalExportProviderServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportProviderService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), null, Mock.Of<ILogger<ExternalExportProviderService>>()));
+            new ExternalExportProviderService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IAverageRatingService>(), null, Mock.Of<ILogger<ExternalExportProviderService>>()));
     }
 
     [Test]
@@ -178,7 +182,15 @@ public class ExternalExportProviderServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportProviderService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IMapper>(), null));
+            new ExternalExportProviderService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IAverageRatingService>(), Mock.Of<IMapper>(), null));
+    }
+
+    [Test]
+    public void Constructor_NullAverageRatingService_ThrowsArgumentNullException()
+    {
+        // Arrange, Act, Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            new ExternalExportProviderService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportProviderService>>()));
     }
 
     [Test]
@@ -192,7 +204,7 @@ public class ExternalExportProviderServiceTests
         using (var dbContext = new OutOfSchoolDbContext(options))
         {
             var updatedAfter = default(DateTime);
-            var sizeFilter = new SizeFilter { Size = 10 };
+            var offsetFilter = new OffsetFilter { Size = 10 }; 
             var fakeProviders = ProvidersGenerator.Generate(5);
             var fakeWorkshops = WorkshopGenerator.Generate(3);
 
@@ -209,12 +221,13 @@ public class ExternalExportProviderServiceTests
             var externalExportProviderService = new ExternalExportProviderService(
                 providerRepository,
                 workshopRepository,
+                new Mock<IAverageRatingService>().Object,
                 new Mapper(new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>())),
                 new Mock<ILogger<ExternalExportProviderService>>().Object
             );
 
             // Act
-            var result = await externalExportProviderService.GetProvidersWithWorkshops(updatedAfter, sizeFilter);
+            var result = await externalExportProviderService.GetProvidersWithWorkshops(updatedAfter, offsetFilter);
 
             // Assert
             Assert.IsNotNull(result);

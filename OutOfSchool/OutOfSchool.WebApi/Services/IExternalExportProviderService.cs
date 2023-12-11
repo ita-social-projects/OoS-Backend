@@ -5,5 +5,5 @@ namespace OutOfSchool.WebApi.Services;
 
 public interface IExternalExportProviderService
 {
-    Task<SearchResult<ProviderInfoBaseDto>> GetProvidersWithWorkshops(DateTime updatedAfter, SizeFilter sizeFilter);
+    Task<SearchResult<ProviderInfoBaseDto>> GetProvidersWithWorkshops(DateTime updatedAfter, OffsetFilter offsetFilter);
 }
