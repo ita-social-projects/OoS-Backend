@@ -12,4 +12,6 @@ public interface IProviderRepository : ISensitiveEntityRepositorySoftDeleted<Pro
     Task<Provider> GetWithNavigations(Guid id);
 
     Task<List<Provider>> GetAllWithDeleted(DateTime updatedAfter, int from, int size);
+
+    int CountWithDeleted();
 }

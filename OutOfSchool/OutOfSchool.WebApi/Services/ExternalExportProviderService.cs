@@ -32,7 +32,6 @@ public class ExternalExportProviderService : IExternalExportProviderService
         try
         {
             logger.LogInformation("Getting all updated providers started.");
-
             var providers = await GetAllUpdatedProviders(updatedAfter, offsetFilter);
 
             if (providers == null)
@@ -58,9 +57,11 @@ public class ExternalExportProviderService : IExternalExportProviderService
                 ? "Providers table is empty."
                 : $"All {providerWorkshopDtos.Count} records were successfully received from the Provider table");
 
+            int count = providerRepository.CountWithDeleted();
+
             var searchResult = new SearchResult<ProviderInfoBaseDto>
             {
-                TotalAmount = providerWorkshopDtos.Count,
+                TotalAmount = count,
                 Entities = providerWorkshopDtos,
             };
 
