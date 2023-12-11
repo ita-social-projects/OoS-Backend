@@ -93,5 +93,14 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
         return query.Skip(from).Take(size).ToListAsync();
     }
 
-    public int CountWithDeleted() => db.Providers.Count();
+    public Task<int> CountWithDeleted(DateTime updatedAfter)
+    {
+        IQueryable<Provider> query = dbSet;
+
+        query = updatedAfter == default
+        ? query.Where(provider => !provider.IsDeleted)
+        : query.Where(provider => provider.UpdatedAt > updatedAfter || provider.Workshops.Any(w => w.UpdatedAt > updatedAfter));
+
+        return query.CountAsync();
+    }
 }

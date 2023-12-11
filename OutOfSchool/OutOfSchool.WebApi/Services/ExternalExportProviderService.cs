@@ -57,7 +57,7 @@ public class ExternalExportProviderService : IExternalExportProviderService
                 ? "Providers table is empty."
                 : $"All {providerWorkshopDtos.Count} records were successfully received from the Provider table");
 
-            int count = providerRepository.CountWithDeleted();
+            int count = await providerRepository.CountWithDeleted(updatedAfter);
 
             var searchResult = new SearchResult<ProviderInfoBaseDto>
             {
