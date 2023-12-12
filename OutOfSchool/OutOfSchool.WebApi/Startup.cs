@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.HeaderPropagation;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
+using OutOfSchool.EmailSender;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Services.Communication.ICommunication;
@@ -421,5 +422,13 @@ public static class Startup
             options.Headers.Add("Request-Id", defaultHeaderDelegate);
             options.Headers.Add("X-Request-Id", defaultHeaderDelegate);
         });
+
+        var mailConfig = configuration
+            .GetSection(EmailOptions.SectionName)
+            .Get<EmailOptions>();
+        services.AddEmailSender(
+            builder.Environment.IsDevelopment(),
+            mailConfig.SendGridKey,
+            builder => builder.Bind(configuration.GetSection(EmailOptions.SectionName)));
     }
 }

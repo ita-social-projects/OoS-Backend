@@ -81,6 +81,7 @@
         <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
         <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
         <ProjectReference Include="..\OutOfSchool.ElasticsearchData\OutOfSchool.ElasticsearchData.csproj" />
+        <ProjectReference Include="..\OutOfSchool.EmailSender\OutOfSchool.EmailSender.csproj" />
         <ProjectReference Include="..\OutOfSchool.GRPC\OutOfSchool.GRPC.csproj" />
         <ProjectReference Include="..\OutOfSchool.Redis\OutOfSchool.Redis.csproj" />
     </ItemGroup>

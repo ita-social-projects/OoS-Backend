@@ -3,6 +3,7 @@ using AutoMapper;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
+using OutOfSchool.EmailSender;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.StatusPermissions;
@@ -32,6 +33,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
     private readonly IRegionAdminService regionAdminService;
     private readonly IAreaAdminService areaAdminService;
     private readonly ICodeficatorService codeficatorService;
+    private readonly IEmailSender emailSender;
 
     private readonly string errorNullWorkshopMessage = "Operation failed. Workshop in Application dto is null";
     private readonly string errorBlockedWorkshopMessage = "Unable to create a new application for a workshop because workshop is blocked";
@@ -55,6 +57,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
     /// <param name="regionAdminService">Service for managing region admin rigths.</param>
     /// <param name="areaAdminService">Service for managing area admin rigths.</param>
     /// <param name="codeficatorService">Codeficator service.</param>
+    /// <param name="emailSender">Service for sending Email messages.</param>
     public ApplicationService(
         IApplicationRepository repository,
         ILogger<ApplicationService> logger,
@@ -69,7 +72,8 @@ public class ApplicationService : IApplicationService, INotificationReciever
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService,
         IAreaAdminService areaAdminService,
-        ICodeficatorService codeficatorService)
+        ICodeficatorService codeficatorService,
+        IEmailSender emailSender)
     {
         applicationRepository = repository ?? throw new ArgumentNullException(nameof(repository));
         this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
@@ -88,6 +92,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
         this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
         this.areaAdminService = areaAdminService ?? throw new ArgumentNullException(nameof(areaAdminService));
         this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
+        this.emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
     }
 
     /// <inheritdoc/>
@@ -944,6 +949,11 @@ public class ApplicationService : IApplicationService, INotificationReciever
                 this,
                 additionalData,
                 groupedData).ConfigureAwait(false);
+
+            if (updatedApplication.Status == ApplicationStatus.Approved)
+            {
+                await emailSender.SendAsync(updatedApplication.Parent.User.Email, "Approved", (string.Empty, string.Empty));
+            }
 
             await ControlWorkshopStatus(previewAppStatus, updatedApplication.Status, currentApplication.WorkshopId);
 
