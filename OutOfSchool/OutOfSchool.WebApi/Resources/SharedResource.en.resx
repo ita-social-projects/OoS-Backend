@@ -121,6 +121,10 @@
     <value>Address is null.</value>
     <comment>AdressController</comment>
   </data>
+  <data name="Approved!" xml:space="preserve">
+    <value>Approved!</value>
+    <comment>ApplicationService</comment>
+  </data>
   <data name="Block does not exist for ParentId: {0}, ProviderId: {1}." xml:space="preserve">
     <value>Block does not exist for ParentId: {0}, ProviderId: {1}.</value>
     <comment>BlockedProviderParentService</comment>

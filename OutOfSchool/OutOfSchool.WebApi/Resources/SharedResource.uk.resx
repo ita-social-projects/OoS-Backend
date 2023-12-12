@@ -120,6 +120,10 @@
   <data name="Address is null." xml:space="preserve">
     <value>Адреса null (пуста).</value>
   </data>
+  <data name="Approved!" xml:space="preserve">
+    <value>Зараховано!</value>
+    <comment>ApplicationService</comment>
+  </data>
   <data name="Block does not exist for ParentId: {0}, ProviderId: {1}." xml:space="preserve">
     <value>Не існує блокування для ParentId: {0}, ProviderId: {1}.</value>
     <comment>BlockedProviderParentService</comment>
