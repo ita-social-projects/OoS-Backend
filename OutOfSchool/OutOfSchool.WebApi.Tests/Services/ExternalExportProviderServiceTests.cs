@@ -86,6 +86,8 @@ public class ExternalExportProviderServiceTests
             .Setup(x => x.GetAllWithDeleted(It.IsAny<DateTime>(), offsetFilter.From, offsetFilter.Size))
             .ReturnsAsync(fakeProviders);
 
+        mockProviderRepository.Setup(x => x.CountWithDeleted(It.IsAny<DateTime>())).ReturnsAsync(5);
+
         mockWorkshopRepository
             .Setup(x => x.GetAllWithDeleted(It.IsAny<Expression<Func<Workshop, bool>>>()))
             .ReturnsAsync(fakeWorkshops);
@@ -96,7 +98,8 @@ public class ExternalExportProviderServiceTests
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(fakeProviders.Count, result.TotalAmount);
-        Assert.AreEqual(fakeProviders.Count, result.Entities.Count); ;
+        Assert.AreEqual(fakeProviders.Count, result.Entities.Count);
+        mockProviderRepository.Verify(x => x.CountWithDeleted(updatedAfter), Times.Once);
     }
 
     [Test]
