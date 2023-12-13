@@ -246,7 +246,6 @@ public static class Startup
         services.AddTransient<IValueProjector, ValueProjector>();
         services.AddTransient<IExternalExportProviderService, ExternalExportProviderService>();
 
-
         services.AddTransient<IInstitutionHierarchyService, InstitutionHierarchyService>();
         services.AddTransient<IInstitutionService, InstitutionService>();
         services.AddTransient<IInstitutionFieldDescriptionService, InstitutionFieldDescriptionService>();
@@ -422,7 +421,9 @@ public static class Startup
                 options.Configuration.AbortOnConnectFail = false;
             });
 
-            services.AddSingleton(typeof(HubLifetimeManager<>), typeof(LocalDistributedHubLifetimeManager<>));
+            // TODO: Rework or remove
+            // Comented to check if chat will work corectly
+            //services.AddSingleton(typeof(HubLifetimeManager<>), typeof(LocalDistributedHubLifetimeManager<>));
         }
 
         services.AddStackExchangeRedisCache(options =>
