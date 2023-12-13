@@ -1,8 +1,6 @@
-﻿using Google.Protobuf.WellKnownTypes;
+﻿using System;
 using NUnit.Framework;
 using OutOfSchool.Common.Responces;
-using OutOfSchool.WebApi.Services;
-using System;
 
 namespace OutOfSchool.WebApi.Tests.Common;
 
