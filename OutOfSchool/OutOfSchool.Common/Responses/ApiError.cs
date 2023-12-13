@@ -5,6 +5,11 @@ public class ApiError
 {
     public ApiError(string group, string code, string message)
     {
+        if (string.IsNullOrEmpty(group))
+        {
+            throw new ArgumentException(@"Group must be non-empty value", nameof(group));
+        }
+
         if (string.IsNullOrEmpty(code))
         {
             throw new ArgumentException(@"Code must be non-empty value", nameof(code));
@@ -13,11 +18,6 @@ public class ApiError
         if (string.IsNullOrEmpty(message))
         {
             throw new ArgumentException(@"Message must be non-empty value", nameof(message));
-        }
-
-        if (string.IsNullOrEmpty(group))
-        {
-            throw new ArgumentException(@"Group must be non-empty value", nameof(group));
         }
 
         Group = group;
