@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.Extensions.Localization;
+using Nest;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -67,6 +68,22 @@ public class UserService : IUserService
         return mapper.Map<ShortUserDto>(users.First());
     }
 
+    public async Task<IEnumerable<ShortUserDto>> GetByFilter(Expression<Func<User, bool>> filter)
+    {
+        logger.LogInformation($"Getting users by filter started.");
+
+        var users = await repository.GetByFilter(filter);
+
+        if (!users.Any())
+        {
+            throw new ArgumentException(localizer["Getting users by filter: there are no users in the Db."]);
+        }
+
+        logger.LogInformation($"Successfully got users by filter.");
+
+        return mapper.Map<IEnumerable<ShortUserDto>>(users);
+    }
+
     public async Task<ShortUserDto> Update(ShortUserDto dto)
     {
         logger.LogInformation($"Updating User with Id = {dto?.Id} started.");
@@ -104,6 +121,22 @@ public class UserService : IUserService
         logger.LogInformation("Successfully got the User with Id = {id}.", id);
 
         return user.IsBlocked;
+    }
+
+    public async Task<bool> IsNeverLogged(string id)
+    {
+        logger.LogInformation("Checking if the User account status is NeverLogged started. Getting user by Id = {id}.", id);
+
+        var user = await repository.GetById(id).ConfigureAwait(false);
+
+        if (user is null)
+        {
+            throw new ArgumentException(localizer["There is no User in the Db with such an id"], nameof(id));
+        }
+
+        logger.LogInformation("Successfully checked the User account status with Id = {id}.", id);
+
+        return user.LastLogin == DateTimeOffset.MinValue;
     }
 
     public async Task Delete(string id)

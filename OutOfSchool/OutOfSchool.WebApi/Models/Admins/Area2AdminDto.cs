@@ -1,6 +1,10 @@
 ﻿namespace OutOfSchool.WebApi.Models.Admins;
 
-public class Area2AdminDto : Region2AdminDto
+public class Area2AdminDto : BaseAdminDto
 {
-    public long ParentCATOTTGId { get; set; }
+    public Guid InstitutionId { get; set; }
+
+    public long CATOTTGId { get; set; }
+
+    public long RegionId { get; set; }
 }

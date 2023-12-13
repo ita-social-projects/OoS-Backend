@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.Services.Repository.Files;
+using OutOfSchool.WebApi.Services.Admins;
 using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Services.Communication.ICommunication;
 using OutOfSchool.WebApi.Services.ProviderServices;
@@ -164,6 +165,13 @@ public static class Startup
         services.AddHttpContextAccessor();
         services.AddScoped<IProviderAdminService, ProviderAdminService>();
         services.AddScoped<IMinistryAdminService, MinistryAdminService>();
+        //services.AddScoped<BaseAdminService, Ministry2AdminService>();
+        //services.AddScoped<BaseAdminService, Region2AdminService>();
+        //services.AddScoped<BaseAdminService, Area2AdminService>();
+        //services.AddScoped<BaseAdminService>();
+        services.AddScoped<Ministry2AdminService>();
+        services.AddScoped<Region2AdminService>();
+        services.AddScoped<Area2AdminService>();
         services.AddScoped<IRegionAdminService, RegionAdminService>();
         services.AddScoped<IAreaAdminService, AreaAdminService>();
 

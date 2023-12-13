@@ -1,4 +1,5 @@
-﻿using OutOfSchool.WebApi.Models;
+﻿using System.Linq.Expressions;
+using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -18,6 +19,13 @@ public interface IUserService
     Task<ShortUserDto> GetById(string id);
 
     /// <summary>
+    /// Get entity by filter expression.
+    /// </summary>
+    /// <param name="filter">Filter expression.</param>
+    /// <returns>User.</returns>
+    Task<IEnumerable<ShortUserDto>> GetByFilter(Expression<Func<User, bool>> filter);
+
+    /// <summary>
     /// Update entity.
     /// </summary>
     /// <param name="dto">User entity to add.</param>
@@ -30,6 +38,13 @@ public interface IUserService
     /// <param name="id">Key in the table.</param>
     /// <returns><see cref="Task{TResult}"/>.</returns>
     Task<bool> IsBlocked(string id);
+
+    /// <summary>
+    /// Check if entity is never logged.
+    /// </summary>
+    /// <param name="id">Key in the table.</param>
+    /// <returns><see cref="Task{TResult}"/>.</returns>
+    Task<bool> IsNeverLogged(string id);
 
     /// <summary>
     /// Delete entity by id.
