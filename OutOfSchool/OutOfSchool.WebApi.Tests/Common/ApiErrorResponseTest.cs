@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using NUnit.Framework;
-using OutOfSchool.Common.Responces;
+using OutOfSchool.Common.Responses;
 
 namespace OutOfSchool.WebApi.Tests.Common;
 

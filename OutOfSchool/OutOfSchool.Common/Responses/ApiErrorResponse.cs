@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace OutOfSchool.Common.Responces;
+namespace OutOfSchool.Common.Responses;
 public class ApiErrorResponse
 {
     private readonly List<ApiError> apiErrors;

@@ -1,5 +1,5 @@
 using System.Net;
-using OutOfSchool.Common.Responces;
+using OutOfSchool.Common.Responses;
 
 namespace OutOfSchool.Common.Models;
 

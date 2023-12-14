@@ -10,7 +10,6 @@ using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Common.Responces;
 using OutOfSchool.Common.Responses;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;

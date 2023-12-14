@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OutOfSchool.Common.Responces;
+namespace OutOfSchool.Common.Responses;
 public class ApiError
 {
     public ApiError(string group, string code, string message)

@@ -1,6 +1,4 @@
-﻿using OutOfSchool.Common.Responces;
-
-namespace OutOfSchool.Common.Responses;
+﻿namespace OutOfSchool.Common.Responses;
 public static class ApiErrorsTypes
 {
     public static class ProviderAdmin

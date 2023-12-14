@@ -5,7 +5,6 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Common.Responces;
 using OutOfSchool.Common.Responses;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
