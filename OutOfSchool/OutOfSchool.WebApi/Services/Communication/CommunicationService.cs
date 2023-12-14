@@ -33,7 +33,7 @@ public class CommunicationService : ICommunicationService
 
     protected ILogger<CommunicationService> Logger => logger;
 
-    public async Task<Either<ErrorResponse, T>> SendRequest<T>(Request request)
+    public async virtual Task<Either<ErrorResponse, T>> SendRequest<T>(Request request)
     where T : IResponse
     {
         if (request is null)
