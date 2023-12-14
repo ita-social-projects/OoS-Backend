@@ -852,7 +852,7 @@ public class ApplicationControllerTests
             InstitutionHierarchyId = w.InstitutionHierarchyId,
             InstitutionId = w.InstitutionId,
             Institution = w.Institution,
-            AvailableSeats = w.AvailableSeats,
+            AvailableSeats = (uint)w.AvailableSeats,
             TakenSeats = w.TakenSeats,
         }).ToList();
     }

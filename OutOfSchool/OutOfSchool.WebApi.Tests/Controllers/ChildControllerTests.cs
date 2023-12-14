@@ -301,7 +301,7 @@ public class ChildControllerTests
                 InstitutionHierarchyId = existingWorkshop.InstitutionHierarchyId,
                 InstitutionId = existingWorkshop.InstitutionId,
                 Institution = existingWorkshop.Institution,
-                AvailableSeats = existingWorkshop.AvailableSeats,
+                AvailableSeats = (uint)existingWorkshop.AvailableSeats,
                 TakenSeats = existingWorkshop.TakenSeats,
             })
             .WithChild(child);
