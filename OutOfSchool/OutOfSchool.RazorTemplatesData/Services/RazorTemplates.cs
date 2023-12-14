@@ -17,6 +17,7 @@ public static class RazorTemplates
     public static string ChangeEmail => "ChangeEmail";
     public static string ResetPassword => "ResetPassword";
     public static string NewAdminInvitation => "NewAdminInvitation";
+    public static string ApplicationApprovedEmail => "ApplicationApprovedEmail";
 
     /// <summary>
     /// Get view name

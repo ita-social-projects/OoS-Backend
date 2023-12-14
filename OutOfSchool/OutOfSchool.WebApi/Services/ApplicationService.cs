@@ -5,6 +5,8 @@ using Microsoft.Extensions.Options;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.EmailSender;
+using OutOfSchool.RazorTemplatesData.Models.Emails;
+using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.StatusPermissions;
@@ -34,8 +36,10 @@ public class ApplicationService : IApplicationService, INotificationReciever
     private readonly IRegionAdminService regionAdminService;
     private readonly IAreaAdminService areaAdminService;
     private readonly ICodeficatorService codeficatorService;
+    private readonly IRazorViewToStringRenderer renderer;
     private readonly IEmailSender emailSender;
     private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly IOptions<HostsConfig> hostsConfig;
 
     private readonly string errorNullWorkshopMessage = "Operation failed. Workshop in Application dto is null";
     private readonly string errorBlockedWorkshopMessage = "Unable to create a new application for a workshop because workshop is blocked";
@@ -59,8 +63,10 @@ public class ApplicationService : IApplicationService, INotificationReciever
     /// <param name="regionAdminService">Service for managing region admin rigths.</param>
     /// <param name="areaAdminService">Service for managing area admin rigths.</param>
     /// <param name="codeficatorService">Codeficator service.</param>
+    /// <param name="renderer">Razor view to string renderer.</param>
     /// <param name="emailSender">Service for sending Email messages.</param>
     /// <param name="localizer">Localizer.</param>
+    /// <param name="hostsConfig">Hosts config.</param>
     public ApplicationService(
         IApplicationRepository repository,
         ILogger<ApplicationService> logger,
@@ -76,8 +82,10 @@ public class ApplicationService : IApplicationService, INotificationReciever
         IRegionAdminService regionAdminService,
         IAreaAdminService areaAdminService,
         ICodeficatorService codeficatorService,
+        IRazorViewToStringRenderer renderer,
         IEmailSender emailSender,
-        IStringLocalizer<SharedResource> localizer)
+        IStringLocalizer<SharedResource> localizer,
+        IOptions<HostsConfig> hostsConfig)
     {
         applicationRepository = repository ?? throw new ArgumentNullException(nameof(repository));
         this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
@@ -98,6 +106,8 @@ public class ApplicationService : IApplicationService, INotificationReciever
         this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
         this.emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(emailSender));
+        this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
+        this.hostsConfig = hostsConfig ?? throw new ArgumentNullException(nameof(hostsConfig));
     }
 
     /// <inheritdoc/>
@@ -958,8 +968,18 @@ public class ApplicationService : IApplicationService, INotificationReciever
             if (updatedApplication.Status == ApplicationStatus.Approved)
             {
                 var subject = localizer["Approved!"];
-
-                await emailSender.SendAsync(updatedApplication.Parent.User.Email, subject, (string.Empty, string.Empty));
+                var applicationStatusViewModel = new ApplicationStatusViewModel
+                {
+                    ChildFullName =
+                        $"{updatedApplication.Child.LastName} " +
+                        $"{updatedApplication.Child.FirstName} " +
+                        $"{updatedApplication.Child.MiddleName}".TrimEnd(),
+                    WorkshopTitle = updatedApplication.Workshop.Title,
+                    WorkshopUrl = $"{hostsConfig.Value.FrontendUrl}/#/details/workshop/{updatedApplication.WorkshopId}",
+                };
+                var content = await renderer
+                    .GetHtmlPlainStringAsync(RazorTemplates.ApplicationApprovedEmail, applicationStatusViewModel);
+                await emailSender.SendAsync(updatedApplication.Parent.User.Email, subject, content);
             }
 
             await ControlWorkshopStatus(previewAppStatus, updatedApplication.Status, currentApplication.WorkshopId);

@@ -1,0 +1,11 @@
+﻿@using OutOfSchool.RazorTemplatesData.Models.Emails
+@model ApplicationStatusViewModel
+
+@{
+    ViewData["EmailTitle"] = "";
+}
+
+Зараховано!
+Вітаємо!
+@Model.ChildFullName
+зараховано до @Model.WorkshopUrl

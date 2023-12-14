@@ -3,9 +3,9 @@
 @inject IConfiguration configuration
 
 @{
-    var host = configuration.GetSection("Identity")["Authority"];
+    var host = configuration.GetSection("Hosts")["BackendUrl"];
     var appName = Assembly.GetExecutingAssembly().GetName().Name;
-    var pathToContent = string.Concat(host, "/_content/email", appName);
+    var pathToContent = string.Concat(host, "/_content/email");
 }  
 
 <!DOCTYPE html>
