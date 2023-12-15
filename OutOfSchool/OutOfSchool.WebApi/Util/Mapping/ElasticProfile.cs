@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Nest;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
@@ -38,10 +39,13 @@ public class ElasticProfile : Profile
             .ForMember(dest => dest.TakenSeats, opt => opt.Ignore());
 
         CreateMap<WorkshopDto, WorkshopES>()
-            .IncludeBase<WorkshopBaseDto, WorkshopES>();
+            .IncludeBase<WorkshopBaseDto, WorkshopES>()
+            .CommonFieldsMapping();
 
         CreateMap<WorkshopV2Dto, WorkshopES>()
-        .IncludeBase<WorkshopDto, WorkshopES>();
+            .IncludeBase<WorkshopDto, WorkshopES>()
+            .CommonFieldsMapping()
+            .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(src => src.CoverImageId));
 
         CreateMap<AddressDto, AddressES>()
             .ForMember(
