@@ -52,7 +52,7 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
             .ConfigureAwait(false);
 
         return response
-            .FlatMap<ResponseDto>(r => r.IsSuccess
+            .FlatMap<ResponseDto>(r => r.HttpStatusCode == HttpStatusCode.Created
                 ? r
                 : new ErrorResponse
                 {

@@ -89,7 +89,7 @@ public class ProviderAdminController : Controller
             result =>
             {
                 logger.LogInformation("Successfully created ProviderAdmin(id): {result.UserId} by User(id): {UserId}", result.UserId, userId);
-                return Ok(result);
+                return Created(string.Empty, result);
             });
     }
 
