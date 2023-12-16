@@ -380,6 +380,6 @@ public class ProviderAdminController : Controller
         await userService.IsBlocked(userId);
 
     private async Task<bool> IsProviderBlocked(Guid providerId) =>
-        await providerService.IsBlocked(providerId).ConfigureAwait(false);
+        await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false;
 
 }

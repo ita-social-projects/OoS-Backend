@@ -508,6 +508,6 @@ public class WorkshopController : ControllerBase
             await providerService.GetProviderIdForWorkshopById(workshopId).ConfigureAwait(false) :
             providerId;
 
-        return await providerService.IsBlocked(providerId).ConfigureAwait(false);
+        return await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false;
     }
 }

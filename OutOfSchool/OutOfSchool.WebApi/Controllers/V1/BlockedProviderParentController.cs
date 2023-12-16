@@ -149,5 +149,5 @@ public class BlockedProviderParentController : ControllerBase
         await userService.IsBlocked(currentUserService.UserId);
 
     private async Task<bool> IsProviderBlocked(Guid providerId) =>
-        await providerService.IsBlocked(providerId).ConfigureAwait(false);
+        await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false;
 }
