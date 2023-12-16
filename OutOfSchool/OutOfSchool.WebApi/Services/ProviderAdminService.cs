@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Responses;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshops;
@@ -61,10 +62,13 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         if (!hasAccess)
         {
             Logger.LogError("User(id): {UserId} doesn't have permission to create provider admin", userId);
-
             return new ErrorResponse
             {
                 HttpStatusCode = HttpStatusCode.Forbidden,
+                ApiErrorResponse = new ApiErrorResponse(new List<ApiError>()
+                {
+                    ApiErrorsTypes.ProviderAdmin.UserDontHavePermissionToCreate(userId),
+                }),
             };
         }
 

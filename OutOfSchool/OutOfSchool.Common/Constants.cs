@@ -43,4 +43,8 @@ public static class Constants
     public const int NameMaxLength = 60;
 
     public const int ChatMessageTextMaxLength = 256;
+
+    public const string CacheProfilePrivate = "CacheProfilePrivate";
+
+    public const string CacheProfilePublic = "CacheProfilePublic";
 }

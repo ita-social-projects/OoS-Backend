@@ -86,11 +86,11 @@ public class ProviderAdminController : Controller
             .ConfigureAwait(false);
 
         return response.Match<ActionResult>(
-            error => StatusCode((int)error.HttpStatusCode, error.Message),
+            error => StatusCode((int)error.HttpStatusCode, new { error.Message, error.ApiErrorResponse }),
             result =>
             {
                 logger.LogInformation("Successfully created ProviderAdmin(id): {result.UserId} by User(id): {UserId}", result.UserId, userId);
-                return Ok(result);
+                return Created(string.Empty, result);
             });
     }
 

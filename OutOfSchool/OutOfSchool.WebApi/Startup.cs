@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using AutoMapper;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HeaderPropagation;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
@@ -121,7 +122,31 @@ public static class Startup
                     .AllowAnyHeader()
                     .AllowCredentials()));
 
-        services.AddControllers().AddNewtonsoftJson()
+        var cacheProfilesConfigSection = configuration.GetSection(CacheProfilesConfig.Name);
+        var cacheProfilesConfig = cacheProfilesConfigSection.Get<CacheProfilesConfig>();
+
+        services.Configure<CacheProfilesConfig>(cacheProfilesConfigSection);
+
+        services.AddControllers(options =>
+            {
+                options.CacheProfiles.Add(
+                    Constants.CacheProfilePrivate,
+                    new CacheProfile()
+                    {
+                        Location = ResponseCacheLocation.Client,
+                        NoStore = false,
+                        Duration = cacheProfilesConfig.PrivateDurationInSeconds,
+                    });
+                options.CacheProfiles.Add(
+                    Constants.CacheProfilePublic,
+                    new CacheProfile()
+                    {
+                        Location = ResponseCacheLocation.Any,
+                        NoStore = false,
+                        Duration = cacheProfilesConfig.PublicDurationInSeconds,
+                    });
+            })
+            .AddNewtonsoftJson()
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 

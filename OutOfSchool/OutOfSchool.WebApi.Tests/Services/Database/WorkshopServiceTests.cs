@@ -101,6 +101,29 @@ public class WorkshopServiceTests
 
         // Assert
         result.Should().BeEquivalentTo(ExpectedWorkshopDtoCreateSuccess(newWorkshop));
+        result.AvailableSeats.Should().Be(uint.MaxValue);
+    }
+
+    [Test]
+    public async Task Create_WhenEntityIsValidAvaliableSeatsIsNull_ShouldReturnThisEntity([Random(1, 100, 1)] long id)
+    {
+        // Arrange
+        SetupCreate();
+        var newWorkshop = new Workshop()
+        {
+            Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
+            InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
+        };
+
+        var workshopDto = mapper.Map<WorkshopBaseDto>(newWorkshop);
+        workshopDto.AvailableSeats = null;
+
+        // Act
+        var result = await workshopService.Create(workshopDto).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEquivalentTo(ExpectedWorkshopDtoCreateSuccess(newWorkshop));
+        result.AvailableSeats.Should().Be(uint.MaxValue);
     }
 
     [Test]
@@ -345,6 +368,32 @@ public class WorkshopServiceTests
 
         // Assert
         result.Teachers.Should().BeEquivalentTo(expectedTeachers);
+        result.AvailableSeats.Should().Be(uint.MaxValue);
+    }
+
+    [Test]
+    public async Task Update_WhenEntityIsValidAvaliableSeatsIsNull_ShouldReturnUpdatedEntity([Random(2, 5, 1)] int teachersInWorkshop)
+    {
+        // Arrange
+        var id = new Guid("ca2cc30c-419c-4b00-a344-b23f0cbf18d8");
+        var changedFirstEntity = WithWorkshop(id);
+        var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(changedFirstEntity);
+        var provider = ProvidersGenerator.Generate();
+        changedFirstEntity.Teachers = teachers;
+        changedFirstEntity.DateTimeRanges = new List<DateTimeRange>();
+        changedFirstEntity.Provider = provider;
+        SetupUpdate(changedFirstEntity);
+        var expectedTeachers = teachers.Select(s => mapper.Map<TeacherDTO>(s));
+
+        var changeFirstEntityDto = mapper.Map<WorkshopBaseDto>(changedFirstEntity);
+        changeFirstEntityDto.AvailableSeats = null;
+
+        // Act
+        var result = await workshopService.Update(changeFirstEntityDto).ConfigureAwait(false);
+
+        // Assert
+        result.Teachers.Should().BeEquivalentTo(expectedTeachers);
+        result.AvailableSeats.Should().Be(uint.MaxValue);
     }
 
     [Test]

@@ -33,6 +33,7 @@ public class StatisticController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DirectionDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ResponseCache(CacheProfileName = Constants.CacheProfilePublic)]
     [AllowAnonymous]
     public async Task<IActionResult> GetDirections(int limit, [FromQuery] long catottgId)
     {
@@ -60,6 +61,7 @@ public class StatisticController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopCard>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ResponseCache(CacheProfileName = Constants.CacheProfilePublic)]
     [AllowAnonymous]
     public async Task<IActionResult> GetWorkshops(int limit, [FromQuery] long catottgId)
     {
