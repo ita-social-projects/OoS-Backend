@@ -385,9 +385,9 @@ public class ProviderService : IProviderService, INotificationReciever
         };
     }
 
-    public async Task<bool> IsBlocked(Guid providerId)
+    public async Task<bool?> IsBlocked(Guid providerId)
     {
-        return (await providerRepository.GetById(providerId).ConfigureAwait(false)).IsBlocked;
+        return (await providerRepository.GetById(providerId).ConfigureAwait(false))?.IsBlocked;
     }
 
     public void SendNotification(Provider provider, NotificationAction notificationAction, bool addStatusData, bool addLicenseStatusData)
@@ -422,10 +422,13 @@ public class ProviderService : IProviderService, INotificationReciever
         var workshops = await workshopServiceCombiner.UpdateProviderStatus(providerId, providerStatus)
            .ConfigureAwait(false);
 
-        foreach (var workshop in workshops)
+        if (workshops != null)
         {
-            logger.LogInformation($"Provider's status with Id = {providerId} " +
-                                  $"in workshops with Id = {workshop.Id} updated successfully.");
+            foreach (var workshop in workshops)
+            {
+                logger.LogInformation($"Provider's status with Id = {providerId} " +
+                                      $"in workshops with Id = {workshop.Id} updated successfully.");
+            }
         }
     }
 

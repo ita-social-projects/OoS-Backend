@@ -105,7 +105,7 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
     {
         async Task BeforeDeleteAction(Provider provider)
         {
-            if (provider.Images.Count > 0)
+            if (provider.Images?.Count > 0)
             {
                 await ProviderImagesService.RemoveManyImagesAsync(provider, provider.Images.Select(x => x.ExternalStorageId).ToList()).ConfigureAwait(false);
             }
