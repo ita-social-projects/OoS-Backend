@@ -248,7 +248,7 @@ public class Region2AdminController : Controller
     /// <summary>
     /// Block the RegionAdmin.
     /// </summary>
-    /// <param name="regionAdminId">Entity's id to delete.</param>
+    /// <param name="regionAdminId">Entity's id to block.</param>
     /// <param name="isBlocked">Blocking status.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HttpPut]
@@ -295,7 +295,7 @@ public class Region2AdminController : Controller
     /// </summary>
     /// <param name="regionAdminId">Entity's id.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    [HttpPut("{adminId}")]
+    [HttpPut("{regionAdminId}")]
     [HasPermission(Permissions.RegionAdminEdit)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

@@ -797,13 +797,21 @@ public class MappingProfile : Profile
                             : AccountStatus.Accepted));
 
         CreateMap<BaseAdminDto, AdminBaseDto>()
-            .IncludeAllDerived();
-
-        CreateMap<Ministry2AdminDto, MinistryAdminBaseDto>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id));
 
+        CreateMap<AdminBaseDto, BaseAdminDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId))
+            .ForMember(dest => dest.AccountStatus, opt => opt.Ignore());
+
+        CreateMap<MinistryAdminBaseDto, BaseAdminDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId))
+            .ForMember(dest => dest.AccountStatus, opt => opt.Ignore());
+
+        CreateMap<MinistryAdminBaseDto, Ministry2AdminDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId))
+            .ForMember(dest => dest.AccountStatus, opt => opt.Ignore());
+
         CreateMap<RegionAdmin, Region2AdminDto>()
-            //.IncludeBase<InstitutionAdmin, Ministry2AdminDto>();
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.User.Id))
             .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
@@ -820,13 +828,22 @@ public class MappingProfile : Profile
                             : AccountStatus.Accepted));
 
         CreateMap<AreaAdmin, Area2AdminDto>()
-            //.IncludeBase<RegionAdmin, Region2AdminDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.User.Id))
             .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName ?? string.Empty))
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber.Right(Constants.PhoneShortLength)))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+            .ForMember(
+                dest => dest.RegionId,
+                opt => opt.MapFrom(src =>
+                    src.CATOTTG != null
+                        ? src.CATOTTG.Parent != null
+                            ? src.CATOTTG.Parent.Parent != null
+                                ? src.CATOTTG.Parent.Parent.Id
+                                : 0
+                            : 0
+                        : 0))
             .ForMember(
                 dest => dest.AccountStatus,
                 opt => opt.MapFrom(src =>
@@ -835,14 +852,6 @@ public class MappingProfile : Profile
                         : src.User.LastLogin == DateTimeOffset.MinValue
                             ? AccountStatus.NeverLogged
                             : AccountStatus.Accepted));
-            //.ForMember(
-            //    dest => dest.ParentCATOTTGId,
-            //    opt => opt.MapFrom(
-            //        src => src.CATOTTG != null ?
-            //            src.CATOTTG.Parent != null ?
-            //                src.CATOTTG.Parent.Parent != null ? src.CATOTTG.Parent.Parent.Id : 0
-            //            : 0
-            //        : 0));
     }
 
     private IMappingExpression<TSource, TDestination> CreateSoftDeletedMap<TSource, TDestination>()

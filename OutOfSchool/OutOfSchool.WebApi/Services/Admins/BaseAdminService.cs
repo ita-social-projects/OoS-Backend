@@ -24,7 +24,7 @@ public abstract class BaseAdminService : CommunicationService
         ILogger<BaseAdminService> logger,
         IMapper mapper,
         IUserService userService)
-        : base(httpClientFactory, communicationConfig?.Value, logger)
+        : base(httpClientFactory, communicationConfig, logger)
     {
         ArgumentNullException.ThrowIfNull(authorizationServerConfig);
         ArgumentNullException.ThrowIfNull(logger);
@@ -139,6 +139,7 @@ public abstract class BaseAdminService : CommunicationService
         logger.LogDebug("{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}", request.HttpMethodType, userId, request.Url);
 
         var response = await SendRequest<ResponseDto>(request);
+        var t = response.Map(x => x.Result).Match(l => l.HttpStatusCode, r => r);
 
         return response
             .FlatMap<ResponseDto>(r => r.IsSuccess
@@ -149,9 +150,8 @@ public abstract class BaseAdminService : CommunicationService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert
-                    .DeserializeObject<BaseAdminDto>(result.Result.ToString())
-                : null);
+                ? mapper.Map(JsonConvert.DeserializeObject<AdminBaseDto>(result.Result.ToString()), adminDto)
+                : null); // JsonConvert.DeserializeObject<BaseAdminDto>(result.Result.ToString())
     }
 
     public async Task<Either<ErrorResponse, BaseAdminDto>> UpdateAsync(string userId, BaseAdminDto adminDto, string token)
@@ -201,8 +201,8 @@ public abstract class BaseAdminService : CommunicationService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? mapper.Map<BaseAdminDto>(JsonConvert.DeserializeObject<BaseAdminDto>(result.Result.ToString()))
-                : null);
+                ? mapper.Map(JsonConvert.DeserializeObject<AdminBaseDto>(result.Result.ToString()), adminDto)
+                : null); // JsonConvert.DeserializeObject<BaseAdminDto>(result.Result.ToString())
     }
 
     public async Task<Either<ErrorResponse, ActionResult>> DeleteAsync(string adminId, string userId, string token)
@@ -249,8 +249,7 @@ public abstract class BaseAdminService : CommunicationService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert
-                    .DeserializeObject<ActionResult>(result.Result.ToString())
+                ? JsonConvert.DeserializeObject<ActionResult>(result.Result.ToString())
                 : null);
     }
 
@@ -298,8 +297,7 @@ public abstract class BaseAdminService : CommunicationService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert
-                    .DeserializeObject<ActionResult>(result.Result.ToString())
+                ? JsonConvert.DeserializeObject<ActionResult>(result.Result.ToString())
                 : null);
     }
 
@@ -358,8 +356,7 @@ public abstract class BaseAdminService : CommunicationService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert
-                    .DeserializeObject<ActionResult>(result.Result.ToString())
+                ? JsonConvert.DeserializeObject<ActionResult>(result.Result.ToString())
                 : null);
     }
 

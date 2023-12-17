@@ -78,7 +78,7 @@ public class Region2AdminService : BaseAdminService
 
         if (currentUserService.IsRegionAdmin())
         {
-            var regionAdmin = await GetByUserId(currentUserService.UserId) as Region2AdminDto;
+            var regionAdmin = await GetById(currentUserService.UserId) as Region2AdminDto;
 
             if (((filter as Region2AdminFilter).InstitutionId != regionAdmin.InstitutionId
                 && (filter as Region2AdminFilter).InstitutionId != Guid.Empty)
@@ -106,7 +106,7 @@ public class Region2AdminService : BaseAdminService
 
         if (currentUserService.IsRegionAdmin())
         {
-            var regionAdmin = await GetByUserId(currentUserService.UserId) as Region2AdminDto;
+            var regionAdmin = await GetById(currentUserService.UserId) as Region2AdminDto;
 
             if ((filter as Region2AdminFilter).InstitutionId == Guid.Empty)
             {
@@ -211,9 +211,9 @@ public class Region2AdminService : BaseAdminService
     {
         if (currentUserService.IsMinistryAdmin())
         {
-            var ministryAdmin = await ministryAdminService.GetByIdAsync((adminDto as Ministry2AdminDto).Id) as Ministry2AdminDto;
+            var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId) as Ministry2AdminDto;
 
-            if (ministryAdmin.InstitutionId != (adminDto as Ministry2AdminDto).InstitutionId)
+            if (ministryAdmin.InstitutionId != (adminDto as Region2AdminDto).InstitutionId)
             {
                 logger.LogDebug("Forbidden to create region admin. Region admin isn't subordinated to ministry admin.");
 
@@ -260,12 +260,19 @@ public class Region2AdminService : BaseAdminService
 
     protected override async Task<bool> IsUserHasRightsToDeleteAdmin(string adminId)
     {
-        if (!(currentUserService.IsMinistryAdmin()
-            && await IsRegionAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId)))
+        if (currentUserService.IsTechAdmin())
         {
-            logger.LogDebug("Forbidden to delete region admin. Region admin isn't subordinated to ministry admin.");
+            return true;
+        }
 
-            return false;
+        if (currentUserService.IsMinistryAdmin())
+        {
+            if (!await IsRegionAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
+            {
+                logger.LogDebug("Forbidden to delete region admin. Region admin isn't subordinated to ministry admin.");
+
+                return false;
+            }
         }
 
         return true;
@@ -273,12 +280,19 @@ public class Region2AdminService : BaseAdminService
 
     protected override async Task<bool> IsUserHasRightsToBlockAdmin(string adminId)
     {
-        if (!(currentUserService.IsMinistryAdmin()
-            && await IsRegionAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId)))
+        if (currentUserService.IsTechAdmin())
         {
-            logger.LogDebug("Forbidden to block region admin. Region admin isn't subordinated to ministry admin.");
+            return true;
+        }
 
-            return false;
+        if (currentUserService.IsMinistryAdmin())
+        {
+            if (!await IsRegionAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
+            {
+                logger.LogDebug("Forbidden to block region admin. Region admin isn't subordinated to ministry admin.");
+
+                return false;
+            }
         }
 
         return true;

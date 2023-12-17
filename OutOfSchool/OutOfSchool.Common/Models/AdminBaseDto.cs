@@ -4,6 +4,8 @@ namespace OutOfSchool.Common.Models;
 
 public class AdminBaseDto
 {
+    public string UserId { get; set; }
+
     [Required(ErrorMessage = "FirstName is required")]
     public string FirstName { get; set; }
 

@@ -201,7 +201,7 @@ public class ProviderAdminService : IProviderAdminService
         _ = providerAdminUpdateDto ?? throw new ArgumentNullException(nameof(providerAdminUpdateDto));
 
         if (await context.Users.AnyAsync(x => x.Email == providerAdminUpdateDto.Email
-            && x.Id != providerAdminUpdateDto.Id).ConfigureAwait(false))
+            && x.Id != providerAdminUpdateDto.UserId).ConfigureAwait(false))
         {
             logger.LogError("Cant update provider admin with duplicate email: {Email}", providerAdminUpdateDto.Email);
             return CreateResponseDto(
@@ -209,13 +209,13 @@ public class ProviderAdminService : IProviderAdminService
                 $"Cant update provider admin with duplicate email: {providerAdminUpdateDto.Email}");
         }
 
-        var providerAdmin = this.GetProviderAdmin(providerAdminUpdateDto.Id);
+        var providerAdmin = this.GetProviderAdmin(providerAdminUpdateDto.UserId);
 
         if (providerAdmin is null)
         {
             logger.LogError(
                 "ProviderAdmin(id) {Id} not found. User(id): {UserId}",
-                providerAdminUpdateDto.Id,
+                providerAdminUpdateDto.UserId,
                 userId);
             return CreateResponseDto(HttpStatusCode.NotFound);
         }
@@ -226,7 +226,7 @@ public class ProviderAdminService : IProviderAdminService
             return CreateResponseDto(HttpStatusCode.BadRequest);
         }
 
-        var user = await userManager.FindByIdAsync(providerAdminUpdateDto.Id);
+        var user = await userManager.FindByIdAsync(providerAdminUpdateDto.UserId);
 
         var executionStrategy = context.Database.CreateExecutionStrategy();
         return await executionStrategy.Execute(providerAdminUpdateDto, UpdateProviderAdminOperation).ConfigureAwait(false);
@@ -328,7 +328,7 @@ public class ProviderAdminService : IProviderAdminService
 
                 logger.LogInformation(
                     "ProviderAdmin(id):{Id} was successfully updated by User(id): {UserId}",
-                    updateDto.Id,
+                    updateDto.UserId,
                     userId);
 
                 return CreateResponseDto(HttpStatusCode.OK, null, updateDto);

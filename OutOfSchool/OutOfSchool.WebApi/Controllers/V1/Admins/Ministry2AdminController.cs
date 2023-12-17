@@ -295,7 +295,7 @@ public class Ministry2AdminController : Controller
     /// </summary>
     /// <param name="ministryAdminId">Entity's id.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    [HttpPut("{adminId}")]
+    [HttpPut("{ministryAdminId}")]
     [HasPermission(Permissions.MinistryAdminEdit)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

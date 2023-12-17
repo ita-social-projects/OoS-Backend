@@ -13,7 +13,7 @@ public class CreateProviderAdminDto : AdminBaseDto
 
     public Guid ProviderId { get; set; }
 
-    public string UserId { get; set; }
+    //public string UserId { get; set; }
 
     // to specify if its assistant or deputy
     public bool IsDeputy { get; set; }

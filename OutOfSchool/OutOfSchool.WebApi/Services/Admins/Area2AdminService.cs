@@ -91,7 +91,7 @@ public class Area2AdminService : BaseAdminService
 
             if (((filter as Area2AdminFilter).InstitutionId != regionAdmin.InstitutionId
                 && (filter as Area2AdminFilter).InstitutionId != Guid.Empty)
-               || !(childrenCATOTTGIds.Contains((filter as Area2AdminFilter).CATOTTGId)
+               || (!childrenCATOTTGIds.Contains((filter as Area2AdminFilter).CATOTTGId)
                     && (filter as Area2AdminFilter).CATOTTGId > 0))
             {
                 return false;
@@ -212,7 +212,7 @@ public class Area2AdminService : BaseAdminService
 
             foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
             {
-                tempPredicate = tempPredicate.Or(
+                tempPredicate = tempPredicate.Or<AreaAdmin>(
                     x => x.Institution.Title.Contains(word, StringComparison.InvariantCultureIgnoreCase)
                         || x.CATOTTG.Name.Contains(word, StringComparison.InvariantCultureIgnoreCase));
             }
@@ -222,23 +222,39 @@ public class Area2AdminService : BaseAdminService
 
         if ((filter as Area2AdminFilter).InstitutionId != Guid.Empty)
         {
-            predicate = predicate.And(a => a.Institution.Id == (filter as Area2AdminFilter).InstitutionId);
+            predicate = predicate.And<AreaAdmin>(a => a.Institution.Id == (filter as Area2AdminFilter).InstitutionId);
         }
 
-        var childrenCATOTTGIds = codeficatorService.GetAllChildrenIdsByParentIdAsync((filter as Area2AdminFilter).CATOTTGId).Result;
-
-        if (childrenCATOTTGIds.Any())
+        if ((filter as Area2AdminFilter).CATOTTGId > 0)
         {
-            predicate = predicate.And(a => childrenCATOTTGIds.Contains(a.CATOTTGId));
-        }
-        else if ((filter as Area2AdminFilter).CATOTTGId > 0)
-        {
-            predicate = predicate.And(c => c.CATOTTG.Id == (filter as Area2AdminFilter).CATOTTGId);
+            var childrenCATOTTGIds = codeficatorService.GetAllChildrenIdsByParentIdAsync((filter as Area2AdminFilter).CATOTTGId).Result;
+
+            if (childrenCATOTTGIds.Any())
+            {
+                predicate = predicate.And<AreaAdmin>(a => childrenCATOTTGIds.Contains(a.CATOTTGId));
+            }
+            else
+            {
+                predicate = predicate.And<AreaAdmin>(a => a.CATOTTG.Id == (filter as Area2AdminFilter).CATOTTGId);
+            }
         }
 
-        predicate = predicate.And(x => !x.Institution.IsDeleted);
+        //var childrenCATOTTGIds = codeficatorService.GetAllChildrenIdsByParentIdAsync((filter as Area2AdminFilter).CATOTTGId).Result;
 
-        return expressionConverter2.Convert(predicate);
+        //if (childrenCATOTTGIds.Any())
+        //{
+        //    predicate = predicate.And(a => childrenCATOTTGIds.Contains(a.CATOTTGId));
+        //}
+        //else if ((filter as Area2AdminFilter).CATOTTGId > 0)
+        //{
+        //    predicate = predicate.And(c => c.CATOTTG.Id == (filter as Area2AdminFilter).CATOTTGId);
+        //}
+
+        predicate = predicate.And<AreaAdmin>(x => !x.Institution.IsDeleted);
+
+        var newPredicate = expressionConverter2.Convert(predicate);
+
+        return newPredicate;
     }
 
     /// <inheritdoc/>
@@ -270,7 +286,7 @@ public class Area2AdminService : BaseAdminService
     {
         if (currentUserService.IsMinistryAdmin())
         {
-            var ministryAdmin = await ministryAdminService.GetByIdAsync((adminDto as Area2AdminDto).Id) as Ministry2AdminDto;
+            var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId) as Ministry2AdminDto;
 
             if (ministryAdmin.InstitutionId != (adminDto as Area2AdminDto).InstitutionId)
             {
@@ -281,7 +297,7 @@ public class Area2AdminService : BaseAdminService
         }
         else if (currentUserService.IsRegionAdmin())
         {
-            var regionAdmin = await regionAdminService.GetByIdAsync((adminDto as Area2AdminDto).Id) as Region2AdminDto;
+            var regionAdmin = await regionAdminService.GetByIdAsync(currentUserService.UserId) as Region2AdminDto;
 
             var subSettlementsIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId);
 
@@ -343,19 +359,29 @@ public class Area2AdminService : BaseAdminService
 
     protected override async Task<bool> IsUserHasRightsToDeleteAdmin(string adminId)
     {
-        if (!(currentUserService.IsMinistryAdmin()
-            && await IsAreaAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId)))
+        if (currentUserService.IsTechAdmin())
         {
-            logger.LogDebug("Forbidden to delete area admin. Area admin isn't subordinated to ministry admin.");
-
-            return false;
+            return true;
         }
-        else if (!(currentUserService.IsRegionAdmin()
-                 && await IsAreaAdminSubordinatedToRegionAdminAsync(currentUserService.UserId, adminId)))
-        {
-            logger.LogDebug("Forbidden to delete area admin. Area admin isn't subordinated to region admin.");
 
-            return false;
+        if (currentUserService.IsMinistryAdmin())
+        {
+            if (!await IsAreaAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
+            {
+                logger.LogDebug("Forbidden to delete area admin. Area admin isn't subordinated to ministry admin.");
+
+                return false;
+            }
+        }
+
+        if (currentUserService.IsRegionAdmin())
+        {
+            if (!await IsAreaAdminSubordinatedToRegionAdminAsync(currentUserService.UserId, adminId))
+            {
+                logger.LogDebug("Forbidden to delete area admin. Area admin isn't subordinated to region admin.");
+
+                return false;
+            }
         }
 
         return true;
@@ -363,19 +389,29 @@ public class Area2AdminService : BaseAdminService
 
     protected override async Task<bool> IsUserHasRightsToBlockAdmin(string adminId)
     {
-        if (!(currentUserService.IsMinistryAdmin()
-            && await IsAreaAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId)))
+        if (currentUserService.IsTechAdmin())
         {
-            logger.LogDebug("Forbidden to block area admin. Area admin isn't subordinated to ministry admin.");
-
-            return false;
+            return true;
         }
-        else if (!(currentUserService.IsRegionAdmin()
-                 && await IsAreaAdminSubordinatedToRegionAdminAsync(currentUserService.UserId, adminId)))
-        {
-            logger.LogDebug("Forbidden to block area admin. Area admin isn't subordinated to region admin.");
 
-            return false;
+        if (currentUserService.IsMinistryAdmin())
+        {
+            if (!await IsAreaAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
+            {
+                logger.LogDebug("Forbidden to block area admin. Area admin isn't subordinated to ministry admin.");
+
+                return false;
+            }
+        }
+
+        if (currentUserService.IsRegionAdmin())
+        {
+            if (!await IsAreaAdminSubordinatedToRegionAdminAsync(currentUserService.UserId, adminId))
+            {
+                logger.LogDebug("Forbidden to block area admin. Area admin isn't subordinated to region admin.");
+
+                return false;
+            }
         }
 
         return true;

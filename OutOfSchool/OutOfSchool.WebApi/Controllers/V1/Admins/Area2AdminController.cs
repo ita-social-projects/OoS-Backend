@@ -181,34 +181,6 @@ public class Area2AdminController : Controller
             return BadRequest(ModelState);
         }
 
-        //if (currentUserId != adminDto.Id)
-        //{
-        //    if (!(currentUserRole == nameof(Role.TechAdmin).ToLower() ||
-        //          currentUserRole == nameof(Role.MinistryAdmin).ToLower()))
-        //    {
-        //        logger.LogDebug("Forbidden to update another user if you don't have TechAdmin or MinistryAdmin role.");
-        //        return StatusCode(403,
-        //            "Forbidden to update another user if you don't have TechAdmin or MinistryAdmin role.");
-        //    }
-
-        //    if ((currentUserRole == nameof(Role.MinistryAdmin).ToLower()
-        //        && !await areaAdminService.IsAreaAdminSubordinatedToMinistryAdminAsync(currentUserId, adminDto.Id)) ||
-        //        (currentUserRole == nameof(Role.RegionAdmin).ToLower()
-        //         && !await areaAdminService.IsAreaAdminSubordinatedToRegionAdminAsync(currentUserId, adminDto.Id)))
-        //    {
-        //        logger.LogDebug("Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
-        //        return StatusCode(403,
-        //            "Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
-        //    }
-
-        //    var updatedRegionAdmin = await areaAdminService.GetByIdAsync(adminDto.Id);
-        //    if (updatedRegionAdmin.AccountStatus == AccountStatus.Accepted)
-        //    {
-        //        logger.LogDebug("Forbidden to update accepted user.");
-        //        return StatusCode(403, "Forbidden to update accepted user.");
-        //    }
-        //}
-
         try
         {
             var response = await areaAdminService.UpdateAsync(
@@ -253,16 +225,6 @@ public class Area2AdminController : Controller
     {
         logger.LogInformation("The deleting of the area admin {areaAdminId} by the user {UserId} was started.", areaAdminId, userId);
 
-        //if ((currentUserRole == nameof(Role.MinistryAdmin).ToLower()
-        // && !await areaAdminService.IsAreaAdminSubordinatedToMinistryAdminAsync(userId, areaAdminId)) ||
-        //(currentUserRole == nameof(Role.RegionAdmin).ToLower()
-        // && !await areaAdminService.IsAreaAdminSubordinatedToRegionAdminAsync(userId, areaAdminId)))
-        //{
-        //    logger.LogDebug("Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
-        //    return StatusCode(403,
-        //        "Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
-        //}
-
         var response = await areaAdminService.DeleteAsync(
                 areaAdminId,
                 userId,
@@ -300,16 +262,6 @@ public class Area2AdminController : Controller
     {
         logger.LogInformation("The blocking of the area admin {areaAdminId} by the user {UserId} was started.", areaAdminId, userId);
 
-        //if ((currentUserRole == nameof(Role.MinistryAdmin).ToLower()
-        // && !await areaAdminService.IsAreaAdminSubordinatedToMinistryAdminAsync(userId, areaAdminId)) ||
-        //(currentUserRole == nameof(Role.RegionAdmin).ToLower()
-        // && !await areaAdminService.IsAreaAdminSubordinatedToRegionAdminAsync(userId, areaAdminId)))
-        //{
-        //    logger.LogDebug("Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
-        //    return StatusCode(403,
-        //        "Forbidden to update AreaAdmin. AreaAdmin doesn't subordinate to MinistryAdmin.");
-        //}
-
         if (isBlocked is null)
         {
             logger.LogDebug("The IsBlocked parameter is not specified");
@@ -343,7 +295,7 @@ public class Area2AdminController : Controller
     /// </summary>
     /// <param name="areaAdminId">Entity's id.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    [HttpPut("{adminId}")]
+    [HttpPut("{areaAdminId}")]
     [HasPermission(Permissions.AreaAdminEdit)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

@@ -2,7 +2,6 @@
 using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.Extensions.Localization;
-using Nest;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
