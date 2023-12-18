@@ -4,6 +4,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Achievement;
+using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -102,7 +103,7 @@ public class AchievementController : ControllerBase
     {
         var providerId = await providerService.GetProviderIdForWorkshopById(achievementDto.WorkshopId).ConfigureAwait(false);
 
-        if (await providerService.IsBlocked(providerId).ConfigureAwait(false))
+        if (await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false)
         {
             return StatusCode(403, "It is forbidden to add achievements to workshops at blocked providers");
         }
@@ -157,7 +158,7 @@ public class AchievementController : ControllerBase
     {
         var providerId = await providerService.GetProviderIdForWorkshopById(achievementDto.WorkshopId).ConfigureAwait(false);
 
-        if (await providerService.IsBlocked(providerId).ConfigureAwait(false))
+        if (await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false)
         {
             return StatusCode(403, "It is forbidden to update the workshops achievements at blocked providers");
         }
@@ -210,7 +211,7 @@ public class AchievementController : ControllerBase
 
         var providerId = await providerService.GetProviderIdForWorkshopById(achievement.WorkshopId).ConfigureAwait(false);
 
-        if (await providerService.IsBlocked(providerId).ConfigureAwait(false))
+        if (await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false)
         {
             return StatusCode(403, "It is forbidden to delete the workshops achievements at blocked providers");
         }

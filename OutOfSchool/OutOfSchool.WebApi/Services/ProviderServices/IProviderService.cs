@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 
-namespace OutOfSchool.WebApi.Services;
+namespace OutOfSchool.WebApi.Services.ProviderServices;
 
 /// <summary>
 /// Defines interface for CRUD functionality for Provider entity.
@@ -38,7 +40,7 @@ public interface IProviderService
     /// <param name="id">Key of the User entity in the table.</param>
     /// <param name="isDeputyOrAdmin">Is user a deputy or delegated provider admin.</param>
     /// <returns>Provider.</returns>
-    Task<ProviderDto?> GetByUserId(string id, bool isDeputyOrAdmin = false);
+    Task<ProviderDto> GetByUserId(string id, bool isDeputyOrAdmin = false);
 
     /// <summary>
     /// Get provider's status.
@@ -71,22 +73,6 @@ public interface IProviderService
     Task<Guid> GetProviderIdForWorkshopById(Guid workshopId);
 
     /// <summary>
-    /// Update Provider Status.
-    /// </summary>
-    /// <param name="dto">Provider to update.</param>
-    /// <param name="userId">Id of user that requests update.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
-    Task<ProviderStatusDto> UpdateStatus(ProviderStatusDto dto, string userId);
-
-    /// <summary>
-    /// Updates Provider LicenseStatus.
-    /// </summary>
-    /// <param name="dto">Provider to update.</param>
-    /// <param name="userId">Id of user that requests update.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
-    Task<ProviderLicenseStatusDto> UpdateLicenseStatus(ProviderLicenseStatusDto dto, string userId);
-
-    /// <summary>
     /// Set block/unblock state.
     /// </summary>
     /// <param name="providerBlockDto">Provider to block/unblock.</param>
@@ -99,5 +85,26 @@ public interface IProviderService
     /// </summary>
     /// <param name="providerId">Key of the Provider entity in the table.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
-    Task<bool> IsBlocked(Guid providerId);
+    Task<bool?> IsBlocked(Guid providerId);
+
+    /// <summary>
+    /// Sends notification about provider
+    /// </summary>
+    /// <param name="provider"></param>
+    /// <param name="notificationAction"></param>
+    /// <param name="addStatusData"></param>
+    /// <param name="addLicenseStatusData"></param>
+    /// <returns></returns>
+    void SendNotification(Provider provider,
+        NotificationAction notificationAction,
+        bool addStatusData,
+        bool addLicenseStatusData);
+
+    /// <summary>
+    /// Updates workshop's provider status
+    /// </summary>
+    /// <param name="providerId"></param>
+    /// <param name="providerStatus"></param>
+    /// <returns></returns>
+    Task UpdateWorkshopsProviderStatus(Guid providerId, ProviderStatus providerStatus);
 }
