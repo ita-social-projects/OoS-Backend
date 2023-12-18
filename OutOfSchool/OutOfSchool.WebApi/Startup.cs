@@ -75,8 +75,8 @@ public static class Startup
             .WithMetadata(new AllowAnonymousAttribute());
 
         app.MapControllers();
-        app.MapHub<ChatWorkshopHub>("/chathub/workshop");
-        app.MapHub<NotificationHub>("/notificationhub");
+        app.MapHub<ChatWorkshopHub>("/hubs/chat");
+        app.MapHub<NotificationHub>("/hubs/notification");
     }
 
     public static void AddApplicationServices(this WebApplicationBuilder builder)

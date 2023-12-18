@@ -2,7 +2,7 @@
 
 public class AuthorizationTokenMiddleware
 {
-    private static readonly string[] Hubs = new string[] { "/chathub", "/notificationhub" };
+    private static readonly string[] Hubs = new string[] { "/hubs/chat", "/hubs/notification" };
     private readonly RequestDelegate next;
 
     public AuthorizationTokenMiddleware(RequestDelegate next)
