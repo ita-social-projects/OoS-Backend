@@ -324,7 +324,7 @@ public class MappingProfile : Profile
             .IncludeBase<Workshop, WorkshopBaseCard>()
             .ForMember(dest => dest.AmountOfPendingApplications, opt => opt.MapFrom(src =>
                 src.Applications.Count(x =>
-                    x.Status == ApplicationStatus.Pending)))
+                    x.Status == ApplicationStatus.Pending && !x.IsDeleted)))
             .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src =>
                 src.Applications.Count(x =>
                     x.Status == ApplicationStatus.Approved

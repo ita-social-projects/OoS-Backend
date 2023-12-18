@@ -11,4 +11,6 @@ public interface IApplicationRepository : IEntityRepositorySoftDeleted<Guid, App
     Task<int> GetCountByWorkshop(Guid workshopId);
 
     Task<int> UpdateAllApprovedApplications();
+
+    Task DeleteChildApplications(Guid childId);
 }
