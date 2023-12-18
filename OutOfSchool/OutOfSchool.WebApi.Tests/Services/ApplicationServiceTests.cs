@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using FluentAssertions;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
@@ -12,6 +13,8 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
+using OutOfSchool.EmailSender;
+using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
@@ -42,6 +45,10 @@ public class ApplicationServiceTests
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<IAreaAdminService> areaAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
+    private Mock<IRazorViewToStringRenderer> rendererMock;
+    private Mock<IEmailSender> emailSenderMock;
+    private Mock<IStringLocalizer<SharedResource>> localizerMock;
+    private Mock<IOptions<HostsConfig>> hostsConfigMock;
 
     private Mock<IOptions<ApplicationsConstraintsConfig>> applicationsConstraintsConfig;
 
@@ -59,6 +66,10 @@ public class ApplicationServiceTests
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         areaAdminServiceMock = new Mock<IAreaAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
+        rendererMock = new Mock<IRazorViewToStringRenderer>();
+        emailSenderMock = new Mock<IEmailSender>();
+        localizerMock = new Mock<IStringLocalizer<SharedResource>>();
+        hostsConfigMock = new Mock<IOptions<HostsConfig>>();
 
         logger = new Mock<ILogger<ApplicationService>>();
         mapper = new Mock<IMapper>();
@@ -70,6 +81,11 @@ public class ApplicationServiceTests
                 ApplicationsLimit = 2,
                 ApplicationsLimitDays = 7,
             });
+
+        var config = new HostsConfig();
+        config.FrontendUrl = "http://localhost:4200";
+        config.BackendUrl = "http://localhost:5443";
+        hostsConfigMock.Setup(x => x.Value).Returns(config);
 
         service = new ApplicationService(
             applicationRepositoryMock.Object,
@@ -85,7 +101,11 @@ public class ApplicationServiceTests
             ministryAdminServiceMock.Object,
             regionAdminServiceMock.Object,
             areaAdminServiceMock.Object,
-            codeficatorServiceMock.Object);
+            codeficatorServiceMock.Object,
+            rendererMock.Object,
+            emailSenderMock.Object,
+            localizerMock.Object,
+            hostsConfigMock.Object);
     }
 
     [Test]
@@ -195,8 +215,8 @@ public class ApplicationServiceTests
 
         currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
         currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(false);
-		currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(false);
-		currentUserServiceMock.Setup(c => c.IsAreaAdmin()).Returns(true);
+        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(false);
+        currentUserServiceMock.Setup(c => c.IsAreaAdmin()).Returns(true);
         areaAdminServiceMock
             .Setup(m => m.GetByUserId(It.IsAny<string>()))
             .Returns(Task.FromResult<AreaAdminDto>(new AreaAdminDto()
@@ -1097,6 +1117,13 @@ public class ApplicationServiceTests
                 {
                     LastName = "Petroffski",
                 },
+            },
+            Child = new Child()
+            {
+                Id = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
+                LastName = "Petroffski",
+                FirstName = "Ivan",
+                Gender = Gender.Male,
             },
             Workshop = new Workshop()
             {
