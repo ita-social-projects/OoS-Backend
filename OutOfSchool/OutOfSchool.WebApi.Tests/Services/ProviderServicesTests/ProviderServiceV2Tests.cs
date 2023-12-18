@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,7 +17,9 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Config;
+using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.AverageRatings;
@@ -50,6 +53,7 @@ public class ProviderServiceV2Tests
     private Mock<IAreaAdminRepository> areaAdminRepositoryMock;
     private Mock<IUserService> userServiceMock;
     private Mock<ICommunicationService> communicationService;
+    private Mock<IImageDependentEntityImagesInteractionService<Provider>> providerImagesService;
 
     private List<Provider> fakeProviders;
     private User fakeUser;
@@ -69,7 +73,6 @@ public class ProviderServiceV2Tests
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderServiceV2>>();
         var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
-        var providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
         var changesLogService = new Mock<IChangesLogService>();
         notificationService = new Mock<INotificationService>(MockBehavior.Strict);
         providerAdminService = new Mock<IProviderAdminService>();
@@ -84,6 +87,7 @@ public class ProviderServiceV2Tests
         areaAdminRepositoryMock = new Mock<IAreaAdminRepository>();
         userServiceMock = new Mock<IUserService>();
         communicationService = new Mock<ICommunicationService>();
+        providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
 
         var authorizationServerConfig = Options.Create(new AuthorizationServerConfig { Authority = new Uri("http://test.com") });
         mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
@@ -242,6 +246,58 @@ public class ProviderServiceV2Tests
 
         // Act & Assert
         Assert.ThrowsAsync<InvalidOperationException>(async () => await providerService.Create(randomProvider));
+    }
+
+    [Test]
+    public async Task Create_ShouldCallAddMayImagesMethod_WhenHasImagesFiles()
+    {
+        // Arrange
+        var expectedEntity = ProvidersGenerator.Generate();
+        var expectedEntityDto = mapper.Map<ProviderCreateDto>(expectedEntity);
+        var file = new Mock<IFormFile>().Object;
+        expectedEntityDto.ImageFiles = new List<IFormFile> { file };
+
+        providersRepositoryMock.Setup(p => p.Create(It.IsAny<Provider>())).ReturnsAsync(expectedEntity);
+        providerImagesService.Setup(p => p.AddManyImagesAsync(expectedEntity, expectedEntityDto.ImageFiles)).ReturnsAsync(new MultipleImageUploadingResult());
+        notificationService.Setup(s => s.Create(
+                NotificationType.Provider,
+                NotificationAction.Create,
+                It.IsAny<Guid>(),
+                providerService,
+                It.IsAny<Dictionary<string, string>>(),
+                null)).Returns(Task.CompletedTask);
+
+        // Act
+        await providerService.Create(expectedEntityDto).ConfigureAwait(false);
+
+        // Assert
+        providerImagesService.Verify(p => p.AddManyImagesAsync(expectedEntity, expectedEntityDto.ImageFiles), Times.Once);
+    }
+
+    [Test]
+    public async Task Create_ShouldCallCoverImageMethod_WhenHasCoverImage()
+    {
+        // Arrange
+        var expectedEntity = ProvidersGenerator.Generate();
+        var expectedEntityDto = mapper.Map<ProviderCreateDto>(expectedEntity);
+        var file = new Mock<IFormFile>().Object;
+        expectedEntityDto.CoverImage = file;
+
+        providersRepositoryMock.Setup(p => p.Create(It.IsAny<Provider>())).ReturnsAsync(expectedEntity);
+        providerImagesService.Setup(p => p.AddCoverImageAsync(expectedEntity, expectedEntityDto.CoverImage)).ReturnsAsync(new Result<string>());
+        notificationService.Setup(s => s.Create(
+                NotificationType.Provider,
+                NotificationAction.Create,
+                It.IsAny<Guid>(),
+                providerService,
+                It.IsAny<Dictionary<string, string>>(),
+                null)).Returns(Task.CompletedTask);
+
+        // Act
+        await providerService.Create(expectedEntityDto).ConfigureAwait(false);
+
+        // Assert
+        providerImagesService.Verify(p => p.AddCoverImageAsync(expectedEntity, expectedEntityDto.CoverImage), Times.Once);
     }
 
     #endregion
@@ -574,6 +630,57 @@ public class ProviderServiceV2Tests
 
         // Assert
         communicationService.Verify(x => x.SendRequest<ResponseDto>(It.IsAny<Request>()), Times.AtLeastOnce);
+    }
+
+    [Test]
+    public async Task Delete_ShouldCallRemoveManyImagesMethod_WhenHasImagesFiles()
+    {
+        // Arrange
+        var images = ImagesGenerator.Generate<Provider>(5);
+        var imageIds = images.Select(i => i.ExternalStorageId).ToList();
+        var providerToDelete = ProvidersGenerator.Generate();
+        var providerToDeleteDto = mapper.Map<ProviderDto>(providerToDelete);
+        providerToDelete.Images = images;
+
+        var deleteMethodArguments = new List<Provider>();
+        var deleteUserArguments = new List<string>();
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(providerToDelete.Id))
+            .ReturnsAsync(providerToDelete);
+        providersRepositoryMock.Setup(r => r.Delete(Capture.In(deleteMethodArguments)));
+        userServiceMock.Setup(r => r.Delete(Capture.In(deleteUserArguments)));
+        currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(true);
+        communicationService.Setup(x => x.SendRequest<ResponseDto>(It.IsAny<Request>())).ReturnsAsync(new ResponseDto());
+
+        // Act
+        await providerService.Delete(providerToDelete.Id, It.IsAny<string>()).ConfigureAwait(false);
+
+        // Assert
+        providerImagesService.Verify(p => p.RemoveManyImagesAsync(providerToDelete, imageIds), Times.Once);
+    }
+
+    [Test]
+    public async Task Delete_ShouldCallRemoveCoverImageMethod_WhenHasCoverImage()
+    {
+        // Arrange
+        var image = ImagesGenerator.Generate<Provider>();
+        var providerToDelete = ProvidersGenerator.Generate();
+        var providerToDeleteDto = mapper.Map<ProviderDto>(providerToDelete);
+        providerToDelete.CoverImageId = image.EntityId.ToString();
+
+        var deleteMethodArguments = new List<Provider>();
+        var deleteUserArguments = new List<string>();
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(providerToDelete.Id))
+            .ReturnsAsync(providerToDelete);
+        providersRepositoryMock.Setup(r => r.Delete(Capture.In(deleteMethodArguments)));
+        userServiceMock.Setup(r => r.Delete(Capture.In(deleteUserArguments)));
+        currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(true);
+        communicationService.Setup(x => x.SendRequest<ResponseDto>(It.IsAny<Request>())).ReturnsAsync(new ResponseDto());
+
+        // Act
+        await providerService.Delete(providerToDelete.Id, It.IsAny<string>()).ConfigureAwait(false);
+
+        // Assert
+        providerImagesService.Verify(p => p.RemoveCoverImageAsync(providerToDelete), Times.Once);
     }
 
     #endregion

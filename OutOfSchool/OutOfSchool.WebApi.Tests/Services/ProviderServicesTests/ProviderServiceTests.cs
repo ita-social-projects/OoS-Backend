@@ -429,6 +429,7 @@ public class ProviderServiceTests
 
         // Assert
         TestHelper.AssertDtosAreEqual(mapper.Map<ProviderDto>(existingProvider), actualProviderDto);
+        averageRatingServiceMock.Verify(r => r.GetByEntityIdAsync(It.IsAny<Guid>()), Times.Once);
     }
 
     [Test]
@@ -852,6 +853,26 @@ public class ProviderServiceTests
 
         // Assert
         communicationService.Verify(x => x.SendRequest<ResponseDto>(It.IsAny<Request>()), Times.AtLeastOnce);
+    }
+
+    #endregion
+
+    #region GetProviderIdForWorkshopById
+
+    [Test]
+    public async Task GetProviderIdForWorkshopById_MethodWasCalled()
+    {
+        // Arrange
+        var existingProvider = fakeProviders.RandomItem();
+        existingProvider.WithWorkshops();
+        workshopServicesCombinerMock.Setup(w => w.GetWorkshopProviderId(existingProvider.Workshops.FirstOrDefault().Id)).ReturnsAsync(existingProvider.Id);
+
+        // Act
+        var actualResult = await providerService.GetProviderIdForWorkshopById(existingProvider.Workshops.FirstOrDefault().Id);
+
+        // Assert
+        workshopServicesCombinerMock.Verify(w => w.GetWorkshopProviderId(existingProvider.Workshops.FirstOrDefault().Id), Times.Once);
+        Assert.AreEqual(existingProvider.Id, actualResult);
     }
 
     #endregion
