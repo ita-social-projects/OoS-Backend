@@ -87,6 +87,9 @@ public class ApplicationServiceTests
         config.BackendUrl = "http://localhost:5443";
         hostsConfigMock.Setup(x => x.Value).Returns(config);
 
+        rendererMock.Setup(x => x.GetHtmlPlainStringAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((string.Empty, string.Empty));
+
         service = new ApplicationService(
             applicationRepositoryMock.Object,
             logger.Object,

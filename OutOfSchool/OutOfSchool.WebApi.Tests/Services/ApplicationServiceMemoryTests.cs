@@ -89,6 +89,9 @@ public class ApplicationServiceMemoryTests
                 ApplicationsLimitDays = 7,
             });
 
+        rendererMock.Setup(x => x.GetHtmlPlainStringAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((string.Empty, string.Empty));
+
         service = new ApplicationService(
             applicationRepository,
             logger.Object,
