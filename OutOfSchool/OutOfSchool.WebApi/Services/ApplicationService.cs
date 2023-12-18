@@ -965,21 +965,11 @@ public class ApplicationService : IApplicationService, INotificationReciever
                 additionalData,
                 groupedData).ConfigureAwait(false);
 
-            if (updatedApplication.Status == ApplicationStatus.Approved)
+            if (updatedApplication.Status == ApplicationStatus.Approved
+                || updatedApplication.Status == ApplicationStatus.AcceptedForSelection
+                || updatedApplication.Status == ApplicationStatus.Rejected)
             {
-                var subject = localizer["Approved!"];
-                var applicationStatusViewModel = new ApplicationStatusViewModel
-                {
-                    ChildFullName =
-                        $"{updatedApplication.Child.LastName} " +
-                        $"{updatedApplication.Child.FirstName} " +
-                        $"{updatedApplication.Child.MiddleName}".TrimEnd(),
-                    WorkshopTitle = updatedApplication.Workshop.Title,
-                    WorkshopUrl = $"{hostsConfig.Value.FrontendUrl}/#/details/workshop/{updatedApplication.WorkshopId}",
-                };
-                var content = await renderer
-                    .GetHtmlPlainStringAsync(RazorTemplates.ApplicationApprovedEmail, applicationStatusViewModel);
-                await emailSender.SendAsync(updatedApplication.Parent.User.Email, subject, content);
+                await SendApplicationUpdateStatusEmail(updatedApplication);
             }
 
             await ControlWorkshopStatus(previewAppStatus, updatedApplication.Status, currentApplication.WorkshopId);
@@ -1003,5 +993,33 @@ public class ApplicationService : IApplicationService, INotificationReciever
         return await applicationRepository.Count(a => application.ChildId == a.ChildId &&
                                                       application.WorkshopId == a.WorkshopId &&
                                                       Application.ValidApplicationStatuses.Contains(a.Status));
+    }
+
+    private async Task SendApplicationUpdateStatusEmail(Application application)
+    {
+        LocalizedString subject = application.Status switch
+        {
+            ApplicationStatus.Approved => localizer["Approved!"],
+            ApplicationStatus.Rejected => localizer["Rejected"],
+            ApplicationStatus.AcceptedForSelection => localizer["Accepted for selection!"],
+            _ => localizer["Application status changed"],
+        };
+        var applicationStatusViewModel = new ApplicationStatusViewModel
+        {
+            ApplicationStatus = application.Status,
+            ChildFullName =
+                $"{application.Child.LastName} " +
+                $"{application.Child.FirstName} " +
+                $"{application.Child.MiddleName}".TrimEnd(),
+            ChildGender = application.Child.Gender,
+            WorkshopTitle = application.Workshop.Title,
+
+            // TODO: Think about pass URL from variable
+            WorkshopUrl = $"{hostsConfig.Value.FrontendUrl}/#/details/workshop/{application.WorkshopId}",
+            RejectionMessage = application.RejectionMessage,
+        };
+        var content = await renderer
+            .GetHtmlPlainStringAsync(RazorTemplates.ApplicationStatusUpdateEmail, applicationStatusViewModel);
+        await emailSender.SendAsync(application.Parent.User.Email, subject, content);
     }
 }

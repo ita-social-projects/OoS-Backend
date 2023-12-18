@@ -117,8 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Accepted for selection!" xml:space="preserve">
+    <value>Прийнято до конкурсного відбору!</value>
+    <comment>ApplicationService</comment>
+  </data>
   <data name="Address is null." xml:space="preserve">
     <value>Адреса null (пуста).</value>
+  </data>
+  <data name="Application status changed" xml:space="preserve">
+    <value>Статус заявки змінено</value>
+    <comment>ApplicationService</comment>
   </data>
   <data name="Approved!" xml:space="preserve">
     <value>Зараховано!</value>
@@ -145,6 +153,10 @@
   </data>
   <data name="Id cannot be 0 or less than 0." xml:space="preserve">
     <value>Id не може бути 0 або меншим за 0.</value>
+  </data>
+  <data name="Rejected" xml:space="preserve">
+    <value>Відмовлено</value>
+    <comment>ApplicationService</comment>
   </data>
   <data name="Server error. Please try again later or contact technical support." xml:space="preserve">
     <value>Помилка на сервері. Будь ласка, спробуйте пізніше або зверніться до технічної підтримки.</value>

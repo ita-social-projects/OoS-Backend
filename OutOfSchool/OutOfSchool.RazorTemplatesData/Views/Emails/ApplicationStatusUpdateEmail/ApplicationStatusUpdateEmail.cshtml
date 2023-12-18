@@ -1,0 +1,57 @@
+﻿@using OutOfSchool.RazorTemplatesData.Models.Emails
+@using OutOfSchool.RazorTemplatesData.Models.Shared
+@using OutOfSchool.Services.Enums
+@model ApplicationStatusViewModel
+
+@{
+    ViewData["EmailTitle"] = "";
+    var ending = "";
+
+    if (Model.ChildGender == Gender.Male) 
+    {
+        ending = "ий";
+    }
+    else if (Model.ChildGender == Gender.Female)
+    {
+        ending = "а";
+    }
+    else if (Model.ChildGender == null)
+    {
+        ending = "ий/a";
+    }
+}
+
+<main class="container">
+    <div class="content">
+        @if (Model.ApplicationStatus == ApplicationStatus.Approved)
+        {
+            <h1 class="title">Зараховано!</h1>
+            <p class="text">Вітаємо!</p>
+            <p class="text">@Model.ChildFullName</p>
+            <p class="text">зарахован@(ending) до</p>
+            <a href="@Model.WorkshopUrl" target="_blank">"@Model.WorkshopTitle"</a>
+        }
+        else if (Model.ApplicationStatus == ApplicationStatus.Rejected)
+        {
+            <h1 class="title">Відмовлено</h1>
+            <p class="text">На жаль,</p>
+            <p class="text">@Model.ChildFullName</p>
+            <p class="text">не може бути зарахован@(ending) до</p>
+            <a href="@Model.WorkshopUrl" target="_blank">"@Model.WorkshopTitle"</a>
+            <p class="text">Причина:"@Model.RejectionMessage"</p>
+        }
+        else if (Model.ApplicationStatus == ApplicationStatus.AcceptedForSelection)
+        {
+            <h1 class="title">Вітаємо!</h1>
+            <p class="text">@Model.ChildFullName</p>
+            <p class="text">Прийнят@(ending) до конкурсного відбору до</p>
+            <a href="@Model.WorkshopUrl" target="_blank">"@Model.WorkshopTitle"</a>
+        }
+        else
+        {
+            <h1 class="title">Вітаємо!</h1>
+            <p class="text">Статус Вашої заявки змінився на:</p>
+            <p class="text">@Model.ApplicationStatus</p>
+        }
+    </div>
+</main>
