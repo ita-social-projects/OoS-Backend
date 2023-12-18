@@ -88,8 +88,7 @@ public class ApplicationRepository : EntityRepositorySoftDeleted<Guid, Applicati
     public async Task DeleteChildApplications(Guid childId)
     {
         List<Application> applicationsToDelete = await dbContext.Applications
-        .Where(app => app.ChildId == childId)
-        .ToListAsync();
+                                                    .Where(app => app.ChildId == childId).ToListAsync();
 
         if (applicationsToDelete.Any())
         {
