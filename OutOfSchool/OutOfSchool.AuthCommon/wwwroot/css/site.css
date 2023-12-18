@@ -433,6 +433,8 @@ a {
   font-size: 13px;
   line-height: 1;
   cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
 .registration_submit {
