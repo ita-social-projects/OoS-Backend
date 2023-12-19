@@ -421,6 +421,8 @@ public class ChildService : IChildService
             throw new ArgumentException($"Forbidden to delete child which related to the parent.");
         }
 
+        await applicationRepository.DeleteChildApplications(id).ConfigureAwait(false);
+
         await childRepository.Delete(child).ConfigureAwait(false);
 
         logger.LogDebug($"Child with Id = {id} succesfully deleted.");
