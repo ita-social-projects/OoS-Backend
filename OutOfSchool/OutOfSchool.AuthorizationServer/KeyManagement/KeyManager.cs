@@ -55,7 +55,7 @@ public class KeyManager : IKeyManager
         {
             // Data was deleted but we didn't do it, this case should be unreal
             // throw exception and hope for the better next time
-            throw new Exception();
+            throw new InvalidOperationException();
         }
 
         // Certificate was updated by other instance
@@ -69,7 +69,7 @@ public class KeyManager : IKeyManager
 
         // Updated and expired right away, this case should be unreal
         // throw exception and hope for the better next time?
-        throw new Exception();
+        throw new InvalidOperationException();
     }
 
     /// <summary>

@@ -174,8 +174,8 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
                 Query = new MatchQuery()
                 {
                     Field = filter.IsStrictWorkdays
-                                ? Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().Workdays.Suffix("keyword"))
-                                : Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().Workdays),
+                                ? Infer.Field<WorkshopES>(w => w.DateTimeRanges[0].Workdays.Suffix("keyword"))
+                                : Infer.Field<WorkshopES>(w => w.DateTimeRanges[0].Workdays),
                     Query = filter.Workdays,
                 },
             };
@@ -204,7 +204,7 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
                     Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
                     Query = new NumericRangeQuery()
                     {
-                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().StartTime),
+                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges[0].StartTime),
                         GreaterThanOrEqualTo = filter.MinStartTime.Ticks,
                     },
                 };
@@ -214,7 +214,7 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
                     Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
                     Query = new NumericRangeQuery()
                     {
-                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().EndTime),
+                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges[0].EndTime),
                         LessThan = TimeSpan.FromHours(filter.MaxStartTime.Hours + 1).Ticks,
                     },
                 };
@@ -226,7 +226,7 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
                     Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
                     Query = new NumericRangeQuery()
                     {
-                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().StartTime),
+                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges[0].StartTime),
                         GreaterThanOrEqualTo = filter.MinStartTime.Ticks,
                         LessThan = TimeSpan.FromHours(filter.MaxStartTime.Hours + 1).Ticks,
                     },

@@ -18,9 +18,8 @@ public class ProviderAdminService : IProviderAdminService
     private readonly IMapper mapper;
     private readonly ILogger<ProviderAdminService> logger;
     private readonly IProviderAdminRepository providerAdminRepository;
-    private readonly GRPCConfig gPRCConfig;
+    private readonly GrpcConfig gPrcConfig;
     private readonly AngularClientScopeExternalUrisConfig externalUrisConfig;
-    private readonly ChangesLogConfig changesLogConfig;
 
     private readonly UserManager<User> userManager;
     private readonly OutOfSchoolDbContext context;
@@ -37,7 +36,7 @@ public class ProviderAdminService : IProviderAdminService
         OutOfSchoolDbContext context,
         IRazorViewToStringRenderer renderer,
         IProviderAdminChangesLogService providerAdminChangesLogService,
-        IOptions<GRPCConfig> gRPCConfig,
+        IOptions<GrpcConfig> gRpcConfig,
         IOptions<AngularClientScopeExternalUrisConfig> externalUrisConfig,
         IOptions<ChangesLogConfig> changesLogConfig)
     {
@@ -49,13 +48,13 @@ public class ProviderAdminService : IProviderAdminService
         this.emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
         this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
         this.providerAdminChangesLogService = providerAdminChangesLogService ?? throw new ArgumentNullException(nameof(providerAdminChangesLogService));
-        this.gPRCConfig = gRPCConfig?.Value ?? throw new ArgumentNullException(nameof(gRPCConfig));
+        this.gPrcConfig = gRpcConfig?.Value ?? throw new ArgumentNullException(nameof(gRpcConfig));
         this.externalUrisConfig =
             externalUrisConfig?.Value ?? throw new ArgumentNullException(nameof(externalUrisConfig));
-        this.changesLogConfig = changesLogConfig?.Value ?? throw new ArgumentNullException(nameof(changesLogConfig));
+        _ = changesLogConfig?.Value ?? throw new ArgumentNullException(nameof(changesLogConfig));
         this.trackedProperties =
-            this.changesLogConfig.TrackedProperties.TryGetValue("ProviderAdmin", out var trackedProperties)
-            ? trackedProperties
+            changesLogConfig.Value.TrackedProperties.TryGetValue("ProviderAdmin", out var properties)
+            ? properties
             : Array.Empty<string>();
     }
 
@@ -527,25 +526,25 @@ public class ProviderAdminService : IProviderAdminService
             .GetByFilter(x => x.ProviderId == providerId && x.BlockingType != BlockingType.Manually)
             .ConfigureAwait(false);
 
-        foreach (var providerAdmin in providerAdmins)
+        foreach (var providerAdminUserId in providerAdmins.Select(providerAdmin => providerAdmin.UserId))
         {
-            var response = await BlockProviderAdminAsync(providerAdmin.UserId, userId, isBlocked);
+            var response = await BlockProviderAdminAsync(providerAdminUserId, userId, isBlocked);
 
             if (response.IsSuccess)
             {
                 logger.LogInformation(
                     "ProviderAdmin(id):{ProviderAdminId} was successfully blocked by User(id): {UserId}",
-                    providerAdmin.UserId,
+                    providerAdminUserId,
                     userId);
             }
             else
             {
                 mainResponse.IsSuccess = false;
-                mainResponse.Message = string.Concat(mainResponse.Message, providerAdmin.UserId, " ", response.HttpStatusCode.ToString(), " ");
+                mainResponse.Message = string.Concat(mainResponse.Message, providerAdminUserId, " ", response.HttpStatusCode.ToString(), " ");
 
                 logger.LogInformation(
                     "ProviderAdmin(id):{ProviderAdminId} wasn't blocked by User(id): {UserId}. Reason {ResponseHttpStatusCode}",
-                    providerAdmin.UserId,
+                    providerAdminUserId,
                     userId,
                     response.HttpStatusCode);
             }
@@ -651,7 +650,7 @@ public class ProviderAdminService : IProviderAdminService
 
         string confirmationLink =
         url is null
-                ? $"{gPRCConfig.ProviderAdminConfirmationLink}?userId={user.Id}&token={token}?redirectUrl={externalUrisConfig.Login}"
+                ? $"{gPrcConfig.ProviderAdminConfirmationLink}?userId={user.Id}&token={token}?redirectUrl={externalUrisConfig.Login}"
                 : url.Action(
                     "EmailConfirmation",
                     "Account",

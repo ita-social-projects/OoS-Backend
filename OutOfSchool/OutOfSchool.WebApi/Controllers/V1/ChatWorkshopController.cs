@@ -547,7 +547,7 @@ public class ChatWorkshopController : ControllerBase
 
             var providerOrParentId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
 
-            if (providerOrParentId != default)
+            if (providerOrParentId != Guid.Empty)
             {
                 IEnumerable<ChatRoomWorkshopDtoWithLastMessage> chatRooms = null;
                 if (IsFilterEmpty(filter))
@@ -580,7 +580,7 @@ public class ChatWorkshopController : ControllerBase
     {
         filter ??= new ChatWorkshopFilter();
         filter.WorkshopIds ??= new List<Guid>();
-        return filter.WorkshopIds.Count() == 0 && string.IsNullOrEmpty(filter.SearchText) && filter.From == 0 && filter.Size == 0;
+        return !filter.WorkshopIds.Any() && string.IsNullOrEmpty(filter.SearchText) && filter.From == 0 && filter.Size == 0;
     }
 
     private async Task<IActionResult> HandleOperationAsync(Func<Task<IActionResult>> operation)

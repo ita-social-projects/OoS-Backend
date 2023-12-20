@@ -18,6 +18,8 @@ public class CacheService : ICacheService, IDisposable
     private readonly bool isEnabled = false;
 
     private readonly object lockObject = new object();
+    
+    private bool _disposed;
 
     public CacheService(
         IDistributedCache cache, 
@@ -107,7 +109,17 @@ public class CacheService : ICacheService, IDisposable
 
     public void Dispose()
     {
-        cacheLock?.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+    
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing && !_disposed)
+        {
+            cacheLock?.Dispose();
+            _disposed = true;
+        }
     }
 
     private async Task RedisIsBrokenStartCheck()

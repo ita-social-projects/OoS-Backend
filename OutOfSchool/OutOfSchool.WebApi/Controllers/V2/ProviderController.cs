@@ -114,7 +114,7 @@ public class ProviderController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Create([FromForm] ProviderCreateDto providerModel)
     {
-        providerModel.Id = default;
+        providerModel.Id = Guid.Empty;
         providerModel.LegalAddress.Id = default;
 
         if (providerModel.ActualAddress != null)

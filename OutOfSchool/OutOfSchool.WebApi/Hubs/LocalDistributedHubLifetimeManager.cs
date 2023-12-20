@@ -6,7 +6,7 @@ using StackExchange.Redis;
 
 namespace OutOfSchool.WebApi.Hubs;
 
-public class LocalDistributedHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposable
+public sealed class LocalDistributedHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposable
     where THub : Hub
 {
     private readonly DefaultHubLifetimeManager<THub> defaultHubLifetimeManager;
