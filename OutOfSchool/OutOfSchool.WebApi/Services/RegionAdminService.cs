@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Responses;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 
@@ -87,7 +88,14 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         if (await IsSuchEmailExisted(regionAdminBaseDto.Email))
         {
             Logger.LogDebug("RegionAdmin creating is not possible. Username {Email} is already taken", regionAdminBaseDto.Email);
-            throw new InvalidOperationException($"Username {regionAdminBaseDto.Email} is already taken.");
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                ApiErrorResponse = new ApiErrorResponse(new List<ApiError>()
+                {
+                    ApiErrorsTypes.Common.EmailAlreadyTaken("RegionAdmin", regionAdminBaseDto.Email),
+                }),
+            };
         }
 
         var request = new Request()
