@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.Services.Models;
 
-public static class CATOTTGAddressExtensions
+public static class CatottgAddressExtensions
 {
     public static string GetCityDistrictName(CATOTTG src)
         => src.Category == CodeficatorCategory.CityDistrict.Name ? src.Name : null;

@@ -459,9 +459,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.InstitutionTitle, opt => opt.MapFrom(src => src.Institution.Title))
             .ForMember(dest => dest.CATOTTGCategory, opt => opt.MapFrom(src => src.CATOTTG.Category))
             .ForMember(dest => dest.CATOTTGName, opt => opt.MapFrom(src => src.CATOTTG.Name))
-            .ForMember(dest => dest.RegionId, opt => opt.MapFrom(src => src.CATOTTG != null ? src.CATOTTG.Parent != null ? src.CATOTTG.Parent.Parent != null ? src.CATOTTG.Parent.Parent.Id : 0 : 0 : 0))
-            .ForMember(dest => dest.RegionName, opt => opt.MapFrom(src => src.CATOTTG != null ? src.CATOTTG.Parent != null ? src.CATOTTG.Parent.Parent != null ? src.CATOTTG.Parent.Parent.Name : string.Empty : string.Empty : string.Empty))
-            .ForMember(dest => dest.AccountStatus, opt => opt.MapFrom(src => AccountStatusExtensions.Convert(src.User)));
+            .ForMember(dest => dest.RegionId, opt => opt.MapFrom(src => src.CATOTTG.Parent.Parent.Id))
+            .ForMember(dest => dest.RegionName, opt => opt.MapFrom(src => src.CATOTTG.Parent.Parent.Name))
+            .ForMember(dest => dest.AccountStatus, opt => opt.MapFrom(src => AccountStatusExtensions.Convert(src.User)))
+            .AfterMap((src, dest) => dest.RegionName ??= string.Empty);
 
         CreateMap<AreaAdminDto, AreaAdminBaseDto>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
@@ -598,22 +599,22 @@ public class MappingProfile : Profile
             });
 
         CreateMap<CATOTTG, CodeficatorAddressDto>()
-            .ForMember(dest => dest.Settlement, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetSettlementName(src)))
-            .ForMember(dest => dest.TerritorialCommunity, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetTerritorialCommunityName(src)))
-            .ForMember(dest => dest.District, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetDistrictName(src)))
-            .ForMember(dest => dest.Region, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetRegionName(src)))
-            .ForMember(dest => dest.CityDistrict, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetCityDistrictName(src)));
+            .ForMember(dest => dest.Settlement, opt => opt.MapFrom(src => CatottgAddressExtensions.GetSettlementName(src)))
+            .ForMember(dest => dest.TerritorialCommunity, opt => opt.MapFrom(src => CatottgAddressExtensions.GetTerritorialCommunityName(src)))
+            .ForMember(dest => dest.District, opt => opt.MapFrom(src => CatottgAddressExtensions.GetDistrictName(src)))
+            .ForMember(dest => dest.Region, opt => opt.MapFrom(src => CatottgAddressExtensions.GetRegionName(src)))
+            .ForMember(dest => dest.CityDistrict, opt => opt.MapFrom(src => CatottgAddressExtensions.GetCityDistrictName(src)));
 
         CreateMap<CATOTTG, AllAddressPartsDto>()
             .IncludeBase<CATOTTG, CodeficatorAddressDto>()
             .ForMember(dest => dest.AddressParts, opt => opt.MapFrom(src => src));
 
         CreateMap<CATOTTG, CodeficatorAddressInfoDto>()
-            .ForMember(dest => dest.Settlement, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetSettlementName(src)))
-            .ForMember(dest => dest.TerritorialCommunity, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetTerritorialCommunityName(src)))
-            .ForMember(dest => dest.District, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetDistrictName(src)))
-            .ForMember(dest => dest.Region, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetRegionName(src)))
-            .ForMember(dest => dest.CityDistrict, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetCityDistrictName(src)));
+            .ForMember(dest => dest.Settlement, opt => opt.MapFrom(src => CatottgAddressExtensions.GetSettlementName(src)))
+            .ForMember(dest => dest.TerritorialCommunity, opt => opt.MapFrom(src => CatottgAddressExtensions.GetTerritorialCommunityName(src)))
+            .ForMember(dest => dest.District, opt => opt.MapFrom(src => CatottgAddressExtensions.GetDistrictName(src)))
+            .ForMember(dest => dest.Region, opt => opt.MapFrom(src => CatottgAddressExtensions.GetRegionName(src)))
+            .ForMember(dest => dest.CityDistrict, opt => opt.MapFrom(src => CatottgAddressExtensions.GetCityDistrictName(src)));
 
         CreateMap<Provider, ProviderStatusDto>()
             .ForMember(dest => dest.ProviderId, opt => opt.MapFrom(src => src.Id))

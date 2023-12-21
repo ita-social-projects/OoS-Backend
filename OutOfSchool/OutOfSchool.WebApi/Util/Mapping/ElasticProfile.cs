@@ -126,11 +126,11 @@ public class ElasticProfile : Profile
                 opt => opt.Ignore());
 
         CreateMap<CATOTTG, CodeficatorAddressES>()
-            .ForMember(dest => dest.Settlement, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetSettlementName(src)))
-            .ForMember(dest => dest.TerritorialCommunity, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetTerritorialCommunityName(src)))
-            .ForMember(dest => dest.District, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetDistrictName(src)))
-            .ForMember(dest => dest.Region, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetRegionName(src)))
-            .ForMember(dest => dest.CityDistrict, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetCityDistrictName(src)))
+            .ForMember(dest => dest.Settlement, opt => opt.MapFrom(src => CatottgAddressExtensions.GetSettlementName(src)))
+            .ForMember(dest => dest.TerritorialCommunity, opt => opt.MapFrom(src => CatottgAddressExtensions.GetTerritorialCommunityName(src)))
+            .ForMember(dest => dest.District, opt => opt.MapFrom(src => CatottgAddressExtensions.GetDistrictName(src)))
+            .ForMember(dest => dest.Region, opt => opt.MapFrom(src => CatottgAddressExtensions.GetRegionName(src)))
+            .ForMember(dest => dest.CityDistrict, opt => opt.MapFrom(src => CatottgAddressExtensions.GetCityDistrictName(src)))
             .ForMember(dest => dest.FullAddress, opt => opt.Ignore())
             .ForMember(dest => dest.FullName, opt => opt.Ignore());
 
