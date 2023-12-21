@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
+using Castle.Core.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -67,6 +68,19 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
                 ApiErrorResponse = new ApiErrorResponse(new List<ApiError>()
                 {
                     ApiErrorsTypes.ProviderAdmin.UserDontHavePermissionToCreate(userId),
+                }),
+            };
+        }
+
+        if (await IsSuchEmailExisted(providerAdminDto.Email))
+        {
+            Logger.LogDebug("providerAdmin creating is not possible. Username {Email} is already taken", providerAdminDto.Email);
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                ApiErrorResponse = new ApiErrorResponse(new List<ApiError>()
+                {
+                    ApiErrorsTypes.Common.EmailAlreadyTaken("ProviderAdmin", providerAdminDto.Email),
                 }),
             };
         }
@@ -673,5 +687,11 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         }
 
         return predicate;
+    }
+
+    private async Task<bool> IsSuchEmailExisted(string email)
+    {
+        var result = await userRepository.GetByFilter(x => x.Email == email);
+        return !result.IsNullOrEmpty();
     }
 }
