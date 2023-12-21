@@ -1,6 +1,5 @@
-using System.Linq.Expressions;
 using Nest;
-using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Codeficator;
@@ -14,6 +13,7 @@ public class ElasticProfile : Profile
     public ElasticProfile()
     {
         CreateMap<WorkshopBaseDto, WorkshopES>()
+            .IncludeBase<object, IHasRating>()
             .ForMember(
                 dest => dest.Keywords,
                 opt =>
@@ -32,8 +32,6 @@ public class ElasticProfile : Profile
             .ForMember(dest => dest.Status, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore())
-            .ForMember(dest => dest.Rating, opt => opt.Ignore())
-            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderStatus, opt => opt.Ignore())
             .ForMember(dest => dest.Status, opt => opt.Ignore())
             .ForMember(dest => dest.TakenSeats, opt => opt.Ignore());
@@ -128,29 +126,11 @@ public class ElasticProfile : Profile
                 opt => opt.Ignore());
 
         CreateMap<CATOTTG, CodeficatorAddressES>()
-            .ForMember(
-                dest => dest.Settlement,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Name : src.Name))
-            .ForMember(
-                dest => dest.TerritorialCommunity,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Parent.Name : src.Parent.Name))
-            .ForMember(
-                dest => dest.District,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name
-                        ? src.Parent.Parent.Parent.Name
-                        : src.Parent.Parent.Name))
-            .ForMember(
-                dest => dest.Region,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name
-                        ? src.Parent.Parent.Parent.Parent.Name
-                        : src.Parent.Parent.Parent.Name))
-            .ForMember(
-                dest => dest.CityDistrict,
-                opt => opt.MapFrom(src => src.Category == CodeficatorCategory.CityDistrict.Name ? src.Name : null))
+            .ForMember(dest => dest.Settlement, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetSettlementName(src)))
+            .ForMember(dest => dest.TerritorialCommunity, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetTerritorialCommunityName(src)))
+            .ForMember(dest => dest.District, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetDistrictName(src)))
+            .ForMember(dest => dest.Region, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetRegionName(src)))
+            .ForMember(dest => dest.CityDistrict, opt => opt.MapFrom(src => CATOTTGAddressExtensions.GetCityDistrictName(src)))
             .ForMember(dest => dest.FullAddress, opt => opt.Ignore())
             .ForMember(dest => dest.FullName, opt => opt.Ignore());
 

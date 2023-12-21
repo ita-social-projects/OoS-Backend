@@ -210,7 +210,7 @@ public static class Startup
                 }))
             .AddCustomDataProtection("WebApi");
 
-        services.AddAutoMapper(typeof(MappingProfile), typeof(ElasticProfile));
+        services.AddAutoMapper(typeof(CommonProfile), typeof(MappingProfile), typeof(ElasticProfile));
 
         // Add Elasticsearch client
         var elasticConfig = configuration
