@@ -75,14 +75,11 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         if (await IsSuchEmailExisted(providerAdminDto.Email))
         {
             Logger.LogDebug("providerAdmin creating is not possible. Username {Email} is already taken", providerAdminDto.Email);
-            return new ErrorResponse
-            {
-                HttpStatusCode = HttpStatusCode.BadRequest,
-                ApiErrorResponse = new ApiErrorResponse(new List<ApiError>()
+            return ErrorResponse.BadRequest(
+                new ApiErrorResponse(new List<ApiError>()
                 {
                     ApiErrorsTypes.Common.EmailAlreadyTaken("ProviderAdmin", providerAdminDto.Email),
-                }),
-            };
+                }));
         }
 
         var numberProviderAdminsLessThanMax = await providerAdminRepository

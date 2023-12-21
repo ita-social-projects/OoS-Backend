@@ -104,14 +104,11 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
             Logger.LogDebug(
                 "AreaAdmin creating is not possible. Username {Email} is already taken",
                 areaAdminBaseDto.Email);
-            return new ErrorResponse
-            {
-                HttpStatusCode = HttpStatusCode.BadRequest,
-                ApiErrorResponse = new ApiErrorResponse(new List<ApiError>()
+            return ErrorResponse.BadRequest(
+                new ApiErrorResponse(new List<ApiError>()
                 {
                     ApiErrorsTypes.Common.EmailAlreadyTaken("AreaAdmin", areaAdminBaseDto.Email),
-                }),
-            };
+                }));
         }
 
         bool isValidCatottg = await IsValidCatottg(areaAdminBaseDto.CATOTTGId);

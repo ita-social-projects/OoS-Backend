@@ -88,14 +88,11 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         if (await IsSuchEmailExisted(regionAdminBaseDto.Email))
         {
             Logger.LogDebug("RegionAdmin creating is not possible. Username {Email} is already taken", regionAdminBaseDto.Email);
-            return new ErrorResponse
-            {
-                HttpStatusCode = HttpStatusCode.BadRequest,
-                ApiErrorResponse = new ApiErrorResponse(new List<ApiError>()
+            return ErrorResponse.BadRequest(
+                new ApiErrorResponse(new List<ApiError>()
                 {
                     ApiErrorsTypes.Common.EmailAlreadyTaken("RegionAdmin", regionAdminBaseDto.Email),
-                }),
-            };
+                }));
         }
 
         var request = new Request()

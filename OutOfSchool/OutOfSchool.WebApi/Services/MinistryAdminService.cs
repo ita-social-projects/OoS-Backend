@@ -80,14 +80,11 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         if (await IsSuchEmailExisted(ministryAdminBaseDto.Email))
         {
             Logger.LogDebug("ministryAdmin creating is not possible. Username {Email} is already taken", ministryAdminBaseDto.Email);
-            return new ErrorResponse
-            {
-                HttpStatusCode = HttpStatusCode.BadRequest,
-                ApiErrorResponse = new ApiErrorResponse(new List<ApiError>()
+            return ErrorResponse.BadRequest(
+                new ApiErrorResponse(new List<ApiError>()
                 {
                     ApiErrorsTypes.Common.EmailAlreadyTaken("MinistryAdmin", ministryAdminBaseDto.Email),
-                }),
-            };
+                }));
         }
 
         var request = new Request()
