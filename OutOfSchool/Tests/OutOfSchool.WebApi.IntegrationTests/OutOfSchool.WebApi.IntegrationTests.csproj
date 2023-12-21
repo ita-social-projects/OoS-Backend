@@ -27,7 +27,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\OutOfSchool.AuthorizationServer\OutOfSchool.AuthorizationServer.csproj" />
         <ProjectReference Include="..\..\OutOfSchool.WebApi.Tests\OutOfSchool.WebApi.Tests.csproj"/>
         <ProjectReference Include="..\..\OutOfSchool.WebApi\OutOfSchool.WebApi.csproj"/>
     </ItemGroup>
