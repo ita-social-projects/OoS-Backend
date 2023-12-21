@@ -1,13 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Util.JsonTools;
 
 namespace OutOfSchool.WebApi.Models.ProvidersInfo;
 
-public class ProviderInfoDto : ProviderInfoBaseDto
+public class ProviderInfoDto : ProviderInfoBaseDto, IHasRating
 {
     [Required]
     [EnumDataType(typeof(OwnershipType), ErrorMessage = Constants.EnumErrorMessage)]

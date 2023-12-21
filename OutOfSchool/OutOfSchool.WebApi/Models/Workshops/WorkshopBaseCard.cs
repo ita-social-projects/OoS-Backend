@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.WebApi.Models.Workshops;
 
-public class WorkshopBaseCard
+public class WorkshopBaseCard : IHasRating
 {
     [Required]
     public Guid WorkshopId { get; set; }

@@ -12,7 +12,7 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models;
 
-public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>, ISoftDeleted
+public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>, ISoftDeleted, IHasEntityImages<Workshop>
 {
     public Guid Id { get; set; }
 
