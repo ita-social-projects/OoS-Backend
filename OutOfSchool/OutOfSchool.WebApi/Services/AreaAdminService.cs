@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Responses;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 
@@ -103,7 +104,14 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
             Logger.LogDebug(
                 "AreaAdmin creating is not possible. Username {Email} is already taken",
                 areaAdminBaseDto.Email);
-            throw new InvalidOperationException($"Username {areaAdminBaseDto.Email} is already taken.");
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                ApiErrorResponse = new ApiErrorResponse(new List<ApiError>()
+                {
+                    ApiErrorsTypes.Common.EmailAlreadyTaken("AreaAdmin", areaAdminBaseDto.Email),
+                }),
+            };
         }
 
         bool isValidCatottg = await IsValidCatottg(areaAdminBaseDto.CATOTTGId);
