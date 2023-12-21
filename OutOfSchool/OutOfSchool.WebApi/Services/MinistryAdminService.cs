@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Responses;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 
@@ -79,7 +80,14 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         if (await IsSuchEmailExisted(ministryAdminBaseDto.Email))
         {
             Logger.LogDebug("ministryAdmin creating is not possible. Username {Email} is already taken", ministryAdminBaseDto.Email);
-            throw new InvalidOperationException($"Username {ministryAdminBaseDto.Email} is already taken.");
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                ApiErrorResponse = new ApiErrorResponse(new List<ApiError>()
+                {
+                    ApiErrorsTypes.Common.EmailAlreadyTaken("MinistryAdmin", ministryAdminBaseDto.Email),
+                }),
+            };
         }
 
         var request = new Request()

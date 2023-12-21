@@ -143,7 +143,7 @@ public class MinistryAdminController : Controller
             .ConfigureAwait(false);
 
         return response.Match<ActionResult>(
-            error => StatusCode((int)error.HttpStatusCode, error.Message),
+            error => StatusCode((int)error.HttpStatusCode, new { error.Message, error.ApiErrorResponse }),
             result =>
             {
                 logger.LogInformation("Successfully created MinistryAdmin(id): {result.UserId} by User(id): {UserId}", result.UserId, userId);
