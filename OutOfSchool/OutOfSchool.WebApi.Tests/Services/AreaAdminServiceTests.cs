@@ -20,6 +20,7 @@ using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -41,16 +42,12 @@ public class AreaAdminServiceTests
     private AreaAdminService areaAdminService;
     private AreaAdmin areaAdmin;
     private List<AreaAdmin> areaAdmins;
-    private AreaAdminDto areaAdminDto;
-    private List<AreaAdminDto> areaAdminsDtos;
 
     [SetUp]
     public void SetUp()
     {
         areaAdmin = AdminGenerator.GenerateAreaAdmin().WithUserAndInstitution();
         areaAdmins = AdminGenerator.GenerateAreaAdmins(5).WithUserAndInstitution();
-        areaAdminDto = AdminGenerator.GenerateAreaAdminDto();
-        areaAdminsDtos = AdminGenerator.GenerateAreaAdminsDtos(5);
 
         codeficatorRepositoryMock = new Mock<ICodeficatorRepository>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
@@ -73,7 +70,7 @@ public class AreaAdminServiceTests
 
         areaAdminRepositoryMock = new Mock<IAreaAdminRepository>();
         var logger = new Mock<ILogger<AreaAdminService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         institutionAdminServiceMock = new Mock<IMinistryAdminService>();

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -17,6 +16,7 @@ using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -43,7 +43,7 @@ public class UserServiceTest
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         repo = new EntityRepositorySoftDeleted<string, User>(context);
         logger = new Mock<ILogger<UserService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         service = new UserService(repo, logger.Object, localizer.Object, mapper);
 
         SeedDatabase();

@@ -12,6 +12,7 @@ using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ProvidersInfo;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -25,7 +26,7 @@ public class ExternalExportProviderControllerTests
     [SetUp]
     public void Setup()
     {
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         mockExternalProviderService = new Mock<IExternalExportProviderService>();
         controller = new ExternalExportProviderController(mockExternalProviderService.Object);
     }

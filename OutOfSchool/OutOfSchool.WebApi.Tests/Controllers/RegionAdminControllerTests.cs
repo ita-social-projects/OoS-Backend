@@ -18,6 +18,7 @@ using OutOfSchool.WebApi.Controllers;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -36,7 +37,7 @@ public class RegionAdminControllerTests
     [SetUp]
     public void Setup()
     {
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         regionAdminController =
             new RegionAdminController(regionAdminServiceMock.Object, new Mock<ILogger<RegionAdminController>>().Object);

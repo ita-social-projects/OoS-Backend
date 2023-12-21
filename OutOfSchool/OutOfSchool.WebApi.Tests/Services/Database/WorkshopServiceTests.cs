@@ -22,6 +22,7 @@ using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -51,7 +52,7 @@ public class WorkshopServiceTests
         logger = new Mock<ILogger<WorkshopService>>();
         mapperMock = new Mock<IMapper>();
         workshopImagesMediator = new Mock<IImageDependentEntityImagesInteractionService<Workshop>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         providerAdminRepository = new Mock<IProviderAdminRepository>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
         providerRepositoryMock = new Mock<IProviderRepository>();

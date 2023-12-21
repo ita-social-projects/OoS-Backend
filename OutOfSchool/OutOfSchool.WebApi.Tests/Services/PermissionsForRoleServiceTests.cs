@@ -16,6 +16,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -38,7 +39,7 @@ public class PermissionsForRoleServiceTests
         var context = new OutOfSchoolDbContext(options);
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         repository = new EntityRepository<long, PermissionsForRole>(context);
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         var logger = new Mock<ILogger<PermissionsForRoleService>>();
         service = new PermissionsForRoleService(repository, logger.Object, localizer.Object, mapper);
 

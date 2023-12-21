@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -17,6 +16,7 @@ using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.ProviderAdminOperations;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -74,7 +74,7 @@ public class ProviderAdminServiceTest
             });
         providerAdminRepository = new Mock<IProviderAdminRepository>();
         userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, OutOfSchool.Services.Models.User>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         var logger = new Mock<ILogger<ProviderAdminService>>();
         providerAdminOperationsService = new Mock<IProviderAdminOperationsService>();
         workshopService = new Mock<IWorkshopService>();
@@ -100,8 +100,7 @@ public class ProviderAdminServiceTest
         // Arrange
         var expected = userDosntHavePermissionErrorResponse
             .ApiErrorResponse
-            .ApiErrors
-            .First();
+            .ApiErrors[0];
 
         // Act
         var response = await providerAdminService.CreateProviderAdminAsync(userId, new CreateProviderAdminDto(), It.IsAny<string>()).ConfigureAwait(false);
@@ -111,7 +110,7 @@ public class ProviderAdminServiceTest
             actionResult => errorResponse = actionResult,
             succeed => errorResponse = new ErrorResponse());
 
-        var result = errorResponse.ApiErrorResponse.ApiErrors.First();
+        var result = errorResponse.ApiErrorResponse.ApiErrors[0];
 
         // Assert
         Assert.AreEqual(expected.Group, result.Group);
