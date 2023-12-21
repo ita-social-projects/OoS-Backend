@@ -46,16 +46,15 @@ public class KeyManager : IKeyManager
     /// </summary>
     /// <param name="e"><see cref="DbUpdateException"/> or <see cref="DbUpdateConcurrencyException"/> depending on error type.</param>
     /// <returns><see cref="X509Certificate2"/> that was updated by other instance.</returns>
-    /// <exception cref="Exception">TODO: Figure out exception.</exception>
+    /// <exception cref="InvalidOperationException">Data was deleted but we didn't do it or the certificate was updated and expired right away,
+    /// both these cases should be unreal. If it happens then there is something wrong with database.</exception>
     private static async Task<X509Certificate2> HandleConcurrentUpdate(DbUpdateException e)
     {
         var entry = e.Entries.Single();
         var databaseValues = await entry.GetDatabaseValuesAsync();
         if (databaseValues == null)
         {
-            // Data was deleted but we didn't do it, this case should be unreal
-            // throw exception and hope for the better next time
-            throw new InvalidOperationException();
+            throw new InvalidOperationException("Data was deleted but we didn't do it");
         }
 
         // Certificate was updated by other instance
@@ -69,7 +68,7 @@ public class KeyManager : IKeyManager
 
         // Updated and expired right away, this case should be unreal
         // throw exception and hope for the better next time?
-        throw new InvalidOperationException();
+        throw new InvalidOperationException("Updated and expired right away");
     }
 
     /// <summary>

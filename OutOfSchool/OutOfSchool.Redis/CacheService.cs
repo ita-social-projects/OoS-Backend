@@ -19,7 +19,7 @@ public class CacheService : ICacheService, IDisposable
 
     private readonly object lockObject = new object();
     
-    private bool _disposed;
+    private bool isDisposed;
 
     public CacheService(
         IDistributedCache cache, 
@@ -115,10 +115,10 @@ public class CacheService : ICacheService, IDisposable
     
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing && !_disposed)
+        if (disposing && !isDisposed)
         {
             cacheLock?.Dispose();
-            _disposed = true;
+            isDisposed = true;
         }
     }
 

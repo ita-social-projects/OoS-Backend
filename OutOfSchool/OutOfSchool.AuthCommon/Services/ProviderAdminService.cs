@@ -18,7 +18,7 @@ public class ProviderAdminService : IProviderAdminService
     private readonly IMapper mapper;
     private readonly ILogger<ProviderAdminService> logger;
     private readonly IProviderAdminRepository providerAdminRepository;
-    private readonly GrpcConfig gPrcConfig;
+    private readonly GrpcConfig grpcConfig;
     private readonly AngularClientScopeExternalUrisConfig externalUrisConfig;
 
     private readonly UserManager<User> userManager;
@@ -36,7 +36,7 @@ public class ProviderAdminService : IProviderAdminService
         OutOfSchoolDbContext context,
         IRazorViewToStringRenderer renderer,
         IProviderAdminChangesLogService providerAdminChangesLogService,
-        IOptions<GrpcConfig> gRpcConfig,
+        IOptions<GrpcConfig> grpcConfig,
         IOptions<AngularClientScopeExternalUrisConfig> externalUrisConfig,
         IOptions<ChangesLogConfig> changesLogConfig)
     {
@@ -48,7 +48,7 @@ public class ProviderAdminService : IProviderAdminService
         this.emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
         this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
         this.providerAdminChangesLogService = providerAdminChangesLogService ?? throw new ArgumentNullException(nameof(providerAdminChangesLogService));
-        this.gPrcConfig = gRpcConfig?.Value ?? throw new ArgumentNullException(nameof(gRpcConfig));
+        this.grpcConfig = grpcConfig?.Value ?? throw new ArgumentNullException(nameof(grpcConfig));
         this.externalUrisConfig =
             externalUrisConfig?.Value ?? throw new ArgumentNullException(nameof(externalUrisConfig));
         _ = changesLogConfig?.Value ?? throw new ArgumentNullException(nameof(changesLogConfig));
@@ -650,7 +650,7 @@ public class ProviderAdminService : IProviderAdminService
 
         string confirmationLink =
         url is null
-                ? $"{gPrcConfig.ProviderAdminConfirmationLink}?userId={user.Id}&token={token}?redirectUrl={externalUrisConfig.Login}"
+                ? $"{grpcConfig.ProviderAdminConfirmationLink}?userId={user.Id}&token={token}?redirectUrl={externalUrisConfig.Login}"
                 : url.Action(
                     "EmailConfirmation",
                     "Account",

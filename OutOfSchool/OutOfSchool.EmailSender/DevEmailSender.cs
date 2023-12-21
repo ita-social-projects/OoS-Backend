@@ -14,7 +14,15 @@ public class DevEmailSender : IEmailSender
         
     public Task SendAsync(string email, string subject, (string html, string plain) content)
     {
-        logger.LogDebug($"Sending mail to {email} with subject \"{subject}\" and content: {content.html}");
+        // This code runs only in dev for testing purposes
+        // so can ignore "not log user-controlled data".
+        #pragma warning disable S5145
+        logger.LogDebug(
+            "Sending mail to {Email} with subject '{Subject}' and content: {Content}",
+            email,
+            subject,
+            content.html);
+        #pragma warning restore S5145
         return Task.CompletedTask;
     }
 }
