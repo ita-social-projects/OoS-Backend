@@ -396,6 +396,7 @@ public class ProviderService : IProviderService, INotificationReciever
         {
             return;
         }
+
         var additionalData = new Dictionary<string, string>();
 
         if (addStatusData)
@@ -534,6 +535,11 @@ public class ProviderService : IProviderService, INotificationReciever
             : ProviderLicenseStatus.Pending;
 
         var newProvider = await providerRepository.Create(providerDomainModel).ConfigureAwait(false);
+
+        if (newProvider is not null)
+        {
+            await changesLogService.AddCreatingOfEntityToDbContext(newProvider, newProvider.UserId).ConfigureAwait(false);
+        }
 
         if (actionAfterCreation != null)
         {

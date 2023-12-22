@@ -19,6 +19,16 @@ public interface IChangesLogService
         where TEntity : class, IKeyedEntity, new();
 
     /// <summary>
+    /// Create and add ChangesLog records for the entity.
+    /// </summary>
+    /// <typeparam name="TEntity">Entity type that exists in the DB.</typeparam>
+    /// <param name="entity">Modified entity.</param>
+    /// <param name="userId">User ID.</param>
+    /// <returns>True - if we did if.</returns>
+    Task<bool> AddCreatingOfEntityToDbContext<TEntity>(TEntity entity, string userId)
+        where TEntity : class, IKeyedEntity, new();
+
+    /// <summary>
     /// Get Provider entities that match filter's parameters.
     /// </summary>
     /// <param name="request">Filter with specified searching parameters.</param>
