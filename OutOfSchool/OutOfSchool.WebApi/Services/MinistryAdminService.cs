@@ -77,14 +77,21 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
 
         ArgumentNullException.ThrowIfNull(ministryAdminBaseDto);
 
+        var badRequestApiErrorResponse = new ApiErrorResponse();
         if (await IsSuchEmailExisted(ministryAdminBaseDto.Email))
         {
             Logger.LogDebug("ministryAdmin creating is not possible. Username {Email} is already taken", ministryAdminBaseDto.Email);
-            return ErrorResponse.BadRequest(
-                new ApiErrorResponse(new List<ApiError>()
-                {
-                    ApiErrorsTypes.Common.EmailAlreadyTaken("MinistryAdmin", ministryAdminBaseDto.Email),
-                }));
+            badRequestApiErrorResponse.AddApiError(
+                ApiErrorsTypes.Common.EmailAlreadyTaken("MinistryAdmin", ministryAdminBaseDto.Email));
+        }
+
+        // Here will be the same checks for phone number and possibly other fields
+
+        // TODO: Separate checks for BadRequset that require ApiErrorResponse
+        // to be returned in a method
+        if (badRequestApiErrorResponse.ApiErrors.Count != 0)
+        {
+            return ErrorResponse.BadRequest(badRequestApiErrorResponse);
         }
 
         var request = new Request()

@@ -99,16 +99,23 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
 
         _ = areaAdminBaseDto ?? throw new ArgumentNullException(nameof(areaAdminBaseDto));
 
+        var badRequestApiErrorResponse = new ApiErrorResponse();
         if (await IsSuchEmailExisted(areaAdminBaseDto.Email))
         {
             Logger.LogDebug(
                 "AreaAdmin creating is not possible. Username {Email} is already taken",
                 areaAdminBaseDto.Email);
-            return ErrorResponse.BadRequest(
-                new ApiErrorResponse(new List<ApiError>()
-                {
-                    ApiErrorsTypes.Common.EmailAlreadyTaken("AreaAdmin", areaAdminBaseDto.Email),
-                }));
+            badRequestApiErrorResponse.AddApiError(
+                ApiErrorsTypes.Common.EmailAlreadyTaken("AreaAdmin", areaAdminBaseDto.Email));
+        }
+
+        // Here will be the same checks for phone number and possibly other fields
+
+        // TODO: Separate checks for BadRequset that require ApiErrorResponse
+        // to be returned in a method
+        if (badRequestApiErrorResponse.ApiErrors.Count != 0)
+        {
+            return ErrorResponse.BadRequest(badRequestApiErrorResponse);
         }
 
         bool isValidCatottg = await IsValidCatottg(areaAdminBaseDto.CATOTTGId);

@@ -85,14 +85,21 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
 
         _ = regionAdminBaseDto ?? throw new ArgumentNullException(nameof(regionAdminBaseDto));
 
+        var badRequestApiErrorResponse = new ApiErrorResponse();
         if (await IsSuchEmailExisted(regionAdminBaseDto.Email))
         {
             Logger.LogDebug("RegionAdmin creating is not possible. Username {Email} is already taken", regionAdminBaseDto.Email);
-            return ErrorResponse.BadRequest(
-                new ApiErrorResponse(new List<ApiError>()
-                {
-                    ApiErrorsTypes.Common.EmailAlreadyTaken("RegionAdmin", regionAdminBaseDto.Email),
-                }));
+            badRequestApiErrorResponse.AddApiError(
+                ApiErrorsTypes.Common.EmailAlreadyTaken("RegionAdmin", regionAdminBaseDto.Email));
+        }
+
+        // Here will be the same checks for phone number and possibly other fields
+
+        // TODO: Separate checks for BadRequset that require ApiErrorResponse
+        // to be returned in a method
+        if (badRequestApiErrorResponse.ApiErrors.Count != 0)
+        {
+            return ErrorResponse.BadRequest(badRequestApiErrorResponse);
         }
 
         var request = new Request()
