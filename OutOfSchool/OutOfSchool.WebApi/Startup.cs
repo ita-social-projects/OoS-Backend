@@ -22,6 +22,26 @@ public static class Startup
 {
     public static void Configure(this WebApplication app)
     {
+        app.Use(async (context, next) =>
+        {
+            var httpRequest = context.Request;
+            var httpResponse = context.Response;
+
+            bool healthCheck = httpRequest.Path.Equals("/healthz/ready");
+
+            int healthPort = app.Configuration.GetValue<int>("ApplicationPorts:HealthPort");
+            int apiPort = app.Configuration.GetValue<int>("ApplicationPorts:ApiPort");
+
+            if ((httpRequest.HttpContext.Connection.LocalPort == healthPort && !healthCheck) ||
+                (httpRequest.HttpContext.Connection.LocalPort == apiPort && healthCheck))
+            {
+                httpResponse.StatusCode = 404;
+                return;
+            }
+
+            await next();
+        });
+
         var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
 
         var proxyOptions = app.Configuration.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
