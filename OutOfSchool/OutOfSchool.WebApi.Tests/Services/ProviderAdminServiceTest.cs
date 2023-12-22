@@ -60,7 +60,7 @@ public class ProviderAdminServiceTest
             HttpStatusCode = HttpStatusCode.BadRequest,
             ApiErrorResponse = new ApiErrorResponse(new List<ApiError>()
                 {
-                    ApiErrorsTypes.Common.EmailAlreadyTaken("ProviderAdmin",email),
+                    ApiErrorsTypes.Common.EmailAlreadyTaken("ProviderAdmin", email),
                 }),
         };
         httpClientFactory = new Mock<IHttpClientFactory>();
