@@ -13,6 +13,7 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
         <PackageReference Include="Microsoft.AspNet.Identity.Core" />
         <PackageReference Include="Moq" />
+        <PackageReference Include="Bogus" />
         <PackageReference Include="NUnit" />
         <PackageReference Include="NUnit3TestAdapter" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
