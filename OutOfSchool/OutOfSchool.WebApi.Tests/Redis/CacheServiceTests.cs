@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Caching.Distributed;
@@ -80,6 +81,18 @@ public class CacheServiceTests
                 It.IsAny<string>(),
                 It.IsAny<byte[]>(),
                 It.IsAny<DistributedCacheEntryOptions>()),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task RemoveAsync_ShouldCallCacheRemove()
+    {
+        // Arrange & Act
+        await cacheService.RemoveAsync("Example");
+
+        // Assert
+        distributedCacheMock.Verify(
+            c => c.RemoveAsync("Example", It.IsAny<CancellationToken>()),
             Times.Once);
     }
 }
