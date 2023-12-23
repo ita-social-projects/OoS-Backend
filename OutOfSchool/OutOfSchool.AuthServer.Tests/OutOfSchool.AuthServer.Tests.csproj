@@ -21,7 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\OutOfSchool.AuthCommon\OutOfSchool.AuthCommon.csproj" />
+        <ProjectReference Include="..\OutOfSchool.AuthorizationServer\OutOfSchool.AuthorizationServer.csproj" />
         
         <!-- GrpcService namespace is present in both WebApi (transitive of Tests.Common) and in AuthCommon.
              Need to exclude transitives, or the tests using GrpcService namespace won't compile-->
