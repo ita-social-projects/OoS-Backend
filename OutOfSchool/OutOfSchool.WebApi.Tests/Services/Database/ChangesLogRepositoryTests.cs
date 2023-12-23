@@ -299,6 +299,25 @@ public class ChangesLogRepositoryTests
         Assert.IsEmpty(added);
         Assert.IsEmpty(context.ChangesLog.Local);
     }
+
+    [Test]
+    public async Task AddCreatingOfEntityToChangesLog_WhenEntityIsProvider_AddsLogToDbContext()
+    {
+        // Arrange
+        using var context = GetContext();
+        var changesLogRepository = GetChangesLogRepository(context);
+        var provider = await context.Providers.FirstAsync();
+
+        // Act
+        var added = await changesLogRepository.AddCreatingOfEntityToChangesLog(provider, user.Id);
+
+        // Assert
+        var legalChanges = context.ChangesLog.Local
+            .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == "Creating");
+
+        Assert.AreEqual(1, context.ChangesLog.Local.Count);
+        Assert.AreEqual(added.Id, legalChanges.Id);
+    }
     #endregion
 
     private OutOfSchoolDbContext GetContext() => new OutOfSchoolDbContext(dbContextOptions);
