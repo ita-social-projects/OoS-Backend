@@ -69,7 +69,7 @@ public class ProviderAdminServiceGrpcTests
     }
 
     [Test]
-    public async Task CreateProviderAdmin_WhenEntityInalid_ShouldReturnSuccessFalse()
+    public async Task CreateProviderAdmin_WhenEntityInvalid_ShouldReturnSuccessFalse()
     {
         // Arrange
         var providerId = Guid.NewGuid();
