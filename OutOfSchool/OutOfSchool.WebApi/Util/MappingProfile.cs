@@ -370,7 +370,12 @@ public class MappingProfile : Profile
         CreateMap<CompanyInformationItem, CompanyInformationItemDto>().ReverseMap();
         CreateMap<CompanyInformation, CompanyInformationDto>().ReverseMap();
 
-        CreateMap<InstitutionHierarchy, InstitutionHierarchyDto>().ReverseMap();
+        CreateMap<InstitutionHierarchy, InstitutionHierarchyDto>();
+        CreateSoftDeletedMap<InstitutionHierarchyDto, InstitutionHierarchy>()
+            .ForMember(c => c.Parent, m => m.Ignore())
+            .ForMember(c => c.Directions, m => m.Ignore())
+            .ForMember(c => c.Institution, m => m.Ignore());
+
         CreateMap<Institution, InstitutionDto>().ReverseMap();
         CreateMap<InstitutionFieldDescription, InstitutionFieldDescriptionDto>().ReverseMap();
 

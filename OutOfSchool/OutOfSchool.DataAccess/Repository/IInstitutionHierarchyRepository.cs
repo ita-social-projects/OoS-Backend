@@ -7,5 +7,7 @@ namespace OutOfSchool.Services.Repository;
 
 public interface IInstitutionHierarchyRepository : IEntityRepositorySoftDeleted<Guid, InstitutionHierarchy>
 {
+    Task<InstitutionHierarchy> Create(InstitutionHierarchy entity, List<long> directionsIds);
+
     Task<InstitutionHierarchy> Update(InstitutionHierarchy entity, List<long> directionsIds);
 }
