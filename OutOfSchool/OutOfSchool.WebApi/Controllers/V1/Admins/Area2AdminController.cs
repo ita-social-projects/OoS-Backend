@@ -79,7 +79,7 @@ public class Area2AdminController : Controller
 
         if (areaAdmin == null)
         {
-            return NotFound($"There is no area admin in DB with {nameof(areaAdmin.Id)} - {id}");
+            return NotFound($"There is no area admin in DB with {nameof(areaAdmin.UserId)} - {id}");
         }
 
         return Ok(areaAdmin);
@@ -150,7 +150,7 @@ public class Area2AdminController : Controller
             },
             result =>
             {
-                logger.LogInformation("The area admin {resultUserId} was successfully created by the user {UserId}", (result as Area2AdminDto).Id, userId);
+                logger.LogInformation("The area admin {resultUserId} was successfully created by the user {UserId}", (result as Area2AdminDto).UserId, userId);
 
                 return Ok(result as Area2AdminDto);
             });
@@ -169,7 +169,7 @@ public class Area2AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> Update(Area2AdminDto areaAdminDto)
     {
-        logger.LogInformation("The updating of the area admin {areaAdminId} by the user {UserId} was started.", areaAdminDto.Id, userId);
+        logger.LogInformation("The updating of the area admin {areaAdminId} by the user {UserId} was started.", areaAdminDto.UserId, userId);
 
         if (areaAdminDto == null)
         {
@@ -197,7 +197,7 @@ public class Area2AdminController : Controller
                 },
                 result =>
                 {
-                    logger.LogInformation("The area admin {resultUserId} was successfully updated by the user {UserId}", (result as Area2AdminDto).Id, userId);
+                    logger.LogInformation("The area admin {resultUserId} was successfully updated by the user {UserId}", (result as Area2AdminDto).UserId, userId);
 
                     return Ok();
                 });

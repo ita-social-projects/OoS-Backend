@@ -1,8 +1,6 @@
 ﻿namespace OutOfSchool.WebApi.Models.Admins;
 
-public class Region2AdminDto : BaseAdminDto
+public class Region2AdminDto : Ministry2AdminDto
 {
-    public Guid InstitutionId { get; set; }
-
     public long CATOTTGId { get; set; }
 }

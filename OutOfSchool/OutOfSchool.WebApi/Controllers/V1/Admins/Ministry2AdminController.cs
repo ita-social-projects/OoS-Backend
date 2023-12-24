@@ -79,7 +79,7 @@ public class Ministry2AdminController : Controller
 
         if (ministryAdmin == null)
         {
-            return NotFound($"There is no ministry admin in DB with {nameof(ministryAdmin.Id)} - {id}");
+            return NotFound($"There is no ministry admin in DB with {nameof(ministryAdmin.UserId)} - {id}");
         }
 
         return Ok(ministryAdmin);
@@ -150,7 +150,7 @@ public class Ministry2AdminController : Controller
             },
             result =>
             {
-                logger.LogInformation("The ministry admin {resultUserId} was successfully created by the user {UserId}", (result as Ministry2AdminDto).Id, userId);
+                logger.LogInformation("The ministry admin {resultUserId} was successfully created by the user {UserId}", (result as Ministry2AdminDto).UserId, userId);
 
                 return Ok(result as Ministry2AdminDto);
             });
@@ -169,7 +169,7 @@ public class Ministry2AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> Update(Ministry2AdminDto ministryAdminDto)
     {
-        logger.LogInformation("The updating of the ministry admin {ministryAdminId} by the user {UserId} was started.", ministryAdminDto.Id, userId);
+        logger.LogInformation("The updating of the ministry admin {ministryAdminId} by the user {UserId} was started.", ministryAdminDto.UserId, userId);
 
         if (ministryAdminDto == null)
         {
@@ -197,7 +197,7 @@ public class Ministry2AdminController : Controller
                 },
                 result =>
                 {
-                    logger.LogInformation("The ministry admin {resultUserId} was successfully updated by the user {UserId}", (result as Ministry2AdminDto).Id, userId);
+                    logger.LogInformation("The ministry admin {resultUserId} was successfully updated by the user {UserId}", (result as Ministry2AdminDto).UserId, userId);
 
                     return Ok();
                 });

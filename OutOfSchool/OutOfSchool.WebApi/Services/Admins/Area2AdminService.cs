@@ -5,10 +5,11 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models.Admins;
+using OutOfSchool.WebApi.Services.Communication.ICommunication;
 
 namespace OutOfSchool.WebApi.Services.Admins;
 
-public class Area2AdminService : BaseAdminService
+public class Area2AdminService : BaseAdminService<AreaAdmin, Area2AdminDto, Area2AdminFilter>
 {
     private const string IncludePropertiers = "Institution,User,CATOTTG.Parent.Parent";
 
@@ -20,13 +21,9 @@ public class Area2AdminService : BaseAdminService
     private readonly Region2AdminService regionAdminService;
     private readonly ICodeficatorService codeficatorService;
 
-    private readonly ExpressionConverter<InstitutionAdminBase, AreaAdmin> expressionConverter;
-    private readonly ExpressionConverter<AreaAdmin, InstitutionAdminBase> expressionConverter2;
-
     public Area2AdminService(
-        IHttpClientFactory httpClientFactory,
         IOptions<AuthorizationServerConfig> authorizationServerConfig,
-        IOptions<CommunicationConfig> communicationConfig,
+        ICommunicationService communicationService,
         ILogger<Area2AdminService> logger,
         IMapper mapper,
         IUserService userService,
@@ -36,9 +33,8 @@ public class Area2AdminService : BaseAdminService
         Region2AdminService regionAdminService,
         ICodeficatorService codeficatorService)
         : base(
-            httpClientFactory,
             authorizationServerConfig,
-            communicationConfig,
+            communicationService,
             logger,
             mapper,
             userService)
@@ -58,27 +54,23 @@ public class Area2AdminService : BaseAdminService
         this.ministryAdminService = ministryAdminService;
         this.regionAdminService = regionAdminService;
         this.codeficatorService = codeficatorService;
-
-        expressionConverter = new ExpressionConverter<InstitutionAdminBase, AreaAdmin>();
-        expressionConverter2 = new ExpressionConverter<AreaAdmin, InstitutionAdminBase>();
     }
 
-    protected override async Task<BaseAdminDto> GetById(string id) =>
+    protected override async Task<Area2AdminDto> GetById(string id) =>
         mapper.Map<Area2AdminDto>(await areaAdminRepository.GetByIdAsync(id));
 
-    protected override async Task<BaseAdminDto> GetByUserId(string userId) =>
+    protected override async Task<Area2AdminDto> GetByUserId(string userId) =>
         mapper.Map<Area2AdminDto>((await areaAdminRepository.GetByFilter(p => p.UserId == userId)).FirstOrDefault());
 
-    protected override Area2AdminFilter CreateEmptyFilter() => new Area2AdminFilter();
+    protected override Area2AdminFilter CreateEmptyFilter() => new();
 
-    protected override async Task<bool> IsUserHasRightsToGetAdminsByFilter(BaseAdminFilter filter)
+    protected override async Task<bool> IsUserHasRightsToGetAdminsByFilter(Area2AdminFilter filter)
     {
         if (currentUserService.IsMinistryAdmin())
         {
-            var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId) as Ministry2AdminDto;
+            var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId);
 
-            if ((filter as Area2AdminFilter).InstitutionId != ministryAdmin.InstitutionId
-                && (filter as Area2AdminFilter).InstitutionId != Guid.Empty)
+            if (filter.InstitutionId != ministryAdmin.InstitutionId && filter.InstitutionId != Guid.Empty)
             {
                 return false;
             }
@@ -86,13 +78,11 @@ public class Area2AdminService : BaseAdminService
 
         if (currentUserService.IsRegionAdmin())
         {
-            var regionAdmin = await regionAdminService.GetByIdAsync(currentUserService.UserId) as Region2AdminDto;
+            var regionAdmin = await regionAdminService.GetByIdAsync(currentUserService.UserId);
             var childrenCATOTTGIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId);
 
-            if (((filter as Area2AdminFilter).InstitutionId != regionAdmin.InstitutionId
-                && (filter as Area2AdminFilter).InstitutionId != Guid.Empty)
-               || (!childrenCATOTTGIds.Contains((filter as Area2AdminFilter).CATOTTGId)
-                    && (filter as Area2AdminFilter).CATOTTGId > 0))
+            if ((filter.InstitutionId != regionAdmin.InstitutionId && filter.InstitutionId != Guid.Empty)
+                || (!childrenCATOTTGIds.Contains(filter.CATOTTGId) && filter.CATOTTGId > 0))
             {
                 return false;
             }
@@ -100,12 +90,10 @@ public class Area2AdminService : BaseAdminService
 
         if (currentUserService.IsAreaAdmin())
         {
-            var areaAdmin = await GetByUserId(currentUserService.UserId) as Area2AdminDto;
+            var areaAdmin = await GetByUserId(currentUserService.UserId);
 
-            if (((filter as Area2AdminFilter).InstitutionId != areaAdmin.InstitutionId
-                && (filter as Area2AdminFilter).InstitutionId != Guid.Empty)
-               || ((filter as Area2AdminFilter).CATOTTGId != areaAdmin.CATOTTGId
-                   && (filter as Area2AdminFilter).CATOTTGId > 0))
+            if ((filter.InstitutionId != areaAdmin.InstitutionId && filter.InstitutionId != Guid.Empty)
+               || (filter.CATOTTGId != areaAdmin.CATOTTGId && filter.CATOTTGId > 0))
             {
                 return false;
             }
@@ -114,75 +102,60 @@ public class Area2AdminService : BaseAdminService
         return true;
     }
 
-    protected override async Task UpdateTheFilterWithTheAdminRestrictions(BaseAdminFilter filter)
+    protected override async Task UpdateTheFilterWithTheAdminRestrictions(Area2AdminFilter filter)
     {
         if (currentUserService.IsMinistryAdmin())
         {
-            var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId) as Ministry2AdminDto;
+            var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId);
 
-            if ((filter as Area2AdminFilter).InstitutionId == Guid.Empty)
+            if (filter.InstitutionId == Guid.Empty)
             {
-                (filter as Area2AdminFilter).InstitutionId = ministryAdmin.InstitutionId;
+                filter.InstitutionId = ministryAdmin.InstitutionId;
             }
         }
 
         if (currentUserService.IsRegionAdmin())
         {
-            var regionAdmin = await regionAdminService.GetByIdAsync(currentUserService.UserId) as Region2AdminDto;
+            var regionAdmin = await regionAdminService.GetByIdAsync(currentUserService.UserId);
 
-            if ((filter as Area2AdminFilter).InstitutionId == Guid.Empty)
+            if (filter.InstitutionId == Guid.Empty)
             {
-                (filter as Area2AdminFilter).InstitutionId = regionAdmin.InstitutionId;
+                filter.InstitutionId = regionAdmin.InstitutionId;
             }
 
-            if ((filter as Area2AdminFilter).CATOTTGId == 0)
+            if (filter.CATOTTGId == 0)
             {
-                (filter as Area2AdminFilter).CATOTTGId = regionAdmin.CATOTTGId;
+                filter.CATOTTGId = regionAdmin.CATOTTGId;
             }
         }
 
         if (currentUserService.IsAreaAdmin())
         {
-            var areaAdmin = await GetByUserId(currentUserService.UserId) as Area2AdminDto;
+            var areaAdmin = await GetByUserId(currentUserService.UserId);
 
-            if ((filter as Area2AdminFilter).InstitutionId == Guid.Empty)
+            if (filter.InstitutionId == Guid.Empty)
             {
-                (filter as Area2AdminFilter).InstitutionId = areaAdmin.InstitutionId;
+                filter.InstitutionId = areaAdmin.InstitutionId;
             }
 
-            if ((filter as Area2AdminFilter).CATOTTGId == 0)
+            if (filter.CATOTTGId == 0)
             {
-                (filter as Area2AdminFilter).CATOTTGId = areaAdmin.CATOTTGId;
+                filter.CATOTTGId = areaAdmin.CATOTTGId;
             }
         }
     }
 
-    protected override int Count(Expression<Func<InstitutionAdminBase, bool>> filterPredicate)
+    protected override int Count(Expression<Func<AreaAdmin, bool>> filterPredicate) =>
+        areaAdminRepository.Count(filterPredicate).Result;
+
+    protected override IEnumerable<Area2AdminDto> Get(Area2AdminFilter filter, Expression<Func<AreaAdmin, bool>> filterPredicate)
     {
-        var predicate = expressionConverter.Convert(filterPredicate);
-
-        return areaAdminRepository.Count(predicate).Result;
-    }
-
-    private Dictionary<Expression<Func<AreaAdmin, object>>, SortDirection> MakeSortExpression() =>
-    new Dictionary<Expression<Func<AreaAdmin, object>>, SortDirection>
-        {
-            {
-                x => x.User.LastName,
-                SortDirection.Ascending
-            },
-        };
-
-    protected override IEnumerable<Area2AdminDto> Get(BaseAdminFilter filter, Expression<Func<InstitutionAdminBase, bool>> filterPredicate)
-    {
-        var predicate = expressionConverter.Convert(filterPredicate);
-
         var admins = areaAdminRepository
             .Get(
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: IncludePropertiers,
-                whereExpression: predicate,
+                whereExpression: filterPredicate,
                 orderBy: MakeSortExpression(),
                 asNoTracking: true);
 
@@ -200,11 +173,9 @@ public class Area2AdminService : BaseAdminService
             _ => throw new ArgumentException("Invalid enum value for request command", nameof(command)),
         };
 
-    protected override Expression<Func<InstitutionAdminBase, bool>> PredicateBuild(BaseAdminFilter filter)
+    protected override Expression<Func<AreaAdmin, bool>> PredicateBuild(Area2AdminFilter filter)
     {
-        var pred = base.PredicateBuild(filter);
-
-        Expression<Func<AreaAdmin, bool>> predicate = expressionConverter.Convert(pred);
+        var predicate = PredicateBuilder.True<AreaAdmin>();
 
         if (!string.IsNullOrWhiteSpace(filter.SearchString))
         {
@@ -212,83 +183,49 @@ public class Area2AdminService : BaseAdminService
 
             foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
             {
-                tempPredicate = tempPredicate.Or<AreaAdmin>(
-                    x => x.Institution.Title.Contains(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.CATOTTG.Name.Contains(word, StringComparison.InvariantCultureIgnoreCase));
+                tempPredicate = tempPredicate.Or(
+                    x => x.User.FirstName.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.User.LastName.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.User.Email.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.User.PhoneNumber.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.Institution.Title.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.CATOTTG.Name.Contains(word, StringComparison.InvariantCultureIgnoreCase));
             }
 
             predicate = predicate.And(tempPredicate);
         }
 
-        if ((filter as Area2AdminFilter).InstitutionId != Guid.Empty)
+        if (filter.InstitutionId != Guid.Empty)
         {
-            predicate = predicate.And<AreaAdmin>(a => a.Institution.Id == (filter as Area2AdminFilter).InstitutionId);
+            predicate = predicate.And(a => a.Institution.Id == filter.InstitutionId);
         }
 
-        if ((filter as Area2AdminFilter).CATOTTGId > 0)
+        if (filter.CATOTTGId > 0)
         {
-            var childrenCATOTTGIds = codeficatorService.GetAllChildrenIdsByParentIdAsync((filter as Area2AdminFilter).CATOTTGId).Result;
+            var childrenCATOTTGIds = codeficatorService.GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId).Result;
 
             if (childrenCATOTTGIds.Any())
             {
-                predicate = predicate.And<AreaAdmin>(a => childrenCATOTTGIds.Contains(a.CATOTTGId));
+                predicate = predicate.And(a => childrenCATOTTGIds.Contains(a.CATOTTGId));
             }
             else
             {
-                predicate = predicate.And<AreaAdmin>(a => a.CATOTTG.Id == (filter as Area2AdminFilter).CATOTTGId);
+                predicate = predicate.And(a => a.CATOTTG.Id == filter.CATOTTGId);
             }
         }
 
-        //var childrenCATOTTGIds = codeficatorService.GetAllChildrenIdsByParentIdAsync((filter as Area2AdminFilter).CATOTTGId).Result;
-
-        //if (childrenCATOTTGIds.Any())
-        //{
-        //    predicate = predicate.And(a => childrenCATOTTGIds.Contains(a.CATOTTGId));
-        //}
-        //else if ((filter as Area2AdminFilter).CATOTTGId > 0)
-        //{
-        //    predicate = predicate.And(c => c.CATOTTG.Id == (filter as Area2AdminFilter).CATOTTGId);
-        //}
-
         predicate = predicate.And<AreaAdmin>(x => !x.Institution.IsDeleted);
 
-        var newPredicate = expressionConverter2.Convert(predicate);
-
-        return newPredicate;
+        return predicate;
     }
 
-    /// <inheritdoc/>
-    public async Task<bool> IsAreaAdminSubordinatedToMinistryAdminAsync(string ministryAdminUserId, string areaAdminId)
-    {
-        _ = ministryAdminUserId ?? throw new ArgumentNullException(nameof(ministryAdminUserId));
-        _ = areaAdminId ?? throw new ArgumentNullException(nameof(areaAdminId));
-
-        var ministryAdmin = await ministryAdminService.GetByIdAsync(ministryAdminUserId) as Ministry2AdminDto;
-        var areaAdmin = await areaAdminRepository.GetByIdAsync(areaAdminId);
-
-        return ministryAdmin.InstitutionId == areaAdmin.InstitutionId;
-    }
-
-    public async Task<bool> IsAreaAdminSubordinatedToRegionAdminAsync(string regionAdminUserId, string areaAdminId)
-    {
-        _ = regionAdminUserId ?? throw new ArgumentNullException(nameof(regionAdminUserId));
-        _ = areaAdminId ?? throw new ArgumentNullException(nameof(areaAdminId));
-
-        var regionAdmin = await regionAdminService.GetByIdAsync(regionAdminUserId) as Region2AdminDto;
-        var areaAdmin = await areaAdminRepository.GetByIdAsync(areaAdminId);
-
-        var subSettlementsIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId);
-
-        return regionAdmin.InstitutionId == areaAdmin.InstitutionId && subSettlementsIds.Contains(areaAdmin.CATOTTGId);
-    }
-
-    protected override async Task<bool> IsUserHasRightsToCreateAdmin(BaseAdminDto adminDto)
+    protected override async Task<bool> IsUserHasRightsToCreateAdmin(Area2AdminDto adminDto)
     {
         if (currentUserService.IsMinistryAdmin())
         {
-            var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId) as Ministry2AdminDto;
+            var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId);
 
-            if (ministryAdmin.InstitutionId != (adminDto as Area2AdminDto).InstitutionId)
+            if (ministryAdmin.InstitutionId != adminDto.InstitutionId)
             {
                 logger.LogDebug("Forbidden to create area admin. Area admin isn't subordinated to ministry admin.");
 
@@ -297,12 +234,11 @@ public class Area2AdminService : BaseAdminService
         }
         else if (currentUserService.IsRegionAdmin())
         {
-            var regionAdmin = await regionAdminService.GetByIdAsync(currentUserService.UserId) as Region2AdminDto;
+            var regionAdmin = await regionAdminService.GetByIdAsync(currentUserService.UserId);
 
             var subSettlementsIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId);
 
-            if (!(regionAdmin.InstitutionId == (adminDto as Area2AdminDto).InstitutionId
-                && subSettlementsIds.Contains((adminDto as Area2AdminDto).CATOTTGId)))
+            if (!(regionAdmin.InstitutionId == adminDto.InstitutionId && subSettlementsIds.Contains(adminDto.CATOTTGId)))
             {
                 logger.LogDebug("Forbidden to create area admin. Area admin isn't subordinated to region admin.");
 
@@ -415,5 +351,38 @@ public class Area2AdminService : BaseAdminService
         }
 
         return true;
+    }
+
+    private Dictionary<Expression<Func<AreaAdmin, object>>, SortDirection> MakeSortExpression() =>
+        new()
+        {
+            {
+                x => x.User.LastName,
+                SortDirection.Ascending
+            },
+        };
+
+    private async Task<bool> IsAreaAdminSubordinatedToMinistryAdminAsync(string ministryAdminUserId, string areaAdminId)
+    {
+        _ = ministryAdminUserId ?? throw new ArgumentNullException(nameof(ministryAdminUserId));
+        _ = areaAdminId ?? throw new ArgumentNullException(nameof(areaAdminId));
+
+        var ministryAdmin = await ministryAdminService.GetByIdAsync(ministryAdminUserId);
+        var areaAdmin = await areaAdminRepository.GetByIdAsync(areaAdminId);
+
+        return ministryAdmin.InstitutionId == areaAdmin.InstitutionId;
+    }
+
+    private async Task<bool> IsAreaAdminSubordinatedToRegionAdminAsync(string regionAdminUserId, string areaAdminId)
+    {
+        _ = regionAdminUserId ?? throw new ArgumentNullException(nameof(regionAdminUserId));
+        _ = areaAdminId ?? throw new ArgumentNullException(nameof(areaAdminId));
+
+        var regionAdmin = await regionAdminService.GetByIdAsync(regionAdminUserId);
+        var areaAdmin = await areaAdminRepository.GetByIdAsync(areaAdminId);
+
+        var subSettlementsIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId);
+
+        return regionAdmin.InstitutionId == areaAdmin.InstitutionId && subSettlementsIds.Contains(areaAdmin.CATOTTGId);
     }
 }

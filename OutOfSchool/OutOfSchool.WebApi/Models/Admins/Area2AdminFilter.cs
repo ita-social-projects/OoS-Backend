@@ -1,8 +1,5 @@
 ﻿namespace OutOfSchool.WebApi.Models.Admins;
 
-public class Area2AdminFilter : BaseAdminFilter
+public class Area2AdminFilter : Region2AdminFilter
 {
-    public Guid InstitutionId { get; set; } = Guid.Empty;
-
-    public long CATOTTGId { get; set; }
 }

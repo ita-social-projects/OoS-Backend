@@ -5,10 +5,11 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models.Admins;
+using OutOfSchool.WebApi.Services.Communication.ICommunication;
 
 namespace OutOfSchool.WebApi.Services.Admins;
 
-public class Region2AdminService : BaseAdminService
+public class Region2AdminService : BaseAdminService<RegionAdmin, Region2AdminDto, Region2AdminFilter>
 {
     private const string IncludePropertiers = "Institution,User,CATOTTG";
 
@@ -18,23 +19,18 @@ public class Region2AdminService : BaseAdminService
     private readonly IRegionAdminRepository regionAdminRepository;
     private readonly Ministry2AdminService ministryAdminService;
 
-    private readonly ExpressionConverter<InstitutionAdminBase, RegionAdmin> expressionConverter;
-    private readonly ExpressionConverter<RegionAdmin, InstitutionAdminBase> expressionConverter2;
-
     public Region2AdminService(
-        IHttpClientFactory httpClientFactory,
         IOptions<AuthorizationServerConfig> authorizationServerConfig,
-        IOptions<CommunicationConfig> communicationConfig,
+        ICommunicationService communicationService,
         ILogger<Region2AdminService> logger,
         IMapper mapper,
         IUserService userService,
         ICurrentUserService currentUserService,
         IRegionAdminRepository regionAdminRepository,
-        Ministry2AdminService ministry2AdminService)
+        Ministry2AdminService ministryAdminService)
         : base(
-            httpClientFactory,
             authorizationServerConfig,
-            communicationConfig,
+            communicationService,
             logger,
             mapper,
             userService)
@@ -43,34 +39,30 @@ public class Region2AdminService : BaseAdminService
         ArgumentNullException.ThrowIfNull(mapper);
         ArgumentNullException.ThrowIfNull(currentUserService);
         ArgumentNullException.ThrowIfNull(regionAdminRepository);
-        ArgumentNullException.ThrowIfNull(ministry2AdminService);
+        ArgumentNullException.ThrowIfNull(ministryAdminService);
 
         this.logger = logger;
         this.mapper = mapper;
         this.currentUserService = currentUserService;
         this.regionAdminRepository = regionAdminRepository;
-        this.ministryAdminService = ministry2AdminService;
-
-        expressionConverter = new ExpressionConverter<InstitutionAdminBase, RegionAdmin>();
-        expressionConverter2 = new ExpressionConverter<RegionAdmin, InstitutionAdminBase>();
+        this.ministryAdminService = ministryAdminService;
     }
 
-    protected override async Task<BaseAdminDto> GetById(string id) =>
+    protected override async Task<Region2AdminDto> GetById(string id) =>
         mapper.Map<Region2AdminDto>(await regionAdminRepository.GetByIdAsync(id));
 
-    protected override async Task<BaseAdminDto> GetByUserId(string userId) =>
+    protected override async Task<Region2AdminDto> GetByUserId(string userId) =>
         mapper.Map<Region2AdminDto>((await regionAdminRepository.GetByFilter(p => p.UserId == userId)).FirstOrDefault());
 
-    protected override Region2AdminFilter CreateEmptyFilter() => new Region2AdminFilter();
+    protected override Region2AdminFilter CreateEmptyFilter() => new();
 
-    protected override async Task<bool> IsUserHasRightsToGetAdminsByFilter(BaseAdminFilter filter)
+    protected override async Task<bool> IsUserHasRightsToGetAdminsByFilter(Region2AdminFilter filter)
     {
         if (currentUserService.IsMinistryAdmin())
         {
-            var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId) as Ministry2AdminDto;
+            var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId);
 
-            if ((filter as Region2AdminFilter).InstitutionId != ministryAdmin.InstitutionId
-                && (filter as Region2AdminFilter).InstitutionId != Guid.Empty)
+            if (filter.InstitutionId != ministryAdmin.InstitutionId && filter.InstitutionId != Guid.Empty)
             {
                 return false;
             }
@@ -78,12 +70,10 @@ public class Region2AdminService : BaseAdminService
 
         if (currentUserService.IsRegionAdmin())
         {
-            var regionAdmin = await GetById(currentUserService.UserId) as Region2AdminDto;
+            var regionAdmin = await GetById(currentUserService.UserId);
 
-            if (((filter as Region2AdminFilter).InstitutionId != regionAdmin.InstitutionId
-                && (filter as Region2AdminFilter).InstitutionId != Guid.Empty)
-               || ((filter as Region2AdminFilter).CATOTTGId != regionAdmin.CATOTTGId
-                   && (filter as Region2AdminFilter).CATOTTGId > 0))
+            if ((filter.InstitutionId != regionAdmin.InstitutionId && filter.InstitutionId != Guid.Empty)
+               || (filter.CATOTTGId != regionAdmin.CATOTTGId && filter.CATOTTGId > 0))
             {
                 return false;
             }
@@ -92,60 +82,45 @@ public class Region2AdminService : BaseAdminService
         return true;
     }
 
-    protected override async Task UpdateTheFilterWithTheAdminRestrictions(BaseAdminFilter filter)
+    protected override async Task UpdateTheFilterWithTheAdminRestrictions(Region2AdminFilter filter)
     {
         if (currentUserService.IsMinistryAdmin())
         {
-            var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId) as Ministry2AdminDto;
+            var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId);
 
-            if ((filter as Region2AdminFilter).InstitutionId == Guid.Empty)
+            if (filter.InstitutionId == Guid.Empty)
             {
-                (filter as Region2AdminFilter).InstitutionId = ministryAdmin.InstitutionId;
+                filter.InstitutionId = ministryAdmin.InstitutionId;
             }
         }
 
         if (currentUserService.IsRegionAdmin())
         {
-            var regionAdmin = await GetById(currentUserService.UserId) as Region2AdminDto;
+            var regionAdmin = await GetById(currentUserService.UserId);
 
-            if ((filter as Region2AdminFilter).InstitutionId == Guid.Empty)
+            if (filter.InstitutionId == Guid.Empty)
             {
-                (filter as Region2AdminFilter).InstitutionId = regionAdmin.InstitutionId;
+                filter.InstitutionId = regionAdmin.InstitutionId;
             }
 
-            if ((filter as Region2AdminFilter).CATOTTGId == 0)
+            if (filter.CATOTTGId == 0)
             {
-                (filter as Region2AdminFilter).CATOTTGId = regionAdmin.CATOTTGId;
+                filter.CATOTTGId = regionAdmin.CATOTTGId;
             }
         }
     }
 
-    protected override int Count(Expression<Func<InstitutionAdminBase, bool>> filterPredicate)
+    protected override int Count(Expression<Func<RegionAdmin, bool>> filterPredicate) =>
+        regionAdminRepository.Count(filterPredicate).Result;
+
+    protected override IEnumerable<Region2AdminDto> Get(Region2AdminFilter filter, Expression<Func<RegionAdmin, bool>> filterPredicate)
     {
-        var predicate = expressionConverter.Convert(filterPredicate);
-
-        return regionAdminRepository.Count(predicate).Result;
-    }
-
-    private Dictionary<Expression<Func<RegionAdmin, object>>, SortDirection> MakeSortExpression() =>
-    new Dictionary<Expression<Func<RegionAdmin, object>>, SortDirection>
-        {
-            {
-                x => x.User.LastName,
-                SortDirection.Ascending
-            },
-        };
-
-    protected override IEnumerable<Region2AdminDto> Get(BaseAdminFilter filter, Expression<Func<InstitutionAdminBase, bool>> filterPredicate)
-    {
-        var predicate = expressionConverter.Convert(filterPredicate);
-
         var admins = regionAdminRepository
             .Get(
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: IncludePropertiers,
-                whereExpression: predicate,
+                whereExpression: filterPredicate,
                 orderBy: MakeSortExpression(),
                 asNoTracking: true);
 
@@ -153,21 +128,19 @@ public class Region2AdminService : BaseAdminService
     }
 
     protected override string GetCommunicationString(RequestCommand command) =>
-    command switch
-    {
-        RequestCommand.Create => CommunicationConstants.CreateRegionAdmin,
-        RequestCommand.Update => CommunicationConstants.UpdateRegionAdmin,
-        RequestCommand.Delete => CommunicationConstants.DeleteRegionAdmin,
-        RequestCommand.Block => CommunicationConstants.BlockRegionAdmin,
-        RequestCommand.Reinvite => CommunicationConstants.ReinviteRegionAdmin,
-        _ => throw new ArgumentException("Invalid enum value for request command", nameof(command)),
+        command switch
+        {
+            RequestCommand.Create => CommunicationConstants.CreateRegionAdmin,
+            RequestCommand.Update => CommunicationConstants.UpdateRegionAdmin,
+            RequestCommand.Delete => CommunicationConstants.DeleteRegionAdmin,
+            RequestCommand.Block => CommunicationConstants.BlockRegionAdmin,
+            RequestCommand.Reinvite => CommunicationConstants.ReinviteRegionAdmin,
+            _ => throw new ArgumentException("Invalid enum value for request command", nameof(command)),
     };
 
-    protected override Expression<Func<InstitutionAdminBase, bool>> PredicateBuild(BaseAdminFilter filter)
+    protected override Expression<Func<RegionAdmin, bool>> PredicateBuild(Region2AdminFilter filter)
     {
-        var pred = base.PredicateBuild(filter);
-
-        Expression<Func<RegionAdmin, bool>> predicate = expressionConverter.Convert(pred);
+        var predicate = PredicateBuilder.True<RegionAdmin>();
 
         if (!string.IsNullOrWhiteSpace(filter.SearchString))
         {
@@ -176,44 +149,39 @@ public class Region2AdminService : BaseAdminService
             foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
             {
                 tempPredicate = tempPredicate.Or(
-                    x => x.Institution.Title.Contains(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.CATOTTG.Name.Contains(word, StringComparison.InvariantCultureIgnoreCase));
+                    x => x.User.FirstName.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.User.LastName.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.User.Email.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.User.PhoneNumber.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.Institution.Title.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.CATOTTG.Name.Contains(word, StringComparison.InvariantCultureIgnoreCase));
             }
 
             predicate = predicate.And(tempPredicate);
         }
 
-        if ((filter as Region2AdminFilter).InstitutionId != Guid.Empty)
+        if (filter.InstitutionId != Guid.Empty)
         {
-            predicate = predicate.And(a => a.Institution.Id == (filter as Region2AdminFilter).InstitutionId);
+            predicate = predicate.And(a => a.Institution.Id == filter.InstitutionId);
         }
 
-        if ((filter as Region2AdminFilter).CATOTTGId > 0)
+        if (filter.CATOTTGId > 0)
         {
-            predicate = predicate.And(c => c.CATOTTG.Id == (filter as Region2AdminFilter).CATOTTGId);
+            predicate = predicate.And(c => c.CATOTTG.Id == filter.CATOTTGId);
         }
 
-        return expressionConverter2.Convert(predicate);
+        predicate = predicate.And(x => !x.Institution.IsDeleted);
+
+        return predicate;
     }
 
-    public async Task<bool> IsRegionAdminSubordinatedToMinistryAdminAsync(string ministryAdminUserId, string regionAdminId)
-    {
-        _ = ministryAdminUserId ?? throw new ArgumentNullException(nameof(ministryAdminUserId));
-        _ = regionAdminId ?? throw new ArgumentNullException(nameof(regionAdminId));
-
-        var ministryAdmin = await ministryAdminService.GetByIdAsync(ministryAdminUserId) as Ministry2AdminDto;
-        var regionAdmin = await regionAdminRepository.GetByIdAsync(regionAdminId);
-
-        return ministryAdmin.InstitutionId == regionAdmin.InstitutionId;
-    }
-
-    protected override async Task<bool> IsUserHasRightsToCreateAdmin(BaseAdminDto adminDto)
+    protected override async Task<bool> IsUserHasRightsToCreateAdmin(Region2AdminDto adminDto)
     {
         if (currentUserService.IsMinistryAdmin())
         {
-            var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId) as Ministry2AdminDto;
+            var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId);
 
-            if (ministryAdmin.InstitutionId != (adminDto as Region2AdminDto).InstitutionId)
+            if (ministryAdmin.InstitutionId != adminDto.InstitutionId)
             {
                 logger.LogDebug("Forbidden to create region admin. Region admin isn't subordinated to ministry admin.");
 
@@ -296,5 +264,25 @@ public class Region2AdminService : BaseAdminService
         }
 
         return true;
+    }
+
+    private Dictionary<Expression<Func<RegionAdmin, object>>, SortDirection> MakeSortExpression() =>
+        new()
+        {
+            {
+                x => x.User.LastName,
+                SortDirection.Ascending
+            },
+        };
+
+    private async Task<bool> IsRegionAdminSubordinatedToMinistryAdminAsync(string ministryAdminUserId, string regionAdminId)
+    {
+        _ = ministryAdminUserId ?? throw new ArgumentNullException(nameof(ministryAdminUserId));
+        _ = regionAdminId ?? throw new ArgumentNullException(nameof(regionAdminId));
+
+        var ministryAdmin = await ministryAdminService.GetByIdAsync(ministryAdminUserId);
+        var regionAdmin = await regionAdminRepository.GetByIdAsync(regionAdminId);
+
+        return ministryAdmin.InstitutionId == regionAdmin.InstitutionId;
     }
 }

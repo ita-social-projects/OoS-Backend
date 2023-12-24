@@ -165,10 +165,6 @@ public static class Startup
         services.AddHttpContextAccessor();
         services.AddScoped<IProviderAdminService, ProviderAdminService>();
         services.AddScoped<IMinistryAdminService, MinistryAdminService>();
-        //services.AddScoped<BaseAdminService, Ministry2AdminService>();
-        //services.AddScoped<BaseAdminService, Region2AdminService>();
-        //services.AddScoped<BaseAdminService, Area2AdminService>();
-        //services.AddScoped<BaseAdminService>();
         services.AddScoped<Ministry2AdminService>();
         services.AddScoped<Region2AdminService>();
         services.AddScoped<Area2AdminService>();

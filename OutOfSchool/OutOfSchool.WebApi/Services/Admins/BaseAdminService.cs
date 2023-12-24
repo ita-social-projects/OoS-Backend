@@ -7,37 +7,42 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Admins;
+using OutOfSchool.WebApi.Services.Communication.ICommunication;
 
 namespace OutOfSchool.WebApi.Services.Admins;
 
-public abstract class BaseAdminService : CommunicationService
+public abstract class BaseAdminService<TEntity, TDto, TFilter>
+    where TEntity : InstitutionAdminBase
+    where TDto : BaseAdminDto
+    where TFilter : BaseAdminFilter
 {
     private readonly AuthorizationServerConfig authorizationServerConfig;
-    private readonly ILogger<BaseAdminService> logger;
+    private readonly ICommunicationService communicationService;
+    private readonly ILogger<BaseAdminService<TEntity, TDto, TFilter>> logger;
     private readonly IMapper mapper;
     private readonly IUserService userService;
 
     public BaseAdminService(
-        IHttpClientFactory httpClientFactory,
         IOptions<AuthorizationServerConfig> authorizationServerConfig,
-        IOptions<CommunicationConfig> communicationConfig,
-        ILogger<BaseAdminService> logger,
+        ICommunicationService communicationService,
+        ILogger<BaseAdminService<TEntity, TDto, TFilter>> logger,
         IMapper mapper,
         IUserService userService)
-        : base(httpClientFactory, communicationConfig, logger)
     {
         ArgumentNullException.ThrowIfNull(authorizationServerConfig);
+        ArgumentNullException.ThrowIfNull(communicationService);
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(mapper);
         ArgumentNullException.ThrowIfNull(userService);
 
         this.authorizationServerConfig = authorizationServerConfig.Value;
+        this.communicationService = communicationService;
         this.logger = logger;
         this.mapper = mapper;
         this.userService = userService;
     }
 
-    public async Task<BaseAdminDto> GetByIdAsync(string id)
+    public async Task<TDto> GetByIdAsync(string id)
     {
         logger.LogInformation("Getting admin by id {id} started.", id);
 
@@ -55,7 +60,7 @@ public abstract class BaseAdminService : CommunicationService
         return admin;
     }
 
-    public async Task<BaseAdminDto> GetByUserIdAsync(string userId)
+    public async Task<TDto> GetByUserIdAsync(string userId)
     {
         logger.LogInformation("Getting admin by userId {id} started.", userId);
 
@@ -73,7 +78,7 @@ public abstract class BaseAdminService : CommunicationService
         return admin;
     }
 
-    public async Task<SearchResult<BaseAdminDto>> GetByFilter(BaseAdminFilter filter)
+    public async Task<SearchResult<TDto>> GetByFilter(TFilter filter)
     {
         logger.LogInformation("Getting admins by filter started.");
 
@@ -85,7 +90,7 @@ public abstract class BaseAdminService : CommunicationService
         {
             logger.LogInformation("Current user doesn't have rights to get admins.");
 
-            return new SearchResult<BaseAdminDto>()
+            return new SearchResult<TDto>()
             {
                 TotalAmount = 0,
                 Entities = default,
@@ -107,14 +112,14 @@ public abstract class BaseAdminService : CommunicationService
             logger.LogInformation("There aren't any admins in the Db.");
         }
 
-        return new SearchResult<BaseAdminDto>()
+        return new SearchResult<TDto>()
         {
             TotalAmount = Count(filterPredicate),
-            Entities = (IReadOnlyCollection<BaseAdminDto>)admins,
+            Entities = (IReadOnlyCollection<TDto>)admins,
         };
     }
 
-    public async Task<Either<ErrorResponse, BaseAdminDto>> CreateAsync(string userId, BaseAdminDto adminDto, string token)
+    public async Task<Either<ErrorResponse, TDto>> CreateAsync(string userId, TDto adminDto, string token)
     {
         logger.LogDebug("Admin creating by userId {userId} started.", userId);
 
@@ -138,7 +143,7 @@ public abstract class BaseAdminService : CommunicationService
 
         logger.LogDebug("{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}", request.HttpMethodType, userId, request.Url);
 
-        var response = await SendRequest<ResponseDto>(request);
+        var response = await communicationService.SendRequest<ResponseDto>(request);
         var t = response.Map(x => x.Result).Match(l => l.HttpStatusCode, r => r);
 
         return response
@@ -150,22 +155,21 @@ public abstract class BaseAdminService : CommunicationService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? mapper.Map(JsonConvert.DeserializeObject<AdminBaseDto>(result.Result.ToString()), adminDto)
-                : null); // JsonConvert.DeserializeObject<BaseAdminDto>(result.Result.ToString())
+                ? mapper.Map(JsonConvert.DeserializeObject<TDto>(result.Result.ToString()), adminDto)
+                : null);
     }
 
-    public async Task<Either<ErrorResponse, BaseAdminDto>> UpdateAsync(string userId, BaseAdminDto adminDto, string token)
+    public async Task<Either<ErrorResponse, TDto>> UpdateAsync(string userId, TDto adminDto, string token)
     {
         _ = adminDto ?? throw new ArgumentNullException(nameof(adminDto));
 
-        logger.LogDebug("Admin with id {id} updating by userId {userId} started.", adminDto.Id, userId);
+        logger.LogDebug("Admin with id {id} updating by userId {userId} started.", adminDto.UserId, userId);
 
-        // TODO Add checking if ministry Admin belongs to Institution and is exist MinistryAdmin with such UserId
-        BaseAdminDto admin = await GetById(adminDto.Id);
+        var admin = await GetById(adminDto.UserId);
 
         if (admin is null)
         {
-            logger.LogError("Admin {id} not found. User(id): {UserId}", adminDto.Id, userId);
+            logger.LogError("Admin {id} not found. User(id): {UserId}", adminDto.UserId, userId);
 
             return new ErrorResponse
             {
@@ -173,7 +177,7 @@ public abstract class BaseAdminService : CommunicationService
             };
         }
 
-        if (!await IsUserHasRightsToUpdateAdmin(adminDto.Id))
+        if (!await IsUserHasRightsToUpdateAdmin(adminDto.UserId))
         {
             return new ErrorResponse
             {
@@ -189,7 +193,7 @@ public abstract class BaseAdminService : CommunicationService
             userId,
             request.Url);
 
-        var response = await SendRequest<ResponseDto>(request)
+        var response = await communicationService.SendRequest<ResponseDto>(request)
             .ConfigureAwait(false);
 
         return response
@@ -201,15 +205,15 @@ public abstract class BaseAdminService : CommunicationService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? mapper.Map(JsonConvert.DeserializeObject<AdminBaseDto>(result.Result.ToString()), adminDto)
-                : null); // JsonConvert.DeserializeObject<BaseAdminDto>(result.Result.ToString())
+                ? mapper.Map(JsonConvert.DeserializeObject<TDto>(result.Result.ToString()), adminDto)
+                : null);
     }
 
     public async Task<Either<ErrorResponse, ActionResult>> DeleteAsync(string adminId, string userId, string token)
     {
         logger.LogDebug("Admin with id {id} deleting by userId {userId} started.", adminId, userId);
 
-        BaseAdminDto admin = await GetById(adminId);
+        var admin = await GetById(adminId);
 
         if (admin is null)
         {
@@ -237,7 +241,7 @@ public abstract class BaseAdminService : CommunicationService
             userId,
             request.Url);
 
-        var response = await SendRequest<ResponseDto>(request)
+        var response = await communicationService.SendRequest<ResponseDto>(request)
             .ConfigureAwait(false);
 
         return response
@@ -257,7 +261,7 @@ public abstract class BaseAdminService : CommunicationService
     {
         logger.LogDebug("Admin with id {id} blocking by userId {userId} started.", adminId, userId);
 
-        BaseAdminDto admin = await GetById(adminId);
+        var admin = await GetById(adminId);
 
         if (admin is null)
         {
@@ -285,7 +289,7 @@ public abstract class BaseAdminService : CommunicationService
             userId,
             request.Url);
 
-        var response = await SendRequest<ResponseDto>(request)
+        var response = await communicationService.SendRequest<ResponseDto>(request)
             .ConfigureAwait(false);
 
         return response
@@ -305,7 +309,7 @@ public abstract class BaseAdminService : CommunicationService
     {
         logger.LogDebug("Admin with id {id} reinviting by userId {userId} was started.", adminId, userId);
 
-        BaseAdminDto admin = await GetById(adminId);
+        var admin = await GetById(adminId);
 
         if (admin is null)
         {
@@ -318,7 +322,7 @@ public abstract class BaseAdminService : CommunicationService
 
         try
         {
-            if (await userService.IsNeverLogged(admin.Id))
+            if (await userService.IsNeverLogged(admin.UserId))
             {
                 return new ErrorResponse
                 {
@@ -344,7 +348,7 @@ public abstract class BaseAdminService : CommunicationService
             userId,
             request.Url);
 
-        var response = await SendRequest<ResponseDto>(request)
+        var response = await communicationService.SendRequest<ResponseDto>(request)
             .ConfigureAwait(false);
 
         return response
@@ -360,38 +364,17 @@ public abstract class BaseAdminService : CommunicationService
                 : null);
     }
 
-    protected virtual Expression<Func<InstitutionAdminBase, bool>> PredicateBuild(BaseAdminFilter filter)
-    {
-        var predicate = PredicateBuilder.True<InstitutionAdminBase>();
+    protected abstract Expression<Func<TEntity, bool>> PredicateBuild(TFilter filter);
 
-        if (!string.IsNullOrWhiteSpace(filter.SearchString))
-        {
-            var tempPredicate = PredicateBuilder.False<InstitutionAdminBase>();
+    protected abstract Task<TDto> GetById(string id);
 
-            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
-            {
-                tempPredicate = tempPredicate.Or(
-                    x => x.User.FirstName.Contains(word, StringComparison.InvariantCultureIgnoreCase)
-                         || x.User.LastName.Contains(word, StringComparison.InvariantCultureIgnoreCase)
-                         || x.User.Email.Contains(word, StringComparison.InvariantCultureIgnoreCase)
-                         || x.User.PhoneNumber.Contains(word, StringComparison.InvariantCultureIgnoreCase));
-            }
+    protected abstract Task<TDto> GetByUserId(string userId);
 
-            predicate = predicate.And(tempPredicate);
-        }
+    protected abstract TFilter CreateEmptyFilter();
 
-        return predicate;
-    }
+    protected abstract Task<bool> IsUserHasRightsToGetAdminsByFilter(TFilter filter);
 
-    protected abstract Task<BaseAdminDto> GetById(string id);
-
-    protected abstract Task<BaseAdminDto> GetByUserId(string userId);
-
-    protected abstract BaseAdminFilter CreateEmptyFilter();
-
-    protected abstract Task<bool> IsUserHasRightsToGetAdminsByFilter(BaseAdminFilter filter);
-
-    protected abstract Task<bool> IsUserHasRightsToCreateAdmin(BaseAdminDto adminDto);
+    protected abstract Task<bool> IsUserHasRightsToCreateAdmin(TDto adminDto);
 
     protected abstract Task<bool> IsUserHasRightsToUpdateAdmin(string adminId);
 
@@ -399,16 +382,16 @@ public abstract class BaseAdminService : CommunicationService
 
     protected abstract Task<bool> IsUserHasRightsToBlockAdmin(string adminId);
 
-    protected abstract Task UpdateTheFilterWithTheAdminRestrictions(BaseAdminFilter filter);
+    protected abstract Task UpdateTheFilterWithTheAdminRestrictions(TFilter filter);
 
-    protected abstract int Count(Expression<Func<InstitutionAdminBase, bool>> filterPredicate);
+    protected abstract int Count(Expression<Func<TEntity, bool>> filterPredicate);
 
-    protected abstract IEnumerable<BaseAdminDto> Get(BaseAdminFilter filter, Expression<Func<InstitutionAdminBase, bool>> filterPredicate);
+    protected abstract IEnumerable<TDto> Get(TFilter filter, Expression<Func<TEntity, bool>> filterPredicate);
 
     protected abstract string GetCommunicationString(RequestCommand command);
 
-    private Request MakeCreateRequest(BaseAdminDto adminDto, string token) =>
-        new Request()
+    private Request MakeCreateRequest(TDto adminDto, string token) =>
+        new()
         {
             HttpMethodType = HttpMethodType.Post,
             Url = new Uri(authorizationServerConfig.Authority, GetCommunicationString(RequestCommand.Create)),
@@ -416,17 +399,17 @@ public abstract class BaseAdminService : CommunicationService
             Data = adminDto,
         };
 
-    private Request MakeUpdateRequest(BaseAdminDto adminDto, string token) =>
-        new Request()
+    private Request MakeUpdateRequest(TDto adminDto, string token) =>
+        new()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(authorizationServerConfig.Authority, $"{GetCommunicationString(RequestCommand.Update)}{adminDto.Id}"),
+            Url = new Uri(authorizationServerConfig.Authority, $"{GetCommunicationString(RequestCommand.Update)}{adminDto.UserId}"),
             Token = token,
             Data = mapper.Map<AdminBaseDto>(adminDto),
         };
 
     private Request MakeDeleteRequest(string adminId, string token) =>
-        new Request()
+        new()
         {
             HttpMethodType = HttpMethodType.Delete,
             Url = new Uri(authorizationServerConfig.Authority, $"{GetCommunicationString(RequestCommand.Delete)}{adminId}"),
@@ -434,7 +417,7 @@ public abstract class BaseAdminService : CommunicationService
         };
 
     private Request MakeBlockRequest(string adminId, string token, bool isBlocked) =>
-        new Request()
+        new()
         {
             HttpMethodType = HttpMethodType.Put,
             Url = new Uri(authorizationServerConfig.Authority, $"{GetCommunicationString(RequestCommand.Block)}{adminId}/{isBlocked}"),
@@ -442,7 +425,7 @@ public abstract class BaseAdminService : CommunicationService
         };
 
     private Request MakeReinviteRequest(string adminId, string token) =>
-        new Request()
+        new()
         {
             HttpMethodType = HttpMethodType.Put,
             Url = new Uri(authorizationServerConfig.Authority, $"{GetCommunicationString(RequestCommand.Reinvite)}{adminId}"),

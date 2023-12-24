@@ -5,10 +5,11 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models.Admins;
+using OutOfSchool.WebApi.Services.Communication.ICommunication;
 
 namespace OutOfSchool.WebApi.Services.Admins;
 
-public class Ministry2AdminService : BaseAdminService
+public class Ministry2AdminService : BaseAdminService<InstitutionAdmin, Ministry2AdminDto, Ministry2AdminFilter>
 {
     private const string IncludePropertiers = "Institution,User";
 
@@ -17,22 +18,17 @@ public class Ministry2AdminService : BaseAdminService
     private readonly ICurrentUserService currentUserService;
     private readonly IInstitutionAdminRepository institutionAdminRepository;
 
-    private readonly ExpressionConverter<InstitutionAdminBase, InstitutionAdmin> expressionConverter;
-    private readonly ExpressionConverter<InstitutionAdmin, InstitutionAdminBase> expressionConverter2;
-
     public Ministry2AdminService(
-        IHttpClientFactory httpClientFactory,
         IOptions<AuthorizationServerConfig> authorizationServerConfig,
-        IOptions<CommunicationConfig> communicationConfig,
+        ICommunicationService communicationService,
         ILogger<Ministry2AdminService> logger,
         IMapper mapper,
         IUserService userService,
         ICurrentUserService currentUserService,
         IInstitutionAdminRepository institutionAdminRepository)
         : base(
-            httpClientFactory,
             authorizationServerConfig,
-            communicationConfig,
+            communicationService,
             logger,
             mapper,
             userService)
@@ -46,27 +42,23 @@ public class Ministry2AdminService : BaseAdminService
         this.mapper = mapper;
         this.currentUserService = currentUserService;
         this.institutionAdminRepository = institutionAdminRepository;
-
-        expressionConverter = new ExpressionConverter<InstitutionAdminBase, InstitutionAdmin>();
-        expressionConverter2 = new ExpressionConverter<InstitutionAdmin, InstitutionAdminBase>();
     }
 
-    protected override async Task<BaseAdminDto> GetById(string id) =>
+    protected override async Task<Ministry2AdminDto> GetById(string id) =>
         mapper.Map<Ministry2AdminDto>(await institutionAdminRepository.GetByIdAsync(id));
 
-    protected override async Task<BaseAdminDto> GetByUserId(string userId) =>
+    protected override async Task<Ministry2AdminDto> GetByUserId(string userId) =>
         mapper.Map<Ministry2AdminDto>((await institutionAdminRepository.GetByFilter(p => p.UserId == userId)).FirstOrDefault());
 
-    protected override Ministry2AdminFilter CreateEmptyFilter() => new Ministry2AdminFilter();
+    protected override Ministry2AdminFilter CreateEmptyFilter() => new();
 
-    protected override async Task<bool> IsUserHasRightsToGetAdminsByFilter(BaseAdminFilter filter)
+    protected override async Task<bool> IsUserHasRightsToGetAdminsByFilter(Ministry2AdminFilter filter)
     {
         if (currentUserService.IsMinistryAdmin())
         {
-            var admin = await GetByUserId(currentUserService.UserId) as Ministry2AdminDto;
+            var admin = await GetByUserId(currentUserService.UserId);
 
-            if ((filter as Ministry2AdminFilter).InstitutionId != admin.InstitutionId
-                && (filter as Ministry2AdminFilter).InstitutionId != Guid.Empty)
+            if (filter.InstitutionId != admin.InstitutionId && filter.InstitutionId != Guid.Empty)
             {
                 return false;
             }
@@ -75,36 +67,30 @@ public class Ministry2AdminService : BaseAdminService
         return true;
     }
 
-    protected override async Task UpdateTheFilterWithTheAdminRestrictions(BaseAdminFilter filter)
+    protected override async Task UpdateTheFilterWithTheAdminRestrictions(Ministry2AdminFilter filter)
     {
         if (currentUserService.IsMinistryAdmin())
         {
-            var admin = await GetByUserId(currentUserService.UserId) as Ministry2AdminDto;
+            var admin = await GetByUserId(currentUserService.UserId);
 
-            if ((filter as Ministry2AdminFilter).InstitutionId == Guid.Empty)
+            if (filter.InstitutionId == Guid.Empty)
             {
-                (filter as Ministry2AdminFilter).InstitutionId = admin.InstitutionId;
+                filter.InstitutionId = admin.InstitutionId;
             }
         }
     }
 
-    protected override int Count(Expression<Func<InstitutionAdminBase, bool>> filterPredicate)
+    protected override int Count(Expression<Func<InstitutionAdmin, bool>> filterPredicate) =>
+        institutionAdminRepository.Count(filterPredicate).Result;
+
+    protected override IEnumerable<Ministry2AdminDto> Get(Ministry2AdminFilter filter, Expression<Func<InstitutionAdmin, bool>> filterPredicate)
     {
-        var predicate = expressionConverter.Convert(filterPredicate);
-
-        return institutionAdminRepository.Count(predicate).Result;
-    }
-
-    protected override IEnumerable<Ministry2AdminDto> Get(BaseAdminFilter filter, Expression<Func<InstitutionAdminBase, bool>> filterPredicate)
-    {
-        var predicate = expressionConverter.Convert(filterPredicate);
-
         var admins = institutionAdminRepository
             .Get(
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: IncludePropertiers,
-                whereExpression: predicate,
+                whereExpression: filterPredicate,
                 orderBy: MakeSortExpression(),
                 asNoTracking: true);
 
@@ -122,11 +108,9 @@ public class Ministry2AdminService : BaseAdminService
             _ => throw new ArgumentException("Invalid enum value for request command", nameof(command)),
         };
 
-    protected override Expression<Func<InstitutionAdminBase, bool>> PredicateBuild(BaseAdminFilter filter)
+    protected override Expression<Func<InstitutionAdmin, bool>> PredicateBuild(Ministry2AdminFilter filter)
     {
-        var pred = base.PredicateBuild(filter);
-
-        Expression<Func<InstitutionAdmin, bool>> predicate = expressionConverter.Convert(pred);
+        var predicate = PredicateBuilder.True<InstitutionAdmin>();
 
         if (!string.IsNullOrWhiteSpace(filter.SearchString))
         {
@@ -135,23 +119,27 @@ public class Ministry2AdminService : BaseAdminService
             foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
             {
                 tempPredicate = tempPredicate.Or(
-                    x => x.Institution.Title.Contains(word, StringComparison.InvariantCultureIgnoreCase));
+                    x => x.User.FirstName.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.User.LastName.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.User.Email.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.User.PhoneNumber.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                         || x.Institution.Title.Contains(word, StringComparison.InvariantCultureIgnoreCase));
             }
 
             predicate = predicate.And(tempPredicate);
         }
 
-        if ((filter as Ministry2AdminFilter).InstitutionId != Guid.Empty)
+        if (filter.InstitutionId != Guid.Empty)
         {
-            predicate = predicate.And(a => a.Institution.Id == (filter as Ministry2AdminFilter).InstitutionId);
+            predicate = predicate.And(a => a.Institution.Id == filter.InstitutionId);
         }
 
         predicate = predicate.And(x => !x.Institution.IsDeleted);
 
-        return expressionConverter2.Convert(predicate);
+        return predicate;
     }
 
-    protected override async Task<bool> IsUserHasRightsToCreateAdmin(BaseAdminDto adminDto) => true;
+    protected override async Task<bool> IsUserHasRightsToCreateAdmin(Ministry2AdminDto adminDto) => true;
 
     protected override async Task<bool> IsUserHasRightsToUpdateAdmin(string ministryAdminId)
     {
@@ -184,11 +172,11 @@ public class Ministry2AdminService : BaseAdminService
     protected override async Task<bool> IsUserHasRightsToBlockAdmin(string adminId) => true;
 
     private Dictionary<Expression<Func<InstitutionAdmin, object>>, SortDirection> MakeSortExpression() =>
-        new Dictionary<Expression<Func<InstitutionAdmin, object>>, SortDirection>
+        new()
+        {
             {
-                {
-                    x => x.User.LastName,
-                    SortDirection.Ascending
-                },
-            };
+                x => x.User.LastName,
+                SortDirection.Ascending
+            },
+        };
 }

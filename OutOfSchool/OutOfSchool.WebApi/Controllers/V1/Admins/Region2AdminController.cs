@@ -79,7 +79,7 @@ public class Region2AdminController : Controller
 
         if (regionAdmin == null)
         {
-            return NotFound($"There is no region admin in DB with {nameof(regionAdmin.Id)} - {id}");
+            return NotFound($"There is no region admin in DB with {nameof(regionAdmin.UserId)} - {id}");
         }
 
         return Ok(regionAdmin);
@@ -150,7 +150,7 @@ public class Region2AdminController : Controller
             },
             result =>
             {
-                logger.LogInformation("The region admin {resultUserId} was successfully created by the user {UserId}", (result as Region2AdminDto).Id, userId);
+                logger.LogInformation("The region admin {resultUserId} was successfully created by the user {UserId}", (result as Region2AdminDto).UserId, userId);
 
                 return Ok(result as Region2AdminDto);
             });
@@ -169,7 +169,7 @@ public class Region2AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> Update(Region2AdminDto regionAdminDto)
     {
-        logger.LogInformation("The updating of the region admin {regionAdminId} by the user {UserId} was started.", regionAdminDto.Id, userId);
+        logger.LogInformation("The updating of the region admin {regionAdminId} by the user {UserId} was started.", regionAdminDto.UserId, userId);
 
         if (regionAdminDto == null)
         {
@@ -197,7 +197,7 @@ public class Region2AdminController : Controller
                 },
                 result =>
                 {
-                    logger.LogInformation("The region admin {resultUserId} was successfully updated by the user {UserId}", (result as Region2AdminDto).Id, userId);
+                    logger.LogInformation("The region admin {resultUserId} was successfully updated by the user {UserId}", (result as Region2AdminDto).UserId, userId);
 
                     return Ok();
                 });
