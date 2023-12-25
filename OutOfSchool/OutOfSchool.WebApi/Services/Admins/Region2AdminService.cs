@@ -212,14 +212,12 @@ public class Region2AdminService : BaseAdminService<RegionAdmin, Region2AdminDto
                 return false;
             }
 
-            if (currentUserService.IsMinistryAdmin())
+            if (currentUserService.IsMinistryAdmin()
+                && !await IsRegionAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
             {
-                if (!await IsRegionAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
-                {
-                    logger.LogDebug("Forbidden to update region admin. Region admin isn't subordinated to ministry admin.");
+                logger.LogDebug("Forbidden to update region admin. Region admin isn't subordinated to ministry admin.");
 
-                    return false;
-                }
+                return false;
             }
         }
 
@@ -233,14 +231,12 @@ public class Region2AdminService : BaseAdminService<RegionAdmin, Region2AdminDto
             return true;
         }
 
-        if (currentUserService.IsMinistryAdmin())
+        if (currentUserService.IsMinistryAdmin()
+            && !await IsRegionAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
         {
-            if (!await IsRegionAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
-            {
-                logger.LogDebug("Forbidden to delete region admin. Region admin isn't subordinated to ministry admin.");
+            logger.LogDebug("Forbidden to delete region admin. Region admin isn't subordinated to ministry admin.");
 
-                return false;
-            }
+            return false;
         }
 
         return true;
@@ -253,14 +249,12 @@ public class Region2AdminService : BaseAdminService<RegionAdmin, Region2AdminDto
             return true;
         }
 
-        if (currentUserService.IsMinistryAdmin())
+        if (currentUserService.IsMinistryAdmin()
+            && !await IsRegionAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
         {
-            if (!await IsRegionAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
-            {
-                logger.LogDebug("Forbidden to block region admin. Region admin isn't subordinated to ministry admin.");
+            logger.LogDebug("Forbidden to block region admin. Region admin isn't subordinated to ministry admin.");
 
-                return false;
-            }
+            return false;
         }
 
         return true;
