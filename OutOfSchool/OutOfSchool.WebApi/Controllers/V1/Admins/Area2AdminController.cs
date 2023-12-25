@@ -150,9 +150,9 @@ public class Area2AdminController : Controller
             },
             result =>
             {
-                logger.LogInformation("The area admin {resultUserId} was successfully created by the user {UserId}", (result as Area2AdminDto).UserId, userId);
+                logger.LogInformation("The area admin {resultUserId} was successfully created by the user {UserId}", result.UserId, userId);
 
-                return Ok(result as Area2AdminDto);
+                return Ok(result);
             });
     }
 
@@ -169,12 +169,12 @@ public class Area2AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> Update(Area2AdminDto areaAdminDto)
     {
-        logger.LogInformation("The updating of the area admin {areaAdminId} by the user {UserId} was started.", areaAdminDto.UserId, userId);
-
-        if (areaAdminDto == null)
+        if (areaAdminDto is null)
         {
             return BadRequest("The area Admin is null.");
         }
+
+        logger.LogInformation("The updating of the area admin {areaAdminId} by the user {UserId} was started.", areaAdminDto.UserId, userId);
 
         if (!ModelState.IsValid)
         {
@@ -197,7 +197,7 @@ public class Area2AdminController : Controller
                 },
                 result =>
                 {
-                    logger.LogInformation("The area admin {resultUserId} was successfully updated by the user {UserId}", (result as Area2AdminDto).UserId, userId);
+                    logger.LogInformation("The area admin {resultUserId} was successfully updated by the user {UserId}", result.UserId, userId);
 
                     return Ok();
                 });

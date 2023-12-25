@@ -150,9 +150,9 @@ public class Ministry2AdminController : Controller
             },
             result =>
             {
-                logger.LogInformation("The ministry admin {resultUserId} was successfully created by the user {UserId}", (result as Ministry2AdminDto).UserId, userId);
+                logger.LogInformation("The ministry admin {resultUserId} was successfully created by the user {UserId}", result.UserId, userId);
 
-                return Ok(result as Ministry2AdminDto);
+                return Ok(result);
             });
     }
 
@@ -169,12 +169,12 @@ public class Ministry2AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> Update(Ministry2AdminDto ministryAdminDto)
     {
-        logger.LogInformation("The updating of the ministry admin {ministryAdminId} by the user {UserId} was started.", ministryAdminDto.UserId, userId);
-
         if (ministryAdminDto == null)
         {
             return BadRequest("The ministry admin is null.");
         }
+
+        logger.LogInformation("The updating of the ministry admin {ministryAdminId} by the user {UserId} was started.", ministryAdminDto.UserId, userId);
 
         if (!ModelState.IsValid)
         {
@@ -197,7 +197,7 @@ public class Ministry2AdminController : Controller
                 },
                 result =>
                 {
-                    logger.LogInformation("The ministry admin {resultUserId} was successfully updated by the user {UserId}", (result as Ministry2AdminDto).UserId, userId);
+                    logger.LogInformation("The ministry admin {resultUserId} was successfully updated by the user {UserId}", result.UserId, userId);
 
                     return Ok();
                 });

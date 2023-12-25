@@ -141,13 +141,13 @@ public class Ministry2AdminService : BaseAdminService<InstitutionAdmin, Ministry
 
     protected override async Task<bool> IsUserHasRightsToCreateAdmin(Ministry2AdminDto adminDto) => true;
 
-    protected override async Task<bool> IsUserHasRightsToUpdateAdmin(string ministryAdminId)
+    protected override async Task<bool> IsUserHasRightsToUpdateAdmin(string adminId)
     {
-        if (currentUserService.UserId != ministryAdminId)
+        if (currentUserService.UserId != adminId)
         {
             if (currentUserService.IsTechAdmin())
             {
-                var ministryAdmin = await GetByIdAsync(ministryAdminId);
+                var ministryAdmin = await GetByIdAsync(adminId);
 
                 if (ministryAdmin.AccountStatus == AccountStatus.Accepted)
                 {

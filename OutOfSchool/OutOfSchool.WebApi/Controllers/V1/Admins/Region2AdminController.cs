@@ -150,9 +150,9 @@ public class Region2AdminController : Controller
             },
             result =>
             {
-                logger.LogInformation("The region admin {resultUserId} was successfully created by the user {UserId}", (result as Region2AdminDto).UserId, userId);
+                logger.LogInformation("The region admin {resultUserId} was successfully created by the user {UserId}", result.UserId, userId);
 
-                return Ok(result as Region2AdminDto);
+                return Ok(result);
             });
     }
 
@@ -169,12 +169,12 @@ public class Region2AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> Update(Region2AdminDto regionAdminDto)
     {
-        logger.LogInformation("The updating of the region admin {regionAdminId} by the user {UserId} was started.", regionAdminDto.UserId, userId);
-
         if (regionAdminDto == null)
         {
             return BadRequest("The regionAdmin is null.");
         }
+
+        logger.LogInformation("The updating of the region admin {regionAdminId} by the user {UserId} was started.", regionAdminDto.UserId, userId);
 
         if (!ModelState.IsValid)
         {
@@ -197,7 +197,7 @@ public class Region2AdminController : Controller
                 },
                 result =>
                 {
-                    logger.LogInformation("The region admin {resultUserId} was successfully updated by the user {UserId}", (result as Region2AdminDto).UserId, userId);
+                    logger.LogInformation("The region admin {resultUserId} was successfully updated by the user {UserId}", result.UserId, userId);
 
                     return Ok();
                 });

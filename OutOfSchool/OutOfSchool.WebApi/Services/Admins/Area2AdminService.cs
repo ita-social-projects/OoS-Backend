@@ -269,24 +269,20 @@ public class Area2AdminService : BaseAdminService<AreaAdmin, Area2AdminDto, Area
                 return false;
             }
 
-            if (currentUserService.IsMinistryAdmin())
+            if (currentUserService.IsMinistryAdmin()
+                && !await IsAreaAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
             {
-                if (!await IsAreaAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
-                {
-                    logger.LogDebug("Forbidden to update area admin. Area admin isn't subordinated to ministry admin.");
+                logger.LogDebug("Forbidden to update area admin. Area admin isn't subordinated to ministry admin.");
 
-                    return false;
-                }
+                return false;
             }
 
-            if (currentUserService.IsRegionAdmin())
+            if (currentUserService.IsRegionAdmin()
+                && !await IsAreaAdminSubordinatedToRegionAdminAsync(currentUserService.UserId, adminId))
             {
-                if (!await IsAreaAdminSubordinatedToRegionAdminAsync(currentUserService.UserId, adminId))
-                {
-                    logger.LogDebug("Forbidden to update area admin. Area admin isn't subordinated to region admin.");
+                logger.LogDebug("Forbidden to update area admin. Area admin isn't subordinated to region admin.");
 
-                    return false;
-                }
+                return false;
             }
         }
 
@@ -300,24 +296,20 @@ public class Area2AdminService : BaseAdminService<AreaAdmin, Area2AdminDto, Area
             return true;
         }
 
-        if (currentUserService.IsMinistryAdmin())
+        if (currentUserService.IsMinistryAdmin()
+            && !await IsAreaAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
         {
-            if (!await IsAreaAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
-            {
-                logger.LogDebug("Forbidden to delete area admin. Area admin isn't subordinated to ministry admin.");
+            logger.LogDebug("Forbidden to delete area admin. Area admin isn't subordinated to ministry admin.");
 
-                return false;
-            }
+            return false;
         }
 
-        if (currentUserService.IsRegionAdmin())
+        if (currentUserService.IsRegionAdmin()
+            && !await IsAreaAdminSubordinatedToRegionAdminAsync(currentUserService.UserId, adminId))
         {
-            if (!await IsAreaAdminSubordinatedToRegionAdminAsync(currentUserService.UserId, adminId))
-            {
-                logger.LogDebug("Forbidden to delete area admin. Area admin isn't subordinated to region admin.");
+            logger.LogDebug("Forbidden to delete area admin. Area admin isn't subordinated to region admin.");
 
-                return false;
-            }
+            return false;
         }
 
         return true;
@@ -330,24 +322,20 @@ public class Area2AdminService : BaseAdminService<AreaAdmin, Area2AdminDto, Area
             return true;
         }
 
-        if (currentUserService.IsMinistryAdmin())
+        if (currentUserService.IsMinistryAdmin()
+            && !await IsAreaAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
         {
-            if (!await IsAreaAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
-            {
-                logger.LogDebug("Forbidden to block area admin. Area admin isn't subordinated to ministry admin.");
+            logger.LogDebug("Forbidden to block area admin. Area admin isn't subordinated to ministry admin.");
 
-                return false;
-            }
+            return false;
         }
 
-        if (currentUserService.IsRegionAdmin())
+        if (currentUserService.IsRegionAdmin()
+            && !await IsAreaAdminSubordinatedToRegionAdminAsync(currentUserService.UserId, adminId))
         {
-            if (!await IsAreaAdminSubordinatedToRegionAdminAsync(currentUserService.UserId, adminId))
-            {
-                logger.LogDebug("Forbidden to block area admin. Area admin isn't subordinated to region admin.");
+            logger.LogDebug("Forbidden to block area admin. Area admin isn't subordinated to region admin.");
 
-                return false;
-            }
+            return false;
         }
 
         return true;

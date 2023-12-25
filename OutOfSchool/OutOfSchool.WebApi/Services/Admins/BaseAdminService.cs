@@ -22,7 +22,7 @@ public abstract class BaseAdminService<TEntity, TDto, TFilter>
     private readonly IMapper mapper;
     private readonly IUserService userService;
 
-    public BaseAdminService(
+    protected BaseAdminService(
         IOptions<AuthorizationServerConfig> authorizationServerConfig,
         ICommunicationService communicationService,
         ILogger<BaseAdminService<TEntity, TDto, TFilter>> logger,
@@ -144,7 +144,6 @@ public abstract class BaseAdminService<TEntity, TDto, TFilter>
         logger.LogDebug("{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}", request.HttpMethodType, userId, request.Url);
 
         var response = await communicationService.SendRequest<ResponseDto>(request);
-        var t = response.Map(x => x.Result).Match(l => l.HttpStatusCode, r => r);
 
         return response
             .FlatMap<ResponseDto>(r => r.IsSuccess
