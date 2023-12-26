@@ -2,7 +2,7 @@
 
 public interface IHasImages
 {
-    IList<string> ImageIds { get; }
+    IList<string> ImageIds { get; set; }
 
-    List<IFormFile> ImageFiles { get; }
+    List<IFormFile> ImageFiles { get; set; }
 }

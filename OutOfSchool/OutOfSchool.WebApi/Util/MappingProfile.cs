@@ -384,7 +384,7 @@ public class MappingProfile : Profile
         CreateSoftDeletedMap<ShortUserDto, User>()
             .IncludeBase<BaseUserDto, User>()
             .ForMember(dest => dest.Email, opt => opt.Ignore());
-        
+
         CreateMap<IHasUser, BaseUserDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.User.Id))
             .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
@@ -638,7 +638,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.Institution))
             .Apply(IgnoreAllImages)
-            .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
+            .Apply(MapImageIds)
         ;
 
     private IMappingExpression<T, Provider> IgnoreCommonProviderBaseDto2Provider<T>(IMappingExpression<T, Provider> mappings)
@@ -659,8 +659,8 @@ public class MappingProfile : Profile
         ;
 
     private IMappingExpression<TSource, TDestination> MapImageIds<TSource, TDestination>(IMappingExpression<TSource, TDestination> mappings)
-        where TSource : IHasEntityImages<TSource>
-        where TDestination : IHasImages
+        where TSource : class, IHasEntityImages<TSource>
+        where TDestination : class, IHasImages
         => mappings
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
         ;
