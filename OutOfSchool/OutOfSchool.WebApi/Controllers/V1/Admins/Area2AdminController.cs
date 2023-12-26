@@ -252,7 +252,7 @@ public class Area2AdminController : Controller
     /// <param name="isBlocked">Blocking status.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HttpPut]
-    [HasPermission(Permissions.AreaAdminEdit)]
+    [HasPermission(Permissions.AreaAdminBlock)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

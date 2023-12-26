@@ -148,6 +148,8 @@ public enum Permissions : short
     MinistryAdminRemove = 113,
     [Display(GroupName = "MinistryAdmin", Name = "Ministry Admins", Description = "Can manage ministry admins")]
     MinistryAdmins = 114,
+    [Display(GroupName = "MinistryAdmin", Name = "Block", Description = "Can block ministry admin")]
+    MinistryAdminBlock = 115,
     #endregion
 
     #region RegionAdmin Control permissions # 13

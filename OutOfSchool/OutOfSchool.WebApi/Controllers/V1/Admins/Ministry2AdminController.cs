@@ -252,7 +252,7 @@ public class Ministry2AdminController : Controller
     /// <param name="isBlocked">Blocking status.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HttpPut]
-    [HasPermission(Permissions.MinistryAdminEdit)]
+    [HasPermission(Permissions.MinistryAdminBlock)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

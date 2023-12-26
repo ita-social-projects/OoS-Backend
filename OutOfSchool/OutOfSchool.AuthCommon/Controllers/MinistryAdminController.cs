@@ -75,7 +75,7 @@ public class MinistryAdminController : Controller
     }
 
     [HttpPut("{ministryAdminId}/{isBlocked}")]
-    [HasPermission(Permissions.MinistryAdminEdit)]
+    [HasPermission(Permissions.MinistryAdminBlock)]
     public async Task<ResponseDto> Block(string ministryAdminId, bool isBlocked)
     {
         logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
