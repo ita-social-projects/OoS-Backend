@@ -71,7 +71,7 @@ public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChanges
         return result;
     }
 
-    public async Task<ChangesLog> AddCreatingOfEntityToChangesLog<TEntity>(
+    public Task<ChangesLog> AddCreatingOfEntityToChangesLog<TEntity>(
         TEntity entity,
         string userId)
         where TEntity : class, IKeyedEntity, new()
@@ -86,10 +86,9 @@ public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChanges
             entityIdLong,
             string.Empty,
             string.Empty,
-            userId
-            );
+            userId);
 
-        return await Create(changesLog).ConfigureAwait(false);
+        return Create(changesLog);
     }
 
     // TODO: logging of the Institution changes is yet to be configured
