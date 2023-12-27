@@ -93,7 +93,7 @@ public static class Startup
                 Predicate = healthCheck => healthCheck.Tags.Contains("readiness"),
                 AllowCachingResponses = false,
             })
-            .RequireHost("*:9000")
+            .RequireHost($"*:{app.Configuration.GetValue<int>("ApplicationPorts:HealthPort")}")
             .WithMetadata(new AllowAnonymousAttribute());
 
         app.MapControllers();
