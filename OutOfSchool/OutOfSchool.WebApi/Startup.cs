@@ -30,10 +30,8 @@ public static class Startup
             bool healthCheck = httpRequest.Path.Equals("/healthz/ready");
 
             int healthPort = app.Configuration.GetValue<int>("ApplicationPorts:HealthPort");
-            int apiPort = app.Configuration.GetValue<int>("ApplicationPorts:ApiPort");
 
-            if ((httpRequest.HttpContext.Connection.LocalPort == healthPort && !healthCheck) ||
-                (httpRequest.HttpContext.Connection.LocalPort == apiPort && healthCheck))
+            if (httpRequest.HttpContext.Connection.LocalPort == healthPort && !healthCheck)
             {
                 httpResponse.StatusCode = 404;
                 return;
@@ -95,6 +93,7 @@ public static class Startup
                 Predicate = healthCheck => healthCheck.Tags.Contains("readiness"),
                 AllowCachingResponses = false,
             })
+            .RequireHost("*:9000")
             .WithMetadata(new AllowAnonymousAttribute());
 
         app.MapControllers();
