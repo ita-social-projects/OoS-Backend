@@ -19,6 +19,22 @@ public class InstitutionHierarchyRepository : EntityRepositorySoftDeleted<Guid, 
     }
 
     /// <summary>
+    /// Add new element.
+    /// </summary>
+    /// <param name="entity">Entity to create.</param>
+    /// <param name="directionsIds">IDs List of directions.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    public async Task<InstitutionHierarchy> Create(InstitutionHierarchy entity, List<long> directionsIds)
+    {
+        entity.Directions = dbContext.Directions.Where(w => directionsIds.Contains(w.Id)).ToList();
+
+        await dbSet.AddAsync(entity);
+        await dbContext.SaveChangesAsync();
+
+        return await Task.FromResult(entity);
+    }
+
+    /// <summary>
     /// Update information about element.
     /// </summary>
     /// <param name="entity">Entity to update.</param>
