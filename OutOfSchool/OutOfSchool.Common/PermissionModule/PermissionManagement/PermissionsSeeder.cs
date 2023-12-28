@@ -65,7 +65,7 @@ public static class PermissionsSeeder
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.TeacherRead,
         Permissions.PersonalInfo,
-        Permissions.MinistryAdminRead, Permissions.MinistryAdminEdit,
+        Permissions.MinistryAdminEdit,
         Permissions.WorkshopEdit,
         Permissions.RegionAdminAddNew, Permissions.RegionAdminRead, Permissions.RegionAdminEdit,
         Permissions.RegionAdminRemove, Permissions.RegionAdminBlock,
@@ -97,7 +97,7 @@ public static class PermissionsSeeder
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.TeacherRead,
         Permissions.PersonalInfo,
-        Permissions.RegionAdminRead, Permissions.RegionAdminEdit,
+        Permissions.RegionAdminEdit,
         Permissions.AreaAdminAddNew, Permissions.AreaAdminRead, Permissions.AreaAdminEdit,
         Permissions.AreaAdminRemove, Permissions.AreaAdminBlock,
         Permissions.WorkshopEdit,
@@ -114,7 +114,7 @@ public static class PermissionsSeeder
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.TeacherRead,
         Permissions.PersonalInfo,
-        Permissions.AreaAdminRead, Permissions.AreaAdminEdit,
+        Permissions.AreaAdminEdit,
         Permissions.WorkshopEdit,
     };
 

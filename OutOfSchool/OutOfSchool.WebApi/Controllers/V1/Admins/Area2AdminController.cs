@@ -248,7 +248,7 @@ public class Area2AdminController : Controller
     /// <summary>
     /// Block the AreaAdmin.
     /// </summary>
-    /// <param name="areaAdminId">Entity's id to delete.</param>
+    /// <param name="areaAdminId">Entity's id to block.</param>
     /// <param name="isBlocked">Blocking status.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HttpPut]
@@ -296,7 +296,7 @@ public class Area2AdminController : Controller
     /// <param name="areaAdminId">Entity's id.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HttpPut("{areaAdminId}")]
-    [HasPermission(Permissions.AreaAdminEdit)]
+    [HasPermission(Permissions.AreaAdminAddNew)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

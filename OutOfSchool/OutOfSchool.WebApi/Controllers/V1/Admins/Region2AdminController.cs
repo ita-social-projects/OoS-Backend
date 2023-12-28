@@ -296,7 +296,7 @@ public class Region2AdminController : Controller
     /// <param name="regionAdminId">Entity's id.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HttpPut("{regionAdminId}")]
-    [HasPermission(Permissions.RegionAdminEdit)]
+    [HasPermission(Permissions.RegionAdminAddNew)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
