@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using OutOfSchool.Common.Extensions;
@@ -11,6 +12,8 @@ namespace OutOfSchool.Services.Repository;
 
 public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChangesLogRepository
 {
+    public const string CreatingOperation = "Creating";
+
     public ChangesLogRepository(OutOfSchoolDbContext dbContext)
         : base(dbContext)
     {
@@ -66,6 +69,26 @@ public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChanges
         }
 
         return result;
+    }
+
+    public Task<ChangesLog> AddCreatingOfEntityToChangesLog<TEntity>(
+        TEntity entity,
+        string userId)
+        where TEntity : class, IKeyedEntity, new()
+    {
+        var entry = dbContext.Entry(entity);
+        var (entityIdGuid, entityIdLong) = GetEntityId(entry);
+
+        var changesLog = CreateChangesLogRecord(
+            typeof(TEntity).Name,
+            CreatingOperation,
+            entityIdGuid,
+            entityIdLong,
+            string.Empty,
+            string.Empty,
+            userId);
+
+        return Create(changesLog);
     }
 
     // TODO: logging of the Institution changes is yet to be configured

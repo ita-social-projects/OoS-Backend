@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Services;
@@ -20,14 +21,21 @@ public class ChangesLogRepositoryTests
     private Provider provider;
     private User user;
 
+    private Institution institution1;
+    private Institution institution2;
+
     [SetUp]
     public async Task SetUp()
     {
+        institution1 = InstitutionsGenerator.Generate();
+        institution2 = InstitutionsGenerator.Generate();
+
         provider = ProvidersGenerator.Generate();
         provider.LegalAddress.Id = 6;
         provider.LegalAddressId = 6;
         provider.LegalAddress.CATOTTGId = 4970;
         provider.LegalAddress.CATOTTG.Id = 4970;
+        provider.InstitutionId = institution1.Id;
         user = UserGenerator.Generate();
 
         dbContextOptions = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
@@ -240,6 +248,38 @@ public class ChangesLogRepositoryTests
     }
 
     [Test]
+    public async Task AddChangesLogToDbContext_WhenInstitutionIdIsModified_AddsLogToDbContext()
+    {
+        // Arrange
+        using var context = GetContext();
+        var changesLogRepository = GetChangesLogRepository(context);
+        var trackedProperties = new[] { "InstitutionId" };
+        var provider = await context.Providers.Include(p => p.Institution).FirstAsync();
+
+        var oldInstitution = institution1.Title;
+        var newInstitution = institution2.Title;
+
+        // Act
+        provider.InstitutionId = institution2.Id;
+
+        var added = changesLogRepository.AddChangesLogToDbContext(
+            provider,
+            user.Id,
+            trackedProperties,
+            valueProjector.ProjectValue);
+
+        // Assert
+        var legalChanges = context.ChangesLog.Local
+            .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.Institution));
+
+        Assert.AreEqual(added.ToList(), context.ChangesLog.Local.ToList());
+        Assert.AreEqual(1, context.ChangesLog.Local.Count);
+        Assert.AreEqual(oldInstitution, legalChanges.OldValue);
+        Assert.AreEqual(newInstitution, legalChanges.NewValue);
+        Assert.AreEqual(user.Id, legalChanges.UserId);
+    }
+
+    [Test]
     public async Task AddChangesLogToDbContext_WhenAddressIsNotModified_DoesNotAddLogToDbContext()
     {
         // Arrange
@@ -259,6 +299,25 @@ public class ChangesLogRepositoryTests
         Assert.IsEmpty(added);
         Assert.IsEmpty(context.ChangesLog.Local);
     }
+
+    [Test]
+    public async Task AddCreatingOfEntityToChangesLog_WhenEntityIsProvider_AddsLogToDbContext()
+    {
+        // Arrange
+        using var context = GetContext();
+        var changesLogRepository = GetChangesLogRepository(context);
+        var provider = await context.Providers.FirstAsync();
+
+        // Act
+        var added = await changesLogRepository.AddCreatingOfEntityToChangesLog(provider, user.Id);
+
+        // Assert
+        var legalChanges = context.ChangesLog.Local
+            .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == "Creating");
+
+        Assert.AreEqual(1, context.ChangesLog.Local.Count);
+        Assert.AreEqual(added.Id, legalChanges.Id);
+    }
     #endregion
 
     private OutOfSchoolDbContext GetContext() => new OutOfSchoolDbContext(dbContextOptions);
@@ -271,6 +330,8 @@ public class ChangesLogRepositoryTests
         using var context = GetContext();
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
+        context.Add(institution1);
+        context.Add(institution2);
         context.Add(provider);
         context.Add(user);
         await context.SaveChangesAsync();

@@ -119,6 +119,39 @@ public class ChangesLogServiceTests
     }
     #endregion
 
+    #region AddCreatingOfEntityToDbContext
+    [Test]
+    public async Task AddCreatingOfEntityToDbContext_WhenTrackingIsEnabledForTheEntity_AddsToContext()
+    {
+        // Arrange
+        var options = CreateChangesLogOptions();
+        changesLogRepository.Setup(repo => repo.AddCreatingOfEntityToChangesLog(
+                It.IsAny<Provider>(),
+                It.IsAny<string>()))
+            .ReturnsAsync(new ChangesLog());
+        var changesLogService = GetChangesLogService();
+
+        // Act
+        var result = await changesLogService.AddCreatingOfEntityToDbContext(new Provider(), user.Id).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(true, result);
+    }
+
+    [Test]
+    public async Task AddCreatingOfEntityToDbContext_WhenTrackingIsNotEnabledForTheEntity_DoesNotLogChanges()
+    {
+        // Arrange
+        var changesLogService = GetChangesLogService();
+
+        // Act
+        var result = await changesLogService.AddCreatingOfEntityToDbContext(new Address(), user.Id).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(false, result);
+    }
+    #endregion
+
     #region GetChangesLog
     [Test]
     public async Task GetProviderChangesLog_WhenCalled_ReturnsSearchResult()
