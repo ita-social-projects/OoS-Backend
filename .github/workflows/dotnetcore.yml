@@ -48,7 +48,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           cd ./OutOfSchool/
-          ../.sonar/scanner/dotnet-sonarscanner begin /k:"ita-social-projects-oos-backend" /o:"ita-social-projects" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.vstest.reportsPaths="/OutOfSchool.AuthServer.Tests/TestResults/*.trx, /OutOfSchool.WebApi.Tests/TestResults/*.trx, /OutOfSchool/Tests/OutOfSchool.WebApi.IntegrationTests/TestResults/*.trx" /d:"sonar.cs.opencover.reportsPaths"="/OutOfSchool.AuthServer.Tests/coverage.opencover.xml, /OutOfSchool.WebApi.Tests/coverage.opencover.xml, /OutOfSchool/Tests/OutOfSchool.WebApi.IntegrationTests/coverage.opencover.xml"
+          ../.sonar/scanner/dotnet-sonarscanner begin /k:"ita-social-projects-oos-backend" /o:"ita-social-projects" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.vstest.reportsPaths="OutOfSchool.AuthServer.Tests/TestResults/*.trx, OutOfSchool.WebApi.Tests/TestResults/*.trx, Tests/OutOfSchool.WebApi.IntegrationTests/TestResults/*.trx" /d:"sonar.cs.opencover.reportsPaths"="OutOfSchool.AuthServer.Tests/coverage.opencover.xml, OutOfSchool.WebApi.Tests/coverage.opencover.xml, Tests/OutOfSchool.WebApi.IntegrationTests/coverage.opencover.xml"
           dotnet build
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover -l:trx
           ../.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
