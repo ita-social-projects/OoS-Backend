@@ -2,30 +2,12 @@
 @using OutOfSchool.Services.Enums
 @model ApplicationStatusViewModel
 
-@{
-    ViewData["EmailTitle"] = "";
-    var ending = "";
-
-    if (Model.ChildGender == Gender.Male)
-    {
-        ending = "ий";
-    }
-    else if (Model.ChildGender == Gender.Female)
-    {
-        ending = "а";
-    }
-    else if (Model.ChildGender == null)
-    {
-        ending = "ий/a";
-    }
-}
-
 @if (Model.ApplicationStatus == ApplicationStatus.Approved)
 {
     @:Зараховано!
     @:Вітаємо!
     @Model.ChildFullName
-    @:зарахован@(ending) до
+    @:зарахован@(Model.UaEnding) до
     @Model.WorkshopTitle
 }
 else if (Model.ApplicationStatus == ApplicationStatus.Rejected)
@@ -33,7 +15,7 @@ else if (Model.ApplicationStatus == ApplicationStatus.Rejected)
     @:Відмовлено
     @:На жаль,
     @Model.ChildFullName
-    @:не може бути зарахован@(ending) до
+    @:не може бути зарахован@(Model.UaEnding) до
     @Model.WorkshopTitle
     @:Причина:"@Model.RejectionMessage"
 }
@@ -41,7 +23,7 @@ else if (Model.ApplicationStatus == ApplicationStatus.AcceptedForSelection)
 {
     @:Вітаємо!
     @Model.ChildFullName
-    @:Прийнят@(ending) до конкурсного відбору до
+    @:Прийнят@(Model.UaEnding) до конкурсного відбору до
     @Model.WorkshopTitle
 }
 else
