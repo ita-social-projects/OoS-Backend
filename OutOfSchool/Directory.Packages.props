@@ -72,8 +72,8 @@
     <PackageVersion Include="Quartz.Plugins.TimeZoneConverter" Version="$(QuartzVersion)" />
     <PackageVersion Include="Quartz.Serialization.Json" Version="$(QuartzVersion)" />
     <!--Image processing-->
-    <PackageVersion Include="SkiaSharp" Version="2.88.0" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.0" />
+    <PackageVersion Include="SkiaSharp" Version="2.88.6" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.6" />
     <!--Feature Management-->
     <PackageVersion Include="Microsoft.FeatureManagement" Version="2.5.1" />
     <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="2.5.1" />

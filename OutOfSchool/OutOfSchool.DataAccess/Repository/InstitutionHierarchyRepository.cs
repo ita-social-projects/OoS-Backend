@@ -47,7 +47,7 @@ public class InstitutionHierarchyRepository : EntityRepositorySoftDeleted<Guid, 
         dbContext.Entry(newEntity).CurrentValues.SetValues(entity);
 
         newEntity.Directions.RemoveAll(x => !directionsIds.Contains(x.Id));
-        var exceptDirectionsIds = directionsIds.Where(p => newEntity.Directions.All(x => x.Id != p));
+        var exceptDirectionsIds = directionsIds.Where(p => newEntity.Directions.TrueForAll(x => x.Id != p));
         newEntity.Directions.AddRange(dbContext.Directions.Where(w => exceptDirectionsIds.Contains(w.Id)).ToList());
 
         dbContext.Entry(newEntity).State = EntityState.Modified;

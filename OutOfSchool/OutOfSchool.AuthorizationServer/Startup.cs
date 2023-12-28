@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Net.Http.Headers;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
+using OutOfSchool.AuthCommon;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Extensions;
 using OutOfSchool.AuthCommon.Services;
@@ -30,7 +31,7 @@ public static class Startup
         var serverVersion = new MySqlServerVersion(new Version(mySQLServerVersion));
         if (serverVersion.Version.Major < Constants.MySQLServerMinimalMajorVersion)
         {
-            throw new Exception("MySQL Server version should be 8 or higher.");
+            throw new InvalidOperationException("MySQL Server version should be 8 or higher.");
         }
 
         var quartzConfig = config.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
@@ -299,13 +300,13 @@ public static class Startup
 
         app.MapRazorPages();
 
-        var gRPCConfig = app.Configuration.GetSection(GRPCConfig.Name).Get<GRPCConfig>();
+        var gRPCConfig = app.Configuration.GetSection(GrpcConfig.Name).Get<GrpcConfig>();
 
         if (gRPCConfig.Enabled)
         {
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGrpcService<ProviderAdminServiceGRPC>().RequireHost($"*:{gRPCConfig.Port}");
+                endpoints.MapGrpcService<ProviderAdminServiceGrpc>().RequireHost($"*:{gRPCConfig.Port}");
             });
         }
     }

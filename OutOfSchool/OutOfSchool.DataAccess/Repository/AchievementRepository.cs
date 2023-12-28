@@ -72,12 +72,12 @@ public class AchievementRepository : EntityRepositorySoftDeleted<Guid, Achieveme
         dbContext.Entry(newAchievement).CurrentValues.SetValues(achievement);
 
         newAchievement.Children.RemoveAll(x => !childrenIDs.Contains(x.Id));
-        var exceptChildrenIDs = childrenIDs.Where(p => newAchievement.Children.All(x => x.Id != p));
+        var exceptChildrenIDs = childrenIDs.Where(p => newAchievement.Children.TrueForAll(x => x.Id != p));
         newAchievement.Children.AddRange(dbContext.Children.Where(w => exceptChildrenIDs.Contains(w.Id)).ToList());
 
         newAchievement.Teachers.RemoveAll(x => !teachers.Contains(x.Title));
 
-        var exceptTeachers = teachers.Where(p => newAchievement.Teachers.All(x => !x.Title.Equals(p)));
+        var exceptTeachers = teachers.Where(p => newAchievement.Teachers.TrueForAll(x => !x.Title.Equals(p)));
         foreach (var teacher in exceptTeachers)
         {
             newAchievement.Teachers.Add(new AchievementTeacher { Title = teacher, Achievement = newAchievement });

@@ -6,12 +6,12 @@ using OutOfSchool.Common.Models;
 namespace GrpcServiceServer;
 
 [Authorize]
-public class ProviderAdminServiceGRPC : GRPCProviderAdmin.GRPCProviderAdminBase
+public class ProviderAdminServiceGrpc : GRPCProviderAdmin.GRPCProviderAdminBase
 {
     private readonly IProviderAdminService providerAdminService;
     private readonly IMapper mapper;
 
-    public ProviderAdminServiceGRPC(
+    public ProviderAdminServiceGrpc(
         IProviderAdminService providerAdminService,
         IMapper mapper)
     {

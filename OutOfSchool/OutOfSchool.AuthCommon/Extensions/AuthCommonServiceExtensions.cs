@@ -23,7 +23,7 @@ public static class AuthCommonServiceExtensions
         services.AddLocalization(options => options.ResourcesPath = "Resources");
 
         // GRPC options
-        services.Configure<GRPCConfig>(config.GetSection(GRPCConfig.Name));
+        services.Configure<GrpcConfig>(config.GetSection(GrpcConfig.Name));
 
         var mailConfig = config
             .GetSection(EmailOptions.SectionName)
