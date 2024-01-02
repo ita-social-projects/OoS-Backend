@@ -86,7 +86,7 @@ public abstract class BaseAdminService<TEntity, TDto, TFilter>
 
         ModelValidationHelper.ValidateOffsetFilter(filter);
 
-        if (!await IsUserHasRightsToGetAdminsByFilter(filter))
+        if (!await UserHasRightsToGetAdminsByFilter(filter))
         {
             logger.LogInformation("Current user doesn't have rights to get admins.");
 
@@ -131,7 +131,7 @@ public abstract class BaseAdminService<TEntity, TDto, TFilter>
             throw new InvalidOperationException($"Username {adminDto.Email} is already taken.");
         }
 
-        if (!await IsUserHasRightsToCreateAdmin(adminDto))
+        if (!await UserHasRightsToCreateAdmin(adminDto))
         {
             return new ErrorResponse
             {
@@ -176,7 +176,7 @@ public abstract class BaseAdminService<TEntity, TDto, TFilter>
             };
         }
 
-        if (!await IsUserHasRightsToUpdateAdmin(adminDto.UserId))
+        if (!await UserHasRightsToUpdateAdmin(adminDto.UserId))
         {
             return new ErrorResponse
             {
@@ -224,7 +224,7 @@ public abstract class BaseAdminService<TEntity, TDto, TFilter>
             };
         }
 
-        if (!await IsUserHasRightsToDeleteAdmin(adminId))
+        if (!await UserHasRightsToDeleteAdmin(adminId))
         {
             return new ErrorResponse
             {
@@ -272,7 +272,7 @@ public abstract class BaseAdminService<TEntity, TDto, TFilter>
             };
         }
 
-        if (!await IsUserHasRightsToBlockAdmin(adminId))
+        if (!await UserHasRightsToBlockAdmin(adminId))
         {
             return new ErrorResponse
             {
@@ -371,15 +371,15 @@ public abstract class BaseAdminService<TEntity, TDto, TFilter>
 
     protected abstract TFilter CreateEmptyFilter();
 
-    protected abstract Task<bool> IsUserHasRightsToGetAdminsByFilter(TFilter filter);
+    protected abstract Task<bool> UserHasRightsToGetAdminsByFilter(TFilter filter);
 
-    protected abstract Task<bool> IsUserHasRightsToCreateAdmin(TDto adminDto);
+    protected abstract Task<bool> UserHasRightsToCreateAdmin(TDto adminDto);
 
-    protected abstract Task<bool> IsUserHasRightsToUpdateAdmin(string adminId);
+    protected abstract Task<bool> UserHasRightsToUpdateAdmin(string adminId);
 
-    protected abstract Task<bool> IsUserHasRightsToDeleteAdmin(string adminId);
+    protected abstract Task<bool> UserHasRightsToDeleteAdmin(string adminId);
 
-    protected abstract Task<bool> IsUserHasRightsToBlockAdmin(string adminId);
+    protected abstract Task<bool> UserHasRightsToBlockAdmin(string adminId);
 
     protected abstract Task UpdateTheFilterWithTheAdminRestrictions(TFilter filter);
 

@@ -64,14 +64,38 @@ public class Area2AdminService : BaseAdminService<AreaAdmin, Area2AdminDto, Area
 
     protected override Area2AdminFilter CreateEmptyFilter() => new();
 
-    protected override async Task<bool> IsUserHasRightsToGetAdminsByFilter(Area2AdminFilter filter)
+    protected override async Task<bool> UserHasRightsToGetAdminsByFilter(Area2AdminFilter filter)
     {
         if (currentUserService.IsMinistryAdmin())
         {
             var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId);
 
-            if (filter.InstitutionId != ministryAdmin.InstitutionId && filter.InstitutionId != Guid.Empty)
+            return ministryAdmin.InstitutionId == filter.InstitutionId || filter.InstitutionId == Guid.Empty;
+        }
+
+        if (currentUserService.IsRegionAdmin())
+        {
+            var regionAdmin = await regionAdminService.GetByIdAsync(currentUserService.UserId);
+
+            var childrenCATOTTGIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId);
+
+            return (regionAdmin.InstitutionId == filter.InstitutionId || filter.InstitutionId == Guid.Empty)
+                    && (childrenCATOTTGIds.Contains(filter.CATOTTGId) || filter.CATOTTGId == 0);
+        }
+
+        return true;
+    }
+
+    protected override async Task<bool> UserHasRightsToCreateAdmin(Area2AdminDto adminDto)
+    {
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId);
+
+            if (ministryAdmin.InstitutionId != adminDto.InstitutionId)
             {
+                logger.LogDebug("Forbidden to create area admin. Area admin isn't subordinated to ministry admin.");
+
                 return false;
             }
         }
@@ -79,24 +103,97 @@ public class Area2AdminService : BaseAdminService<AreaAdmin, Area2AdminDto, Area
         if (currentUserService.IsRegionAdmin())
         {
             var regionAdmin = await regionAdminService.GetByIdAsync(currentUserService.UserId);
+
             var childrenCATOTTGIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId);
 
-            if ((filter.InstitutionId != regionAdmin.InstitutionId && filter.InstitutionId != Guid.Empty)
-                || (!childrenCATOTTGIds.Contains(filter.CATOTTGId) && filter.CATOTTGId > 0))
+            if (regionAdmin.InstitutionId != adminDto.InstitutionId || !childrenCATOTTGIds.Contains(adminDto.CATOTTGId))
             {
+                logger.LogDebug("Forbidden to create area admin. Area admin isn't subordinated to region admin.");
+
                 return false;
             }
         }
 
-        if (currentUserService.IsAreaAdmin())
-        {
-            var areaAdmin = await GetByUserId(currentUserService.UserId);
+        return true;
+    }
 
-            if ((filter.InstitutionId != areaAdmin.InstitutionId && filter.InstitutionId != Guid.Empty)
-               || (filter.CATOTTGId != areaAdmin.CATOTTGId && filter.CATOTTGId > 0))
+    protected override async Task<bool> UserHasRightsToUpdateAdmin(string adminId)
+    {
+        if (currentUserService.UserId != adminId)
+        {
+            if (!(currentUserService.IsTechAdmin() || currentUserService.IsMinistryAdmin() || currentUserService.IsRegionAdmin()))
             {
+                logger.LogDebug("Forbidden to update another area admin if you don't have techadmin, ministryadmin or regionadmin role.");
+
                 return false;
             }
+
+            var areaAdmin = await GetByIdAsync(adminId);
+
+            if (areaAdmin.AccountStatus == AccountStatus.Accepted)
+            {
+                logger.LogDebug("Forbidden to update the accepted area admin.");
+
+                return false;
+            }
+
+            if (currentUserService.IsMinistryAdmin()
+                && !await IsAreaAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
+            {
+                logger.LogDebug("Forbidden to update area admin. Area admin isn't subordinated to ministry admin.");
+
+                return false;
+            }
+
+            if (currentUserService.IsRegionAdmin()
+                && !await IsAreaAdminSubordinatedToRegionAdminAsync(currentUserService.UserId, adminId))
+            {
+                logger.LogDebug("Forbidden to update area admin. Area admin isn't subordinated to region admin.");
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected override async Task<bool> UserHasRightsToDeleteAdmin(string adminId)
+    {
+        if (currentUserService.IsMinistryAdmin()
+            && !await IsAreaAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
+        {
+            logger.LogDebug("Forbidden to delete area admin. Area admin isn't subordinated to ministry admin.");
+
+            return false;
+        }
+
+        if (currentUserService.IsRegionAdmin()
+            && !await IsAreaAdminSubordinatedToRegionAdminAsync(currentUserService.UserId, adminId))
+        {
+            logger.LogDebug("Forbidden to delete area admin. Area admin isn't subordinated to region admin.");
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected override async Task<bool> UserHasRightsToBlockAdmin(string adminId)
+    {
+        if (currentUserService.IsMinistryAdmin()
+            && !await IsAreaAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
+        {
+            logger.LogDebug("Forbidden to block area admin. Area admin isn't subordinated to ministry admin.");
+
+            return false;
+        }
+
+        if (currentUserService.IsRegionAdmin()
+            && !await IsAreaAdminSubordinatedToRegionAdminAsync(currentUserService.UserId, adminId))
+        {
+            logger.LogDebug("Forbidden to block area admin. Area admin isn't subordinated to region admin.");
+
+            return false;
         }
 
         return true;
@@ -108,40 +205,15 @@ public class Area2AdminService : BaseAdminService<AreaAdmin, Area2AdminDto, Area
         {
             var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId);
 
-            if (filter.InstitutionId == Guid.Empty)
-            {
-                filter.InstitutionId = ministryAdmin.InstitutionId;
-            }
+            filter.InstitutionId = ministryAdmin.InstitutionId;
         }
 
         if (currentUserService.IsRegionAdmin())
         {
             var regionAdmin = await regionAdminService.GetByIdAsync(currentUserService.UserId);
 
-            if (filter.InstitutionId == Guid.Empty)
-            {
-                filter.InstitutionId = regionAdmin.InstitutionId;
-            }
-
-            if (filter.CATOTTGId == 0)
-            {
-                filter.CATOTTGId = regionAdmin.CATOTTGId;
-            }
-        }
-
-        if (currentUserService.IsAreaAdmin())
-        {
-            var areaAdmin = await GetByUserId(currentUserService.UserId);
-
-            if (filter.InstitutionId == Guid.Empty)
-            {
-                filter.InstitutionId = areaAdmin.InstitutionId;
-            }
-
-            if (filter.CATOTTGId == 0)
-            {
-                filter.CATOTTGId = areaAdmin.CATOTTGId;
-            }
+            filter.InstitutionId = regionAdmin.InstitutionId;
+            filter.CATOTTGId = regionAdmin.CATOTTGId;
         }
     }
 
@@ -214,131 +286,9 @@ public class Area2AdminService : BaseAdminService<AreaAdmin, Area2AdminDto, Area
             }
         }
 
-        predicate = predicate.And<AreaAdmin>(x => !x.Institution.IsDeleted);
+        predicate = predicate.And(x => !x.Institution.IsDeleted);
 
         return predicate;
-    }
-
-    protected override async Task<bool> IsUserHasRightsToCreateAdmin(Area2AdminDto adminDto)
-    {
-        if (currentUserService.IsMinistryAdmin())
-        {
-            var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId);
-
-            if (ministryAdmin.InstitutionId != adminDto.InstitutionId)
-            {
-                logger.LogDebug("Forbidden to create area admin. Area admin isn't subordinated to ministry admin.");
-
-                return false;
-            }
-        }
-        else if (currentUserService.IsRegionAdmin())
-        {
-            var regionAdmin = await regionAdminService.GetByIdAsync(currentUserService.UserId);
-
-            var subSettlementsIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId);
-
-            if (!(regionAdmin.InstitutionId == adminDto.InstitutionId && subSettlementsIds.Contains(adminDto.CATOTTGId)))
-            {
-                logger.LogDebug("Forbidden to create area admin. Area admin isn't subordinated to region admin.");
-
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    protected override async Task<bool> IsUserHasRightsToUpdateAdmin(string adminId)
-    {
-        if (currentUserService.UserId != adminId)
-        {
-            if (!(currentUserService.IsTechAdmin() || currentUserService.IsMinistryAdmin() || currentUserService.IsRegionAdmin()))
-            {
-                logger.LogDebug("Forbidden to update another area admin if you don't have techadmin, ministryadmin or regionadmin role.");
-
-                return false;
-            }
-
-            var areaAdmin = await GetByIdAsync(adminId);
-
-            if (areaAdmin.AccountStatus == AccountStatus.Accepted)
-            {
-                logger.LogDebug("Forbidden to update the accepted area admin.");
-
-                return false;
-            }
-
-            if (currentUserService.IsMinistryAdmin()
-                && !await IsAreaAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
-            {
-                logger.LogDebug("Forbidden to update area admin. Area admin isn't subordinated to ministry admin.");
-
-                return false;
-            }
-
-            if (currentUserService.IsRegionAdmin()
-                && !await IsAreaAdminSubordinatedToRegionAdminAsync(currentUserService.UserId, adminId))
-            {
-                logger.LogDebug("Forbidden to update area admin. Area admin isn't subordinated to region admin.");
-
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    protected override async Task<bool> IsUserHasRightsToDeleteAdmin(string adminId)
-    {
-        if (currentUserService.IsTechAdmin())
-        {
-            return true;
-        }
-
-        if (currentUserService.IsMinistryAdmin()
-            && !await IsAreaAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
-        {
-            logger.LogDebug("Forbidden to delete area admin. Area admin isn't subordinated to ministry admin.");
-
-            return false;
-        }
-
-        if (currentUserService.IsRegionAdmin()
-            && !await IsAreaAdminSubordinatedToRegionAdminAsync(currentUserService.UserId, adminId))
-        {
-            logger.LogDebug("Forbidden to delete area admin. Area admin isn't subordinated to region admin.");
-
-            return false;
-        }
-
-        return true;
-    }
-
-    protected override async Task<bool> IsUserHasRightsToBlockAdmin(string adminId)
-    {
-        if (currentUserService.IsTechAdmin())
-        {
-            return true;
-        }
-
-        if (currentUserService.IsMinistryAdmin()
-            && !await IsAreaAdminSubordinatedToMinistryAdminAsync(currentUserService.UserId, adminId))
-        {
-            logger.LogDebug("Forbidden to block area admin. Area admin isn't subordinated to ministry admin.");
-
-            return false;
-        }
-
-        if (currentUserService.IsRegionAdmin()
-            && !await IsAreaAdminSubordinatedToRegionAdminAsync(currentUserService.UserId, adminId))
-        {
-            logger.LogDebug("Forbidden to block area admin. Area admin isn't subordinated to region admin.");
-
-            return false;
-        }
-
-        return true;
     }
 
     private Dictionary<Expression<Func<AreaAdmin, object>>, SortDirection> MakeSortExpression() =>
@@ -369,8 +319,8 @@ public class Area2AdminService : BaseAdminService<AreaAdmin, Area2AdminDto, Area
         var regionAdmin = await regionAdminService.GetByIdAsync(regionAdminUserId);
         var areaAdmin = await areaAdminRepository.GetByIdAsync(areaAdminId);
 
-        var subSettlementsIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId);
+        var childrenCATOTTGIds = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId);
 
-        return regionAdmin.InstitutionId == areaAdmin.InstitutionId && subSettlementsIds.Contains(areaAdmin.CATOTTGId);
+        return regionAdmin.InstitutionId == areaAdmin.InstitutionId && childrenCATOTTGIds.Contains(areaAdmin.CATOTTGId);
     }
 }

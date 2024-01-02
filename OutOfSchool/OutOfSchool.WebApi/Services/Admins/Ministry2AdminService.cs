@@ -52,14 +52,27 @@ public class Ministry2AdminService : BaseAdminService<InstitutionAdmin, Ministry
 
     protected override Ministry2AdminFilter CreateEmptyFilter() => new();
 
-    protected override async Task<bool> IsUserHasRightsToGetAdminsByFilter(Ministry2AdminFilter filter)
-    {
-        if (currentUserService.IsMinistryAdmin())
-        {
-            var admin = await GetByUserId(currentUserService.UserId);
+    protected override async Task<bool> UserHasRightsToGetAdminsByFilter(Ministry2AdminFilter filter) => true;
 
-            if (filter.InstitutionId != admin.InstitutionId && filter.InstitutionId != Guid.Empty)
+    protected override async Task<bool> UserHasRightsToCreateAdmin(Ministry2AdminDto adminDto) => true;
+
+    protected override async Task<bool> UserHasRightsToUpdateAdmin(string adminId)
+    {
+        if (currentUserService.UserId != adminId)
+        {
+            if (!currentUserService.IsTechAdmin())
             {
+                logger.LogDebug("Forbidden to update the another ministry admin if you don't have the techadmin role.");
+
+                return false;
+            }
+
+            var ministryAdmin = await GetByIdAsync(adminId);
+
+            if (ministryAdmin.AccountStatus == AccountStatus.Accepted)
+            {
+                logger.LogDebug("Forbidden to update the accepted ministry admin.");
+
                 return false;
             }
         }
@@ -67,17 +80,12 @@ public class Ministry2AdminService : BaseAdminService<InstitutionAdmin, Ministry
         return true;
     }
 
+    protected override async Task<bool> UserHasRightsToDeleteAdmin(string adminId) => true;
+
+    protected override async Task<bool> UserHasRightsToBlockAdmin(string adminId) => true;
+
     protected override async Task UpdateTheFilterWithTheAdminRestrictions(Ministry2AdminFilter filter)
     {
-        if (currentUserService.IsMinistryAdmin())
-        {
-            var admin = await GetByUserId(currentUserService.UserId);
-
-            if (filter.InstitutionId == Guid.Empty)
-            {
-                filter.InstitutionId = admin.InstitutionId;
-            }
-        }
     }
 
     protected override int Count(Expression<Func<InstitutionAdmin, bool>> filterPredicate) =>
@@ -138,38 +146,6 @@ public class Ministry2AdminService : BaseAdminService<InstitutionAdmin, Ministry
 
         return predicate;
     }
-
-    protected override async Task<bool> IsUserHasRightsToCreateAdmin(Ministry2AdminDto adminDto) => true;
-
-    protected override async Task<bool> IsUserHasRightsToUpdateAdmin(string adminId)
-    {
-        if (currentUserService.UserId != adminId)
-        {
-            if (currentUserService.IsTechAdmin())
-            {
-                var ministryAdmin = await GetByIdAsync(adminId);
-
-                if (ministryAdmin.AccountStatus == AccountStatus.Accepted)
-                {
-                    logger.LogDebug("Forbidden to update the accepted ministry admin.");
-
-                    return false;
-                }
-            }
-            else
-            {
-                logger.LogDebug("Forbidden to update the another ministry admin if you don't have the techadmin role.");
-
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    protected override async Task<bool> IsUserHasRightsToDeleteAdmin(string adminId) => true;
-
-    protected override async Task<bool> IsUserHasRightsToBlockAdmin(string adminId) => true;
 
     private Dictionary<Expression<Func<InstitutionAdmin, object>>, SortDirection> MakeSortExpression() =>
         new()
