@@ -1,4 +1,4 @@
-namespace OutOfSchool.AuthorizationServer;
+namespace OutOfSchool.AuthCommon;
 
 public class OpenIdDictDbContext : DbContext, IUnitOfWork
 {
@@ -7,14 +7,14 @@ public class OpenIdDictDbContext : DbContext, IUnitOfWork
     {
     }
 
-    public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
+    public Task<int> CompleteAsync() => this.SaveChangesAsync();
 
     public int Complete() => this.SaveChanges();
 
-    protected override void OnModelCreating(ModelBuilder builder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(builder);
-        builder
+        base.OnModelCreating(modelBuilder);
+        modelBuilder
             .UseOpenIddict();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
+using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -148,5 +149,5 @@ public class BlockedProviderParentController : ControllerBase
         await userService.IsBlocked(currentUserService.UserId);
 
     private async Task<bool> IsProviderBlocked(Guid providerId) =>
-        await providerService.IsBlocked(providerId).ConfigureAwait(false);
+        await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false;
 }

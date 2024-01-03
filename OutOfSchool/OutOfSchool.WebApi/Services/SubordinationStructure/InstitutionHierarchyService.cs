@@ -50,7 +50,7 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
 
         var institutionHierarchy = mapper.Map<InstitutionHierarchy>(dto);
 
-        var newInstitutionHierarchy = await repository.Create(institutionHierarchy).ConfigureAwait(false);
+        var newInstitutionHierarchy = await repository.Create(institutionHierarchy, dto.Directions.Select(d => d.Id).ToList()).ConfigureAwait(false);
 
         logger.LogInformation($"InstitutionHierarchy with Id = {newInstitutionHierarchy?.Id} created successfully.");
 

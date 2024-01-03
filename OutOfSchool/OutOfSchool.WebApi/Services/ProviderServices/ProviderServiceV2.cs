@@ -8,7 +8,7 @@ using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Services.Communication.ICommunication;
 
-namespace OutOfSchool.WebApi.Services;
+namespace OutOfSchool.WebApi.Services.ProviderServices;
 
 public class ProviderServiceV2 : ProviderService, IProviderServiceV2
 {
@@ -105,7 +105,7 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
     {
         async Task BeforeDeleteAction(Provider provider)
         {
-            if (provider.Images.Count > 0)
+            if (provider.Images?.Count > 0)
             {
                 await ProviderImagesService.RemoveManyImagesAsync(provider, provider.Images.Select(x => x.ExternalStorageId).ToList()).ConfigureAwait(false);
             }

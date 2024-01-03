@@ -16,7 +16,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common;
-using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -25,10 +24,10 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
-using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.ProviderServices;
 using OutOfSchool.WebApi.Util;
 
-namespace OutOfSchool.WebApi.Tests.Controllers;
+namespace OutOfSchool.WebApi.Tests.Controllers.ProviderControllersTests;
 
 [TestFixture]
 public class ProviderControllerTests
@@ -284,112 +283,6 @@ public class ProviderControllerTests
         Assert.IsInstanceOf<ObjectResult>(result);
         Assert.AreEqual((int)HttpStatusCode.NotFound, (result as ObjectResult).StatusCode);
         Assert.AreEqual(errorMessage, (result as ObjectResult).Value);
-    }
-
-    [Test]
-    public async Task StatusUpdate_WhenIdIsValid_ReturnsOkObjectResult()
-    {
-        // Arrange
-        var provider = providers.FirstOrDefault();
-
-        var updateRequest = new ProviderStatusDto
-        {
-            ProviderId = provider.Id,
-            Status = ProviderStatus.Approved,
-        };
-        providerService.Setup(x => x.UpdateStatus(updateRequest, userId))
-            .ReturnsAsync(updateRequest);
-
-        // Act
-        var result = await providerController.StatusUpdate(updateRequest).ConfigureAwait(false);
-
-        // Assert
-        result.AssertResponseOkResultAndValidateValue(updateRequest);
-    }
-
-    [Test]
-    public async Task StatusUpdate_WhenIdDoesNotExist_ReturnsNotFoundResult()
-    {
-        // Arrange
-        var nonExistentProviderId = Guid.NewGuid();
-        var expected = new NotFoundObjectResult($"There is no Provider in DB with Id - {nonExistentProviderId}");
-        var updateRequest = new ProviderStatusDto
-        {
-            ProviderId = Guid.NewGuid(),
-            Status = ProviderStatus.Approved,
-        };
-        providerService.Setup(x => x.UpdateStatus(updateRequest, userId))
-            .ReturnsAsync(null as ProviderStatusDto);
-
-        // Act
-        var result = await providerController.StatusUpdate(updateRequest).ConfigureAwait(false);
-
-        // Assert
-        result.AssertExpectedResponseTypeAndCheckDataInside<NotFoundObjectResult>(expected);
-    }
-
-    [Test]
-    public async Task LicenseStatusUpdate_WhenIdIsValid_ReturnsOkObjectResult()
-    {
-        // Arrange
-        var provider = providers.FirstOrDefault();
-
-        var updateRequest = new ProviderLicenseStatusDto
-        {
-            ProviderId = provider.Id,
-            LicenseStatus = ProviderLicenseStatus.Approved,
-        };
-        providerService.Setup(x => x.UpdateLicenseStatus(updateRequest, userId))
-            .ReturnsAsync(updateRequest);
-
-        // Act
-        var result = await providerController.LicenseStatusUpdate(updateRequest).ConfigureAwait(false);
-
-        // Assert
-        result.AssertResponseOkResultAndValidateValue(updateRequest);
-    }
-
-    [Test]
-    public async Task LicenseStatusUpdate_WhenIdDoesNotExist_ReturnsNotFoundResult()
-    {
-        // Arrange
-        var nonExistentProviderId = Guid.NewGuid();
-        var expected = new NotFoundObjectResult($"There is no Provider in DB with Id - {nonExistentProviderId}");
-        var updateRequest = new ProviderLicenseStatusDto
-        {
-            ProviderId = Guid.NewGuid(),
-            LicenseStatus = ProviderLicenseStatus.Approved,
-        };
-        providerService.Setup(x => x.UpdateLicenseStatus(updateRequest, userId))
-            .ReturnsAsync(null as ProviderLicenseStatusDto);
-
-        // Act
-        var result = await providerController.LicenseStatusUpdate(updateRequest).ConfigureAwait(false);
-
-        // Assert
-        result.AssertExpectedResponseTypeAndCheckDataInside<NotFoundObjectResult>(expected);
-    }
-
-    [Test]
-    public async Task LicenseStatusUpdate_WhenInvalidRequest_ReturnsBadRequestObjectResult()
-    {
-        // Arrange
-        var guid = Guid.NewGuid();
-        var errorMessage = TestDataHelper.GetRandomWords();
-        var expected = new BadRequestObjectResult(errorMessage);
-        var updateRequest = new ProviderLicenseStatusDto
-        {
-            ProviderId = Guid.NewGuid(),
-            LicenseStatus = ProviderLicenseStatus.Approved,
-        };
-        providerService.Setup(x => x.UpdateLicenseStatus(updateRequest, userId))
-            .ThrowsAsync(new ArgumentException(errorMessage));
-
-        // Act
-        var result = await providerController.LicenseStatusUpdate(updateRequest).ConfigureAwait(false);
-
-        // Assert
-        result.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
     }
 
     [Test]

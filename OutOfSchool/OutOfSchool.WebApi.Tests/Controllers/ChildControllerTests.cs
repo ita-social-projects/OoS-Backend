@@ -20,6 +20,7 @@ using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Models.SocialGroup;
 using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -301,7 +302,7 @@ public class ChildControllerTests
                 InstitutionHierarchyId = existingWorkshop.InstitutionHierarchyId,
                 InstitutionId = existingWorkshop.InstitutionId,
                 Institution = existingWorkshop.Institution,
-                AvailableSeats = existingWorkshop.AvailableSeats,
+                AvailableSeats = (uint)existingWorkshop.AvailableSeats,
                 TakenSeats = existingWorkshop.TakenSeats,
             })
             .WithChild(child);

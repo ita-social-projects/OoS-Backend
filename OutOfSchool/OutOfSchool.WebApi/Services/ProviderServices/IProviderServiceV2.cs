@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Models.Providers;
 
-namespace OutOfSchool.WebApi.Services;
+namespace OutOfSchool.WebApi.Services.ProviderServices;
 
 public interface IProviderServiceV2 : IProviderService
 {

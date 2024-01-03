@@ -1,6 +1,6 @@
 ﻿namespace OutOfSchool.AuthCommon.Config;
 
-public class GRPCConfig
+public class GrpcConfig
 {
     public const string Name = "GRPC";
 

@@ -11,5 +11,5 @@ public interface IAchievementRepository : IEntityRepositorySoftDeleted<Guid, Ach
 
     Task<Achievement> Create(Achievement achievement, List<Guid> childrenIDs, List<string> teachers);
 
-    Task<Achievement> Update(Achievement entity, List<Guid> childrenIDs, List<string> teachers);
+    Task<Achievement> Update(Achievement achievement, List<Guid> childrenIDs, List<string> teachers);
 }

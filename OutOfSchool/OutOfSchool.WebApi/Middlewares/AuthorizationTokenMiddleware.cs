@@ -2,7 +2,7 @@
 
 public class AuthorizationTokenMiddleware
 {
-    private static readonly string[] Hubs = new string[] { "/chathub", "/notificationhub" };
+    private static readonly string[] Hubs = new string[] { Constants.PathToChatHub, Constants.PathToNotificationHub };
     private readonly RequestDelegate next;
 
     public AuthorizationTokenMiddleware(RequestDelegate next)
@@ -31,6 +31,9 @@ public class AuthorizationTokenMiddleware
 
     private static bool IsHubConnectionPath(HttpRequest request)
     {
+        // We have an array, not list. Exists is not applicable
+        #pragma warning disable S6605
         return Hubs.Any(h => request.Path.StartsWithSegments(h, StringComparison.OrdinalIgnoreCase));
+        #pragma warning restore S6605
     }
 }

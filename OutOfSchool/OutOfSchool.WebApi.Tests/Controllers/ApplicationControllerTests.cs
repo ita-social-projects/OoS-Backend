@@ -18,6 +18,7 @@ using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Models.SocialGroup;
 using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -852,7 +853,7 @@ public class ApplicationControllerTests
             InstitutionHierarchyId = w.InstitutionHierarchyId,
             InstitutionId = w.InstitutionId,
             Institution = w.Institution,
-            AvailableSeats = w.AvailableSeats,
+            AvailableSeats = (uint)w.AvailableSeats,
             TakenSeats = w.TakenSeats,
         }).ToList();
     }

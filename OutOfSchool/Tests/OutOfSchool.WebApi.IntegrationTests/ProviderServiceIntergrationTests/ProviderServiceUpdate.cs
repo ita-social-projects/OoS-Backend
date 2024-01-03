@@ -18,6 +18,7 @@ using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Services.Communication.ICommunication;
 using OutOfSchool.WebApi.Services.Images;
+using OutOfSchool.WebApi.Services.ProviderServices;
 using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests;

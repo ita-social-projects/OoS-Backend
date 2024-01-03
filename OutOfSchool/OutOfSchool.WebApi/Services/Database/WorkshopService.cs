@@ -90,6 +90,11 @@ public class WorkshopService : IWorkshopService
 
         workshop.Status = WorkshopStatus.Open;
 
+        if (dto.AvailableSeats is 0 or null)
+        {
+            dto.AvailableSeats = uint.MaxValue;
+        }
+
         Func<Task<Workshop>> operation = async () =>
             await workshopRepository.Create(workshop).ConfigureAwait(false);
 
@@ -332,6 +337,11 @@ public class WorkshopService : IWorkshopService
             dto.Address.Id = currentWorkshop.AddressId;
 
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherDTO>()).ConfigureAwait(false);
+
+            if (dto.AvailableSeats is 0 or null)
+            {
+                dto.AvailableSeats = uint.MaxValue;
+            }
 
             mapper.Map(dto, currentWorkshop);
 

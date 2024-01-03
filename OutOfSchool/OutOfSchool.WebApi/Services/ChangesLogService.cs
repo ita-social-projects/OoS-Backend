@@ -82,6 +82,25 @@ public class ChangesLogService : IChangesLogService
         return result.Count;
     }
 
+    public async Task<bool> AddCreatingOfEntityToDbContext<TEntity>(TEntity entity, string userId)
+        where TEntity : class, IKeyedEntity, new()
+    {
+        if (!IsLoggingAllowed<TEntity>())
+        {
+            logger.LogDebug($"Logging is not allowed for the '{typeof(TEntity).Name}' entity type.");
+
+            return false;
+        }
+
+        logger.LogDebug($"Logging of the '{typeof(TEntity).Name}' entity creating started.");
+
+        var result = await changesLogRepository.AddCreatingOfEntityToChangesLog(entity, userId).ConfigureAwait(false);
+
+        logger.LogDebug($"Added record to the Changes Log.");
+
+        return result is not null;
+    }
+
     public async Task<SearchResult<ProviderChangesLogDto>> GetProviderChangesLogAsync(ProviderChangesLogRequest request)
     {
         var changeLogFilter = mapper.Map<ChangesLogFilter>(request);
@@ -352,6 +371,9 @@ public class ChangesLogService : IChangesLogService
 
     private bool IsLoggingAllowed<TEntity>(out string[] trackedProperties)
         => config.Value.TrackedProperties.TryGetValue(typeof(TEntity).Name, out trackedProperties);
+
+    private bool IsLoggingAllowed<TEntity>()
+        => config.Value.TrackedProperties.ContainsKey(typeof(TEntity).Name);
 
     private Expression<Func<ChangesLog, bool>> GetQueryFilter(ChangesLogFilter filter)
     {

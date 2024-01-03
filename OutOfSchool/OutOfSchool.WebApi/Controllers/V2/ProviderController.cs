@@ -5,6 +5,7 @@ using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
+using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Controllers.V2;
 
@@ -113,7 +114,7 @@ public class ProviderController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Create([FromForm] ProviderCreateDto providerModel)
     {
-        providerModel.Id = default;
+        providerModel.Id = Guid.Empty;
         providerModel.LegalAddress.Id = default;
 
         if (providerModel.ActualAddress != null)

@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using AutoMapper;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HeaderPropagation;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
@@ -10,6 +11,7 @@ using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Services.Communication.ICommunication;
+using OutOfSchool.WebApi.Services.ProviderServices;
 using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 using OutOfSchool.WebApi.Services.Strategies.WorkshopStrategies;
 using OutOfSchool.WebApi.Util.Mapping;
@@ -76,8 +78,8 @@ public static class Startup
             .WithMetadata(new AllowAnonymousAttribute());
 
         app.MapControllers();
-        app.MapHub<ChatWorkshopHub>("/chathub/workshop");
-        app.MapHub<NotificationHub>("/notificationhub");
+        app.MapHub<ChatWorkshopHub>(Constants.PathToChatHub);
+        app.MapHub<NotificationHub>(Constants.PathToNotificationHub);
     }
 
     public static void AddApplicationServices(this WebApplicationBuilder builder)
@@ -122,7 +124,31 @@ public static class Startup
                     .AllowAnyHeader()
                     .AllowCredentials()));
 
-        services.AddControllers().AddNewtonsoftJson()
+        var cacheProfilesConfigSection = configuration.GetSection(CacheProfilesConfig.Name);
+        var cacheProfilesConfig = cacheProfilesConfigSection.Get<CacheProfilesConfig>();
+
+        services.Configure<CacheProfilesConfig>(cacheProfilesConfigSection);
+
+        services.AddControllers(options =>
+            {
+                options.CacheProfiles.Add(
+                    Constants.CacheProfilePrivate,
+                    new CacheProfile()
+                    {
+                        Location = ResponseCacheLocation.Client,
+                        NoStore = false,
+                        Duration = cacheProfilesConfig.PrivateDurationInSeconds,
+                    });
+                options.CacheProfiles.Add(
+                    Constants.CacheProfilePublic,
+                    new CacheProfile()
+                    {
+                        Location = ResponseCacheLocation.Any,
+                        NoStore = false,
+                        Duration = cacheProfilesConfig.PublicDurationInSeconds,
+                    });
+            })
+            .AddNewtonsoftJson()
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
@@ -207,7 +233,9 @@ public static class Startup
         services.AddTransient<IFavoriteService, FavoriteService>();
         services.AddTransient<IParentService, ParentService>();
         services.AddTransient<IParentBlockedByAdminLogService, ParentBlockedByAdminLogService>();
+        services.AddTransient<IPrivateProviderService, PrivateProviderService>();
         services.AddTransient<IProviderService, ProviderService>();
+        services.AddTransient<IPublicProviderService, PublicProviderService>();
         services.AddTransient<IProviderTypeService, ProviderTypeService>();
         services.AddTransient<IProviderServiceV2, ProviderServiceV2>();
         services.AddTransient<IRatingService, RatingService>();
@@ -400,6 +428,7 @@ public static class Startup
                 options.Configuration.AbortOnConnectFail = false;
             });
 
+            // TODO: Try to rework or remove if chat will stop working correctly
             services.AddSingleton(typeof(HubLifetimeManager<>), typeof(LocalDistributedHubLifetimeManager<>));
         }
 

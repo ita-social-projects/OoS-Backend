@@ -6,6 +6,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshops;
+using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Controllers;
 
@@ -85,11 +86,11 @@ public class ProviderAdminController : Controller
             .ConfigureAwait(false);
 
         return response.Match<ActionResult>(
-            error => StatusCode((int)error.HttpStatusCode, error.Message),
+            error => StatusCode((int)error.HttpStatusCode, new { error.Message, error.ApiErrorResponse }),
             result =>
             {
                 logger.LogInformation("Successfully created ProviderAdmin(id): {result.UserId} by User(id): {UserId}", result.UserId, userId);
-                return Ok(result);
+                return Created(string.Empty, result);
             });
     }
 
@@ -379,6 +380,6 @@ public class ProviderAdminController : Controller
         await userService.IsBlocked(userId);
 
     private async Task<bool> IsProviderBlocked(Guid providerId) =>
-        await providerService.IsBlocked(providerId).ConfigureAwait(false);
+        await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false;
 
 }

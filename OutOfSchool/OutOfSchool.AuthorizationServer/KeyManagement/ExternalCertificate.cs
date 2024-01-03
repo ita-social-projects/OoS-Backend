@@ -4,7 +4,7 @@ using OutOfSchool.AuthorizationServer.Config;
 
 namespace OutOfSchool.AuthorizationServer.KeyManagement;
 
-public class ExternalCertificate
+public static class ExternalCertificate
 {
     public static X509Certificate2 LoadCertificates(AuthorizationCertificateConfig configuration)
     {
