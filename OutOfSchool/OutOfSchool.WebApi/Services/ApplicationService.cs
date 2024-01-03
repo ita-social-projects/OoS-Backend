@@ -22,6 +22,10 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class ApplicationService : IApplicationService, INotificationReciever
 {
+    public const string UaMaleEnding = "ий";
+    public const string UaFemaleEnding = "а";
+    public const string UaUnspecifiedGenderEnding = "ий/a";
+
     private readonly IApplicationRepository applicationRepository;
     private readonly IWorkshopRepository workshopRepository;
     private readonly ILogger<ApplicationService> logger;
@@ -997,21 +1001,29 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
     private async Task SendApplicationUpdateStatusEmail(Application application)
     {
-        LocalizedString subject = application.Status switch
+        (string subject, string templateName) = application.Status switch
         {
-            ApplicationStatus.Approved => localizer["Approved!"],
-            ApplicationStatus.Rejected => localizer["Rejected"],
-            ApplicationStatus.AcceptedForSelection => localizer["Accepted for selection!"],
-            _ => localizer["Application status changed"],
+            ApplicationStatus.Approved =>
+                (localizer["Approved!"], RazorTemplates.ApplicationApprovedEmail),
+            ApplicationStatus.Rejected =>
+                (localizer["Rejected"], RazorTemplates.ApplicationRejectedEmail),
+            ApplicationStatus.AcceptedForSelection =>
+                (localizer["Accepted for selection!"], RazorTemplates.ApplicationAcceptedForSelectionEmail),
+            _ => throw new ArgumentException("Unsupported application status."),
         };
+
         var applicationStatusViewModel = new ApplicationStatusViewModel
         {
-            ApplicationStatus = application.Status,
             ChildFullName =
                 $"{application.Child.LastName} " +
                 $"{application.Child.FirstName} " +
                 $"{application.Child.MiddleName}".TrimEnd(),
-            ChildGender = application.Child.Gender,
+            UaEnding = application.Child.Gender switch
+            {
+                Gender.Male => UaMaleEnding,
+                Gender.Female => UaFemaleEnding,
+                _ => UaUnspecifiedGenderEnding,
+            },
             WorkshopTitle = application.Workshop.Title,
 
             // TODO: Think about pass URL from variable
@@ -1019,7 +1031,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
             RejectionMessage = application.RejectionMessage,
         };
         var content = await renderer
-            .GetHtmlPlainStringAsync(RazorTemplates.ApplicationStatusUpdateEmail, applicationStatusViewModel);
+                .GetHtmlPlainStringAsync(templateName, applicationStatusViewModel);
         await emailSender.SendAsync(application.Parent.User.Email, subject, content);
     }
 }

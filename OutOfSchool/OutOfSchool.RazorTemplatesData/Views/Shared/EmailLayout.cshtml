@@ -1,10 +1,8 @@
 ﻿@using Microsoft.Extensions.Configuration
-@using System.Reflection;
 @inject IConfiguration configuration
 
 @{
     var host = configuration.GetSection("Hosts")["BackendUrl"];
-    var appName = Assembly.GetExecutingAssembly().GetName().Name;
     var pathToContent = string.Concat(host, "/_content/email");
 }  
 
