@@ -1,10 +1,9 @@
 using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 using GrpcService;
-using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Enums;
+using OutOfSchool.Services.Models.Images;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Achievement;
 using OutOfSchool.WebApi.Models.Application;
@@ -82,13 +81,11 @@ public class MappingProfile : Profile
 
         CreateMap<Workshop, WorkshopDto>()
             .IncludeBase<Workshop, WorkshopBaseDto>()
-            .ForMember(dest => dest.TakenSeats, opt =>
-                opt.MapFrom(src =>
-                    src.Applications.Count(x =>
-                        x.Status == ApplicationStatus.Approved
-                        || x.Status == ApplicationStatus.StudyingForYears)))
-            .ForMember(dest => dest.Rating, opt => opt.Ignore())
-            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
+            .ForMember(
+                dest => dest.TakenSeats,
+                opt => opt.MapFrom(src
+                    => src.Applications.Count(x => x.Status == ApplicationStatus.Approved || x.Status == ApplicationStatus.StudyingForYears)))
+            .IncludeBase<object, IHasRating>()
             .ForMember(dest => dest.IsBlocked, opt => opt.MapFrom(src => src.Provider.IsBlocked))
             .ForMember(dest => dest.ProviderStatus, opt => opt.MapFrom(src => src.Provider.Status));
 
@@ -97,9 +94,9 @@ public class MappingProfile : Profile
 
         CreateMap<Workshop, WorkshopV2Dto>()
             .IncludeBase<Workshop, WorkshopDto>()
-            .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
-            .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
-            .ForMember(dest => dest.ImageFiles, opt => opt.Ignore());
+            .Apply(MapImageIds)
+            .Apply(IgnoreAllImages)
+            ;
 
         CreateMap<WorkshopV2Dto, Workshop>()
             .IncludeBase<WorkshopDto, Workshop>();
@@ -145,66 +142,43 @@ public class MappingProfile : Profile
         CreateMap<ProviderType, ProviderTypeDto>().ReverseMap();
 
         CreateMap<Provider, ProviderDto>()
-            .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
-            .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
-            .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.Institution))
-            .ForMember(dest => dest.Rating, opt => opt.Ignore())
-            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
-            .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
-            .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
-            .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
+            .Apply(AddCommonProvider2ProviderBaseDto)
+            .IncludeBase<object, IHasRating>()
             .ForMember(dest => dest.ProviderSectionItems, opt => opt.MapFrom(src => src.ProviderSectionItems.Where(x => !x.IsDeleted)));
 
         CreateSoftDeletedMap<ProviderDto, Provider>()
+            .Apply(IgnoreCommonProviderBaseDto2Provider)
             .ForMember(dest => dest.Workshops, opt => opt.Ignore())
             .ForMember(dest => dest.User, opt => opt.Ignore())
-            .ForMember(dest => dest.Institution, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore())
-            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
-            .ForMember(dest => dest.Status, opt => opt.Ignore())
-            .ForMember(dest => dest.LicenseStatus, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore());
 
         CreateSoftDeletedMap<ProviderUpdateDto, Provider>()
+            .Apply(IgnoreCommonProviderBaseDto2Provider)
             .ForMember(dest => dest.Ownership, opt => opt.Ignore())
             .ForMember(dest => dest.Workshops, opt => opt.Ignore())
             .ForMember(dest => dest.User, opt => opt.Ignore())
-            .ForMember(dest => dest.Institution, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore())
-            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
-            .ForMember(dest => dest.Status, opt => opt.Ignore())
-            .ForMember(dest => dest.StatusReason, opt => opt.Ignore())
-            .ForMember(dest => dest.LicenseStatus, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
             .ForMember(dest => dest.BlockPhoneNumber, opt => opt.Ignore())
-            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore()) 
+            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.BlockReason, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
         CreateMap<Provider, ProviderUpdateDto>()
-            .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
-            .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
-            .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.Institution))
-            .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
-            .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
-            .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)));
+            .Apply(AddCommonProvider2ProviderBaseDto);
 
         CreateMap<ProviderDto, ProviderUpdateDto>();
 
         CreateSoftDeletedMap<ProviderCreateDto, Provider>()
+            .Apply(IgnoreCommonProviderBaseDto2Provider)
             .ForMember(dest => dest.Workshops, opt => opt.Ignore())
             .ForMember(dest => dest.User, opt => opt.Ignore())
-            .ForMember(dest => dest.Institution, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore())
-            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
-            .ForMember(dest => dest.Status, opt => opt.Ignore())
-            .ForMember(dest => dest.StatusReason, opt => opt.Ignore())
-            .ForMember(dest => dest.LicenseStatus, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
             .ForMember(dest => dest.BlockPhoneNumber, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
@@ -212,18 +186,12 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
         CreateMap<Provider, ProviderCreateDto>()
-            .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
-            .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
-            .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.Institution))
-            .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
-            .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
-            .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)));
+            .Apply(AddCommonProvider2ProviderBaseDto);
 
         CreateMap<ProviderCreateDto, ProviderDto>()
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.BlockReason, opt => opt.Ignore())
-            .ForMember(dest => dest.Rating, opt => opt.Ignore())
-            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
+            .IncludeBase<object, IHasRating>()
             .ForMember(dest => dest.BlockPhoneNumber, opt => opt.Ignore())
             .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
             .ForMember(dest => dest.ImageIds, opt => opt.Ignore());
@@ -251,18 +219,13 @@ public class MappingProfile : Profile
                         src.Applications.Count(x =>
                             x.Status == ApplicationStatus.Approved
                             || x.Status == ApplicationStatus.StudyingForYears)))
-                .ForMember(dest => dest.Rating, opt => opt.Ignore())
-                .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
+            .IncludeBase<object, IHasRating>();
 
         CreateMap<Provider, ProviderInfoBaseDto>();
 
         CreateMap<Provider, ProviderInfoDto>()
             .IncludeBase<Provider, ProviderInfoBaseDto>()
-            .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.Institution))
-            .ForMember(dest => dest.LicenseStatus, opt => opt.MapFrom(src => src.LicenseStatus))
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-            .ForMember(dest => dest.Rating, opt => opt.Ignore())
-            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
+            .IncludeBase<object, IHasRating>();
 
         CreateSoftDeletedMap<TeacherDTO, Teacher>()
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
@@ -301,8 +264,7 @@ public class MappingProfile : Profile
             .IncludeBase<Workshop, WorkshopBaseCard>()
             .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
-            .ForMember(dest => dest.Rating, opt => opt.Ignore())
-            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
+            .IncludeBase<object, IHasRating>()
             .ForMember(dest => dest.TakenSeats, opt =>
                 opt.MapFrom(src =>
                     src.Applications.Count(x =>
@@ -315,8 +277,7 @@ public class MappingProfile : Profile
             .ForMember(
                 dest => dest.DirectionIds,
                 opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(x => x.Id)))
-            .ForMember(dest => dest.Rating, opt => opt.Ignore())
-            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
+            .IncludeBase<object, IHasRating>()
             .ForMember(dest => dest.ProviderLicenseStatus, opt =>
                 opt.MapFrom(src => src.Provider.LicenseStatus));
 
@@ -399,10 +360,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber.Right(Constants.PhoneShortLength)));
 
         CreateMap<User, FullProviderAdminDto>()
-            .ForMember(dest => dest.IsDeputy, opt => opt.Ignore())
-            .ForMember(dest => dest.AccountStatus, m => m.Ignore())
+            .IncludeBase<User, ProviderAdminDto>()
             .ForMember(dest => dest.WorkshopTitles, opt => opt.Ignore())
-            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber.Right(Constants.PhoneShortLength)))
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
         CreateSoftDeletedMap<DirectionDto, Direction>()
@@ -415,32 +374,12 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.RequestId, opt => opt.Ignore())
             .ForMember(c => c.CreatingTime, m => m.MapFrom(c => Timestamp.FromDateTimeOffset(c.CreatingTime)))
             .ForMember(c => c.ProviderId, m => m.MapFrom(c => c.ProviderId.ToString()))
-            .ForMember(c => c.ManagedWorkshopIds, m => m.MapFrom((dto, entity) =>
-            {
-                var managedWorkshopIds = new List<string>();
-
-                foreach (var item in dto.ManagedWorkshopIds)
-                {
-                    managedWorkshopIds.Add(item.ToString());
-                }
-
-                return managedWorkshopIds;
-            }));
+            .ForMember(c => c.ManagedWorkshopIds, m => m.MapFrom(src => src.ManagedWorkshopIds.Select(id => id.ToString()).ToList()));
 
         CreateMap<CreateProviderAdminReply, CreateProviderAdminDto>()
             .ForMember(c => c.CreatingTime, m => m.MapFrom(c => c.CreatingTime.ToDateTimeOffset()))
             .ForMember(c => c.ProviderId, m => m.MapFrom(c => Guid.Parse(c.ProviderId)))
-            .ForMember(c => c.ManagedWorkshopIds, opt => opt.MapFrom((dto, entity) =>
-            {
-                var managedWorkshopIds = new List<Guid>();
-
-                foreach (var item in dto.ManagedWorkshopIds)
-                {
-                    managedWorkshopIds.Add(Guid.Parse(item));
-                }
-
-                return managedWorkshopIds;
-            }));
+            .ForMember(c => c.ManagedWorkshopIds, opt => opt.MapFrom(src => src.ManagedWorkshopIds.Select(Guid.Parse).ToList()));
 
         CreateMap<User, ShortUserDto>()
             .ForMember(dest => dest.Gender, opt => opt.Ignore())
@@ -448,37 +387,23 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
         CreateSoftDeletedMap<ShortUserDto, User>()
-            .ForMember(dest => dest.IsRegistered, opt => opt.Ignore())
-            .ForMember(dest => dest.Role, opt => opt.Ignore())
-            .ForMember(dest => dest.Email, opt => opt.Ignore())
-            .ForMember(dest => dest.UserName, opt => opt.Ignore())
-            .ForMember(dest => dest.LastLogin, opt => opt.Ignore())
-            .ForMember(dest => dest.NormalizedEmail, opt => opt.Ignore())
-            .ForMember(dest => dest.NormalizedUserName, opt => opt.Ignore())
-            .ForMember(dest => dest.EmailConfirmed, opt => opt.Ignore())
-            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
-            .ForMember(dest => dest.SecurityStamp, opt => opt.Ignore())
-            .ForMember(dest => dest.ConcurrencyStamp, opt => opt.Ignore())
-            .ForMember(dest => dest.PhoneNumberConfirmed, opt => opt.Ignore())
-            .ForMember(dest => dest.TwoFactorEnabled, opt => opt.Ignore())
-            .ForMember(dest => dest.LockoutEnabled, opt => opt.Ignore())
-            .ForMember(dest => dest.LockoutEnd, opt => opt.Ignore())
-            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore())
-            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
-            .ForMember(dest => dest.IsDerived, opt => opt.Ignore())
-            .ForMember(dest => dest.MustChangePassword, opt => opt.Ignore())
-            .ForMember(dest => dest.AccessFailedCount, opt => opt.Ignore());
+            .IncludeBase<BaseUserDto, User>()
+            .ForMember(dest => dest.Email, opt => opt.Ignore());
 
-        CreateMap<Parent, ShortUserDto>()
+        CreateMap<IHasUser, BaseUserDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.User.Id))
-            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
-            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.User.Role))
             .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName ?? string.Empty))
+            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber.Right(Constants.PhoneShortLength)))
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+        ;
+
+        CreateMap<Parent, ShortUserDto>()
+            .IncludeBase<IHasUser, BaseUserDto>()
+            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.User.Role))
             .ForMember(dest => dest.IsRegistered, opt => opt.MapFrom(src => src.User.IsRegistered))
             .ForMember(dest => dest.EmailConfirmed, opt => opt.MapFrom(src => src.User.EmailConfirmed))
-            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber.Right(Constants.PhoneShortLength)))
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName));
 
         CreateSoftDeletedMap<BaseUserDto, User>()
@@ -503,21 +428,9 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.MustChangePassword, m => m.Ignore());
 
         CreateMap<InstitutionAdmin, MinistryAdminDto>()
+            .IncludeBase<IHasUser, BaseUserDto>()
             .ForMember(dest => dest.InstitutionTitle, opt => opt.MapFrom(src => src.Institution.Title))
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.User.Id))
-            .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
-            .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
-            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName ?? string.Empty))
-            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber.Right(Constants.PhoneShortLength)))
-            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
-            .ForMember(
-                dest => dest.AccountStatus,
-                opt => opt.MapFrom(src =>
-                    src.User.IsBlocked
-                        ? AccountStatus.Blocked
-                        : src.User.LastLogin == DateTimeOffset.MinValue
-                            ? AccountStatus.NeverLogged
-                            : AccountStatus.Accepted));
+            .ForMember(dest => dest.AccountStatus, opt => opt.MapFrom(src => AccountStatusExtensions.Convert(src.User)));
 
         CreateMap<MinistryAdminDto, MinistryAdminBaseDto>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
@@ -529,23 +442,11 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.InstitutionTitle, opt => opt.Ignore());
 
         CreateMap<RegionAdmin, RegionAdminDto>()
+            .IncludeBase<IHasUser, BaseUserDto>()
             .ForMember(dest => dest.InstitutionTitle, opt => opt.MapFrom(src => src.Institution.Title))
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.User.Id))
-            .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
-            .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
-            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber.Right(Constants.PhoneShortLength)))
-            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName ?? string.Empty))
-            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
             .ForMember(dest => dest.CATOTTGCategory, opt => opt.MapFrom(src => src.CATOTTG.Category))
             .ForMember(dest => dest.CATOTTGName, opt => opt.MapFrom(src => src.CATOTTG.Name))
-            .ForMember(
-                dest => dest.AccountStatus,
-                opt => opt.MapFrom(src =>
-                    src.User.IsBlocked
-                        ? AccountStatus.Blocked
-                        : src.User.LastLogin == DateTimeOffset.MinValue
-                            ? AccountStatus.NeverLogged
-                            : AccountStatus.Accepted));
+            .ForMember(dest => dest.AccountStatus, opt => opt.MapFrom(src => AccountStatusExtensions.Convert(src.User)));
 
         CreateMap<RegionAdminDto, RegionAdminBaseDto>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
@@ -559,29 +460,18 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CATOTTGName, opt => opt.Ignore());
 
         CreateMap<AreaAdmin, AreaAdminDto>()
-                   .ForMember(dest => dest.InstitutionTitle, opt => opt.MapFrom(src => src.Institution.Title))
-                   .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.User.Id))
-                   .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
-                   .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
-                   .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber.Right(Constants.PhoneShortLength)))
-                   .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName ?? string.Empty))
-                   .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
-                   .ForMember(dest => dest.CATOTTGCategory, opt => opt.MapFrom(src => src.CATOTTG.Category))
-                   .ForMember(dest => dest.CATOTTGName, opt => opt.MapFrom(src => src.CATOTTG.Name))
-                   .ForMember(dest => dest.RegionId, opt => opt.MapFrom(src => src.CATOTTG != null ? src.CATOTTG.Parent != null ? src.CATOTTG.Parent.Parent != null ? src.CATOTTG.Parent.Parent.Id :0 :0 :0))
-                   .ForMember(dest => dest.RegionName, opt => opt.MapFrom(src => src.CATOTTG != null ? src.CATOTTG.Parent != null ? src.CATOTTG.Parent.Parent != null ? src.CATOTTG.Parent.Parent.Name :String.Empty :String.Empty :String.Empty))
-                   .ForMember(
-                       dest => dest.AccountStatus,
-                       opt => opt.MapFrom(src =>
-                           src.User.IsBlocked
-                               ? AccountStatus.Blocked
-                               : src.User.LastLogin == DateTimeOffset.MinValue
-                                   ? AccountStatus.NeverLogged
-                                   : AccountStatus.Accepted));
+            .IncludeBase<IHasUser, BaseUserDto>()
+            .ForMember(dest => dest.InstitutionTitle, opt => opt.MapFrom(src => src.Institution.Title))
+            .ForMember(dest => dest.CATOTTGCategory, opt => opt.MapFrom(src => src.CATOTTG.Category))
+            .ForMember(dest => dest.CATOTTGName, opt => opt.MapFrom(src => src.CATOTTG.Name))
+            .ForMember(dest => dest.RegionId, opt => opt.MapFrom(src => src.CATOTTG.Parent.Parent.Id))
+            .ForMember(dest => dest.RegionName, opt => opt.MapFrom(src => src.CATOTTG.Parent.Parent.Name))
+            .ForMember(dest => dest.AccountStatus, opt => opt.MapFrom(src => AccountStatusExtensions.Convert(src.User)))
+            .AfterMap((src, dest) => dest.RegionName ??= string.Empty);
 
         CreateMap<AreaAdminDto, AreaAdminBaseDto>()
-                   .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
-                   .ForMember(dest => dest.CreatingTime, opt => opt.Ignore());
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore());
 
         CreateMap<AreaAdminBaseDto, AreaAdminDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId))
@@ -610,16 +500,14 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.InstitutionId, opt => opt.Ignore());
 
         CreateMap<ProviderChangesLogRequest, ChangesLogFilter>()
-            .ForMember(dest => dest.EntityType, opt => opt.Ignore())
+            .ForMember(dest => dest.EntityType, opt => opt.MapFrom(src => "Provider"))
             .ForMember(dest => dest.From, opt => opt.Ignore())
-            .ForMember(dest => dest.Size, opt => opt.MapFrom(o => default(int)))
-            .AfterMap((src, dest) => dest.EntityType = "Provider");
+            .ForMember(dest => dest.Size, opt => opt.MapFrom(o => default(int)));
 
         CreateMap<ApplicationChangesLogRequest, ChangesLogFilter>()
-            .ForMember(dest => dest.EntityType, opt => opt.Ignore())
+            .ForMember(dest => dest.EntityType, opt => opt.MapFrom(src => "Application"))
             .ForMember(dest => dest.From, opt => opt.Ignore())
-            .ForMember(dest => dest.Size, opt => opt.MapFrom(o => default(int)))
-            .AfterMap((src, dest) => dest.EntityType = "Application");
+            .ForMember(dest => dest.Size, opt => opt.MapFrom(o => default(int)));
 
         CreateMap<AchievementType, AchievementTypeDto>();
 
@@ -696,18 +584,12 @@ public class MappingProfile : Profile
         CreateMap<InstitutionStatus, InstitutionStatusDTO>().ReverseMap();
 
         CreateMap<PermissionsForRole, PermissionsForRoleDTO>()
-            .ForMember(
-                dest => dest.Permissions,
-                opt => opt.MapFrom(c => c.PackedPermissions.UnpackPermissionsFromString()));
+            .ForMember(dest => dest.Permissions, opt => opt.MapFrom(c => c.PackedPermissions.UnpackPermissionsFromString()));
         CreateMap<PermissionsForRoleDTO, PermissionsForRole>()
-            .ForMember(
-                dest => dest.PackedPermissions,
-                opt => opt.MapFrom(c => c.Permissions.PackPermissionsIntoString()));
+            .ForMember(dest => dest.PackedPermissions, opt => opt.MapFrom(c => c.Permissions.PackPermissionsIntoString()));
 
         CreateMap<Child, ShortEntityDto>()
-            .ForMember(
-                dest => dest.Title,
-                opt => opt.MapFrom(src => src.LastName + " " + src.FirstName + " " + src.MiddleName));
+            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.LastName + " " + src.FirstName + " " + src.MiddleName));
 
         CreateMap<Workshop, ShortEntityDto>()
             .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title));
@@ -722,58 +604,22 @@ public class MappingProfile : Profile
             });
 
         CreateMap<CATOTTG, CodeficatorAddressDto>()
-            .ForMember(
-                dest => dest.Settlement,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Name : src.Name))
-            .ForMember(
-                dest => dest.TerritorialCommunity,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Parent.Name : src.Parent.Name))
-            .ForMember(
-                dest => dest.District,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name
-                        ? src.Parent.Parent.Parent.Name
-                        : src.Parent.Parent.Name))
-            .ForMember(
-                dest => dest.Region,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name
-                        ? src.Parent.Parent.Parent.Parent.Name
-                        : src.Parent.Parent.Parent.Name))
-            .ForMember(
-                dest => dest.CityDistrict,
-                opt => opt.MapFrom(src => src.Category == CodeficatorCategory.CityDistrict.Name ? src.Name : null));
+            .ForMember(dest => dest.Settlement, opt => opt.MapFrom(src => CatottgAddressExtensions.GetSettlementName(src)))
+            .ForMember(dest => dest.TerritorialCommunity, opt => opt.MapFrom(src => CatottgAddressExtensions.GetTerritorialCommunityName(src)))
+            .ForMember(dest => dest.District, opt => opt.MapFrom(src => CatottgAddressExtensions.GetDistrictName(src)))
+            .ForMember(dest => dest.Region, opt => opt.MapFrom(src => CatottgAddressExtensions.GetRegionName(src)))
+            .ForMember(dest => dest.CityDistrict, opt => opt.MapFrom(src => CatottgAddressExtensions.GetCityDistrictName(src)));
 
         CreateMap<CATOTTG, AllAddressPartsDto>()
             .IncludeBase<CATOTTG, CodeficatorAddressDto>()
             .ForMember(dest => dest.AddressParts, opt => opt.MapFrom(src => src));
 
         CreateMap<CATOTTG, CodeficatorAddressInfoDto>()
-             .ForMember(
-                dest => dest.Settlement,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Name : src.Name))
-            .ForMember(
-                dest => dest.TerritorialCommunity,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Parent.Name : src.Parent.Name))
-            .ForMember(
-                dest => dest.District,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name
-                        ? src.Parent.Parent.Parent.Name
-                        : src.Parent.Parent.Name))
-            .ForMember(
-                dest => dest.Region,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name
-                        ? src.Parent.Parent.Parent.Parent.Name
-                        : src.Parent.Parent.Parent.Name))
-            .ForMember(
-                dest => dest.CityDistrict,
-                opt => opt.MapFrom(src => src.Category == CodeficatorCategory.CityDistrict.Name ? src.Name : null));
+            .ForMember(dest => dest.Settlement, opt => opt.MapFrom(src => CatottgAddressExtensions.GetSettlementName(src)))
+            .ForMember(dest => dest.TerritorialCommunity, opt => opt.MapFrom(src => CatottgAddressExtensions.GetTerritorialCommunityName(src)))
+            .ForMember(dest => dest.District, opt => opt.MapFrom(src => CatottgAddressExtensions.GetDistrictName(src)))
+            .ForMember(dest => dest.Region, opt => opt.MapFrom(src => CatottgAddressExtensions.GetRegionName(src)))
+            .ForMember(dest => dest.CityDistrict, opt => opt.MapFrom(src => CatottgAddressExtensions.GetCityDistrictName(src)));
 
         CreateMap<Provider, ProviderStatusDto>()
             .ForMember(dest => dest.ProviderId, opt => opt.MapFrom(src => src.Id))
@@ -784,9 +630,43 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.SettlementsIds, opt => opt.Ignore());
     }
 
-    private IMappingExpression<TSource, TDestination> CreateSoftDeletedMap<TSource, TDestination>()
+    public IMappingExpression<TSource, TDestination> CreateSoftDeletedMap<TSource, TDestination>()
         where TSource : class
         where TDestination : class, ISoftDeleted
         => CreateMap<TSource, TDestination>()
             .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
+
+    private IMappingExpression<Provider, T> AddCommonProvider2ProviderBaseDto<T>(IMappingExpression<Provider, T> mappings)
+        where T : ProviderBaseDto
+        => mappings
+            .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
+            .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
+            .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.Institution))
+            .Apply(IgnoreAllImages)
+            .Apply(MapImageIds)
+        ;
+
+    private IMappingExpression<T, Provider> IgnoreCommonProviderBaseDto2Provider<T>(IMappingExpression<T, Provider> mappings)
+        where T : ProviderBaseDto
+        => mappings
+            .ForMember(dest => dest.Institution, opt => opt.Ignore())
+            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+            .ForMember(dest => dest.Status, opt => opt.Ignore())
+            .ForMember(dest => dest.StatusReason, opt => opt.Ignore())
+            .ForMember(dest => dest.LicenseStatus, opt => opt.Ignore())
+        ;
+
+    private IMappingExpression<TSource, TDestination> IgnoreAllImages<TSource, TDestination>(IMappingExpression<TSource, TDestination> mappings)
+        where TDestination : IHasCoverImage, IHasImages
+        => mappings
+            .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
+            .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
+        ;
+
+    private IMappingExpression<TSource, TDestination> MapImageIds<TSource, TDestination>(IMappingExpression<TSource, TDestination> mappings)
+        where TSource : class, IHasEntityImages<TSource>
+        where TDestination : class, IHasImages
+        => mappings
+            .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
+        ;
 }

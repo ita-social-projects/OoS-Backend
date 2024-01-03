@@ -6,7 +6,6 @@ using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
-using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshops;
 
@@ -515,17 +514,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
                 var user = (await userRepository.GetByFilter(u => u.Id == pa.UserId).ConfigureAwait(false)).Single();
                 var dto = mapper.Map<ProviderAdminDto>(user);
                 dto.IsDeputy = pa.IsDeputy;
-
-                if (user.IsBlocked)
-                {
-                    dto.AccountStatus = AccountStatus.Blocked;
-                }
-                else
-                {
-                    dto.AccountStatus = user.LastLogin == DateTimeOffset.MinValue
-                        ? AccountStatus.NeverLogged
-                        : AccountStatus.Accepted;
-                }
+                dto.AccountStatus = AccountStatusExtensions.Convert(user);
 
                 dtos.Add(dto);
             }
@@ -570,16 +559,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         result.WorkshopTitles = await workshopService.GetWorkshopListByProviderAdminId(providerAdminId).ConfigureAwait(false);
 
         result.IsDeputy = providerAdmin.IsDeputy;
-        if (user.IsBlocked)
-        {
-            result.AccountStatus = AccountStatus.Blocked;
-        }
-        else
-        {
-            result.AccountStatus = user.LastLogin == DateTimeOffset.MinValue
-                ? AccountStatus.NeverLogged
-                : AccountStatus.Accepted;
-        }
+        result.AccountStatus = AccountStatusExtensions.Convert(user);
 
         return result;
     }

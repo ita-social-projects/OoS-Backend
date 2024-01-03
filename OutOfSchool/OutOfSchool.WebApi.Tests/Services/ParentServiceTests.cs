@@ -12,6 +12,7 @@ using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.Parent;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -35,7 +36,7 @@ public class ParentServiceTests
         parentBlockedByAdminLogServiceMock = new Mock<IParentBlockedByAdminLogService>();
         loggerMock = new Mock<ILogger<ParentService>>();
         repositoryChildMock = new Mock<IEntityRepositorySoftDeleted<Guid, Child>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
 
         parentService = new ParentService(
             parentRepositoryMock.Object,

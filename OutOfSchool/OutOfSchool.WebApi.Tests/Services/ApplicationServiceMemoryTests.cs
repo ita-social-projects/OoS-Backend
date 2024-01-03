@@ -20,6 +20,7 @@ using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -68,7 +69,7 @@ public class ApplicationServiceMemoryTests
         codeficatorServiceMock = new Mock<ICodeficatorService>();
 
         logger = new Mock<ILogger<ApplicationService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
 
         applicationsConstraintsConfig = new Mock<IOptions<ApplicationsConstraintsConfig>>();
         applicationsConstraintsConfig.Setup(x => x.Value)

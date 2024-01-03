@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -18,7 +17,6 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.ProviderServices;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Controllers.ProviderControllersTests;
 
@@ -28,14 +26,11 @@ public class PublicProviderControllerTests
     private PublicProviderController providerController;
     private Mock<IPublicProviderService> publicProviderService;
     private List<Provider> providers;
-    private Provider provider;
-    private IMapper mapper;
     private string userId;
 
     [SetUp]
     public void Setup()
     {
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         userId = Guid.NewGuid().ToString();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var user = new ClaimsPrincipal
@@ -52,7 +47,6 @@ public class PublicProviderControllerTests
 
         providerController.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
         providers = ProvidersGenerator.Generate(10);
-        provider = ProvidersGenerator.Generate();
     }
 
     [Test]

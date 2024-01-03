@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.WebApi.Models.Workshops;
 
-public class WorkshopDto : WorkshopBaseDto
+public class WorkshopDto : WorkshopBaseDto, IHasRating
 {
     public uint TakenSeats { get; set; } = 0;
 

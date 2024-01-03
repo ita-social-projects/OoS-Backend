@@ -17,6 +17,7 @@ using OutOfSchool.WebApi.Models.ProvidersInfo;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 [TestFixture]
@@ -35,7 +36,7 @@ public class ExternalExportProviderServiceTests
         mockProviderRepository = new Mock<IProviderRepository>();
         mockWorkshopRepository = new Mock<IWorkshopRepository>();
         mockAverageRatingService = new Mock<IAverageRatingService>();
-        mockMapper = OutOfSchool.Tests.Common.TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mockMapper = OutOfSchool.Tests.Common.TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         mockLogger = new Mock<ILogger<ExternalExportProviderService>>();
 
         externalExportProviderService = new ExternalExportProviderService(
@@ -225,7 +226,7 @@ public class ExternalExportProviderServiceTests
                 providerRepository,
                 workshopRepository,
                 new Mock<IAverageRatingService>().Object,
-                new Mapper(new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>())),
+                mockMapper,
                 new Mock<ILogger<ExternalExportProviderService>>().Object
             );
 

@@ -5,7 +5,7 @@ using OutOfSchool.WebApi.Util.JsonTools;
 
 namespace OutOfSchool.WebApi.Models.Workshops;
 
-public class WorkshopV2Dto : WorkshopDto
+public class WorkshopV2Dto : WorkshopDto, IHasCoverImage, IHasImages
 {
     [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;
