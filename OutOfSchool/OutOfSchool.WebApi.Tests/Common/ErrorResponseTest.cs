@@ -28,7 +28,7 @@ public class ErrorResponseTest
         var result = ErrorResponse.BadRequest(emailAlreadyTaken);
 
         // Assert
-        Assert.AreEqual(result.HttpStatusCode, httpBadRequest);
-        Assert.AreEqual(result.ApiErrorResponse.ApiErrors.Count, 1);
+        Assert.AreEqual(httpBadRequest, result.HttpStatusCode);
+        Assert.AreEqual(1, result.ApiErrorResponse.ApiErrors.Count);
     }
 }
