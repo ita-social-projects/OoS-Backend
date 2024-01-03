@@ -76,8 +76,8 @@ public static class Startup
             .WithMetadata(new AllowAnonymousAttribute());
 
         app.MapControllers();
-        app.MapHub<ChatWorkshopHub>("/chathub/workshop");
-        app.MapHub<NotificationHub>("/notificationhub");
+        app.MapHub<ChatWorkshopHub>(Constants.PathToChatHub);
+        app.MapHub<NotificationHub>(Constants.PathToNotificationHub);
     }
 
     public static void AddApplicationServices(this WebApplicationBuilder builder)
@@ -248,7 +248,6 @@ public static class Startup
         services.AddTransient<IChangesLogService, ChangesLogService>();
         services.AddTransient<IValueProjector, ValueProjector>();
         services.AddTransient<IExternalExportProviderService, ExternalExportProviderService>();
-
 
         services.AddTransient<IInstitutionHierarchyService, InstitutionHierarchyService>();
         services.AddTransient<IInstitutionService, InstitutionService>();
@@ -425,6 +424,7 @@ public static class Startup
                 options.Configuration.AbortOnConnectFail = false;
             });
 
+            // TODO: Try to rework or remove if chat will stop working correctly
             services.AddSingleton(typeof(HubLifetimeManager<>), typeof(LocalDistributedHubLifetimeManager<>));
         }
 

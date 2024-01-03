@@ -47,4 +47,8 @@ public static class Constants
     public const string CacheProfilePrivate = "CacheProfilePrivate";
 
     public const string CacheProfilePublic = "CacheProfilePublic";
+
+    public const string PathToChatHub = "/hubs/chat";
+
+    public const string PathToNotificationHub = "/hubs/notification";
 }
