@@ -500,7 +500,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             var providerAdmin =
                 (await providerAdminRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false))
                 .SingleOrDefault();
-            if (providerAdmin.IsDeputy)
+            if (providerAdmin != null && providerAdmin.IsDeputy)
             {
                 providerAdmins = (await providerAdminRepository
                     .GetByFilter(pa => pa.ProviderId == providerAdmin.ProviderId && !pa.IsDeputy)
@@ -551,10 +551,11 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         return providersDeputies.Select(d => d.UserId);
     }
 
-    /// <inheritdoc/>
+/// <inheritdoc/>
     public async Task<FullProviderAdminDto> GetFullProviderAdmin(string providerAdminId)
     {
         var providerAdmin = await GetById(providerAdminId).ConfigureAwait(false);
+
         if (providerAdmin == null)
         {
             return null;
@@ -565,11 +566,19 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         var user = (await userRepository.GetByFilter(u => u.Id == providerAdmin.UserId).ConfigureAwait(false))
             .SingleOrDefault();
 
+        if (user == null)
+        {
+            Logger.LogWarning("User is null. Unable to retrieve FullProviderAdminDto.");
+
+            return null;
+        }
+
         var result = mapper.Map<FullProviderAdminDto>(user);
 
         result.WorkshopTitles = await workshopService.GetWorkshopListByProviderAdminId(providerAdminId).ConfigureAwait(false);
 
         result.IsDeputy = providerAdmin.IsDeputy;
+
         if (user.IsBlocked)
         {
             result.AccountStatus = AccountStatus.Blocked;
