@@ -4,8 +4,10 @@ using AutoMapper;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.IntegrationTests.MappingIntergrationTests;
 
@@ -17,8 +19,7 @@ public class WorkshopMappingTests
     [SetUp]
     public void SetUp()
     {
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
-        this.mapper = new Mapper(config);
+        this.mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
     }
 
     [Test]

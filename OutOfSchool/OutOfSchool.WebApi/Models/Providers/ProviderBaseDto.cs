@@ -8,7 +8,7 @@ using OutOfSchool.WebApi.Util.JsonTools;
 
 namespace OutOfSchool.WebApi.Models.Providers;
 
-public class ProviderBaseDto
+public class ProviderBaseDto : IHasCoverImage, IHasImages
 {
     public Guid Id { get; set; }
 

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -20,6 +21,7 @@ using OutOfSchool.WebApi.Services.Communication.ICommunication;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Services.ProviderServices;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests;
 
@@ -46,7 +48,7 @@ public class ProviderServiceUpdate
             await context.SaveChangesAsync();
         }
 
-        this.mapper = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile(typeof(MappingProfile))));
+        this.mapper = new Mapper(new MapperConfiguration(cfg => cfg.UseProfile<CommonProfile>().UseProfile<MappingProfile>()));
 
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderService>>();

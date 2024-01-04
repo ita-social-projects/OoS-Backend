@@ -8,7 +8,7 @@ using OutOfSchool.Services.Models.ChatWorkshop;
 
 namespace OutOfSchool.Services.Models;
 
-public class Parent : IKeyedEntity<Guid>, ISoftDeleted
+public class Parent : IKeyedEntity<Guid>, ISoftDeleted, IHasUser
 {
     public Parent()
     {

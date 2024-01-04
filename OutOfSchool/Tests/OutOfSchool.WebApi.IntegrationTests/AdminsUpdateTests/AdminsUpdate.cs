@@ -2,8 +2,10 @@
 using AutoMapper;
 using NUnit.Framework;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.IntegrationTests.AdminsUpdateTests;
 
@@ -15,7 +17,7 @@ public class AdminsUpdate
     [SetUp]
     public void SetUp()
     {
-        this.mapper = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile(typeof(MappingProfile))));
+        this.mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
     }
 
     [Test]

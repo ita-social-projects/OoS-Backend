@@ -1,9 +1,10 @@
-using OutOfSchool.Common.Enums;
 using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.WebApi.Models.Providers;
 
-public class ProviderDto : ProviderBaseDto
+public class ProviderDto : ProviderBaseDto, IHasRating
 {
     [Required]
     [EnumDataType(typeof(OwnershipType), ErrorMessage = Constants.EnumErrorMessage)]
