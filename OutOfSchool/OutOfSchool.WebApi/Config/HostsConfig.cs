@@ -7,4 +7,6 @@ public class HostsConfig
     public string BackendUrl { get; set; }
 
     public string FrontendUrl { get; set; }
+
+    public string PathToWorkshopDetailsOnFrontend { get; set; }
 }

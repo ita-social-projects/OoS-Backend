@@ -1025,9 +1025,8 @@ public class ApplicationService : IApplicationService, INotificationReciever
                 _ => UaUnspecifiedGenderEnding,
             },
             WorkshopTitle = application.Workshop.Title,
-
-            // TODO: Think about pass URL from variable
-            WorkshopUrl = $"{hostsConfig.Value.FrontendUrl}/#/details/workshop/{application.WorkshopId}",
+            WorkshopUrl =
+                $"{hostsConfig.Value.FrontendUrl}{hostsConfig.Value.PathToWorkshopDetailsOnFrontend}{application.WorkshopId}",
             RejectionMessage = application.RejectionMessage,
         };
         var content = await renderer
