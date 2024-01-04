@@ -92,7 +92,7 @@ public class WorkshopService : IWorkshopService
 
         if (dto.AvailableSeats is 0 or null)
         {
-            dto.AvailableSeats = uint.MaxValue;
+            workshop.AvailableSeats = uint.MaxValue;
         }
 
         Func<Task<Workshop>> operation = async () =>
