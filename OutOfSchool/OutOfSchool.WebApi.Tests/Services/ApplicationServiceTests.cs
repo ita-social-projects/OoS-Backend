@@ -488,6 +488,57 @@ public class ApplicationServiceTests
     }
 
     [Test]
+    public async Task GetAllByProviderAdmin_WhenIdIsValid_ShouldReturnApplications()
+    {
+        // Arrange
+        var existingApplications = WithApplicationsList();
+        var mappedDtos = existingApplications.Select(a => new ApplicationDto() { Id = a.Id }).ToList();
+        var providerAdmin = new ProviderAdminProviderRelationDto()
+        {
+            UserId = Guid.NewGuid().ToString(),
+            ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+            IsDeputy = false,
+        };
+        providerAdminService.Setup(x => x.GetById(It.IsAny<string>())).ReturnsAsync(providerAdmin);
+        currentUserServiceMock.Setup(x => x.IsAdmin()).Returns(false);
+        var applicationFilter = new ApplicationFilter
+        {
+            Statuses = null,
+            OrderByAlphabetically = false,
+            OrderByStatus = false,
+            OrderByDateAscending = false,
+        };
+        var workshopsMock = WithWorkshopsList().AsQueryable().BuildMock();
+        workshopRepositoryMock.Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Workshop, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(workshopsMock)
+            .Verifiable();
+        var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
+        applicationRepositoryMock.Setup(r => r.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Application, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(applicationsMock)
+            .Verifiable();
+        mapper.Setup(x => x.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
+
+        // Act
+        var result = await service.GetAllByProviderAdmin(providerAdmin.UserId, applicationFilter)
+            .ConfigureAwait(false);
+
+        // Assert
+        result.Entities.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
+    }
+
+    [Test]
     public async Task GetAllByParent_WhenIdIsValid_ShouldReturnApplications()
     {
         // Arrange
