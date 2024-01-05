@@ -14,6 +14,7 @@ using NUnit.Framework;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.EmailSender;
+using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -921,6 +922,76 @@ public class ApplicationServiceTests
         await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
+        emailSenderMock.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<(string, string)>()), Times.Once);
+    }
+
+    [Test]
+    [TestCase(Gender.Male, "ий")]
+    [TestCase(Gender.Female, "а")]
+    [TestCase(null, "ий/a")]
+    public async Task UpdateApplication_WhenChildGenderMaleFemaleNull_ShouldSendEmailWithCorrectUaEnding(
+        Gender? gender,
+        string expectedEnding)
+    {
+        // Arrange
+        var id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd");
+        var changedEntity = WithApplication(id);
+        changedEntity.Child.Gender = gender;
+
+        var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
+
+        applicationRepositoryMock.Setup(r => r.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Application, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(applicationsMock)
+            .Verifiable();
+
+        applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>()))
+            .ReturnsAsync(changedEntity);
+        applicationRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(changedEntity);
+        applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
+        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto() { Id = id });
+
+        var expected = new ApplicationDto() { Id = id };
+        var update = new ApplicationUpdate
+        {
+            Id = id,
+            Status = ApplicationStatus.Approved,
+            WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+        };
+
+        workshopServiceCombinerMock.Setup(c =>
+                c.GetById(It.Is<Guid>(i => i == update.WorkshopId)))
+            .ReturnsAsync(new WorkshopDto()
+            {
+                Id = update.WorkshopId,
+                AvailableSeats = uint.MaxValue,
+                Status = WorkshopStatus.Open,
+            });
+
+        workshopRepositoryMock.Setup(w => w.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
+            .ReturnsAsync(new List<Workshop>());
+
+        workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
+
+        currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
+        currentUserServiceMock.Setup(c => c.UserSubRole).Returns(string.Empty);
+        applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MinValue);
+
+        // Act
+        await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        rendererMock.Verify(
+            x => x.GetHtmlPlainStringAsync(
+                "ApplicationApprovedEmail",
+                It.Is<ApplicationStatusViewModel>(viewModel => viewModel.UaEnding == expectedEnding)),
+            Times.Once);
         emailSenderMock.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<(string, string)>()), Times.Once);
     }
 
