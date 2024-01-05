@@ -285,11 +285,11 @@ public class MappingProfile : Profile
             .IncludeBase<Workshop, WorkshopBaseCard>()
             .ForMember(dest => dest.AmountOfPendingApplications, opt => opt.MapFrom(src =>
                 src.Applications.Count(x =>
-                    x.Status == ApplicationStatus.Pending && !x.IsDeleted && !x.Child.IsDeleted && !x.Parent.IsDeleted)))
+                    x.Status == ApplicationStatus.Pending && !x.IsDeleted && (x.Child == null || !x.Child.IsDeleted) && (x.Parent == null || !x.Parent.IsDeleted))))
             .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src =>
                 src.Applications.Count(x =>
                     (x.Status == ApplicationStatus.Approved
-                    || x.Status == ApplicationStatus.StudyingForYears) && !x.IsDeleted && !x.Child.IsDeleted && !x.Parent.IsDeleted)))
+                    || x.Status == ApplicationStatus.StudyingForYears) && !x.IsDeleted && (x.Child == null || !x.Child.IsDeleted) && (x.Parent == null || !x.Parent.IsDeleted))))
             .ForMember(dest => dest.UnreadMessages, opt => opt.Ignore());
 
         CreateMap<SocialGroup, SocialGroupDto>().ReverseMap();
