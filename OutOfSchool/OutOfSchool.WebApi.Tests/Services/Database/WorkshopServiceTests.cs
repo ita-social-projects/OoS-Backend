@@ -672,14 +672,46 @@ public class WorkshopServiceTests
             .Returns(Task.FromResult(provider));
         workshopRepository.Setup(
                 w => w.Create(It.IsAny<Workshop>()))
-            .Returns(Task.FromResult(It.IsAny<Workshop>()));
+            .ReturnsAsync((Workshop workshop) =>
+            {
+                return new Workshop
+                {
+                    Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
+                    AvailableSeats = workshop.AvailableSeats,
+                };
+            });
         workshopRepository.Setup(
                 w => w.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
-            .ReturnsAsync(new Workshop() { Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e") });
+            .ReturnsAsync((Func<Task<Workshop>> func) =>
+            {
+                return new Workshop
+                {
+                    Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
+                    AvailableSeats = func.Invoke().Result.AvailableSeats,
+                };
+            });
         mapperMock.Setup(m => m.Map<WorkshopBaseDto>(It.IsAny<Workshop>()))
-            .Returns(new WorkshopBaseDto() { Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e") });
+            .Returns((Workshop workshop) =>
+            {
+                var dto = new WorkshopBaseDto
+                {
+                    Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
+                    AvailableSeats = workshop.AvailableSeats,
+                };
+
+                return dto;
+            });
         mapperMock.Setup(m => m.Map<Workshop>(It.IsAny<WorkshopBaseDto>()))
-            .Returns(new Workshop() { Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e") });
+            .Returns((WorkshopBaseDto dto) =>
+            {
+                var workshop = new Workshop
+                {
+                    Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
+                    AvailableSeats = (uint)dto.AvailableSeats,
+                };
+
+                return workshop;
+            });
     }
 
     private void SetupGetAll(IEnumerable<Workshop> workshops, IEnumerable<AverageRatingDto> ratings)

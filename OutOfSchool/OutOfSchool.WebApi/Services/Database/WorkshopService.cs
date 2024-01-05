@@ -79,6 +79,11 @@ public class WorkshopService : IWorkshopService
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
 
+        if (dto.AvailableSeats is 0 or null)
+        {
+            dto.AvailableSeats = uint.MaxValue;
+        }
+
         var workshop = mapper.Map<Workshop>(dto);
         workshop.Provider = await providerRepository.GetById(workshop.ProviderId).ConfigureAwait(false);
         workshop.ProviderOwnership = workshop.Provider.Ownership;
@@ -89,11 +94,6 @@ public class WorkshopService : IWorkshopService
         }
 
         workshop.Status = WorkshopStatus.Open;
-
-        if (dto.AvailableSeats is 0 or null)
-        {
-            workshop.AvailableSeats = uint.MaxValue;
-        }
 
         Func<Task<Workshop>> operation = async () =>
             await workshopRepository.Create(workshop).ConfigureAwait(false);
