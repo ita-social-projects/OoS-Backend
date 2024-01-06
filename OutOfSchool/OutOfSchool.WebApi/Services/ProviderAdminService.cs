@@ -471,6 +471,8 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             relatedAdmins = relatedAdmins.Where(filterPredicate);
         }
 
+        relatedAdmins = relatedAdmins.OrderBy(x => x.AccountStatus).ThenBy(x => x.LastName).ThenBy(x => x.FirstName).ThenBy(x => x.MiddleName);
+
         var providerAdmins = relatedAdmins.Skip(filter.From).Take(filter.Size).ToList();
 
         var searchResult = new SearchResult<ProviderAdminDto>()
