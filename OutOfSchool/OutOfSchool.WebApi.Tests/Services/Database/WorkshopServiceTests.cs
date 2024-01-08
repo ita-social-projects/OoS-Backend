@@ -666,6 +666,7 @@ public class WorkshopServiceTests
     private void SetupCreate()
     {
         var provider = ProvidersGenerator.Generate();
+        var id = Guid.NewGuid();
 
         providerRepositoryMock
             .Setup(p => p.GetById(It.IsAny<Guid>()))
@@ -676,18 +677,19 @@ public class WorkshopServiceTests
             {
                 return new Workshop
                 {
-                    Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
+                    Id = id,
                     AvailableSeats = workshop.AvailableSeats,
                 };
             });
         workshopRepository.Setup(
                 w => w.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
-            .ReturnsAsync((Func<Task<Workshop>> func) =>
+            .Returns(async (Func<Task<Workshop>> func) =>
             {
+                var workshop = await func();
                 return new Workshop
                 {
-                    Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
-                    AvailableSeats = func.Invoke().Result.AvailableSeats,
+                    Id = id,
+                    AvailableSeats = workshop.AvailableSeats,
                 };
             });
         mapperMock.Setup(m => m.Map<WorkshopBaseDto>(It.IsAny<Workshop>()))
@@ -695,7 +697,7 @@ public class WorkshopServiceTests
             {
                 var dto = new WorkshopBaseDto
                 {
-                    Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
+                    Id = id,
                     AvailableSeats = workshop.AvailableSeats,
                 };
 
@@ -706,7 +708,7 @@ public class WorkshopServiceTests
             {
                 var workshop = new Workshop
                 {
-                    Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
+                    Id = id,
                     AvailableSeats = (uint)dto.AvailableSeats,
                 };
 
