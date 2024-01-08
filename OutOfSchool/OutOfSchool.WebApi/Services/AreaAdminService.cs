@@ -1,11 +1,12 @@
 using System.Linq.Expressions;
 using AutoMapper;
-using Castle.Core.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Responses;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 
@@ -98,12 +99,23 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
 
         _ = areaAdminBaseDto ?? throw new ArgumentNullException(nameof(areaAdminBaseDto));
 
+        var badRequestApiErrorResponse = new ApiErrorResponse();
         if (await IsSuchEmailExisted(areaAdminBaseDto.Email))
         {
             Logger.LogDebug(
                 "AreaAdmin creating is not possible. Username {Email} is already taken",
                 areaAdminBaseDto.Email);
-            throw new InvalidOperationException($"Username {areaAdminBaseDto.Email} is already taken.");
+            badRequestApiErrorResponse.AddApiError(
+                ApiErrorsTypes.Common.EmailAlreadyTaken("AreaAdmin", areaAdminBaseDto.Email));
+        }
+
+        // Here will be the same checks for phone number and possibly other fields
+
+        // TODO: Separate checks for BadRequset that require ApiErrorResponse
+        // to be returned in a method
+        if (badRequestApiErrorResponse.ApiErrors.Count != 0)
+        {
+            return ErrorResponse.BadRequest(badRequestApiErrorResponse);
         }
 
         bool isValidCatottg = await IsValidCatottg(areaAdminBaseDto.CATOTTGId);

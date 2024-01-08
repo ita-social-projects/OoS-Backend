@@ -12,6 +12,8 @@ using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Responses;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -28,6 +30,8 @@ namespace OutOfSchool.WebApi.Tests.Services;
 [TestFixture]
 public class RegionAdminServiceTests
 {
+    private readonly string email = "email@gmail.com";
+
     private Mock<IHttpClientFactory> httpClientFactory;
     private Mock<IOptions<AuthorizationServerConfig>> identityServerConfig;
     private Mock<IOptions<CommunicationConfig>> communicationConfig;
@@ -42,6 +46,8 @@ public class RegionAdminServiceTests
     private List<RegionAdmin> regionAdmins;
     private RegionAdminDto regionAdminDto;
     private List<RegionAdminDto> regionAdminsDtos;
+    private ErrorResponse emailAlreadyTakenErrorResponse;
+    private ApiErrorResponse badRequestApiErrorResponse;
 
     [SetUp]
     public void SetUp()
@@ -54,6 +60,12 @@ public class RegionAdminServiceTests
         httpClientFactory = new Mock<IHttpClientFactory>();
         identityServerConfig = new Mock<IOptions<AuthorizationServerConfig>>();
         communicationConfig = new Mock<IOptions<CommunicationConfig>>();
+
+        badRequestApiErrorResponse = new ApiErrorResponse();
+        badRequestApiErrorResponse.AddApiError(
+            ApiErrorsTypes.Common.EmailAlreadyTaken("RegionAdmin", email));
+        emailAlreadyTakenErrorResponse = ErrorResponse.BadRequest(badRequestApiErrorResponse);
+
         communicationConfig.Setup(x => x.Value)
             .Returns(new CommunicationConfig()
             {
@@ -254,5 +266,35 @@ public class RegionAdminServiceTests
 
         // Assert
         Assert.That(result, Is.False);
+    }
+
+    [Test]
+    public async Task Create_EmailIsAlreadyTaken_ReturnsErrorResponse()
+    {
+        // Arrange
+        var expected = emailAlreadyTakenErrorResponse
+            .ApiErrorResponse
+            .ApiErrors
+            .First();
+        userRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<string>()))
+            .ReturnsAsync(new List<User> { new User() });
+
+        var regionAdminBaseDto = new RegionAdminBaseDto();
+        regionAdminBaseDto.Email = email;
+
+        // Act
+        var response = await regionAdminService.CreateRegionAdminAsync(It.IsAny<string>(), regionAdminBaseDto, It.IsAny<string>()).ConfigureAwait(false);
+
+        ErrorResponse errorResponse = default;
+        response.Match<ErrorResponse>(
+            actionResult => errorResponse = actionResult,
+            succeed => errorResponse = new ErrorResponse());
+
+        var result = errorResponse.ApiErrorResponse.ApiErrors.First();
+
+        // Assert
+        Assert.AreEqual(expected.Group, result.Group);
+        Assert.AreEqual(expected.Code, result.Code);
+        Assert.AreEqual(expected.Message, result.Message);
     }
 }

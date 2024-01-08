@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -10,6 +12,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Config;
@@ -24,6 +27,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class ProviderAdminServiceTest
 {
     private readonly string userId = "1";
+    private readonly string email = "email@gmail.com";
 
     private Mock<IHttpClientFactory> httpClientFactory;
     private Mock<IOptions<AuthorizationServerConfig>> identityServerConfig;
@@ -37,7 +41,9 @@ public class ProviderAdminServiceTest
     private Mock<ICurrentUserService> currentUserServiceMock;
 
     private ProviderAdminService providerAdminService;
+    private ApiErrorResponse badRequestApiErrorResponse;
     private ErrorResponse userDosntHavePermissionErrorResponse;
+    private ErrorResponse emailAlreadyTakenErrorResponse;
 
     [SetUp]
     public void SetUp()
@@ -50,6 +56,11 @@ public class ProviderAdminServiceTest
                     ApiErrorsTypes.ProviderAdmin.UserDontHavePermissionToCreate(userId),
                 }),
         };
+        badRequestApiErrorResponse = new ApiErrorResponse();
+        badRequestApiErrorResponse.AddApiError(
+            ApiErrorsTypes.Common.EmailAlreadyTaken("ProviderAdmin", email));
+        emailAlreadyTakenErrorResponse = ErrorResponse.BadRequest(badRequestApiErrorResponse);
+
         httpClientFactory = new Mock<IHttpClientFactory>();
         httpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>()))
             .Returns(new HttpClient()
@@ -111,6 +122,42 @@ public class ProviderAdminServiceTest
             succeed => errorResponse = new ErrorResponse());
 
         var result = errorResponse.ApiErrorResponse.ApiErrors[0];
+
+        // Assert
+        Assert.AreEqual(expected.Group, result.Group);
+        Assert.AreEqual(expected.Code, result.Code);
+        Assert.AreEqual(expected.Message, result.Message);
+    }
+
+    [Test]
+    public async Task Create_EmailIsAlreadyTaken_ReturnsErrorResponse()
+    {
+        // Arrange
+        var expected = emailAlreadyTakenErrorResponse
+            .ApiErrorResponse
+            .ApiErrors
+            .First();
+        userRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<string>()))
+            .ReturnsAsync(new List<User> { new User() });
+
+        providerAdminRepository.Setup(r => r.IsExistProviderAdminDeputyWithUserIdAsync(It.IsAny<Guid>(), It.IsAny<string>()))
+                                   .ReturnsAsync(true);
+
+        providerAdminRepository.Setup(r => r.IsExistProviderWithUserIdAsync(It.IsAny<string>()))
+                                   .ReturnsAsync(true);
+
+        var createProviderAdminDto = new CreateProviderAdminDto();
+        createProviderAdminDto.Email = email;
+
+        // Act
+        var response = await providerAdminService.CreateProviderAdminAsync(userId, createProviderAdminDto, It.IsAny<string>()).ConfigureAwait(false);
+
+        ErrorResponse errorResponse = default;
+        response.Match<ErrorResponse>(
+            actionResult => errorResponse = actionResult,
+            succeed => errorResponse = new ErrorResponse());
+
+        var result = errorResponse.ApiErrorResponse.ApiErrors.First();
 
         // Assert
         Assert.AreEqual(expected.Group, result.Group);

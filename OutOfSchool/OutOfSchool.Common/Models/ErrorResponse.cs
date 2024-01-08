@@ -10,4 +10,13 @@ public class ErrorResponse
     public string Message { get; set; }
 
     public ApiErrorResponse ApiErrorResponse { get; set; }
+
+    public static ErrorResponse BadRequest(ApiErrorResponse apiErrorResponse)
+    {
+        return new ErrorResponse
+        {
+            HttpStatusCode = HttpStatusCode.BadRequest,
+            ApiErrorResponse = apiErrorResponse,
+        };
+    }
 }
