@@ -41,6 +41,7 @@ public class ProviderAdminServiceTest
     private Mock<ICurrentUserService> currentUserServiceMock;
 
     private ProviderAdminService providerAdminService;
+    private ApiErrorResponse badRequestApiErrorResponse;
     private ErrorResponse userDosntHavePermissionErrorResponse;
     private ErrorResponse emailAlreadyTakenErrorResponse;
 
@@ -55,14 +56,11 @@ public class ProviderAdminServiceTest
                     ApiErrorsTypes.ProviderAdmin.UserDontHavePermissionToCreate(userId),
                 }),
         };
-        emailAlreadyTakenErrorResponse = new ErrorResponse
-        {
-            HttpStatusCode = HttpStatusCode.BadRequest,
-            ApiErrorResponse = new ApiErrorResponse(new List<ApiError>()
-                {
-                    ApiErrorsTypes.Common.EmailAlreadyTaken("ProviderAdmin", email),
-                }),
-        };
+        badRequestApiErrorResponse = new ApiErrorResponse();
+        badRequestApiErrorResponse.AddApiError(
+            ApiErrorsTypes.Common.EmailAlreadyTaken("ProviderAdmin", email));
+        emailAlreadyTakenErrorResponse = ErrorResponse.BadRequest(badRequestApiErrorResponse);
+
         httpClientFactory = new Mock<IHttpClientFactory>();
         httpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>()))
             .Returns(new HttpClient()

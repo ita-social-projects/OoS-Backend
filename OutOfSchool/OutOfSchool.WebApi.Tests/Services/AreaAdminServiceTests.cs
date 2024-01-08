@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -51,6 +50,7 @@ public class AreaAdminServiceTests
     private AreaAdminDto areaAdminDto;
     private List<AreaAdminDto> areaAdminsDtos;
     private ErrorResponse emailAlreadyTakenErrorResponse;
+    private ApiErrorResponse badRequestApiErrorResponse;
 
     [SetUp]
     public void SetUp()
@@ -63,14 +63,12 @@ public class AreaAdminServiceTests
         httpClientFactory = new Mock<IHttpClientFactory>();
         identityServerConfig = new Mock<IOptions<AuthorizationServerConfig>>();
         communicationConfig = new Mock<IOptions<CommunicationConfig>>();
-        emailAlreadyTakenErrorResponse = new ErrorResponse
-        {
-            HttpStatusCode = HttpStatusCode.BadRequest,
-            ApiErrorResponse = new ApiErrorResponse(new List<ApiError>()
-            {
-                    ApiErrorsTypes.Common.EmailAlreadyTaken("AreaAdmin", email),
-            }),
-        };
+
+        badRequestApiErrorResponse = new ApiErrorResponse();
+        badRequestApiErrorResponse.AddApiError(
+            ApiErrorsTypes.Common.EmailAlreadyTaken("AreaAdmin", email));
+        emailAlreadyTakenErrorResponse = ErrorResponse.BadRequest(badRequestApiErrorResponse);
+
         communicationConfig.Setup(x => x.Value)
             .Returns(new CommunicationConfig()
             {

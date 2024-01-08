@@ -15,10 +15,9 @@ public class ErrorResponseTest
     [SetUp]
     public void SetUp()
     {
-        emailAlreadyTaken = new ApiErrorResponse(new List<ApiError>()
-            {
-                    ApiErrorsTypes.Common.EmailAlreadyTaken("ProviderAdmin","email@gmail.com"),
-            });
+        emailAlreadyTaken = new ApiErrorResponse();
+        emailAlreadyTaken.AddApiError(
+            ApiErrorsTypes.Common.EmailAlreadyTaken("ProviderAdmin", "email@gmail.com"));
     }
 
     [Test]

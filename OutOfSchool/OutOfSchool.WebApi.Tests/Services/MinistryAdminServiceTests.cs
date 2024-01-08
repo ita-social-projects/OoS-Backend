@@ -44,6 +44,7 @@ public class MinistryAdminServiceTests
     private InstitutionAdmin institutionAdmin;
     private List<InstitutionAdmin> institutionAdmins;
     private ErrorResponse emailAlreadyTakenErrorResponse;
+    private ApiErrorResponse badRequestApiErrorResponse;
 
     [SetUp]
     public void SetUp()
@@ -54,14 +55,12 @@ public class MinistryAdminServiceTests
         httpClientFactory = new Mock<IHttpClientFactory>();
         identityServerConfig = new Mock<IOptions<AuthorizationServerConfig>>();
         communicationConfig = new Mock<IOptions<CommunicationConfig>>();
-        emailAlreadyTakenErrorResponse = new ErrorResponse
-        {
-            HttpStatusCode = HttpStatusCode.BadRequest,
-            ApiErrorResponse = new ApiErrorResponse(new List<ApiError>()
-            {
-                    ApiErrorsTypes.Common.EmailAlreadyTaken("MinistryAdmin", email),
-            }),
-        };
+
+        badRequestApiErrorResponse = new ApiErrorResponse();
+        badRequestApiErrorResponse.AddApiError(
+            ApiErrorsTypes.Common.EmailAlreadyTaken("MinistryAdmin", email));
+        emailAlreadyTakenErrorResponse = ErrorResponse.BadRequest(badRequestApiErrorResponse);
+
         communicationConfig.Setup(x => x.Value)
             .Returns(new CommunicationConfig()
             {

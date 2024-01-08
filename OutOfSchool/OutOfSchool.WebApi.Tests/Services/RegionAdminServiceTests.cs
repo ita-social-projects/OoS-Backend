@@ -47,6 +47,7 @@ public class RegionAdminServiceTests
     private RegionAdminDto regionAdminDto;
     private List<RegionAdminDto> regionAdminsDtos;
     private ErrorResponse emailAlreadyTakenErrorResponse;
+    private ApiErrorResponse badRequestApiErrorResponse;
 
     [SetUp]
     public void SetUp()
@@ -59,14 +60,12 @@ public class RegionAdminServiceTests
         httpClientFactory = new Mock<IHttpClientFactory>();
         identityServerConfig = new Mock<IOptions<AuthorizationServerConfig>>();
         communicationConfig = new Mock<IOptions<CommunicationConfig>>();
-        emailAlreadyTakenErrorResponse = new ErrorResponse
-        {
-            HttpStatusCode = HttpStatusCode.BadRequest,
-            ApiErrorResponse = new ApiErrorResponse(new List<ApiError>()
-            {
-                    ApiErrorsTypes.Common.EmailAlreadyTaken("RegionAdmin", email),
-            }),
-        };
+
+        badRequestApiErrorResponse = new ApiErrorResponse();
+        badRequestApiErrorResponse.AddApiError(
+            ApiErrorsTypes.Common.EmailAlreadyTaken("RegionAdmin", email));
+        emailAlreadyTakenErrorResponse = ErrorResponse.BadRequest(badRequestApiErrorResponse);
+
         communicationConfig.Setup(x => x.Value)
             .Returns(new CommunicationConfig()
             {
