@@ -74,15 +74,15 @@ public class ChildControllerTests
     }
 
     [Test]
-        public void ChildController_WhenServicesIsNull_ThrowsArgumentNullException()
-        {
-            // Act and Assert
-            Assert.Throws<ArgumentNullException>(() => new ChildController(null, providerService.Object, providerAdminService.Object));
-            Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, null, providerAdminService.Object));
-            Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, providerService.Object, null));            
-        }
+    public void ChildController_WhenServicesIsNull_ThrowsArgumentNullException()
+    {
+        // Act and Assert
+        Assert.Throws<ArgumentNullException>(() => new ChildController(null, providerService.Object, providerAdminService.Object));
+        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, null, providerAdminService.Object));
+        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, providerService.Object, null));
+    }
 
-        [Test]
+    [Test]
     public async Task GetChildren_WhenThereAreChildren_ShouldReturnOkResultObject()
     {
         // Arrange
@@ -245,7 +245,9 @@ public class ChildControllerTests
     public async Task GetApprovedByWorkshopId_WhenThereAreChildren_ShouldReturnOkResultObject()
     {
         // Arrange
-        ChildDto child = children.First();
+        ChildDto firstChild = children.First();
+        ChildDto secondChild = children.Skip(1).First();
+        int expectedApplicationCount = 2;
         WorkshopV2Dto existingWorkshop = new WorkshopV2Dto()
         {
             Id = Guid.NewGuid(),
@@ -280,7 +282,7 @@ public class ChildControllerTests
 
         ProviderDto existingProvider = ProviderDtoGenerator.Generate().WithUserId(existingWorkshop.ProviderId.ToString());
 
-        ApplicationDto existingApplication = ApplicationDTOsGenerator
+        ApplicationDto firstExistingApplication = ApplicationDTOsGenerator
             .Generate()
             .WithWorkshopCard(new WorkshopCard
             {
@@ -305,7 +307,36 @@ public class ChildControllerTests
                 AvailableSeats = (uint)existingWorkshop.AvailableSeats,
                 TakenSeats = existingWorkshop.TakenSeats,
             })
-            .WithChild(child);
+            .WithChild(firstChild);
+
+        ApplicationDto secondExistingApplication = ApplicationDTOsGenerator
+            .Generate()
+            .WithWorkshopCard(new WorkshopCard
+            {
+                WorkshopId = existingWorkshop.Id,
+                ProviderTitle = existingWorkshop.ProviderTitle,
+                ProviderOwnership = existingWorkshop.ProviderOwnership,
+                Title = existingWorkshop.Title,
+                PayRate = (OutOfSchool.Common.Enums.PayRateType)existingWorkshop.PayRate,
+                CoverImageId = existingWorkshop.CoverImageId,
+                MinAge = existingWorkshop.MinAge,
+                MaxAge = existingWorkshop.MaxAge,
+                Price = (decimal)existingWorkshop.Price,
+                DirectionIds = existingWorkshop.DirectionIds,
+                ProviderId = existingWorkshop.ProviderId,
+                Address = existingWorkshop.Address,
+                WithDisabilityOptions = existingWorkshop.WithDisabilityOptions,
+                Rating = existingWorkshop.Rating,
+                ProviderLicenseStatus = existingWorkshop.ProviderLicenseStatus,
+                InstitutionHierarchyId = existingWorkshop.InstitutionHierarchyId,
+                InstitutionId = existingWorkshop.InstitutionId,
+                Institution = existingWorkshop.Institution,
+                AvailableSeats = (uint)existingWorkshop.AvailableSeats,
+                TakenSeats = existingWorkshop.TakenSeats,
+            })
+            .WithChild(secondChild);
+
+        secondExistingApplication.Status = ApplicationStatus.StudyingForYears;
 
         providerService.Setup(s => s.GetProviderIdForWorkshopById(existingWorkshop.Id)).ReturnsAsync(existingProvider.Id);
         providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), false)).ReturnsAsync(existingProvider);
@@ -321,14 +352,16 @@ public class ChildControllerTests
             .ReturnsAsync(
             new SearchResult<ChildDto>()
             {
-                TotalAmount = children.Where(p => p.Id == child.Id).Count(),
-                Entities = children.Where(p => p.Id == child.Id).ToList(),
+                TotalAmount = children.Where(p => p.Id == firstChild.Id || p.Id == secondChild.Id).Count(),
+                Entities = children.Where(p => p.Id == firstChild.Id || p.Id == secondChild.Id).ToList(),
             });
 
         // Act
         var result = await controller.GetApprovedByWorkshopId(existingWorkshop.Id, filter).ConfigureAwait(false);
 
         // Assert
+        var applicationResult = (result as OkObjectResult).Value as SearchResult<ChildDto>;
         Assert.IsInstanceOf<OkObjectResult>(result);
+        Assert.AreEqual(expectedApplicationCount, applicationResult.TotalAmount);
     }
 }

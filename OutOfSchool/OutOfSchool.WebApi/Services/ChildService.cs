@@ -325,7 +325,7 @@ public class ChildService : IChildService
             $"Getting Children by WorkshopId: {workshopId} started. Amount of children to take: {offsetFilter.Size}, skip first: {offsetFilter.From}.");
 
         var applications = await applicationRepository
-            .GetByFilter(p => p.WorkshopId == workshopId && p.Status == ApplicationStatus.Approved)
+            .GetByFilter(p => p.WorkshopId == workshopId && (p.Status == ApplicationStatus.Approved || p.Status == ApplicationStatus.StudyingForYears))
             .ConfigureAwait(false);
         var childrenGuids = new HashSet<Guid>(applications.Select(app => app.ChildId));
 
