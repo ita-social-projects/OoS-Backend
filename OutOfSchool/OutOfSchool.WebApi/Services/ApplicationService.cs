@@ -1,8 +1,12 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
+using OutOfSchool.EmailSender;
+using OutOfSchool.RazorTemplatesData.Models.Emails;
+using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.StatusPermissions;
@@ -18,6 +22,10 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class ApplicationService : IApplicationService, INotificationReciever
 {
+    public const string UaMaleEnding = "ий";
+    public const string UaFemaleEnding = "а";
+    public const string UaUnspecifiedGenderEnding = "ий/a";
+
     private readonly IApplicationRepository applicationRepository;
     private readonly IWorkshopRepository workshopRepository;
     private readonly ILogger<ApplicationService> logger;
@@ -32,6 +40,10 @@ public class ApplicationService : IApplicationService, INotificationReciever
     private readonly IRegionAdminService regionAdminService;
     private readonly IAreaAdminService areaAdminService;
     private readonly ICodeficatorService codeficatorService;
+    private readonly IRazorViewToStringRenderer renderer;
+    private readonly IEmailSender emailSender;
+    private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly IOptions<HostsConfig> hostsConfig;
 
     private readonly string errorNullWorkshopMessage = "Operation failed. Workshop in Application dto is null";
     private readonly string errorBlockedWorkshopMessage = "Unable to create a new application for a workshop because workshop is blocked";
@@ -55,6 +67,10 @@ public class ApplicationService : IApplicationService, INotificationReciever
     /// <param name="regionAdminService">Service for managing region admin rigths.</param>
     /// <param name="areaAdminService">Service for managing area admin rigths.</param>
     /// <param name="codeficatorService">Codeficator service.</param>
+    /// <param name="renderer">Razor view to string renderer.</param>
+    /// <param name="emailSender">Service for sending Email messages.</param>
+    /// <param name="localizer">Localizer.</param>
+    /// <param name="hostsConfig">Hosts config.</param>
     public ApplicationService(
         IApplicationRepository repository,
         ILogger<ApplicationService> logger,
@@ -69,7 +85,11 @@ public class ApplicationService : IApplicationService, INotificationReciever
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService,
         IAreaAdminService areaAdminService,
-        ICodeficatorService codeficatorService)
+        ICodeficatorService codeficatorService,
+        IRazorViewToStringRenderer renderer,
+        IEmailSender emailSender,
+        IStringLocalizer<SharedResource> localizer,
+        IOptions<HostsConfig> hostsConfig)
     {
         applicationRepository = repository ?? throw new ArgumentNullException(nameof(repository));
         this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
@@ -88,6 +108,10 @@ public class ApplicationService : IApplicationService, INotificationReciever
         this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
         this.areaAdminService = areaAdminService ?? throw new ArgumentNullException(nameof(areaAdminService));
         this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
+        this.emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
+        this.localizer = localizer ?? throw new ArgumentNullException(nameof(emailSender));
+        this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
+        this.hostsConfig = hostsConfig ?? throw new ArgumentNullException(nameof(hostsConfig));
     }
 
     /// <inheritdoc/>
@@ -945,6 +969,13 @@ public class ApplicationService : IApplicationService, INotificationReciever
                 additionalData,
                 groupedData).ConfigureAwait(false);
 
+            if (updatedApplication.Status == ApplicationStatus.Approved
+                || updatedApplication.Status == ApplicationStatus.AcceptedForSelection
+                || updatedApplication.Status == ApplicationStatus.Rejected)
+            {
+                await SendApplicationUpdateStatusEmail(updatedApplication);
+            }
+
             await ControlWorkshopStatus(previewAppStatus, updatedApplication.Status, currentApplication.WorkshopId);
 
             return Result<ApplicationDto>.Success(mapper.Map<ApplicationDto>(updatedApplication));
@@ -966,5 +997,40 @@ public class ApplicationService : IApplicationService, INotificationReciever
         return await applicationRepository.Count(a => application.ChildId == a.ChildId &&
                                                       application.WorkshopId == a.WorkshopId &&
                                                       Application.ValidApplicationStatuses.Contains(a.Status));
+    }
+
+    private async Task SendApplicationUpdateStatusEmail(Application application)
+    {
+        (string subject, string templateName) = application.Status switch
+        {
+            ApplicationStatus.Approved =>
+                (localizer["Approved!"], RazorTemplates.ApplicationApprovedEmail),
+            ApplicationStatus.Rejected =>
+                (localizer["Rejected"], RazorTemplates.ApplicationRejectedEmail),
+            ApplicationStatus.AcceptedForSelection =>
+                (localizer["Accepted for selection!"], RazorTemplates.ApplicationAcceptedForSelectionEmail),
+            _ => throw new ArgumentException("Unsupported application status."),
+        };
+
+        var applicationStatusViewModel = new ApplicationStatusViewModel
+        {
+            ChildFullName =
+                $"{application.Child.LastName} " +
+                $"{application.Child.FirstName} " +
+                $"{application.Child.MiddleName}".TrimEnd(),
+            UaEnding = application.Child.Gender switch
+            {
+                Gender.Male => UaMaleEnding,
+                Gender.Female => UaFemaleEnding,
+                _ => UaUnspecifiedGenderEnding,
+            },
+            WorkshopTitle = application.Workshop.Title,
+            WorkshopUrl =
+                $"{hostsConfig.Value.FrontendUrl}{hostsConfig.Value.PathToWorkshopDetailsOnFrontend}{application.WorkshopId}",
+            RejectionMessage = application.RejectionMessage,
+        };
+        var content = await renderer
+                .GetHtmlPlainStringAsync(templateName, applicationStatusViewModel);
+        await emailSender.SendAsync(application.Parent.User.Email, subject, content);
     }
 }

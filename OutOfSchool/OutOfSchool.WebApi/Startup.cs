@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
+using OutOfSchool.EmailSender;
+using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Services.Communication.ICommunication;
@@ -161,6 +163,7 @@ public static class Startup
                 })
             .AddHeaderPropagation();
 
+        services.AddRazorPages();
         services.AddHttpContextAccessor();
         services.AddScoped<IProviderAdminService, ProviderAdminService>();
         services.AddScoped<IMinistryAdminService, MinistryAdminService>();
@@ -248,6 +251,7 @@ public static class Startup
         services.AddTransient<IChangesLogService, ChangesLogService>();
         services.AddTransient<IValueProjector, ValueProjector>();
         services.AddTransient<IExternalExportProviderService, ExternalExportProviderService>();
+        services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
 
         services.AddTransient<IInstitutionHierarchyService, InstitutionHierarchyService>();
         services.AddTransient<IInstitutionService, InstitutionService>();
@@ -449,5 +453,17 @@ public static class Startup
             options.Headers.Add("Request-Id", defaultHeaderDelegate);
             options.Headers.Add("X-Request-Id", defaultHeaderDelegate);
         });
+
+        var mailConfig = configuration
+            .GetSection(EmailOptions.SectionName)
+            .Get<EmailOptions>();
+        services.AddEmailSender(
+            builder.Environment.IsDevelopment(),
+            mailConfig.SendGridKey,
+            builder => builder.Bind(configuration.GetSection(EmailOptions.SectionName)));
+
+        // Hosts options
+        services.Configure<HostsConfig>(configuration.GetSection(HostsConfig.Name));
+
     }
 }

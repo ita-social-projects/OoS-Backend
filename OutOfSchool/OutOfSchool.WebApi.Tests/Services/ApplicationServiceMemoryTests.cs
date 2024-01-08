@@ -5,10 +5,13 @@ using System.Threading.Tasks;
 using AutoMapper;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.EmailSender;
+using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -43,6 +46,10 @@ public class ApplicationServiceMemoryTests
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<IAreaAdminService> areaAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
+    private Mock<IRazorViewToStringRenderer> rendererMock;
+    private Mock<IEmailSender> emailSenderMock;
+    private Mock<IStringLocalizer<SharedResource>> localizerMock;
+    private Mock<IOptions<HostsConfig>> hostsConfigMock;
 
     private Mock<IOptions<ApplicationsConstraintsConfig>> applicationsConstraintsConfig;
 
@@ -67,6 +74,10 @@ public class ApplicationServiceMemoryTests
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         areaAdminServiceMock = new Mock<IAreaAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
+        rendererMock = new Mock<IRazorViewToStringRenderer>();
+        emailSenderMock = new Mock<IEmailSender>();
+        localizerMock = new Mock<IStringLocalizer<SharedResource>>();
+        hostsConfigMock = new Mock<IOptions<HostsConfig>>();
 
         logger = new Mock<ILogger<ApplicationService>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
@@ -78,6 +89,9 @@ public class ApplicationServiceMemoryTests
                 ApplicationsLimit = 2,
                 ApplicationsLimitDays = 7,
             });
+
+        rendererMock.Setup(x => x.GetHtmlPlainStringAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((string.Empty, string.Empty));
 
         service = new ApplicationService(
             applicationRepository,
@@ -93,7 +107,11 @@ public class ApplicationServiceMemoryTests
             ministryAdminServiceMock.Object,
             regionAdminServiceMock.Object,
             areaAdminServiceMock.Object,
-            codeficatorServiceMock.Object);
+            codeficatorServiceMock.Object,
+            rendererMock.Object,
+            emailSenderMock.Object,
+            localizerMock.Object,
+            hostsConfigMock.Object);
 
         SeedDatabase();
     }
