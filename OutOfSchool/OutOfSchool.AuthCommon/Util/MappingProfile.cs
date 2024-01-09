@@ -2,8 +2,6 @@
 using Google.Protobuf.WellKnownTypes;
 using GrpcService;
 using OutOfSchool.Common.Models;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.AuthCommon.Util;
 
@@ -26,30 +24,6 @@ public class MappingProfile : Profile
             .ForMember(c => c.CreatingTime, m => m.MapFrom(c => c.CreatingTime.ToDateTimeOffset()))
             .ForMember(c => c.ProviderId, m => m.MapFrom(c => Guid.Parse(c.ProviderId)))
             .ForMember(c => c.ManagedWorkshopIds, opt => opt.MapFrom(src => src.ManagedWorkshopIds.Select(Guid.Parse).ToList()));
-
-        CreateMap<Provider, ProviderDto>()
-            .ForMember(dest => dest.BlockReason, opt => opt.MapFrom(scr => scr.BlockReason))
-            .ForMember(dest => dest.Ownership, opt => opt.MapFrom(scr => scr.Ownership))
-            .ForMember(dest => dest.IsBlocked, opt => opt.MapFrom(scr => scr.IsBlocked))
-            .ForMember(dest => dest.Institution, opt => opt.Ignore())
-            .ForMember(dest => dest.InstitutionType, opt => opt.Ignore())
-            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore())
-            .ForMember(dest => dest.FullTitle, opt => opt.Ignore())
-            .ForMember(dest => dest.ShortTitle, opt => opt.Ignore())
-            .ForMember(dest => dest.Email, opt => opt.Ignore())
-            .ForMember(dest => dest.EdrpouIpn, opt => opt.Ignore())
-            .ForMember(dest => dest.Director, opt => opt.Ignore())
-            .ForMember(dest => dest.DirectorDateOfBirth, opt => opt.Ignore())
-            .ForMember(dest => dest.PhoneNumber, opt => opt.Ignore())
-            .ForMember(dest => dest.Founder, opt => opt.Ignore())
-            .ForMember(dest => dest.TypeId, opt => opt.Ignore())
-            .ForMember(dest => dest.Status, opt => opt.Ignore())
-            .ForMember(dest => dest.BlockPhoneNumber, opt => opt.Ignore())
-            .ForMember(dest => dest.UserId, opt => opt.Ignore())
-            .ForMember(dest => dest.ActualAddress, opt => opt.Ignore())
-            .ForMember(dest => dest.LegalAddress, opt => opt.Ignore());
-
-        CreateMap<Address, AddressDto>();
 
         CreateMap<MinistryAdminBaseDto, User>()
             .Apply(MapEmailAndPhone);

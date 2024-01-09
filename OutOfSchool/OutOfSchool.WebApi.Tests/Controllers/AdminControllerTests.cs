@@ -214,6 +214,28 @@ public class AdminControllerTests
     }
 
     [Test]
+    public async Task GetMinistryAdmins_WhenCalled_ReturnsForbidResultObject()
+    {
+        // Arrange
+        var expected = new SearchResult<MinistryAdminDto>
+        {
+            TotalAmount = 10,
+            Entities = ministryAdminDtos.Select(x => mapper.Map<MinistryAdminDto>(x)).ToList(),
+        };
+
+        sensitiveMinistryAdminService.Setup(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>()))
+            .ReturnsAsync(expected);
+
+        currentUserService.Setup(x => x.IsAdmin()).Returns(false);
+
+        // Act
+        var result = await controller.GetByFilterMinistryAdmin(new MinistryAdminFilter()).ConfigureAwait(false) as ForbidResult;
+
+        // Assert
+        Assert.That(result is ForbidResult);
+    }
+    
+    [Test]
     [TestCase(10)]
     public async Task Delete_WhenThereAreRelatedWorkshops_ReturnsBadRequestObjectResult(long id)
     {
@@ -252,6 +274,28 @@ public class AdminControllerTests
 
         // Assert
         result.AssertResponseOkResultAndValidateValue(expected);
+    }
+    
+    [Test]
+    public async Task GetProviders_WhenCalled_ReturnsForbidObject()
+    {
+        // Arrange
+        var expected = new SearchResult<ProviderDto>
+        {
+            TotalAmount = 10,
+            Entities = providers.Select(x => mapper.Map<ProviderDto>(x)).ToList(),
+        };
+
+        sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
+            .ReturnsAsync(expected);
+
+        currentUserService.Setup(x => x.IsAdmin()).Returns(false);
+
+        // Act
+        var result = await controller.GetByFilterProvider(new ProviderFilter()).ConfigureAwait(false) as ForbidResult;
+
+        // Assert
+        Assert.That(result is ForbidResult);
     }
 
     [Test]
