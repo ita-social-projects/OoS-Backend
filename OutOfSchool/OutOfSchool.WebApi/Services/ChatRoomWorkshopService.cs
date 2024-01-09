@@ -487,10 +487,21 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
 
         var roomsCount = rooms.Count();
 
-        var chatRoomsWithMessages = (await roomWorkshopWithLastMessageRepository
+        IEnumerable<ChatRoomWorkshopForChatList> chatRoomsWithMessages;
+        if (searchForProvider)
+        {
+            chatRoomsWithMessages = (await roomWorkshopWithLastMessageRepository
                 .GetByWorkshopIdsAsync(rooms.Select(x => x.WorkshopId), searchForProvider).ConfigureAwait(false))
-            .Skip(filter.From)
-            .Take(filter.Size);
+                .Skip(filter.From)
+                .Take(filter.Size);
+        }
+        else
+        {
+            chatRoomsWithMessages = (await roomWorkshopWithLastMessageRepository
+                .GetByParentIdAsync(userId).ConfigureAwait(false))
+                .Skip(filter.From)
+                .Take(filter.Size);
+        }
 
         logger.LogInformation(!rooms.Any()
             ? "There was no matching entity found."
