@@ -409,6 +409,30 @@ public class WorkshopServiceTests
         workshopService.Invoking(w => w.Update(mapper.Map<WorkshopBaseDto>(changedEntity))).Should().ThrowAsync<ArgumentException>();
     }
 
+    [Test]
+    [TestCase(4, false)]
+    [TestCase(2, true)]
+    public async Task Update_WhenTeachersWereDeletedBefore_ShouldReturnUpdatedEntity(int teachersInWorkshop, bool isDeleted)
+    {
+        // Arrange
+        var id = new Guid("ca2cc30c-419c-4b00-a344-b23f0cbf18d8");
+        var changedFirstEntity = WithWorkshop(id);
+        var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(changedFirstEntity).WithIsDeleted(true);
+        teachers.AddRange(TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(changedFirstEntity).WithIsDeleted(isDeleted));
+        var provider = ProvidersGenerator.Generate();
+        changedFirstEntity.Teachers = teachers;
+        changedFirstEntity.DateTimeRanges = new List<DateTimeRange>();
+        changedFirstEntity.Provider = provider;
+        SetupUpdate(changedFirstEntity);
+        var expectedTeachers = teachers.Where(t => !t.IsDeleted).Select(s => mapper.Map<TeacherDTO>(s));
+
+        // Act
+        var result = await workshopService.Update(mapper.Map<WorkshopBaseDto>(changedFirstEntity)).ConfigureAwait(false);
+
+        // Assert
+        result.Teachers.Should().BeEquivalentTo(expectedTeachers);
+    }
+
     #endregion
 
     #region UpdateStatus
