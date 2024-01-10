@@ -516,6 +516,188 @@ public class ChatRoomWorkshopServiceTests
     }
     #endregion
 
+    #region GetChatRoomByFilter
+    [Test]
+    public async Task GetChatRoomByFilter_WhenUserIsValidProvider_ShouldReturnRightSearchResult()
+    {
+        // Arrange
+        var existingProviderId = providers[0].Id;
+        var expectedChatRoomsWithLastMessage = rooms
+            .Select(r =>
+            new ChatRoomWorkshopForChatList
+            {
+                Id = Guid.NewGuid(),
+                WorkshopId = r.WorkshopId,
+                Workshop = new WorkshopInfoForChatList()
+                { Id = r.WorkshopId },
+            }).ToList();
+
+        var expectedResultEntities = expectedChatRoomsWithLastMessage
+            .Select(r => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(r))
+            .ToList();
+
+        roomWithSpecialModelRepositoryMock
+            .Setup(x => x.GetByWorkshopIdsAsync(
+                It.IsAny<IEnumerable<Guid>>(), true))
+            .Returns(Task.FromResult(expectedChatRoomsWithLastMessage));
+
+        // Act
+        var result = await roomService
+            .GetChatRoomByFilter(new ChatWorkshopFilter(), existingProviderId, true);
+
+        // Assert
+        Assert.That(result is not null);
+        Assert.AreEqual(expectedResultEntities.Count, result.TotalAmount);
+    }
+
+    [Test]
+    public async Task GetChatRoomByFilter_WhenUserIsValidParent_ShouldReturnRightSearchResult()
+    {
+        // Arrange
+        var existingParentId = parents[0].Id;
+        var expectedChatRoomsWithLastMessage = rooms
+            .Where(r => r.ParentId == existingParentId)
+            .Select(r =>
+            new ChatRoomWorkshopForChatList
+            {
+                Id = Guid.NewGuid(),
+                WorkshopId = r.WorkshopId,
+                Workshop = new WorkshopInfoForChatList()
+                { Id = r.WorkshopId },
+            }).ToList();
+
+        var expectedResultEntities = expectedChatRoomsWithLastMessage
+            .Select(r => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(r))
+            .ToList();
+
+        roomWithSpecialModelRepositoryMock
+            .Setup(x => x.GetByParentIdAsync(existingParentId, false))
+            .Returns(Task.FromResult(expectedChatRoomsWithLastMessage));
+
+        // Act
+        var result = await roomService
+            .GetChatRoomByFilter(new ChatWorkshopFilter(), existingParentId, false);
+
+        // Assert
+        Assert.That(result is not null);
+        Assert.AreEqual(expectedResultEntities.Count, result.TotalAmount);
+    }
+
+    [Test]
+    public async Task GetChatRoomByFilter_WhenUserIsInValidParent_ShouldReturnEmptySearchResult()
+    {
+        // Arrange
+        var invalidParentId = Guid.NewGuid();
+        var expectedEmptyList = new List<ChatRoomWorkshopDtoWithLastMessage>();
+
+        roomWithSpecialModelRepositoryMock
+            .Setup(x => x.GetByParentIdAsync(invalidParentId, false))
+            .Returns(Task.FromResult(new List<ChatRoomWorkshopForChatList>()));
+
+        // Act
+        var result = await roomService
+            .GetChatRoomByFilter(new ChatWorkshopFilter(), invalidParentId, false);
+
+        // Assert
+        Assert.That(result is not null);
+        Assert.AreEqual(0, result.TotalAmount);
+        Assert.AreEqual(expectedEmptyList, result.Entities);
+    }
+
+    [Test]
+    public async Task GetChatRoomByFilter_WhenUserIsInValidProvider_ShouldReturnEmptySearchResult()
+    {
+        // Arrange
+        var invalidProviderId = Guid.NewGuid();
+        var expectedEmptyList = new List<ChatRoomWorkshopDtoWithLastMessage>();
+
+        roomWithSpecialModelRepositoryMock
+            .Setup(x => x.GetByWorkshopIdsAsync(It.IsAny<IEnumerable<Guid>>(), true))
+            .Returns(Task.FromResult(new List<ChatRoomWorkshopForChatList>()));
+
+        // Act
+        var result = await roomService
+            .GetChatRoomByFilter(new ChatWorkshopFilter(), invalidProviderId, true);
+
+        // Assert
+        Assert.That(result is not null);
+        Assert.AreEqual(0, result.TotalAmount);
+        Assert.AreEqual(expectedEmptyList, result.Entities);
+    }
+
+    [Test]
+    public async Task GetChatRoomByFilter_WhenFilterIsAppliedForProvider_ShouldReturnRightSearchResult()
+    {
+        // Arrange
+        var filterSize = 2;
+        var filterFrom = 1;
+        var existingProviderId = providers[0].Id;
+        var expectedChatRoomsWithLastMessage = rooms
+            .Select(r =>
+            new ChatRoomWorkshopForChatList
+            {
+                Id = Guid.NewGuid(),
+                WorkshopId = r.WorkshopId,
+                Workshop = new WorkshopInfoForChatList()
+                { Id = r.WorkshopId },
+            }).ToList();
+
+        var expectedResultEntities = expectedChatRoomsWithLastMessage
+            .Select(r => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(r))
+            .ToList();
+
+        roomWithSpecialModelRepositoryMock
+            .Setup(x => x.GetByWorkshopIdsAsync(
+                It.IsAny<IEnumerable<Guid>>(), true))
+            .Returns(Task.FromResult(expectedChatRoomsWithLastMessage));
+
+        // Act
+        var result = await roomService
+            .GetChatRoomByFilter(new ChatWorkshopFilter { Size = filterSize, From = filterFrom }, existingProviderId, true);
+
+        // Assert
+        Assert.That(result is not null);
+        Assert.AreEqual(expectedResultEntities.Count, result.TotalAmount);
+        Assert.AreEqual(expectedResultEntities.Skip(filterFrom).Take(filterSize).ToList().Count, result.Entities.Count);
+    }
+
+    [Test]
+    public async Task GetChatRoomByFilter_WhenFilterIsAppliedForParent_ShouldReturnRightSearchResult()
+    {
+        // Arrange
+        var filterSize = 2;
+        var filterFrom = 1;
+        var existingParentId = parents[0].Id;
+        var expectedChatRoomsWithLastMessage = rooms
+            .Where(r => r.ParentId == existingParentId)
+            .Select(r =>
+            new ChatRoomWorkshopForChatList
+            {
+                Id = Guid.NewGuid(),
+                WorkshopId = r.WorkshopId,
+                Workshop = new WorkshopInfoForChatList()
+                { Id = r.WorkshopId },
+            }).ToList();
+
+        var expectedResultEntities = expectedChatRoomsWithLastMessage
+            .Select(r => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(r))
+            .ToList();
+
+        roomWithSpecialModelRepositoryMock
+            .Setup(x => x.GetByParentIdAsync(existingParentId, false))
+            .Returns(Task.FromResult(expectedChatRoomsWithLastMessage));
+
+        // Act
+        var result = await roomService
+            .GetChatRoomByFilter(new ChatWorkshopFilter { Size = filterSize, From = filterFrom }, existingParentId, false);
+
+        // Assert
+        Assert.That(result is not null);
+        Assert.AreEqual(expectedResultEntities.Count, result.TotalAmount);
+        Assert.AreEqual(expectedResultEntities.Skip(filterFrom).Take(filterSize).ToList().Count, result.Entities.Count);
+    }
+    #endregion
+
     private void SeedDatabase()
     {
         using var context = new OutOfSchoolDbContext(options);

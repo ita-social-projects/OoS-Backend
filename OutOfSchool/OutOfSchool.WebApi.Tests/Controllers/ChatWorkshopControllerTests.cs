@@ -1,0 +1,177 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
+using Moq;
+using NUnit.Framework;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Controllers.V1;
+using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.ChatWorkshop;
+using OutOfSchool.WebApi.Services;
+
+namespace OutOfSchool.WebApi.Tests.Controllers;
+
+[TestFixture]
+public class ChatWorkshopControllerTests
+{
+    private const int Ok = 200;
+    private const int NoContent = 204;
+
+    private ChatWorkshopController controller;
+    private Mock<IChatMessageWorkshopService> chatMessageWorkshopServiceMoq;
+    private Mock<IChatRoomWorkshopService> roomServiceMoq;
+    private Mock<IValidationService> validationServiceMoq;
+    private Mock<IStringLocalizer<SharedResource>> localizerMoq;
+    private Mock<ILogger<ChatWorkshopController>> loggerMoq;
+    private Mock<IProviderAdminService> providerAdminServiceMoq;
+    private Mock<IApplicationService> applicationServiceMoq;
+
+    private string userId;
+    private Mock<HttpContext> httpContextMoq;
+
+    private List<ChatRoomWorkshopDtoWithLastMessage> chatRoomWorkshopDtoWithLastMessageList;
+
+    [OneTimeSetUp]
+    public void OneTimeSetup()
+    {
+        chatRoomWorkshopDtoWithLastMessageList = new List<ChatRoomWorkshopDtoWithLastMessage>
+        {
+            new ChatRoomWorkshopDtoWithLastMessage(),
+            new ChatRoomWorkshopDtoWithLastMessage(),
+        };
+    }
+
+    [SetUp]
+    public void Setup()
+    {
+        chatMessageWorkshopServiceMoq = new Mock<IChatMessageWorkshopService>();
+        roomServiceMoq = new Mock<IChatRoomWorkshopService>();
+        validationServiceMoq = new Mock<IValidationService>();
+        localizerMoq = new Mock<IStringLocalizer<SharedResource>>();
+        loggerMoq = new Mock<ILogger<ChatWorkshopController>>();
+        providerAdminServiceMoq = new Mock<IProviderAdminService>();
+        applicationServiceMoq = new Mock<IApplicationService>();
+
+        userId = "someUserId";
+        httpContextMoq = new Mock<HttpContext>();
+        httpContextMoq.Setup(x => x.User.FindFirst("sub"))
+            .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
+        httpContextMoq.Setup(x => x.User.FindFirst("role"))
+            .Returns(new Claim(ClaimTypes.Role, "parent"));
+        httpContextMoq.Setup(x => x.User.FindFirst("subrole"))
+            .Returns(new Claim(ClaimTypes.Role, "None"));
+
+        controller = new ChatWorkshopController(
+            chatMessageWorkshopServiceMoq.Object,
+            roomServiceMoq.Object,
+            validationServiceMoq.Object,
+            localizerMoq.Object,
+            loggerMoq.Object,
+            providerAdminServiceMoq.Object,
+            applicationServiceMoq.Object)
+        {
+            ControllerContext = new ControllerContext()
+            { HttpContext = httpContextMoq.Object },
+        };
+    }
+
+    #region GetParentsRoomsAsync
+    [Test]
+    public async Task GetParentsRoomsAsync_WhenIdIsValid_ShouldReturnOkResultObject()
+    {
+        // Arrange
+        var validUserId = Guid.NewGuid();
+        validationServiceMoq.Setup(
+            x => x.GetParentOrProviderIdByUserRoleAsync(
+                userId, It.IsAny<Role>()))
+            .Returns(Task.FromResult(validUserId));
+
+        var expectedSearchResult =
+            new SearchResult<ChatRoomWorkshopDtoWithLastMessage>
+            { Entities = chatRoomWorkshopDtoWithLastMessageList };
+
+        roomServiceMoq.Setup(
+            x => x.GetChatRoomByFilter(
+                It.IsAny<ChatWorkshopFilter>(), validUserId, false))
+            .Returns(Task.FromResult(expectedSearchResult));
+
+        // Act
+        var result = await controller
+            .GetParentsRoomsAsync(
+            new ChatWorkshopFilter())
+            .ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(Ok, result.StatusCode);
+        Assert.AreEqual(expectedSearchResult, result.Value);
+    }
+
+    [Test]
+    public async Task GetParentsRoomsAsync_WhenIdIsNotValid_ShouldReturnNoContentResultObject()
+    {
+        // Arrange
+        Guid invalidUserId = default;
+        validationServiceMoq.Setup(
+            x => x.GetParentOrProviderIdByUserRoleAsync(
+                userId, It.IsAny<Role>()))
+            .Returns(Task.FromResult(invalidUserId));
+
+        // Act
+        var result = await controller
+            .GetParentsRoomsAsync(
+            new ChatWorkshopFilter { Size = 8 })
+            .ConfigureAwait(false) as NoContentResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(NoContent, result.StatusCode);
+    }
+
+    [Test]
+    public async Task GetProvidersRoomsAsync_WhenUserIsProviderAdmin_ShouldReturnBadRequest()
+    {
+        // Arrange
+        httpContextMoq.Setup(x => x.User.FindFirst("role"))
+            .Returns(new Claim(ClaimTypes.Role, "provider"));
+        httpContextMoq.Setup(x => x.User.FindFirst("subrole"))
+            .Returns(new Claim(ClaimTypes.Role, "ProviderAdmin"));
+
+        var workShopIds = new List<Guid>
+        {
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+        };
+
+        providerAdminServiceMoq.Setup(
+            x => x.GetRelatedWorkshopIdsForProviderAdmins(
+                It.IsAny<string>()))
+            .ReturnsAsync(workShopIds);
+
+        var expectedSearchResult =
+            new SearchResult<ChatRoomWorkshopDtoWithLastMessage>
+            { Entities = chatRoomWorkshopDtoWithLastMessageList };
+
+        roomServiceMoq.Setup(
+            x => x.GetChatRoomByFilter(
+                It.IsAny<ChatWorkshopFilter>(), Guid.Empty, true))
+            .Returns(Task.FromResult(expectedSearchResult));
+
+        // Act
+        var result = await controller
+            .GetParentsRoomsAsync(new ChatWorkshopFilter())
+            .ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(Ok, result.StatusCode);
+        Assert.AreEqual(expectedSearchResult, result.Value);
+    }
+
+    #endregion
+    }
