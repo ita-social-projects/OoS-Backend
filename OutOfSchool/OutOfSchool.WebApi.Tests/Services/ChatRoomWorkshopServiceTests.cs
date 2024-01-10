@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
@@ -548,6 +549,7 @@ public class ChatRoomWorkshopServiceTests
         // Assert
         Assert.That(result is not null);
         Assert.AreEqual(expectedResultEntities.Count, result.TotalAmount);
+        expectedResultEntities.Should().BeEquivalentTo(result.Entities);
     }
 
     [Test]
@@ -581,6 +583,7 @@ public class ChatRoomWorkshopServiceTests
         // Assert
         Assert.That(result is not null);
         Assert.AreEqual(expectedResultEntities.Count, result.TotalAmount);
+        expectedResultEntities.Should().BeEquivalentTo(result.Entities);
     }
 
     [Test]
@@ -659,6 +662,7 @@ public class ChatRoomWorkshopServiceTests
         Assert.That(result is not null);
         Assert.AreEqual(expectedResultEntities.Count, result.TotalAmount);
         Assert.AreEqual(expectedResultEntities.Skip(filterFrom).Take(filterSize).ToList().Count, result.Entities.Count);
+        expectedResultEntities.Skip(filterFrom).Take(filterSize).Should().BeEquivalentTo(result.Entities);
     }
 
     [Test]
@@ -695,6 +699,7 @@ public class ChatRoomWorkshopServiceTests
         Assert.That(result is not null);
         Assert.AreEqual(expectedResultEntities.Count, result.TotalAmount);
         Assert.AreEqual(expectedResultEntities.Skip(filterFrom).Take(filterSize).ToList().Count, result.Entities.Count);
+        expectedResultEntities.Skip(filterFrom).Take(filterSize).Should().BeEquivalentTo(result.Entities);
     }
     #endregion
 
