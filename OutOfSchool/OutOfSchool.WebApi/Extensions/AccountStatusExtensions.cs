@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.WebApi.Extensions;
 
-internal static class AccountStatusExtensions
+public static class AccountStatusExtensions
 {
     public static AccountStatus Convert(bool isBlocked, DateTimeOffset lastLogin)
     {
