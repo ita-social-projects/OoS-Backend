@@ -81,10 +81,7 @@ public class MappingProfile : Profile
 
         CreateMap<Workshop, WorkshopDto>()
             .IncludeBase<Workshop, WorkshopBaseDto>()
-            .ForMember(
-                dest => dest.TakenSeats,
-                opt => opt.MapFrom(src
-                    => src.Applications.Count(x => x.Status == ApplicationStatus.Approved || x.Status == ApplicationStatus.StudyingForYears)))
+            .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats()))
             .IncludeBase<object, IHasRating>()
             .ForMember(dest => dest.IsBlocked, opt => opt.MapFrom(src => src.Provider.IsBlocked))
             .ForMember(dest => dest.ProviderStatus, opt => opt.MapFrom(src => src.Provider.Status));
@@ -214,11 +211,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.WorkshopDescriptionItems, opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price))
             .ForMember(dest => dest.PayRate, opt => opt.MapFrom(src => src.PayRate))
-            .ForMember(dest => dest.TakenSeats, opt =>
-                    opt.MapFrom(src =>
-                        src.Applications.Count(x =>
-                            x.Status == ApplicationStatus.Approved
-                            || x.Status == ApplicationStatus.StudyingForYears)))
+            .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats()))
             .IncludeBase<object, IHasRating>();
 
         CreateMap<Provider, ProviderInfoBaseDto>();
@@ -265,11 +258,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
             .IncludeBase<object, IHasRating>()
-            .ForMember(dest => dest.TakenSeats, opt =>
-                opt.MapFrom(src =>
-                    src.Applications.Count(x =>
-                        !x.IsDeleted && (x.Status == ApplicationStatus.Approved
-                        || x.Status == ApplicationStatus.StudyingForYears))));
+            .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats()));
 
         CreateMap<Workshop, WorkshopBaseCard>()
             .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
@@ -281,15 +270,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProviderLicenseStatus, opt =>
                 opt.MapFrom(src => src.Provider.LicenseStatus));
 
-        CreateMap<Workshop, WorkshopProviderViewCard>()
+        _ = CreateMap<Workshop, WorkshopProviderViewCard>()
             .IncludeBase<Workshop, WorkshopBaseCard>()
-            .ForMember(dest => dest.AmountOfPendingApplications, opt => opt.MapFrom(src =>
-                src.Applications.Count(x =>
-                    x.Status == ApplicationStatus.Pending && !x.IsDeleted && (x.Child == null || !x.Child.IsDeleted) && (x.Parent == null || !x.Parent.IsDeleted))))
-            .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src =>
-                src.Applications.Count(x =>
-                    (x.Status == ApplicationStatus.Approved
-                    || x.Status == ApplicationStatus.StudyingForYears) && !x.IsDeleted && (x.Child == null || !x.Child.IsDeleted) && (x.Parent == null || !x.Parent.IsDeleted))))
+            .ForMember(dest => dest.AmountOfPendingApplications, opt => opt.MapFrom(src => src.Applications.AmountOfPendingApplications()))
+            .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats()))
             .ForMember(dest => dest.UnreadMessages, opt => opt.Ignore());
 
         CreateMap<SocialGroup, SocialGroupDto>().ReverseMap();
