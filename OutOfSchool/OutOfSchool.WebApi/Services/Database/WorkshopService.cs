@@ -833,7 +833,11 @@ public class WorkshopService : IWorkshopService
 
     private async Task ChangeTeachers(Workshop currentWorkshop, List<TeacherDTO> teacherDtoList)
     {
-        var deletedIds = currentWorkshop.Teachers.Select(x => x.Id).Except(teacherDtoList.Select(x => x.Id)).ToList();
+        var deletedIds = currentWorkshop.Teachers
+            .Where(x => !x.IsDeleted)
+            .Select(x => x.Id)
+            .Except(teacherDtoList.Select(x => x.Id))
+            .ToList();
 
         foreach (var deletedId in deletedIds)
         {
