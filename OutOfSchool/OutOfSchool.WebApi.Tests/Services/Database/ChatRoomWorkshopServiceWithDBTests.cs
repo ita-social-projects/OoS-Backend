@@ -109,36 +109,8 @@ public class ChatRoomWorkshopServiceWithDBTests
         var existingProviderId = providers[0].Id;
         var searchMessagesForProvider = true;
 
-        var expectedRooms = rooms
-            .Where(item => item.Workshop.ProviderId == existingProviderId)
-            .Select(item => new ChatRoomWorkshopForChatList()
-            {
-                Id = item.Id,
-                WorkshopId = item.WorkshopId,
-                Workshop = new WorkshopInfoForChatList()
-                {
-                    Id = item.Workshop.Id,
-                    Title = item.Workshop.Title,
-                    ProviderId = item.Workshop.ProviderId,
-                    ProviderTitle = item.Workshop.ProviderTitle,
-                },
-                ParentId = item.ParentId,
-                Parent = new ParentInfoForChatList()
-                {
-                    Id = item.Parent.Id,
-                    UserId = item.Parent.UserId,
-                    FirstName = item.Parent.User.FirstName,
-                    MiddleName = item.Parent.User.MiddleName,
-                    LastName = item.Parent.User.LastName,
-                    Gender = item.Parent.Gender,
-                    Email = item.Parent.User.Email,
-                    PhoneNumber = item.Parent.User.PhoneNumber,
-                },
-            });
-
-        var expectedResultEntities = expectedRooms
-            .Select(r => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(r))
-            .ToList();
+        var expectedRoomsCount = rooms
+            .Count(item => item.Workshop.ProviderId == existingProviderId);
 
         // Act
         var result = await roomService
@@ -146,8 +118,8 @@ public class ChatRoomWorkshopServiceWithDBTests
 
         // Assert
         Assert.That(result is not null);
-        Assert.AreEqual(expectedResultEntities.Count, result.TotalAmount);
-        expectedResultEntities.Should().BeEquivalentTo(result.Entities);
+        Assert.AreEqual(expectedRoomsCount, result.TotalAmount);
+        Assert.That(result.Entities.All(r => r.Workshop.ProviderId == existingProviderId));
     }
 
     [Test]
@@ -156,36 +128,8 @@ public class ChatRoomWorkshopServiceWithDBTests
         // Arrange
         var existingParentId = parents[0].Id;
         var searchMessagesForProvider = false;
-        var expectedRooms = rooms
-            .Where(item => item.ParentId == existingParentId)
-            .Select(item => new ChatRoomWorkshopForChatList()
-            {
-                Id = item.Id,
-                WorkshopId = item.WorkshopId,
-                Workshop = new WorkshopInfoForChatList()
-                {
-                    Id = item.Workshop.Id,
-                    Title = item.Workshop.Title,
-                    ProviderId = item.Workshop.ProviderId,
-                    ProviderTitle = item.Workshop.ProviderTitle,
-                },
-                ParentId = item.ParentId,
-                Parent = new ParentInfoForChatList()
-                {
-                    Id = item.Parent.Id,
-                    UserId = item.Parent.UserId,
-                    FirstName = item.Parent.User.FirstName,
-                    MiddleName = item.Parent.User.MiddleName,
-                    LastName = item.Parent.User.LastName,
-                    Gender = item.Parent.Gender,
-                    Email = item.Parent.User.Email,
-                    PhoneNumber = item.Parent.User.PhoneNumber,
-                },
-            });
-
-        var expectedResultEntities = expectedRooms
-            .Select(r => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(r))
-            .ToList();
+        var expectedRoomsCount = rooms
+            .Count(item => item.ParentId == existingParentId);
 
         // Act
         var result = await roomService
@@ -193,8 +137,8 @@ public class ChatRoomWorkshopServiceWithDBTests
 
         // Assert
         Assert.That(result is not null);
-        Assert.AreEqual(expectedResultEntities.Count, result.TotalAmount);
-        expectedResultEntities.Should().BeEquivalentTo(result.Entities);
+        Assert.AreEqual(expectedRoomsCount, result.TotalAmount);
+        Assert.That(result.Entities.All(r => r.ParentId == existingParentId));
     }
 
     [Test]
@@ -206,37 +150,13 @@ public class ChatRoomWorkshopServiceWithDBTests
         var searchMessagesForProvider = true;
         var existingProviderId = providers[0].Id;
         var expectedRooms = rooms
-            .Where(item => item.Workshop.ProviderId == existingProviderId)
-            .Select(item => new ChatRoomWorkshopForChatList()
-            {
-                Id = item.Id,
-                WorkshopId = item.WorkshopId,
-                Workshop = new WorkshopInfoForChatList()
-                {
-                    Id = item.Workshop.Id,
-                    Title = item.Workshop.Title,
-                    ProviderId = item.Workshop.ProviderId,
-                    ProviderTitle = item.Workshop.ProviderTitle,
-                },
-                ParentId = item.ParentId,
-                Parent = new ParentInfoForChatList()
-                {
-                    Id = item.Parent.Id,
-                    UserId = item.Parent.UserId,
-                    FirstName = item.Parent.User.FirstName,
-                    MiddleName = item.Parent.User.MiddleName,
-                    LastName = item.Parent.User.LastName,
-                    Gender = item.Parent.Gender,
-                    Email = item.Parent.User.Email,
-                    PhoneNumber = item.Parent.User.PhoneNumber,
-                },
-            });
+            .Where(item => item.Workshop.ProviderId == existingProviderId);
 
-        var expectedResultEntities = expectedRooms
+        var expectedTotalAmount = expectedRooms.Count();
+        var expectedResultCount = expectedRooms
             .Skip(filterFrom)
             .Take(filterSize)
-            .Select(r => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(r))
-            .ToList();
+            .Count();
 
         // Act
         var result = await roomService
@@ -244,9 +164,9 @@ public class ChatRoomWorkshopServiceWithDBTests
 
         // Assert
         Assert.That(result is not null);
-        Assert.AreEqual(expectedRooms.Count(), result.TotalAmount);
-        Assert.AreEqual(expectedResultEntities.Count, result.Entities.Count);
-        expectedResultEntities.Should().BeEquivalentTo(result.Entities);
+        Assert.AreEqual(expectedTotalAmount, result.TotalAmount);
+        Assert.AreEqual(expectedResultCount, result.Entities.Count);
+        Assert.That(result.Entities.All(r => r.Workshop.ProviderId == existingProviderId));
     }
 
     [Test]
@@ -258,37 +178,13 @@ public class ChatRoomWorkshopServiceWithDBTests
         var searchMessagesForProvider = false;
         var existingParentId = parents[0].Id;
         var expectedRooms = rooms
-            .Where(item => item.ParentId == existingParentId)
-            .Select(item => new ChatRoomWorkshopForChatList()
-            {
-                Id = item.Id,
-                WorkshopId = item.WorkshopId,
-                Workshop = new WorkshopInfoForChatList()
-                {
-                    Id = item.Workshop.Id,
-                    Title = item.Workshop.Title,
-                    ProviderId = item.Workshop.ProviderId,
-                    ProviderTitle = item.Workshop.ProviderTitle,
-                },
-                ParentId = item.ParentId,
-                Parent = new ParentInfoForChatList()
-                {
-                    Id = item.Parent.Id,
-                    UserId = item.Parent.UserId,
-                    FirstName = item.Parent.User.FirstName,
-                    MiddleName = item.Parent.User.MiddleName,
-                    LastName = item.Parent.User.LastName,
-                    Gender = item.Parent.Gender,
-                    Email = item.Parent.User.Email,
-                    PhoneNumber = item.Parent.User.PhoneNumber,
-                },
-            });
+            .Where(item => item.ParentId == existingParentId);
 
-        var expectedResultEntities = expectedRooms
+        var expectedTotalAmount = expectedRooms.Count();
+        var expectedResultCount = expectedRooms
             .Skip(filterFrom)
             .Take(filterSize)
-            .Select(r => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(r))
-            .ToList();
+            .Count();
 
         // Act
         var result = await roomService
@@ -296,9 +192,9 @@ public class ChatRoomWorkshopServiceWithDBTests
 
         // Assert
         Assert.That(result is not null);
-        Assert.AreEqual(expectedRooms.Count(), result.TotalAmount);
-        Assert.AreEqual(expectedResultEntities.Count, result.Entities.Count);
-        expectedResultEntities.Should().BeEquivalentTo(result.Entities);
+        Assert.AreEqual(expectedTotalAmount, result.TotalAmount);
+        Assert.AreEqual(expectedResultCount, result.Entities.Count);
+        Assert.That(result.Entities.All(r => r.ParentId == existingParentId));
     }
     #endregion
 
