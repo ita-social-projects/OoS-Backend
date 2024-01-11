@@ -101,25 +101,6 @@ public class InstitutionHierarchyServiceTests
             InstitutionId = institutionId,
             Directions = new List<DirectionDto>(),
         };
-        var mockDbResponse = new List<InstitutionHierarchy>()
-        {
-            new InstitutionHierarchy()
-            {
-                Title = "NewTitle",
-                HierarchyLevel = 1,
-                InstitutionId = institutionId,
-                Directions = new List<Direction>(),
-            },
-        }.AsTestAsyncEnumerableQuery();
-
-        repo.Setup(r => r.Get(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
-                null,
-                false))
-            .Returns(mockDbResponse);
 
         // Act
         var expected = await service.Create(input).ConfigureAwait(false);
