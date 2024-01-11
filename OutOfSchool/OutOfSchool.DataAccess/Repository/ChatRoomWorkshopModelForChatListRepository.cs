@@ -102,6 +102,7 @@ public class ChatRoomWorkshopModelForChatListRepository : IChatRoomWorkshopModel
                     Gender = item.Parent.Gender,
                     Email = item.Parent.User.Email,
                     PhoneNumber = item.Parent.User.PhoneNumber,
+                    IsBlocked = item.IsBlocked,
                 },
                 LastMessage = item.ChatMessages.Where(mess => !mess.IsDeleted && mess.CreatedDateTime == item.ChatMessages.Where(m => !m.IsDeleted).Max(m => m.CreatedDateTime))
                     .Select(message => new ChatMessageInfoForChatList()
