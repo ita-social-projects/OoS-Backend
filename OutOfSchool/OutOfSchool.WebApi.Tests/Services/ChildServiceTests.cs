@@ -75,14 +75,14 @@ public class ChildServiceTests
             new Application() { WorkshopId = workshopId, ChildId = children[1].Id, Status = ApplicationStatus.StudyingForYears },
             new Application() { WorkshopId = workshopId, ChildId = children[2].Id, Status = ApplicationStatus.Pending },
         };
-        var approvedApplications = applications.Where(p => p.WorkshopId == workshopId &&
-                                            (p.Status == ApplicationStatus.Approved ||
-                                            p.Status == ApplicationStatus.StudyingForYears));
-
-        var approvedChildren = new List<Child>() { children[0], children[1] }.AsTestAsyncEnumerableQuery();
+        var expectedTotalAmount = 2;
 
         applicationRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Application, bool>>>(), It.IsAny<string>()))
-            .ReturnsAsync(approvedApplications);
+            .ReturnsAsync((Expression<Func<Application, bool>> filter, string _) =>
+            {
+                var predicate = filter.Compile();
+                return applications.Where(predicate);
+            });
         childRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
@@ -90,23 +90,39 @@ public class ChildServiceTests
                 It.IsAny<Expression<Func<Child, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>(),
                 false))
-            .Returns(approvedChildren);
+            .Returns(new List<Child>().AsTestAsyncEnumerableQuery());
         mapperMock.Setup(mapper => mapper.Map<List<ChildDto>>(It.IsAny<List<Child>>()))
             .Returns(new List<ChildDto>());
 
         var result = await childService.GetApprovedByWorkshopId(workshopId, offsetFilter);
 
         Assert.IsNotNull(result);
-        Assert.AreEqual(approvedApplications.Count(), result.TotalAmount);
+        Assert.AreEqual(expectedTotalAmount, result.TotalAmount);
     }
 
     [Test]
     public async Task GetApprovedByWorkshopId_NoExistingChildren_ShouldReturnEmptySearchResult()
     {
         var workshopId = Guid.NewGuid();
+        var children = new List<Child>()
+        {
+            new Child() { Id = Guid.NewGuid() },
+            new Child() { Id = Guid.NewGuid() },
+            new Child() { Id = Guid.NewGuid() },
+        };
+        var applications = new List<Application>()
+        {
+            new Application() { WorkshopId = workshopId, ChildId = children[0].Id, Status = ApplicationStatus.Left },
+            new Application() { WorkshopId = workshopId, ChildId = children[1].Id, Status = ApplicationStatus.Completed },
+            new Application() { WorkshopId = workshopId, ChildId = children[2].Id, Status = ApplicationStatus.Pending },
+        };
 
         applicationRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Application, bool>>>(), It.IsAny<string>()))
-            .ReturnsAsync(new List<Application>());
+            .ReturnsAsync((Expression<Func<Application, bool>> filter, string _) =>
+            {
+                var predicate = filter.Compile();
+                return applications.Where(predicate);
+            });
         childRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
@@ -123,7 +139,6 @@ public class ChildServiceTests
         Assert.IsNotNull(result);
         Assert.AreEqual(0, result.TotalAmount);
     }
-
 
     //    [Test]
     //    public void ChildService_GetAll_ReturnsChildrenModels()
