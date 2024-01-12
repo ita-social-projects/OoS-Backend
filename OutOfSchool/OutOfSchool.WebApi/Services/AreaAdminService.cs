@@ -99,20 +99,8 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
 
         _ = areaAdminBaseDto ?? throw new ArgumentNullException(nameof(areaAdminBaseDto));
 
-        var badRequestApiErrorResponse = new ApiErrorResponse();
-        if (await IsSuchEmailExisted(areaAdminBaseDto.Email))
-        {
-            Logger.LogDebug(
-                "AreaAdmin creating is not possible. Username {Email} is already taken",
-                areaAdminBaseDto.Email);
-            badRequestApiErrorResponse.AddApiError(
-                ApiErrorsTypes.Common.EmailAlreadyTaken("AreaAdmin", areaAdminBaseDto.Email));
-        }
+        var badRequestApiErrorResponse = await IsBadRequestDataAttend(areaAdminBaseDto);
 
-        // Here will be the same checks for phone number and possibly other fields
-
-        // TODO: Separate checks for BadRequset that require ApiErrorResponse
-        // to be returned in a method
         if (badRequestApiErrorResponse.ApiErrors.Count != 0)
         {
             return ErrorResponse.BadRequest(badRequestApiErrorResponse);
@@ -550,16 +538,46 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         return predicate;
     }
 
+    private async Task<bool> IsValidCatottg(long catottgId)
+    {
+        var catottg = await codeficatorRepository.GetById(catottgId);
+        return catottg is not null && (catottg.Category == CodeficatorCategory.TerritorialCommunity.ToString() ||
+                                       catottg.Category == CodeficatorCategory.SpecialStatusCity.ToString());
+    }
+
     private async Task<bool> IsSuchEmailExisted(string email)
     {
         var result = await userRepository.GetByFilter(x => x.Email == email);
         return !result.IsNullOrEmpty();
     }
 
-    private async Task<bool> IsValidCatottg(long catottgId)
+    private async Task<bool> IsSuchPhoneNumberExisted(string phoneNumber)
     {
-        var catottg = await codeficatorRepository.GetById(catottgId);
-        return catottg is not null && (catottg.Category == CodeficatorCategory.TerritorialCommunity.ToString() ||
-                                       catottg.Category == CodeficatorCategory.SpecialStatusCity.ToString());
+        var result = await userRepository.GetByFilter(x => x.PhoneNumber == phoneNumber);
+        return !result.IsNullOrEmpty();
+    }
+
+    private async Task<ApiErrorResponse> IsBadRequestDataAttend(AreaAdminBaseDto areaAdminBaseDto)
+    {
+        var badRequestApiErrorResponse = new ApiErrorResponse();
+        if (await IsSuchEmailExisted(areaAdminBaseDto.Email))
+        {
+            Logger.LogDebug(
+                "AreaAdmin creating is not possible. Username {Email} is already taken",
+                areaAdminBaseDto.Email);
+            badRequestApiErrorResponse.AddApiError(
+                ApiErrorsTypes.Common.EmailAlreadyTaken("AreaAdmin", areaAdminBaseDto.Email));
+        }
+
+        if (await IsSuchPhoneNumberExisted(areaAdminBaseDto.PhoneNumber))
+        {
+            Logger.LogDebug(
+                "AreaAdmin creating is not possible. PhoneNumber {PhoneNumber} is already taken",
+                areaAdminBaseDto.PhoneNumber);
+            badRequestApiErrorResponse.AddApiError(
+                ApiErrorsTypes.Common.PhoneNumberAlreadyTaken("AreaAdmin", areaAdminBaseDto.PhoneNumber));
+        }
+
+        return badRequestApiErrorResponse;
     }
 }

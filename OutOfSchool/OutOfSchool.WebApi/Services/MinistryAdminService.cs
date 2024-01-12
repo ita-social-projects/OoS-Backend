@@ -76,18 +76,8 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
 
         ArgumentNullException.ThrowIfNull(ministryAdminBaseDto);
 
-        var badRequestApiErrorResponse = new ApiErrorResponse();
-        if (await IsSuchEmailExisted(ministryAdminBaseDto.Email))
-        {
-            Logger.LogDebug("ministryAdmin creating is not possible. Username {Email} is already taken", ministryAdminBaseDto.Email);
-            badRequestApiErrorResponse.AddApiError(
-                ApiErrorsTypes.Common.EmailAlreadyTaken("MinistryAdmin", ministryAdminBaseDto.Email));
-        }
+        var badRequestApiErrorResponse = await IsBadRequestDataAttend(ministryAdminBaseDto);
 
-        // Here will be the same checks for phone number and possibly other fields
-
-        // TODO: Separate checks for BadRequset that require ApiErrorResponse
-        // to be returned in a method
         if (badRequestApiErrorResponse.ApiErrors.Count != 0)
         {
             return ErrorResponse.BadRequest(badRequestApiErrorResponse);
@@ -451,5 +441,35 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
     {
         var result = await userRepository.GetByFilter(x => x.Email == email);
         return !result.IsNullOrEmpty();
+    }
+
+    private async Task<bool> IsSuchPhoneNumberExisted(string phoneNumber)
+    {
+        var result = await userRepository.GetByFilter(x => x.PhoneNumber == phoneNumber);
+        return !result.IsNullOrEmpty();
+    }
+
+    private async Task<ApiErrorResponse> IsBadRequestDataAttend(MinistryAdminBaseDto ministryAdminBaseDto)
+    {
+        var badRequestApiErrorResponse = new ApiErrorResponse();
+        if (await IsSuchEmailExisted(ministryAdminBaseDto.Email))
+        {
+            Logger.LogDebug(
+                "ministryAdmin creating is not possible. Username {Email} is already taken",
+                ministryAdminBaseDto.Email);
+            badRequestApiErrorResponse.AddApiError(
+                ApiErrorsTypes.Common.EmailAlreadyTaken("MinistryAdmin", ministryAdminBaseDto.Email));
+        }
+
+        if (await IsSuchPhoneNumberExisted(ministryAdminBaseDto.PhoneNumber))
+        {
+            Logger.LogDebug(
+                "ministryAdmin creating is not possible. PhoneNumber {PhoneNumber} is already taken",
+                ministryAdminBaseDto.PhoneNumber);
+            badRequestApiErrorResponse.AddApiError(
+                ApiErrorsTypes.Common.PhoneNumberAlreadyTaken("MinistryAdmin", ministryAdminBaseDto.PhoneNumber));
+        }
+
+        return badRequestApiErrorResponse;
     }
 }

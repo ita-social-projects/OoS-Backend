@@ -85,18 +85,8 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
 
         _ = regionAdminBaseDto ?? throw new ArgumentNullException(nameof(regionAdminBaseDto));
 
-        var badRequestApiErrorResponse = new ApiErrorResponse();
-        if (await IsSuchEmailExisted(regionAdminBaseDto.Email))
-        {
-            Logger.LogDebug("RegionAdmin creating is not possible. Username {Email} is already taken", regionAdminBaseDto.Email);
-            badRequestApiErrorResponse.AddApiError(
-                ApiErrorsTypes.Common.EmailAlreadyTaken("RegionAdmin", regionAdminBaseDto.Email));
-        }
+        var badRequestApiErrorResponse = await IsBadRequestDataAttend(regionAdminBaseDto);
 
-        // Here will be the same checks for phone number and possibly other fields
-
-        // TODO: Separate checks for BadRequset that require ApiErrorResponse
-        // to be returned in a method
         if (badRequestApiErrorResponse.ApiErrors.Count != 0)
         {
             return ErrorResponse.BadRequest(badRequestApiErrorResponse);
@@ -495,5 +485,35 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
     {
         var result = await userRepository.GetByFilter(x => x.Email == email);
         return !result.IsNullOrEmpty();
+    }
+
+    private async Task<bool> IsSuchPhoneNumberExisted(string phoneNumber)
+    {
+        var result = await userRepository.GetByFilter(x => x.PhoneNumber == phoneNumber);
+        return !result.IsNullOrEmpty();
+    }
+
+    private async Task<ApiErrorResponse> IsBadRequestDataAttend(RegionAdminBaseDto regionAdminBaseDto)
+    {
+        var badRequestApiErrorResponse = new ApiErrorResponse();
+        if (await IsSuchEmailExisted(regionAdminBaseDto.Email))
+        {
+            Logger.LogDebug(
+                "RegionAdmin creating is not possible. Username {Email} is already taken",
+                regionAdminBaseDto.Email);
+            badRequestApiErrorResponse.AddApiError(
+                ApiErrorsTypes.Common.EmailAlreadyTaken("RegionAdmin", regionAdminBaseDto.Email));
+        }
+
+        if (await IsSuchPhoneNumberExisted(regionAdminBaseDto.PhoneNumber))
+        {
+            Logger.LogDebug(
+                "RegionAdmin creating is not possible. PhoneNumber {PhoneNumber} is already taken",
+                regionAdminBaseDto.PhoneNumber);
+            badRequestApiErrorResponse.AddApiError(
+                ApiErrorsTypes.Common.PhoneNumberAlreadyTaken("RegionAdmin", regionAdminBaseDto.PhoneNumber));
+        }
+
+        return badRequestApiErrorResponse;
     }
 }

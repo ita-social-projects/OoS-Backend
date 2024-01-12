@@ -72,18 +72,8 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             };
         }
 
-        var badRequestApiErrorResponse = new ApiErrorResponse();
-        if (await IsSuchEmailExisted(providerAdminDto.Email))
-        {
-            Logger.LogDebug("providerAdmin creating is not possible. Username {Email} is already taken", providerAdminDto.Email);
-            badRequestApiErrorResponse.AddApiError(
-                ApiErrorsTypes.Common.EmailAlreadyTaken("ProviderAdmin", providerAdminDto.Email));
-        }
+        var badRequestApiErrorResponse = await IsBadRequestDataAttend(providerAdminDto);
 
-        // Here will be the same checks for phone number and possibly other fields
-
-        // TODO: Separate checks for BadRequset that require ApiErrorResponse
-        // to be returned in a method
         if (badRequestApiErrorResponse.ApiErrors.Count != 0)
         {
             return ErrorResponse.BadRequest(badRequestApiErrorResponse);
@@ -699,5 +689,35 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     {
         var result = await userRepository.GetByFilter(x => x.Email == email);
         return !result.IsNullOrEmpty();
+    }
+
+    private async Task<bool> IsSuchPhoneNumberExisted(string phoneNumber)
+    {
+        var result = await userRepository.GetByFilter(x => x.PhoneNumber == phoneNumber);
+        return !result.IsNullOrEmpty();
+    }
+
+    private async Task<ApiErrorResponse> IsBadRequestDataAttend(CreateProviderAdminDto providerAdminDto)
+    {
+        var badRequestApiErrorResponse = new ApiErrorResponse();
+        if (await IsSuchEmailExisted(providerAdminDto.Email))
+        {
+            Logger.LogDebug(
+                "providerAdmin creating is not possible. Username {Email} is already taken",
+                providerAdminDto.Email);
+            badRequestApiErrorResponse.AddApiError(
+                ApiErrorsTypes.Common.EmailAlreadyTaken("ProviderAdmin", providerAdminDto.Email));
+        }
+
+        if (await IsSuchPhoneNumberExisted(providerAdminDto.PhoneNumber))
+        {
+            Logger.LogDebug(
+                "providerAdmin creating is not possible. PhoneNumber {PhoneNumber} is already taken",
+                providerAdminDto.PhoneNumber);
+            badRequestApiErrorResponse.AddApiError(
+                ApiErrorsTypes.Common.PhoneNumberAlreadyTaken("ProviderAdmin", providerAdminDto.PhoneNumber));
+        }
+
+        return badRequestApiErrorResponse;
     }
 }
