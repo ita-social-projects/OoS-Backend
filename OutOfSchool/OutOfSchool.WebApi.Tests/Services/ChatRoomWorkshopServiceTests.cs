@@ -516,6 +516,50 @@ public class ChatRoomWorkshopServiceTests
     }
     #endregion
 
+    #region GetChatRoomByFilter
+    [Test]
+    public async Task GetChatRoomByFilter_WhenUserIsInValidParent_ShouldReturnEmptySearchResult()
+    {
+        // Arrange
+        var invalidParentId = Guid.NewGuid();
+        var expectedEmptyList = new List<ChatRoomWorkshopDtoWithLastMessage>();
+
+        roomWithSpecialModelRepositoryMock
+            .Setup(x => x.GetByParentIdAsync(invalidParentId, false))
+            .Returns(Task.FromResult(new List<ChatRoomWorkshopForChatList>()));
+
+        // Act
+        var result = await roomService
+            .GetChatRoomByFilter(new ChatWorkshopFilter(), invalidParentId, false);
+
+        // Assert
+        Assert.That(result is not null);
+        Assert.AreEqual(0, result.TotalAmount);
+        Assert.AreEqual(expectedEmptyList, result.Entities);
+    }
+
+    [Test]
+    public async Task GetChatRoomByFilter_WhenUserIsInValidProvider_ShouldReturnEmptySearchResult()
+    {
+        // Arrange
+        var invalidProviderId = Guid.NewGuid();
+        var expectedEmptyList = new List<ChatRoomWorkshopDtoWithLastMessage>();
+
+        roomWithSpecialModelRepositoryMock
+            .Setup(x => x.GetByWorkshopIdsAsync(It.IsAny<IEnumerable<Guid>>(), true))
+            .Returns(Task.FromResult(new List<ChatRoomWorkshopForChatList>()));
+
+        // Act
+        var result = await roomService
+            .GetChatRoomByFilter(new ChatWorkshopFilter(), invalidProviderId, true);
+
+        // Assert
+        Assert.That(result is not null);
+        Assert.AreEqual(0, result.TotalAmount);
+        Assert.AreEqual(expectedEmptyList, result.Entities);
+    }
+    #endregion
+
     private void SeedDatabase()
     {
         using var context = new OutOfSchoolDbContext(options);
