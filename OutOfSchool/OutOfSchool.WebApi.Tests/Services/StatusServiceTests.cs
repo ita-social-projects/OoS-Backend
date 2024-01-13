@@ -154,33 +154,25 @@ public class StatusServiceTests
     }
 
     [Test]
-    public async Task Update_WhenEntityIsNotFound_ReturnsNull()
+    public async Task Update_WhenEntityIsValidButNotFound_ThrowsDbUpdateConcurrencyException()
     {
         // Arrange
+        var nonExistingId = TestDataHelper.GetPositiveInt(
+            (int)(await repository.GetAll()).Last().Id + 1,
+            int.MaxValue);
+
         var entityToUpdate = new InstitutionStatusDTO
         {
-            Id = 999, 
+            Id = nonExistingId,
             Name = TestDataHelper.GetRandomWords(),
         };
 
-        var expectedMessage = $"Updating failed. InstitutionStatus with Id = {entityToUpdate.Id} doesn't exist in the system.";
-
-        var mockRepository = new Mock<IEntityRepositorySoftDeleted<long, InstitutionStatus>>();
-        mockRepository.Setup(repo => repo.GetById(It.IsAny<long>()))
-            .ReturnsAsync((InstitutionStatus)null);
-
-        var mockLogger = new Mock<ILogger<StatusService>>();
-        var mockLocalizer = new Mock<IStringLocalizer<SharedResource>>();
-        var mockMapper = new Mock<IMapper>();
-        var statusService = new StatusService(mockRepository.Object, mockLogger.Object, mockLocalizer.Object, mockMapper.Object);
-
-        // Act
+        // Act and Assert
         var exception = Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-            async () => await statusService.Update(entityToUpdate).ConfigureAwait(false));
+            async () => await service.Update(entityToUpdate).ConfigureAwait(false));
 
         // Assert
-        Assert.NotNull(exception);
-        Assert.AreEqual(expectedMessage, exception.Message);
+        StringAssert.Contains($"Updating failed. InstitutionStatus with Id = {nonExistingId} doesn't exist in the system.", exception.Message);
     }
 
     [Test]

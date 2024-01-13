@@ -166,6 +166,36 @@ public class SocialGroupServiceTests
     }
 
     [Test]
+    public async Task Update_WhenSocialGroupIsNull_ShouldLogErrorAndReturnNull()
+    {
+        // Arrange
+        long socialGroupId = 1;
+        var dto = new SocialGroupDto
+        {
+            Id = socialGroupId,
+            Name = "UpdatedName",
+        };
+
+        var repositoryMock = new Mock<IEntityRepositorySoftDeleted<long, SocialGroup>>();
+        repositoryMock.Setup(repo => repo.GetById(socialGroupId))
+            .ReturnsAsync((SocialGroup)null);
+
+        var loggerMock = new Mock<ILogger<SocialGroupService>>();
+
+        var localizerMock = new Mock<IStringLocalizer<SharedResource>>();
+
+        var mapperMock = new Mock<IMapper>();
+        var socialGroupService = new SocialGroupService(repositoryMock.Object, loggerMock.Object, localizerMock.Object, mapperMock.Object);
+
+        // Act
+        var result = await socialGroupService.Update(dto);
+
+        // Assert
+        repositoryMock.Verify(repo => repo.GetById(socialGroupId), Times.Once);
+        Assert.IsNull(result);
+    }
+
+    [Test]
     [TestCase(1)]
     public async Task Delete_WhenIdIsValid_DeletesEntity(long id)
     {

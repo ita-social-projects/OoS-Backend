@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Newtonsoft.Json;
 using NUnit.Framework;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
@@ -256,6 +257,40 @@ public class ChatWorkshopHubTests
         await chatHub.SendMessageToOthersInGroupAsync(chatNewMessage).ConfigureAwait(false);
 
         // Assert
+        clientsMock.Verify(clients => clients.Caller, Times.Once);
+        clientsMock.Verify(clients => clients.Group(It.IsAny<string>()), Times.Never);
+    }
+
+    [Test]
+    public async Task SendMessageToOthersInGroup_WhenWorkshopIsNull_ShouldWriteWarningToLogger()
+    {
+        // Arrange
+        var chatMessageCreateDto = new ChatMessageWorkshopCreateDto
+        {
+            WorkshopId = Guid.NewGuid(),
+            ParentId = Guid.NewGuid(),
+            ChatRoomId = Guid.NewGuid(),
+            Text = "Test message",
+        };
+
+        var chatNewMessage = JsonConvert.SerializeObject(chatMessageCreateDto);
+
+        roomServiceMock.Setup(x => x.GetByIdAsync(chatMessageCreateDto.ChatRoomId))
+            .ReturnsAsync((ChatRoomWorkshopDto)null);
+
+        clientsMock.Setup(clients => clients.Caller).Returns(clientProxyMock.Object);
+
+        // Act
+        await chatHub.SendMessageToOthersInGroupAsync(chatNewMessage).ConfigureAwait(false);
+
+        // Assert
+        loggerMock.Verify(
+            x => x.Log(
+         It.Is<LogLevel>(l => l == LogLevel.Warning),
+         It.IsAny<EventId>(),
+         It.IsAny<It.IsAnyType>(),
+         It.IsAny<Exception>(),
+         (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
         clientsMock.Verify(clients => clients.Caller, Times.Once);
         clientsMock.Verify(clients => clients.Group(It.IsAny<string>()), Times.Never);
     }
