@@ -29,14 +29,19 @@ public class ApplicationExtensionTests
         Assert.AreEqual(1, result);
     }
 
-    [Test]
-    public void ApplicationExtensions_AmountOfPendingApplications_WrongStatus()
+    [TestCase(ApplicationStatus.AcceptedForSelection)]
+    [TestCase(ApplicationStatus.Approved)]
+    [TestCase(ApplicationStatus.StudyingForYears)]
+    [TestCase(ApplicationStatus.Completed)]
+    [TestCase(ApplicationStatus.Rejected)]
+    [TestCase(ApplicationStatus.Left)]
+    public void ApplicationExtensions_AmountOfPendingApplications_WrongStatus(ApplicationStatus status)
     {
         // Arrange
         var applications = new List<Application>();
 
         var application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
-        application.Status = ApplicationStatus.AcceptedForSelection;
+        application.Status = status;
 
         applications.Add(application);
 
@@ -165,14 +170,18 @@ public class ApplicationExtensionTests
         Assert.AreEqual(2, result);
     }
 
-    [Test]
-    public void ApplicationExtensions_TakenSeats_WrongStatus()
+    [TestCase(ApplicationStatus.AcceptedForSelection)]
+    [TestCase(ApplicationStatus.Pending)]
+    [TestCase(ApplicationStatus.Completed)]
+    [TestCase(ApplicationStatus.Rejected)]
+    [TestCase(ApplicationStatus.Left)]
+    public void ApplicationExtensions_TakenSeats_WrongStatus(ApplicationStatus status)
     {
         // Arrange
         var applications = new List<Application>();
 
         var application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
-        application.Status = ApplicationStatus.Completed;
+        application.Status = status;
 
         applications.Add(application);
 
