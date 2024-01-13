@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -11,98 +10,271 @@ namespace OutOfSchool.WebApi.Tests.Extensions;
 [TestFixture]
 public class ApplicationExtensionTests
 {
+    // Delete it
     [Test]
     public void ApplicationExtensions_AmountOfPendingApplications_ReturnValue()
     {
         // Arrange
-        var applications = GetApplications();
+        var applications = new List<Application>();
+
+        var application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
+        application.Status = ApplicationStatus.Pending;
+
+        applications.Add(application);
 
         // Act
         var result = applications.AmountOfPendingApplications();
-        var expected = applications.Count(x =>
-            x.Status == ApplicationStatus.Pending
-            && !x.IsDeleted
-            && (x.Child == null || !x.Child.IsDeleted)
-            && (x.Parent == null || !x.Parent.IsDeleted));
 
         // Assert
-        Assert.AreEqual(expected, result);
+        Assert.AreEqual(1, result);
+    }
+
+    [Test]
+    public void ApplicationExtensions_AmountOfPendingApplications_WrongStatus()
+    {
+        // Arrange
+        var applications = new List<Application>();
+
+        var application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
+        application.Status = ApplicationStatus.AcceptedForSelection;
+
+        applications.Add(application);
+
+        // Act
+        var result = applications.AmountOfPendingApplications();
+
+        // Assert
+        Assert.AreEqual(0, result);
+    }
+
+    [Test]
+    public void ApplicationExtensions_AmountOfPendingApplications_ApplicationIsDeleted()
+    {
+        // Arrange
+        var applications = new List<Application>();
+
+        var application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
+        application.Status = ApplicationStatus.Pending;
+        application.IsDeleted = true;
+
+        applications.Add(application);
+
+        // Act
+        var result = applications.AmountOfPendingApplications();
+
+        // Assert
+        Assert.AreEqual(0, result);
+    }
+
+    [Test]
+    public void ApplicationExtensions_AmountOfPendingApplications_ChildIsNull()
+    {
+        // Arrange
+        var applications = new List<Application>();
+
+        var application = ApplicationGenerator.Generate().WithParent(ParentGenerator.Generate());
+        application.Status = ApplicationStatus.Pending;
+
+        applications.Add(application);
+
+        // Act
+        var result = applications.AmountOfPendingApplications();
+
+        // Assert
+        Assert.AreEqual(0, result);
+    }
+
+    [Test]
+    public void ApplicationExtensions_AmountOfPendingApplications_ParentIsNull()
+    {
+        // Arrange
+        var applications = new List<Application>();
+
+        var application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate());
+        application.Status = ApplicationStatus.Pending;
+
+        applications.Add(application);
+
+        // Act
+        var result = applications.AmountOfPendingApplications();
+
+        // Assert
+        Assert.AreEqual(0, result);
+    }
+
+    [Test]
+    public void ApplicationExtensions_AmountOfPendingApplications_ChildIsDeleted()
+    {
+        // Arrange
+        var applications = new List<Application>();
+
+        var application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
+        application.Status = ApplicationStatus.Pending;
+
+        application.Child.IsDeleted = true;
+
+        applications.Add(application);
+
+        // Act
+        var result = applications.AmountOfPendingApplications();
+
+        // Assert
+        Assert.AreEqual(0, result);
+    }
+
+    [Test]
+    public void ApplicationExtensions_AmountOfPendingApplications_ParentIsDeleted()
+    {
+        // Arrange
+        var applications = new List<Application>();
+
+        var application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
+        application.Status = ApplicationStatus.Pending;
+
+        application.Parent.IsDeleted = true;
+
+        applications.Add(application);
+
+        // Act
+        var result = applications.AmountOfPendingApplications();
+
+        // Assert
+        Assert.AreEqual(0, result);
     }
 
     [Test]
     public void ApplicationExtensions_TakenSeats_ReturnValue()
     {
         // Arrange
-        var applications = GetApplications();
+        var applications = new List<Application>();
 
-        // Act
-        var result = applications.TakenSeats();
-        var expected = applications.Count(x =>
-            (x.Status == ApplicationStatus.Approved || x.Status == ApplicationStatus.StudyingForYears)
-            && !x.IsDeleted
-            && (x.Child == null || !x.Child.IsDeleted)
-            && (x.Parent == null || !x.Parent.IsDeleted));
-
-        // Assert
-        Assert.AreEqual(expected, result);
-    }
-
-    private List<Application> GetApplications()
-    {
-        var result = new List<Application>();
-
-        // 1
         var application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
-        application.Status = ApplicationStatus.Pending;
+        application.Status = ApplicationStatus.Approved;
 
-        result.Add(application);
+        applications.Add(application);
 
-        // 2
-        application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
-        application.Status = ApplicationStatus.Pending;
-
-        result.Add(application);
-
-        // 3
-        application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
-        application.Status = ApplicationStatus.Pending;
-        application.IsDeleted = true;
-
-        result.Add(application);
-
-        // 4
         application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
         application.Status = ApplicationStatus.StudyingForYears;
 
-        result.Add(application);
+        applications.Add(application);
 
-        // 5
-        application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
-        application.Status = ApplicationStatus.Pending;
+        // Act
+        var result = applications.TakenSeats();
+
+        // Assert
+        Assert.AreEqual(2, result);
+    }
+
+    [Test]
+    public void ApplicationExtensions_TakenSeats_WrongStatus()
+    {
+        // Arrange
+        var applications = new List<Application>();
+
+        var application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
+        application.Status = ApplicationStatus.Completed;
+
+        applications.Add(application);
+
+        // Act
+        var result = applications.TakenSeats();
+
+        // Assert
+        Assert.AreEqual(0, result);
+    }
+
+    [Test]
+    public void ApplicationExtensions_TakenSeats_ApplicationIsDeleted()
+    {
+        // Arrange
+        var applications = new List<Application>();
+
+        var application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
+        application.Status = ApplicationStatus.Approved;
+        application.IsDeleted = true;
+
+        applications.Add(application);
+
+        // Act
+        var result = applications.TakenSeats();
+
+        // Assert
+        Assert.AreEqual(0, result);
+    }
+
+    [Test]
+    public void ApplicationExtensions_TakenSeats_ChildIsNull()
+    {
+        // Arrange
+        var applications = new List<Application>();
+
+        var application = ApplicationGenerator.Generate().WithParent(ParentGenerator.Generate());
+        application.Status = ApplicationStatus.Approved;
+
+        applications.Add(application);
+
+        // Act
+        var result = applications.TakenSeats();
+
+        // Assert
+        Assert.AreEqual(0, result);
+    }
+
+    [Test]
+    public void ApplicationExtensions_TakenSeats_ChildIsDeleted()
+    {
+        // Arrange
+        var applications = new List<Application>();
+
+        var application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
+        application.Status = ApplicationStatus.Approved;
+
         application.Child.IsDeleted = true;
 
-        result.Add(application);
+        applications.Add(application);
 
-        // 6
-        application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
-        application.Status = ApplicationStatus.Pending;
+        // Act
+        var result = applications.TakenSeats();
+
+        // Assert
+        Assert.AreEqual(0, result);
+    }
+
+    [Test]
+    public void ApplicationExtensions_TakenSeats_ParentIsNull()
+    {
+        // Arrange
+        var applications = new List<Application>();
+
+        var application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate());
+        application.Status = ApplicationStatus.Approved;
+
+        applications.Add(application);
+
+        // Act
+        var result = applications.TakenSeats();
+
+        // Assert
+        Assert.AreEqual(0, result);
+    }
+
+    [Test]
+    public void ApplicationExtensions_TakenSeats_ParentIsDeleted()
+    {
+        // Arrange
+        var applications = new List<Application>();
+
+        var application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
+        application.Status = ApplicationStatus.Approved;
+
         application.Parent.IsDeleted = true;
 
-        result.Add(application);
+        applications.Add(application);
 
-        // 7
-        application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
-        application.Status = ApplicationStatus.Approved;
+        // Act
+        var result = applications.TakenSeats();
 
-        result.Add(application);
-
-        // 8
-        application = ApplicationGenerator.Generate().WithChild(ChildGenerator.Generate()).WithParent(ParentGenerator.Generate());
-        application.Status = ApplicationStatus.Approved;
-        application.IsDeleted= true;
-
-        result.Add(application);
-
-        return result;
+        // Assert
+        Assert.AreEqual(0, result);
     }
 }
