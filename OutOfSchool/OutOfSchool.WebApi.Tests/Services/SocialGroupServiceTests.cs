@@ -16,6 +16,7 @@ using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models.SocialGroup;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -42,7 +43,7 @@ public class SocialGroupServiceTests
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         repository = new EntityRepositorySoftDeleted<long, SocialGroup>(context);
         logger = new Mock<ILogger<SocialGroupService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         service = new SocialGroupService(repository, logger.Object, localizer.Object, mapper);
 
         SeedDatabase();

@@ -5,7 +5,7 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models;
 
-public abstract class InstitutionAdminBase : ISoftDeleted
+public abstract class InstitutionAdminBase : ISoftDeleted, IHasUser
 {
     [Key]
     public string UserId { get; set; }

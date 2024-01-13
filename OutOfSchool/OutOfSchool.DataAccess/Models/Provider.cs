@@ -10,7 +10,7 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models;
 
-public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISoftDeleted
+public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISoftDeleted, IHasEntityImages<Provider>
 {
     public Guid Id { get; set; }
 

@@ -2,13 +2,14 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Util.CustomValidation;
 using OutOfSchool.WebApi.Util.JsonTools;
 
 namespace OutOfSchool.WebApi.Models.ProvidersInfo;
 
-public class WorkshopInfoDto : WorkshopInfoBaseDto
+public class WorkshopInfoDto : WorkshopInfoBaseDto, IHasRating
 {
     public uint TakenSeats { get; set; } = 0;
 

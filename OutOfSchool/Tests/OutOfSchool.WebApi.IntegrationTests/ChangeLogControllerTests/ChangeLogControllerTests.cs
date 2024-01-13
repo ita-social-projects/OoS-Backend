@@ -19,6 +19,7 @@ using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Changes;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.IntegrationTests.ChangeLogControllerTests;
 
@@ -35,7 +36,7 @@ public class ChangeLogControllerTests
     {
         var context = GetContext();
         parentBlockedByAdminLogRepository = new EntityRepository<long, ParentBlockedByAdminLog>(context);
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         changesLogService = new ChangesLogService(
             new Mock<IOptions<ChangesLogConfig>>().Object,
             new Mock<IChangesLogRepository>().Object,

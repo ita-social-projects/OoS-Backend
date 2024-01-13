@@ -15,6 +15,7 @@ using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -32,7 +33,7 @@ public class InstitutionStatusControllerTests
     {
         // setup controller
         service = new Mock<IStatusService>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         controller = new InstitutionStatusController(service.Object, localizer.Object);
 
