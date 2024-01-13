@@ -13,6 +13,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
@@ -132,6 +133,56 @@ public class StatusServiceTests
     }
 
     [Test]
+    public async Task Update_WhenEntityIsValidAndLocalizationIsEn_UpdatesExistedEntityWithEnglishName()
+    {
+        // Arrange
+        var entityToUpdate = new InstitutionStatusDTO
+        {
+            Id = 1,
+            Name = TestDataHelper.GetRandomWords(),
+        };
+
+        var expected = mapper.Map<InstitutionStatusDTO>(entityToUpdate);
+        expected.Name = entityToUpdate.Name;
+
+        // Act
+        var result = await service.Update(entityToUpdate, LocalizationType.En).ConfigureAwait(false);
+
+        // Assert
+        TestHelper.AssertDtosAreEqual(expected, result);
+    }
+
+    [Test]
+    public async Task Update_WhenEntityIsNotFound_ReturnsNull()
+    {
+        // Arrange
+        var entityToUpdate = new InstitutionStatusDTO
+        {
+            Id = 999, 
+            Name = TestDataHelper.GetRandomWords(),
+        };
+
+        var expectedMessage = $"Updating failed. InstitutionStatus with Id = {entityToUpdate.Id} doesn't exist in the system.";
+
+        var mockRepository = new Mock<IEntityRepositorySoftDeleted<long, InstitutionStatus>>();
+        mockRepository.Setup(repo => repo.GetById(It.IsAny<long>()))
+            .ReturnsAsync((InstitutionStatus)null);
+
+        var mockLogger = new Mock<ILogger<StatusService>>();
+        var mockLocalizer = new Mock<IStringLocalizer<SharedResource>>();
+        var mockMapper = new Mock<IMapper>();
+        var statusService = new StatusService(mockRepository.Object, mockLogger.Object, mockLocalizer.Object, mockMapper.Object);
+
+        // Act
+        var exception = Assert.ThrowsAsync<DbUpdateConcurrencyException>(
+            async () => await statusService.Update(entityToUpdate).ConfigureAwait(false));
+
+        // Assert
+        Assert.NotNull(exception);
+        Assert.AreEqual(expectedMessage, exception.Message);
+    }
+
+    [Test]
     public async Task Delete_WhenIdIsValid_DeletesEntityFromRepository()
     {
         // Arrange
@@ -167,10 +218,16 @@ public class StatusServiceTests
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
 
-            var institutionStatuses = InstitutionStatusGenerator.Generate(5);
-            context.InstitutionStatuses.AddRange(institutionStatuses);
+            var existingStatuses = context.InstitutionStatuses.ToList();
+
+            var institutionStatusesToAdd = InstitutionStatusGenerator.Generate(5)
+                .Where(status => existingStatuses.All(existingStatus => existingStatus.Id != status.Id))
+                .ToList();
+
+            context.InstitutionStatuses.AddRange(institutionStatusesToAdd);
 
             context.SaveChanges();
+
         }
     }
 }

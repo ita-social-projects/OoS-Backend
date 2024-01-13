@@ -135,6 +135,36 @@ public class SocialGroupServiceTests
     }
 
     [Test]
+    public async Task Update_WhenDtoIsNull_ReturnsNull()
+    {
+        // Arrange
+        SocialGroupDto dto = null;
+
+        // Act
+        var result = await service.Update(dto).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNull(result);
+    }
+
+    [Test]
+    [TestCase(10)]
+    public async Task Update_WhenSocialGroupLocalizedIsNull_ReturnsNull(long id)
+    {
+        // Arrange
+        var dto = new SocialGroupDto { Id = id };
+
+        repository = new EntityRepositorySoftDeleted<long, SocialGroup>(context);
+        service = new SocialGroupService(repository, logger.Object, localizer.Object, mapper);
+
+        // Act
+        var result = await service.Update(dto).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNull(result);
+    }
+
+    [Test]
     [TestCase(1)]
     public async Task Delete_WhenIdIsValid_DeletesEntity(long id)
     {
