@@ -17,6 +17,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.AverageRatings;
@@ -501,6 +502,39 @@ public class WorkshopServiceTests
 
     #endregion
 
+    #region UpdateV2
+    [Test]
+    public async Task UpdateV2_WhenZeroCoordinates_ShouldCallGetNearestCoordinatesByCATOTTGId()
+    {
+        // Arrange
+        var workshop = WithWorkshop(Guid.NewGuid());
+        workshop.Address.Longitude = 0;
+        workshop.Address.Latitude = 0;
+        SetupUpdateV2(workshop);
+
+        // Act
+        await workshopService.UpdateV2(mapper.Map<WorkshopV2Dto>(workshop));
+
+        // Assert
+        codeficatorServiceMock.Verify(cs => cs.GetNearestCoordinatesByCATOTTGId(workshop.Address.CATOTTGId), Times.Once);
+    }
+
+    [Test]
+    public async Task UpdateV2_WhenValidCoordinates_ShouldNotCallGetNearestCoordinatesByCATOTTGId()
+    {
+        // Arrange
+        var workshop = WithWorkshop(Guid.NewGuid());
+        SetupUpdateV2(workshop);
+
+        // Act
+        await workshopService.UpdateV2(mapper.Map<WorkshopV2Dto>(workshop));
+
+        // Assert
+        codeficatorServiceMock.Verify(cs => cs.GetNearestCoordinatesByCATOTTGId(workshop.Address.CATOTTGId), Times.Never);
+    }
+
+    #endregion
+
     #region UpdateStatus
 
     [Test]
@@ -899,6 +933,18 @@ public class WorkshopServiceTests
 
         workshopRepository.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
             .Returns((Func<Task<Workshop>> f) => f.Invoke());
+    }
+
+    private void SetupUpdateV2(Workshop workshop)
+    {
+        workshopRepository.Setup(w => w.GetWithNavigations(It.IsAny<Guid>())).ReturnsAsync(workshop);
+        workshopRepository.Setup(w => w.UnitOfWork.CompleteAsync()).ReturnsAsync(It.IsAny<int>());
+        mapperMock.Setup(m => m.Map<WorkshopV2Dto>(workshop))
+            .Returns(mapper.Map<WorkshopV2Dto>(workshop));
+        mapperMock.Setup(m => m.Map<List<DateTimeRange>>(It.IsAny<List<DateTimeRangeDto>>()))
+            .Returns(mapper.Map<List<DateTimeRange>>(It.IsAny<List<DateTimeRangeDto>>()));
+        workshopRepository.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<(Workshop, MultipleImageChangingResult, ImageChangingResult)>>>()))
+            .Returns((Func<Task<(Workshop, MultipleImageChangingResult, ImageChangingResult)>> f) => f.Invoke());
     }
 
     private void SetupDelete(Workshop workshop)
