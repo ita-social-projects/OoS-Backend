@@ -40,6 +40,7 @@ public class WorkshopService : IWorkshopService
     /// </summary>
     /// <param name="workshopRepository">Repository for Workshop entity.</param>
     /// <param name="dateTimeRangeRepository">Repository for DateTimeRange entity.</param>
+    /// <param name="roomRepository">Repository for chatrooms.</param>
     /// <param name="teacherService">Teacher service.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Automapper DI service.</param>
@@ -220,7 +221,8 @@ public class WorkshopService : IWorkshopService
     /// <inheritdoc/>
     public async Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId)
     {
-        logger.LogDebug("Getting Workshop (Id, Title) by organization started. Looking ProviderId = {ProviderId}",
+        logger.LogDebug(
+            "Getting Workshop (Id, Title) by organization started. Looking ProviderId = {ProviderId}",
             providerId);
 
         var workshops = await workshopRepository.GetByFilter(
@@ -325,7 +327,7 @@ public class WorkshopService : IWorkshopService
     public async Task<WorkshopBaseDto> Update(WorkshopBaseDto dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
-        logger.LogInformation($"Updating Workshop with Id = {dto?.Id} started.");
+        logger.LogInformation($"Updating Workshop with Id = {dto.Id} started.");
 
         async Task<Workshop> UpdateWorkshopLocally()
         {
@@ -459,7 +461,8 @@ public class WorkshopService : IWorkshopService
         }
         catch (DbUpdateConcurrencyException exception)
         {
-            logger.LogError(exception,
+            logger.LogError(
+                exception,
                 $"Partial updating {nameof(Workshop)} with ProviderId = {providerId} was failed. Exception: {exception.Message}");
             throw; // TODO Probably should not rethrow this exception to the higher level. See pull request [Provicevk/unified responses #843] as future decision
         }
@@ -477,7 +480,8 @@ public class WorkshopService : IWorkshopService
         }
         catch (DbUpdateConcurrencyException exception)
         {
-            logger.LogError(exception,
+            logger.LogError(
+                exception,
                 $"Block {nameof(Workshop)} with ProviderId = {provider.Id} was failed. Exception: {exception.Message}");
             throw; // TODO Probably should not rethrow this exception to the higher level. See pull request [Provicevk/unified responses #843] as future decision
         }
