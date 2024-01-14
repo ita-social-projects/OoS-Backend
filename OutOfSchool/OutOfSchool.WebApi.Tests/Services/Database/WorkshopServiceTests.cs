@@ -16,6 +16,7 @@ using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Workshops;
@@ -191,6 +192,38 @@ public class WorkshopServiceTests
 
         // Act
         await workshopService.Create(mapper.Map<WorkshopBaseDto>(workshop));
+
+        // Assert
+        codeficatorServiceMock.Verify(cs => cs.GetNearestCoordinatesByCATOTTGId(workshop.Address.CATOTTGId), Times.Never);
+    }
+    #endregion
+
+    #region CreateV2
+    [Test]
+    public async Task CreateV2_WhenZeroCoordinates_ShouldCallGetNearestCoordinatesByCATOTTGId()
+    {
+        // Arrange
+        var workshop = WithWorkshop(Guid.NewGuid());
+        workshop.Address.Longitude = 0;
+        workshop.Address.Latitude = 0;
+        SetupCreateV2();
+
+        // Act
+        await workshopService.CreateV2(mapper.Map<WorkshopV2Dto>(workshop));
+
+        // Assert
+        codeficatorServiceMock.Verify(cs => cs.GetNearestCoordinatesByCATOTTGId(workshop.Address.CATOTTGId), Times.Once);
+    }
+
+    [Test]
+    public async Task CreateV2_WhenValidCoordinates_ShouldNotCallGetNearestCoordinatesByCATOTTGId()
+    {
+        // Arrange
+        var workshop = WithWorkshop(Guid.NewGuid());
+        SetupCreateV2();
+
+        // Act
+        await workshopService.CreateV2(mapper.Map<WorkshopV2Dto>(workshop));
 
         // Assert
         codeficatorServiceMock.Verify(cs => cs.GetNearestCoordinatesByCATOTTGId(workshop.Address.CATOTTGId), Times.Never);
@@ -840,6 +873,52 @@ public class WorkshopServiceTests
             });
     }
 
+    private void SetupCreateV2()
+    {
+        var id = Guid.NewGuid();
+        workshopRepository.Setup(
+                w => w.Create(It.IsAny<Workshop>()))
+            .ReturnsAsync((Workshop workshop) =>
+            {
+                return new Workshop
+                {
+                    Id = id,
+                    AvailableSeats = workshop.AvailableSeats,
+                };
+            });
+        workshopRepository.Setup(
+            r => r.RunInTransaction(
+                It.IsAny<Func<Task<(Workshop, MultipleImageUploadingResult, Result<string>)>>>()))
+            .Returns((Func<Task<(Workshop, MultipleImageUploadingResult, Result<string>)>> f) => f.Invoke());
+
+        mapperMock.Setup(m => m.Map<WorkshopV2Dto>(It.IsAny<Workshop>()))
+            .Returns((Workshop workshop) =>
+            {
+                var dto = new WorkshopV2Dto
+                {
+                    Id = id,
+                    AvailableSeats = workshop.AvailableSeats,
+                };
+
+                return dto;
+            });
+        mapperMock.Setup(m => m.Map<Workshop>(It.IsAny<WorkshopV2Dto>()))
+            .Returns((WorkshopV2Dto dto) =>
+            {
+                var workshop = new Workshop
+                {
+                    Id = id,
+                    AvailableSeats = (uint)dto.AvailableSeats,
+                };
+
+                return workshop;
+            });
+
+        workshopRepository.Setup(
+            w => w.UnitOfWork.CompleteAsync())
+            .ReturnsAsync(It.IsAny<int>());
+    }
+
     private void SetupGetAll(IEnumerable<Workshop> workshops, IEnumerable<AverageRatingDto> ratings)
     {
         var mockWorkshops = workshops.AsQueryable().BuildMock();
@@ -943,7 +1022,9 @@ public class WorkshopServiceTests
             .Returns(mapper.Map<WorkshopV2Dto>(workshop));
         mapperMock.Setup(m => m.Map<List<DateTimeRange>>(It.IsAny<List<DateTimeRangeDto>>()))
             .Returns(mapper.Map<List<DateTimeRange>>(It.IsAny<List<DateTimeRangeDto>>()));
-        workshopRepository.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<(Workshop, MultipleImageChangingResult, ImageChangingResult)>>>()))
+        workshopRepository.Setup(
+            r => r.RunInTransaction(
+                It.IsAny<Func<Task<(Workshop, MultipleImageChangingResult, ImageChangingResult)>>>()))
             .Returns((Func<Task<(Workshop, MultipleImageChangingResult, ImageChangingResult)>> f) => f.Invoke());
     }
 
