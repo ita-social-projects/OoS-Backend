@@ -34,6 +34,7 @@ public class WorkshopService : IWorkshopService
     private readonly IProviderAdminRepository providerAdminRepository;
     private readonly IAverageRatingService averageRatingService;
     private readonly IProviderRepository providerRepository;
+    private readonly ICodeficatorService codeficatorService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -48,7 +49,7 @@ public class WorkshopService : IWorkshopService
     /// <param name="providerAdminRepository">Repository for provider admins.</param>
     /// <param name="averageRatingService">Average rating service.</param>
     /// <param name="providerRepository">Repository for providers.</param>
-
+    /// <param name="codeficatorService">Codeficator service.</param>
     public WorkshopService(
         IWorkshopRepository workshopRepository,
         IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository,
@@ -59,7 +60,8 @@ public class WorkshopService : IWorkshopService
         IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService,
         IProviderAdminRepository providerAdminRepository,
         IAverageRatingService averageRatingService,
-        IProviderRepository providerRepository)
+        IProviderRepository providerRepository,
+        ICodeficatorService codeficatorService)
     {
         this.workshopRepository = workshopRepository;
         this.dateTimeRangeRepository = dateTimeRangeRepository;
@@ -71,6 +73,7 @@ public class WorkshopService : IWorkshopService
         this.providerAdminRepository = providerAdminRepository;
         this.averageRatingService = averageRatingService;
         this.providerRepository = providerRepository;
+        this.codeficatorService = codeficatorService;
     }
 
     /// <inheritdoc/>
@@ -83,6 +86,12 @@ public class WorkshopService : IWorkshopService
         if (dto.AvailableSeats is 0 or null)
         {
             dto.AvailableSeats = uint.MaxValue;
+        }
+
+        if (dto.Address.Latitude == 0 && dto.Address.Longitude == 0)
+        {
+            (dto.Address.Latitude, dto.Address.Longitude) =
+                await codeficatorService.GetNearestCoordinatesByCATOTTGId(dto.Address.CATOTTGId);
         }
 
         var workshop = mapper.Map<Workshop>(dto);
@@ -118,6 +127,12 @@ public class WorkshopService : IWorkshopService
         async Task<(Workshop createdWorkshop, MultipleImageUploadingResult imagesUploadResult, Result<string>
             coverImageUploadResult)> CreateWorkshopAndDependencies()
         {
+            if (dto.Address.Latitude == 0 && dto.Address.Longitude == 0)
+            {
+                (dto.Address.Latitude, dto.Address.Longitude) =
+                    await codeficatorService.GetNearestCoordinatesByCATOTTGId(dto.Address.CATOTTGId);
+            }
+
             var createdWorkshop = mapper.Map<Workshop>(dto);
             createdWorkshop.Status = WorkshopStatus.Open;
             var workshop = await workshopRepository.Create(createdWorkshop).ConfigureAwait(false);
@@ -338,6 +353,12 @@ public class WorkshopService : IWorkshopService
             dto.AddressId = currentWorkshop.AddressId;
             dto.Address.Id = currentWorkshop.AddressId;
 
+            if (dto.Address.Latitude == 0 && dto.Address.Longitude == 0)
+            {
+                (dto.Address.Latitude, dto.Address.Longitude) =
+                    await codeficatorService.GetNearestCoordinatesByCATOTTGId(dto.Address.CATOTTGId);
+            }
+
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherDTO>()).ConfigureAwait(false);
 
             if (dto.AvailableSeats is 0 or null)
@@ -425,6 +446,12 @@ public class WorkshopService : IWorkshopService
             // In case if AddressId was changed. AddressId is one and unique for workshop.
             dto.AddressId = currentWorkshop.AddressId;
             dto.Address.Id = currentWorkshop.AddressId;
+
+            if (dto.Address.Latitude == 0 && dto.Address.Longitude == 0)
+            {
+                (dto.Address.Latitude, dto.Address.Longitude) =
+                    await codeficatorService.GetNearestCoordinatesByCATOTTGId(dto.Address.CATOTTGId);
+            }
 
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherDTO>()).ConfigureAwait(false);
 
