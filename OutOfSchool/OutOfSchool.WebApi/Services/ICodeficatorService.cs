@@ -53,4 +53,11 @@ public interface ICodeficatorService
     /// <param name="catottgId">CATOTTG id.</param>
     /// <returns>The task result contains a <see cref="List{TResult}"/> that contains subsettlements ids.</returns>
     public Task<IEnumerable<long>> GetAllChildrenIdsByParentIdAsync(long catottgId);
+
+    /// <summary>
+    /// Get latitude and longitude by CATOTTG id.
+    /// </summary>
+    /// <param name="catottgId">CATOTTG id.</param>
+    /// <returns>The task result contains a <see cref="List{TResult}"/> that contains coordinates.</returns>
+    public Task<(double Latitude, double Longitude)> GetNearestCoordinatesByCATOTTGId(long catottgId);
 }
