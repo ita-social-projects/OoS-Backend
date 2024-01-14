@@ -83,7 +83,7 @@ public class WorkshopServiceTests
         var newWorkshop = new Workshop() { Address = new Address() };
 
         // Act
-        var result = await workshopService.Create(mapper.Map<WorkshopBaseDto>(newWorkshop)).ConfigureAwait(false);
+        await workshopService.Create(mapper.Map<WorkshopBaseDto>(newWorkshop)).ConfigureAwait(false);
 
         // Assert
         workshopRepository.Verify(x => x.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()), Times.Once);
@@ -163,6 +163,36 @@ public class WorkshopServiceTests
 
         // Act and Assert
         workshopService.Invoking(w => w.Create(mapper.Map<WorkshopBaseDto>(newWorkshop))).Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task Create_WhenZeroCoordinates_ShouldCallGetNearestCoordinatesByCATOTTGId()
+    {
+        // Arrange
+        var workshop = WithWorkshop(Guid.NewGuid());
+        workshop.Address.Longitude = 0;
+        workshop.Address.Latitude = 0;
+        SetupCreate();
+
+        // Act
+        await workshopService.Create(mapper.Map<WorkshopBaseDto>(workshop));
+
+        // Assert
+        codeficatorServiceMock.Verify(cs => cs.GetNearestCoordinatesByCATOTTGId(workshop.Address.CATOTTGId), Times.Once);
+    }
+
+    [Test]
+    public async Task Create_WhenValidCoordinates_ShouldNotCallGetNearestCoordinatesByCATOTTGId()
+    {
+        // Arrange
+        var workshop = WithWorkshop(Guid.NewGuid());
+        SetupCreate();
+
+        // Act
+        await workshopService.Create(mapper.Map<WorkshopBaseDto>(workshop));
+
+        // Assert
+        codeficatorServiceMock.Verify(cs => cs.GetNearestCoordinatesByCATOTTGId(workshop.Address.CATOTTGId), Times.Never);
     }
     #endregion
 
@@ -437,6 +467,36 @@ public class WorkshopServiceTests
 
         // Assert
         result.Teachers.Should().BeEquivalentTo(expectedTeachers);
+    }
+
+    [Test]
+    public async Task Update_WhenZeroCoordinates_ShouldCallGetNearestCoordinatesByCATOTTGId()
+    {
+        // Arrange
+        var workshop = WithWorkshop(Guid.NewGuid());
+        workshop.Address.Longitude = 0;
+        workshop.Address.Latitude = 0;
+        SetupUpdate(workshop);
+
+        // Act
+        await workshopService.Update(mapper.Map<WorkshopBaseDto>(workshop));
+
+        // Assert
+        codeficatorServiceMock.Verify(cs => cs.GetNearestCoordinatesByCATOTTGId(workshop.Address.CATOTTGId), Times.Once);
+    }
+
+    [Test]
+    public async Task Update_WhenValidCoordinates_ShouldNotCallGetNearestCoordinatesByCATOTTGId()
+    {
+        // Arrange
+        var workshop = WithWorkshop(Guid.NewGuid());
+        SetupUpdate(workshop);
+
+        // Act
+        await workshopService.Update(mapper.Map<WorkshopBaseDto>(workshop));
+
+        // Assert
+        codeficatorServiceMock.Verify(cs => cs.GetNearestCoordinatesByCATOTTGId(workshop.Address.CATOTTGId), Times.Never);
     }
 
     #endregion
