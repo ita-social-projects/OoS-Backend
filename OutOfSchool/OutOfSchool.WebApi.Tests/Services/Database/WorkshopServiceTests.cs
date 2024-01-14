@@ -41,6 +41,7 @@ public class WorkshopServiceTests
     private Mock<IProviderAdminRepository> providerAdminRepository;
     private Mock<IAverageRatingService> averageRatingServiceMock;
     private Mock<IProviderRepository> providerRepositoryMock;
+    private Mock<ICodeficatorService> codeficatorServiceMock;
 
     [SetUp]
     public void SetUp()
@@ -56,6 +57,7 @@ public class WorkshopServiceTests
         providerAdminRepository = new Mock<IProviderAdminRepository>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
         providerRepositoryMock = new Mock<IProviderRepository>();
+        codeficatorServiceMock = new Mock<ICodeficatorService>();
 
         workshopService =
             new WorkshopService(
@@ -68,7 +70,8 @@ public class WorkshopServiceTests
                 workshopImagesMediator.Object,
                 providerAdminRepository.Object,
                 averageRatingServiceMock.Object,
-                providerRepositoryMock.Object);
+                providerRepositoryMock.Object,
+                codeficatorServiceMock.Object);
     }
 
     #region Create
@@ -77,7 +80,7 @@ public class WorkshopServiceTests
     {
         // Arrange
         SetupCreate();
-        var newWorkshop = new Workshop();
+        var newWorkshop = new Workshop() { Address = new Address() };
 
         // Act
         var result = await workshopService.Create(mapper.Map<WorkshopBaseDto>(newWorkshop)).ConfigureAwait(false);
@@ -95,6 +98,7 @@ public class WorkshopServiceTests
         {
             Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
             InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
+            Address = new Address(),
         };
 
         // Act
@@ -114,6 +118,7 @@ public class WorkshopServiceTests
         {
             Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
             InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
+            Address = new Address(),
         };
 
         var workshopDto = mapper.Map<WorkshopBaseDto>(newWorkshop);
@@ -136,6 +141,7 @@ public class WorkshopServiceTests
         {
             Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
             InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
+            Address = new Address(),
         };
 
         // Act
