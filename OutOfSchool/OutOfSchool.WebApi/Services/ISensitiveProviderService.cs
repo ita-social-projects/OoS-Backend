@@ -35,5 +35,4 @@ public interface ISensitiveProviderService
     /// <param name="userId">Id of user that requests update.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
     Task<ProviderStatusDto> UpdateStatus(ProviderStatusDto dto, string userId);
-
 }

@@ -5,7 +5,6 @@ using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
-using Castle.Core.Logging;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,10 +12,8 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.AuthCommon.Util;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Redis;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
@@ -28,6 +25,8 @@ using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Models.SocialGroup;
 using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -61,7 +60,7 @@ public class AdminControllerTests
     [SetUp]
     public void Setup()
     {
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         currentUserService = new Mock<ICurrentUserService>();
         sensitiveMinistryAdminService = new Mock<ISensitiveMinistryAdminService>();
         sensitiveDirectionService = new Mock<ISensitiveDirectionService>();
@@ -84,8 +83,7 @@ public class AdminControllerTests
             sensitiveApplicationService.Object,
             sensitiveDirectionService.Object,
             sensitiveProviderService.Object,
-            localizer.Object
-            )
+            localizer.Object)
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContext.Object },
         };
@@ -360,6 +358,7 @@ public class AdminControllerTests
         Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
         Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
     }
+
     private List<WorkshopCard> FakeWorkshopCards()
     {
         return FakeWorkshops().Select(w => new WorkshopCard
@@ -368,7 +367,7 @@ public class AdminControllerTests
             ProviderTitle = w.ProviderTitle,
             ProviderOwnership = w.ProviderOwnership,
             Title = w.Title,
-            PayRate = (OutOfSchool.Common.Enums.PayRateType)w.PayRate,
+            PayRate = (PayRateType)w.PayRate,
             CoverImageId = w.CoverImageId,
             MinAge = w.MinAge,
             MaxAge = w.MaxAge,
@@ -382,7 +381,7 @@ public class AdminControllerTests
             InstitutionHierarchyId = w.InstitutionHierarchyId,
             InstitutionId = w.InstitutionId,
             Institution = w.Institution,
-            AvailableSeats = w.AvailableSeats,
+            AvailableSeats = w.AvailableSeats ?? uint.MaxValue,
             TakenSeats = w.TakenSeats,
         }).ToList();
     }
