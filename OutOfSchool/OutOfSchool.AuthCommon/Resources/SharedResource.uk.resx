@@ -151,7 +151,7 @@
     <value>Логін</value>
   </data>
   <data name="Middle name" xml:space="preserve">
-    <value>По-батькові</value>
+    <value>По батькові</value>
   </data>
   <data name="or fill out the form" xml:space="preserve">
     <value>або заповніть форму</value>
@@ -303,7 +303,7 @@
     <value>Паролі не збігаються</value>
   </data>
   <data name="Error! Please check the number is correct" xml:space="preserve">
-    <value>Помилка! Перевірте будь ласка правильність номеру</value>
+    <value>Помилка! Перевірте, будь ласка, правильність номеру</value>
   </data>
   <data name="Phone number is required" xml:space="preserve">
     <value>Номер телефону обов’язковий</value>
