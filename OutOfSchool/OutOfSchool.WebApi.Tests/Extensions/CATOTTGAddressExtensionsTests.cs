@@ -11,6 +11,7 @@ public class CATOTTGAddressExtensionsTests
     private static CATOTTG territorialCommunityWithParent;
     private static CATOTTG districtWithParent;
     private static CATOTTG regionWithoutParent;
+    private static CATOTTG cityDistrictWithoutParent;
     private static CATOTTG settlementWithoutParent;
 
     [OneTimeSetUp]
@@ -58,6 +59,15 @@ public class CATOTTGAddressExtensionsTests
             ParentId = 2,
             Parent = settlementWithParent,
             Name = "Залізничний",
+            Category = "B",
+        };
+
+        cityDistrictWithoutParent = new CATOTTG()
+        {
+            Id = 1,
+            ParentId = null,
+            Parent = null,
+            Name = "Печерський",
             Category = "B",
         };
 
@@ -162,6 +172,19 @@ public class CATOTTGAddressExtensionsTests
 
         // Act
         var result = CatottgAddressExtensions.GetTerritorialCommunityName(settlementWithoutParent);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+    }
+
+    [Test]
+    public void GetTerritorialCommunityName_WhenCATOTTGIsCityDistrictWithoutParent_ShouldReturnNull()
+    {
+        // Arrange
+        string expected = null;
+
+        // Act
+        var result = CatottgAddressExtensions.GetTerritorialCommunityName(cityDistrictWithoutParent);
 
         // Assert
         Assert.AreEqual(expected, result);
