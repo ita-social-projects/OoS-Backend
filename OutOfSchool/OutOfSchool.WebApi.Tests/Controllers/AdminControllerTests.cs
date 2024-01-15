@@ -232,7 +232,7 @@ public class AdminControllerTests
         // Assert
         Assert.That(result is ForbidResult);
     }
-    
+
     [Test]
     [TestCase(10)]
     public async Task Delete_WhenThereAreRelatedWorkshops_ReturnsBadRequestObjectResult(long id)
@@ -273,7 +273,7 @@ public class AdminControllerTests
         // Assert
         result.AssertResponseOkResultAndValidateValue(expected);
     }
-    
+
     [Test]
     public async Task GetProviders_WhenCalled_ReturnsForbidObject()
     {
@@ -357,6 +357,37 @@ public class AdminControllerTests
         // Assert
         Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
         Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    public async Task GetByProvider_ReturnsNoContentResult()
+    {
+        // Arrange
+        sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
+            .ReturnsAsync(new SearchResult<ProviderDto> { TotalAmount = 0, Entities = new List<ProviderDto>() });
+
+        // Act
+        var result = await controller.GetProvider(new ProviderFilter()).ConfigureAwait(false);
+
+        // Assert
+        sensitiveProviderService.VerifyAll();
+        Assert.That(result, Is.InstanceOf<NoContentResult>());
+    }
+
+    [Test]
+    public async Task GetByProvider_ReturnsOkResult()
+    {
+        // Arrange
+        var expected = new SearchResult<ProviderDto> { TotalAmount = 1, Entities = new List<ProviderDto>() };
+        sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
+            .ReturnsAsync(expected);
+
+        // Act
+        var result = await controller.GetProvider(new ProviderFilter()).ConfigureAwait(false) as ActionResult;
+
+        // Assert
+        sensitiveProviderService.VerifyAll();
+        result.AssertResponseOkResultAndValidateValue(expected);
     }
 
     private List<WorkshopCard> FakeWorkshopCards()
