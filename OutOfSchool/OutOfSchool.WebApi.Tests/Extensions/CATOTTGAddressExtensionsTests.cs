@@ -230,6 +230,19 @@ public class CATOTTGAddressExtensionsTests
         // Assert
         Assert.AreEqual(expected, result);
     }
+
+    [Test]
+    public void GetDistrictName_WhenCATOTTGIsCityDistrictWithoutParent_ShouldReturnNull()
+    {
+        // Arrange
+        string expected = null;
+
+        // Act
+        var result = CatottgAddressExtensions.GetDistrictName(cityDistrictWithoutParent);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+    }
     #endregion
 
     #region GetRegionName
