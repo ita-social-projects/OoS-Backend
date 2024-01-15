@@ -19,20 +19,4 @@ public interface ISensitiveProviderService
     /// <param name="providerBlockDto">Provider to block/unblock.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
     Task<ResponseDto> Block(ProviderBlockDto providerBlockDto, string token = default);
-
-    /// <summary>
-    /// Updates Provider LicenseStatus.
-    /// </summary>
-    /// <param name="dto">Provider to update.</param>
-    /// <param name="userId">Id of user that requests update.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
-    Task<ProviderLicenseStatusDto> UpdateLicenseStatus(ProviderLicenseStatusDto dto, string userId);
-
-    /// <summary>
-    /// Update Provider Status.
-    /// </summary>
-    /// <param name="dto">Provider to update.</param>
-    /// <param name="userId">Id of user that requests update.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
-    Task<ProviderStatusDto> UpdateStatus(ProviderStatusDto dto, string userId);
 }
