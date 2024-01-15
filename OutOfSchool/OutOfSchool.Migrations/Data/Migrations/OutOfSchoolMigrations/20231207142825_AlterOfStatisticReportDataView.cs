@@ -99,9 +99,9 @@ public partial class AlterOfStatisticReportDataView : Migration
                 IFNULL(`app`.`ChildrenStudyingLess18`, 0) AS `ChildrenStudyingLess18`,
                 IFNULL(`t`.`Amount`, 0) AS `Teachers`
         FROM
-            ((((((`outofschool`.`providers` `p`
-        JOIN `outofschool`.`institutions` `i` ON ((`i`.`Id` = `p`.`InstitutionId`)))
-        JOIN `outofschool`.`addresses` `a` ON ((`a`.`Id` = `p`.`LegalAddressId`)))
+            ((((((`outofschool`.`Providers` `p`
+        JOIN `outofschool`.`Institutions` `i` ON ((`i`.`Id` = `p`.`InstitutionId`)))
+        JOIN `outofschool`.`Addresses` `a` ON ((`a`.`Id` = `p`.`LegalAddressId`)))
         JOIN (SELECT 
             `c`.`Id` AS `Id`,
                 `c`.`Code` AS `Code`,
@@ -132,15 +132,15 @@ public partial class AlterOfStatisticReportDataView : Migration
                     ELSE ''
                 END) AS `Settlement`
         FROM
-            ((((`outofschool`.`catottgs` `c`
-        LEFT JOIN `outofschool`.`catottgs` `c2` ON ((`c2`.`Id` = `c`.`ParentId`)))
-        LEFT JOIN `outofschool`.`catottgs` `c3` ON ((`c3`.`Id` = `c2`.`ParentId`)))
-        LEFT JOIN `outofschool`.`catottgs` `c4` ON ((`c4`.`Id` = `c3`.`ParentId`)))
-        LEFT JOIN `outofschool`.`catottgs` `c5` ON ((`c5`.`Id` = `c4`.`ParentId`)))) `c` ON ((`c`.`Id` = `a`.`CATOTTGId`)))
+            ((((`outofschool`.`CATOTTGs` `c`
+        LEFT JOIN `outofschool`.`CATOTTGs` `c2` ON ((`c2`.`Id` = `c`.`ParentId`)))
+        LEFT JOIN `outofschool`.`CATOTTGs` `c3` ON ((`c3`.`Id` = `c2`.`ParentId`)))
+        LEFT JOIN `outofschool`.`CATOTTGs` `c4` ON ((`c4`.`Id` = `c3`.`ParentId`)))
+        LEFT JOIN `outofschool`.`CATOTTGs` `c5` ON ((`c5`.`Id` = `c4`.`ParentId`)))) `c` ON ((`c`.`Id` = `a`.`CATOTTGId`)))
         LEFT JOIN (SELECT 
             `w`.`ProviderId` AS `ProviderId`, COUNT(0) AS `Amount`
         FROM
-            `outofschool`.`workshops` `w`
+            `outofschool`.`Workshops` `w`
         WHERE
             (0 = `w`.`IsDeleted`)
         GROUP BY `w`.`ProviderId`) `wa` ON ((`wa`.`ProviderId` = `p`.`Id`)))
@@ -172,9 +172,9 @@ public partial class AlterOfStatisticReportDataView : Migration
                     ELSE 0
                 END)) AS `ChildrenStudyingLess18`
         FROM
-            ((`outofschool`.`applications` `a`
-        JOIN `outofschool`.`workshops` `w` ON ((`w`.`Id` = `a`.`WorkshopId`)))
-        JOIN `outofschool`.`children` `c` ON ((`c`.`Id` = `a`.`ChildId`)))
+            ((`outofschool`.`Applications` `a`
+        JOIN `outofschool`.`Workshops` `w` ON ((`w`.`Id` = `a`.`WorkshopId`)))
+        JOIN `outofschool`.`Children` `c` ON ((`c`.`Id` = `a`.`ChildId`)))
         WHERE
             ((0 = `a`.`IsDeleted`)
                 AND (0 = `a`.`IsBlocked`)
@@ -183,9 +183,9 @@ public partial class AlterOfStatisticReportDataView : Migration
         LEFT JOIN (SELECT 
             `w`.`ProviderId` AS `ProviderId`, COUNT(0) AS `Amount`
         FROM
-            ((`outofschool`.`teachers` `t`
-        JOIN `outofschool`.`workshops` `w` ON ((`w`.`Id` = `t`.`WorkshopId`)))
-        JOIN `outofschool`.`providers` `p` ON ((`p`.`Id` = `w`.`ProviderId`)))
+            ((`outofschool`.`Teachers` `t`
+        JOIN `outofschool`.`Workshops` `w` ON ((`w`.`Id` = `t`.`WorkshopId`)))
+        JOIN `outofschool`.`Providers` `p` ON ((`p`.`Id` = `w`.`ProviderId`)))
         WHERE
             ((0 = `t`.`IsDeleted`)
                 AND (0 = `w`.`IsDeleted`)
@@ -213,17 +213,17 @@ public partial class AlterOfStatisticReportDataView : Migration
                 IFNULL(`tih`.`TeachersFrom51To55`, 0) AS `TeachersFrom51To55InstitutionHierarchy`,
                 IFNULL(`tih`.`TeachersFrom55`, 0) AS `TeachersFrom55InstitutionHierarchy`
         FROM
-            ((((`outofschool`.`providers` `p`
+            ((((`outofschool`.`Providers` `p`
         JOIN (SELECT 
             `w`.`ProviderId` AS `ProviderId`,
                 `w`.`InstitutionHierarchyId` AS `InstitutionHierarchyId`,
                 COUNT(0) AS `Amount`
         FROM
-            `outofschool`.`workshops` `w`
+            `outofschool`.`Workshops` `w`
         WHERE
             (0 = `w`.`IsDeleted`)
         GROUP BY `w`.`ProviderId` , `w`.`InstitutionHierarchyId`) `wa` ON ((`wa`.`ProviderId` = `p`.`Id`)))
-        LEFT JOIN `outofschool`.`institutionhierarchies` `ih` ON ((`wa`.`InstitutionHierarchyId` = `ih`.`Id`)))
+        LEFT JOIN `outofschool`.`InstitutionHierarchies` `ih` ON ((`wa`.`InstitutionHierarchyId` = `ih`.`Id`)))
         LEFT JOIN (SELECT 
             `w`.`ProviderId` AS `ProviderId`,
                 `w`.`InstitutionHierarchyId` AS `InstitutionHierarchyId`,
@@ -288,20 +288,20 @@ public partial class AlterOfStatisticReportDataView : Migration
                     ELSE 0
                 END)) AS `ChildrenStudyingOrphanInstitutionHierarchy`
         FROM
-            (((((((`outofschool`.`applications` `a`
-        JOIN `outofschool`.`workshops` `w` ON ((`w`.`Id` = `a`.`WorkshopId`)))
-        JOIN `outofschool`.`children` `c` ON ((`c`.`Id` = `a`.`ChildId`)))
+            (((((((`outofschool`.`Applications` `a`
+        JOIN `outofschool`.`Workshops` `w` ON ((`w`.`Id` = `a`.`WorkshopId`)))
+        JOIN `outofschool`.`Children` `c` ON ((`c`.`Id` = `a`.`ChildId`)))
         LEFT JOIN (SELECT DISTINCT
             `ac`.`ChildrenId` AS `ChildrenId`
         FROM
-            `outofschool`.`achievementchild` `ac`) `ach` ON ((`ach`.`ChildrenId` = `c`.`Id`)))
-        LEFT JOIN `outofschool`.`childsocialgroup` `csglargefamily` ON (((`csglargefamily`.`ChildrenId` = `c`.`Id`)
+            `outofschool`.`AchievementChild` `ac`) `ach` ON ((`ach`.`ChildrenId` = `c`.`Id`)))
+        LEFT JOIN `outofschool`.`ChildSocialGroup` `csglargefamily` ON (((`csglargefamily`.`ChildrenId` = `c`.`Id`)
             AND (`csglargefamily`.`SocialGroupsId` = 1))))
-        LEFT JOIN `outofschool`.`childsocialgroup` `csgpoorfamily` ON (((`csgpoorfamily`.`ChildrenId` = `c`.`Id`)
+        LEFT JOIN `outofschool`.`ChildSocialGroup` `csgpoorfamily` ON (((`csgpoorfamily`.`ChildrenId` = `c`.`Id`)
             AND (`csgpoorfamily`.`SocialGroupsId` = 2))))
-        LEFT JOIN `outofschool`.`childsocialgroup` `csgdisability` ON (((`csgdisability`.`ChildrenId` = `c`.`Id`)
+        LEFT JOIN `outofschool`.`ChildSocialGroup` `csgdisability` ON (((`csgdisability`.`ChildrenId` = `c`.`Id`)
             AND (`csgdisability`.`SocialGroupsId` = 3))))
-        LEFT JOIN `outofschool`.`childsocialgroup` `csgorphan` ON (((`csgorphan`.`ChildrenId` = `c`.`Id`)
+        LEFT JOIN `outofschool`.`ChildSocialGroup` `csgorphan` ON (((`csgorphan`.`ChildrenId` = `c`.`Id`)
             AND (`csgorphan`.`SocialGroupsId` IN (4 , 5)))))
         WHERE
             ((0 = `a`.`IsDeleted`)
@@ -334,14 +334,14 @@ public partial class AlterOfStatisticReportDataView : Migration
                     ELSE 0
                 END)) AS `TeachersFrom55`
         FROM
-            (((`outofschool`.`teachers` `t`
-        JOIN `outofschool`.`workshops` `w` ON ((`w`.`Id` = `t`.`WorkshopId`)))
-        JOIN `outofschool`.`providers` `p` ON ((`p`.`Id` = `w`.`ProviderId`)))
+            (((`outofschool`.`Teachers` `t`
+        JOIN `outofschool`.`Workshops` `w` ON ((`w`.`Id` = `t`.`WorkshopId`)))
+        JOIN `outofschool`.`Providers` `p` ON ((`p`.`Id` = `w`.`ProviderId`)))
         JOIN (SELECT 
             `t`.`Id` AS `Id`,
                 TIMESTAMPDIFF(YEAR, `t`.`DateOfBirth`, CURDATE()) AS `Years`
         FROM
-            `outofschool`.`teachers` `t`) `ty` ON ((`ty`.`Id` = `t`.`Id`)))
+            `outofschool`.`Teachers` `t`) `ty` ON ((`ty`.`Id` = `t`.`Id`)))
         WHERE
             ((0 = `t`.`IsDeleted`)
                 AND (0 = `w`.`IsDeleted`)
