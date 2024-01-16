@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
 using FluentAssertions;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -56,6 +57,7 @@ public class AdminControllerTests
     private List<Provider> providers;
     private DirectionDto direction;
     private IMapper mapper;
+    private HttpContext fakeHttpContext;
 
     [SetUp]
     public void Setup()
@@ -75,6 +77,7 @@ public class AdminControllerTests
         httpContext = new Mock<HttpContext>();
         httpContext.Setup(c => c.User.FindFirst("sub"))
             .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
+        
 
         controller = new AdminController(
             logger.Object,
@@ -98,6 +101,8 @@ public class AdminControllerTests
         provider.UserId = userId;
         provider.Id = providerId;
         applications = ApplicationDTOsGenerator.Generate(2).WithWorkshopCard(workshops.First()).WithParent(parent);
+        fakeHttpContext = GetFakeHttpContext();
+        controller.ControllerContext.HttpContext = fakeHttpContext;
     }
 
     [Test]
@@ -356,7 +361,7 @@ public class AdminControllerTests
 
         // Assert
         Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-        Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+        Assert.That(((BadRequestObjectResult)result).StatusCode, Is.EqualTo(400));
     }
 
     [Test]
@@ -388,6 +393,118 @@ public class AdminControllerTests
         // Assert
         sensitiveProviderService.VerifyAll();
         result.AssertResponseOkResultAndValidateValue(expected);
+    }
+
+    [Test]
+    public async Task GetProviderByFilter_ReturnsOkResult()
+    {
+        // Arrange
+        var expected = new SearchResult<ProviderDto> { TotalAmount = 1, Entities = new List<ProviderDto>() };
+        sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
+            .ReturnsAsync(expected);
+
+        // Act
+        var result = await controller.GetProviderByFilter(new ProviderFilter()).ConfigureAwait(false) as ActionResult;
+
+        // Assert
+        sensitiveProviderService.VerifyAll();
+        result.AssertResponseOkResultAndValidateValue(expected);
+    }
+
+    [Test]
+    public async Task BlockProvider_WithValidIdAndBlocked_ReturnsOkResult()
+    {
+        // Arrange
+        sensitiveProviderService
+            .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
+                new ResponseDto(){Result = new object(), HttpStatusCode = HttpStatusCode.Accepted, IsSuccess = true, Message = "test"});
+
+        // Act
+        var result = await controller.BlockProvider(It.IsAny<ProviderBlockDto>());
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+    }
+
+    [Test]
+    public async Task BlockProvider_WithValidIdAndBlocked_ReturnsForbidResult()
+    {
+        // Arrange
+        sensitiveProviderService
+            .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
+                new ResponseDto(){Result = new object(), HttpStatusCode = HttpStatusCode.Forbidden, IsSuccess = false, Message = "test"});
+
+        // Act
+        var result = await controller.BlockProvider(It.IsAny<ProviderBlockDto>());
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Is.InstanceOf<ForbidResult>());
+    }
+
+    [Test]
+    public async Task BlockProvider_WithValidIdAndBlocked_ReturnsNotFoundResult()
+    {
+        // Arrange
+        sensitiveProviderService
+            .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
+                new ResponseDto(){Result = new object(), HttpStatusCode = HttpStatusCode.NotFound, IsSuccess = false, Message = "test"});
+
+        // Act
+        var result = await controller.BlockProvider(It.IsAny<ProviderBlockDto>());
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Is.InstanceOf<NotFoundObjectResult>());
+    }
+
+    [Test]
+    public async Task BlockProvider_WithValidIdAndBlocked_DefaultCase_ReturnsNotFoundResult()
+    {
+        // Arrange
+        sensitiveProviderService
+            .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
+                new ResponseDto(){Result = new object(), HttpStatusCode = HttpStatusCode.Accepted, IsSuccess = false, Message = "test"});
+
+        // Act
+        var result = await controller.BlockProvider(It.IsAny<ProviderBlockDto>());
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Is.InstanceOf<NotFoundObjectResult>());
+    }
+
+    private HttpContext GetFakeHttpContext()
+    {
+        var authProps = new AuthenticationProperties();
+
+        authProps.StoreTokens(new List<AuthenticationToken>
+        {
+            new AuthenticationToken{ Name = "access_token", Value = "accessTokenValue"},
+        });
+
+        var authResult = AuthenticateResult
+            .Success(new AuthenticationTicket(new ClaimsPrincipal(), authProps, It.IsAny<string>()));
+
+        var authenticationServiceMock = new Mock<IAuthenticationService>();
+
+        authenticationServiceMock
+            .Setup(x => x.AuthenticateAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
+            .ReturnsAsync(authResult);
+
+        var serviceProviderMock = new Mock<IServiceProvider>();
+
+        serviceProviderMock
+            .Setup(s => s.GetService(typeof(IAuthenticationService)))
+            .Returns(authenticationServiceMock.Object);
+
+        var context = new DefaultHttpContext()
+        {
+            RequestServices = serviceProviderMock.Object,
+        };
+
+        return context;
     }
 
     private List<WorkshopCard> FakeWorkshopCards()
