@@ -17,4 +17,6 @@ public class ChatRoomWorkshopForChatList
     public int NotReadByCurrentUserMessagesCount { get; set; }
 
     public ChatMessageInfoForChatList LastMessage { get; set; }
+
+    public bool IsBlocked { get; set; }
 }

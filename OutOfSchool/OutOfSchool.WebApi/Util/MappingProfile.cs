@@ -540,6 +540,7 @@ public class MappingProfile : Profile
 
         CreateMap<ParentInfoForChatList, ParentDtoWithContactInfo>()
             .ForMember(dest => dest.EmailConfirmed, opt => opt.Ignore())
+            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
         CreateMap<ChatMessageInfoForChatList, ChatMessageWorkshopDto>();
