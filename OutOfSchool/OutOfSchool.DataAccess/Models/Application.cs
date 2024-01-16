@@ -20,7 +20,7 @@ public class Application : IKeyedEntity<Guid>, ISoftDeleted
 
     public DateTimeOffset? ApprovedTime { get; set; }
 
-    public bool IsBlocked { get; set; }
+    public bool IsBlockedByProvider { get; set; }
 
     public Guid WorkshopId { get; set; }
 

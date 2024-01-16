@@ -8,7 +8,7 @@ public class ChatRoomWorkshopDto
 
     public Guid ParentId { get; set; }
 
-    public bool IsBlocked { get; set; }
+    public bool IsBlockedByProvider { get; set; }
 
     public WorkshopInfoForChatListDto Workshop { get; set; }
 

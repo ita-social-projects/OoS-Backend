@@ -16,7 +16,7 @@ public class ChatRoomWorkshop : IKeyedEntity<Guid>, ISoftDeleted
     [Required]
     public Guid ParentId { get; set; }
 
-    public bool IsBlocked { get; set; }
+    public bool IsBlockedByProvider { get; set; }
 
     public virtual Workshop Workshop { get; set; }
 

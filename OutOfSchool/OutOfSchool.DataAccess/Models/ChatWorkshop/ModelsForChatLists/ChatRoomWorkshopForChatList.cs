@@ -18,5 +18,5 @@ public class ChatRoomWorkshopForChatList
 
     public ChatMessageInfoForChatList LastMessage { get; set; }
 
-    public bool IsBlocked { get; set; }
+    public bool IsBlockedByProvider { get; set; }
 }
