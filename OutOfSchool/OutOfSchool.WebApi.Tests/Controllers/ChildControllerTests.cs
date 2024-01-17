@@ -74,15 +74,15 @@ public class ChildControllerTests
     }
 
     [Test]
-        public void ChildController_WhenServicesIsNull_ThrowsArgumentNullException()
-        {
-            // Act and Assert
-            Assert.Throws<ArgumentNullException>(() => new ChildController(null, providerService.Object, providerAdminService.Object));
-            Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, null, providerAdminService.Object));
-            Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, providerService.Object, null));            
-        }
+    public void ChildController_WhenServicesIsNull_ThrowsArgumentNullException()
+    {
+        // Act and Assert
+        Assert.Throws<ArgumentNullException>(() => new ChildController(null, providerService.Object, providerAdminService.Object));
+        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, null, providerAdminService.Object));
+        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, providerService.Object, null));
+    }
 
-        [Test]
+    [Test]
     public async Task GetChildren_WhenThereAreChildren_ShouldReturnOkResultObject()
     {
         // Arrange
