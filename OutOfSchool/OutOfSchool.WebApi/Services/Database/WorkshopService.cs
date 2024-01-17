@@ -239,26 +239,27 @@ public class WorkshopService : IWorkshopService
             providerAdminId);
 
         var providerAdmin = (await providerAdminRepository.GetByFilter(pa => pa.UserId == providerAdminId)).FirstOrDefault();
-        if (providerAdmin != null)
+
+        if (providerAdmin == null)
         {
-            if (providerAdmin.IsDeputy)
-            {
-                return (await workshopRepository
+            return new List<ShortEntityDto>();
+        }
+
+        if (providerAdmin.IsDeputy)
+         {
+            return (await workshopRepository
                         .GetByFilter(w => providerAdmin.Provider.Workshops.Contains(w)))
                     .Select(workshop => mapper.Map<ShortEntityDto>(workshop))
                     .OrderBy(workshop => workshop.Title)
                     .ToList();
-            }
+         }
 
-            return (await providerAdminRepository
+        return (await providerAdminRepository
                     .GetByFilter(pa => pa.UserId == providerAdminId))
                 .SelectMany(pa => pa.ManagedWorkshops, (pa, workshops) => new { workshops })
                 .Select(x => mapper.Map<ShortEntityDto>(x.workshops))
                 .OrderBy(w => w.Title)
                 .ToList();
-        }
-
-        return new List<ShortEntityDto>();
     }
 
     /// <inheritdoc/>

@@ -176,6 +176,8 @@ public class ChatWorkshopHub : Hub
             else
             {
                 logger.LogWarning("Workshop is null. Unable to add connections to group.");
+
+                return;
             }
 
             // Add Provider's deputy connections to the Group.

@@ -211,10 +211,10 @@ public class StatusServiceTests
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
 
-            var existingStatuses = context.InstitutionStatuses.ToList();
+            var existingStatusIds = context.InstitutionStatuses.Select(status => status.Id).ToList();
 
             var institutionStatusesToAdd = InstitutionStatusGenerator.Generate(5)
-                .Where(status => existingStatuses.All(existingStatus => existingStatus.Id != status.Id))
+                .Where(status => !existingStatusIds.Contains(status.Id))
                 .ToList();
 
             context.InstitutionStatuses.AddRange(institutionStatusesToAdd);
