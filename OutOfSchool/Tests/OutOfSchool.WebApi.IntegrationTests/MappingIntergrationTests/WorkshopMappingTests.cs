@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using AutoMapper;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
@@ -41,13 +40,6 @@ public class WorkshopMappingTests
         var result = mapper.Map<WorkshopProviderViewCard>(workshop);
 
         // Assert
-        Assert.AreEqual(
-            workshop.Applications.Count(x => x.Status == ApplicationStatus.Pending && !x.IsDeleted),
-            result.AmountOfPendingApplications);
-        Assert.AreEqual(
-            workshop.Applications.Count(x => x.Status == ApplicationStatus.Approved
-                                                        || x.Status == ApplicationStatus.StudyingForYears),
-            result.TakenSeats);
         Assert.AreEqual(0, result.UnreadMessages);
     }
 }

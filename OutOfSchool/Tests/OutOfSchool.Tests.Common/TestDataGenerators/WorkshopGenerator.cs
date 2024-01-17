@@ -60,7 +60,9 @@ public static class WorkshopGenerator
     public static Workshop WithApplications(this Workshop workshop)
     {
         workshop.Applications = ApplicationGenerator.Generate(new Random().Next(1, 4))
-            .WithWorkshop(workshop);
+            .WithWorkshop(workshop)
+            .WithParent(ParentGenerator.Generate())
+            .WithChild(ChildGenerator.Generate());
         return workshop;
     }
 
