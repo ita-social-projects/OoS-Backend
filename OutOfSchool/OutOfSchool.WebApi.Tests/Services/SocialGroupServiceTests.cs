@@ -166,7 +166,7 @@ public class SocialGroupServiceTests
     }
 
     [Test]
-    public async Task Update_WhenSocialGroupIsNull_ShouldLogErrorAndReturnNull()
+    public async Task Update_WhenSocialGroupIsNull_ShouldReturnNull()
     {
         // Arrange
         long socialGroupId = 1;

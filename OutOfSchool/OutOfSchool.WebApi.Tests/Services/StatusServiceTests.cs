@@ -151,6 +151,10 @@ public class StatusServiceTests
 
         // Assert
         TestHelper.AssertDtosAreEqual(expected, result);
+
+        var updatedEntity = await repository.GetById(entityToUpdate.Id).ConfigureAwait(false);
+
+        Assert.AreEqual(entityToUpdate.Name, updatedEntity.NameEn);
     }
 
     [Test]
