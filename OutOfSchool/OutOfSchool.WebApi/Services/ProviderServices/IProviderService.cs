@@ -95,10 +95,7 @@ public interface IProviderService
     /// <param name="addStatusData"></param>
     /// <param name="addLicenseStatusData"></param>
     /// <returns></returns>
-    void SendNotification(Provider provider,
-        NotificationAction notificationAction,
-        bool addStatusData,
-        bool addLicenseStatusData);
+    Task SendNotification(Provider provider, NotificationAction notificationAction, bool addStatusData, bool addLicenseStatusData);
 
     /// <summary>
     /// Updates workshop's provider status

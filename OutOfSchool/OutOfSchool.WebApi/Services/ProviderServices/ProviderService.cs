@@ -364,7 +364,7 @@ public class ProviderService : IProviderService, INotificationReciever
             logger.LogInformation($"Provider(id) {providerBlockDto.Id} IsBlocked was changed to {provider.IsBlocked}");
         });
 
-        SendNotification(provider, providerBlockDto.IsBlocked ? NotificationAction.Block : NotificationAction.Unblock, false, false);
+        await SendNotification(provider, providerBlockDto.IsBlocked ? NotificationAction.Block : NotificationAction.Unblock, false, false);
 
         logger.LogInformation("Block/Unblock the particular provider admins and deputy providers belonging to the Provider starts.");
 
@@ -390,7 +390,7 @@ public class ProviderService : IProviderService, INotificationReciever
         return (await providerRepository.GetById(providerId).ConfigureAwait(false))?.IsBlocked;
     }
 
-    public void SendNotification(Provider provider, NotificationAction notificationAction, bool addStatusData, bool addLicenseStatusData)
+    public async Task SendNotification(Provider provider, NotificationAction notificationAction, bool addStatusData, bool addLicenseStatusData)
     {
         if (provider == null)
         {
@@ -409,7 +409,7 @@ public class ProviderService : IProviderService, INotificationReciever
             additionalData.Add("LicenseStatus", provider.LicenseStatus.ToString());
         }
 
-        notificationService.Create(
+        await notificationService.Create(
                 NotificationType.Provider,
                 notificationAction,
                 provider.Id,
