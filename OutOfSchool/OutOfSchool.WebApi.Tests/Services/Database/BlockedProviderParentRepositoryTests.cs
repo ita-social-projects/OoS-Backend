@@ -19,7 +19,7 @@ public class BlockedProviderParentRepositoryTests
     private List<Parent> parents;
     private List<Provider> providers;
     private List<Workshop> workshops;
-    private List<Application> aplications;
+    private List<Application> applications;
     private List<ChatRoomWorkshop> chatRooms;
 
     [SetUp]
@@ -97,7 +97,7 @@ public class BlockedProviderParentRepositoryTests
     }
 
     [Test]
-    public async Task Block_ShouldBlockApplicaionAndChatRoomWorkshop()
+    public async Task Block_ShouldBlockApplicationAndChatRoomWorkshop()
     {
         // Arrange
         using var context = GetContext();
@@ -113,7 +113,7 @@ public class BlockedProviderParentRepositoryTests
             UserIdBlock = "TestId",
         };
 
-        var expectedBlockedAplications = context.Applications.Count(a => a.IsBlockedByProvider) + 1;
+        var expectedBlockedApplications = context.Applications.Count(a => a.IsBlockedByProvider) + 1;
         var expectedBlockedChatRooms = context.ChatRoomWorkshops.Count(c => c.IsBlockedByProvider) + 1;
         var aplication = context.Applications.FirstOrDefault(
             a => a.ParentId == parentId &&
@@ -128,14 +128,14 @@ public class BlockedProviderParentRepositoryTests
 
         // Assert
         Assert.That(result is not null);
-        Assert.AreEqual(expectedBlockedAplications, context.Applications.Count(a => a.IsBlockedByProvider));
+        Assert.AreEqual(expectedBlockedApplications, context.Applications.Count(a => a.IsBlockedByProvider));
         Assert.AreEqual(expectedBlockedChatRooms, context.ChatRoomWorkshops.Count(c => c.IsBlockedByProvider));
         Assert.True(aplication.IsBlockedByProvider);
         Assert.True(chatRoom.IsBlockedByProvider);
     }
 
     [Test]
-    public async Task UnBlock_ShouldUnBlockApplicaionAndChatRoomWorkshop()
+    public async Task UnBlock_ShouldUnBlockApplicationAndChatRoomWorkshop()
     {
         // Arrange
         using var context = GetContext();
@@ -153,7 +153,7 @@ public class BlockedProviderParentRepositoryTests
 
         await repository.Block(blockedProviderParent);
 
-        var expectedUnBlockedAplications = context.Applications.Count(a => !a.IsBlockedByProvider) + 1;
+        var expectedUnBlockedApplications = context.Applications.Count(a => !a.IsBlockedByProvider) + 1;
         var expectedUnBlockedChatRooms = context.ChatRoomWorkshops.Count(c => !c.IsBlockedByProvider) + 1;
         var aplication = context.Applications.FirstOrDefault(
             a => a.ParentId == parentId &&
@@ -176,7 +176,7 @@ public class BlockedProviderParentRepositoryTests
 
         // Assert
         Assert.That(result is not null);
-        Assert.AreEqual(expectedUnBlockedAplications, context.Applications.Count(a => !a.IsBlockedByProvider));
+        Assert.AreEqual(expectedUnBlockedApplications, context.Applications.Count(a => !a.IsBlockedByProvider));
         Assert.AreEqual(expectedUnBlockedChatRooms, context.ChatRoomWorkshops.Count(c => !c.IsBlockedByProvider));
         Assert.False(aplication.IsBlockedByProvider);
         Assert.False(chatRoom.IsBlockedByProvider);
@@ -204,12 +204,12 @@ public class BlockedProviderParentRepositoryTests
         workshops[1].ProviderId = providers[1].Id;
         context.AddRange(workshops);
 
-        aplications = ApplicationGenerator.Generate(2);
-        aplications[0].Workshop = workshops[0];
-        aplications[1].Workshop = workshops[1];
-        aplications[0].ParentId = parents[0].Id;
-        aplications[1].ParentId = parents[1].Id;
-        context.AddRange(aplications);
+        applications = ApplicationGenerator.Generate(2);
+        applications[0].Workshop = workshops[0];
+        applications[1].Workshop = workshops[1];
+        applications[0].ParentId = parents[0].Id;
+        applications[1].ParentId = parents[1].Id;
+        context.AddRange(applications);
 
         chatRooms = new List<ChatRoomWorkshop>
         {
