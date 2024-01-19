@@ -587,6 +587,7 @@ public class ApplicationServiceTests
     public async Task GetCountByParentId_WhenIdIsValid_ShouldReturnCount()
     {
         // Arrange
+        currentUserServiceMock.Setup(c => c.IsDeputyOrProviderAdmin()).Returns(true);
         var existingApplications = WithApplicationsList();
         var parentId = existingApplications.First().ParentId;
         var expectedCount = existingApplications.Count(x => x.ParentId == parentId);
@@ -604,6 +605,9 @@ public class ApplicationServiceTests
     [Test]
     public async Task GetCountByParentId_WhenIdIsNotValid_ShouldReturnZero()
     {
+        // Arrange
+        currentUserServiceMock.Setup(c => c.IsDeputyOrProviderAdmin()).Returns(true);
+
         // Act
         var result = await service.GetCountByParentId(Guid.NewGuid()).ConfigureAwait(false);
 
