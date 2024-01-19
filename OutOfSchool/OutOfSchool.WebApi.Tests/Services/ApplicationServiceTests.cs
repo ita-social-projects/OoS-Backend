@@ -616,6 +616,13 @@ public class ApplicationServiceTests
     }
 
     [Test]
+    public async Task GetCountByParentId_WhenUserNotAuthorized_ShouldThrowException()
+    {
+        // Act
+        await service.Invoking(s => s.GetCountByParentId(Guid.NewGuid())).Should().ThrowAsync<UnauthorizedAccessException>();
+    }
+
+    [Test]
     public async Task GetAllByChild_WhenIdIsValid_ShouldReturnApplications()
     {
         // Arrange
