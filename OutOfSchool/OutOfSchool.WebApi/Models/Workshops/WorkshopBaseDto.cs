@@ -64,6 +64,10 @@ public class WorkshopBaseDto : IValidatableObject
     [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
     public PayRateType? PayRate { get; set; } = PayRateType.Classes;
 
+    [Required]
+    [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
+    public FormOfLearning FormOfLearning { get; set; }
+
     public uint? AvailableSeats { get; set; } = uint.MaxValue;
 
     public bool CompetitiveSelection { get; set; }

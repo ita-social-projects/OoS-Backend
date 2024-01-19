@@ -57,4 +57,6 @@ public class WorkshopFilterES
     public string ElasticRadius { get; set; } = GeoMathHelper.ElasticRadius;
 
     public Guid? InstitutionId { get; set; } = Guid.Empty;
+
+    public IReadOnlyCollection<FormOfLearning> FormOfLearning { get; set; } = new List<FormOfLearning>();
 }

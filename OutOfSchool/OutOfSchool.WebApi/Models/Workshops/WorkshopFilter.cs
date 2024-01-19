@@ -64,4 +64,6 @@ public class WorkshopFilter : OffsetFilter
     public int RadiusKm { get; set; } = 5;
 
     public Guid? InstitutionId { get; set; } = Guid.Empty;
+
+    public IReadOnlyCollection<FormOfLearning> FormOfLearning { get; set; } = new List<FormOfLearning>();
 }
