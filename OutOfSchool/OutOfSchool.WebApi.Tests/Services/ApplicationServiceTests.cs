@@ -584,6 +584,34 @@ public class ApplicationServiceTests
     }
 
     [Test]
+    public async Task GetCountByParentId_WhenIdIsValid_ShouldReturnCount()
+    {
+        // Arrange
+        var existingApplications = WithApplicationsList();
+        var parentId = existingApplications.First().ParentId;
+        var expectedCount = existingApplications.Count(x => x.ParentId == parentId);
+        applicationRepositoryMock.Setup(a => a.Count(
+                It.IsAny<Expression<Func<Application, bool>>>()))
+            .Returns(Task.FromResult<int>(expectedCount));
+
+        // Act
+        var result = await service.GetCountByParentId(parentId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(expectedCount);
+    }
+
+    [Test]
+    public async Task GetCountByParentId_WhenIdIsNotValid_ShouldReturnZero()
+    {
+        // Act
+        var result = await service.GetCountByParentId(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(0);
+    }
+
+    [Test]
     public async Task GetAllByChild_WhenIdIsValid_ShouldReturnApplications()
     {
         // Arrange
