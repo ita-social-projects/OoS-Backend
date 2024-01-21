@@ -67,7 +67,7 @@ public class ProviderService : IProviderService, INotificationReciever
     /// <param name="ministryAdminService">Service for manage ministry admin.</param>
     /// <param name="regionAdminService">Service for managing region admin rigths.</param>
     /// <param name="codeficatorService">Codeficator service.</param>
-    /// <param name="regionAdminRepository">RegionAdminRepository</param>
+    /// <param name="regionAdminRepository">RegionAdminRepository.</param>
     /// <param name="averageRatingService">Average rating service.</param>
     /// <param name="areaAdminService">Service for manage area admin.</param>
     /// <param name="areaAdminRepository">Repository for manage area admin.</param>
@@ -364,7 +364,9 @@ public class ProviderService : IProviderService, INotificationReciever
             logger.LogInformation($"Provider(id) {providerBlockDto.Id} IsBlocked was changed to {provider.IsBlocked}");
         });
 
-        await SendNotification(provider, providerBlockDto.IsBlocked ? NotificationAction.Block : NotificationAction.Unblock, false, false);
+        var notificationAction = providerBlockDto.IsBlocked ? NotificationAction.Block : NotificationAction.Unblock;
+
+        await SendNotification(provider, notificationAction, false, false);
 
         logger.LogInformation("Block/Unblock the particular provider admins and deputy providers belonging to the Provider starts.");
 
@@ -549,7 +551,7 @@ public class ProviderService : IProviderService, INotificationReciever
 
         logger.LogDebug("Provider with Id = {ProviderId} created successfully", newProvider?.Id);
 
-        SendNotification(newProvider, NotificationAction.Create, true, true);
+        await SendNotification(newProvider, NotificationAction.Create, true, true);
 
         return mapper.Map<ProviderDto>(newProvider);
     }
@@ -649,7 +651,7 @@ public class ProviderService : IProviderService, INotificationReciever
 
             if (statusChanged || licenseChanged)
             {
-                SendNotification(checkProvider, NotificationAction.Update, statusChanged, licenseChanged);
+                await SendNotification(checkProvider, NotificationAction.Update, statusChanged, licenseChanged);
             }
 
             return mapper.Map<ProviderDto>(checkProvider);
@@ -657,32 +659,6 @@ public class ProviderService : IProviderService, INotificationReciever
         finally
         {
             logger.LogTrace("Updating Provider with Id = {Id} was finished", providerUpdateDto.Id);
-        }
-    }
-
-    private void ChangeProviderStatusIfNeeded(
-        ProviderUpdateDto providerDto,
-        Provider checkProvider,
-        out bool statusChanged,
-        out bool licenseChanged)
-    {
-        statusChanged = false;
-        licenseChanged = false;
-
-        if (checkProvider.Status != ProviderStatus.Pending &&
-            !(checkProvider.FullTitle == providerDto.FullTitle
-              && checkProvider.EdrpouIpn == providerDto.EdrpouIpn))
-        {
-            checkProvider.Status = ProviderStatus.Recheck;
-            statusChanged = true;
-        }
-
-        if (checkProvider.License != providerDto.License)
-        {
-            checkProvider.LicenseStatus = string.IsNullOrEmpty(providerDto.License)
-                ? ProviderLicenseStatus.NotProvided
-                : ProviderLicenseStatus.Pending;
-            licenseChanged = !string.IsNullOrEmpty(providerDto.License);
         }
     }
 
@@ -755,6 +731,32 @@ public class ProviderService : IProviderService, INotificationReciever
             : null);
     }
 
+    private void ChangeProviderStatusIfNeeded(
+        ProviderUpdateDto providerDto,
+        Provider checkProvider,
+        out bool statusChanged,
+        out bool licenseChanged)
+    {
+        statusChanged = false;
+        licenseChanged = false;
+
+        if (checkProvider.Status != ProviderStatus.Pending &&
+            !(checkProvider.FullTitle == providerDto.FullTitle
+              && checkProvider.EdrpouIpn == providerDto.EdrpouIpn))
+        {
+            checkProvider.Status = ProviderStatus.Recheck;
+            statusChanged = true;
+        }
+
+        if (checkProvider.License != providerDto.License)
+        {
+            checkProvider.LicenseStatus = string.IsNullOrEmpty(providerDto.License)
+                ? ProviderLicenseStatus.NotProvided
+                : ProviderLicenseStatus.Pending;
+            licenseChanged = !string.IsNullOrEmpty(providerDto.License);
+        }
+    }
+
     private async Task<bool> IsCurrentUserIsAdminOfDistrictOrMinistryOfProvider(Provider provider)
     {
         if (!currentUserService.IsAdmin())
@@ -785,7 +787,7 @@ public class ProviderService : IProviderService, INotificationReciever
         return true;
     }
 
-    private static bool IsNeedInRelatedWorkshopsUpdating(ProviderUpdateDto providerDto, Provider checkProvider)
+    private bool IsNeedInRelatedWorkshopsUpdating(ProviderUpdateDto providerDto, Provider checkProvider)
     {
         return checkProvider.FullTitle != providerDto.FullTitle;
     }
