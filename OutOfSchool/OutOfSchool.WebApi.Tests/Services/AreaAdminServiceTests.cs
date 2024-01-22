@@ -43,6 +43,7 @@ public class AreaAdminServiceTests
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> institutionAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
+    private Mock<IEntityRepositorySoftDeleted<string, User>> apiErrorServiceUserRepositoryMock;
 
     private AreaAdminService areaAdminService;
     private AreaAdmin areaAdmin;
@@ -51,6 +52,7 @@ public class AreaAdminServiceTests
     private List<AreaAdminDto> areaAdminsDtos;
     private ErrorResponse emailAlreadyTakenErrorResponse;
     private ApiErrorResponse badRequestApiErrorResponse;
+    private ApiErrorService apiErrorService;
 
     [SetUp]
     public void SetUp()
@@ -90,6 +92,9 @@ public class AreaAdminServiceTests
         currentUserServiceMock = new Mock<ICurrentUserService>();
         institutionAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
+        apiErrorServiceUserRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
+        var apiErrorServiceLogger = new Mock<ILogger<ApiErrorService>>();
+        apiErrorService = new ApiErrorService(apiErrorServiceUserRepositoryMock.Object, apiErrorServiceLogger.Object);
 
         areaAdminService = new AreaAdminService(
             codeficatorRepositoryMock.Object,
@@ -103,7 +108,8 @@ public class AreaAdminServiceTests
             mapper,
             currentUserServiceMock.Object,
             institutionAdminServiceMock.Object,
-            regionAdminServiceMock.Object);
+            regionAdminServiceMock.Object,
+            apiErrorService);
     }
 
     [Test]
@@ -302,7 +308,7 @@ public class AreaAdminServiceTests
             .ApiErrorResponse
             .ApiErrors
             .First();
-        userRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<string>()))
+        apiErrorServiceUserRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<string>()))
             .ReturnsAsync(new List<User> { new User() });
 
         var areaAdminBaseDto = new AreaAdminBaseDto();

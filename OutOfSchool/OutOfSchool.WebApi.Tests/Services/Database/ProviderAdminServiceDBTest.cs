@@ -36,6 +36,7 @@ public class ProviderAdminServiceDBTest
     private Mock<IProviderAdminOperationsService> providerAdminOperationsService;
     private Mock<IWorkshopService> workshopService;
     private Mock<ICurrentUserService> currentUserServiceMock;
+    private Mock<IApiErrorService> apiErrorService;
 
     private ProviderAdminService providerAdminService;
 
@@ -87,6 +88,7 @@ public class ProviderAdminServiceDBTest
         providerAdminOperationsService = new Mock<IProviderAdminOperationsService>();
         workshopService = new Mock<IWorkshopService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
+        apiErrorService = new Mock<IApiErrorService>();
 
         providerAdminService = new ProviderAdminService(
             httpClientFactory.Object,
@@ -99,7 +101,8 @@ public class ProviderAdminServiceDBTest
             logger.Object,
             providerAdminOperationsService.Object,
             workshopService.Object,
-            currentUserServiceMock.Object);
+            currentUserServiceMock.Object,
+            apiErrorService.Object);
 
         await Seed();
     }

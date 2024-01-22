@@ -39,11 +39,13 @@ public class ProviderAdminServiceTest
     private Mock<IProviderAdminOperationsService> providerAdminOperationsService;
     private Mock<IWorkshopService> workshopService;
     private Mock<ICurrentUserService> currentUserServiceMock;
+    private Mock<IEntityRepositorySoftDeleted<string, User>> apiErrorServiceUserRepositoryMock;
 
     private ProviderAdminService providerAdminService;
     private ApiErrorResponse badRequestApiErrorResponse;
     private ErrorResponse userDosntHavePermissionErrorResponse;
     private ErrorResponse emailAlreadyTakenErrorResponse;
+    private ApiErrorService apiErrorService;
 
     [SetUp]
     public void SetUp()
@@ -90,6 +92,9 @@ public class ProviderAdminServiceTest
         providerAdminOperationsService = new Mock<IProviderAdminOperationsService>();
         workshopService = new Mock<IWorkshopService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
+        apiErrorServiceUserRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
+        var apiErrorServiceLogger = new Mock<ILogger<ApiErrorService>>();
+        apiErrorService = new ApiErrorService(apiErrorServiceUserRepositoryMock.Object, apiErrorServiceLogger.Object);
 
         providerAdminService = new ProviderAdminService(
             httpClientFactory.Object,
@@ -102,7 +107,8 @@ public class ProviderAdminServiceTest
             logger.Object,
             providerAdminOperationsService.Object,
             workshopService.Object,
-            currentUserServiceMock.Object);
+            currentUserServiceMock.Object,
+            apiErrorService);
     }
 
     [Test]
@@ -137,7 +143,7 @@ public class ProviderAdminServiceTest
             .ApiErrorResponse
             .ApiErrors
             .First();
-        userRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<string>()))
+        apiErrorServiceUserRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<string>()))
             .ReturnsAsync(new List<User> { new User() });
 
         providerAdminRepository.Setup(r => r.IsExistProviderAdminDeputyWithUserIdAsync(It.IsAny<Guid>(), It.IsAny<string>()))

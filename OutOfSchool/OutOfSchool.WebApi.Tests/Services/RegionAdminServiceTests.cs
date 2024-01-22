@@ -40,6 +40,7 @@ public class RegionAdminServiceTests
     private IMapper mapper;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock<IEntityRepositorySoftDeleted<string, User>> apiErrorServiceUserRepositoryMock;
 
     private RegionAdminService regionAdminService;
     private RegionAdmin regionAdmin;
@@ -48,6 +49,7 @@ public class RegionAdminServiceTests
     private List<RegionAdminDto> regionAdminsDtos;
     private ErrorResponse emailAlreadyTakenErrorResponse;
     private ApiErrorResponse badRequestApiErrorResponse;
+    private ApiErrorService apiErrorService;
 
     [SetUp]
     public void SetUp()
@@ -86,6 +88,9 @@ public class RegionAdminServiceTests
         userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        apiErrorServiceUserRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
+        var apiErrorServiceLogger = new Mock<ILogger<ApiErrorService>>();
+        apiErrorService = new ApiErrorService(apiErrorServiceUserRepositoryMock.Object, apiErrorServiceLogger.Object);
 
         regionAdminService = new RegionAdminService(
             httpClientFactory.Object,
@@ -96,7 +101,8 @@ public class RegionAdminServiceTests
             userRepositoryMock.Object,
             mapper,
             currentUserServiceMock.Object,
-            ministryAdminServiceMock.Object);
+            ministryAdminServiceMock.Object,
+            apiErrorService);
     }
 
     [Test]
@@ -276,7 +282,7 @@ public class RegionAdminServiceTests
             .ApiErrorResponse
             .ApiErrors
             .First();
-        userRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<string>()))
+        apiErrorServiceUserRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<string>()))
             .ReturnsAsync(new List<User> { new User() });
 
         var regionAdminBaseDto = new RegionAdminBaseDto();
