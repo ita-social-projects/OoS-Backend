@@ -2,11 +2,9 @@ using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Common.Responses;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 
@@ -22,6 +20,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
     private readonly IMinistryAdminService ministryAdminService;
     private readonly IRegionAdminService regionAdminService;
     private readonly ICodeficatorService codeficatorService;
+    private readonly IApiErrorService apiErrorService;
     private ICodeficatorRepository codeficatorRepository;
 
     public AreaAdminService(
@@ -36,7 +35,8 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         IMapper mapper,
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,
-        IRegionAdminService regionAdminService)
+        IRegionAdminService regionAdminService,
+        IApiErrorService apiErrorService)
         : base(httpClientFactory, communicationConfig, logger)
     {
         ArgumentNullException.ThrowIfNull(authorizationServerConfig);
@@ -54,6 +54,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         this.ministryAdminService = ministryAdminService;
         this.regionAdminService = regionAdminService;
         this.codeficatorService = codeficatorService;
+        this.apiErrorService = apiErrorService;
     }
 
     public async Task<AreaAdminDto> GetByIdAsync(string id)
@@ -99,7 +100,9 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
 
         _ = areaAdminBaseDto ?? throw new ArgumentNullException(nameof(areaAdminBaseDto));
 
-        var badRequestApiErrorResponse = await IsBadRequestDataAttend(areaAdminBaseDto);
+        var badRequestApiErrorResponse = await apiErrorService.AdminsCreatingIsBadRequestDataAttend(
+            areaAdminBaseDto,
+            $"{nameof(AreaAdmin)}");
 
         if (badRequestApiErrorResponse.ApiErrors.Count != 0)
         {
@@ -543,41 +546,5 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
         var catottg = await codeficatorRepository.GetById(catottgId);
         return catottg is not null && (catottg.Category == CodeficatorCategory.TerritorialCommunity.ToString() ||
                                        catottg.Category == CodeficatorCategory.SpecialStatusCity.ToString());
-    }
-
-    private async Task<bool> IsSuchEmailExisted(string email)
-    {
-        var result = await userRepository.GetByFilter(x => x.Email == email);
-        return !result.IsNullOrEmpty();
-    }
-
-    private async Task<bool> IsSuchPhoneNumberExisted(string phoneNumber)
-    {
-        var result = await userRepository.GetByFilter(x => x.PhoneNumber == phoneNumber);
-        return !result.IsNullOrEmpty();
-    }
-
-    private async Task<ApiErrorResponse> IsBadRequestDataAttend(AreaAdminBaseDto areaAdminBaseDto)
-    {
-        var badRequestApiErrorResponse = new ApiErrorResponse();
-        if (await IsSuchEmailExisted(areaAdminBaseDto.Email))
-        {
-            Logger.LogDebug(
-                "AreaAdmin creating is not possible. Username {Email} is already taken",
-                areaAdminBaseDto.Email);
-            badRequestApiErrorResponse.AddApiError(
-                ApiErrorsTypes.Common.EmailAlreadyTaken("AreaAdmin", areaAdminBaseDto.Email));
-        }
-
-        if (await IsSuchPhoneNumberExisted(areaAdminBaseDto.PhoneNumber))
-        {
-            Logger.LogDebug(
-                "AreaAdmin creating is not possible. PhoneNumber {PhoneNumber} is already taken",
-                areaAdminBaseDto.PhoneNumber);
-            badRequestApiErrorResponse.AddApiError(
-                ApiErrorsTypes.Common.PhoneNumberAlreadyTaken("AreaAdmin", areaAdminBaseDto.PhoneNumber));
-        }
-
-        return badRequestApiErrorResponse;
     }
 }

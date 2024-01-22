@@ -2,7 +2,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
@@ -24,6 +23,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     private readonly IProviderAdminOperationsService providerAdminOperationsService;
     private readonly IWorkshopService workshopService;
     private readonly ICurrentUserService currentUserService;
+    private readonly IApiErrorService apiErrorService;
 
     public ProviderAdminService(
         IHttpClientFactory httpClientFactory,
@@ -36,7 +36,8 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         ILogger<ProviderAdminService> logger,
         IProviderAdminOperationsService providerAdminOperationsService,
         IWorkshopService workshopService,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        IApiErrorService apiErrorService)
         : base(httpClientFactory, communicationConfig, logger)
     {
         this.authorizationServerConfig = authorizationServerConfig.Value;
@@ -47,6 +48,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         this.providerAdminOperationsService = providerAdminOperationsService;
         this.workshopService = workshopService;
         this.currentUserService = currentUserService;
+        this.apiErrorService = apiErrorService;
     }
 
     public async Task<Either<ErrorResponse, CreateProviderAdminDto>> CreateProviderAdminAsync(
@@ -72,7 +74,9 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             };
         }
 
-        var badRequestApiErrorResponse = await IsBadRequestDataAttend(providerAdminDto);
+        var badRequestApiErrorResponse = await apiErrorService.AdminsCreatingIsBadRequestDataAttend(
+            providerAdminDto,
+            $"{nameof(ProviderAdmin)}");
 
         if (badRequestApiErrorResponse.ApiErrors.Count != 0)
         {
@@ -683,41 +687,5 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         }
 
         return predicate;
-    }
-
-    private async Task<bool> IsSuchEmailExisted(string email)
-    {
-        var result = await userRepository.GetByFilter(x => x.Email == email);
-        return !result.IsNullOrEmpty();
-    }
-
-    private async Task<bool> IsSuchPhoneNumberExisted(string phoneNumber)
-    {
-        var result = await userRepository.GetByFilter(x => x.PhoneNumber == phoneNumber);
-        return !result.IsNullOrEmpty();
-    }
-
-    private async Task<ApiErrorResponse> IsBadRequestDataAttend(CreateProviderAdminDto providerAdminDto)
-    {
-        var badRequestApiErrorResponse = new ApiErrorResponse();
-        if (await IsSuchEmailExisted(providerAdminDto.Email))
-        {
-            Logger.LogDebug(
-                "providerAdmin creating is not possible. Username {Email} is already taken",
-                providerAdminDto.Email);
-            badRequestApiErrorResponse.AddApiError(
-                ApiErrorsTypes.Common.EmailAlreadyTaken("ProviderAdmin", providerAdminDto.Email));
-        }
-
-        if (await IsSuchPhoneNumberExisted(providerAdminDto.PhoneNumber))
-        {
-            Logger.LogDebug(
-                "providerAdmin creating is not possible. PhoneNumber {PhoneNumber} is already taken",
-                providerAdminDto.PhoneNumber);
-            badRequestApiErrorResponse.AddApiError(
-                ApiErrorsTypes.Common.PhoneNumberAlreadyTaken("ProviderAdmin", providerAdminDto.PhoneNumber));
-        }
-
-        return badRequestApiErrorResponse;
     }
 }
