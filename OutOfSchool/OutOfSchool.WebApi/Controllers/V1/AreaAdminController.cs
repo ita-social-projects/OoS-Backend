@@ -337,7 +337,7 @@ public class AreaAdminController : Controller
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HasPermission(Permissions.AreaAdminEdit)]
-    [HttpPut("{regionAdminId}")]
+    [HttpPut("{areaAdminId}")]
     public async Task<IActionResult> Reinvite(string areaAdminId)
     {
         logger.LogDebug($"User(id): {currentUserId}.");
