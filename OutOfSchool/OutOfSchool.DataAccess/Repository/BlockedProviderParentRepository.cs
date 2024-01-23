@@ -53,10 +53,10 @@ public class BlockedProviderParentRepository : SensitiveEntityRepositorySoftDele
     {
         var applications = db.Applications.Where(a => a.ParentId == parentId
                                                       && a.Workshop.ProviderId == providerId);
-        await applications.ForEachAsync(a => a.IsBlocked = block);
+        await applications.ForEachAsync(a => a.IsBlockedByProvider = block);
 
         var chatRooms = db.ChatRoomWorkshops.Where(c => c.ParentId == parentId
                                                         && c.Workshop.ProviderId == providerId);
-        await chatRooms.ForEachAsync(a => a.IsBlocked = block);
+        await chatRooms.ForEachAsync(a => a.IsBlockedByProvider = block);
     }
 }

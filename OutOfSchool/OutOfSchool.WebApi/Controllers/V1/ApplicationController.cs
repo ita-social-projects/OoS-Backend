@@ -29,6 +29,7 @@ public class ApplicationController : ControllerBase
     /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
     /// <param name="workshopService">Service for Workshop model.</param>
     /// <param name="userService">Service for operations with users.</param>
+    /// <param name="blockedProviderParentService">Service for blocking parents for providers.</param>
     public ApplicationController(
         IApplicationService applicationService,
         IProviderService providerService,

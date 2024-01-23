@@ -633,7 +633,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         if (filter.Show != ShowApplications.All)
         {
-            predicate = predicate.And(a => a.IsBlocked == (filter.Show == ShowApplications.Blocked));
+            predicate = predicate.And(a => a.IsBlockedByProvider == (filter.Show == ShowApplications.Blocked));
         }
 
         return predicate;
@@ -646,7 +646,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         if (filter.Show == ShowApplications.All)
         {
-            sortExpression.Add(a => a.IsBlocked, SortDirection.Ascending);
+            sortExpression.Add(a => a.IsBlockedByProvider, SortDirection.Ascending);
         }
 
         if (filter.OrderByStatus)
