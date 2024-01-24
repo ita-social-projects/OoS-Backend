@@ -7,6 +7,8 @@ namespace OutOfSchool.EmailSender;
 
 public static class ServiceProviderExtensions
 {
+    public const string PlaceholderForSendGridApiKey = "x";
+
     public static IServiceCollection AddEmailSender(
         this IServiceCollection services,
         bool isDevelopment,
@@ -17,6 +19,11 @@ public static class ServiceProviderExtensions
         {
             services.AddTransient<IEmailSender, DevEmailSender>();
             return services;
+        }
+
+        if (string.IsNullOrWhiteSpace(sendGridApiKey))
+        {
+            sendGridApiKey = PlaceholderForSendGridApiKey;
         }
 
         services.AddSendGrid(options =>
