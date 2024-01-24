@@ -127,7 +127,7 @@ public class WorkshopServiceDBTests
     }
 
     [Test]
-    public async Task GetByFilter_WhenSetFormOfLearning_WhenNotSetFormOfLearning()
+    public async Task GetByFilter_WhenNotSetFormOfLearning_ReturnAll()
     {
         // Arrange
         await SeedFormOfLearningWorkshops();
