@@ -2,10 +2,8 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Common.Responses;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 
@@ -18,6 +16,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
     private readonly IEntityRepositorySoftDeleted<string, User> userRepository;
     private readonly IMapper mapper;
     private readonly ICurrentUserService currentUserService;
+    private readonly IApiErrorService apiErrorService;
 
     public MinistryAdminService(
         IHttpClientFactory httpClientFactory,
@@ -27,7 +26,8 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         ILogger<MinistryAdminService> logger,
         IEntityRepositorySoftDeleted<string, User> userRepository,
         IMapper mapper,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        IApiErrorService apiErrorService)
         : base(httpClientFactory, communicationConfig, logger)
     {
         this.authorizationServerConfig = (authorizationServerConfig ?? throw new ArgumentNullException(nameof(authorizationServerConfig))).Value;
@@ -35,6 +35,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
+        this.apiErrorService = apiErrorService;
     }
 
     public async Task<MinistryAdminDto> GetByIdAsync(string id)
@@ -76,18 +77,10 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
 
         ArgumentNullException.ThrowIfNull(ministryAdminBaseDto);
 
-        var badRequestApiErrorResponse = new ApiErrorResponse();
-        if (await IsSuchEmailExisted(ministryAdminBaseDto.Email))
-        {
-            Logger.LogDebug("ministryAdmin creating is not possible. Username {Email} is already taken", ministryAdminBaseDto.Email);
-            badRequestApiErrorResponse.AddApiError(
-                ApiErrorsTypes.Common.EmailAlreadyTaken("MinistryAdmin", ministryAdminBaseDto.Email));
-        }
+        var badRequestApiErrorResponse = await apiErrorService.AdminsCreatingIsBadRequestDataAttend(
+            ministryAdminBaseDto,
+            "MinistryAdmin");
 
-        // Here will be the same checks for phone number and possibly other fields
-
-        // TODO: Separate checks for BadRequset that require ApiErrorResponse
-        // to be returned in a method
         if (badRequestApiErrorResponse.ApiErrors.Count != 0)
         {
             return ErrorResponse.BadRequest(badRequestApiErrorResponse);
@@ -445,11 +438,5 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         predicate = predicate.And(p => !p.Institution.IsDeleted);
 
         return predicate;
-    }
-
-    private async Task<bool> IsSuchEmailExisted(string email)
-    {
-        var result = await userRepository.GetByFilter(x => x.Email == email);
-        return !result.IsNullOrEmpty();
     }
 }

@@ -8,6 +8,12 @@ public static class ApiErrorsTypes
             $"{nameof(Common)}",
             $"{nameof(EmailAlreadyTaken)}",
             $"{entityName} creating is not possible. Username {email} is already taken");
+
+        public static ApiError PhoneNumberAlreadyTaken(string entityName, string phoneNumber) =>
+        new ApiError(
+            $"{nameof(Common)}",
+            $"{nameof(PhoneNumberAlreadyTaken)}",
+            $"{entityName} creating is not possible. Phone number {phoneNumber} is already taken");
     }
 
     public static class ProviderAdmin

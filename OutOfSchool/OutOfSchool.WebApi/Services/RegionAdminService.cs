@@ -2,10 +2,8 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Common.Responses;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 
@@ -19,6 +17,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
     private readonly IMapper mapper;
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
+    private readonly IApiErrorService apiErrorService;
 
     public RegionAdminService(
         IHttpClientFactory httpClientFactory,
@@ -29,7 +28,8 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         IEntityRepositorySoftDeleted<string, User> userRepository,
         IMapper mapper,
         ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService)
+        IMinistryAdminService ministryAdminService,
+        IApiErrorService apiErrorService)
         : base(httpClientFactory, communicationConfig, logger)
     {
         ArgumentNullException.ThrowIfNull(authorizationServerConfig);
@@ -44,6 +44,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         this.mapper = mapper;
         this.currentUserService = currentUserService;
         this.ministryAdminService = ministryAdminService;
+        this.apiErrorService = apiErrorService;
     }
 
     public async Task<RegionAdminDto> GetByIdAsync(string id)
@@ -85,18 +86,10 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
 
         _ = regionAdminBaseDto ?? throw new ArgumentNullException(nameof(regionAdminBaseDto));
 
-        var badRequestApiErrorResponse = new ApiErrorResponse();
-        if (await IsSuchEmailExisted(regionAdminBaseDto.Email))
-        {
-            Logger.LogDebug("RegionAdmin creating is not possible. Username {Email} is already taken", regionAdminBaseDto.Email);
-            badRequestApiErrorResponse.AddApiError(
-                ApiErrorsTypes.Common.EmailAlreadyTaken("RegionAdmin", regionAdminBaseDto.Email));
-        }
+        var badRequestApiErrorResponse = await apiErrorService.AdminsCreatingIsBadRequestDataAttend(
+            regionAdminBaseDto,
+            $"{nameof(RegionAdmin)}");
 
-        // Here will be the same checks for phone number and possibly other fields
-
-        // TODO: Separate checks for BadRequset that require ApiErrorResponse
-        // to be returned in a method
         if (badRequestApiErrorResponse.ApiErrors.Count != 0)
         {
             return ErrorResponse.BadRequest(badRequestApiErrorResponse);
@@ -489,11 +482,5 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         predicate = predicate.And(x => !x.Institution.IsDeleted);
 
         return predicate;
-    }
-
-    private async Task<bool> IsSuchEmailExisted(string email)
-    {
-        var result = await userRepository.GetByFilter(x => x.Email == email);
-        return !result.IsNullOrEmpty();
     }
 }

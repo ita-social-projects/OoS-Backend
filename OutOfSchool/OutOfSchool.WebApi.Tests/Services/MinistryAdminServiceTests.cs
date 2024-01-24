@@ -39,12 +39,14 @@ public class MinistryAdminServiceTests
     private Mock<IEntityRepositorySoftDeleted<string, OutOfSchool.Services.Models.User>> userRepositoryMock;
     private IMapper mapper;
     private Mock<ICurrentUserService> currentUserServiceMock;
+    private Mock<IEntityRepositorySoftDeleted<string, User>> apiErrorServiceUserRepositoryMock;
 
     private MinistryAdminService ministryAdminService;
     private InstitutionAdmin institutionAdmin;
     private List<InstitutionAdmin> institutionAdmins;
     private ErrorResponse emailAlreadyTakenErrorResponse;
     private ApiErrorResponse badRequestApiErrorResponse;
+    private ApiErrorService apiErrorService;
 
     [SetUp]
     public void SetUp()
@@ -80,6 +82,9 @@ public class MinistryAdminServiceTests
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
+        apiErrorServiceUserRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
+        var apiErrorServiceLogger = new Mock<ILogger<ApiErrorService>>();
+        apiErrorService = new ApiErrorService(apiErrorServiceUserRepositoryMock.Object, apiErrorServiceLogger.Object);
 
         ministryAdminService = new MinistryAdminService(
             httpClientFactory.Object,
@@ -89,7 +94,8 @@ public class MinistryAdminServiceTests
             logger.Object,
             userRepositoryMock.Object,
             mapper,
-            currentUserServiceMock.Object);
+            currentUserServiceMock.Object,
+            apiErrorService);
     }
 
     [Test]
@@ -194,7 +200,7 @@ public class MinistryAdminServiceTests
             .ApiErrorResponse
             .ApiErrors
             .First();
-        userRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<string>()))
+        apiErrorServiceUserRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<string>()))
             .ReturnsAsync(new List<User> { new User() });
 
         var ministryAdminBaseDto = new MinistryAdminBaseDto();
