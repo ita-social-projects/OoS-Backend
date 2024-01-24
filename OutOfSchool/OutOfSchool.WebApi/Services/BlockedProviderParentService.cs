@@ -1,16 +1,19 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 
 namespace OutOfSchool.WebApi.Services;
 
-public class BlockedProviderParentService : IBlockedProviderParentService
+public class BlockedProviderParentService : IBlockedProviderParentService, INotificationReciever
 {
     private readonly IBlockedProviderParentRepository blockedProviderParentRepository;
     private readonly ILogger<BlockedProviderParentService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
+    private readonly INotificationService notificationService;
+    private readonly IParentRepository parentRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BlockedProviderParentService"/> class.
@@ -19,16 +22,22 @@ public class BlockedProviderParentService : IBlockedProviderParentService
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
+    /// <param name="notificationService">Notification service.</param>
+    /// <param name="parentRepository">Parent repository.</param>
     public BlockedProviderParentService(
         IBlockedProviderParentRepository blockedProviderParentRepository,
         ILogger<BlockedProviderParentService> logger,
         IStringLocalizer<SharedResource> localizer,
-        IMapper mapper)
+        IMapper mapper,
+        INotificationService notificationService,
+        IParentRepository parentRepository)
     {
         this.blockedProviderParentRepository = blockedProviderParentRepository;
         this.logger = logger;
         this.localizer = localizer;
         this.mapper = mapper;
+        this.notificationService = notificationService;
+        this.parentRepository = parentRepository;
     }
 
     /// <inheritdoc/>
@@ -61,6 +70,15 @@ public class BlockedProviderParentService : IBlockedProviderParentService
         newBlockedProviderParent.DateTimeFrom = DateTime.Now;
 
         var entity = await blockedProviderParentRepository.Block(newBlockedProviderParent).ConfigureAwait(false);
+
+        var blockedParent = await parentRepository.GetById(newBlockedProviderParent.ParentId).ConfigureAwait(false);
+        var blockedParentUserId = Guid.Parse(blockedParent.UserId);
+
+        await notificationService.Create(
+            NotificationType.Parent,
+            NotificationAction.Block,
+            blockedParentUserId,
+            this).ConfigureAwait(false);
 
         return Result<BlockedProviderParentDto>.Success(mapper.Map<BlockedProviderParentDto>(entity));
     }
@@ -117,5 +135,14 @@ public class BlockedProviderParentService : IBlockedProviderParentService
                  && b.DateTimeTo == null).ConfigureAwait(false);
 
         return currentBlock.Any();
+    }
+
+    public Task<IEnumerable<string>> GetNotificationsRecipientIds(
+        NotificationAction action,
+        Dictionary<string, string> additionalData,
+        Guid objectId)
+    {
+        IEnumerable<string> recipientIds = new List<string> { objectId.ToString() };
+        return Task.FromResult(recipientIds);
     }
 }
