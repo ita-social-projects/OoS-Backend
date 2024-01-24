@@ -221,6 +221,53 @@ public class ApplicationControllerTests
     }
 
     [Test]
+    public async Task GetCountByParentId_WhenIdIsValid_ShouldReturnOkObjectResult()
+    {
+        // Arrange
+        httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
+        List<ApplicationDto> app = applications.Where(a => a.ParentId == parent.Id).ToList();
+        applicationService.Setup(s => s.GetCountByParentId(parent.Id)).ReturnsAsync(app.Count());
+
+        // Act
+        var result = await controller.GetCountByParentId(parent.Id).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        result.Should().NotBeNull();
+        result.StatusCode.Should().Be(StatusCodes.Status200OK);
+    }
+
+    [Test]
+    public async Task GetByCountParentId_WhenParentHasNoApplications_ShouldReturnOkObjectResultWithZero()
+    {
+        // Arrange
+        var newParent = ParentDtoGenerator.Generate().WithUserId(userId);
+
+        httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
+        List<ApplicationDto> app = applications.Where(a => a.ParentId == newParent.Id).ToList();
+        applicationService.Setup(s => s.GetCountByParentId(newParent.Id)).ReturnsAsync(app.Count());
+
+        // Act
+        var result = await controller.GetCountByParentId(newParent.Id).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        result.Should().NotBeNull();
+        result.StatusCode.Should().Be(StatusCodes.Status200OK);
+        result.Value.Should().Be(0);
+    }
+
+    [Test]
+    public void GetByCountParentId_WhenParentHasNoRights_ShouldThrowUnauthorizedAccess()
+    {
+        // Arrange
+        httpContext.Setup(c => c.User.IsInRole("techAdmin")).Returns(true);
+        applicationService.Setup(s => s.GetCountByParentId(parent.Id))
+            .ThrowsAsync(new UnauthorizedAccessException());
+
+        // Act & Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await controller.GetCountByParentId(parent.Id));
+    }
+
+    [Test]
     public async Task GetByProviderId_WhenIdIsValid_ShouldReturnOkObjectResult()
     {
         // Arrange

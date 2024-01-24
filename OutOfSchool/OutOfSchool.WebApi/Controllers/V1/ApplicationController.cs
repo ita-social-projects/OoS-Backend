@@ -138,6 +138,34 @@ public class ApplicationController : ControllerBase
     }
 
     /// <summary>
+    /// Get Applications count by Parent Id.
+    /// </summary>
+    /// <param name="id">Parent id.</param>
+    /// <returns>Count of applications.</returns>
+    /// <response code="200">Entities count by given Id.</response>
+    /// <response code="500">If any server error occurs.</response>
+    [HasPermission(Permissions.ApplicationRead)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(int))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("/api/v{version:apiVersion}/parents/{id}/applicationsCount")]
+    public async Task<IActionResult> GetCountByParentId(Guid id)
+    {
+        try
+        {
+            var applications = await applicationService.GetCountByParentId(id).ConfigureAwait(false);
+
+            return Ok(applications);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    /// <summary>
     /// Get Applications by Provider Id.
     /// </summary>
     /// <param name="providerId">Provider id.</param>

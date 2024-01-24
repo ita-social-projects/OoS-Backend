@@ -584,6 +584,45 @@ public class ApplicationServiceTests
     }
 
     [Test]
+    public async Task GetCountByParentId_WhenIdIsValid_ShouldReturnCount()
+    {
+        // Arrange
+        currentUserServiceMock.Setup(c => c.IsDeputyOrProviderAdmin()).Returns(true);
+        var existingApplications = WithApplicationsList();
+        var parentId = existingApplications.First().ParentId;
+        var expectedCount = existingApplications.Count(x => x.ParentId == parentId);
+        applicationRepositoryMock.Setup(a => a.Count(
+                It.IsAny<Expression<Func<Application, bool>>>()))
+            .Returns(Task.FromResult<int>(expectedCount));
+
+        // Act
+        var result = await service.GetCountByParentId(parentId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(expectedCount);
+    }
+
+    [Test]
+    public async Task GetCountByParentId_WhenIdIsNotValid_ShouldReturnZero()
+    {
+        // Arrange
+        currentUserServiceMock.Setup(c => c.IsDeputyOrProviderAdmin()).Returns(true);
+
+        // Act
+        var result = await service.GetCountByParentId(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(0);
+    }
+
+    [Test]
+    public async Task GetCountByParentId_WhenUserNotAuthorized_ShouldThrowException()
+    {
+        // Act
+        await service.Invoking(s => s.GetCountByParentId(Guid.NewGuid())).Should().ThrowAsync<UnauthorizedAccessException>();
+    }
+
+    [Test]
     public async Task GetAllByChild_WhenIdIsValid_ShouldReturnApplications()
     {
         // Arrange
