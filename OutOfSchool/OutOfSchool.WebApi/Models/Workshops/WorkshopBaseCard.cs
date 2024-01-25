@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models.Workshops;
 
@@ -23,6 +24,9 @@ public class WorkshopBaseCard : IHasRating
 
     [Required]
     public PayRateType PayRate { get; set; }
+
+    [Required]
+    public FormOfLearning FormOfLearning { get; set; }
 
     public string CoverImageId { get; set; } = string.Empty;
 

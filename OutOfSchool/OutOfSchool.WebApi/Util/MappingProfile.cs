@@ -553,8 +553,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.AvailableSeats, opt => opt.Ignore())
             .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
             .ForMember(dest => dest.CompetitiveSelection, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderLicenseStatus, opt =>
-                opt.MapFrom(src => src.Workshop.ProviderLicenseStatus));
+            .ForMember(dest => dest.ProviderLicenseStatus, opt => opt.MapFrom(src => src.Workshop.ProviderLicenseStatus))
+            .ForMember(dest => dest.FormOfLearning, opt => opt.MapFrom(src => src.Workshop.FormOfLearning));
 
         CreateMap<Rating, RatingDto>()
             .ForMember(dest => dest.FirstName, opt => opt.Ignore())

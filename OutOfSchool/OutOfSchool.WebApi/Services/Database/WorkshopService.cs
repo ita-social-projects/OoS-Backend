@@ -773,6 +773,11 @@ public class WorkshopService : IWorkshopService
             predicate = predicate.And(x => filter.Statuses.Contains(x.Status));
         }
 
+        if (filter.FormOfLearning.Any())
+        {
+            predicate = predicate.And(x => filter.FormOfLearning.Contains(x.FormOfLearning));
+        }
+
         return predicate;
     }
 

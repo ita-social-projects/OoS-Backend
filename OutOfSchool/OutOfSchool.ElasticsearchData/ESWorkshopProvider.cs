@@ -277,6 +277,15 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
             return queryContainer;
         }
 
+        if (filter.FormOfLearning.Any())
+        {
+            queryContainer &= new TermsQuery()
+            {
+                Field = Infer.Field<WorkshopES>(w => w.FormOfLearning),
+                Terms = filter.FormOfLearning.Cast<object>(),
+            };
+        }
+
         return queryContainer;
     }
 

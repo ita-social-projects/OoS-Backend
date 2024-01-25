@@ -74,4 +74,6 @@ public class WorkshopES: IHasRating
     public uint TakenSeats { get; set; }
 
     public ProviderLicenseStatus ProviderLicenseStatus { get; set; }
+
+    public FormOfLearning FormOfLearning { get; set; }
 }
