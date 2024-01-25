@@ -77,7 +77,7 @@ public class BlockedProviderParentService : IBlockedProviderParentService, INoti
             var blockedParentUserId = Guid.Parse(blockedParent.UserId);
             await notificationService.Create(
                 NotificationType.Parent,
-                NotificationAction.Block,
+                NotificationAction.ProviderBlock,
                 blockedParentUserId,
                 this).ConfigureAwait(false);
         }
