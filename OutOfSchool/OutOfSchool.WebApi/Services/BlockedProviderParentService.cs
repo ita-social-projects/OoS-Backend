@@ -72,13 +72,15 @@ public class BlockedProviderParentService : IBlockedProviderParentService, INoti
         var entity = await blockedProviderParentRepository.Block(newBlockedProviderParent).ConfigureAwait(false);
 
         var blockedParent = await parentRepository.GetById(newBlockedProviderParent.ParentId).ConfigureAwait(false);
-        var blockedParentUserId = Guid.Parse(blockedParent.UserId);
-
-        await notificationService.Create(
-            NotificationType.Parent,
-            NotificationAction.Block,
-            blockedParentUserId,
-            this).ConfigureAwait(false);
+        if (blockedParent != null)
+        {
+            var blockedParentUserId = Guid.Parse(blockedParent.UserId);
+            await notificationService.Create(
+                NotificationType.Parent,
+                NotificationAction.Block,
+                blockedParentUserId,
+                this).ConfigureAwait(false);
+        }
 
         return Result<BlockedProviderParentDto>.Success(mapper.Map<BlockedProviderParentDto>(entity));
     }
@@ -142,7 +144,6 @@ public class BlockedProviderParentService : IBlockedProviderParentService, INoti
         Dictionary<string, string> additionalData,
         Guid objectId)
     {
-        IEnumerable<string> recipientIds = new List<string> { objectId.ToString() };
-        return Task.FromResult(recipientIds);
+        return Task.FromResult<IEnumerable<string>>(new List<string>() { objectId.ToString() });
     }
 }
