@@ -245,6 +245,22 @@ public class ApplicationService : IApplicationService, INotificationReciever
     }
 
     /// <inheritdoc/>
+    public async Task<int> GetCountByParentId(Guid id)
+    {
+        logger.LogInformation("Getting Applications count by Parent Id started. Looking Parent Id = {Id}", id);
+        if (!currentUserService.IsInRole(Role.Provider) && !currentUserService.IsDeputyOrProviderAdmin())
+        {
+            throw new UnauthorizedAccessException("User has no rights to perform operation");
+        }
+
+        var totalAmount = await applicationRepository.Count(a => a.ParentId == id).ConfigureAwait(false);
+
+        logger.LogInformation("There are {Count} applications in the Db with Parent Id = {Id}", totalAmount, id);
+
+        return totalAmount;
+    }
+
+    /// <inheritdoc/>
     public async Task<IEnumerable<ApplicationDto>> GetAllByChild(Guid id)
     {
         logger.LogInformation("Getting Applications by Child Id started. Looking Child Id = {Id}", id);
@@ -633,7 +649,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         if (filter.Show != ShowApplications.All)
         {
-            predicate = predicate.And(a => a.IsBlocked == (filter.Show == ShowApplications.Blocked));
+            predicate = predicate.And(a => a.IsBlockedByProvider == (filter.Show == ShowApplications.Blocked));
         }
 
         return predicate;
@@ -646,7 +662,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         if (filter.Show == ShowApplications.All)
         {
-            sortExpression.Add(a => a.IsBlocked, SortDirection.Ascending);
+            sortExpression.Add(a => a.IsBlockedByProvider, SortDirection.Ascending);
         }
 
         if (filter.OrderByStatus)

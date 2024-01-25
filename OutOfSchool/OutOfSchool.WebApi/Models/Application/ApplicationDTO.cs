@@ -18,7 +18,7 @@ public class ApplicationDto
 
     public DateTimeOffset? ApprovedTime { get; set; }
 
-    public bool IsBlocked { get; set; }
+    public bool IsBlockedByProvider { get; set; }
 
     [Required]
     public Guid WorkshopId { get; set; }

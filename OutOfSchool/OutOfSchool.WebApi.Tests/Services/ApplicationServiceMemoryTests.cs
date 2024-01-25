@@ -136,7 +136,7 @@ public class ApplicationServiceMemoryTests
     public async Task GetApplications_WhenCalled_ShouldReturnBlockedApplications()
     {
         // Arrange
-        var application = GetAllFromMemory().Where(a => a.IsBlocked).ToList();
+        var application = GetAllFromMemory().Where(a => a.IsBlockedByProvider).ToList();
         currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
         currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(false);
         currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(false);
@@ -146,14 +146,14 @@ public class ApplicationServiceMemoryTests
 
         // Assert
         Assert.AreEqual(result.Entities.Count, application.Count);
-        Assert.IsTrue(result.Entities.All(a => a.IsBlocked));
+        Assert.IsTrue(result.Entities.All(a => a.IsBlockedByProvider));
     }
 
     [Test]
     public async Task GetApplications_WhenCalled_ShouldReturnUnblockedApplications()
     {
         // Arrange
-        var application = GetAllFromMemory().Where(a => !a.IsBlocked).ToList();
+        var application = GetAllFromMemory().Where(a => !a.IsBlockedByProvider).ToList();
         currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
         currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(false);
         currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(false);
@@ -163,7 +163,7 @@ public class ApplicationServiceMemoryTests
 
         // Assert
         Assert.AreEqual(result.Entities.Count, application.Count);
-        Assert.IsTrue(result.Entities.All(a => !a.IsBlocked));
+        Assert.IsTrue(result.Entities.All(a => !a.IsBlockedByProvider));
     }
 
     private void SeedDatabase()
@@ -191,7 +191,7 @@ public class ApplicationServiceMemoryTests
                 new Application()
                 {
                     Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8db"),
-                    IsBlocked = false,
+                    IsBlockedByProvider = false,
                     Status = ApplicationStatus.Pending,
                     WorkshopId = workshop.Id,
                     ChildId = child.Id,
@@ -200,7 +200,7 @@ public class ApplicationServiceMemoryTests
                 new Application()
                 {
                     Id = new Guid("7c5f8f7c-d850-44d0-8d4e-fd2de99453be"),
-                    IsBlocked = false,
+                    IsBlockedByProvider = false,
                     Status = ApplicationStatus.Rejected,
                     WorkshopId = workshop.Id,
                     ChildId = child.Id,
@@ -209,7 +209,7 @@ public class ApplicationServiceMemoryTests
                 new Application()
                 {
                     Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-                    IsBlocked = true,
+                    IsBlockedByProvider = true,
                     Status = ApplicationStatus.Pending,
                     WorkshopId = workshop.Id,
                     ChildId = child.Id,

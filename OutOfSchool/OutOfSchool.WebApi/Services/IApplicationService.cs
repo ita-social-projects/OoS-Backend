@@ -66,6 +66,13 @@ public interface IApplicationService
     Task<SearchResult<ApplicationDto>> GetAllByParent(Guid id, ApplicationFilter filter);
 
     /// <summary>
+    /// Get applications count by parent id.
+    /// </summary>
+    /// <param name="id">Key in the table.</param>
+    /// <returns>Count of applications.</returns>
+    Task<int> GetCountByParentId(Guid id);
+
+    /// <summary>
     /// Get applications by child id.
     /// </summary>
     /// <param name="id">Key in the table.</param>

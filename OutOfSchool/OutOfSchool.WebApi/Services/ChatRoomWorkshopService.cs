@@ -1,9 +1,8 @@
-﻿using AutoMapper;
-
+﻿using System.Linq.Expressions;
+using AutoMapper;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
-using System.Linq.Expressions;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -16,6 +15,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     private readonly IChatRoomWorkshopModelForChatListRepository roomWorkshopWithLastMessageRepository;
     private readonly ILogger<ChatRoomWorkshopService> logger;
     private readonly IMapper mapper;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatRoomWorkshopService"/> class.
     /// </summary>

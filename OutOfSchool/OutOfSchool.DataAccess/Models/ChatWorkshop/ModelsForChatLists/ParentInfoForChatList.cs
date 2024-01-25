@@ -20,6 +20,4 @@ public class ParentInfoForChatList
     public string FirstName { get; set; }
 
     public Gender? Gender { get; set; }
-
-    public bool IsBlocked { get; set; }
 }
