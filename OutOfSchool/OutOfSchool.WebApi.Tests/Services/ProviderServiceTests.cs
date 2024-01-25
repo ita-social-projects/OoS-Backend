@@ -837,6 +837,15 @@ public class ProviderServiceTests
     #region Block
 
     [Test]
+    public void Block_ReturnsArgumentNullException_IfDtoIsNull()
+    {
+        // Arrange
+
+        // Act, Assert
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await providerService.Block(null).ConfigureAwait(false));
+    }
+
+    [Test]
     public async Task Block_ReturnsNull_IfDtoIsNotValid()
     {
         // Arrange
