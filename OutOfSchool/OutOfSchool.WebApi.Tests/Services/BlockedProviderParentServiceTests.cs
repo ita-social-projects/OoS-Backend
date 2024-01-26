@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -60,16 +61,13 @@ public class BlockedProviderParentServiceTests
             ProviderId = Guid.NewGuid(),
             Reason = "Reason to block user",
         };
-
         var userId = Guid.NewGuid().ToString();
-
         var entity = new BlockedProviderParent()
         {
             Id = Guid.NewGuid(),
             ParentId = dto.ParentId,
             ProviderId = dto.ProviderId,
         };
-
         var parent = ParentGenerator.Generate();
         parent.Id = dto.ParentId;
 
@@ -95,8 +93,8 @@ public class BlockedProviderParentServiceTests
                 It.IsAny<Dictionary<string, string>>(),
                 It.IsAny<string>()),
                 Times.Once);
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Succeeded, Is.True);
+        Assert.IsNotNull(result);
+        Assert.IsTrue(result.Succeeded);
     }
 
     [Test]
@@ -107,5 +105,41 @@ public class BlockedProviderParentServiceTests
 
         // Act & Assert
         Assert.ThrowsAsync<ArgumentNullException>(() => service.Block(null, userId));
+    }
+
+    [Test]
+    public async Task Block_WhenBlockedProviderParentBlockDtoIsAlreadyBlocked_ShouldReturnFailed()
+    {
+        // Arrange
+        var dto = new BlockedProviderParentBlockDto()
+        {
+            ParentId = Guid.NewGuid(),
+            ProviderId = Guid.NewGuid(),
+            Reason = "Reason to block user",
+        };
+        var userId = Guid.NewGuid().ToString();
+        var entity = new BlockedProviderParent()
+        {
+            Id = Guid.NewGuid(),
+            ParentId = dto.ParentId,
+            ProviderId = dto.ProviderId,
+        };
+        var blockedParents = new List<BlockedProviderParent>
+        {
+            entity,
+        };
+        blockedProviderParentRepositoryMock
+            .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<BlockedProviderParent, bool>>>(), It.IsAny<string>()))
+            .ReturnsAsync(blockedParents);
+
+        string expectedErrorCode = "400";
+
+        // Act
+        var result = await service.Block(dto, userId).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsFalse(result.Succeeded);
+        Assert.AreEqual(1, result.OperationResult.Errors.Count());
+        Assert.AreEqual(expectedErrorCode, result.OperationResult.Errors.FirstOrDefault().Code);
     }
 }
