@@ -2,7 +2,6 @@ using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 using GrpcService;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Achievement;
