@@ -207,4 +207,22 @@ public class BlockedProviderParentServiceTests
     }
 
     #endregion
+
+    #region GetNotificationRecipientIds
+    [Test]
+    public async Task GetNotificationsRecipientIds_WhenObjectIdIsValid_ShouldReturnIEnumerableWithObjectId()
+    {
+        // Arrange
+        var action = NotificationAction.ProviderBlock;
+        var additionalData = new Dictionary<string, string>();
+        var objectId = Guid.NewGuid();
+        var expected = new List<string>() { objectId.ToString() };
+
+        // Act
+        var result = await service.GetNotificationsRecipientIds(action, additionalData, objectId);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+    }
+    #endregion
 }
