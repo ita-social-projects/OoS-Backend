@@ -7,6 +7,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
@@ -50,7 +51,7 @@ public class BlockedProviderParentServiceTests
     }
 
     [Test]
-    public async Task Block_WhenBlockedProviderParentBlockDtoAndUserIdIsValid_ShouldReturnSuccess()
+    public async Task Block_WhenBlockedProviderParentBlockDtoAndUserIdIsValid_ShouldSendNotificationAndReturnSuccess()
     {
         // Arrange
         var dto = new BlockedProviderParentBlockDto()
@@ -84,7 +85,27 @@ public class BlockedProviderParentServiceTests
         var result = await service.Block(dto, userId).ConfigureAwait(false);
 
         // Assert
+        notificationServiceMock
+            .Verify(
+                x => x.Create(
+                NotificationType.Parent,
+                NotificationAction.ProviderBlock,
+                It.IsAny<Guid>(),
+                It.IsAny<BlockedProviderParentService>(),
+                It.IsAny<Dictionary<string, string>>(),
+                It.IsAny<string>()),
+                Times.Once);
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Succeeded, Is.True);
+    }
+
+    [Test]
+    public void Block_WhenBlockedProviderParentBlockDtoIsNull_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid().ToString();
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>(() => service.Block(null, userId));
     }
 }
