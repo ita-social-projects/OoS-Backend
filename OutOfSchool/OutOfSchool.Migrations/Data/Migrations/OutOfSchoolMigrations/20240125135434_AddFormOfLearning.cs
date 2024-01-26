@@ -15,7 +15,7 @@ public partial class AddFormOfLearning : Migration
             nullable: false,
             defaultValue: 0);
 
-        migrationBuilder.Sql("UPDATE workshops SET formoflearning = 10;");
+        migrationBuilder.Sql("UPDATE Workshops SET FormOfLearning = 10;");
     }
 
     protected override void Down(MigrationBuilder migrationBuilder)
