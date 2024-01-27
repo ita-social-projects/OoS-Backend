@@ -91,6 +91,37 @@ public class WorkshopRepositoryTests
         Assert.IsEmpty(images);
     }
 
+    [Test]
+    public async Task GetWithNavigations_WhenGetValidEntity_ReturnValue()
+    {
+        // Arrange
+        using var context = GetContext();
+        var workshopRepository = GetWorkshopRepository(context);
+        var workshop = context.Workshops.First();
+
+        // Act
+        var expectedWorkshop = await workshopRepository.GetWithNavigations(workshop.Id);
+
+        // Assert
+        Assert.IsNotNull(expectedWorkshop);
+    }
+
+    [Test]
+    public async Task GetWithNavigations_WhenGetValidEntity_ReturnEmpty()
+    {
+        // Arrange
+        using var context = GetContext();
+        var workshopRepository = GetWorkshopRepository(context);
+        var workshop = context.Workshops.First();
+
+        // Act
+        await workshopRepository.Delete(workshop);
+        var expectedWorkshop = await workshopRepository.GetWithNavigations(workshop.Id);
+
+        // Assert
+        Assert.IsNull(expectedWorkshop);
+    }
+
     #endregion
 
     #region private
