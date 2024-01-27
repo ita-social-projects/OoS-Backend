@@ -38,7 +38,7 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
             .Include(ws => ws.Teachers)
             .Include(ws => ws.DateTimeRanges)
             .Include(ws => ws.Images)
-            .SingleOrDefaultAsync(ws => ws.Id == id);
+            .SingleOrDefaultAsync(ws => ws.Id == id && !ws.IsDeleted);
     }
 
     public async Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids)
