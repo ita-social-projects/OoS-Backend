@@ -246,6 +246,20 @@ public class ChildControllerTests
     }
 
     [Test]
+    public async Task DeleteChild_WhenWorkshopIdIsNotValid_ShouldReturnNotFound()
+    {
+        // Arrange
+        var filter = new OffsetFilter();
+        workshopService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(() => null);
+
+        // Act
+        var result = await controller.GetApprovedByWorkshopId(Guid.NewGuid(), filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<NotFoundObjectResult>(result);
+    }
+
+    [Test]
     public async Task GetApprovedByWorkshopId_WhenThereAreChildren_ShouldReturnOkResultObject()
     {
         // Arrange
