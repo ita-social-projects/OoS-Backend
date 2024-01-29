@@ -90,6 +90,7 @@ public class BlockedProviderParentServiceTests
         // Arrange
         var parent = ParentGenerator.Generate();
         parent.Id = blockDto.ParentId;
+        var blockedParentUseId = Guid.Parse(parent.UserId);
 
         blockedProviderParentRepositoryMock
             .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<BlockedProviderParent, bool>>>(), It.IsAny<string>()))
@@ -97,7 +98,7 @@ public class BlockedProviderParentServiceTests
         blockedProviderParentRepositoryMock
             .Setup(x => x.Block(It.IsAny<BlockedProviderParent>()))
             .ReturnsAsync(blockEntity);
-        parentRepositoryMock.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(parent);
+        parentRepositoryMock.Setup(x => x.GetById(parent.Id)).ReturnsAsync(parent);
 
         // Act
         var result = await service.Block(blockDto, userId).ConfigureAwait(false);
@@ -108,10 +109,10 @@ public class BlockedProviderParentServiceTests
                 x => x.Create(
                 NotificationType.Parent,
                 NotificationAction.ProviderBlock,
-                It.IsAny<Guid>(),
-                It.IsAny<BlockedProviderParentService>(),
-                It.IsAny<Dictionary<string, string>>(),
-                It.IsAny<string>()),
+                blockedParentUseId,
+                service,
+                null,
+                null),
                 Times.Once);
         Assert.IsNotNull(result);
         Assert.IsTrue(result.Succeeded);
@@ -169,7 +170,7 @@ public class BlockedProviderParentServiceTests
         blockedProviderParentRepositoryMock
             .Setup(x => x.UnBlock(It.IsAny<BlockedProviderParent>()))
             .ReturnsAsync(unblockEntity);
-        parentRepositoryMock.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(parent);
+        parentRepositoryMock.Setup(x => x.GetById(parent.Id)).ReturnsAsync(parent);
 
         // Act
         var result = await service.Unblock(unblockDto, userId).ConfigureAwait(false);
