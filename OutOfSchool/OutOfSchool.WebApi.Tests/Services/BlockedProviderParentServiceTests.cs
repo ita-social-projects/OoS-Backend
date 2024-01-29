@@ -90,7 +90,7 @@ public class BlockedProviderParentServiceTests
         // Arrange
         var parent = ParentGenerator.Generate();
         parent.Id = blockDto.ParentId;
-        var blockedParentUseId = Guid.Parse(parent.UserId);
+        var blockedParentUserId = Guid.Parse(parent.UserId);
 
         blockedProviderParentRepositoryMock
             .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<BlockedProviderParent, bool>>>(), It.IsAny<string>()))
@@ -109,7 +109,7 @@ public class BlockedProviderParentServiceTests
                 x => x.Create(
                 NotificationType.Parent,
                 NotificationAction.ProviderBlock,
-                blockedParentUseId,
+                blockedParentUserId,
                 service,
                 null,
                 null),
