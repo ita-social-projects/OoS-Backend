@@ -45,15 +45,15 @@ public class AdminController : ControllerBase
      /// </summary>
      /// <param name="filter">Entity that represents searching parameters.</param>
      /// <returns><see cref="SearchResult{MinistryAdminDto}"/>, or no content.</returns>
-     [HasPermission(Permissions.MinistryAdminRead)]
-     [HttpGet]
-     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<MinistryAdminDto>))]
-     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [HasPermission(Permissions.MinistryAdminRead)]
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<MinistryAdminDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-     public async Task<IActionResult> GetByFilterMinistryAdmin([FromQuery] MinistryAdminFilter filter)
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetByFilterMinistryAdmin([FromQuery] MinistryAdminFilter filter)
      {
          if (!currentUserService.IsAdmin())
          {
