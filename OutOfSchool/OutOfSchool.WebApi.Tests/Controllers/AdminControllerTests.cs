@@ -77,7 +77,7 @@ public class AdminControllerTests
         httpContext = new Mock<HttpContext>();
         httpContext.Setup(c => c.User.FindFirst("sub"))
             .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
-        
+
 
         controller = new AdminController(
             logger.Object,
