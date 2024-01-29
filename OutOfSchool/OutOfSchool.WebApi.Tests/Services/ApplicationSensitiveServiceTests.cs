@@ -30,7 +30,6 @@ namespace OutOfSchool.WebApi.Tests.Services;
 [TestFixture]
 public class ApplicationSensitiveServiceTests
 {
-    private const int N = 1;
     private ISensitiveApplicationService service;
     private ISensitiveApplicationService sensitiveApplicationService;
     private Mock<IApplicationRepository> applicationRepositoryMock;
@@ -113,7 +112,7 @@ public class ApplicationSensitiveServiceTests
     }
 
     [Test]
-    public async Task GetAll_ShouldReturnApplications()
+    public async Task GetApplications_WhenCalled_ShouldReturnApplications()
     {
         // Arrange
         var application = WithApplicationsList();
@@ -151,12 +150,12 @@ public class ApplicationSensitiveServiceTests
         var result = await service.GetAll(new ApplicationFilter());
 
         // Assert
-        Assert.That(result.Entities.Count, Is.EqualTo(N));
-        Assert.That(result.Entities.FirstOrDefault()?.Workshop.InstitutionId, Is.EqualTo(institutionId));
+        Assert.That(result.Entities.Count, Is.EqualTo(1));
+        Assert.That(result.Entities.FirstOrDefault().Workshop.InstitutionId, Is.EqualTo(institutionId));
     }
 
     [Test]
-    public async Task GetAll_WhenRegionAdminCalled_ShouldReturnApplications()
+    public async Task GetApplications_WhenRegionAdminCalled_ShouldReturnApplications()
     {
         // Arrange
         var institutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4");
@@ -191,7 +190,7 @@ public class ApplicationSensitiveServiceTests
         var result = await service.GetAll(new ApplicationFilter());
 
         // Assert
-        Assert.That(result.Entities.Count, Is.EqualTo(N));
+        Assert.That(result.Entities.Count, Is.EqualTo(1));
         Assert.That(result.Entities.FirstOrDefault().Workshop.InstitutionId, Is.EqualTo(institutionId));
     }
 
@@ -232,8 +231,8 @@ public class ApplicationSensitiveServiceTests
         var result = await service.GetAll(new ApplicationFilter());
 
         // Assert
-        Assert.That(result.Entities.Count, Is.EqualTo(N));
-        Assert.That(result.Entities.FirstOrDefault()?.Workshop.InstitutionId, Is.EqualTo(institutionId));
+        Assert.That(result.Entities.Count, Is.EqualTo(1));
+        Assert.That(result.Entities.FirstOrDefault().Workshop.InstitutionId, Is.EqualTo(institutionId));
     }
 
     private List<Application> WithApplicationsList()

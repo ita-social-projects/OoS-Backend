@@ -22,9 +22,6 @@ namespace OutOfSchool.WebApi.Tests.Services;
 [TestFixture]
 public class DirectionSensitiveServiceTests
 {
-    private static Guid institutionId;
-    private static Guid institutionHierarchyId;
-
     private DbContextOptions<OutOfSchoolDbContext> options;
     private OutOfSchoolDbContext context;
     private IEntityRepositorySoftDeleted<long, Direction> repo;
@@ -40,8 +37,6 @@ public class DirectionSensitiveServiceTests
     [SetUp]
     public void SetUp()
     {
-        institutionId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771");
-        institutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771");
         mapper = new Mock<IMapper>();
         var builder =
             new DbContextOptionsBuilder<OutOfSchoolDbContext>().UseInMemoryDatabase(
@@ -123,7 +118,7 @@ public class DirectionSensitiveServiceTests
 
             ctx.Institutions.Add(new Institution()
             {
-                Id = institutionId,
+                Id = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
                 NumberOfHierarchyLevels = 1,
                 Title = "Title"
             });
@@ -143,10 +138,10 @@ public class DirectionSensitiveServiceTests
                     {
                         new InstitutionHierarchy()
                         {
-                            Id = institutionHierarchyId,
+                            Id = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
                             Title = "Title",
                             HierarchyLevel = 1,
-                            InstitutionId = institutionId,
+                            InstitutionId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
                         },
                     },
                 },
@@ -164,7 +159,7 @@ public class DirectionSensitiveServiceTests
                 new Workshop()
                 {
                     Title = "Test1",
-                    InstitutionHierarchyId = institutionHierarchyId,
+                    InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
                 },
             };
 
