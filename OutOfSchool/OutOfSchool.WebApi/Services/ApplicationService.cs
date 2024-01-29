@@ -1005,7 +1005,10 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
     private async Task<int> GetAmountOfApprovedApplications(Guid workshopId)
     {
-        return await applicationRepository.Count(x => x.WorkshopId == workshopId && Application.ValidApplicationStatuses.Contains(x.Status));
+        return await applicationRepository.Count(x => x.WorkshopId == workshopId &&
+                                                      Application.ValidApplicationStatuses.Contains(x.Status) &&
+                                                      !x.Child.IsDeleted &&
+                                                      !x.Parent.IsDeleted);
     }
 
     private async Task<int> GetApprovedWorkshopAndChild(Application application)
