@@ -1,9 +1,6 @@
-using Google.Apis.Discovery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using Microsoft.FeatureManagement.Mvc;
-using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Models.Providers;
@@ -171,7 +168,7 @@ public class AdminController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [FeatureGate(nameof(Feature.ShowForProduction))]
+    //TODO: Need to think about implementation. Temporary it is hidden.
     public async Task<ActionResult> DeleteDirectionById(long id)
     {
         this.ValidateId(id, localizer);
@@ -183,6 +180,28 @@ public class AdminController : ControllerBase
         }
 
         return NoContent();
+    }
+    
+    /// <summary>
+    /// Get Providers that match filter's parameters.
+    /// </summary>
+    /// <param name="filter">Entity that represents searching parameters.</param>
+    /// <returns><see cref="SearchResult{ProviderDto}"/>, or no content.</returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetProvider([FromQuery] ProviderFilter filter)
+    {
+        var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
+
+        if (providers.TotalAmount < 1)
+        {
+            return NoContent();
+        }
+
+        return Ok(providers);
     }
 
     /// <summary>
