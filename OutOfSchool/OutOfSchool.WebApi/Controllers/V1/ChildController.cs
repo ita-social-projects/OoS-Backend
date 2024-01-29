@@ -26,7 +26,11 @@ public class ChildController : ControllerBase
     /// <param name="providerService">Service for Provider model.</param>
     /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
     /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
-    public ChildController(IChildService service, IProviderService providerService, IProviderAdminService providerAdminService, IWorkshopServicesCombiner combinedWorkshopService)
+    public ChildController(
+        IChildService service,
+        IProviderService providerService,
+        IProviderAdminService providerAdminService,
+        IWorkshopServicesCombiner combinedWorkshopService)
     {
         this.service = service ?? throw new ArgumentNullException(nameof(service));
         this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
@@ -171,14 +175,17 @@ public class ChildController : ControllerBase
         {
             Guid workshopProviderId = await providerService.GetProviderIdForWorkshopById(workshopId);
             var userId = GettingUserProperties.GetUserId(User);
-            try
-            {
-                var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
-                return workshopProviderId == provider?.Id;
-            }
-            catch (ArgumentException)
+            var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
+
+            if (userSubrole == Subrole.ProviderAdmin)
             {
                 return await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, workshopProviderId, workshopId).ConfigureAwait(false);
+            }
+            else
+            {
+                bool isDeputy = userSubrole == Subrole.ProviderDeputy;
+                var provider = await providerService.GetByUserId(userId, isDeputy).ConfigureAwait(false);
+                return workshopProviderId == provider?.Id;
             }
         }
 
