@@ -14,4 +14,5 @@ public enum NotificationAction
     LicenseApproval,
     Block,
     Unblock,
+    ProviderBlock,
 }
