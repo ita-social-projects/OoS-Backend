@@ -153,9 +153,9 @@ public class ChildController : ControllerBase
     [HttpGet("/api/v{version:apiVersion}/workshops/{id}/children/approved")]
     public async Task<IActionResult> GetApprovedByWorkshopId(Guid workshopId, [FromQuery] OffsetFilter offsetFilter)
     {
-        var workshop = await combinedWorkshopService.GetById(workshopId).ConfigureAwait(false);
+        var isWorkshopExists = await combinedWorkshopService.Exists(workshopId).ConfigureAwait(false);
 
-        if (workshop is null)
+        if (!isWorkshopExists)
         {
             return NotFound($"There is no Workshop in DB with Id - {workshopId}");
         }

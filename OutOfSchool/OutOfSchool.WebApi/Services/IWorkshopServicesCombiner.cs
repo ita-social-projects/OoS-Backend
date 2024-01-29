@@ -33,6 +33,13 @@ public interface IWorkshopServicesCombiner
     Task<List<ShortEntityDto>> GetWorkshopListByProviderAdminId(string providerAdminId);
 
     /// <summary>
+    /// Check if entity is exists by it's key.
+    /// </summary>
+    /// <param name="id">Key in the table.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    Task<bool> Exists(Guid id);
+
+    /// <summary>
     /// Get entity by it's key.
     /// </summary>
     /// <param name="id">Key in the table.</param>

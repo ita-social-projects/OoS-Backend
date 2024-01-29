@@ -325,13 +325,17 @@ public class ChildControllerTests
             })
             .WithChild(child);
 
-        workshopService.Setup(s => s.GetById(existingWorkshop.Id)).ReturnsAsync(existingWorkshop);
+        workshopService.Setup(s => s.Exists(existingWorkshop.Id)).ReturnsAsync(true);
         providerService.Setup(s => s.GetProviderIdForWorkshopById(existingWorkshop.Id)).ReturnsAsync(existingProvider.Id);
         providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), false)).ReturnsAsync(existingProvider);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[] { new Claim(ClaimTypes.Role, nameof(Role.Provider).ToLower()),
-                            new Claim("sub", currentUserId)}));
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.Provider).ToLower()),
+                new Claim("subrole", nameof(Subrole.None).ToLower()),
+                new Claim("sub", currentUserId),
+            }));
 
         controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
