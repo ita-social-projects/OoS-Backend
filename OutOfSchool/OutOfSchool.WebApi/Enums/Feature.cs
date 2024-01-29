@@ -10,4 +10,5 @@ public enum Feature
     Release2,
     Release3,
     Images,
+    ShowForProduction,
 }

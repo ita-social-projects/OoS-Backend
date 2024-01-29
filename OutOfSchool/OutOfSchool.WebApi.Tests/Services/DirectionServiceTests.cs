@@ -29,7 +29,7 @@ public class DirectionServiceTests
     private OutOfSchoolDbContext context;
     private IEntityRepositorySoftDeleted<long, Direction> repo;
     private IWorkshopRepository repositoryWorkshop;
-    private IDirectionService service;
+    private DirectionService service;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<DirectionService>> logger;
     private Mock<IMapper> mapper;
@@ -184,7 +184,7 @@ public class DirectionServiceTests
     public async Task Delete_WhenIdIsInvalid_DirectionNotExists(long id)
     {
         // Act
-        var result = await ((ISensitiveDirectionService)service).Delete(id).ConfigureAwait(false);
+        var result = await service.Delete(id).ConfigureAwait(false);
 
         // Assert
         Assert.False(result.Succeeded);
@@ -197,7 +197,7 @@ public class DirectionServiceTests
     public async Task Delete_WhenThereAreRelatedWorkshops_ReturnsNotSucceeded(long id)
     {
         // Act
-        var result = await (service as ISensitiveDirectionService).Delete(id).ConfigureAwait(false);
+        var result = await service.Delete(id).ConfigureAwait(false);
 
         // Assert
         Assert.False(result.Succeeded);
