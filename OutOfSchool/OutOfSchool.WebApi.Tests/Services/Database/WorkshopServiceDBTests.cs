@@ -141,6 +141,36 @@ public class WorkshopServiceDBTests
         Assert.AreEqual(5, result.TotalAmount);
     }
 
+    [Test]
+    public async Task Exists_WhenSendWrongId_ReturnFalse()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate();
+        dbContext.Add(workshop);
+        await dbContext.SaveChangesAsync();
+
+        // Act
+        var result = await workshopService.Exists(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(false, result);
+    }
+
+    [Test]
+    public async Task Exists_WhenSendGoodId_ReturnTrue()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate();
+        dbContext.Add(workshop);
+        await dbContext.SaveChangesAsync();
+
+        // Act
+        var result = await workshopService.Exists(workshop.Id).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(true, result);
+    }
+
     #region private
 
     private OutOfSchoolDbContext GetContext() => new OutOfSchoolDbContext(dbContextOptions);

@@ -17,6 +17,7 @@ public class ChildController : ControllerBase
     private readonly IChildService service;
     private readonly IProviderService providerService;
     private readonly IProviderAdminService providerAdminService;
+    private readonly IWorkshopServicesCombiner combinedWorkshopService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChildController"/> class.
@@ -24,11 +25,17 @@ public class ChildController : ControllerBase
     /// <param name="service">Service for Child model.</param>
     /// <param name="providerService">Service for Provider model.</param>
     /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
-    public ChildController(IChildService service, IProviderService providerService, IProviderAdminService providerAdminService)
+    /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
+    public ChildController(
+        IChildService service,
+        IProviderService providerService,
+        IProviderAdminService providerAdminService,
+        IWorkshopServicesCombiner combinedWorkshopService)
     {
         this.service = service ?? throw new ArgumentNullException(nameof(service));
         this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
         this.providerAdminService = providerAdminService ?? throw new ArgumentNullException(nameof(providerAdminService));
+        this.combinedWorkshopService = combinedWorkshopService ?? throw new ArgumentNullException(nameof(combinedWorkshopService));
     }
 
     /// <summary>
@@ -146,6 +153,13 @@ public class ChildController : ControllerBase
     [HttpGet("/api/v{version:apiVersion}/workshops/{id}/children/approved")]
     public async Task<IActionResult> GetApprovedByWorkshopId(Guid workshopId, [FromQuery] OffsetFilter offsetFilter)
     {
+        var isWorkshopExists = await combinedWorkshopService.Exists(workshopId).ConfigureAwait(false);
+
+        if (!isWorkshopExists)
+        {
+            return NotFound($"There is no Workshop in DB with Id - {workshopId}");
+        }
+
         var userHasRights = await this.IsUserProvidersOwnerOrAdmin(workshopId).ConfigureAwait(false);
         if (!userHasRights)
         {
@@ -161,14 +175,17 @@ public class ChildController : ControllerBase
         {
             Guid workshopProviderId = await providerService.GetProviderIdForWorkshopById(workshopId);
             var userId = GettingUserProperties.GetUserId(User);
-            try
-            {
-                var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
-                return workshopProviderId == provider?.Id;
-            }
-            catch (ArgumentException)
+            var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
+
+            if (userSubrole == Subrole.ProviderAdmin)
             {
                 return await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, workshopProviderId, workshopId).ConfigureAwait(false);
+            }
+            else
+            {
+                bool isDeputy = userSubrole == Subrole.ProviderDeputy;
+                var provider = await providerService.GetByUserId(userId, isDeputy).ConfigureAwait(false);
+                return workshopProviderId == provider?.Id;
             }
         }
 

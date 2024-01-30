@@ -164,6 +164,14 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
+    public Task<bool> Exists(Guid id)
+    {
+        logger.LogInformation($"Checking if Workshop exists by Id started. Looking Id = {id}.");
+
+        return workshopRepository.Any(x => x.Id == id);
+    }
+
+    /// <inheritdoc/>
     public async Task<SearchResult<WorkshopDto>> GetAll(OffsetFilter offsetFilter)
     {
         logger.LogInformation("Getting all Workshops started.");

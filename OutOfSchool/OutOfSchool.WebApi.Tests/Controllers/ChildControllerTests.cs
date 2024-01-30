@@ -31,6 +31,7 @@ public class ChildControllerTests
     private Mock<IChildService> service;
     private Mock<IProviderService> providerService;
     private Mock<IProviderAdminService> providerAdminService;
+    private Mock<IWorkshopServicesCombiner> workshopService;
     private List<ChildDto> children;
     private ChildDto child;
     private ChildCreateDto childCreateDto;
@@ -45,7 +46,9 @@ public class ChildControllerTests
         service = new Mock<IChildService>();
         providerService = new Mock<IProviderService>();
         providerAdminService = new Mock<IProviderAdminService>();
-        controller = new ChildController(service.Object, providerService.Object, providerAdminService.Object);
+        workshopService = new Mock<IWorkshopServicesCombiner>();
+
+        controller = new ChildController(service.Object, providerService.Object, providerAdminService.Object, workshopService.Object);
 
         // TODO: find out why it is a string but not a GUID
         currentUserId = Guid.NewGuid().ToString();
@@ -77,9 +80,10 @@ public class ChildControllerTests
     public void ChildController_WhenServicesIsNull_ThrowsArgumentNullException()
     {
         // Act and Assert
-        Assert.Throws<ArgumentNullException>(() => new ChildController(null, providerService.Object, providerAdminService.Object));
-        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, null, providerAdminService.Object));
-        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, providerService.Object, null));
+        Assert.Throws<ArgumentNullException>(() => new ChildController(null, providerService.Object, providerAdminService.Object, workshopService.Object));
+        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, null, providerAdminService.Object, workshopService.Object));
+        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, providerService.Object, null, workshopService.Object));
+        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, providerService.Object, providerAdminService.Object, null));
     }
 
     [Test]
@@ -242,6 +246,20 @@ public class ChildControllerTests
     }
 
     [Test]
+    public async Task DeleteChild_WhenWorkshopIdIsNotValid_ShouldReturnNotFound()
+    {
+        // Arrange
+        var filter = new OffsetFilter();
+        workshopService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(() => null);
+
+        // Act
+        var result = await controller.GetApprovedByWorkshopId(Guid.NewGuid(), filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<NotFoundObjectResult>(result);
+    }
+
+    [Test]
     public async Task GetApprovedByWorkshopId_WhenThereAreChildren_ShouldReturnOkResultObject()
     {
         // Arrange
@@ -307,12 +325,17 @@ public class ChildControllerTests
             })
             .WithChild(child);
 
+        workshopService.Setup(s => s.Exists(existingWorkshop.Id)).ReturnsAsync(true);
         providerService.Setup(s => s.GetProviderIdForWorkshopById(existingWorkshop.Id)).ReturnsAsync(existingProvider.Id);
         providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), false)).ReturnsAsync(existingProvider);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[] { new Claim(ClaimTypes.Role, nameof(Role.Provider).ToLower()),
-                            new Claim("sub", currentUserId)}));
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.Provider).ToLower()),
+                new Claim("subrole", nameof(Subrole.None).ToLower()),
+                new Claim("sub", currentUserId),
+            }));
 
         controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 

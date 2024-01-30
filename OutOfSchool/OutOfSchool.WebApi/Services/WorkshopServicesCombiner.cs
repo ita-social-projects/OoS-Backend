@@ -67,6 +67,12 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
+    public Task<bool> Exists(Guid id)
+    {
+        return workshopService.Exists(id);
+    }
+
+    /// <inheritdoc/>
     public async Task<WorkshopDto> GetById(Guid id)
     {
         var workshop = await workshopService.GetById(id).ConfigureAwait(false);
