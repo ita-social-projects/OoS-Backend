@@ -1,8 +1,11 @@
 using Google.Apis.Discovery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Localization;
 using Microsoft.FeatureManagement.Mvc;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
@@ -13,7 +16,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
-public class AdminController : ControllerBase
+public class AdminController : Controller
 {
     private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -24,6 +27,8 @@ public class AdminController : ControllerBase
     private readonly ISensitiveDirectionService directionService;
     private readonly ISensitiveProviderService providerService;
     private readonly ISensitiveApplicationService applicationService;
+
+    private string currentUserRole;
 
     public AdminController(
        ILogger<AdminController> logger,
@@ -43,6 +48,11 @@ public class AdminController : ControllerBase
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
     }
 
+    public override void OnActionExecuting(ActionExecutingContext context)
+    {
+        currentUserRole = GettingUserProperties.GetUserRole(User);
+    }
+
     /// <summary>
      /// Get MinistryAdmins that match filter's parameters.
      /// </summary>
@@ -58,10 +68,10 @@ public class AdminController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetByFilterMinistryAdmin([FromQuery] MinistryAdminFilter filter)
      {
-         if (!currentUserService.IsAdmin())
+         if (currentUserRole != nameof(Role.TechAdmin).ToLower())
          {
              logger.LogError("You have no rights because you are not an admin");
-             return this.Forbid();
+             return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin or MinistryAdmin role.");
          }
 
          var ministryAdmins = await ministryAdminService.GetByFilter(filter).ConfigureAwait(false);
@@ -88,10 +98,10 @@ public class AdminController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetByFilterProvider([FromQuery] ProviderFilter filter)
      {
-         if (!currentUserService.IsAdmin())
+         if (currentUserRole != nameof(Role.TechAdmin).ToLower())
          {
              logger.LogError("You have no rights because you are not an admin");
-             return this.Forbid();
+             return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin or MinistryAdmin role.");
          }
 
          var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
@@ -119,6 +129,12 @@ public class AdminController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetApplications([FromQuery] ApplicationFilter filter)
     {
+        if (currentUserRole != nameof(Role.TechAdmin).ToLower())
+        {
+            logger.LogError("You have no rights because you are not an admin");
+            return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin or MinistryAdmin role.");
+        }
+
         var applications = await applicationService.GetAll(filter).ConfigureAwait(false);
 
         if (!applications.Entities.Any())
@@ -147,6 +163,12 @@ public class AdminController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> UpdateDirections(DirectionDto directionDto)
     {
+        if (currentUserRole != nameof(Role.TechAdmin).ToLower())
+        {
+            logger.LogError("You have no rights because you are not an admin");
+            return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin or MinistryAdmin role.");
+        }
+
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -174,6 +196,12 @@ public class AdminController : ControllerBase
     [FeatureGate(nameof(Feature.ShowForProduction))]
     public async Task<ActionResult> DeleteDirectionById(long id)
     {
+        if (currentUserRole != nameof(Role.TechAdmin).ToLower())
+        {
+            logger.LogError("You have no rights because you are not an admin");
+            return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin or MinistryAdmin role.");
+        }
+
         this.ValidateId(id, localizer);
 
         var result = await directionService.Delete(id).ConfigureAwait(false);
@@ -199,6 +227,12 @@ public class AdminController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetProviderByFilter([FromQuery] ProviderFilter filter)
     {
+        if (currentUserRole != nameof(Role.TechAdmin).ToLower())
+        {
+            logger.LogError("You have no rights because you are not an admin");
+            return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin or MinistryAdmin role.");
+        }
+
         var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
 
         return Ok(providers);
@@ -218,6 +252,12 @@ public class AdminController : ControllerBase
     [HttpPut]
     public async Task<ActionResult> BlockProvider([FromBody] ProviderBlockDto providerBlockDto)
     {
+        if (currentUserRole != nameof(Role.TechAdmin).ToLower())
+        {
+            logger.LogError("You have no rights because you are not an admin");
+            return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin or MinistryAdmin role.");
+        }
+
         var result = await providerService.Block(
             providerBlockDto,
             await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false));
