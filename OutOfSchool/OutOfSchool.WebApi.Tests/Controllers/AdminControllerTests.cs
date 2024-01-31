@@ -365,37 +365,6 @@ public class AdminControllerTests
     }
 
     [Test]
-    public async Task GetByProvider_ReturnsNoContentResult()
-    {
-        // Arrange
-        sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
-            .ReturnsAsync(new SearchResult<ProviderDto> { TotalAmount = 0, Entities = new List<ProviderDto>() });
-
-        // Act
-        var result = await controller.GetProvider(new ProviderFilter()).ConfigureAwait(false);
-
-        // Assert
-        sensitiveProviderService.VerifyAll();
-        Assert.That(result, Is.InstanceOf<NoContentResult>());
-    }
-
-    [Test]
-    public async Task GetByProvider_ReturnsOkResult()
-    {
-        // Arrange
-        var expected = new SearchResult<ProviderDto> { TotalAmount = 1, Entities = new List<ProviderDto>() };
-        sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
-            .ReturnsAsync(expected);
-
-        // Act
-        var result = await controller.GetProvider(new ProviderFilter()).ConfigureAwait(false) as ActionResult;
-
-        // Assert
-        sensitiveProviderService.VerifyAll();
-        result.AssertResponseOkResultAndValidateValue(expected);
-    }
-
-    [Test]
     public async Task GetProviderByFilter_ReturnsOkResult()
     {
         // Arrange
