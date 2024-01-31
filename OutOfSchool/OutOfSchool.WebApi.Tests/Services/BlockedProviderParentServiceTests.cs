@@ -23,6 +23,10 @@ namespace OutOfSchool.WebApi.Tests.Services;
 [TestFixture]
 public class BlockedProviderParentServiceTests
 {
+    private const string ProviderIdKey = "ProviderId";
+    private const string ProviderFullTitleKey = "ProviderFullTitle";
+    private const string ProviderShortTitleKey = "ProviderShortTitle";
+
     private BlockedProviderParentService service;
 
     private Mock<IBlockedProviderParentRepository> blockedProviderParentRepositoryMock;
@@ -35,6 +39,7 @@ public class BlockedProviderParentServiceTests
     private BlockedProviderParentBlockDto blockDto;
     private BlockedProviderParentUnblockDto unblockDto;
     private string userId;
+    private Provider provider;
     private BlockedProviderParent blockEntity;
     private BlockedProviderParent unblockEntity;
 
@@ -68,11 +73,14 @@ public class BlockedProviderParentServiceTests
             ProviderId = Guid.NewGuid(),
         };
         userId = Guid.NewGuid().ToString();
+        provider = ProvidersGenerator.Generate();
+        provider.Id = blockDto.ProviderId;
         blockEntity = new BlockedProviderParent()
         {
             Id = Guid.NewGuid(),
             ParentId = blockDto.ParentId,
             ProviderId = blockDto.ProviderId,
+            Provider = provider,
         };
         unblockEntity = new BlockedProviderParent()
         {
@@ -91,6 +99,12 @@ public class BlockedProviderParentServiceTests
         var parent = ParentGenerator.Generate();
         parent.Id = blockDto.ParentId;
         var blockedParentUserId = Guid.Parse(parent.UserId);
+        var additionalData = new Dictionary<string, string>()
+        {
+            { ProviderIdKey, blockEntity.ProviderId.ToString() },
+            { ProviderFullTitleKey, blockEntity.Provider.FullTitle },
+            { ProviderShortTitleKey, blockEntity.Provider.ShortTitle },
+        };
 
         blockedProviderParentRepositoryMock
             .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<BlockedProviderParent, bool>>>(), It.IsAny<string>()))
@@ -111,7 +125,7 @@ public class BlockedProviderParentServiceTests
                 NotificationAction.ProviderBlock,
                 blockedParentUserId,
                 service,
-                null,
+                additionalData,
                 null),
                 Times.Once);
         Assert.IsNotNull(result);
