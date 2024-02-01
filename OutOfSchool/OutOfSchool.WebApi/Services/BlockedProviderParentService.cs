@@ -8,6 +8,10 @@ namespace OutOfSchool.WebApi.Services;
 
 public class BlockedProviderParentService : IBlockedProviderParentService, INotificationReciever
 {
+    public const string ProviderIdKey = "ProviderId";
+    public const string ProviderFullTitleKey = "ProviderFullTitle";
+    public const string ProviderShortTitleKey = "ProviderShortTitle";
+
     private readonly IBlockedProviderParentRepository blockedProviderParentRepository;
     private readonly ILogger<BlockedProviderParentService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
@@ -75,11 +79,18 @@ public class BlockedProviderParentService : IBlockedProviderParentService, INoti
         if (blockedParent != null)
         {
             var blockedParentUserId = Guid.Parse(blockedParent.UserId);
+            var additionalData = new Dictionary<string, string>()
+            {
+                { ProviderIdKey, entity.ProviderId.ToString() },
+                { ProviderFullTitleKey, entity.Provider.FullTitle },
+                { ProviderShortTitleKey, entity.Provider.ShortTitle },
+            };
             await notificationService.Create(
                 NotificationType.Parent,
                 NotificationAction.ProviderBlock,
                 blockedParentUserId,
-                this).ConfigureAwait(false);
+                this,
+                additionalData).ConfigureAwait(false);
         }
 
         return Result<BlockedProviderParentDto>.Success(mapper.Map<BlockedProviderParentDto>(entity));
