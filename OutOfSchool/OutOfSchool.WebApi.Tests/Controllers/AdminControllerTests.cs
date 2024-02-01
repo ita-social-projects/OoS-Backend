@@ -9,12 +9,14 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
@@ -58,6 +60,7 @@ public class AdminControllerTests
     private DirectionDto direction;
     private IMapper mapper;
     private HttpContext fakeHttpContext;
+    private string userRole;
 
     [SetUp]
     public void Setup()
@@ -106,9 +109,165 @@ public class AdminControllerTests
     }
 
     [Test]
+    public async Task GetByFilterMinistryAdmin_WhenCalled_ReturnsOkResultObject_WithExpectedCollectionDtos()
+    {
+        // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
+        var expected = new SearchResult<MinistryAdminDto>
+        {
+            TotalAmount = 10,
+            Entities = ministryAdminDtos.Select(x => mapper.Map<MinistryAdminDto>(x)).ToList(),
+        };
+
+        sensitiveMinistryAdminService.Setup(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>()))
+            .ReturnsAsync(expected);
+
+        // Act
+        var result = await controller.GetByFilterMinistryAdmin(new MinistryAdminFilter()).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        sensitiveMinistryAdminService.VerifyAll();
+        result.AssertResponseOkResultAndValidateValue(expected);
+    }
+
+    [Test]
+    public async Task GetByFilerMinistryAdmin_WhenCalled_ReturnsNoContentResultObject()
+    {
+        // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
+
+        var expected = new SearchResult<MinistryAdminDto>
+        {
+            TotalAmount = 0,
+            Entities = ministryAdminDtos.Select(x => mapper.Map<MinistryAdminDto>(x)).ToList(),
+        };
+
+        sensitiveMinistryAdminService.Setup(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>()))
+            .ReturnsAsync(expected);
+
+        // Act
+        var result = await controller.GetByFilterMinistryAdmin(new MinistryAdminFilter()).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Is.InstanceOf<NoContentResult>());
+    }
+
+    [Test]
+    public async Task GetByFilterMinistryAdmin_ReturnsObjectResult()
+    {
+        // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.Provider).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
+
+        sensitiveMinistryAdminService.Setup(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>())).ReturnsAsync(new SearchResult<MinistryAdminDto> { TotalAmount = 0, Entities = new List<MinistryAdminDto>() });
+
+        // Act
+        var result = await controller.GetByFilterMinistryAdmin(new MinistryAdminFilter()).ConfigureAwait(false);
+
+        // Assert
+        sensitiveMinistryAdminService.Verify(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>()), Times.Never);
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Is.InstanceOf<ObjectResult>());
+    }
+
+    [Test]
+    public async Task GetByFilterProvider_WhenCalled_ReturnsOkResultObject_WithExpectedCollectionDtos()
+    {
+        // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
+        var expected = new SearchResult<ProviderDto>
+        {
+            TotalAmount = 10,
+            Entities = providers.Select(x => mapper.Map<ProviderDto>(x)).ToList(),
+        };
+
+        sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
+            .ReturnsAsync(expected);
+
+
+        // Act
+        var result = await controller.GetByFilterProvider(new ProviderFilter()).ConfigureAwait(false);
+
+        // Assert
+        result.AssertResponseOkResultAndValidateValue(expected);
+    }
+
+    [Test]
+    public async Task GetByFilerProvider_WhenNoRecordsInDB_ReturnsNoContentResult()
+    {
+        // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
+        sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
+            .ReturnsAsync(new SearchResult<ProviderDto> { TotalAmount = 0, Entities = new List<ProviderDto>() });
+
+        // Act
+        var result = await controller.GetByFilterProvider(new ProviderFilter()).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<NoContentResult>(result);
+    }
+
+    [Test]
+    public async Task GetByFilterProvider_WhenCalled_ReturnsObjectResult()
+    {
+        // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.Parent).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
+        var expected = new SearchResult<ProviderDto>
+        {
+            TotalAmount = 10,
+            Entities = providers.Select(x => mapper.Map<ProviderDto>(x)).ToList(),
+        };
+
+        sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
+            .ReturnsAsync(expected);
+
+        // Act
+        var result = await controller.GetByFilterProvider(new ProviderFilter()).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<ObjectResult>());
+    }
+
+    [Test]
     public async Task GetApplications_WhenCalledByAdmin_ShouldReturnOkResultObject()
     {
         // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
         sensitiveApplicationService.Setup(s => s.GetAll(It.IsAny<ApplicationFilter>())).ReturnsAsync(new SearchResult<ApplicationDto>
         {
             Entities = applications,
@@ -124,61 +283,15 @@ public class AdminControllerTests
     }
 
     [Test]
-    public async Task GetProviders_WhenNoRecordsInDB_ReturnsNoContentResult()
-    {
-        // Arrange
-        sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
-            .ReturnsAsync(new SearchResult<ProviderDto> { TotalAmount = 0, Entities = new List<ProviderDto>() });
-
-        currentUserService.Setup(x => x.IsAdmin()).Returns(true);
-
-        // Act
-        var result = await controller.GetByFilterProvider(new ProviderFilter()).ConfigureAwait(false);
-
-        // Assert
-        Assert.IsInstanceOf<NoContentResult>(result);
-    }
-
-    [Test]
-    [TestCase(0)]
-    public void Delete_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
-    {
-        // Arrange
-        sensitiveDirectionService.Setup(x => x.Delete(id));
-
-        // Act and Assert
-        Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-            async () => await controller.DeleteDirectionById(id).ConfigureAwait(false));
-    }
-
-    [Test]
-    public void GetApplications_WhenCalledParentOrProvider_ShouldThrowUnauthorizedAccess()
-    {
-        // Arrange
-        sensitiveApplicationService.Setup(s => s.GetAll(It.IsAny<ApplicationFilter>())).ThrowsAsync(new UnauthorizedAccessException());
-
-        // Act & Assert
-        Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await controller.GetApplications(new ApplicationFilter()));
-    }
-
-    [Test]
-    [TestCase(10)]
-    public async Task Delete_WhenIdIsInvalid_ReturnsNull(long id)
-    {
-        // Arrange
-        sensitiveDirectionService.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Success(direction));
-
-        // Act
-        var result = await controller.DeleteDirectionById(id) as OkObjectResult;
-
-        // Assert
-        Assert.That(result, Is.Null);
-    }
-
-    [Test]
     public async Task GetApplications_WhenCollectionIsEmpty_ShouldReturnNoContent()
     {
         // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
         sensitiveApplicationService.Setup(s => s.GetAll(It.IsAny<ApplicationFilter>())).ReturnsAsync(new SearchResult<ApplicationDto>()
         {
             Entities = new List<ApplicationDto>(),
@@ -194,132 +307,34 @@ public class AdminControllerTests
     }
 
     [Test]
-    public async Task GetMinistryAdmins_WhenCalled_ReturnsOkResultObject_WithExpectedCollectionDtos()
+    public async Task GetApplications_WhenCalledParentOrProvider_RetursObjectResult()
     {
         // Arrange
-        var expected = new SearchResult<MinistryAdminDto>
-        {
-            TotalAmount = 10,
-            Entities = ministryAdminDtos.Select(x => mapper.Map<MinistryAdminDto>(x)).ToList(),
-        };
-
-        sensitiveMinistryAdminService.Setup(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>()))
-            .ReturnsAsync(expected);
-
-        currentUserService.Setup(x => x.IsAdmin()).Returns(true);
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.Parent).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
+        sensitiveApplicationService.Setup(s => s.GetAll(It.IsAny<ApplicationFilter>())).ThrowsAsync(new UnauthorizedAccessException());
 
         // Act
-        var result = await controller.GetByFilterMinistryAdmin(new MinistryAdminFilter()).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.GetApplications(new ApplicationFilter()).ConfigureAwait(false);
 
         // Assert
-        sensitiveMinistryAdminService.VerifyAll();
-        result.AssertResponseOkResultAndValidateValue(expected);
+        Assert.That(result, Is.InstanceOf<ObjectResult>());
     }
 
     [Test]
-    public async Task GetMinistryAdmins_WhenCalled_ReturnsForbidResultObject()
+    public async Task UpdateDirections_WhenModelIsValid_ReturnsOkObjectResult()
     {
         // Arrange
-        var expected = new SearchResult<MinistryAdminDto>
-        {
-            TotalAmount = 10,
-            Entities = ministryAdminDtos.Select(x => mapper.Map<MinistryAdminDto>(x)).ToList(),
-        };
-
-        sensitiveMinistryAdminService.Setup(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>()))
-            .ReturnsAsync(expected);
-
-        currentUserService.Setup(x => x.IsAdmin()).Returns(false);
-
-        // Act
-        var result = await controller.GetByFilterMinistryAdmin(new MinistryAdminFilter()).ConfigureAwait(false) as ForbidResult;
-
-        // Assert
-        Assert.That(result is ForbidResult);
-    }
-
-    [Test]
-    [TestCase(10)]
-    public async Task Delete_WhenThereAreRelatedWorkshops_ReturnsBadRequestObjectResult(long id)
-    {
-        // Arrange
-        sensitiveDirectionService.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Failed(new OperationError
-        {
-            Code = "400",
-            Description = "Some workshops assosiated with this direction. Deletion prohibited.",
-        }));
-
-        // Act
-        var result = await controller.DeleteDirectionById(id);
-
-        // Assert
-        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-        Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
-    }
-
-    [Test]
-    public async Task GetProviders_WhenCalled_ReturnsOkResultObject_WithExpectedCollectionDtos()
-    {
-        // Arrange
-        var expected = new SearchResult<ProviderDto>
-        {
-            TotalAmount = 10,
-            Entities = providers.Select(x => mapper.Map<ProviderDto>(x)).ToList(),
-        };
-
-        sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
-            .ReturnsAsync(expected);
-
-        currentUserService.Setup(x => x.IsAdmin()).Returns(true);
-
-        // Act
-        var result = await controller.GetByFilterProvider(new ProviderFilter()).ConfigureAwait(false);
-
-        // Assert
-        result.AssertResponseOkResultAndValidateValue(expected);
-    }
-
-    [Test]
-    public async Task GetProviders_WhenCalled_ReturnsForbidObject()
-    {
-        // Arrange
-        var expected = new SearchResult<ProviderDto>
-        {
-            TotalAmount = 10,
-            Entities = providers.Select(x => mapper.Map<ProviderDto>(x)).ToList(),
-        };
-
-        sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
-            .ReturnsAsync(expected);
-
-        currentUserService.Setup(x => x.IsAdmin()).Returns(false);
-
-        // Act
-        var result = await controller.GetByFilterProvider(new ProviderFilter()).ConfigureAwait(false) as ForbidResult;
-
-        // Assert
-        Assert.That(result is ForbidResult);
-    }
-
-    [Test]
-    public async Task GetByFilter_WhenNoRecordsInDB_ReturnsNoContentResult()
-    {
-        // Arrange
-        sensitiveMinistryAdminService.Setup(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>())).ReturnsAsync(new SearchResult<MinistryAdminDto> { TotalAmount = 0, Entities = new List<MinistryAdminDto>() });
-        currentUserService.Setup(x => x.IsAdmin()).Returns(true);
-
-        // Act
-        var result = await controller.GetByFilterMinistryAdmin(new MinistryAdminFilter()).ConfigureAwait(false);
-
-        // Assert
-        sensitiveMinistryAdminService.Verify(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>()), Times.Once);
-        Assert.IsInstanceOf<NoContentResult>(result);
-    }
-
-    [Test]
-    public async Task Update_WhenModelIsValid_ReturnsOkObjectResult()
-    {
-        // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
         var changedDirection = new DirectionDto()
         {
             Id = 1,
@@ -336,24 +351,15 @@ public class AdminControllerTests
     }
 
     [Test]
-    [TestCase(1)]
-    public async Task Delete_WhenIdIsValid_ReturnsNoContentResult(long id)
+    public async Task UpdateDirections_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
     {
         // Arrange
-        sensitiveDirectionService.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Success(direction));
-
-        // Act
-        var result = await controller.DeleteDirectionById(id) as NoContentResult;
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(204, result.StatusCode);
-    }
-
-    [Test]
-    public async Task Update_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
-    {
-        // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
         controller.ModelState.AddModelError("UpdateDirection", "Invalid model state.");
 
         // Act
@@ -365,9 +371,143 @@ public class AdminControllerTests
     }
 
     [Test]
+    public async Task UpdateDirections_WhenUserIsNotTechAdmin_ReturnsObjectResult()
+    {
+        // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.MinistryAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
+        var changedDirection = new DirectionDto()
+        {
+            Id = 1,
+            Title = "ChangedTitle",
+        };
+        sensitiveDirectionService.Setup(x => x.Update(changedDirection)).ReturnsAsync(changedDirection);
+
+        // Act
+        var result = await controller.UpdateDirections(changedDirection).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<ObjectResult>());
+    }
+
+    [Test]
+    [TestCase(1)]
+    public async Task DeleteDirectionById_WhenIdIsValid_ReturnsNoContentResult(long id)
+    {
+        // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
+        sensitiveDirectionService.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Success(direction));
+
+        // Act
+        var result = await controller.DeleteDirectionById(id) as NoContentResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(204, result.StatusCode);
+    }
+
+    [Test]
+    [TestCase(0)]
+    public void DeleteDirectionById_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
+    {
+        // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
+        sensitiveDirectionService.Setup(x => x.Delete(id));
+
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            async () => await controller.DeleteDirectionById(id).ConfigureAwait(false));
+    }
+
+    [Test]
+    [TestCase(10)]
+    public async Task DeleteDirectionById_WhenIdIsInvalid_ReturnsNull(long id)
+    {
+        // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
+        sensitiveDirectionService.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Success(direction));
+
+        // Act
+        var result = await controller.DeleteDirectionById(id) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Null);
+    }
+
+    [Test]
+    [TestCase(10)]
+    public async Task DeleteDirectionById_WhenThereAreRelatedWorkshops_ReturnsBadRequestObjectResult(long id)
+    {
+        // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
+        sensitiveDirectionService.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Failed(new OperationError
+        {
+            Code = "400",
+            Description = "Some workshops assosiated with this direction. Deletion prohibited.",
+        }));
+
+        // Act
+        var result = await controller.DeleteDirectionById(id);
+
+        // Assert
+        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+        Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    [TestCase(1)]
+    public async Task DeleteDirectionById_WhenIdIsValid_ReturnsObjectResult(long id)
+    {
+        // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.MinistryAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
+        sensitiveDirectionService.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Success(direction));
+
+        // Act
+        var result = await controller.DeleteDirectionById(id);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<ObjectResult>());
+    }
+
+    [Test]
     public async Task GetProviderByFilter_ReturnsOkResult()
     {
         // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
         var expected = new SearchResult<ProviderDto> { TotalAmount = 1, Entities = new List<ProviderDto>() };
         sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
             .ReturnsAsync(expected);
@@ -381,18 +521,44 @@ public class AdminControllerTests
     }
 
     [Test]
+    public async Task GetProviderByFilter_ReturnsObjectResult()
+    {
+        // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.MinistryAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
+        var expected = new SearchResult<ProviderDto> { TotalAmount = 1, Entities = new List<ProviderDto>() };
+        sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
+            .ReturnsAsync(expected);
+
+        // Act
+        var result = await controller.GetProviderByFilter(new ProviderFilter()).ConfigureAwait(false) as ActionResult;
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<ObjectResult>());
+    }
+
+    [Test]
     public async Task BlockProvider_WithValidIdAndBlocked_ReturnsOkResult()
     {
         // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
         sensitiveProviderService
             .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
                 new ResponseDto(){Result = new object(), HttpStatusCode = HttpStatusCode.Accepted, IsSuccess = true, Message = "test"});
 
         // Act
-        var result = await controller.BlockProvider(It.IsAny<ProviderBlockDto>());
+        var result = await controller.BlockProvider(new ProviderBlockDto{BlockReason = "str", Id = new Guid("4c617c71-c131-4ad6-9eac-bb16288f5322"), IsBlocked = false, BlockPhoneNumber = "-"});
 
         // Assert
-        Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.InstanceOf<OkObjectResult>());
     }
 
@@ -400,6 +566,13 @@ public class AdminControllerTests
     public async Task BlockProvider_WithValidIdAndBlocked_ReturnsForbidResult()
     {
         // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
+
         sensitiveProviderService
             .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
                 new ResponseDto(){Result = new object(), HttpStatusCode = HttpStatusCode.Forbidden, IsSuccess = false, Message = "test"});
@@ -416,6 +589,12 @@ public class AdminControllerTests
     public async Task BlockProvider_WithValidIdAndBlocked_ReturnsNotFoundResult()
     {
         // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
         sensitiveProviderService
             .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
                 new ResponseDto(){Result = new object(), HttpStatusCode = HttpStatusCode.NotFound, IsSuccess = false, Message = "test"});
@@ -432,6 +611,12 @@ public class AdminControllerTests
     public async Task BlockProvider_WithValidIdAndBlocked_DefaultCase_ReturnsNotFoundResult()
     {
         // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
         sensitiveProviderService
             .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
                 new ResponseDto(){Result = new object(), HttpStatusCode = HttpStatusCode.Accepted, IsSuccess = false, Message = "test"});
@@ -442,6 +627,28 @@ public class AdminControllerTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.InstanceOf<NotFoundObjectResult>());
+    }
+
+    [Test]
+    public async Task BlockProvider_UserIsNotTechAdmin_ReturnsObjectResult()
+    {
+        // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.Parent).ToLower()),
+            }));
+        controller.ControllerContext.HttpContext.User = user;
+        sensitiveProviderService
+            .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
+                new ResponseDto(){Result = new object(), HttpStatusCode = HttpStatusCode.Accepted, IsSuccess = false, Message = "test"});
+
+        // Act
+        var result = await controller.BlockProvider(It.IsAny<ProviderBlockDto>());
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Is.InstanceOf<ObjectResult>());
     }
 
     private HttpContext GetFakeHttpContext()
