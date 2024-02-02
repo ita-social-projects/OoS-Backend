@@ -160,18 +160,18 @@ public class NotificationService : INotificationService
     /// <inheritdoc/>
     public async Task ReadAll(string userId)
     {
-        logger.LogInformation("Updating ReadDateTime UserId = {UserId} started", userId);
+        logger.LogInformation("Updating ReadDateTime for UserId = {UserId} all unreaded notifications started", userId);
 
         try
         {
             var readDateTime = DateTimeOffset.UtcNow;
             await notificationRepository.SetReadDateTimeForAll(userId, readDateTime).ConfigureAwait(false);
 
-            logger.LogInformation("Notifications UserId = {UserId} updated successfully", userId);
+            logger.LogInformation("All unreaded notifications for UserId = {UserId} updated successfully", userId);
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            logger.LogError(ex, "Updating ReadDateTime UserId = {UserId} failed", userId);
+            logger.LogError(ex, "Updating ReadDateTime for UserId = {UserId} all unreaded notifications failed", userId);
             throw;
         }
     }

@@ -98,6 +98,7 @@ public class NotificationController : ControllerBase
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="500">If any server error occures.</response>
     [Authorize]
+    [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
