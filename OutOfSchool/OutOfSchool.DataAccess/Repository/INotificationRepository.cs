@@ -24,10 +24,10 @@ public interface INotificationRepository : ISensitiveEntityRepository<Notificati
     Task<IEnumerable<Notification>> SetReadDateTimeByType(string userId, NotificationType notificationType, DateTimeOffset dateTime);
 
     /// <summary>
-    /// Set ReadDateTime for all notifications for passed user.
+    /// Set ReadDateTime for all unreaded notifications for passed user.
     /// </summary>
     /// <param name="userId">User's id for notifications.</param>
     /// <param name="dateTime">DateTime.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task SetReadDateTimeForAll(string userId, DateTimeOffset dateTime);
+    Task SetReadDateTimeForAllUnreaded(string userId, DateTimeOffset dateTime);
 }

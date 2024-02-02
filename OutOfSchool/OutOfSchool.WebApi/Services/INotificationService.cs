@@ -48,7 +48,7 @@ public interface INotificationService
     Task<NotificationDto> Read(Guid id);
 
     /// <summary>
-    /// Set property ReadDateTime field in all notifications.
+    /// Set property ReadDateTime field in all unreaded notifications.
     /// </summary>
     /// <param name="userId">User's id for notifications.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>

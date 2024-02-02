@@ -165,7 +165,7 @@ public class NotificationService : INotificationService
         try
         {
             var readDateTime = DateTimeOffset.UtcNow;
-            await notificationRepository.SetReadDateTimeForAll(userId, readDateTime).ConfigureAwait(false);
+            await notificationRepository.SetReadDateTimeForAllUnreaded(userId, readDateTime).ConfigureAwait(false);
 
             logger.LogInformation("All unreaded notifications for UserId = {UserId} updated successfully", userId);
         }

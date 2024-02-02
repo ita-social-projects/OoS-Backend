@@ -90,7 +90,7 @@ public class NotificationController : ControllerBase
     }
 
     /// <summary>
-    /// Update ReadDateTime field in all notifications.
+    /// Update ReadDateTime field in all unreaded notifications.
     /// </summary>
     /// <returns>Status Code.</returns>
     /// <response code="200">Notification was successfully updated.</response>
