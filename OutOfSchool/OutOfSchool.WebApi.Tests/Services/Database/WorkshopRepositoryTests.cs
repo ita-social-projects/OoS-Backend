@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using OutOfSchool.Services;
+using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.TestDataGenerators;
@@ -45,7 +46,7 @@ public class WorkshopRepositoryTests
         using var context = GetContext();
         var workshopRepository = GetWorkshopRepository(context);
         var initialWorkshopsCount = context.Workshops.Count(x => !x.IsDeleted);
-        var workshop = context.Workshops.First();
+        var workshop = context.Workshops.IncludeProperties("Address").First();
         var expectedWorkshopsCount = initialWorkshopsCount - 1;
         var expectedApplicationsCount = context.Applications.Count(x => !x.IsDeleted) - workshop.Applications.Count;
         var expectedTeachersCount = context.Teachers.Count(x => !x.IsDeleted) - workshop.Teachers.Count;

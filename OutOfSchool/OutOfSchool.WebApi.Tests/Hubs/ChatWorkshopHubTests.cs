@@ -37,7 +37,7 @@ public class ChatWorkshopHubTests
     private ChatWorkshopHub chatHub;
 
     private Mock<IHubCallerClients> clientsMock;
-    private Mock<IClientProxy> clientProxyMock;
+    private Mock<ISingleClientProxy> clientProxyMock;
     private Mock<HubCallerContext> hubCallerContextMock;
     private Mock<IGroupManager> groupsMock;
     private Mock<IStringLocalizer<SharedResource>> localizerMock;
@@ -54,7 +54,7 @@ public class ChatWorkshopHubTests
         blockedProviderParentServiceMock = new Mock<IBlockedProviderParentService>();
 
         clientsMock = new Mock<IHubCallerClients>();
-        clientProxyMock = new Mock<IClientProxy>();
+        clientProxyMock = new Mock<ISingleClientProxy>();
         hubCallerContextMock = new Mock<HubCallerContext>();
         groupsMock = new Mock<IGroupManager>();
         localizerMock = new Mock<IStringLocalizer<SharedResource>>();

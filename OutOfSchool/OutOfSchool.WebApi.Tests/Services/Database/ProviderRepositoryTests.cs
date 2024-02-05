@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using OutOfSchool.Services;
+using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.TestDataGenerators;
@@ -44,7 +45,7 @@ public class ProviderRepositoryTests
         using var context = GetContext();
         var providerRepository = GetProviderRepository(context);
         var initialProvidersCount = context.Providers.Count(x => !x.IsDeleted);
-        var provider = context.Providers.First();
+        var provider = context.Providers.IncludeProperties("LegalAddress,ActualAddress").First();
         var expectedProvidersCount = initialProvidersCount - 1;
         var expectedWorkshopsCount = context.Workshops.Count(x => !x.IsDeleted) - provider.Workshops.Count;
         var expectedAddressesCount = context.Addresses.Count() - 2; // 2 = Legal + Actual

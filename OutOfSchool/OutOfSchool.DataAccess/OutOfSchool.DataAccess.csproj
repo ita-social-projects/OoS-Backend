@@ -11,6 +11,7 @@
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
     <ItemGroup>

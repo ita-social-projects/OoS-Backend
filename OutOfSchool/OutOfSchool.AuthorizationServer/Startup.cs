@@ -26,14 +26,6 @@ public static class Startup
 
         var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
-        // TODO: Move version check into an extension to reuse code across apps
-        var mySQLServerVersion = config["MySQLServerVersion"];
-        var serverVersion = new MySqlServerVersion(new Version(mySQLServerVersion));
-        if (serverVersion.Version.Major < Constants.MySQLServerMinimalMajorVersion)
-        {
-            throw new InvalidOperationException("MySQL Server version should be 8 or higher.");
-        }
-
         var quartzConfig = config.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
         services.AddDefaultQuartz(
             config,
@@ -48,21 +40,20 @@ public static class Startup
                 UserID = options.UserId,
                 Password = options.Password,
                 Database = options.Database,
-                GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
+                OldGuids = options.OldGuids,
             });
+
         services
             .AddDbContext<OutOfSchoolDbContext>(options => options
-                .UseMySql(
+                .UseMySQL(
                     connectionString,
-                    serverVersion,
                     optionsBuilder =>
                         optionsBuilder
                             .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
                             .MigrationsAssembly(migrationsAssembly)))
             .AddDbContext<OpenIdDictDbContext>(options => options
-            .UseMySql(
+            .UseMySQL(
                 connectionString,
-                serverVersion,
                 optionsBuilder =>
                     optionsBuilder
                         .MigrationsAssembly(migrationsAssembly)));

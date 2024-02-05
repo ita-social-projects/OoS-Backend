@@ -14,5 +14,5 @@ public class AuthorizationConnectionOptions : IMySqlGuidConnectionOptions
 
     public string Password { get; set; }
 
-    public string GuidFormat { get; set; }
+    public bool OldGuids { get; set; }
 }

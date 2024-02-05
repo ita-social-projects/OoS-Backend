@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
-    <BaseVersion>6.0.0</BaseVersion>
-    <EFCoreVersion>6.0.16</EFCoreVersion>
+    <BaseVersion>8.0.0</BaseVersion>
+    <EFCoreVersion>8.0.1</EFCoreVersion>
     <OpenIdDictVersion>4.7.0</OpenIdDictVersion>
     <SwaggerVersion>6.3.1</SwaggerVersion>
     <QuartzVersion>3.5.0</QuartzVersion>
@@ -16,14 +16,14 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(BaseVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(BaseVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="$(BaseVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
     <!--MVC-->
     <!-- TODO: Isn't AspNetCore.Mvc.Core included by default for a Web project?-->
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.6" />
-    <PackageVersion Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.6" />
-    <PackageVersion Include="Microsoft.AspNetCore.HeaderPropagation" Version="6.0.21" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.HeaderPropagation" Version="8.0.1" />
     <!--Entity Framework-->
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(EFCoreVersion)" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="$(EFCoreVersion)" />
@@ -34,16 +34,16 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(EFCoreVersion)" />
     <PackageVersion Include="OneOf" Version="3.0.263" />
     <!--MySQL-->
-    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.2" />
-    <PackageVersion Include="MySql.Data" Version="8.0.32" />
-    <PackageVersion Include="Google.Protobuf" Version="3.21.9" />
+    <PackageVersion Include="MySql.EntityFrameworkCore" Version="8.0.0" />
+    <PackageVersion Include="MySql.Data" Version="8.3.0" />
+    <PackageVersion Include="Google.Protobuf" Version="3.25.2" />
     <!--Elasticsearch-->
     <PackageVersion Include="NEST" Version="7.17.5" />
     <!--Redis-->
     <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="$(RedisVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="$(RedisVersion)" />
     <!--Identity-->
-    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(EFCoreVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.1" />
     <PackageVersion Include="IdentityModel" Version="6.1.0" />
     <PackageVersion Include="Microsoft.Extensions.Identity.Core" Version="$(EFCoreVersion)" />
     <!-- TODO: check if this dep is needed -->
@@ -86,7 +86,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.0.0" />
     <!--JSON-->
     <PackageVersion Include="JsonSubTypes" Version="1.9.0" />
-    <PackageVersion Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <!--Health Checks-->
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="$(EFCoreVersion)" />
     <!--Helper libs-->
@@ -99,7 +99,7 @@
     <PackageVersion Include="NetEscapades.AspNetCore.SecurityHeaders" Version="0.18.0" />
     <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <!--Code Analysis-->
-    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.435" />
     <!--GRPC-->
     <PackageVersion Include="Grpc.AspNetCore" Version="2.46.0" />
@@ -108,13 +108,13 @@
     <PackageVersion Include="Grpc.Tools" Version="2.47.0" />
     <!--Testing-->
     <PackageVersion Include="coverlet.msbuild" Version="3.1.2" />
-    <PackageVersion Include="Moq" Version="4.18.1" />
+    <PackageVersion Include="Moq" Version="4.20.70" />
     <PackageVersion Include="NUnit" Version="3.13.3" />
     <PackageVersion Include="NUnit3TestAdapter" Version="4.2.1" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
     <PackageVersion Include="FluentAssertions" Version="6.7.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(EFCoreVersion)" />
-    <PackageVersion Include="MockQueryable.Moq" Version="6.0.1" />
+    <PackageVersion Include="MockQueryable.Moq" Version="7.0.0" />
     <PackageVersion Include="Bogus" Version="34.0.2" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>

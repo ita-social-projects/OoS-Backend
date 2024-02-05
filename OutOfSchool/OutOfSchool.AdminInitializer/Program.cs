@@ -2,11 +2,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MySqlConnector;
+using MySql.Data.MySqlClient;
 using OutOfSchool.AdminInitializer;
 using OutOfSchool.AdminInitializer.Config;
-using OutOfSchool.Common;
-using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Extensions;
@@ -16,13 +14,6 @@ var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>
     {
         var config = context.Configuration;
-        // TODO: Move version check into an extension to reuse code across apps
-        var mySQLServerVersion = config["MySQLServerVersion"];
-        var serverVersion = new MySqlServerVersion(new Version(mySQLServerVersion));
-        if (serverVersion.Version.Major < Constants.MySQLServerMinimalMajorVersion)
-        {
-            throw new InvalidOperationException("MySQL Server version should be 8 or higher.");
-        }
 
         var connectionString = config.GetMySqlConnectionString<InitializerConnectionOptions>(
             "DefaultConnection",
@@ -33,14 +24,13 @@ var host = Host.CreateDefaultBuilder(args)
                 UserID = options.UserId,
                 Password = options.Password,
                 Database = options.Database,
-                GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
+                OldGuids = options.OldGuids,
             });
 
         services
             .AddDbContext<OutOfSchoolDbContext>(options => options
-                .UseMySql(
+                .UseMySQL(
                     connectionString,
-                    serverVersion,
                     optionsBuilder =>
                         optionsBuilder
                             .EnableRetryOnFailure(

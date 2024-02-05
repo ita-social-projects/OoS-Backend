@@ -184,14 +184,6 @@ public static class Startup
         services.Configure<ImageOptions<Teacher>>(configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
         services.Configure<ImageOptions<Provider>>(configuration.GetSection($"Images:{nameof(Provider)}:Specs"));
 
-        // TODO: Move version check into an extension to reuse code across apps
-        var mySQLServerVersion = configuration["MySQLServerVersion"];
-        var serverVersion = new MySqlServerVersion(new Version(mySQLServerVersion));
-        if (serverVersion.Version.Major < Constants.MySQLServerMinimalMajorVersion)
-        {
-            throw new Exception("MySQL Server version should be 8 or higher.");
-        }
-
         var connectionString = configuration.GetMySqlConnectionString<WebApiConnectionOptions>(
             "DefaultConnection",
             options => new MySqlConnectionStringBuilder
@@ -201,17 +193,20 @@ public static class Startup
                 UserID = options.UserId,
                 Password = options.Password,
                 Database = options.Database,
-                GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
+                OldGuids = options.OldGuids,
             });
 
-        services.AddDbContext<OutOfSchoolDbContext>(builder =>
-                builder.UseLazyLoadingProxies().UseMySql(connectionString, serverVersion, mySqlOptions =>
-                {
-                    mySqlOptions
-                        .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
-                        .EnableStringComparisonTranslations();
-                }))
-            .AddCustomDataProtection("WebApi");
+        services
+            .AddDbContext<OutOfSchoolDbContext>(options => options
+                .UseLazyLoadingProxies()
+                .UseMySQL(
+                    connectionString,
+                    mySqlOptions =>
+                        mySqlOptions
+                            .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
+                            //.EnableStringComparisonTranslations()
+                    ))
+                .AddCustomDataProtection("WebApi");
 
         services.AddAutoMapper(typeof(CommonProfile), typeof(MappingProfile), typeof(ElasticProfile));
 

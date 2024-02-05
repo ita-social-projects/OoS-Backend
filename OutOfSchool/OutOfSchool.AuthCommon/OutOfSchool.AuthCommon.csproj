@@ -5,6 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+        <TargetFramework>net8.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,7 +19,7 @@
         <PackageReference Include="IdentityModel" />
         <PackageReference Include="Grpc.AspNetCore" />
         <PackageReference Include="Newtonsoft.Json" />
-        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
+        <PackageReference Include="MySql.EntityFrameworkCore" />
         <PackageReference Include="FluentValidation.AspNetCore" />
     </ItemGroup>
 

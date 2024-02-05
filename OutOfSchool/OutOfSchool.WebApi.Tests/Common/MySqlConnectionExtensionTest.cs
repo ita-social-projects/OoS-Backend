@@ -3,9 +3,8 @@ using System.Data.Common;
 using System.IO;
 using System.Text;
 using Microsoft.Extensions.Configuration;
-using MySqlConnector;
+using MySql.Data.MySqlClient;
 using NUnit.Framework;
-using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Config.Quartz;
@@ -19,7 +18,7 @@ public class MySqlConnectionExtensionTest
         ""Test"": ""server=localhost;user=root;password=rootPassword;database=out_of_school""}}";
 
     private readonly string connectionString = @"{""ConnectionStrings"": {
-        ""Test"": ""server=localhost;user=root;password=rootPassword;database=out_of_school;guidformat=binary16""}}";
+        ""Test"": ""server=localhost;user=root;password=rootPassword;database=out_of_school;oldguids=true""}}";
 
     private readonly string overrides = @"{""ConnectionStringsOverride"": {
         ""Test"": {
@@ -29,7 +28,7 @@ public class MySqlConnectionExtensionTest
             ""Database"": ""test"",
             ""UserId"": ""root"",
             ""Password"": ""rootPassword"",
-            ""GuidFormat"": ""Binary16""
+            ""OldGuids"": true
         }
         }}";
 
@@ -52,11 +51,11 @@ public class MySqlConnectionExtensionTest
             ""Database"": ""test"",
             ""UserId"": ""root"",
             ""Password"": ""rootPassword"",
-            ""GuidFormat"": ""Binary16""
+            ""OldGuids"": true
         }
         },
         ""ConnectionStrings"": {
-        ""Test"": ""server=localhost;user=root;password=rootPassword;database=out_of_school;guidformat=binary16""}}";
+        ""Test"": ""server=localhost;user=root;password=rootPassword;database=out_of_school;oldguids=true""}}";
 
     [Test]
     public void IfNoOverrides_UseConnectionString()
@@ -111,7 +110,7 @@ public class MySqlConnectionExtensionTest
                 UserID = options.UserId,
                 Password = options.Password,
                 Database = options.Database,
-                GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
+                OldGuids = true,
             });
         var builder = new DbConnectionStringBuilder()
         {
@@ -139,11 +138,10 @@ public class MySqlConnectionExtensionTest
                     UserID = options.UserId,
                     Password = options.Password,
                     Database = options.Database,
-                    GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
                 }));
         Assert.AreEqual(
             ex?.Message,
-            "The connection string should have a key: 'guidformat' and a value: 'binary16'");
+            "The connection string should have a key: 'oldguids' and a value: 'true'");
     }
 
     [Test]
@@ -169,7 +167,7 @@ public class MySqlConnectionExtensionTest
             configuration.GetMySqlConnectionString<WebApiConnectionOptions>("Test"));
         Assert.AreEqual(
             ex?.Message,
-            "The connection string should have a key: 'guidformat' and a value: 'binary16'");
+            "The connection string should have a key: 'oldguids' and a value: 'true'");
     }
 
     [Test]
@@ -182,7 +180,7 @@ public class MySqlConnectionExtensionTest
         var connection = configuration.GetMySqlConnectionString<QuartzConnectionOptions>("Test");
 
         // Assert
-        Assert.False(connection.Contains("guidformat"));
+        Assert.False(connection.Contains("oldguids"));
     }
 
     [Test]
@@ -195,7 +193,7 @@ public class MySqlConnectionExtensionTest
         var connection = configuration.GetMySqlConnectionString<QuartzConnectionOptions>("Test");
 
         // Assert
-        Assert.False(connection.Contains("guidformat"));
+        Assert.False(connection.Contains("oldguids"));
     }
 
     private IConfiguration Setup(string json)

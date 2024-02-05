@@ -126,11 +126,11 @@ public class AreaAdminController : Controller
     [HttpPost]
     public async Task<ActionResult> Create(AreaAdminBaseDto areaAdminBase)
     {
-        logger.LogDebug("{User(id): {UserId}", currentUserId);
+        logger.LogDebug($"User(id): {currentUserId}");
 
         if (!ModelState.IsValid)
         {
-            logger.LogError("Input data was not valid for User(id): {UserId}", currentUserId);
+            logger.LogError($"Input data was not valid for User(id): {currentUserId}");
 
             return StatusCode(StatusCodes.Status422UnprocessableEntity);
         }

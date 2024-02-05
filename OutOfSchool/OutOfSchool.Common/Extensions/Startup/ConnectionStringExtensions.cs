@@ -44,15 +44,15 @@ public static class ConnectionStringExtensions
 
         if (typeof(IMySqlGuidConnectionOptions).IsAssignableFrom(typeof(TOptions)))
         {
-            if (!connectionStringBuilder.ContainsKey("guidformat") || !string.Equals(connectionStringBuilder["guidformat"].ToString(), "binary16", StringComparison.OrdinalIgnoreCase))
+            if (!connectionStringBuilder.ContainsKey("oldguids") || !string.Equals(connectionStringBuilder["oldguids"].ToString(), "true", StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException("The connection string should have a key: 'guidformat' and a value: 'binary16'");
+                throw new ArgumentException("The connection string should have a key: 'oldguids' and a value: 'true'");
             }
         }
         else
         {
             // ensure guidformat is not set for Quartz
-            connectionStringBuilder.Remove("guidformat");
+            connectionStringBuilder.Remove("oldguids");
         }
 
         return connectionStringBuilder.ConnectionString;

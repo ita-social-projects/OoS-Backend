@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+using MySql.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
@@ -23,7 +23,7 @@ public partial class AddKeysToEntities : Migration
             type: "int",
             nullable: false,
             defaultValue: 0)
-            .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn);
+            .Annotation("MySql:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn);
 
         migrationBuilder.AddPrimaryKey(
             name: "PK_StatisticReportsCSV",

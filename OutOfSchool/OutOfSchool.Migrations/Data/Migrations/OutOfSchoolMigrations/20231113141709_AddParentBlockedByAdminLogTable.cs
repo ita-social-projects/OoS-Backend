@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+using MySql.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
@@ -14,7 +14,7 @@ public partial class AddParentBlockedByAdminLogTable : Migration
             columns: table => new
             {
                 Id = table.Column<long>(type: "bigint", nullable: false)
-                    .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    .Annotation("MySql:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                 ParentId = table.Column<Guid>(type: "binary(16)", nullable: false),
                 UserId = table.Column<string>(type: "varchar(255)", nullable: false)
                     .Annotation("MySql:CharSet", "utf8mb4"),

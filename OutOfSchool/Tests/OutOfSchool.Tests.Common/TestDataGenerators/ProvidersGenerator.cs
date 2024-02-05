@@ -29,8 +29,6 @@ public static class ProvidersGenerator
         .RuleFor(x => x.Status, f => f.Random.ArrayElement((ProviderStatus[])Enum.GetValues(typeof(ProviderStatus))))
         .RuleFor(x => x.License, f => f.Random.AlphaNumeric(15))
         .RuleFor(x => x.UserId, f => f.Random.Guid().ToString())
-        .RuleFor(x => x.LegalAddress, _ => AddressGenerator.Generate())
-        .RuleFor(x => x.ActualAddress, _ => AddressGenerator.Generate())
         .RuleFor(x => x.InstitutionType, f => f.PickRandom<InstitutionType>())
         .RuleFor(x => x.IsBlocked, _ => false)
         .RuleFor(x => x.UpdatedAt, _ => DateTime.Now);
@@ -39,13 +37,24 @@ public static class ProvidersGenerator
     /// Creates new instance of the <see cref="Provider"/> class with random data.
     /// </summary>
     /// <returns><see cref="Provider"/> object.</returns>
-    public static Provider Generate() => faker.Generate();
+    public static Provider Generate() => faker.Generate().WithAddress();
 
     /// <summary>
     /// Generates a list of the <see cref="Provider"/> objects.
     /// </summary>
     /// <param name="count">count of instances to generate.</param>
-    public static List<Provider> Generate(int count) => faker.Generate(count);
+    public static List<Provider> Generate(int count) => faker.Generate(count).WithAddress();
+
+    public static Provider WithAddress(this Provider provider)
+    {
+        var address = AddressGenerator.Generate();
+        provider = TestDataHelper.ApplyOnItem(provider, (provider, address) => { provider.LegalAddress = address; provider.LegalAddressId = address.Id; }, address);
+        address = AddressGenerator.Generate();
+        return TestDataHelper.ApplyOnItem(provider, (provider, address) => { provider.ActualAddress = address; provider.ActualAddressId = address.Id; }, address);
+    }
+
+    public static List<Provider> WithAddress(this List<Provider> workshops)
+        => workshops.Select(x => WithAddress(x)).ToList();
 
     public static Provider WithWorkshops(this Provider provider)
     {
