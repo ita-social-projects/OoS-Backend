@@ -24,4 +24,13 @@ public static class ApiErrorsTypes
             $"{nameof(UserDontHavePermissionToCreate)}",
             $"User(id): {userId} doesn't have permission to create provider admin");
     }
+
+    public static class Application
+    {
+        public static ApiError AcceptRejectedWorkshopIsFull() =>
+            new ApiError(
+            $"{nameof(Application)}",
+            $"{nameof(AcceptRejectedWorkshopIsFull)}",
+            $"The Workshop is full.");
+    }
 }
