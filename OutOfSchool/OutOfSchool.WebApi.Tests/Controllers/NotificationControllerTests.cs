@@ -31,7 +31,6 @@ public class NotificationControllerTests
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContext.Object },
         };
-
     }
 
     [Test]
