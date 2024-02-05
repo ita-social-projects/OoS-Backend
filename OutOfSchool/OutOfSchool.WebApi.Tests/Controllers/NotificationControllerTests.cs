@@ -37,7 +37,7 @@ public class NotificationControllerTests
     public async Task ReadAll_WhenCalledByUser_ShouldReturnOk()
     {
         // Act
-        var result = await controller.ReadAll();
+        var result = await controller.ReadAll().ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.InstanceOf<OkResult>());

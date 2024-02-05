@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Data;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -59,7 +59,7 @@ public class NotificationServiceTests
             .Returns(Task.CompletedTask);
 
         // Act
-        await notificationService.ReadAll(userId);
+        await notificationService.ReadAll(userId).ConfigureAwait(false);
 
         // Assert
         notificationRepositoryMock
@@ -78,9 +78,9 @@ public class NotificationServiceTests
 
         notificationRepositoryMock
             .Setup(n => n.SetReadDateTimeForAllUnreaded(It.IsAny<string>(), It.IsAny<DateTimeOffset>()))
-            .Throws<DBConcurrencyException>();
+            .Throws<DbUpdateConcurrencyException>();
 
         // Act & Assert
-        Assert.ThrowsAsync<DBConcurrencyException>(() => notificationService.ReadAll(userId));
+        Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => notificationService.ReadAll(userId));
     }
 }
