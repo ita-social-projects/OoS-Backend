@@ -21,6 +21,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
@@ -699,7 +700,11 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MinValue);
 
         // Act
-        var result = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
+        var response = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
+        Result<ApplicationDto> result = new Result<ApplicationDto>();
+        response.Match<Result<ApplicationDto>>(
+            actionResult => result = new Result<ApplicationDto>(),
+            succeed => result = succeed);
 
         // Assert
         AssertApplicationsDTOsAreEqual(expected, result.Value);
@@ -754,7 +759,11 @@ public class ApplicationServiceTests
         currentUserServiceMock.Setup(c => c.UserSubRole).Returns(string.Empty);
 
         // Act
-        var result = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
+        var response = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
+        Result<ApplicationDto> result = new Result<ApplicationDto>();
+        response.Match<Result<ApplicationDto>>(
+            actionResult => result = new Result<ApplicationDto>(),
+            succeed => result = succeed);
 
         // Assert
         AssertApplicationsDTOsAreEqual(expected, result.Value);
@@ -771,8 +780,15 @@ public class ApplicationServiceTests
             Status = ApplicationStatus.Pending,
         };
 
-        // Act and Assert
-        Assert.IsFalse((await service.Update(application, Guid.NewGuid())).Succeeded);
+        // Act
+        var response = await service.Update(application, Guid.NewGuid());
+        Result<ApplicationDto> result = new Result<ApplicationDto>();
+        response.Match<Result<ApplicationDto>>(
+            actionResult => result = new Result<ApplicationDto>(),
+            succeed => result = succeed);
+
+        // Assert
+        Assert.IsFalse(result.Succeeded);
     }
 
     [Test]
@@ -794,7 +810,7 @@ public class ApplicationServiceTests
             .ReturnsAsync(1);
         workshopRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
         mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto()
-            {Id = id, Status = ApplicationStatus.Approved});
+        { Id = id, Status = ApplicationStatus.Approved });
 
         var update = new ApplicationUpdate
         {
@@ -829,8 +845,15 @@ public class ApplicationServiceTests
 
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
 
-        // Act and Assert
-        Assert.False((await service.Update(update, Guid.NewGuid())).Succeeded);
+        // Act
+        var response = await service.Update(update, Guid.NewGuid());
+        Result<ApplicationDto> result = new Result<ApplicationDto>();
+        response.Match<Result<ApplicationDto>>(
+            actionResult => result = new Result<ApplicationDto>(),
+            succeed => result = succeed);
+
+        // Assert
+        Assert.IsFalse(result.Succeeded);
     }
 
     [Test]
@@ -852,7 +875,7 @@ public class ApplicationServiceTests
             .ReturnsAsync(1);
         workshopRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
         mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto()
-            {Id = id, Status = ApplicationStatus.Approved});
+        { Id = id, Status = ApplicationStatus.Approved });
 
         var update = new ApplicationUpdate
         {
@@ -887,8 +910,15 @@ public class ApplicationServiceTests
 
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MinValue);
 
+        // Act
+        var response = await service.Update(update, Guid.NewGuid());
+        Result<ApplicationDto> result = new Result<ApplicationDto>();
+        response.Match<Result<ApplicationDto>>(
+            actionResult => result = new Result<ApplicationDto>(),
+            succeed => result = succeed);
+
         // Act and Assert
-        Assert.True((await service.Update(update, Guid.NewGuid())).Succeeded);
+        Assert.True(result.Succeeded);
     }
 
     [Test]

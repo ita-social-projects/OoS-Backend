@@ -393,12 +393,12 @@ public class ApplicationController : ControllerBase
             var result =
                 await applicationService.Update(applicationDto, workshop.ProviderId).ConfigureAwait(false);
 
-            if (!result.Succeeded)
+            return result.Match<ActionResult>(
+            error => StatusCode((int)error.HttpStatusCode, new { error.Message, error.ApiErrorResponse }),
+            result =>
             {
-                return BadRequest(result.OperationResult.Errors.ElementAt(0).Description);
-            }
-
-            return Ok(result.Value);
+                return Ok(result.Value);
+            });
         }
         catch (ArgumentException ex)
         {

@@ -32,5 +32,11 @@ public static class ApiErrorsTypes
             $"{nameof(Application)}",
             $"{nameof(AcceptRejectedWorkshopIsFull)}",
             $"The Workshop is full.");
+
+        public static ApiError AcceptRejectedAlreadyApproved() =>
+            new ApiError(
+            $"{nameof(Application)}",
+            $"{nameof(AcceptRejectedAlreadyApproved)}",
+            $"There is already approved workshop.");
     }
 }

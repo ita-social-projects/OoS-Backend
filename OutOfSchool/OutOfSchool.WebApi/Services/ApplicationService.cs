@@ -4,6 +4,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Responses;
 using OutOfSchool.EmailSender;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.RazorTemplatesData.Services;
@@ -453,12 +454,11 @@ public class ApplicationService : IApplicationService, INotificationReciever
         return mapper.Map<ApplicationDto>(application);
     }
 
-    public Task<Result<ApplicationDto>> Update(ApplicationUpdate applicationDto, Guid providerId)
+    public Task<Either<ErrorResponse, Result<ApplicationDto>>> Update(ApplicationUpdate applicationDto, Guid providerId)
     {
         logger.LogInformation("Updating Application with Id = {Id} started", applicationDto?.Id);
 
         ArgumentNullException.ThrowIfNull(applicationDto, nameof(applicationDto));
-
         return ExecuteUpdateAsync(applicationDto, providerId);
     }
 
@@ -906,8 +906,9 @@ public class ApplicationService : IApplicationService, INotificationReciever
         };
     }
 
-    private async Task<Result<ApplicationDto>> ExecuteUpdateAsync(ApplicationUpdate applicationDto, Guid providerId)
+    private async Task<Either<ErrorResponse, Result<ApplicationDto>>> ExecuteUpdateAsync(ApplicationUpdate applicationDto, Guid providerId)
     {
+        ApiErrorResponse badRequestApiErrorResponse = new ApiErrorResponse();
         await currentUserService.UserHasRights(
             new ParentRights(applicationDto.ParentId),
             new ProviderRights(providerId),
@@ -943,21 +944,27 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
                     if (amountOfApproved >= availableSeats)
                     {
-                        return Result<ApplicationDto>.Failed(new OperationError
-                        {
-                            Code = "400",
-                            Description = "The Workshop is full.",
-                        });
+                        //return Result<ApplicationDto>.Failed(new OperationError
+                        //{
+                        //    Code = "400",
+                        //    Description = "The Workshop is full.",
+                        //});
+                        badRequestApiErrorResponse.AddApiError(
+                            ApiErrorsTypes.Application.AcceptRejectedWorkshopIsFull());
+                        return ErrorResponse.BadRequest(badRequestApiErrorResponse);
                     }
                 }
 
                 if (await GetApprovedWorkshopAndChild(currentApplication) >= 1)
                 {
-                    return Result<ApplicationDto>.Failed(new OperationError
-                    {
-                        Code = "400",
-                        Description = "There is already approved workshop.",
-                    });
+                    //return Result<ApplicationDto>.Failed(new OperationError
+                    //{
+                    //    Code = "400",
+                    //    Description = "There is already approved workshop.",
+                    //});
+                    badRequestApiErrorResponse.AddApiError(
+                            ApiErrorsTypes.Application.AcceptRejectedAlreadyApproved());
+                    return ErrorResponse.BadRequest(badRequestApiErrorResponse);
                 }
             }
 
