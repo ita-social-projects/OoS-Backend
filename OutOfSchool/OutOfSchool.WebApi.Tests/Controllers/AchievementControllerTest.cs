@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -29,6 +30,20 @@ internal class AchievementControllerTest
         workshopService = new Mock<IWorkshopService>();
 
         controller = new AchievementController(achievementService.Object, providerService.Object, providerAdminService.Object, workshopService.Object);
+    }
+
+    [Test]
+    public async Task CreateAchievement_WhenWorkshopIdIsNotValid_ShouldReturnNotFound()
+    {
+        // Arrange
+        var dto = new AchievementCreateDTO();
+        workshopService.Setup(s => s.Exists(It.IsAny<Guid>())).ReturnsAsync(() => false);
+
+        // Act
+        var result = await controller.Create(dto).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<NotFoundObjectResult>(result);
     }
 
     [Test]

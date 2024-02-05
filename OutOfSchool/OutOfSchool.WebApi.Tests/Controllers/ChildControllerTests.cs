@@ -250,7 +250,7 @@ public class ChildControllerTests
     {
         // Arrange
         var filter = new OffsetFilter();
-        workshopService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(() => null);
+        workshopService.Setup(s => s.Exists(It.IsAny<Guid>())).ReturnsAsync(() => false);
 
         // Act
         var result = await controller.GetApprovedByWorkshopId(Guid.NewGuid(), filter).ConfigureAwait(false);
