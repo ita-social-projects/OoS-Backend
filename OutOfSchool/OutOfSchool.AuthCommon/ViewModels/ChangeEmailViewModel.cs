@@ -10,6 +10,9 @@ public class ChangeEmailViewModel
 
     [DataType(DataType.EmailAddress)]
     [Required(ErrorMessage = "Email is required")]
+    [RegularExpression(
+        Constants.EmailRegexViewModel,
+        ErrorMessage = "Email is not valid")]
     public string Email { get; set; }
 
     public string ReturnUrl { get; set; }
