@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Achievement;
@@ -86,15 +86,8 @@ internal class AchievementControllerTest
         providerService.Setup(s => s.GetProviderIdForWorkshopById(It.IsAny<Guid>())).ReturnsAsync(Guid.NewGuid());
         providerService.Setup(s => s.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
 
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.Parent).ToLower()),
-                new Claim("subrole", nameof(Subrole.None).ToLower()),
-                new Claim("sub", Guid.NewGuid().ToString()),
-            }));
-
-        controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+        controller.ControllerContext.HttpContext = new DefaultHttpContext();
+        controller.ControllerContext.HttpContext.SetContextUser(Role.Parent, Subrole.None);
 
         // Act
         var result = await controller.Create(dto).ConfigureAwait(false) as ObjectResult;
@@ -113,15 +106,8 @@ internal class AchievementControllerTest
         providerService.Setup(s => s.GetProviderIdForWorkshopById(It.IsAny<Guid>())).ReturnsAsync(Guid.NewGuid());
         providerService.Setup(s => s.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
 
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.Provider).ToLower()),
-                new Claim("subrole", nameof(Subrole.ProviderAdmin).ToLower()),
-                new Claim("sub", Guid.NewGuid().ToString()),
-            }));
-
-        controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+        controller.ControllerContext.HttpContext = new DefaultHttpContext();
+        controller.ControllerContext.HttpContext.SetContextUser(Role.Provider, Subrole.ProviderAdmin);
 
         workshopService.Setup(s => s.GetWorkshopProviderOwnerIdAsync(It.IsAny<Guid>())).ReturnsAsync(Guid.NewGuid());
         providerAdminService.Setup(s => s.CheckUserIsRelatedProviderAdmin(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync(true);
@@ -146,15 +132,8 @@ internal class AchievementControllerTest
         providerService.Setup(s => s.GetProviderIdForWorkshopById(It.IsAny<Guid>())).ReturnsAsync(Guid.NewGuid());
         providerService.Setup(s => s.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
 
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.Provider).ToLower()),
-                new Claim("subrole", nameof(Subrole.ProviderDeputy).ToLower()),
-                new Claim("sub", Guid.NewGuid().ToString()),
-            }));
-
-        controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+        controller.ControllerContext.HttpContext = new DefaultHttpContext();
+        controller.ControllerContext.HttpContext.SetContextUser(Role.Provider, Subrole.ProviderDeputy);
 
         workshopService.Setup(s => s.GetWorkshopProviderOwnerIdAsync(It.IsAny<Guid>())).ReturnsAsync(providerId);
         providerAdminService.Setup(s => s.CheckUserIsRelatedProviderAdmin(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync(true);
