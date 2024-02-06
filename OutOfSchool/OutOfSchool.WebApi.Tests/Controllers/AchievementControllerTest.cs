@@ -105,7 +105,7 @@ internal class AchievementControllerTest
     }
 
     [Test]
-    public async Task CreateAchievement_UserProviderAdminHaveRights_ShouldReturnForbidden()
+    public async Task CreateAchievement_UserProviderAdminHaveRights_ShouldReturnCreated()
     {
         // Arrange
         var dto = new AchievementCreateDTO();
