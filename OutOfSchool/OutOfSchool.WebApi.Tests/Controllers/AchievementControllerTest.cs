@@ -104,7 +104,7 @@ internal class AchievementControllerTest
     }
 
     [Test]
-    public async Task CreateAchievement_UserHaveRights_ShouldReturnForbidden()
+    public async Task CreateAchievement_UserProviderAdminHaveRights_ShouldReturnForbidden()
     {
         // Arrange
         var dto = new AchievementCreateDTO();
@@ -117,6 +117,37 @@ internal class AchievementControllerTest
             {
                 new Claim(ClaimTypes.Role, nameof(Role.Provider).ToLower()),
                 new Claim("subrole", nameof(Subrole.ProviderAdmin).ToLower()),
+                new Claim("sub", Guid.NewGuid().ToString()),
+            }));
+
+        controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+
+        workshopService.Setup(s => s.GetWorkshopProviderOwnerIdAsync(It.IsAny<Guid>())).ReturnsAsync(Guid.NewGuid());
+        providerAdminService.Setup(s => s.CheckUserIsRelatedProviderAdmin(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync(true);
+        achievementService.Setup(s => s.Create(It.IsAny<AchievementCreateDTO>())).ReturnsAsync(new AchievementDto());
+
+        // Act
+        var result = await controller.Create(dto).ConfigureAwait(false) as CreatedAtActionResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(201, result.StatusCode);
+    }
+
+    [Test]
+    public async Task CreateAchievement_UserDeputyHaveRights_ShouldReturnForbidden()
+    {
+        // Arrange
+        var dto = new AchievementCreateDTO();
+        workshopService.Setup(s => s.Exists(It.IsAny<Guid>())).ReturnsAsync(true);
+        providerService.Setup(s => s.GetProviderIdForWorkshopById(It.IsAny<Guid>())).ReturnsAsync(Guid.NewGuid());
+        providerService.Setup(s => s.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
+
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.Provider).ToLower()),
+                new Claim("subrole", nameof(Subrole.ProviderDeputy).ToLower()),
                 new Claim("sub", Guid.NewGuid().ToString()),
             }));
 
