@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Achievement;
@@ -33,17 +36,102 @@ internal class AchievementControllerTest
     }
 
     [Test]
+    public async Task CreateAchievement_WhenAchievementDtoIsNull_ShouldReturnBadRequest()
+    {
+        // Act
+        var result = await controller.Create(null).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+    }
+
+    [Test]
     public async Task CreateAchievement_WhenWorkshopIdIsNotValid_ShouldReturnNotFound()
     {
         // Arrange
         var dto = new AchievementCreateDTO();
-        workshopService.Setup(s => s.Exists(It.IsAny<Guid>())).ReturnsAsync(() => false);
+        workshopService.Setup(s => s.Exists(It.IsAny<Guid>())).ReturnsAsync(false);
 
         // Act
         var result = await controller.Create(dto).ConfigureAwait(false);
 
         // Assert
         Assert.IsInstanceOf<NotFoundObjectResult>(result);
+    }
+
+    [Test]
+    public async Task CreateAchievement_WhenProviderIsBlocked_ShouldReturnForbidden()
+    {
+        // Arrange
+        var dto = new AchievementCreateDTO();
+        workshopService.Setup(s => s.Exists(It.IsAny<Guid>())).ReturnsAsync(true);
+        providerService.Setup(s => s.GetProviderIdForWorkshopById(It.IsAny<Guid>())).ReturnsAsync(Guid.NewGuid());
+        providerService.Setup(s => s.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(true);
+
+        // Act
+        var result = await controller.Create(dto).ConfigureAwait(false) as ObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(403, result.StatusCode);
+    }
+
+    [Test]
+    public async Task CreateAchievement_UserDontHaveRights_ShouldReturnForbidden()
+    {
+        // Arrange
+        var dto = new AchievementCreateDTO();
+        workshopService.Setup(s => s.Exists(It.IsAny<Guid>())).ReturnsAsync(true);
+        providerService.Setup(s => s.GetProviderIdForWorkshopById(It.IsAny<Guid>())).ReturnsAsync(Guid.NewGuid());
+        providerService.Setup(s => s.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
+
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.Parent).ToLower()),
+                new Claim("subrole", nameof(Subrole.None).ToLower()),
+                new Claim("sub", Guid.NewGuid().ToString()),
+            }));
+
+        controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+
+        // Act
+        var result = await controller.Create(dto).ConfigureAwait(false) as ObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(403, result.StatusCode);
+    }
+
+    [Test]
+    public async Task CreateAchievement_UserHaveRights_ShouldReturnForbidden()
+    {
+        // Arrange
+        var dto = new AchievementCreateDTO();
+        workshopService.Setup(s => s.Exists(It.IsAny<Guid>())).ReturnsAsync(true);
+        providerService.Setup(s => s.GetProviderIdForWorkshopById(It.IsAny<Guid>())).ReturnsAsync(Guid.NewGuid());
+        providerService.Setup(s => s.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
+
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.Provider).ToLower()),
+                new Claim("subrole", nameof(Subrole.ProviderAdmin).ToLower()),
+                new Claim("sub", Guid.NewGuid().ToString()),
+            }));
+
+        controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+
+        workshopService.Setup(s => s.GetWorkshopProviderOwnerIdAsync(It.IsAny<Guid>())).ReturnsAsync(Guid.NewGuid());
+        providerAdminService.Setup(s => s.CheckUserIsRelatedProviderAdmin(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync(true);
+        achievementService.Setup(s => s.Create(It.IsAny<AchievementCreateDTO>())).ReturnsAsync(new AchievementDto());
+
+        // Act
+        var result = await controller.Create(dto).ConfigureAwait(false) as CreatedAtActionResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(201, result.StatusCode);
     }
 
     [Test]

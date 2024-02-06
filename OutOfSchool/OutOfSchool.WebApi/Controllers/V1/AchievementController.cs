@@ -4,6 +4,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Achievement;
+using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
@@ -101,6 +102,11 @@ public class AchievementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Create(AchievementCreateDTO achievementDto)
     {
+        if (achievementDto == null)
+        {
+            return BadRequest("Achievement is null.");
+        }
+
         var isWorkshopExists = await workshopService.Exists(achievementDto.WorkshopId).ConfigureAwait(false);
 
         if (!isWorkshopExists)
@@ -243,24 +249,24 @@ public class AchievementController : ControllerBase
 
     private async Task<bool> IsUserProvidersOwnerOrAdmin(Guid workshopId)
     {
-        if (User.IsInRole(nameof(Role.Provider).ToLower()))
+        if (!User.IsInRole(nameof(Role.Provider).ToLower()))
         {
-            var userId = GettingUserProperties.GetUserId(User);
-            var providerId = await workshopService.GetWorkshopProviderOwnerIdAsync(workshopId).ConfigureAwait(false);
-            var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
-
-            if (userSubrole == Subrole.ProviderAdmin)
-            {
-                return await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId).ConfigureAwait(false);
-            }
-            else
-            {
-                bool isDeputy = userSubrole == Subrole.ProviderDeputy;
-                var provider = await providerService.GetByUserId(userId, isDeputy).ConfigureAwait(false);
-                return providerId == provider?.Id;
-            }
+            return false;
         }
 
-        return false;
+        var userId = GettingUserProperties.GetUserId(User);
+        var providerId = await workshopService.GetWorkshopProviderOwnerIdAsync(workshopId).ConfigureAwait(false);
+        var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
+
+        if (userSubrole == Subrole.ProviderAdmin)
+        {
+            return await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId).ConfigureAwait(false);
+        }
+        else
+        {
+            bool isDeputy = userSubrole == Subrole.ProviderDeputy;
+            var provider = await providerService.GetByUserId(userId, isDeputy).ConfigureAwait(false);
+            return providerId == provider?.Id;
+        }
     }
 }
