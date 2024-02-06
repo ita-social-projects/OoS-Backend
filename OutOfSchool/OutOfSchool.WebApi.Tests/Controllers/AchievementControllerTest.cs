@@ -10,6 +10,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Achievement;
+using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.ProviderServices;
 
@@ -138,6 +139,8 @@ internal class AchievementControllerTest
     public async Task CreateAchievement_UserDeputyHaveRights_ShouldReturnForbidden()
     {
         // Arrange
+        var providerId = Guid.NewGuid();
+
         var dto = new AchievementCreateDTO();
         workshopService.Setup(s => s.Exists(It.IsAny<Guid>())).ReturnsAsync(true);
         providerService.Setup(s => s.GetProviderIdForWorkshopById(It.IsAny<Guid>())).ReturnsAsync(Guid.NewGuid());
@@ -153,9 +156,10 @@ internal class AchievementControllerTest
 
         controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
-        workshopService.Setup(s => s.GetWorkshopProviderOwnerIdAsync(It.IsAny<Guid>())).ReturnsAsync(Guid.NewGuid());
+        workshopService.Setup(s => s.GetWorkshopProviderOwnerIdAsync(It.IsAny<Guid>())).ReturnsAsync(providerId);
         providerAdminService.Setup(s => s.CheckUserIsRelatedProviderAdmin(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync(true);
         achievementService.Setup(s => s.Create(It.IsAny<AchievementCreateDTO>())).ReturnsAsync(new AchievementDto());
+        providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(new ProviderDto() { Id = providerId });
 
         // Act
         var result = await controller.Create(dto).ConfigureAwait(false) as CreatedAtActionResult;
