@@ -154,8 +154,11 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
 
         var sortExpression = new Dictionary<Expression<Func<InstitutionAdmin, object>>, SortDirection>
         {
+            { x => x.User.IsBlocked, SortDirection.Ascending },
+            { x => x.User.LastLogin == DateTimeOffset.MinValue, SortDirection.Descending },
             { x => x.User.LastName, SortDirection.Ascending },
         };
+
         var institutionAdmins = await institutionAdminRepository
             .Get(
                 skip: filter.From,
@@ -171,8 +174,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             "All {Count} records were successfully received from the Parent table",
             institutionAdmins.Count);
 
-        var ministryAdminsDto = institutionAdmins.Select(admin => mapper.Map<MinistryAdminDto>(admin))
-                                                 .OrderBy(admin => admin.AccountStatus).ToList();
+        var ministryAdminsDto = institutionAdmins.Select(admin => mapper.Map<MinistryAdminDto>(admin)).ToList();
 
         var result = new SearchResult<MinistryAdminDto>()
         {

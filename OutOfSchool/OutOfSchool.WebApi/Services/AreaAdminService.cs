@@ -191,6 +191,8 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
 
         var sortExpression = new Dictionary<Expression<Func<AreaAdmin, object>>, SortDirection>
         {
+            { x => x.User.IsBlocked, SortDirection.Ascending },
+            { x => x.User.LastLogin == DateTimeOffset.MinValue, SortDirection.Descending },
             { x => x.User.LastName, SortDirection.Ascending },
         };
 
