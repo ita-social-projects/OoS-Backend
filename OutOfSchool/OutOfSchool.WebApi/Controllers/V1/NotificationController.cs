@@ -90,6 +90,26 @@ public class NotificationController : ControllerBase
     }
 
     /// <summary>
+    /// Update ReadDateTime field in all unreaded notifications.
+    /// </summary>
+    /// <returns>Status Code.</returns>
+    /// <response code="200">Notification was successfully updated.</response>
+    /// <response code="400">Id was wrong.</response>
+    /// <response code="401">If the user is not authorized.</response>
+    /// <response code="500">If any server error occures.</response>
+    [Authorize]
+    [HttpPut]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> ReadAll()
+    {
+        var userId = GettingUserProperties.GetUserId(User);
+        await notificationService.ReadAll(userId).ConfigureAwait(false);
+        return Ok();
+    }
+
+    /// <summary>
     /// Update ReadDateTime field in all notifications with specified notificationType.
     /// </summary>
     /// <param name="notificationType">NotificationType.</param>
