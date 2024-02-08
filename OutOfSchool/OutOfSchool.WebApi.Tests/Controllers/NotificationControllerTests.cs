@@ -14,20 +14,16 @@ namespace OutOfSchool.WebApi.Tests.Controllers;
 public class NotificationControllerTests
 {
     private NotificationController controller;
-    private Mock<INotificationService> serviceMock;
-    private Mock<HttpContext> httpContext;
-    private string userId;
 
     [SetUp]
     public void SetUp()
     {
-        serviceMock = new Mock<INotificationService>();
-        userId = Guid.NewGuid().ToString();
-        httpContext = new Mock<HttpContext>();
+        var userId = Guid.NewGuid().ToString();
+        var httpContext = new Mock<HttpContext>();
         httpContext.Setup(c => c.User.FindFirst("sub"))
             .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
 
-        controller = new NotificationController(serviceMock.Object)
+        controller = new NotificationController(new Mock<INotificationService>().Object)
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContext.Object },
         };
