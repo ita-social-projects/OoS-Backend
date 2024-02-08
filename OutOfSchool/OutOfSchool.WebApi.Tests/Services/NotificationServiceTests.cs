@@ -66,19 +66,14 @@ public class NotificationServiceTests
     {
         // Arrange
         notificationRepositoryMock
-            .Setup(n => n.SetReadDateTimeForAllUnreaded(It.IsAny<string>(), It.IsAny<DateTimeOffset>()))
+            .Setup(n => n.SetReadDateTimeForAllUnreaded(userId, It.IsAny<DateTimeOffset>()))
             .Returns(Task.CompletedTask);
 
         // Act
         await notificationService.ReadAll(userId).ConfigureAwait(false);
 
         // Assert
-        notificationRepositoryMock
-            .Verify(
-                x => x.SetReadDateTimeForAllUnreaded(
-                userId,
-                It.IsAny<DateTimeOffset>()),
-                Times.Once());
+        notificationRepositoryMock.VerifyAll();
     }
 
     [Test]
