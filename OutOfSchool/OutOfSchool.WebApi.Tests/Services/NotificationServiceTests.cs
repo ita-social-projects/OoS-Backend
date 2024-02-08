@@ -159,8 +159,8 @@ public class NotificationServiceTests
                 It.IsAny<string>()))
             .Returns(Task.FromResult<IEnumerable<Notification>>(notifications));
         var expected = notifications
-            .Select(n => mapper.Map<NotificationDto>(n))
             .Where(n => n.Type == notificationType)
+            .Select(n => mapper.Map<NotificationDto>(n))
             .OrderByDescending(n => n.CreatedDateTime)
             .ToList();
 
