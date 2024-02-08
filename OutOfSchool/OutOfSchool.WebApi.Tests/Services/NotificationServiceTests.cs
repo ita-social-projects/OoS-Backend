@@ -139,14 +139,11 @@ public class NotificationServiceTests
             expectedGroupedByType.Select(x => x.Amount),
             result.NotificationsGroupedByType.Select(x => x.Amount));
         Assert.AreEqual(
-            expectedGroupedByType.Select(x => x.GroupedByAdditionalData).Count(),
-            result.NotificationsGroupedByType.Select(x => x.GroupedByAdditionalData).Count());
-        for (int i = 0; i < expectedGroupedByType.Count; i++)
-        {
-            TestHelper.AssertTwoCollectionsEqualByValues(
-                expectedGroupedByType[i].GroupedByAdditionalData,
-                result.NotificationsGroupedByType.ElementAt(i).GroupedByAdditionalData);
-        }
+            expectedGroupedByType.Count(),
+            result.NotificationsGroupedByType.Count());
+        TestHelper.AssertTwoCollectionsEqualByValues(
+            expectedGroupedByType.SelectMany(_ => _.GroupedByAdditionalData),
+            result.NotificationsGroupedByType.SelectMany(_ => _.GroupedByAdditionalData));
     }
     #endregion
 
