@@ -29,10 +29,7 @@ public class NotificationServiceTests
 {
     private INotificationService notificationService;
     private Mock<INotificationRepository> notificationRepositoryMock;
-    private Mock<ILogger<NotificationService>> loggerMock;
-    private Mock<IStringLocalizer<SharedResource>> localizerMock;
     private IMapper mapper;
-    private Mock<IHubContext<NotificationHub>> notificationHubMock;
     private Mock<IOptions<NotificationsConfig>> notificationsConfigMock;
 
     private string userId;
@@ -42,18 +39,15 @@ public class NotificationServiceTests
     public void SetUp()
     {
         notificationRepositoryMock = new Mock<INotificationRepository>();
-        loggerMock = new Mock<ILogger<NotificationService>>();
-        localizerMock = new Mock<IStringLocalizer<SharedResource>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
-        notificationHubMock = new Mock<IHubContext<NotificationHub>>();
         notificationsConfigMock = new Mock<IOptions<NotificationsConfig>>();
 
         notificationService = new NotificationService(
             notificationRepositoryMock.Object,
-            loggerMock.Object,
-            localizerMock.Object,
+            new Mock<ILogger<NotificationService>>().Object,
+            new Mock<IStringLocalizer<SharedResource>>().Object,
             mapper,
-            notificationHubMock.Object,
+            new Mock<IHubContext<NotificationHub>>().Object,
             notificationsConfigMock.Object);
 
         userId = Guid.NewGuid().ToString();
