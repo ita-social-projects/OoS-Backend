@@ -35,6 +35,9 @@ public class NotificationServiceTests
     private Mock<IHubContext<NotificationHub>> notificationHubMock;
     private Mock<IOptions<NotificationsConfig>> notificationsConfigMock;
 
+    private string userId;
+    private List<Notification> notifications;
+
     [SetUp]
     public void SetUp()
     {
@@ -52,14 +55,16 @@ public class NotificationServiceTests
             mapper,
             notificationHubMock.Object,
             notificationsConfigMock.Object);
+
+        userId = Guid.NewGuid().ToString();
+        notifications = CreateNotificationsForUser(userId);
     }
 
+    #region ReadAll
     [Test]
     public async Task ReadAll_WhenUserIdIsValid_ShouldSetReadDateTimeForAllUnreaded()
     {
         // Arrange
-        var userId = Guid.NewGuid().ToString();
-
         notificationRepositoryMock
             .Setup(n => n.SetReadDateTimeForAllUnreaded(It.IsAny<string>(), It.IsAny<DateTimeOffset>()))
             .Returns(Task.CompletedTask);
@@ -80,8 +85,6 @@ public class NotificationServiceTests
     public void ReadAll_WhenUserIsValidAndDbHasConcurrencyViolation_ShouldThrowDbUpdateConcurrencyException()
     {
         // Arrange
-        string userId = Guid.NewGuid().ToString();
-
         notificationRepositoryMock
             .Setup(n => n.SetReadDateTimeForAllUnreaded(It.IsAny<string>(), It.IsAny<DateTimeOffset>()))
             .Throws<DbUpdateConcurrencyException>();
@@ -89,14 +92,13 @@ public class NotificationServiceTests
         // Act & Assert
         Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => notificationService.ReadAll(userId));
     }
+    #endregion
 
+    #region GetAllUsersNotificationsGroupedAsync
     [Test]
-    public async Task GetAllUsersNotificationsGroupedAsync_WhenUserIdIsValid_ShouldReturnGroupedNotifications()
+    public async Task GetAllUsersNotificationsGroupedAsync_WithValidUserId_ShouldReturnGroupedNotifications()
     {
         // Arrange
-        var userId = Guid.NewGuid().ToString();
-        var notifications = CreateNotificationsForUser(userId);
-
         var notificationsConfig = new NotificationsConfig
         {
             Grouped = new List<string> { "Application", },
@@ -157,6 +159,59 @@ public class NotificationServiceTests
                 result.NotificationsGroupedByType.ElementAt(i).GroupedByAdditionalData);
         }
     }
+    #endregion
+
+    #region GetAllUsersNotificationsByFilterAsync
+    [Test]
+    public async Task GetAllUsersNotificationsByFilterAsync_WithValidUserIdAndNotificationType_ShouldReturnFilteredNotifications()
+    {
+        // Arrange
+        var notificationType = NotificationType.Parent;
+        notificationRepositoryMock
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Notification, bool>>>(),
+                It.IsAny<string>()))
+            .Returns(Task.FromResult<IEnumerable<Notification>>(notifications));
+        var expected = notifications
+            .Select(n => mapper.Map<NotificationDto>(n))
+            .Where(n => n.Type == notificationType)
+            .OrderByDescending(n => n.CreatedDateTime)
+            .ToList();
+
+        // Act
+        var result = await notificationService
+            .GetAllUsersNotificationsByFilterAsync(userId, notificationType)
+            .ConfigureAwait(false);
+
+        // Assert
+        notificationRepositoryMock.VerifyAll();
+        TestHelper.AssertTwoCollectionsEqualByValues(expected, result);
+    }
+
+    [Test]
+    public async Task GetAllUsersNotificationsByFilterAsync_WithValidUserIdAndNotificationTypeIsNull_ShouldReturnAllNotifications()
+    {
+        // Arrange
+        notificationRepositoryMock
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Notification, bool>>>(),
+                It.IsAny<string>()))
+            .Returns(Task.FromResult<IEnumerable<Notification>>(notifications));
+        var expected = notifications
+            .Select(n => mapper.Map<NotificationDto>(n))
+            .OrderByDescending(n => n.CreatedDateTime)
+            .ToList();
+
+        // Act
+        var result = await notificationService
+            .GetAllUsersNotificationsByFilterAsync(userId, null)
+            .ConfigureAwait(false);
+
+        // Assert
+        notificationRepositoryMock.VerifyAll();
+        TestHelper.AssertTwoCollectionsEqualByValues(expected, result);
+    }
+    #endregion
 
     private List<Notification> CreateNotificationsForUser(string userId)
     {
