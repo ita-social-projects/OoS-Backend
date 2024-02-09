@@ -198,6 +198,7 @@ public class ProviderService : IProviderService, INotificationReciever
         {
             { x => x.IsBlocked, SortDirection.Ascending },
             { x => x.Status, SortDirection.Ascending },
+            { x => x.UpdatedAt, SortDirection.Descending },
         };
 
         var providers = await providerRepository
