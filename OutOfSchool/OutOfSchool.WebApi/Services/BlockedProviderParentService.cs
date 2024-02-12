@@ -106,7 +106,10 @@ public class BlockedProviderParentService : IBlockedProviderParentService, INoti
             throw new ArgumentNullException(nameof(blockedProviderParentUnblockDto));
         }
 
-        var currentBlock = await GetBlock(blockedProviderParentUnblockDto.ParentId, blockedProviderParentUnblockDto.ProviderId).ConfigureAwait(false);
+        var currentBlock = (await GetBlockedProviderParentEntities(
+            blockedProviderParentUnblockDto.ParentId,
+            blockedProviderParentUnblockDto.ProviderId).ConfigureAwait(false))
+            .FirstOrDefault();
 
         if (currentBlock is null)
         {
@@ -124,7 +127,20 @@ public class BlockedProviderParentService : IBlockedProviderParentService, INoti
         currentBlock.DateTimeTo = DateTime.Now;
         currentBlock.UserIdUnblock = userId;
 
-        var entity = await blockedProviderParentRepository.UnBlock(mapper.Map<BlockedProviderParent>(currentBlock)).ConfigureAwait(false);
+        var entity = await blockedProviderParentRepository.UnBlock(currentBlock).ConfigureAwait(false);
+        var unblockedParentUserId = Guid.Parse(entity.Parent.UserId);
+        var additionalData = new Dictionary<string, string>()
+            {
+                { ProviderIdKey, entity.ProviderId.ToString() },
+                { ProviderFullTitleKey, entity.Provider.FullTitle },
+                { ProviderShortTitleKey, entity.Provider.ShortTitle },
+            };
+        await notificationService.Create(
+            NotificationType.Parent,
+            NotificationAction.ProviderUnblock,
+            unblockedParentUserId,
+            this,
+            additionalData).ConfigureAwait(false);
 
         return Result<BlockedProviderParentDto>.Success(mapper.Map<BlockedProviderParentDto>(entity));
     }
@@ -132,21 +148,13 @@ public class BlockedProviderParentService : IBlockedProviderParentService, INoti
     /// <inheritdoc/>
     public async Task<BlockedProviderParentDto> GetBlock(Guid parentId, Guid providerId)
     {
-        var currentBlock = await blockedProviderParentRepository.GetByFilter(
-            b => b.ParentId == parentId
-                 && b.ProviderId == providerId
-                 && b.DateTimeTo == null).ConfigureAwait(false);
-
+        var currentBlock = await GetBlockedProviderParentEntities(parentId, providerId).ConfigureAwait(false);
         return mapper.Map<BlockedProviderParentDto>(currentBlock.FirstOrDefault());
     }
 
     public async Task<bool> IsBlocked(Guid parentId, Guid providerId)
     {
-        var currentBlock = await blockedProviderParentRepository.GetByFilter(
-            b => b.ParentId == parentId
-                 && b.ProviderId == providerId
-                 && b.DateTimeTo == null).ConfigureAwait(false);
-
+        var currentBlock = await GetBlockedProviderParentEntities(parentId, providerId).ConfigureAwait(false);
         return currentBlock.Any();
     }
 
@@ -156,5 +164,14 @@ public class BlockedProviderParentService : IBlockedProviderParentService, INoti
         Guid objectId)
     {
         return Task.FromResult<IEnumerable<string>>(new List<string>() { objectId.ToString() });
+    }
+
+    private async Task<IEnumerable<BlockedProviderParent>> GetBlockedProviderParentEntities(Guid parentId, Guid providerId)
+    {
+        var currentBlock = await blockedProviderParentRepository.GetByFilter(
+            b => b.ParentId == parentId
+                 && b.ProviderId == providerId
+                 && b.DateTimeTo == null).ConfigureAwait(false);
+        return currentBlock;
     }
 }

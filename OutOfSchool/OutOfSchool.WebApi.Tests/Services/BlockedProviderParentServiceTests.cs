@@ -87,6 +87,7 @@ public class BlockedProviderParentServiceTests
             Id = Guid.NewGuid(),
             ParentId = unblockDto.ParentId,
             ProviderId = unblockDto.ProviderId,
+            Provider = provider,
         };
     }
 
@@ -173,6 +174,14 @@ public class BlockedProviderParentServiceTests
         // Arrange
         var parent = ParentGenerator.Generate();
         parent.Id = unblockDto.ParentId;
+        var unblockedParentUserId = Guid.Parse(parent.UserId);
+        var additionalData = new Dictionary<string, string>()
+        {
+            { ProviderIdKey, unblockEntity.ProviderId.ToString() },
+            { ProviderFullTitleKey, unblockEntity.Provider.FullTitle },
+            { ProviderShortTitleKey, unblockEntity.Provider.ShortTitle },
+        };
+
         var blockedParents = new List<BlockedProviderParent>
         {
             unblockEntity,
@@ -190,6 +199,16 @@ public class BlockedProviderParentServiceTests
         var result = await service.Unblock(unblockDto, userId).ConfigureAwait(false);
 
         // Assert
+        notificationServiceMock
+           .Verify(
+                x => x.Create(
+                NotificationType.Parent,
+                NotificationAction.ProviderUnblock,
+                unblockedParentUserId,
+                service,
+                additionalData,
+                null),
+                Times.Once);
         Assert.IsNotNull(result);
         Assert.IsTrue(result.Succeeded);
     }
