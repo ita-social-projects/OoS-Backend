@@ -242,6 +242,56 @@ public class BlockedProviderParentServiceTests
 
     #endregion
 
+    #region GetBlock
+    [Test]
+    public async Task GetBlock_WithParentIdAndProviderId_ShouldReturnDto()
+    {
+        // Arrange
+        var parentId = blockEntity.ParentId;
+        var providerId = blockEntity.ProviderId;
+        var entities = new List<BlockedProviderParent>()
+        {
+            blockEntity,
+        };
+        var expected = new BlockedProviderParentDto()
+        {
+            Id = blockEntity.Id,
+            ParentId = blockEntity.ParentId,
+            ProviderId = blockEntity.ProviderId,
+            Reason = blockEntity.Reason,
+            UserIdBlock = blockEntity.UserIdBlock,
+            DateTimeFrom = blockEntity.DateTimeFrom,
+        };
+        blockedProviderParentRepositoryMock
+            .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<BlockedProviderParent, bool>>>(), It.IsAny<string>()))
+            .ReturnsAsync(entities);
+
+        // Act
+        var result = await service.GetBlock(parentId, providerId).ConfigureAwait(false);
+
+        // Assert
+        Assert.NotNull(result);
+        TestHelper.AssertDtosAreEqual(expected, result);
+    }
+
+    [Test]
+    public async Task GetBlock_WithNoMatchingEntities_ShouldReturnNull()
+    {
+        // Arrange
+        var parentId = blockEntity.ParentId;
+        var providerId = blockEntity.ProviderId;
+        blockedProviderParentRepositoryMock
+            .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<BlockedProviderParent, bool>>>(), It.IsAny<string>()))
+            .ReturnsAsync(new List<BlockedProviderParent>());
+
+        // Act
+        var result = await service.GetBlock(parentId, providerId).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNull(result);
+    }
+    #endregion
+
     #region GetNotificationRecipientIds
     [Test]
     public async Task GetNotificationsRecipientIds_WhenObjectIdIsValid_ShouldReturnIEnumerableWithObjectId()
