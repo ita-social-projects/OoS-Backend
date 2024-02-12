@@ -1,11 +1,8 @@
-using Google.Apis.Discovery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Localization;
 using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
@@ -22,7 +19,6 @@ public class AdminController : Controller
 
     private readonly ILogger<AdminController> logger;
 
-    private readonly ICurrentUserService currentUserService;
     private readonly ISensitiveMinistryAdminService ministryAdminService;
     private readonly ISensitiveDirectionService directionService;
     private readonly ISensitiveProviderService providerService;
@@ -30,28 +26,29 @@ public class AdminController : Controller
 
 
     public AdminController(
-       ILogger<AdminController> logger,
-       ICurrentUserService currentUserService,
-       ISensitiveMinistryAdminService ministryAdminService,
-       ISensitiveApplicationService applicationService,
-       ISensitiveDirectionService directionService,
-       ISensitiveProviderService providerService,
-       IStringLocalizer<SharedResource> localizer)
+        ILogger<AdminController> logger,
+        ISensitiveMinistryAdminService ministryAdminService,
+        ISensitiveApplicationService applicationService,
+        ISensitiveDirectionService directionService,
+        ISensitiveProviderService providerService,
+        IStringLocalizer<SharedResource> localizer)
     {
         this.localizer = localizer;
         this.logger = logger;
         this.applicationService = applicationService;
         this.directionService = directionService;
         this.providerService = providerService;
-        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
-        this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
+        this.ministryAdminService =
+            ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
     }
 
+    private bool IsTechAdmin() => User.IsInRole(nameof(Role.TechAdmin).ToLower());
+
     /// <summary>
-     /// Get MinistryAdmins that match filter's parameters.
-     /// </summary>
-     /// <param name="filter">Entity that represents searching parameters.</param>
-     /// <returns><see cref="SearchResult{MinistryAdminDto}"/>, or no content.</returns>
+    /// Get MinistryAdmins that match filter's parameters.
+    /// </summary>
+    /// <param name="filter">Entity that represents searching parameters.</param>
+    /// <returns><see cref="SearchResult{MinistryAdminDto}"/>, or no content.</returns>
     [HasPermission(Permissions.MinistryAdminRead)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<MinistryAdminDto>))]
@@ -61,54 +58,24 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetByFilterMinistryAdmin([FromQuery] MinistryAdminFilter filter)
-     {
-         if (!User.IsInRole(nameof(Role.TechAdmin).ToLower()))
-         {
-             logger.LogError("You have no rights because you are not an admin");
-             return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin role.");
-         }
+    {
+        if (!IsTechAdmin())
+        {
+            logger.LogError("You have no rights because you are not an admin");
+            return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin role.");
+        }
 
-         var ministryAdmins = await ministryAdminService.GetByFilter(filter).ConfigureAwait(false);
+        var ministryAdmins = await ministryAdminService.GetByFilter(filter).ConfigureAwait(false);
 
-         if (ministryAdmins.TotalAmount < 1)
-         {
-             return NoContent();
-         }
+        if (ministryAdmins.TotalAmount < 1)
+        {
+            return NoContent();
+        }
 
-         return Ok(ministryAdmins);
-     }
+        return Ok(ministryAdmins);
+    }
 
-     /// <summary>
-     /// Get all Providers from the database.
-     /// </summary>
-     /// <param name="filter">Filter to get a part of all providers that were found.</param>
-     /// <returns>The result is a <see cref="SearchResult{ProviderDto}"/> that contains the count of all found providers and a list of providers that were received.</returns>
-    [HasPermission(Permissions.ProviderRead)]
-    [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByFilterProvider([FromQuery] ProviderFilter filter)
-     {
-         if (!User.IsInRole(nameof(Role.TechAdmin).ToLower()))
-         {
-             logger.LogError("You have no rights because you are not an admin");
-             return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin role.");
-         }
-
-         var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
-
-         if (providers.TotalAmount < 1)
-         {
-             return NoContent();
-         }
-
-         return Ok(providers);
-     }
-
-     /// <summary>
+    /// <summary>
     /// Get all applications from the database.
     /// </summary>
     /// <param name="filter">Application filter.</param>
@@ -123,7 +90,7 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> GetApplications([FromQuery] ApplicationFilter filter)
     {
-        if (!User.IsInRole(nameof(Role.TechAdmin).ToLower()))
+        if (!IsTechAdmin())
         {
             logger.LogError("You have no rights because you are not an admin");
             return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin role.");
@@ -157,7 +124,7 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> UpdateDirections(DirectionDto directionDto)
     {
-        if (!User.IsInRole(nameof(Role.TechAdmin).ToLower()))
+        if (!IsTechAdmin())
         {
             logger.LogError("You have no rights because you are not an admin");
             return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin role.");
@@ -190,7 +157,7 @@ public class AdminController : Controller
     [FeatureGate(nameof(Feature.ShowForProduction))]
     public async Task<ActionResult> DeleteDirectionById(long id)
     {
-        if (!User.IsInRole(nameof(Role.TechAdmin).ToLower()))
+        if (!IsTechAdmin())
         {
             logger.LogError("You have no rights because you are not an admin");
             return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin role.");
@@ -221,13 +188,19 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetProviderByFilter([FromQuery] ProviderFilter filter)
     {
-        if (!User.IsInRole(nameof(Role.TechAdmin).ToLower()))
+        if (!IsTechAdmin())
         {
             logger.LogError("You have no rights because you are not an admin");
             return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin role.");
         }
 
         var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
+
+        //TODO clarify frontend about if statement
+        if (providers.TotalAmount < 1)
+        {
+            return NoContent();
+        }
 
         return Ok(providers);
     }
@@ -246,7 +219,7 @@ public class AdminController : Controller
     [HttpPut]
     public async Task<ActionResult> BlockProvider([FromBody] ProviderBlockDto providerBlockDto)
     {
-        if (!User.IsInRole(nameof(Role.TechAdmin).ToLower()))
+        if (!IsTechAdmin())
         {
             logger.LogError("You have no rights because you are not an admin");
             return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin role.");

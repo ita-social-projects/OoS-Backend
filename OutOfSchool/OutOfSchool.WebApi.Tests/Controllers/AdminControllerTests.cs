@@ -9,7 +9,6 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -37,7 +36,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers;
 public class AdminControllerTests
 {
     private AdminController controller;
-    private Mock<ICurrentUserService> currentUserService;
     private Mock<ISensitiveMinistryAdminService> sensitiveMinistryAdminService;
     private Mock<ISensitiveDirectionService> sensitiveDirectionService;
     private Mock<ISensitiveProviderService> sensitiveProviderService;
@@ -51,7 +49,7 @@ public class AdminControllerTests
 
     private List<ApplicationDto> applications;
     private IEnumerable<ChildDto> children;
-    private IEnumerable<WorkshopCard> workshops;
+    private List<WorkshopCard> workshopCards;
     private ParentDTO parent;
     private ProviderDto provider;
     private WorkshopV2Dto workshopDto;
@@ -66,7 +64,6 @@ public class AdminControllerTests
     public void Setup()
     {
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
-        currentUserService = new Mock<ICurrentUserService>();
         sensitiveMinistryAdminService = new Mock<ISensitiveMinistryAdminService>();
         sensitiveDirectionService = new Mock<ISensitiveDirectionService>();
         sensitiveProviderService = new Mock<ISensitiveProviderService>();
@@ -84,7 +81,6 @@ public class AdminControllerTests
 
         controller = new AdminController(
             logger.Object,
-            currentUserService.Object,
             sensitiveMinistryAdminService.Object,
             sensitiveApplicationService.Object,
             sensitiveDirectionService.Object,
@@ -94,8 +90,10 @@ public class AdminControllerTests
             ControllerContext = new ControllerContext() { HttpContext = httpContext.Object },
         };
         providerId = Guid.NewGuid();
-        workshops = FakeWorkshopCards();
-        workshopDto = FakeWorkshop();
+
+        workshopCards = WorkshopCardGenerator.Generate(10);
+
+        workshopDto = WorkshopV2DtoGenerator.Generate();
         workshopDto.ProviderId = providerId;
         children = ChildDtoGenerator.Generate(2).WithSocial(new SocialGroupDto { Id = 1 });
         providers = ProvidersGenerator.Generate(10);
@@ -103,7 +101,8 @@ public class AdminControllerTests
         provider = ProviderDtoGenerator.Generate();
         provider.UserId = userId;
         provider.Id = providerId;
-        applications = ApplicationDTOsGenerator.Generate(2).WithWorkshopCard(workshops.First()).WithParent(parent);
+        applications = ApplicationDTOsGenerator.Generate(2).WithWorkshopCard(workshopCards.First()).WithParent(parent);
+
         fakeHttpContext = GetFakeHttpContext();
         controller.ControllerContext.HttpContext = fakeHttpContext;
     }
@@ -182,79 +181,6 @@ public class AdminControllerTests
         // Assert
         sensitiveMinistryAdminService.Verify(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>()), Times.Never);
         Assert.That(result, Is.Not.Null);
-        Assert.That(result, Is.InstanceOf<ObjectResult>());
-    }
-
-    [Test]
-    public async Task GetByFilterProvider_WhenCalled_ReturnsOkResultObject_WithExpectedCollectionDtos()
-    {
-        // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
-        var expected = new SearchResult<ProviderDto>
-        {
-            TotalAmount = 10,
-            Entities = providers.Select(x => mapper.Map<ProviderDto>(x)).ToList(),
-        };
-
-        sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
-            .ReturnsAsync(expected);
-
-
-        // Act
-        var result = await controller.GetByFilterProvider(new ProviderFilter()).ConfigureAwait(false);
-
-        // Assert
-        result.AssertResponseOkResultAndValidateValue(expected);
-    }
-
-    [Test]
-    public async Task GetByFilerProvider_WhenNoRecordsInDB_ReturnsNoContentResult()
-    {
-        // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
-        sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
-            .ReturnsAsync(new SearchResult<ProviderDto> { TotalAmount = 0, Entities = new List<ProviderDto>() });
-
-        // Act
-        var result = await controller.GetByFilterProvider(new ProviderFilter()).ConfigureAwait(false);
-
-        // Assert
-        Assert.IsInstanceOf<NoContentResult>(result);
-    }
-
-    [Test]
-    public async Task GetByFilterProvider_WhenCalled_ReturnsObjectResult()
-    {
-        // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.Parent).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
-        var expected = new SearchResult<ProviderDto>
-        {
-            TotalAmount = 10,
-            Entities = providers.Select(x => mapper.Map<ProviderDto>(x)).ToList(),
-        };
-
-        sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
-            .ReturnsAsync(expected);
-
-        // Act
-        var result = await controller.GetByFilterProvider(new ProviderFilter()).ConfigureAwait(false);
-
-        // Assert
         Assert.That(result, Is.InstanceOf<ObjectResult>());
     }
 
@@ -681,245 +607,6 @@ public class AdminControllerTests
         };
 
         return context;
-    }
-
-    private List<WorkshopCard> FakeWorkshopCards()
-    {
-        return FakeWorkshops().Select(w => new WorkshopCard
-        {
-            WorkshopId = w.Id,
-            ProviderTitle = w.ProviderTitle,
-            ProviderOwnership = w.ProviderOwnership,
-            Title = w.Title,
-            PayRate = (PayRateType)w.PayRate,
-            CoverImageId = w.CoverImageId,
-            MinAge = w.MinAge,
-            MaxAge = w.MaxAge,
-            Price = (decimal)w.Price,
-            DirectionIds = w.DirectionIds,
-            ProviderId = w.ProviderId,
-            Address = w.Address,
-            WithDisabilityOptions = w.WithDisabilityOptions,
-            Rating = w.Rating,
-            ProviderLicenseStatus = w.ProviderLicenseStatus,
-            InstitutionHierarchyId = w.InstitutionHierarchyId,
-            InstitutionId = w.InstitutionId,
-            Institution = w.Institution,
-            AvailableSeats = w.AvailableSeats ?? uint.MaxValue,
-            TakenSeats = w.TakenSeats,
-        }).ToList();
-    }
-
-    private WorkshopDescriptionItemDto FakeWorkshopDescriptionItem()
-    {
-        var id = Guid.NewGuid();
-        return new WorkshopDescriptionItemDto
-        {
-            Id = id,
-            SectionName = "test heading",
-            Description = $"test description text sentence for id: {id.ToString()}",
-        };
-    }
-
-    private WorkshopV2Dto FakeWorkshop()
-    {
-        return new WorkshopV2Dto()
-        {
-            Id = Guid.NewGuid(),
-            Title = "Title6",
-            Phone = "1111111111",
-            WorkshopDescriptionItems = new[]
-            {
-                FakeWorkshopDescriptionItem(),
-                FakeWorkshopDescriptionItem(),
-                FakeWorkshopDescriptionItem(),
-            },
-            Price = 6000,
-            WithDisabilityOptions = true,
-            ProviderTitle = "ProviderTitle",
-            DisabilityOptionsDesc = "Desc6",
-            Website = "website6",
-            Instagram = "insta6",
-            Facebook = "facebook6",
-            Email = "email6@gmail.com",
-            MaxAge = 10,
-            MinAge = 4,
-            CoverImageId = "image6",
-            ProviderId = Guid.NewGuid(),
-            InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-            AddressId = 55,
-            Address = new AddressDto
-            {
-                Id = 55,
-                CATOTTGId = 4970,
-                Street = "Street55",
-                BuildingNumber = "BuildingNumber55",
-                Latitude = 0,
-                Longitude = 0,
-            },
-            Teachers = new List<TeacherDTO>
-            {
-                new TeacherDTO
-                {
-                    Id = Guid.NewGuid(),
-                    FirstName = "Alex",
-                    LastName = "Brown",
-                    MiddleName = "SomeMiddleName",
-                    Description = "Description",
-                    CoverImageId = "Image",
-                    DateOfBirth = DateTime.Parse("2000-01-01"),
-                    WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
-                },
-                new TeacherDTO
-                {
-                    Id = Guid.NewGuid(),
-                    FirstName = "John",
-                    LastName = "Snow",
-                    MiddleName = "SomeMiddleName",
-                    Description = "Description",
-                    CoverImageId = "Image",
-                    DateOfBirth = DateTime.Parse("1990-01-01"),
-                    WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
-                },
-            },
-        };
-    }
-    private List<WorkshopV2Dto> FakeWorkshops()
-    {
-        return new List<WorkshopV2Dto>()
-        {
-            new WorkshopV2Dto()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Title1",
-                Phone = "1111111111",
-                WorkshopDescriptionItems = new[]
-                {
-                    FakeWorkshopDescriptionItem(),
-                    FakeWorkshopDescriptionItem(),
-                },
-                Price = 1000,
-                WithDisabilityOptions = true,
-                ProviderId = Guid.NewGuid(),
-                ProviderTitle = "ProviderTitle",
-                DisabilityOptionsDesc = "Desc1",
-                Website = "website1",
-                Instagram = "insta1",
-                Facebook = "facebook1",
-                Email = "email1@gmail.com",
-                MaxAge = 10,
-                MinAge = 4,
-                CoverImageId = "image1",
-                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                Address = new AddressDto
-                {
-                    CATOTTGId = 4970,
-                },
-            },
-            new WorkshopV2Dto()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Title2",
-                Phone = "1111111111",
-                WorkshopDescriptionItems = new[]
-                {
-                    FakeWorkshopDescriptionItem(),
-                },
-                Price = 2000,
-                WithDisabilityOptions = true,
-                ProviderId = Guid.NewGuid(),
-                ProviderTitle = "ProviderTitle",
-                DisabilityOptionsDesc = "Desc2",
-                Website = "website2",
-                Instagram = "insta2",
-                Facebook = "facebook2",
-                Email = "email2@gmail.com",
-                MaxAge = 10,
-                MinAge = 4,
-                CoverImageId = "image2",
-                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                Address = new AddressDto
-                {
-                    CATOTTGId = 4970,
-                },
-            },
-            new WorkshopV2Dto()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Title3",
-                Phone = "1111111111",
-                WorkshopDescriptionItems = new[]
-                {
-                    FakeWorkshopDescriptionItem(),
-                    FakeWorkshopDescriptionItem(),
-                    FakeWorkshopDescriptionItem(),
-                },
-                Price = 3000,
-                WithDisabilityOptions = true,
-                ProviderId = Guid.NewGuid(),
-                ProviderTitle = "ProviderTitleNew",
-                DisabilityOptionsDesc = "Desc3",
-                Website = "website3",
-                Instagram = "insta3",
-                Facebook = "facebook3",
-                Email = "email3@gmail.com",
-                MaxAge = 10,
-                MinAge = 4,
-                CoverImageId = "image3",
-                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-            },
-            new WorkshopV2Dto()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Title4",
-                Phone = "1111111111",
-                WorkshopDescriptionItems = new[]
-                {
-                    FakeWorkshopDescriptionItem(),
-                    FakeWorkshopDescriptionItem(),
-                },
-                Price = 4000,
-                WithDisabilityOptions = true,
-                ProviderId = Guid.NewGuid(),
-                ProviderTitle = "ProviderTitleNew",
-                DisabilityOptionsDesc = "Desc4",
-                Website = "website4",
-                Instagram = "insta4",
-                Facebook = "facebook4",
-                Email = "email4@gmail.com",
-                MaxAge = 10,
-                MinAge = 4,
-                CoverImageId = "image4",
-                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-            },
-            new WorkshopV2Dto()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Title5",
-                Phone = "1111111111",
-                WorkshopDescriptionItems = new[]
-                {
-                    FakeWorkshopDescriptionItem(),
-                },
-                Price = 5000,
-                WithDisabilityOptions = true,
-                ProviderId = Guid.NewGuid(),
-                ProviderTitle = "ProviderTitleNew",
-                DisabilityOptionsDesc = "Desc5",
-                Website = "website5",
-                Instagram = "insta5",
-                Facebook = "facebook5",
-                Email = "email5@gmail.com",
-                MaxAge = 10,
-                MinAge = 4,
-                CoverImageId = "image5",
-                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                Address = new AddressDto
-                {
-                    CATOTTGId = 4970,
-                },
-            },
-        };
     }
 
     [Test]

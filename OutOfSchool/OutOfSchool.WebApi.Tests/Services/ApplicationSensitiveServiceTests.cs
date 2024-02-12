@@ -1,360 +1,269 @@
+using AutoMapper;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
+using NUnit.Framework;
+using OutOfSchool.EmailSender;
+using OutOfSchool.RazorTemplatesData.Services;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.WebApi.Config;
+using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Application;
+using OutOfSchool.WebApi.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
-using FluentAssertions;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using MockQueryable.Moq;
-using Moq;
-using NUnit.Framework;
-using OutOfSchool.Common.Enums;
-using OutOfSchool.Common.Models;
-using OutOfSchool.EmailSender;
-using OutOfSchool.RazorTemplatesData.Services;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.SubordinationStructure;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.Tests.Common;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Application;
-using OutOfSchool.WebApi.Models.Workshops;
-using OutOfSchool.WebApi.Services;
 namespace OutOfSchool.WebApi.Tests.Services;
 
 [TestFixture]
 public class ApplicationSensitiveServiceTests
 {
-    private const int N = 1;
     private ISensitiveApplicationService service;
-    private ISensitiveApplicationService sensitiveApplicationService;
+    private string currentUserId;
     private Mock<IApplicationRepository> applicationRepositoryMock;
-    private Mock<IWorkshopRepository> workshopRepositoryMock;
-    private Mock<ILogger<ApplicationService>> logger;
     private Mock<IMapper> mapper;
-    private Mock<INotificationService> notificationService;
-    private Mock<IProviderAdminService> providerAdminService;
-    private Mock<IChangesLogService> changesLogService;
-    private Mock<IWorkshopServicesCombiner> workshopServiceCombinerMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<IAreaAdminService> areaAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
-    private Mock<IRazorViewToStringRenderer> rendererMock;
-    private Mock<IEmailSender> emailSenderMock;
-    private Mock<IStringLocalizer<SharedResource>> localizerMock;
-    private Mock<IOptions<HostsConfig>> hostsConfigMock;
-
-    private Mock<IOptions<ApplicationsConstraintsConfig>> applicationsConstraintsConfig;
 
     [SetUp]
     public void SetUp()
     {
         applicationRepositoryMock = new Mock<IApplicationRepository>();
-        workshopRepositoryMock = new Mock<IWorkshopRepository>();
-        notificationService = new Mock<INotificationService>();
-        providerAdminService = new Mock<IProviderAdminService>();
-        changesLogService = new Mock<IChangesLogService>();
-        workshopServiceCombinerMock = new Mock<IWorkshopServicesCombiner>();
+        mapper = new Mock<IMapper>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         areaAdminServiceMock = new Mock<IAreaAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
-        rendererMock = new Mock<IRazorViewToStringRenderer>();
-        emailSenderMock = new Mock<IEmailSender>();
-        localizerMock = new Mock<IStringLocalizer<SharedResource>>();
-        hostsConfigMock = new Mock<IOptions<HostsConfig>>();
-
-        logger = new Mock<ILogger<ApplicationService>>();
-        mapper = new Mock<IMapper>();
-
-        applicationsConstraintsConfig = new Mock<IOptions<ApplicationsConstraintsConfig>>();
-        applicationsConstraintsConfig.Setup(x => x.Value)
-            .Returns(new ApplicationsConstraintsConfig()
-            {
-                ApplicationsLimit = 2,
-                ApplicationsLimitDays = 7,
-            });
-
-        var config = new HostsConfig();
-        config.FrontendUrl = "http://localhost:4200";
-        config.BackendUrl = "http://localhost:5443";
-        hostsConfigMock.Setup(x => x.Value).Returns(config);
-
-        rendererMock.Setup(x => x.GetHtmlPlainStringAsync(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync((string.Empty, string.Empty));
 
         service = new ApplicationService(
             applicationRepositoryMock.Object,
-            logger.Object,
-            workshopRepositoryMock.Object,
+            new Mock<ILogger<ApplicationService>>().Object,
+            new Mock<IWorkshopRepository>().Object,
             mapper.Object,
-            applicationsConstraintsConfig.Object,
-            notificationService.Object,
-            providerAdminService.Object,
-            changesLogService.Object,
-            workshopServiceCombinerMock.Object,
+            new Mock<IOptions<ApplicationsConstraintsConfig>>().Object,
+            new Mock<INotificationService>().Object,
+            new Mock<IProviderAdminService>().Object,
+            new Mock<IChangesLogService>().Object,
+            new Mock<IWorkshopServicesCombiner>().Object,
             currentUserServiceMock.Object,
             ministryAdminServiceMock.Object,
             regionAdminServiceMock.Object,
             areaAdminServiceMock.Object,
             codeficatorServiceMock.Object,
-            rendererMock.Object,
-            emailSenderMock.Object,
-            localizerMock.Object,
-            hostsConfigMock.Object);
+            new Mock<IRazorViewToStringRenderer>().Object,
+            new Mock<IEmailSender>().Object,
+            new Mock<IStringLocalizer<SharedResource>>().Object,
+            new Mock<IOptions<HostsConfig>>().Object);
+
+        currentUserId = Guid.NewGuid().ToString();
+        currentUserServiceMock.SetupGet(c => c.UserId).Returns(currentUserId);
     }
 
     [Test]
-    public async Task GetAll_ShouldReturnApplications()
+    public void GetAll_WhenNotAdmin_Throws()
     {
         // Arrange
-        var application = WithApplicationsList();
-        SetupGetAll(application);
-        currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
-        currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(false);
-        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(false);
+        SetupAdminRights(isAdmin: false);
 
-        // Act
-        var result = await service.GetAll(new ApplicationFilter());
-
-        // Assert
-        Assert.AreEqual(result.Entities.Count, application.Count);
+        // Act, Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await service.GetAll(new ApplicationFilter()));
     }
 
     [Test]
-    public async Task GetApplications_WhenMinistryAdminCalled_ShouldReturnApplications()
+    public async Task GetAll_WhenMinistryAdmin_ReturnsApplications()
     {
         // Arrange
-        var institutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4");
-        var applications = WithApplicationsList();
-        SetupGetAllByInstitutionId(applications);
+        var applications = GenerateApplicationsForSameWorkshop();
 
-        currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
-        currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(true);
-        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(false);
-        ministryAdminServiceMock
-            .Setup(m => m.GetByIdAsync(It.IsAny<string>()))
-            .Returns(Task.FromResult<MinistryAdminDto>(new MinistryAdminDto()
-            {
-                InstitutionId = institutionId,
-            }));
+        SetupAdminRights(isAdmin: true, isMinistry: true);
+
+        var appFilter = new ApplicationFilter();
+        SetupRepositoryWithVerification(appFilter, applications);
+
+        ministryAdminServiceMock.Setup(m => m.GetByIdAsync(currentUserId))
+            .Returns(Task.FromResult(new MinistryAdminDto() { InstitutionId = applications[0].Workshop.InstitutionHierarchy.InstitutionId }));
 
         // Act
-        var result = await service.GetAll(new ApplicationFilter());
+        var result = await service.GetAll(appFilter);
 
         // Assert
-        Assert.That(result.Entities.Count, Is.EqualTo(N));
-        Assert.That(result.Entities.FirstOrDefault()?.Workshop.InstitutionId, Is.EqualTo(institutionId));
+        mapper.VerifyAll();
+        currentUserServiceMock.VerifyAll();
+        applicationRepositoryMock.VerifyAll();
     }
 
     [Test]
-    public async Task GetAll_WhenRegionAdminCalled_ShouldReturnApplications()
+    public async Task GetAll_WhenMinistryAdmin_ReturnsRelatedApplications()
     {
         // Arrange
-        var institutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4");
-        long catottgId = 31737;
-        var applications = WithApplicationsList();
-        SetupGetAllByInstitutionId(applications);
+        var applications = GenerateApplicationsForSameWorkshop();
+        var institutionId = applications[0].Workshop.InstitutionHierarchy.InstitutionId;
 
-        currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
-        currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(false);
-        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(true);
-        regionAdminServiceMock
-            .Setup(m => m.GetByUserId(It.IsAny<string>()))
-            .Returns(Task.FromResult<RegionAdminDto>(new RegionAdminDto()
-            {
-                InstitutionId = institutionId,
-                CATOTTGId = catottgId,
-            }));
+        var mnistryAdmin = AdminGenerator.GenerateMinistryAdminDto();
+        mnistryAdmin.InstitutionId = institutionId;
 
-        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(true);
-        regionAdminServiceMock
-            .Setup(m => m.GetByUserId(It.IsAny<string>()))
-            .Returns(Task.FromResult<RegionAdminDto>(new RegionAdminDto()
-            {
-                InstitutionId = institutionId,
-            }));
+        var otherInstitutionHierarchy = InstitutionHierarchyGenerator.Generate();
+        var otherWorkshop = WorkshopGenerator.Generate().WithInstitutionHierarchy(otherInstitutionHierarchy);
 
-        codeficatorServiceMock
-            .Setup(x => x.GetAllChildrenIdsByParentIdAsync(It.IsAny<long>()))
-            .Returns(Task.FromResult((IEnumerable<long>)new List<long> { catottgId }));
+        var wrongApplications = applications.Take(1).ToList().WithWorkshop(otherWorkshop);
+        var correctApplications = applications.Skip(wrongApplications.Count).ToList();
+
+        SetupAdminRights(isAdmin: true, isMinistry: true);
+
+        ministryAdminServiceMock.Setup(m => m.GetByIdAsync(currentUserId)).Returns(Task.FromResult(mnistryAdmin));
+
+        var appFilter = new ApplicationFilter();
+        SetupRepositoryWithVerification(appFilter, correctApplications, wrongApplications);
 
         // Act
-        var result = await service.GetAll(new ApplicationFilter());
+        var result = await service.GetAll(appFilter);
 
         // Assert
-        Assert.That(result.Entities.Count, Is.EqualTo(N));
-        Assert.That(result.Entities.FirstOrDefault().Workshop.InstitutionId, Is.EqualTo(institutionId));
+        mapper.VerifyAll();
+        currentUserServiceMock.VerifyAll();
+        ministryAdminServiceMock.VerifyAll();
+        applicationRepositoryMock.VerifyAll();
     }
 
     [Test]
-    public async Task GetApplications_WhenAreaAdminCalled_ShouldReturnApplications()
+    public async Task GetAll_WhenRegionAdmin_ReturnsRelatedApplications()
     {
         // Arrange
-        var institutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4");
-        long catottgId = 31737;
-        var applications = WithApplicationsList();
-        SetupGetAllByInstitutionId(applications);
+        var applications = GenerateApplicationsForSameWorkshop();
+        var workshop = applications[0].Workshop;
+        var institutionId = workshop.InstitutionHierarchy.InstitutionId;
+        var catottgId = workshop.Provider.LegalAddress.CATOTTGId;
 
-        currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
-        currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(false);
-        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(false);
-        currentUserServiceMock.Setup(c => c.IsAreaAdmin()).Returns(true);
-        areaAdminServiceMock
-            .Setup(m => m.GetByUserId(It.IsAny<string>()))
-            .Returns(Task.FromResult<AreaAdminDto>(new AreaAdminDto()
-            {
-                InstitutionId = institutionId,
-                CATOTTGId = catottgId,
-            }));
+        var regionAdmin = AdminGenerator.GenerateRegionAdminDto();
+        regionAdmin.InstitutionId = institutionId;
 
-        currentUserServiceMock.Setup(c => c.IsAreaAdmin()).Returns(true);
-        areaAdminServiceMock
-            .Setup(m => m.GetByUserId(It.IsAny<string>()))
-            .Returns(Task.FromResult<AreaAdminDto>(new AreaAdminDto()
-            {
-                InstitutionId = institutionId,
-            }));
+        var childrenCatottgIds = new List<long> { catottgId } as IEnumerable<long>;
 
-        codeficatorServiceMock
-            .Setup(x => x.GetAllChildrenIdsByParentIdAsync(It.IsAny<long>()))
-            .Returns(Task.FromResult((IEnumerable<long>)new List<long> { catottgId }));
+        var otherInstitutionHierarchyWorkshop = WorkshopGenerator.Generate().WithInstitutionHierarchy(InstitutionHierarchyGenerator.Generate()).WithProvider(workshop.Provider);
+        var otherProviderWorkshop = WorkshopGenerator.Generate().WithInstitutionHierarchy(workshop.InstitutionHierarchy).WithProvider(ProvidersGenerator.Generate());
 
-        // Act
-        var result = await service.GetAll(new ApplicationFilter());
-
-        // Assert
-        Assert.That(result.Entities.Count, Is.EqualTo(N));
-        Assert.That(result.Entities.FirstOrDefault()?.Workshop.InstitutionId, Is.EqualTo(institutionId));
-    }
-
-    private List<Application> WithApplicationsList()
-    {
-        return new List<Application>()
+        var wrongApplications = new List<Application> 
         {
-            new Application()
-            {
-                Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8db"),
-                Status = ApplicationStatus.Pending,
-                WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
-                ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
-                ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-                Parent = new Parent()
-                {
-                    Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-                    User = new User()
-                    {
-                        LastName = "Petroffski",
-                    },
-                },
-                Workshop = new Workshop()
-                {
-                    Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
-                    ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-                    Status = WorkshopStatus.Open,
-                    InstitutionHierarchy = new InstitutionHierarchy()
-                    {
-                        InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
-                    },
-                },
-            },
-            new Application()
-            {
-                Id = new Guid("7c5f8f7c-d850-44d0-8d4e-fd2de99453be"),
-                Status = ApplicationStatus.Rejected,
-                WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
-                ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
-                ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-                Parent = new Parent()
-                {
-                    Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-                    User = new User()
-                    {
-                        LastName = "Petroffski",
-                    },
-                },
-                Workshop = new Workshop()
-                {
-                    Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
-                    ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-                    Status = WorkshopStatus.Open,
-                    InstitutionHierarchy = new InstitutionHierarchy()
-                    {
-                        InstitutionId = Guid.NewGuid(),
-                    },
-                },
-            },
-            new Application()
-            {
-                Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-                Status = ApplicationStatus.Pending,
-                WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
-                ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
-                ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-                Parent = new Parent()
-                {
-                    Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-                    User = new User()
-                    {
-                        LastName = "Petroffski",
-                    },
-                },
-                Workshop = new Workshop()
-                {
-                    Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
-                    ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-                    Status = WorkshopStatus.Open,
-                    InstitutionHierarchy = new InstitutionHierarchy()
-                    {
-                        InstitutionId = Guid.NewGuid(),
-                    },
-                },
-            },
+            applications[0].WithWorkshop(otherInstitutionHierarchyWorkshop),
+            applications[1].WithWorkshop(otherProviderWorkshop),
         };
+        var correctApplications = applications.Skip(wrongApplications.Count).ToList();
+
+        SetupAdminRights(isAdmin: true, isRegion: true);
+
+        var appFilter = new ApplicationFilter();
+        SetupRepositoryWithVerification(appFilter, correctApplications, wrongApplications);
+
+        regionAdminServiceMock.Setup(m => m.GetByUserId(currentUserId)).Returns(Task.FromResult(regionAdmin));
+
+        codeficatorServiceMock
+            .Setup(x => x.GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId))
+            .Returns(Task.FromResult(childrenCatottgIds));
+
+        // Act
+        var result = await service.GetAll(appFilter);
+
+        // Assert
+        mapper.VerifyAll();
+        currentUserServiceMock.VerifyAll();
+        regionAdminServiceMock.VerifyAll();
+        codeficatorServiceMock.VerifyAll();
+        applicationRepositoryMock.VerifyAll();
     }
 
-    private void SetupGetAllByInstitutionId(List<Application> apps)
+    [Test]
+    public async Task GetAll_WhenAreaAdmin_ReturnsRelatedApplications()
     {
-        var mappedDtos = apps.Where(a => a.Workshop.InstitutionHierarchy.InstitutionId == new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"))
-            .Select(a => new ApplicationDto()
-            {
-                Id = a.Id,
-                Workshop = new WorkshopCard()
-                {
-                    InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
-                },
-            })
-            .ToList();
-        applicationRepositoryMock.Setup(w => w.Get(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
-            .Returns(new List<Application> { apps.First() }.AsTestAsyncEnumerableQuery());
-        mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
+        // Arrange
+        var applications = GenerateApplicationsForSameWorkshop();
+        var workshop = applications[0].Workshop;
+        var institutionId = workshop.InstitutionHierarchy.InstitutionId;
+        var catottgId = workshop.Provider.LegalAddress.CATOTTGId;
+
+        var areaAdmin = AdminGenerator.GenerateAreaAdminDto();
+        areaAdmin.InstitutionId = institutionId;
+
+        var childrenCatottgIds = new List<long> { catottgId } as IEnumerable<long>;
+
+        var otherInstitutionHierarchyWorkshop = WorkshopGenerator.Generate().WithInstitutionHierarchy(InstitutionHierarchyGenerator.Generate()).WithProvider(workshop.Provider);
+        var otherProviderWorkshop = WorkshopGenerator.Generate().WithInstitutionHierarchy(workshop.InstitutionHierarchy).WithProvider(ProvidersGenerator.Generate());
+
+        var wrongApplications = new List<Application> 
+        {
+            applications[0].WithWorkshop(otherInstitutionHierarchyWorkshop),
+            applications[1].WithWorkshop(otherProviderWorkshop),
+        };
+        var correctApplications = applications.Skip(wrongApplications.Count).ToList();
+
+        SetupAdminRights(isAdmin: true, isArea: true);
+
+        var appFilter = new ApplicationFilter();
+        SetupRepositoryWithVerification(appFilter, correctApplications, wrongApplications);
+
+        areaAdminServiceMock.Setup(m => m.GetByUserId(currentUserId)).Returns(Task.FromResult(areaAdmin));
+
+        codeficatorServiceMock
+            .Setup(x => x.GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId))
+            .Returns(Task.FromResult(childrenCatottgIds));
+
+        // Act
+        var result = await service.GetAll(appFilter);
+
+        // Assert
+        mapper.VerifyAll();
+        currentUserServiceMock.VerifyAll();
+        areaAdminServiceMock.VerifyAll();
+        codeficatorServiceMock.VerifyAll();
+        applicationRepositoryMock.VerifyAll();
     }
 
-    private void SetupGetAll(List<Application> apps)
+    private void SetupAdminRights(bool isAdmin, bool isMinistry = false, bool isRegion = false, bool isArea = false)
     {
-        var mappedDtos = apps.Select(a => new ApplicationDto() {Id = a.Id }).ToList();
-        applicationRepositoryMock.Setup(w => w.Get(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
+        currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(isAdmin);
+        currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(isMinistry);
+        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(isRegion);
+        currentUserServiceMock.Setup(c => c.IsAreaAdmin()).Returns(isArea);
+    }
+
+    private List<Application> GenerateApplicationsForSameWorkshop()
+    {
+        var institutionHierarchy = InstitutionHierarchyGenerator.Generate();
+        var workshop = WorkshopGenerator.Generate().WithInstitutionHierarchy(institutionHierarchy).WithProvider();
+        var parent = ParentGenerator.Generate();
+        var child = ChildGenerator.Generate().WithParent(parent);
+
+        return ApplicationGenerator.Generate(6).WithWorkshop(workshop).WithParent(parent).WithChild(child);
+    }
+
+    private void SetupRepositoryWithVerification(ApplicationFilter appFilter, List<Application> correctApplications, List<Application> wrongApplications = null)
+    {
+        applicationRepositoryMock.Setup(
+            w => w.Get(
+                appFilter.From,
+                appFilter.Size,
                 It.IsAny<string>(),
-                It.IsAny<Expression<Func<Application, bool>>>(),
+                It.Is<Expression<Func<Application, bool>>>(
+                    // here main magic goes - verification that predicate built in service and passed to applicationRepository should behave correctly on "correct" and "wrong" applications
+                    expr => correctApplications.All(expr.Compile())
+                        && (wrongApplications == null || !wrongApplications.Any(expr.Compile()))
+                ),
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
-            .Returns(new List<Application> { apps.First() }.AsTestAsyncEnumerableQuery());
-        mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
+            .Returns(correctApplications.AsTestAsyncEnumerableQuery())
+            .Verifiable("Wrong expression was built in service and passed to applicationRepository.Get() whereExpression argument. Probably some conditions aren't tested");
+
+        mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>()))
+            .Returns(correctApplications.Select(app => new ApplicationDto()).ToList());
     }
 }
