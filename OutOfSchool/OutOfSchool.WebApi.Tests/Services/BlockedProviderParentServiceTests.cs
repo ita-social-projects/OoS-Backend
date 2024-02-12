@@ -97,7 +97,7 @@ public class BlockedProviderParentServiceTests
     public async Task Block_WhenDtoAndUserIdIsValid_ShouldSendNotificationAndReturnSuccess()
     {
         // Arrange
-        var parent = ParentGenerator.Generate();
+        var parent = ParentGenerator.Generate().WithUserId(userId);
         parent.Id = blockDto.ParentId;
         var blockedParentUserId = Guid.Parse(parent.UserId);
         var additionalData = new Dictionary<string, string>()
@@ -172,8 +172,9 @@ public class BlockedProviderParentServiceTests
     public async Task Unblock_WhenDtoAndUserIdIsValid_ShouldReturnSuccess()
     {
         // Arrange
-        var parent = ParentGenerator.Generate();
-        parent.Id = unblockDto.ParentId;
+        var parent = ParentGenerator.Generate().WithUserId(userId);
+        parent.Id = blockDto.ParentId;
+        unblockEntity.Parent = parent;
         var unblockedParentUserId = Guid.Parse(parent.UserId);
         var additionalData = new Dictionary<string, string>()
         {
@@ -193,7 +194,6 @@ public class BlockedProviderParentServiceTests
         blockedProviderParentRepositoryMock
             .Setup(x => x.UnBlock(It.IsAny<BlockedProviderParent>()))
             .ReturnsAsync(unblockEntity);
-        parentRepositoryMock.Setup(x => x.GetById(parent.Id)).ReturnsAsync(parent);
 
         // Act
         var result = await service.Unblock(unblockDto, userId).ConfigureAwait(false);
