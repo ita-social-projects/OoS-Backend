@@ -62,7 +62,7 @@ public class AdminController : Controller
         if (!IsTechAdmin())
         {
             logger.LogError("You have no rights because you are not an admin");
-            return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin role.");
+            return StatusCode(403, "Forbidden to get ministry admin if you don't have TechAdmin role.");
         }
 
         var ministryAdmins = await ministryAdminService.GetByFilter(filter).ConfigureAwait(false);
@@ -93,7 +93,7 @@ public class AdminController : Controller
         if (!IsTechAdmin())
         {
             logger.LogError("You have no rights because you are not an admin");
-            return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin role.");
+            return StatusCode(403, "Forbidden to get applications if you don't have TechAdmin role.");
         }
 
         var applications = await applicationService.GetAll(filter).ConfigureAwait(false);
@@ -127,7 +127,7 @@ public class AdminController : Controller
         if (!IsTechAdmin())
         {
             logger.LogError("You have no rights because you are not an admin");
-            return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin role.");
+            return StatusCode(403, "Forbidden to update directions if you don't have TechAdmin role.");
         }
 
         if (!ModelState.IsValid)
@@ -160,7 +160,7 @@ public class AdminController : Controller
         if (!IsTechAdmin())
         {
             logger.LogError("You have no rights because you are not an admin");
-            return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin role.");
+            return StatusCode(403, "Forbidden to delete direction if you don't have TechAdmin role.");
         }
 
         this.ValidateId(id, localizer);
@@ -191,7 +191,7 @@ public class AdminController : Controller
         if (!IsTechAdmin())
         {
             logger.LogError("You have no rights because you are not an admin");
-            return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin role.");
+            return StatusCode(403, "Forbidden to get provider if you don't have TechAdmin role.");
         }
 
         var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
@@ -222,7 +222,7 @@ public class AdminController : Controller
         if (!IsTechAdmin())
         {
             logger.LogError("You have no rights because you are not an admin");
-            return StatusCode(403, "Forbidden to update another user if you don't have TechAdmin role.");
+            return StatusCode(403, "Forbidden to block provider if you don't have TechAdmin role.");
         }
 
         var result = await providerService.Block(
