@@ -10,3 +10,5 @@ steps:
   - --reproducible
   # Use experimental flag to minimize build speeds
   - --use-new-run
+options:
+  logging: CLOUD_LOGGING_ONLY
