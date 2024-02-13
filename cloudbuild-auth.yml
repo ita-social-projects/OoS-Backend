@@ -12,3 +12,5 @@ steps:
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.AuthorizationServer/
     - --env=BPE_AppDefaults__Version=$SHORT_SHA
     - --publish
+options:
+  logging: CLOUD_LOGGING_ONLY

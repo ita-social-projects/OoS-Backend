@@ -82,3 +82,5 @@ availableSecrets:
   secretManager:
   - versionName: $_GITHUB_DEPLOY
     env: 'SSH'
+options:
+  logging: CLOUD_LOGGING_ONLY
