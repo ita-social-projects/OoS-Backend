@@ -39,6 +39,7 @@ public class ChatWorkshopHub : Hub
     /// <param name="parentRepository">Repository for parent entities.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="providerAdminRepository">ProviderAdminRepository.</param>
+    /// <param name="blockedProviderParentService">BlockedProviderParentService </param>
     public ChatWorkshopHub(
         ILogger<ChatWorkshopHub> logger,
         IChatMessageWorkshopService chatMessageService,
@@ -167,7 +168,17 @@ public class ChatWorkshopHub : Hub
             // Add Provider's connections to the Group.
             var workshops = await workshopRepository.GetByFilter(w => w.Id == chatMessageWorkshopCreateDto.WorkshopId, "Provider").ConfigureAwait(false);
             var workshop = workshops.SingleOrDefault();
-            await AddConnectionsToGroupAsync(workshop.Provider.UserId, createdMessageDto.ChatRoomId.ToString()).ConfigureAwait(false);
+
+            if (workshop != null)
+            {
+                await AddConnectionsToGroupAsync(workshop.Provider.UserId, createdMessageDto.ChatRoomId.ToString()).ConfigureAwait(false);
+            }
+            else
+            {
+                logger.LogWarning("Workshop is null. Unable to add connections to group.");
+
+                return;
+            }
 
             // Add Provider's deputy connections to the Group.
             var providersDeputies = await providerAdminRepository.GetByFilter(p => p.ProviderId == workshop.ProviderId && p.IsDeputy).ConfigureAwait(false);

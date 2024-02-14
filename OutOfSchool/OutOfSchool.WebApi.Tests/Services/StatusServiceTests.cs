@@ -13,6 +13,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
@@ -133,6 +134,52 @@ public class StatusServiceTests
     }
 
     [Test]
+    public async Task Update_WhenEntityIsValidAndLocalizationIsEn_UpdatesExistedEntityWithEnglishName()
+    {
+        // Arrange
+        var entityToUpdate = new InstitutionStatusDTO
+        {
+            Id = 1,
+            Name = TestDataHelper.GetRandomWords(),
+        };
+
+        var expected = mapper.Map<InstitutionStatusDTO>(entityToUpdate);
+        expected.Name = entityToUpdate.Name;
+
+        // Act
+        var result = await service.Update(entityToUpdate, LocalizationType.En).ConfigureAwait(false);
+
+        // Assert
+        TestHelper.AssertDtosAreEqual(expected, result);
+
+        var updatedEntity = await repository.GetById(entityToUpdate.Id).ConfigureAwait(false);
+
+        Assert.AreEqual(entityToUpdate.Name, updatedEntity.NameEn);
+    }
+
+    [Test]
+    public async Task Update_WhenEntityIsValidButNotFound_ThrowsDbUpdateConcurrencyException()
+    {
+        // Arrange
+        var nonExistingId = TestDataHelper.GetPositiveInt(
+            (int)(await repository.GetAll()).Last().Id + 1,
+            int.MaxValue);
+
+        var entityToUpdate = new InstitutionStatusDTO
+        {
+            Id = nonExistingId,
+            Name = TestDataHelper.GetRandomWords(),
+        };
+
+        // Act and Assert
+        var exception = Assert.ThrowsAsync<DbUpdateConcurrencyException>(
+            async () => await service.Update(entityToUpdate).ConfigureAwait(false));
+
+        // Assert
+        StringAssert.Contains($"Updating failed. InstitutionStatus with Id = {nonExistingId} doesn't exist in the system.", exception.Message);
+    }
+
+    [Test]
     public async Task Delete_WhenIdIsValid_DeletesEntityFromRepository()
     {
         // Arrange
@@ -168,10 +215,16 @@ public class StatusServiceTests
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
 
-            var institutionStatuses = InstitutionStatusGenerator.Generate(5);
-            context.InstitutionStatuses.AddRange(institutionStatuses);
+            var existingStatusIds = context.InstitutionStatuses.Select(status => status.Id).ToList();
+
+            var institutionStatusesToAdd = InstitutionStatusGenerator.Generate(5)
+                .Where(status => !existingStatusIds.Contains(status.Id))
+                .ToList();
+
+            context.InstitutionStatuses.AddRange(institutionStatusesToAdd);
 
             context.SaveChanges();
+
         }
     }
 }

@@ -53,7 +53,6 @@ public class SocialGroupService : ISocialGroupService
         }).ToList();
     }
 
-
     /// <inheritdoc/>
     public async Task<SocialGroupDto> GetById(long id, LocalizationType localization = LocalizationType.Ua)
     {
@@ -96,11 +95,18 @@ public class SocialGroupService : ISocialGroupService
     {
         logger.LogInformation($"Updating SocialGroup with Id = {dto?.Id}, {localization} localization, started.");
 
+        if (dto == null)
+        {
+            logger.LogError("Updating failed. The provided SocialGroupDto is null.");
+
+            return null;
+        }
+
         var socialGroupLocalized = await repository.GetById(dto.Id).ConfigureAwait(false);
 
         if (socialGroupLocalized == null)
         {
-            logger.LogError($"Updating failed. SocialGroup with Id = {dto?.Id} doesn't exist in the system.");
+            logger.LogError($"Updating failed. SocialGroup with Id = {dto.Id} doesn't exist in the system.");
 
             return null;
         }
@@ -116,7 +122,14 @@ public class SocialGroupService : ISocialGroupService
 
         var socialGroup = await repository.Update(socialGroupLocalized).ConfigureAwait(false);
 
-        logger.LogInformation($"SocialGroup with Id = {socialGroup?.Id} updated succesfully.");
+        if (socialGroup == null)
+        {
+            logger.LogError($"Updating failed. Updated SocialGroup is null.");
+
+            return null;
+        }
+
+        logger.LogInformation($"SocialGroup with Id = {socialGroup.Id} updated succesfully.");
 
         return new SocialGroupDto()
         {

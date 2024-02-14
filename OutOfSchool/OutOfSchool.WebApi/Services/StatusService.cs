@@ -10,7 +10,6 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class StatusService : IStatusService
 {
-
     private readonly IEntityRepositorySoftDeleted<long, InstitutionStatus> repository;
     private readonly ILogger<StatusService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
@@ -34,7 +33,6 @@ public class StatusService : IStatusService
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
-
 
     /// <inheritdoc/>
     public async Task<IEnumerable<InstitutionStatusDTO>> GetAll(LocalizationType localization = LocalizationType.Ua)
@@ -118,7 +116,13 @@ public class StatusService : IStatusService
 
         var institutionStatus = await repository.Update(institutionStatusLocalized).ConfigureAwait(false);
 
-        logger.LogInformation($"InstitutionStatus with Id = {institutionStatus?.Id} updated succesfully.");
+        if (institutionStatus == null)
+        {
+            logger.LogError($"Updating failed. Updated InstitutionStatus is null.");
+            return null;
+        }
+
+        logger.LogInformation($"InstitutionStatus with Id = {institutionStatus.Id} updated succesfully.");
 
         return new InstitutionStatusDTO
         {

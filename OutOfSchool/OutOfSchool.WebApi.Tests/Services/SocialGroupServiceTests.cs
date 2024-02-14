@@ -136,6 +136,66 @@ public class SocialGroupServiceTests
     }
 
     [Test]
+    public async Task Update_WhenDtoIsNull_ReturnsNull()
+    {
+        // Arrange
+        SocialGroupDto dto = null;
+
+        // Act
+        var result = await service.Update(dto).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNull(result);
+    }
+
+    [Test]
+    [TestCase(10)]
+    public async Task Update_WhenSocialGroupLocalizedIsNull_ReturnsNull(long id)
+    {
+        // Arrange
+        var dto = new SocialGroupDto { Id = id };
+
+        repository = new EntityRepositorySoftDeleted<long, SocialGroup>(context);
+        service = new SocialGroupService(repository, logger.Object, localizer.Object, mapper);
+
+        // Act
+        var result = await service.Update(dto).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNull(result);
+    }
+
+    [Test]
+    public async Task Update_WhenSocialGroupIsNull_ShouldReturnNull()
+    {
+        // Arrange
+        long socialGroupId = 1;
+        var dto = new SocialGroupDto
+        {
+            Id = socialGroupId,
+            Name = "UpdatedName",
+        };
+
+        var repositoryMock = new Mock<IEntityRepositorySoftDeleted<long, SocialGroup>>();
+        repositoryMock.Setup(repo => repo.GetById(socialGroupId))
+            .ReturnsAsync((SocialGroup)null);
+
+        var loggerMock = new Mock<ILogger<SocialGroupService>>();
+
+        var localizerMock = new Mock<IStringLocalizer<SharedResource>>();
+
+        var mapperMock = new Mock<IMapper>();
+        var socialGroupService = new SocialGroupService(repositoryMock.Object, loggerMock.Object, localizerMock.Object, mapperMock.Object);
+
+        // Act
+        var result = await socialGroupService.Update(dto);
+
+        // Assert
+        repositoryMock.Verify(repo => repo.GetById(socialGroupId), Times.Once);
+        Assert.IsNull(result);
+    }
+
+    [Test]
     [TestCase(1)]
     public async Task Delete_WhenIdIsValid_DeletesEntity(long id)
     {
