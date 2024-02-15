@@ -34,7 +34,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(EFCoreVersion)" />
     <PackageVersion Include="OneOf" Version="3.0.263" />
     <!--MySQL-->
-    <PackageVersion Include="MySql.EntityFrameworkCore" Version="8.0.0" />
+    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.0" />
     <PackageVersion Include="MySql.Data" Version="8.3.0" />
     <PackageVersion Include="Google.Protobuf" Version="3.25.2" />
     <!--Elasticsearch-->

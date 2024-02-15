@@ -16,5 +16,5 @@ public class InitializerConnectionOptions : IMySqlGuidConnectionOptions
 
     public string Password { get; set; }
 
-    public bool OldGuids { get; set; }
+    public string GuidFormat { get; set; }
 }

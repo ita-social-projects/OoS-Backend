@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using MySql.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -83,7 +83,7 @@ public partial class RemoveInstitutionAdminId : Migration
                 type: "bigint",
                 nullable: false,
                 defaultValue: 0L)
-            .Annotation("MySql:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn);
+            .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn);
 
         migrationBuilder.AddPrimaryKey(
             name: "PK_InstitutionAdmins",

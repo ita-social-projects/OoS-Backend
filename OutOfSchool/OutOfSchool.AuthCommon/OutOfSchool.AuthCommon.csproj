@@ -19,7 +19,7 @@
         <PackageReference Include="IdentityModel" />
         <PackageReference Include="Grpc.AspNetCore" />
         <PackageReference Include="Newtonsoft.Json" />
-        <PackageReference Include="MySql.EntityFrameworkCore" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
         <PackageReference Include="FluentValidation.AspNetCore" />
     </ItemGroup>
 

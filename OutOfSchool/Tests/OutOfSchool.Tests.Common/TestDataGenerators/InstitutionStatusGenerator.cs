@@ -11,7 +11,7 @@ public class InstitutionStatusGenerator
 {
 
     private static Faker<InstitutionStatus> faker = new Faker<InstitutionStatus>()
-        .RuleFor(x => x.Id, f => ++f.IndexVariable)
+        .RuleFor(x => x.Id, f => f.IndexVariable++)
         .RuleFor(x => x.Name, f => f.Name.JobDescriptor())
         .RuleFor(x => x.Providers, ProvidersGenerator.Generate(3));
 

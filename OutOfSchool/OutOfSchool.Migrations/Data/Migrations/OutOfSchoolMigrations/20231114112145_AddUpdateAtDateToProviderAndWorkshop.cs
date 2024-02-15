@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using MySql.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -14,14 +14,14 @@ public partial class AddUpdateAtDateToProviderAndWorkshop : Migration
             table: "Workshops",
             type: "datetime(6)",
             nullable: false)
-            .Annotation("MySql:ValueGenerationStrategy", MySQLValueGenerationStrategy.ComputedColumn);
+            .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.ComputedColumn);
 
         migrationBuilder.AddColumn<DateTime>(
             name: "UpdatedAt",
             table: "Providers",
             type: "datetime(6)",
             nullable: false)
-            .Annotation("MySql:ValueGenerationStrategy", MySQLValueGenerationStrategy.ComputedColumn);
+            .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.ComputedColumn);
     }
 
     protected override void Down(MigrationBuilder migrationBuilder)

@@ -48,7 +48,7 @@
         <PackageReference Include="Microsoft.FeatureManagement.AspNetCore" />
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" />
         <PackageReference Include="MySql.Data" />
-		<PackageReference Include="MySql.EntityFrameworkCore" />
+		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
         <PackageReference Include="Newtonsoft.Json" />
         <PackageReference Include="JsonSubTypes" />
         <PackageReference Include="Quartz.AspNetCore" />

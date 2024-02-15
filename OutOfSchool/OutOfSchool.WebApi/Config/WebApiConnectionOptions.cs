@@ -14,5 +14,5 @@ public class WebApiConnectionOptions : IMySqlGuidConnectionOptions
 
     public string Password { get; set; }
 
-    public bool OldGuids { get; set; }
+    public string GuidFormat { get; set; }
 }

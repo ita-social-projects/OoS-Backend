@@ -47,4 +47,4 @@ ENV DB_MIGRATION_NAME=""
 
 COPY --from=builder /src/OutOfSchool.Migrations/efbundle .
 COPY --from=builder /src/OutOfSchool.Migrations/appsettings.json .
-CMD exec ./efbundle --connection "server=${DB_HOST};port=${DB_PORT};user=${DB_USER};password=${DB_PASS};database=${DB_NAME};oldguids=true" ${DB_MIGRATION_NAME}
+CMD exec ./efbundle --connection "server=${DB_HOST};port=${DB_PORT};user=${DB_USER};password=${DB_PASS};database=${DB_NAME};guidformat=binary16" ${DB_MIGRATION_NAME}

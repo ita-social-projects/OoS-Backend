@@ -2,5 +2,5 @@ namespace OutOfSchool.Common.Config;
 
 public interface IMySqlGuidConnectionOptions : IMySqlConnectionOptions
 {
-    public bool OldGuids { get; set; }
+    public string GuidFormat { get; set; }
 }

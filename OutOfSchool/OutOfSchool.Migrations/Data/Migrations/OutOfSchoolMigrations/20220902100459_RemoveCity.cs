@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using MySql.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -19,7 +19,7 @@ public partial class RemoveCity : Migration
             columns: table => new
             {
                 Id = table.Column<long>(type: "bigint", nullable: false)
-                    .Annotation("MySql:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                    .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                 District = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: true)
                     .Annotation("MySql:CharSet", "utf8mb4"),
                 GeoHash = table.Column<ulong>(type: "bigint unsigned", nullable: false),

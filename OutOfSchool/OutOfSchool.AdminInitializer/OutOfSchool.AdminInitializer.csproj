@@ -12,7 +12,7 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
         <PackageReference Include="Microsoft.Extensions.Identity.Core" />
-        <PackageReference Include="MySql.EntityFrameworkCore" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
         <PackageReference Include="StyleCop.Analyzers">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

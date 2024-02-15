@@ -5,7 +5,7 @@ global using Microsoft.AspNetCore.Localization;
 global using Microsoft.AspNetCore.Mvc.ApiExplorer;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.FeatureManagement;
-global using MySql.Data.MySqlClient;
+global using MySqlConnector;
 global using OutOfSchool.Common;
 global using OutOfSchool.Common.Config;
 global using OutOfSchool.Common.Extensions;

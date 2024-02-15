@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using MySql.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -288,7 +288,7 @@ public partial class AddAverageRatingsTable : Migration
             columns: table => new
             {
                 Id = table.Column<long>(type: "bigint", nullable: false)
-                    .Annotation("MySql:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                    .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                 Rate = table.Column<float>(type: "float", nullable: false),
                 RateQuantity = table.Column<int>(type: "int", nullable: false),
                 EntityId = table.Column<Guid>(type: "binary(16)", nullable: false),
@@ -305,7 +305,7 @@ public partial class AddAverageRatingsTable : Migration
             columns: table => new
             {
                 Id = table.Column<long>(type: "bigint", nullable: false)
-                    .Annotation("MySql:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                    .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                 Name = table.Column<string>(type: "longtext", nullable: true)
                     .Annotation("MySql:CharSet", "utf8mb4"),
                 LastSuccessLaunch = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: false),
