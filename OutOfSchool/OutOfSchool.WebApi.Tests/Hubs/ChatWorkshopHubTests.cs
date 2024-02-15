@@ -84,7 +84,7 @@ public class ChatWorkshopHubTests
 
     // TODO: use fakers
     [Test]
-    public async Task OnConnectedAsync_ShouldAddConnectionToGroups()
+    public async Task AddConnectionToGroup_ValidChatId_ShouldConnectToChat()
     {
         // Arrange
         var userRole = Role.Provider.ToString();
@@ -94,7 +94,8 @@ public class ChatWorkshopHubTests
         var validProviderId = Guid.NewGuid();
         validationServiceMock.Setup(x => x.GetParentOrProviderIdByUserRoleAsync(UserId, Role.Provider)).ReturnsAsync(validProviderId);
 
-        var validChatRoomIds = new List<Guid>() { Guid.NewGuid(), Guid.NewGuid() };
+        var validChatRoomId = Guid.NewGuid();
+        var validChatRoomIds = new List<Guid>() { validChatRoomId, Guid.NewGuid() };
         roomServiceMock.Setup(x => x.GetChatRoomIdsByProviderIdAsync(validProviderId))
             .ReturnsAsync(validChatRoomIds);
 
@@ -102,21 +103,36 @@ public class ChatWorkshopHubTests
             .Returns(Task.CompletedTask);
 
         // Act
-        await chatHub.OnConnectedAsync();
+        await chatHub.AddConnectionToGroup(validChatRoomId);
 
         // Assert
-        groupsMock.Verify(x => x.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(validChatRoomIds.Count));
+        groupsMock.Verify(x => x.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Test]
-    public void OnConnectedAsync_IfOneOfTheClaimsIsNotFoundInJWT_ThrowsAuthenticationException()
+    public async Task AddConnectionToGroup_InvalidChatId_ShouldWriteMessageToCallerWithException()
     {
         // Arrange
-        hubCallerContextMock.Setup(x => x.User.FindFirst("role"))
-            .Returns(default(Claim));
+        var userRole = Role.Provider.ToString();
+        hubCallerContextMock.Setup(x => x.User.FindFirst(IdentityResourceClaimsTypes.Role))
+            .Returns(new Claim(IdentityResourceClaimsTypes.Role, userRole));
 
-        // Act and Assert
-        Assert.ThrowsAsync<AuthenticationException>(async () => await chatHub.OnConnectedAsync());
+        var validProviderId = Guid.NewGuid();
+        validationServiceMock.Setup(x => x.GetParentOrProviderIdByUserRoleAsync(UserId, Role.Provider)).ReturnsAsync(validProviderId);
+
+        var validChatRoomId = Guid.NewGuid();
+        var validChatRoomIds = new List<Guid>() { Guid.NewGuid(), Guid.NewGuid() };
+        roomServiceMock.Setup(x => x.GetChatRoomIdsByProviderIdAsync(validProviderId))
+            .ReturnsAsync(validChatRoomIds);
+
+        clientsMock.Setup(clients => clients.Caller).Returns(clientProxyMock.Object);
+
+        // Act
+        await chatHub.AddConnectionToGroup(validChatRoomId);
+
+        // Assert
+        clientsMock.Verify(clients => clients.Caller, Times.Once);
+        clientsMock.Verify(clients => clients.Group(It.IsAny<string>()), Times.Never);
     }
 
     // TODO: all the tests below are fake because of invalid string, cannot parse from json string to Guid
