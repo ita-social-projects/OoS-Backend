@@ -27,12 +27,12 @@ public class NotificationRepository : SensitiveEntityRepository<Notification>, I
         var dateNotReaded = DateTimeOffset.UtcNow.AddYears(-1);
         var dateReaded = DateTimeOffset.UtcNow.AddMonths(-1);
 
-        await db.Notifications.Where(x => x.ReadDateTime == null && x.CreatedDateTime < dateNotReaded).ExecuteDeleteAsync();
-        await db.Notifications.Where(x => x.ReadDateTime != null && x.CreatedDateTime < dateReaded).ExecuteDeleteAsync();
+        await db.Notifications.Where(x => (x.ReadDateTime == null && x.CreatedDateTime < dateNotReaded)
+            || (x.ReadDateTime != null && x.CreatedDateTime < dateReaded)).ExecuteDeleteAsync();
     }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<Notification>> SetReadDateTimeByType(string userId, NotificationType notificationType, DateTimeOffset dateTime)
+    public async Task<IEnumerable<Notification>> SetReadDateTimeByType(string userId, NotificationType notificationType, DateTimeOffset dateTime)
     {
         var notifications = db.Notifications.Where(n => n.UserId == userId
                                                         && n.Type == notificationType
