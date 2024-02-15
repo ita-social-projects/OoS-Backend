@@ -20,9 +20,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-	<PackageReference Include="MySql.Data" />
+    <PackageReference Include="MySql.Data" />
 	<PackageReference Include="FluentAssertions" />
-    <PackageReference Include="IdentityModel" />
+	<PackageReference Include="IdentityModel" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" />
     <PackageReference Include="MockQueryable.Moq" />
