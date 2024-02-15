@@ -1,4 +1,5 @@
-﻿using OutOfSchool.Common.Models;
+﻿using Microsoft.IdentityModel.Tokens;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
 
 namespace OutOfSchool.WebApi.Services;
