@@ -177,8 +177,5 @@ public class StatusServiceTests
     {
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
-
-        // New version of InMemoryTestDB uses ModelBuilder to initialize data from common OutOfSchool contex.
-        // Don't need to use seeding of elements.
     }
 }
