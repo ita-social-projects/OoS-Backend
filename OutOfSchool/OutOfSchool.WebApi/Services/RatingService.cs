@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.Extensions.Localization;
-using Microsoft.IdentityModel.Tokens;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 
