@@ -30,7 +30,7 @@ public class StatusServiceTests
     private IMapper mapper;
 
     [SetUp]
-    public async Task Setup()
+    public void Setup()
     {
         options = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
             .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
