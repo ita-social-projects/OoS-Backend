@@ -226,6 +226,24 @@ public static class Startup
 
     public static void Configure(this WebApplication app)
     {
+        app.Use(async (context, next) =>
+        {
+            var httpRequest = context.Request;
+            var httpResponse = context.Response;
+
+            bool healthCheck = httpRequest.Path.Equals("/healthz/ready");
+
+            int healthPort = app.Configuration.GetValue<int>("ApplicationPorts:HealthPort");
+
+            if (httpRequest.HttpContext.Connection.LocalPort == healthPort && !healthCheck)
+            {
+                httpResponse.StatusCode = 404;
+                return;
+            }
+
+            await next();
+        });
+
         var proxyOptions = app.Configuration.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
         app.UseProxy(proxyOptions);
         app.UseCors("AllowAllOrigins");
@@ -292,6 +310,7 @@ public static class Startup
                 Predicate = healthCheck => healthCheck.Tags.Contains("readiness"),
                 AllowCachingResponses = false,
             })
+            .RequireHost($"*:{app.Configuration.GetValue<int>("ApplicationPorts:HealthPort")}")
             .WithMetadata(new AllowAnonymousAttribute());
 
         app.UseEndpoints(endpoints =>
