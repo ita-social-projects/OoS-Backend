@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
@@ -149,8 +150,8 @@ public class BlockedProviderParentServiceTests
             blockEntity,
         };
         blockedProviderParentRepositoryMock
-            .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<BlockedProviderParent, bool>>>(), It.IsAny<string>()))
-            .ReturnsAsync(blockedParents);
+            .Setup(x => x.Any(It.IsAny<Expression<Func<BlockedProviderParent, bool>>>()))
+            .Returns(Task.FromResult(true));
 
         string expectedErrorCode = "400";
 
@@ -189,8 +190,8 @@ public class BlockedProviderParentServiceTests
         };
 
         blockedProviderParentRepositoryMock
-            .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<BlockedProviderParent, bool>>>(), It.IsAny<string>()))
-            .ReturnsAsync(blockedParents);
+            .Setup(x => x.GetBlockedProviderParentEntities(It.IsAny<Guid>(), It.IsAny<Guid>()))
+            .Returns(blockedParents.AsQueryable().BuildMock());
         blockedProviderParentRepositoryMock
             .Setup(x => x.UnBlock(It.IsAny<BlockedProviderParent>()))
             .ReturnsAsync(unblockEntity);
@@ -225,8 +226,8 @@ public class BlockedProviderParentServiceTests
     {
         // Arrange
         blockedProviderParentRepositoryMock
-            .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<BlockedProviderParent, bool>>>(), It.IsAny<string>()))
-            .ReturnsAsync(new List<BlockedProviderParent>());
+            .Setup(x => x.GetBlockedProviderParentEntities(It.IsAny<Guid>(), It.IsAny<Guid>()))
+            .Returns(new List<BlockedProviderParent>().AsQueryable().BuildMock());
 
         string expectedErrorCode = "400";
 
@@ -263,8 +264,8 @@ public class BlockedProviderParentServiceTests
             DateTimeFrom = blockEntity.DateTimeFrom,
         };
         blockedProviderParentRepositoryMock
-            .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<BlockedProviderParent, bool>>>(), It.IsAny<string>()))
-            .ReturnsAsync(entities);
+            .Setup(x => x.GetBlockedProviderParentEntities(It.IsAny<Guid>(), It.IsAny<Guid>()))
+            .Returns(entities.AsQueryable().BuildMock());
 
         // Act
         var result = await service.GetBlock(parentId, providerId).ConfigureAwait(false);
@@ -281,8 +282,8 @@ public class BlockedProviderParentServiceTests
         var parentId = blockEntity.ParentId;
         var providerId = blockEntity.ProviderId;
         blockedProviderParentRepositoryMock
-            .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<BlockedProviderParent, bool>>>(), It.IsAny<string>()))
-            .ReturnsAsync(new List<BlockedProviderParent>());
+            .Setup(x => x.GetBlockedProviderParentEntities(It.IsAny<Guid>(), It.IsAny<Guid>()))
+            .Returns(new List<BlockedProviderParent>().AsQueryable().BuildMock());
 
         // Act
         var result = await service.GetBlock(parentId, providerId).ConfigureAwait(false);

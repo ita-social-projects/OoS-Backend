@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
@@ -18,4 +20,12 @@ public interface IBlockedProviderParentRepository : ISensitiveEntityRepositorySo
     /// <param name="blockedProviderParent">Entity to update.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     Task<BlockedProviderParent> UnBlock(BlockedProviderParent blockedProviderParent);
+
+    /// <summary>
+    /// Retrieves a queryable collection of BlockedProviderParent entities based on the provided parent and provider IDs.
+    /// </summary>
+    /// <param name="parentId">The unique identifier of the parent entity.</param>
+    /// <param name="providerId">The unique identifier of the provider entity.</param>
+    /// <returns>A <see cref="IQueryable{TResult}"/> representing the result of the operation.</returns>
+    IQueryable<BlockedProviderParent> GetBlockedProviderParentEntities(Guid parentId, Guid providerId);
 }

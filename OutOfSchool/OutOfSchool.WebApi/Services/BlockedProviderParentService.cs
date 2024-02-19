@@ -106,10 +106,12 @@ public class BlockedProviderParentService : IBlockedProviderParentService, INoti
             throw new ArgumentNullException(nameof(blockedProviderParentUnblockDto));
         }
 
-        var currentBlock = (await GetBlockedProviderParentEntities(
-            blockedProviderParentUnblockDto.ParentId,
-            blockedProviderParentUnblockDto.ProviderId).ConfigureAwait(false))
-            .FirstOrDefault();
+        var currentBlock = await blockedProviderParentRepository
+            .GetBlockedProviderParentEntities(
+                blockedProviderParentUnblockDto.ParentId,
+                blockedProviderParentUnblockDto.ProviderId)
+            .FirstOrDefaultAsync()
+            .ConfigureAwait(false);
 
         if (currentBlock is null)
         {
@@ -148,14 +150,20 @@ public class BlockedProviderParentService : IBlockedProviderParentService, INoti
     /// <inheritdoc/>
     public async Task<BlockedProviderParentDto> GetBlock(Guid parentId, Guid providerId)
     {
-        var currentBlock = await GetBlockedProviderParentEntities(parentId, providerId).ConfigureAwait(false);
-        return mapper.Map<BlockedProviderParentDto>(currentBlock.FirstOrDefault());
+        var currentBlock = await blockedProviderParentRepository
+            .GetBlockedProviderParentEntities(parentId, providerId)
+            .FirstOrDefaultAsync()
+            .ConfigureAwait(false);
+        return mapper.Map<BlockedProviderParentDto>(currentBlock);
     }
 
     public async Task<bool> IsBlocked(Guid parentId, Guid providerId)
     {
-        var currentBlock = await GetBlockedProviderParentEntities(parentId, providerId).ConfigureAwait(false);
-        return currentBlock.Any();
+        return await blockedProviderParentRepository
+            .Any(b => b.ParentId == parentId
+                 && b.ProviderId == providerId
+                 && b.DateTimeTo == null)
+            .ConfigureAwait(false);
     }
 
     public Task<IEnumerable<string>> GetNotificationsRecipientIds(
@@ -164,14 +172,5 @@ public class BlockedProviderParentService : IBlockedProviderParentService, INoti
         Guid objectId)
     {
         return Task.FromResult<IEnumerable<string>>(new List<string>() { objectId.ToString() });
-    }
-
-    private async Task<IEnumerable<BlockedProviderParent>> GetBlockedProviderParentEntities(Guid parentId, Guid providerId)
-    {
-        var currentBlock = await blockedProviderParentRepository.GetByFilter(
-            b => b.ParentId == parentId
-                 && b.ProviderId == providerId
-                 && b.DateTimeTo == null).ConfigureAwait(false);
-        return currentBlock;
     }
 }

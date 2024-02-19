@@ -77,22 +77,15 @@ public class BlockedProviderParentRepositoryTests
 
         await repository.Block(blockedProviderParent);
 
-        var blockedProviderParentToUnblock = new BlockedProviderParent
-        {
-            Id = blockedProviderParent.Id,
-            ParentId = blockedProviderParent.ParentId,
-            ProviderId = blockedProviderParent.ProviderId,
-            DateTimeTo = DateTime.Now,
-            UserIdUnblock = "TestId",
-        };
-
         // Act
-        var result = await repository.UnBlock(blockedProviderParentToUnblock);
+        blockedProviderParent.DateTimeTo = DateTime.Now;
+        blockedProviderParent.UserIdUnblock = "TestId";
+        var result = await repository.UnBlock(blockedProviderParent);
 
         // Assert
         Assert.AreEqual(expectedBlockedProviderParentCount, context.BlockedProviderParents.Count());
         Assert.That(result is not null);
-        Assert.AreEqual(result.Id, blockedProviderParentToUnblock.Id);
+        Assert.AreEqual(result.Id, blockedProviderParent.Id);
         Assert.That(result.DateTimeTo is not null);
     }
 
@@ -163,16 +156,8 @@ public class BlockedProviderParentRepositoryTests
             c => c.ParentId == parentId &&
             c.Workshop.ProviderId == providerId);
 
-        var unBlockedProviderParent = new BlockedProviderParent
-        {
-            Id = blockedProviderParent.Id,
-            ParentId = parentId,
-            ProviderId = providerId,
-            DateTimeTo = DateTime.Now,
-        };
-
         // Act
-        var result = await repository.UnBlock(unBlockedProviderParent);
+        var result = await repository.UnBlock(blockedProviderParent);
 
         // Assert
         Assert.That(result is not null);
