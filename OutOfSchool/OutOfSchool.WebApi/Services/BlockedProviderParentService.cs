@@ -158,11 +158,9 @@ public class BlockedProviderParentService : IBlockedProviderParentService, INoti
     }
 
     public Task<bool> IsBlocked(Guid parentId, Guid providerId)
-    {
-        return Task.FromResult(blockedProviderParentRepository
+        => blockedProviderParentRepository
             .GetBlockedProviderParentEntities(parentId, providerId)
-            .Any());
-    }
+            .AnyAsync();
 
     public Task<IEnumerable<string>> GetNotificationsRecipientIds(
         NotificationAction action,
