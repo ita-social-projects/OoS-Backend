@@ -157,13 +157,11 @@ public class BlockedProviderParentService : IBlockedProviderParentService, INoti
         return mapper.Map<BlockedProviderParentDto>(currentBlock);
     }
 
-    public async Task<bool> IsBlocked(Guid parentId, Guid providerId)
+    public Task<bool> IsBlocked(Guid parentId, Guid providerId)
     {
-        return await blockedProviderParentRepository
-            .Any(b => b.ParentId == parentId
-                 && b.ProviderId == providerId
-                 && b.DateTimeTo == null)
-            .ConfigureAwait(false);
+        return Task.FromResult(blockedProviderParentRepository
+            .GetBlockedProviderParentEntities(parentId, providerId)
+            .Any());
     }
 
     public Task<IEnumerable<string>> GetNotificationsRecipientIds(
