@@ -120,6 +120,7 @@ public class BlockedProviderParentServiceTests
 
         // Assert
         blockedProviderParentRepositoryMock.VerifyAll();
+        parentRepositoryMock.VerifyAll();
         notificationServiceMock
             .Verify(
                 x => x.Create(
