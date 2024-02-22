@@ -1,4 +1,4 @@
-﻿ARG DOTNET_VERSION=6.0
+﻿ARG DOTNET_VERSION=8.0
 
 FROM mcr.microsoft.com/dotnet/aspnet:${DOTNET_VERSION}-alpine AS base
 WORKDIR /app

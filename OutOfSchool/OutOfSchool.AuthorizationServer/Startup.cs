@@ -50,6 +50,7 @@ public static class Startup
                 Database = options.Database,
                 GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
             });
+
         services
             .AddDbContext<OutOfSchoolDbContext>(options => options
                 .UseMySql(

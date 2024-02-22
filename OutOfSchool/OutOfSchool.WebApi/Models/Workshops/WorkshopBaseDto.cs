@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Castle.Core.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;

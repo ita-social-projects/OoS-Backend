@@ -32,17 +32,26 @@ public class StatusServiceTests
     [SetUp]
     public void Setup()
     {
-        var builder = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
-            .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB");
+        options = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
+            .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
+            .UseLazyLoadingProxies()
+            .EnableSensitiveDataLogging()
+            .Options;
 
-        options = builder.Options;
         context = new OutOfSchoolDbContext(options);
         repository = new EntityRepositorySoftDeleted<long, InstitutionStatus>(context);
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         var logger = new Mock<ILogger<StatusService>>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         service = new StatusService(repository, logger.Object, localizer.Object, mapper);
+
         SeedDatabase();
+    }
+
+    [TearDown]
+    public void Dispose()
+    {
+        context.Dispose();
     }
 
     [Test]
@@ -125,7 +134,10 @@ public class StatusServiceTests
     public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
     {
         // Arrange
-        var changedEntity = mapper.Map<InstitutionStatusDTO>(InstitutionStatusGenerator.Generate());
+        var institutionStatus = InstitutionStatusGenerator.Generate();
+        institutionStatus.Id = 100;
+
+        var changedEntity = mapper.Map<InstitutionStatusDTO>(institutionStatus);
 
         // Act and Assert
         Assert.ThrowsAsync<DbUpdateConcurrencyException>(
@@ -163,15 +175,7 @@ public class StatusServiceTests
 
     private void SeedDatabase()
     {
-        using var context = new OutOfSchoolDbContext(options);
-        {
-            context.Database.EnsureDeleted();
-            context.Database.EnsureCreated();
-
-            var institutionStatuses = InstitutionStatusGenerator.Generate(5);
-            context.InstitutionStatuses.AddRange(institutionStatuses);
-
-            context.SaveChanges();
-        }
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
     }
 }

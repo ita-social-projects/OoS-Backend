@@ -223,14 +223,18 @@ public static class Startup
                 GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
             });
 
-        services.AddDbContext<OutOfSchoolDbContext>(builder =>
-                builder.UseLazyLoadingProxies().UseMySql(connectionString, serverVersion, mySqlOptions =>
-                {
-                    mySqlOptions
-                        .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
-                        .EnableStringComparisonTranslations();
-                }))
-            .AddCustomDataProtection("WebApi");
+        services
+            .AddDbContext<OutOfSchoolDbContext>(options => options
+                .UseLazyLoadingProxies()
+                .UseMySql(
+                    connectionString,
+                    serverVersion,
+                    mySqlOptions =>
+                        mySqlOptions
+                            .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
+                            .EnableStringComparisonTranslations()
+                    ))
+                .AddCustomDataProtection("WebApi");
 
         services.AddAutoMapper(typeof(CommonProfile), typeof(MappingProfile), typeof(ElasticProfile));
 
