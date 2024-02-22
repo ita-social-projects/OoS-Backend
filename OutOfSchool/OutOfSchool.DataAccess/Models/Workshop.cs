@@ -23,6 +23,9 @@ public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>, ISo
     [MaxLength(60)]
     public string Title { get; set; } = string.Empty;
 
+    [MaxLength(60)]
+    public string ShortTitle { get; set; } = string.Empty;
+
     [DataType(DataType.PhoneNumber)]
     [Required(ErrorMessage = "Phone number is required")]
     [RegularExpression(
