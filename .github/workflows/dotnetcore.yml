@@ -21,7 +21,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 6.0.406
+          dotnet-version: 8.0.201
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
@@ -65,7 +65,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 6.0.406
+        dotnet-version: 8.0.201
 
     - name: Clean
       run: dotnet clean ./OutOfSchool/OutOfSchool.sln --configuration Release && dotnet nuget locals all --clear
