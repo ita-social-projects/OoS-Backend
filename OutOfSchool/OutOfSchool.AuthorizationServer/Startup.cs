@@ -226,22 +226,14 @@ public static class Startup
 
     public static void Configure(this WebApplication app)
     {
-        int healthPort;
-        if (app.Environment.IsDevelopment())
-        {
-            healthPort = app.Configuration.GetValue<int>("ApplicationPorts:DevHealthPort");
-        }
-        else
-        {
-            healthPort = app.Configuration.GetValue<int>("ApplicationPorts:HealthPort");
-        }
-
         app.Use(async (context, next) =>
         {
             var httpRequest = context.Request;
             var httpResponse = context.Response;
 
             bool healthCheck = httpRequest.Path.Equals("/healthz/ready");
+
+            int healthPort = app.Configuration.GetValue<int>("ApplicationPorts:HealthPort");
 
             if (httpRequest.HttpContext.Connection.LocalPort == healthPort && !healthCheck)
             {
@@ -318,7 +310,7 @@ public static class Startup
                 Predicate = healthCheck => healthCheck.Tags.Contains("readiness"),
                 AllowCachingResponses = false,
             })
-            .RequireHost($"*:{healthPort}")
+            .RequireHost($"*:{app.Configuration.GetValue<int>("ApplicationPorts:HealthPort")}")
             .WithMetadata(new AllowAnonymousAttribute());
 
         app.UseEndpoints(endpoints =>
