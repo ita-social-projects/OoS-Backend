@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
@@ -87,6 +87,7 @@ public class BlockedProviderParentServiceTests
             Id = Guid.NewGuid(),
             ParentId = unblockDto.ParentId,
             ProviderId = unblockDto.ProviderId,
+            Provider = provider,
         };
     }
 
@@ -96,7 +97,7 @@ public class BlockedProviderParentServiceTests
     public async Task Block_WhenDtoAndUserIdIsValid_ShouldSendNotificationAndReturnSuccess()
     {
         // Arrange
-        var parent = ParentGenerator.Generate();
+        var parent = ParentGenerator.Generate().WithUserId(userId);
         parent.Id = blockDto.ParentId;
         var blockedParentUserId = Guid.Parse(parent.UserId);
         var additionalData = new Dictionary<string, string>()
@@ -107,8 +108,8 @@ public class BlockedProviderParentServiceTests
         };
 
         blockedProviderParentRepositoryMock
-            .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<BlockedProviderParent, bool>>>(), It.IsAny<string>()))
-            .ReturnsAsync(new List<BlockedProviderParent>());
+            .Setup(x => x.GetBlockedProviderParentEntities(blockEntity.ParentId, blockEntity.ProviderId))
+            .Returns(new List<BlockedProviderParent>().AsQueryable().BuildMock());
         blockedProviderParentRepositoryMock
             .Setup(x => x.Block(It.IsAny<BlockedProviderParent>()))
             .ReturnsAsync(blockEntity);
@@ -118,6 +119,8 @@ public class BlockedProviderParentServiceTests
         var result = await service.Block(blockDto, userId).ConfigureAwait(false);
 
         // Assert
+        blockedProviderParentRepositoryMock.VerifyAll();
+        parentRepositoryMock.VerifyAll();
         notificationServiceMock
             .Verify(
                 x => x.Create(
@@ -148,8 +151,8 @@ public class BlockedProviderParentServiceTests
             blockEntity,
         };
         blockedProviderParentRepositoryMock
-            .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<BlockedProviderParent, bool>>>(), It.IsAny<string>()))
-            .ReturnsAsync(blockedParents);
+            .Setup(x => x.GetBlockedProviderParentEntities(blockEntity.ParentId, blockEntity.ProviderId))
+            .Returns(blockedParents.AsQueryable().BuildMock());
 
         string expectedErrorCode = "400";
 
@@ -157,6 +160,7 @@ public class BlockedProviderParentServiceTests
         var result = await service.Block(blockDto, userId).ConfigureAwait(false);
 
         // Assert
+        blockedProviderParentRepositoryMock.VerifyAll();
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Succeeded, Is.False);
         Assert.That(result.OperationResult.Errors, Has.Exactly(1).Items);
@@ -171,25 +175,44 @@ public class BlockedProviderParentServiceTests
     public async Task Unblock_WhenDtoAndUserIdIsValid_ShouldReturnSuccess()
     {
         // Arrange
-        var parent = ParentGenerator.Generate();
-        parent.Id = unblockDto.ParentId;
+        var parent = ParentGenerator.Generate().WithUserId(userId);
+        parent.Id = blockDto.ParentId;
+        unblockEntity.Parent = parent;
+        var unblockedParentUserId = Guid.Parse(parent.UserId);
+        var additionalData = new Dictionary<string, string>()
+        {
+            { ProviderIdKey, unblockEntity.ProviderId.ToString() },
+            { ProviderFullTitleKey, unblockEntity.Provider.FullTitle },
+            { ProviderShortTitleKey, unblockEntity.Provider.ShortTitle },
+        };
+
         var blockedParents = new List<BlockedProviderParent>
         {
             unblockEntity,
         };
 
         blockedProviderParentRepositoryMock
-            .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<BlockedProviderParent, bool>>>(), It.IsAny<string>()))
-            .ReturnsAsync(blockedParents);
+            .Setup(x => x.GetBlockedProviderParentEntities(unblockEntity.ParentId, unblockEntity.ProviderId))
+            .Returns(blockedParents.AsQueryable().BuildMock());
         blockedProviderParentRepositoryMock
             .Setup(x => x.UnBlock(It.IsAny<BlockedProviderParent>()))
             .ReturnsAsync(unblockEntity);
-        parentRepositoryMock.Setup(x => x.GetById(parent.Id)).ReturnsAsync(parent);
 
         // Act
         var result = await service.Unblock(unblockDto, userId).ConfigureAwait(false);
 
         // Assert
+        blockedProviderParentRepositoryMock.VerifyAll();
+        notificationServiceMock
+           .Verify(
+                x => x.Create(
+                NotificationType.Parent,
+                NotificationAction.ProviderUnblock,
+                unblockedParentUserId,
+                service,
+                additionalData,
+                null),
+                Times.Once);
         Assert.IsNotNull(result);
         Assert.IsTrue(result.Succeeded);
     }
@@ -206,8 +229,8 @@ public class BlockedProviderParentServiceTests
     {
         // Arrange
         blockedProviderParentRepositoryMock
-            .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<BlockedProviderParent, bool>>>(), It.IsAny<string>()))
-            .ReturnsAsync(new List<BlockedProviderParent>());
+            .Setup(x => x.GetBlockedProviderParentEntities(unblockEntity.ParentId, unblockEntity.ProviderId))
+            .Returns(new List<BlockedProviderParent>().AsQueryable().BuildMock());
 
         string expectedErrorCode = "400";
 
@@ -215,12 +238,65 @@ public class BlockedProviderParentServiceTests
         var result = await service.Unblock(unblockDto, userId).ConfigureAwait(false);
 
         // Assert
+        blockedProviderParentRepositoryMock.VerifyAll();
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Succeeded, Is.False);
         Assert.That(result.OperationResult.Errors, Has.Exactly(1).Items);
         Assert.That(result.OperationResult.Errors.First().Code, Is.EqualTo(expectedErrorCode));
     }
 
+    #endregion
+
+    #region GetBlock
+    [Test]
+    public async Task GetBlock_WithParentIdAndProviderId_ShouldReturnDto()
+    {
+        // Arrange
+        var parentId = blockEntity.ParentId;
+        var providerId = blockEntity.ProviderId;
+        var entities = new List<BlockedProviderParent>()
+        {
+            blockEntity,
+        };
+        var expected = new BlockedProviderParentDto()
+        {
+            Id = blockEntity.Id,
+            ParentId = blockEntity.ParentId,
+            ProviderId = blockEntity.ProviderId,
+            Reason = blockEntity.Reason,
+            UserIdBlock = blockEntity.UserIdBlock,
+            DateTimeFrom = blockEntity.DateTimeFrom,
+        };
+        blockedProviderParentRepositoryMock
+            .Setup(x => x.GetBlockedProviderParentEntities(parentId, providerId))
+            .Returns(entities.AsQueryable().BuildMock());
+
+        // Act
+        var result = await service.GetBlock(parentId, providerId).ConfigureAwait(false);
+
+        // Assert
+        blockedProviderParentRepositoryMock.VerifyAll();
+        Assert.NotNull(result);
+        TestHelper.AssertDtosAreEqual(expected, result);
+    }
+
+    [Test]
+    public async Task GetBlock_WithNoMatchingEntities_ShouldReturnNull()
+    {
+        // Arrange
+        var parentId = blockEntity.ParentId;
+        var providerId = blockEntity.ProviderId;
+        blockedProviderParentRepositoryMock
+            .Setup(x => x.GetBlockedProviderParentEntities(parentId, providerId))
+            .Returns(new List<BlockedProviderParent>().AsQueryable().BuildMock());
+
+        // Act
+        var result = await service.GetBlock(parentId, providerId).ConfigureAwait(false);
+
+        // Assert
+        blockedProviderParentRepositoryMock.VerifyAll();
+        Assert.IsNull(result);
+    }
     #endregion
 
     #region GetNotificationRecipientIds

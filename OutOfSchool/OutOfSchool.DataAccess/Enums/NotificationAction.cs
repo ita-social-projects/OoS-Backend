@@ -15,4 +15,5 @@ public enum NotificationAction
     Block,
     Unblock,
     ProviderBlock,
+    ProviderUnblock,
 }

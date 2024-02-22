@@ -39,14 +39,22 @@ public class BlockedProviderParentRepository : SensitiveEntityRepositorySoftDele
             blockedProviderParent.ProviderId,
             false);
 
-        var currentBlock = await GetById(blockedProviderParent.Id);
-
-        dbContext.Entry(currentBlock).CurrentValues.SetValues(blockedProviderParent);
-        dbContext.Entry(currentBlock).State = EntityState.Modified;
+        dbContext.Entry(blockedProviderParent).CurrentValues.SetValues(blockedProviderParent);
+        dbContext.Entry(blockedProviderParent).State = EntityState.Modified;
 
         await db.SaveChangesAsync();
 
         return await Task.FromResult(blockedProviderParent);
+    }
+
+    /// <inheritdoc/>
+    public IQueryable<BlockedProviderParent> GetBlockedProviderParentEntities(Guid parentId, Guid providerId)
+    {
+        return Get(
+           whereExpression: b =>
+           b.ParentId == parentId
+           && b.ProviderId == providerId
+           && b.DateTimeTo == null);
     }
 
     private async Task SetApplicationsAndChatRoomsBlock(Guid parentId, Guid providerId, bool block)

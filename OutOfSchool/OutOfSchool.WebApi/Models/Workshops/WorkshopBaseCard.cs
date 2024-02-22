@@ -2,7 +2,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models.Workshops;
 
