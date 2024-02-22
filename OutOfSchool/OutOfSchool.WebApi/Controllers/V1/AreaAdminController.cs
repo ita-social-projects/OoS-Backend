@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -116,6 +117,7 @@ public class AreaAdminController : Controller
     /// </summary>
     /// <param name="areaAdminBase">Entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AreaAdminBaseDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -124,7 +126,7 @@ public class AreaAdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HasPermission(Permissions.AreaAdminAddNew)]
     [HttpPost]
-    public async Task<ActionResult> Create(AreaAdminBaseDto areaAdminBase)
+    public async Task<ActionResult> Create([FromBody] AreaAdminBaseDto areaAdminBase)
     {
         logger.LogDebug($"User(id): {currentUserId}");
 
@@ -172,13 +174,14 @@ public class AreaAdminController : Controller
     /// </summary>
     /// <param name="updateAreaAdminDto">BaseUserDto object with new properties.</param>
     /// <returns>AreaAdmin's key.</returns>
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AreaAdminDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HasPermission(Permissions.AreaAdminEdit)]
     [HttpPut]
-    public async Task<ActionResult> Update(BaseUserDto updateAreaAdminDto)
+    public async Task<ActionResult> Update([FromBody] BaseUserDto updateAreaAdminDto)
     {
         if (updateAreaAdminDto == null)
         {

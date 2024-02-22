@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Services.ProviderServices;
 
@@ -44,11 +45,12 @@ public class BlockedProviderParentController : ControllerBase
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.ProviderAdmins)]
     [HttpPost]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(BlockedProviderParentDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Block(BlockedProviderParentBlockDto blockedProviderParentBlockDto)
+    public async Task<IActionResult> Block([FromBody] BlockedProviderParentBlockDto blockedProviderParentBlockDto)
     {
         if (blockedProviderParentBlockDto == null)
         {
@@ -91,11 +93,12 @@ public class BlockedProviderParentController : ControllerBase
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.ProviderAdmins)]
     [HttpPost]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BlockedProviderParentDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UnBlock(BlockedProviderParentUnblockDto blockedProviderParentUnblockDto)
+    public async Task<IActionResult> UnBlock([FromBody] BlockedProviderParentUnblockDto blockedProviderParentUnblockDto)
     {
         if (blockedProviderParentUnblockDto == null)
         {

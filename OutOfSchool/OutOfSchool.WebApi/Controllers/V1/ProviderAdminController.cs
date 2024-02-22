@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using OutOfSchool.Common.Models;
@@ -46,6 +47,7 @@ public class ProviderAdminController : Controller
     /// </summary>
     /// <param name="providerAdmin">Entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CreateProviderAdminDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -53,7 +55,7 @@ public class ProviderAdminController : Controller
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<ActionResult> Create(CreateProviderAdminDto providerAdmin)
+    public async Task<ActionResult> Create([FromBody] CreateProviderAdminDto providerAdmin)
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
 
@@ -100,13 +102,14 @@ public class ProviderAdminController : Controller
     /// <param name="providerId">Provider's id for which operation perform.</param>
     /// <param name="providerAdminModel">Entity to update.</param>
     /// <returns>Updated ProviderAdmin.</returns>
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderAdminDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(Guid providerId, UpdateProviderAdminDto providerAdminModel)
+    public async Task<IActionResult> Update(Guid providerId, [FromBody] UpdateProviderAdminDto providerAdminModel)
     {
         if (providerAdminModel == null)
         {

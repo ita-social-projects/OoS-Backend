@@ -100,7 +100,7 @@ public class AchievementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Create(AchievementCreateDTO achievementDto)
+    public async Task<IActionResult> Create([FromBody] AchievementCreateDTO achievementDto)
     {
         if (achievementDto == null)
         {
@@ -162,12 +162,13 @@ public class AchievementController : ControllerBase
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopEdit)]
     [HttpPut]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AchievementDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Update(AchievementCreateDTO achievementDto)
+    public async Task<ActionResult> Update([FromBody] AchievementCreateDTO achievementDto)
     {
         var providerId = await providerService.GetProviderIdForWorkshopById(achievementDto.WorkshopId).ConfigureAwait(false);
 

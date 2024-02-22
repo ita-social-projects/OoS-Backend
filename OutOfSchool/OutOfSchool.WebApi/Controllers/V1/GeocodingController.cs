@@ -1,5 +1,6 @@
 #nullable enable
 
+using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Models.Geocoding;
@@ -24,12 +25,13 @@ public class GeocodingController : Controller
     /// </summary>
     /// <param name="request">Coordinates query.</param>
     /// <returns> The geocoding information about address or coordinates. </returns>
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<GeocodingResponse>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Geocoding(GeocodingRequest? request)
+    public async Task<IActionResult> Geocoding([FromBody] GeocodingRequest? request)
     {
         if (request is null)
         {

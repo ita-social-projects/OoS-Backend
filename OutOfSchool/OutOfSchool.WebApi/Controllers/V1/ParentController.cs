@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
@@ -68,11 +69,12 @@ public class ParentController : ControllerBase
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.ParentBlock)]
     [HttpPost("BlockUnblockParent")]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> BlockUnblockParent(BlockUnblockParentDto parentBlockUnblock)
+    public async Task<ActionResult> BlockUnblockParent([FromBody] BlockUnblockParentDto parentBlockUnblock)
     {
         var result = await serviceParent.BlockUnblockParent(parentBlockUnblock).ConfigureAwait(false);
 

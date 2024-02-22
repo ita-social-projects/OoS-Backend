@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
@@ -198,13 +199,14 @@ public class ChildController : ControllerBase
     /// <param name="childCreateDto">Child entity to add.</param>
     /// <returns>The child that was created.</returns>
     [HasPermission(Permissions.ChildAddNew)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChildDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(ChildCreateDto childCreateDto)
+    public async Task<IActionResult> Create([FromBody] ChildCreateDto childCreateDto)
     {
         string userId = GettingUserProperties.GetUserId(User);
 
@@ -222,13 +224,14 @@ public class ChildController : ControllerBase
     /// <param name="childrenCreateDtos">The list of the children entities to add.</param>
     /// <returns>The list of the children that were created.</returns>
     [HasPermission(Permissions.ChildAddNew)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChildDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost("batch")]
-    public async Task<IActionResult> CreateChildren(List<ChildCreateDto> childrenCreateDtos)
+    public async Task<IActionResult> CreateChildren([FromBody] List<ChildCreateDto> childrenCreateDtos)
     {
         string userId = GettingUserProperties.GetUserId(User);
 
@@ -248,13 +251,14 @@ public class ChildController : ControllerBase
     /// <param name="id">Child's Id.</param>
     /// <returns>The child that was updated.</returns>
     [HasPermission(Permissions.ChildEdit)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChildDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(ChildUpdateDto dto, Guid id)
+    public async Task<IActionResult> Update([FromBody] ChildUpdateDto dto, Guid id)
     {
         string userId = GettingUserProperties.GetUserId(User);
 

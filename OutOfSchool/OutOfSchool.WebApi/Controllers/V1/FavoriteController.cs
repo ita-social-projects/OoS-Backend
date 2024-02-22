@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshops;
@@ -114,12 +115,13 @@ public class FavoriteController : ControllerBase
     /// <param name="dto">Favorite entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.FavoriteAddNew)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(FavoriteDto dto)
+    public async Task<IActionResult> Create([FromBody] FavoriteDto dto)
     {
         var favorite = await service.Create(dto).ConfigureAwait(false);
 
@@ -135,12 +137,13 @@ public class FavoriteController : ControllerBase
     /// <param name="dto">Favorite to update.</param>
     /// <returns>Favorite.</returns>
     [HasPermission(Permissions.FavoriteEdit)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(FavoriteDto dto)
+    public async Task<IActionResult> Update([FromBody] FavoriteDto dto)
     {
         return Ok(await service.Update(dto).ConfigureAwait(false));
     }

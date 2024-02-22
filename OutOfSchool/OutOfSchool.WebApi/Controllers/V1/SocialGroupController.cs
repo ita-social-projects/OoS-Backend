@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models.SocialGroup;
@@ -72,12 +73,13 @@ public class SocialGroupController : ControllerBase
     /// <param name="dto">Social Group entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.SystemManagement)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(SocialGroupCreate dto)
+    public async Task<IActionResult> Create([FromBody] SocialGroupCreate dto)
     {
         var socialGroup = await service.Create(dto).ConfigureAwait(false);
 
