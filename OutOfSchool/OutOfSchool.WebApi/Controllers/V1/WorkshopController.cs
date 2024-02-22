@@ -250,7 +250,7 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(WorkshopBaseDto dto)
+    public async Task<IActionResult> Create([FromBody] WorkshopBaseDto dto)
     {
         if (dto == null)
         {
@@ -329,7 +329,7 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(WorkshopBaseDto dto)
+    public async Task<IActionResult> Update([FromBody] WorkshopBaseDto dto)
     {
         if (dto == null)
         {
