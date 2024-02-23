@@ -2,17 +2,20 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
 #nullable disable
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240222124919_AddShortTitleToWorkshop")]
+    partial class AddShortTitleToWorkshop
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1206,7 +1209,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 1L,
                             Description = "techadmin permissions",
-                            PackedPermissions = "def\n\r !()+,432578>=<?HGIFPQ[]\\rpqon|z{yx}Tg",
+                            PackedPermissions = "def\n\r !()+,432578>=<?HGIFPQ[]\\rpqon|z{yx}T",
                             RoleName = "TechAdmin"
                         },
                         new
@@ -1234,21 +1237,21 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 5L,
                             Description = "ministry admin permissions",
-                            PackedPermissions = "ef\n2578(,PQFTn[zxy{}g",
+                            PackedPermissions = "ef\n2578(,PQFTn[zxy{}",
                             RoleName = "MinistryAdmin"
                         },
                         new
                         {
                             Id = 6L,
                             Description = "region admin permissions",
-                            PackedPermissions = "ef\n2578(PQFTxy[g",
+                            PackedPermissions = "ef\n2578(PQFTxy[",
                             RoleName = "RegionAdmin"
                         },
                         new
                         {
                             Id = 7L,
                             Description = "area admin permissions",
-                            PackedPermissions = "ef\n2578(PQFT[g",
+                            PackedPermissions = "ef\n2578(PQFT[",
                             RoleName = "AreaAdmin"
                         });
                 });
@@ -1300,8 +1303,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("Founder")
                         .IsRequired()
-                        .HasMaxLength(60)
-                        .HasColumnType("varchar(60)");
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
 
                     b.Property<string>("FullTitle")
                         .IsRequired()
