@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
@@ -79,12 +80,13 @@ public class InstitutionStatusController : ControllerBase
     /// <param name="dto">Institution Status entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.SystemManagement)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(InstitutionStatusDTO dto)
+    public async Task<IActionResult> Create([FromBody] InstitutionStatusDTO dto)
     {
         var institutionStatus = await service.Create(dto).ConfigureAwait(false);
 
@@ -101,12 +103,13 @@ public class InstitutionStatusController : ControllerBase
     /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <returns>Institution Status.</returns>
     [HasPermission(Permissions.SystemManagement)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InstitutionStatusDTO))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(InstitutionStatusDTO dto, LocalizationType localization = LocalizationType.Ua)
+    public async Task<IActionResult> Update([FromBody] InstitutionStatusDTO dto, LocalizationType localization = LocalizationType.Ua)
     {
         var institutionStatus = await service.Update(dto).ConfigureAwait(false);
 

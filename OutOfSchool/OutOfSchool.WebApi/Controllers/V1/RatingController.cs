@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.AverageRatings;
@@ -170,12 +171,13 @@ public class RatingController : ControllerBase
     /// <param name="dto">Rating entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.RatingAddNew)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(RatingDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(RatingDto dto)
+    public async Task<IActionResult> Create([FromBody] RatingDto dto)
     {
         var rating = await ratingService.Create(dto).ConfigureAwait(false);
 
@@ -199,12 +201,13 @@ public class RatingController : ControllerBase
     /// <param name="dto">Rating to update.</param>
     /// <returns>Rating.</returns>
     [HasPermission(Permissions.RatingEdit)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RatingDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(RatingDto dto)
+    public async Task<IActionResult> Update([FromBody] RatingDto dto)
     {
         var rating = await ratingService.Update(dto).ConfigureAwait(false);
 

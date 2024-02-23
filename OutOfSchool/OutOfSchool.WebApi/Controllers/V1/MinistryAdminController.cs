@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -117,6 +118,7 @@ public class MinistryAdminController : Controller
     /// </summary>
     /// <param name="ministryAdminBase">Entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(MinistryAdminBaseDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -125,7 +127,7 @@ public class MinistryAdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HasPermission(Permissions.MinistryAdminAddNew)]
     [HttpPost]
-    public async Task<ActionResult> Create(MinistryAdminBaseDto ministryAdminBase)
+    public async Task<ActionResult> Create([FromBody] MinistryAdminBaseDto ministryAdminBase)
     {
         logger.LogDebug("{Path} started. User(id): {UserId}", path, userId);
 
@@ -158,11 +160,12 @@ public class MinistryAdminController : Controller
     /// <returns>MinistryAdmin's key.</returns>
     [HasPermission(Permissions.MinistryAdminEdit)]
     [HttpPut]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MinistryAdminDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Update(BaseUserDto updateMinistryAdminDto)
+    public async Task<ActionResult> Update([FromBody] BaseUserDto updateMinistryAdminDto)
     {
         if (updateMinistryAdminDto == null)
         {

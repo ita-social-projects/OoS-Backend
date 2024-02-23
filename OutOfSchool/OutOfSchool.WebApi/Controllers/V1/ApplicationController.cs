@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
@@ -282,6 +283,7 @@ public class ApplicationController : ControllerBase
     /// <response code="429">If too many requests have been sent.</response>
     /// <response code="500">If any server error occurs.</response>
     [HasPermission(Permissions.ApplicationAddNew)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ApplicationDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -289,7 +291,7 @@ public class ApplicationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(ApplicationCreate applicationDto)
+    public async Task<IActionResult> Create([FromBody] ApplicationCreate applicationDto)
     {
         if (applicationDto == null)
         {
@@ -359,12 +361,13 @@ public class ApplicationController : ControllerBase
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="500">If any server error occurres.</response>
     [HasPermission(Permissions.ApplicationEdit)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApplicationDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(ApplicationUpdate applicationDto)
+    public async Task<IActionResult> Update([FromBody] ApplicationUpdate applicationDto)
     {
         if (applicationDto is null)
         {

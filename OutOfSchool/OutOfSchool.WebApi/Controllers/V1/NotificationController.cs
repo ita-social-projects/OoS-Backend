@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.Notifications;
@@ -33,11 +34,12 @@ public class NotificationController : ControllerBase
     /// <response code="500">If any server error occures.</response>
     [Authorize]
     [HttpPost]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Create(NotificationDto notificationDto)
+    public async Task<IActionResult> Create([FromBody] NotificationDto notificationDto)
     {
         var notification = await notificationService.Create(notificationDto).ConfigureAwait(false);
 

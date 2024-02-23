@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
@@ -58,12 +59,13 @@ public abstract class CompanyInformationController : ControllerBase
     /// <param name="companyInformationModel">Entity to update.</param>
     /// <returns>Updated information about CompanyInformation.</returns>
     [HasPermission(Permissions.SystemManagement)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompanyInformationDto))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(CompanyInformationDto companyInformationModel)
+    public async Task<IActionResult> Update([FromBody] CompanyInformationDto companyInformationModel)
     {
         if (!ModelState.IsValid)
         {

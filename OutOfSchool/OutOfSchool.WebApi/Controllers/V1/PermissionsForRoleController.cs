@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
@@ -69,12 +70,13 @@ public class PermissionsForRoleController : ControllerBase
     /// </summary>
     /// <param name="dto">PermissionsForRole entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(PermissionsForRoleDTO dto)
+    public async Task<IActionResult> Create([FromBody] PermissionsForRoleDTO dto)
     {
         var permissionsForRole = await service.Create(dto).ConfigureAwait(false);
 
@@ -89,12 +91,13 @@ public class PermissionsForRoleController : ControllerBase
     /// </summary>
     /// <param name="dto">PermissionsForRole to update.</param>
     /// <returns>PermissionsForRole</returns>
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(PermissionsForRoleDTO dto)
+    public async Task<IActionResult> Update([FromBody] PermissionsForRoleDTO dto)
     {
         try
         {

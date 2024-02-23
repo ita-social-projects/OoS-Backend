@@ -105,7 +105,7 @@ public class DirectionController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Create(DirectionDto directionDto)
+    public async Task<IActionResult> Create([FromBody] DirectionDto directionDto)
     {
         if (!ModelState.IsValid)
         {
@@ -140,12 +140,13 @@ public class DirectionController : ControllerBase
     /// <response code="403">If the user has no rights to use this method.</response>
     /// <response code="500">If any server error occures.</response>
     [HttpPut]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DirectionDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Update(DirectionDto directionDto)
+    public async Task<ActionResult> Update([FromBody] DirectionDto directionDto)
     {
         if (!ModelState.IsValid)
         {

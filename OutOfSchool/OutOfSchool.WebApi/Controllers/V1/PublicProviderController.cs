@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.ProviderServices;
@@ -28,6 +29,7 @@ public class PublicProviderController : ControllerBase
     /// <returns><see cref="ProviderStatusDto"/>.</returns>
     [HttpPut]
     [HasPermission(Permissions.ProviderApprove)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderStatusDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

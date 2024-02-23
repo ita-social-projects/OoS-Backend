@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -128,11 +129,12 @@ public class ProviderController : ControllerBase
     /// <param name="providerModel">Entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.ProviderAddNew)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [HttpPost]
-    public async Task<IActionResult> Create(ProviderCreateDto providerModel)
+    public async Task<IActionResult> Create([FromBody] ProviderCreateDto providerModel)
     {
         if (providerModel == null)
         {
@@ -180,12 +182,13 @@ public class ProviderController : ControllerBase
     /// <param name="providerModel">Entity to update.</param>
     /// <returns>Updated Provider.</returns>
     [HasPermission(Permissions.ProviderEdit)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderDto))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(ProviderUpdateDto providerModel)
+    public async Task<IActionResult> Update([FromBody] ProviderUpdateDto providerModel)
     {
         if (!ModelState.IsValid)
         {
@@ -217,6 +220,7 @@ public class ProviderController : ControllerBase
     /// <param name="providerBlockDto">Entity to update.</param>
     /// <returns>Block Provider.</returns>
     [HasPermission(Permissions.ProviderBlock)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderBlockDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
