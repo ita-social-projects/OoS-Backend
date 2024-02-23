@@ -14,9 +14,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common;
-using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Common;
@@ -48,13 +46,11 @@ public class AdminControllerTests
     private Mock<HttpContext> httpContext;
 
     private List<ApplicationDto> applications;
-    private IEnumerable<ChildDto> children;
     private List<WorkshopCard> workshopCards;
     private ParentDTO parent;
     private ProviderDto provider;
     private WorkshopV2Dto workshopDto;
     private List<MinistryAdminDto> ministryAdminDtos;
-    private List<Provider> providers;
     private DirectionDto direction;
     private IMapper mapper;
     private HttpContext fakeHttpContext;
@@ -343,7 +339,7 @@ public class AdminControllerTests
 
     [Test]
     [TestCase(0)]
-    public void DeleteDirectionById_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
+    public void DeleteDirectionById_WhenIdIsInvalid_ShouldThrowException(long id)
     {
         // Arrange
         var user = new ClaimsPrincipal(new ClaimsIdentity(

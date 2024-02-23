@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -12,10 +11,8 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -24,14 +21,14 @@ public class DirectionSensitiveServiceTests
 {
     private static Guid institutionId;
     private static Guid institutionHierarchyId;
+    private IEntityRepositorySoftDeleted<long, Direction> repo;
+    private ISensitiveDirectionService service;
+    private Mock<IMapper> mapper;
     private DbContextOptions<OutOfSchoolDbContext> options;
     private OutOfSchoolDbContext context;
-    private IEntityRepositorySoftDeleted<long, Direction> repo;
     private IWorkshopRepository repositoryWorkshop;
-    private ISensitiveDirectionService service;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<DirectionService>> logger;
-    private Mock<IMapper> mapper;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;

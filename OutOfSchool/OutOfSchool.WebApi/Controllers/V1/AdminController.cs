@@ -86,6 +86,7 @@ public class AdminController : Controller
     [HasPermission(Permissions.ApplicationRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ApplicationDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
     public async Task<IActionResult> GetApplications([FromQuery] ApplicationFilter filter)
@@ -213,7 +214,7 @@ public class AdminController : Controller
     [HasPermission(Permissions.ProviderBlock)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderBlockDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
