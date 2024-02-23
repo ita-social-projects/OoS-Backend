@@ -33,7 +33,6 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class ApplicationServiceTests
 {
     private IApplicationService service;
-    private ISensitiveApplicationService sensitiveApplicationService;
     private Mock<IApplicationRepository> applicationRepositoryMock;
     private Mock<IWorkshopRepository> workshopRepositoryMock;
     private Mock<ILogger<ApplicationService>> logger;
