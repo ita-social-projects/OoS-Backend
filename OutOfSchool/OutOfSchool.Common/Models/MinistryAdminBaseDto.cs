@@ -10,6 +10,4 @@ public class MinistryAdminBaseDto : AdminBaseDto
 
     [Required(ErrorMessage = "InstitutionId is required")]
     public Guid InstitutionId { get; set; }
-
-    public string UserId { get; set; }
 }

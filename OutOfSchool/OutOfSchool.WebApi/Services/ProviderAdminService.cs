@@ -113,7 +113,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     {
         _ = providerAdminModel ?? throw new ArgumentNullException(nameof(providerAdminModel));
 
-        Logger.LogDebug("ProviderAdmin(id): {ProviderAdminId} updating was started. User(id): {UserId}", providerAdminModel.Id, userId);
+        Logger.LogDebug("ProviderAdmin(id): {ProviderAdminId} updating was started. User(id): {UserId}", providerAdminModel.UserId, userId);
 
         var hasAccess = await IsAllowedAsync(providerId, userId)
             .ConfigureAwait(true);
@@ -128,12 +128,12 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             };
         }
 
-        var provideradmin = await providerAdminRepository.GetByIdAsync(providerAdminModel.Id, providerId)
+        var provideradmin = await providerAdminRepository.GetByIdAsync(providerAdminModel.UserId, providerId)
             .ConfigureAwait(false);
 
         if (provideradmin is null)
         {
-            Logger.LogError("ProviderAdmin(id) {ProviderAdminId} not found. User(id): {UserId}", providerAdminModel.Id, userId);
+            Logger.LogError("ProviderAdmin(id) {ProviderAdminId} not found. User(id): {UserId}", providerAdminModel.UserId, userId);
 
             return new ErrorResponse
             {
@@ -144,7 +144,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.UpdateProviderAdmin + providerAdminModel.Id),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.UpdateProviderAdmin + providerAdminModel.UserId),
             Token = token,
             Data = providerAdminModel,
         };

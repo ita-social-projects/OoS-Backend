@@ -78,7 +78,7 @@ public class AreaAdminController : Controller
     }
 
     [HttpPut("{areaAdminId}/{isBlocked}")]
-    [HasPermission(Permissions.AreaAdminEdit)]
+    [HasPermission(Permissions.AreaAdminBlock)]
     public async Task<ResponseDto> Block(string areaAdminId, bool isBlocked)
     {
         logger.LogDebug(

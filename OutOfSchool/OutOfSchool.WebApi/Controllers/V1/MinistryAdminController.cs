@@ -255,7 +255,7 @@ public class MinistryAdminController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [HasPermission(Permissions.MinistryAdminEdit)]
+    [HasPermission(Permissions.MinistryAdminBlock)]
     [HttpPut]
     public async Task<ActionResult> Block(string ministryAdminId, bool? isBlocked)
     {

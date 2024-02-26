@@ -5,6 +5,7 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Achievement;
+using OutOfSchool.WebApi.Models.Admins;
 using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Models.Changes;
@@ -611,6 +612,43 @@ public class MappingProfile : Profile
 
         CreateMap<WorkshopFilter, WorkshopFilterWithSettlements>()
             .ForMember(dest => dest.SettlementsIds, opt => opt.Ignore());
+
+        CreateMap<InstitutionAdminBase, BaseAdminDto>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.User.Id))
+            .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
+            .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName ?? string.Empty))
+            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber.Right(Constants.PhoneShortLength)))
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+            .ForMember(
+                dest => dest.AccountStatus,
+                opt => opt.MapFrom(src =>
+                    src.User.IsBlocked
+                        ? AccountStatus.Blocked
+                        : src.User.LastLogin == DateTimeOffset.MinValue
+                            ? AccountStatus.NeverLogged
+                            : AccountStatus.Accepted));
+
+        CreateMap<InstitutionAdmin, Ministry2AdminDto>()
+            .IncludeBase<InstitutionAdminBase, BaseAdminDto>();
+
+        CreateMap<RegionAdmin, Region2AdminDto>()
+            .IncludeBase<InstitutionAdminBase, BaseAdminDto>();
+
+        CreateMap<AreaAdmin, Area2AdminDto>()
+            .IncludeBase<InstitutionAdminBase, BaseAdminDto>()
+            .ForMember(
+                dest => dest.RegionId,
+                opt => opt.MapFrom(src =>
+                    src.CATOTTG != null
+                        ? src.CATOTTG.Parent != null
+                            ? src.CATOTTG.Parent.Parent != null
+                                ? src.CATOTTG.Parent.Parent.Id
+                                : 0
+                            : 0
+                        : 0));
+
+        CreateMap<BaseAdminDto, AdminBaseDto>();
     }
 
     public IMappingExpression<TSource, TDestination> CreateSoftDeletedMap<TSource, TDestination>()
