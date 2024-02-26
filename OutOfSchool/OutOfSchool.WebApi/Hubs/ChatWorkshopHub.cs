@@ -61,7 +61,65 @@ public class ChatWorkshopHub : Hub
         this.blockedProviderParentService = blockedProviderParentService;
     }
 
-    public override async Task OnConnectedAsync()
+    //public override async Task OnConnectedAsync()
+    //{
+    //    var userId = GettingUserProperties.GetUserId(Context.User);
+    //    LogErrorThrowExceptionIfPropertyIsNull(userId, nameof(userId));
+
+    //    var userRoleName = GettingUserProperties.GetUserRole(Context.User);
+    //    LogErrorThrowExceptionIfPropertyIsNull(userRoleName, nameof(userRoleName));
+
+    //    var userSubroleName = GettingUserProperties.GetUserSubrole(Context.User);
+    //    LogErrorThrowExceptionIfPropertyIsNull(userSubroleName, nameof(userSubroleName));
+
+    //    Role userRole = (Role)Enum.Parse(typeof(Role), userRoleName, true);
+    //    Subrole userSubrole = (Subrole)Enum.Parse(typeof(Subrole), userSubroleName, true);
+
+    //    logger.LogDebug($"New Hub-connection established. {nameof(userId)}: {userId}, {nameof(userRoleName)}: {userRoleName}");
+
+    //    this.AddUsersConnectionIdTracking(userId);
+
+    //    // Add User to all Groups where he is a member.
+    //    IEnumerable<Guid> usersRoomIds;
+
+    //    if (userRole == Role.Parent)
+    //    {
+    //        var userRoleId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
+    //        usersRoomIds = await roomService.GetChatRoomIdsByParentIdAsync(userRoleId).ConfigureAwait(false);
+    //    }
+    //    else
+    //    {
+    //        if (userSubrole == Subrole.ProviderAdmin)
+    //        {
+    //            var providersAdmins = await providerAdminRepository.GetByFilter(p => p.UserId == userId && !p.IsDeputy).ConfigureAwait(false);
+    //            var workshopsIds = providersAdmins.SelectMany(admin => admin.ManagedWorkshops, (admin, workshops) => new { workshops }).Select(x => x.workshops.Id);
+    //            usersRoomIds = await roomService.GetChatRoomIdsByWorkshopIdsAsync(workshopsIds).ConfigureAwait(false);
+    //        }
+    //        else
+    //        {
+    //            var userRoleId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
+    //            usersRoomIds = await roomService.GetChatRoomIdsByProviderIdAsync(userRoleId).ConfigureAwait(false);
+    //        }
+    //    }
+
+    //    // TODO: add parallel execution (Task.WhenAll(tasks))
+    //    foreach (var id in usersRoomIds)
+    //    {
+    //        await Groups.AddToGroupAsync(Context.ConnectionId, id.ToString()).ConfigureAwait(false);
+    //    }
+    //}
+
+    public override async Task OnDisconnectedAsync(Exception exception)
+    {
+        var userId = GettingUserProperties.GetUserId(Context.User);
+        LogErrorThrowExceptionIfPropertyIsNull(userId, nameof(userId));
+
+        logger.LogDebug($"UserId: {userId} connection:{Context.ConnectionId} disconnected.");
+
+        this.RemoveUsersConnectionIdTracking(userId);
+    }
+
+    public async Task AddConnectionToGroup(Guid userRoomId)
     {
         var userId = GettingUserProperties.GetUserId(Context.User);
         LogErrorThrowExceptionIfPropertyIsNull(userId, nameof(userId));
@@ -79,7 +137,6 @@ public class ChatWorkshopHub : Hub
 
         this.AddUsersConnectionIdTracking(userId);
 
-        // Add User to all Groups where he is a member.
         IEnumerable<Guid> usersRoomIds;
 
         if (userRole == Role.Parent)
@@ -102,21 +159,15 @@ public class ChatWorkshopHub : Hub
             }
         }
 
-        // TODO: add parallel execution (Task.WhenAll(tasks))
-        foreach (var id in usersRoomIds)
+        if (!usersRoomIds.Contains(userRoomId))
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, id.ToString()).ConfigureAwait(false);
+            logger.LogWarning($"{userRole} with UserId:{userId} is trying to connect to not existing chatRoom");
+            var messageForUser = localizer["Some of the message parameters were wrong. Please check your message and try again."];
+            await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", messageForUser).ConfigureAwait(false);
+            return;
         }
-    }
 
-    public override async Task OnDisconnectedAsync(Exception exception)
-    {
-        var userId = GettingUserProperties.GetUserId(Context.User);
-        LogErrorThrowExceptionIfPropertyIsNull(userId, nameof(userId));
-
-        logger.LogDebug($"UserId: {userId} connection:{Context.ConnectionId} disconnected.");
-
-        this.RemoveUsersConnectionIdTracking(userId);
+        await Groups.AddToGroupAsync(Context.ConnectionId, userRoomId.ToString()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -144,7 +195,7 @@ public class ChatWorkshopHub : Hub
                 return;
             }
 
-            var userHasRights = await this.UserHasRigtsForChatRoomAsync(chatMessageWorkshopCreateDto.WorkshopId, chatMessageWorkshopCreateDto.ParentId).ConfigureAwait(false);
+            var userHasRights = await this.UserHasRightsForChatRoomAsync(chatMessageWorkshopCreateDto.WorkshopId, chatMessageWorkshopCreateDto.ParentId).ConfigureAwait(false);
 
             if (!userHasRights)
             {
@@ -242,7 +293,7 @@ public class ChatWorkshopHub : Hub
         }
     }
 
-    private async Task<bool> UserHasRigtsForChatRoomAsync(Guid workshopId, Guid parentId)
+    private async Task<bool> UserHasRightsForChatRoomAsync(Guid workshopId, Guid parentId)
     {
         var userId = GettingUserProperties.GetUserId(Context.User);
         LogErrorThrowExceptionIfPropertyIsNull(userId, nameof(userId));
