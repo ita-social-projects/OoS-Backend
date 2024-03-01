@@ -32,28 +32,6 @@ public class ProviderController : ControllerBase
     }
 
     /// <summary>
-    /// Get Providers that match filter's parameters.
-    /// </summary>
-    /// <param name="filter">Entity that represents searching parameters.</param>
-    /// <returns><see cref="SearchResult{ProviderDto}"/>, or no content.</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet]
-    [AllowAnonymous]
-    public async Task<IActionResult> Get([FromQuery] ProviderFilter filter)
-    {
-        var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
-
-        if (providers.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(providers);
-    }
-
-    /// <summary>
     /// Get Provider by it's Id.
     /// </summary>
     /// <param name="providerId">Provider's id.</param>

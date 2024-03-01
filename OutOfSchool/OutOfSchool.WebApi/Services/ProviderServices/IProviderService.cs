@@ -2,7 +2,6 @@
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.WebApi.Services.ProviderServices;
@@ -18,14 +17,6 @@ public interface IProviderService
     /// <param name="providerDto">Provider entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     Task<ProviderDto> Create(ProviderCreateDto providerDto);
-
-    /// <summary>
-    /// Get entities from the database that match filter's parameters.
-    /// </summary>
-    /// <param name="filter">Filter with specified searching parameters.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-    /// The task result contains the <see cref="SearchResult{ProviderDto}"/> that contains found elements.</returns>
-    Task<SearchResult<ProviderDto>> GetByFilter(ProviderFilter filter = null);
 
     /// <summary>
     /// Get entity by it's key.
@@ -71,14 +62,6 @@ public interface IProviderService
     /// <param name="workshopId">Workshop's key.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     Task<Guid> GetProviderIdForWorkshopById(Guid workshopId);
-
-    /// <summary>
-    /// Set block/unblock state.
-    /// </summary>
-    /// <param name="providerBlockDto">Provider to block/unblock.</param>
-    /// <param name="token">Current user's token.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
-    Task<ResponseDto> Block(ProviderBlockDto providerBlockDto, string token = default);
 
     /// <summary>
     /// Get blocked/unblocked status for provider.

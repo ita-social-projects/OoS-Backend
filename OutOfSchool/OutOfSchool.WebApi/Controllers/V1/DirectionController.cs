@@ -61,12 +61,12 @@ public class DirectionController : ControllerBase
     public async Task<IActionResult> GetByFilter([FromQuery] DirectionFilter filter, bool isAdmins = false)
     {
         var directions = await service.GetByFilter(filter, isAdmins).ConfigureAwait(false);
-
+    
         if (directions.TotalAmount < 1)
         {
             return NoContent();
         }
-
+    
         return Ok(directions);
     }
 

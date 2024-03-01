@@ -10,7 +10,7 @@ namespace OutOfSchool.WebApi.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for Direction entity.
 /// </summary>
-public class DirectionService : IDirectionService
+public class DirectionService : IDirectionService, ISensitiveDirectionService
 {
     private readonly IEntityRepositorySoftDeleted<long, Direction> repository;
     private readonly IWorkshopRepository repositoryWorkshop;

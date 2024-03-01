@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Services.ProviderServices;
 /// <summary>
 /// Implements the interface with CRUD functionality for Provider entity.
 /// </summary>
-public class ProviderService : IProviderService, INotificationReciever
+public class ProviderService : IProviderService, INotificationReciever, ISensitiveProviderService
 {
     private readonly IProviderRepository providerRepository;
     private readonly IProviderAdminRepository providerAdminRepository;

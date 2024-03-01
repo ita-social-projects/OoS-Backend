@@ -186,6 +186,7 @@ public static class Startup
         services.AddHttpContextAccessor();
         services.AddScoped<IProviderAdminService, ProviderAdminService>();
         services.AddScoped<IMinistryAdminService, MinistryAdminService>();
+        services.AddScoped<ISensitiveMinistryAdminService, MinistryAdminService>();
         services.AddScoped<IRegionAdminService, RegionAdminService>();
         services.AddScoped<IAreaAdminService, AreaAdminService>();
 
@@ -249,15 +250,18 @@ public static class Startup
 
         // entities services
         services.AddTransient<IApplicationService, ApplicationService>();
+        services.AddTransient<ISensitiveApplicationService, ApplicationService>();
         services.AddTransient<IChatMessageWorkshopService, ChatMessageWorkshopService>();
         services.AddTransient<IChatRoomWorkshopService, ChatRoomWorkshopService>();
         services.AddTransient<IChildService, ChildService>();
         services.AddTransient<IDirectionService, DirectionService>();
+        services.AddTransient<ISensitiveDirectionService, DirectionService>();
         services.AddTransient<IFavoriteService, FavoriteService>();
         services.AddTransient<IParentService, ParentService>();
         services.AddTransient<IParentBlockedByAdminLogService, ParentBlockedByAdminLogService>();
         services.AddTransient<IPrivateProviderService, PrivateProviderService>();
         services.AddTransient<IProviderService, ProviderService>();
+        services.AddTransient<ISensitiveProviderService, ProviderService>();
         services.AddTransient<IPublicProviderService, PublicProviderService>();
         services.AddTransient<IProviderTypeService, ProviderTypeService>();
         services.AddTransient<IProviderServiceV2, ProviderServiceV2>();

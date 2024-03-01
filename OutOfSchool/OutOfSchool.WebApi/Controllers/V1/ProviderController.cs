@@ -1,4 +1,3 @@
-using System.Net.Mime;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -32,47 +31,6 @@ public class ProviderController : ControllerBase
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
-
-    /// <summary>
-    /// Get Providers that match filter's parameters.
-    /// </summary>
-    /// <param name="filter">Entity that represents searching parameters.</param>
-    /// <returns><see cref="SearchResult{ProviderDto}"/>, or no content.</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet]
-    [AllowAnonymous]
-    public async Task<IActionResult> Get([FromQuery] ProviderFilter filter)
-    {
-        var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
-
-        if (providers.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(providers);
-    }
-
-    /// <summary>
-    /// Get all Providers from the database.
-    /// </summary>
-    /// <param name="filter">Filter to get a part of all providers that were found.</param>
-    /// <returns>The result is a <see cref="SearchResult{ProviderDto}"/> that contains the count of all found providers and a list of providers that were received.</returns>
-    [HasPermission(Permissions.ProviderRead)]
-    [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByFilter([FromQuery] ProviderFilter filter)
-    {
-        var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
-
-        return Ok(providers);
     }
 
     /// <summary>
@@ -276,7 +234,7 @@ public class ProviderController : ControllerBase
     }
 
     /// <summary>
-    /// Get Providers that match filter's parameters.
+    /// Get Provider status by providerId.
     /// </summary>
     /// <param name="providerId">Id of provider.</param>
     /// <returns><see cref="SearchResult{ProviderStatusDto}"/>, or no content.</returns>
