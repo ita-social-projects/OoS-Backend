@@ -7,7 +7,7 @@ using OutOfSchool.Common.Models;
 namespace OutOfSchool.ElasticsearchData.Models;
 
 // TODO: check Nested attribute
-public class WorkshopES: IHasRating
+ public class WorkshopES : IHasRating
 {
     public const string TitleKeyword = "title.keyword";
 
@@ -15,6 +15,8 @@ public class WorkshopES: IHasRating
     public Guid Id { get; set; }
 
     public string Title { get; set; }
+
+    public string ShortTitle { get; set; }
 
     public string CoverImageId { get; set; }
 
@@ -38,6 +40,7 @@ public class WorkshopES: IHasRating
     public int MaxAge { get; set; }
 
     public bool CompetitiveSelection { get; set; }
+
     public decimal Price { get; set; }
 
     public PayRateType PayRate { get; set; }
