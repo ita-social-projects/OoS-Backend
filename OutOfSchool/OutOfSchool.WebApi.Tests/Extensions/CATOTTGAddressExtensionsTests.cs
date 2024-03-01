@@ -111,6 +111,32 @@ public class CATOTTGAddressExtensionsTests
 
     #region GetSettlementName
     [Test]
+    public void GetSettlementName_WhenCATOTTGIsCityDistrictWithParent_ShouldReturnParentName()
+    {
+        // Arrange
+        string expected = "Корюківка";
+
+        // Act
+        var result = CatottgAddressExtensions.GetSettlementName(cityDistrictWithParent);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+    }
+
+    [Test]
+    public void GetSettlementName_WhenCATOTTGIsCityDistrictWithSpecialStatusParent_ShouldReturnParentName()
+    {
+        // Arrange
+        string expected = "Київ";
+
+        // Act
+        var result = CatottgAddressExtensions.GetSettlementName(cityDistrictWithSpecialStatusParent);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+    }
+
+    [Test]
     public void GetSettlementName_WhenCATOTTGIsSettlementWithParent_ShouldReturnSettlementName()
     {
         // Arrange
@@ -131,19 +157,6 @@ public class CATOTTGAddressExtensionsTests
 
         // Act
         var result = CatottgAddressExtensions.GetSettlementName(settlementWithoutParent);
-
-        // Assert
-        Assert.AreEqual(expected, result);
-    }
-
-    [Test]
-    public void GetSettlementName_WhenCATOTTGIsCityDistrictWithParent_ShouldReturnParentName()
-    {
-        // Arrange
-        string expected = "Корюківка";
-
-        // Act
-        var result = CatottgAddressExtensions.GetSettlementName(cityDistrictWithParent);
 
         // Assert
         Assert.AreEqual(expected, result);
@@ -215,6 +228,19 @@ public class CATOTTGAddressExtensionsTests
 
         // Act
         var result = CatottgAddressExtensions.GetDistrictName(cityDistrictWithParent);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+    }
+
+    [Test]
+    public void GetDistrictName_WhenCATOTTGIsCityDistrictWithSpecialStatusParent_ShouldReturnNull()
+    {
+        // Arrange
+        string expected = null;
+
+        // Act
+        var result = CatottgAddressExtensions.GetDistrictName(cityDistrictWithSpecialStatusParent);
 
         // Assert
         Assert.AreEqual(expected, result);
