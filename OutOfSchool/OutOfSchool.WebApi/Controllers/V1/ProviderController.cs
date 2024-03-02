@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -170,41 +171,6 @@ public class ProviderController : ControllerBase
         {
             return BadRequest(e);
         }
-    }
-
-    /// <summary>
-    /// Block/unblock Provider.
-    /// </summary>
-    /// <param name="providerBlockDto">Entity to update.</param>
-    /// <returns>Block Provider.</returns>
-    [HasPermission(Permissions.ProviderBlock)]
-    [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderBlockDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpPut]
-    public async Task<ActionResult> Block([FromBody] ProviderBlockDto providerBlockDto)
-    {
-        var result = await providerService.Block(
-            providerBlockDto,
-            await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false));
-
-        if (!result.IsSuccess)
-        {
-            switch (result.HttpStatusCode)
-            {
-                case HttpStatusCode.Forbidden:
-                    return Forbid();
-                case HttpStatusCode.NotFound:
-                    return NotFound(result.Message);
-                default:
-                    return NotFound(result.Message);
-            }
-        }
-
-        return Ok(result.Result);
     }
 
     /// <summary>

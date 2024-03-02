@@ -25,13 +25,6 @@ public class DirectionSensitiveServiceTests
     private ISensitiveDirectionService service;
     private Mock<IMapper> mapper;
     private DbContextOptions<OutOfSchoolDbContext> options;
-    private OutOfSchoolDbContext context;
-    private IWorkshopRepository repositoryWorkshop;
-    private Mock<IStringLocalizer<SharedResource>> localizer;
-    private Mock<ILogger<DirectionService>> logger;
-    private Mock<ICurrentUserService> currentUserServiceMock;
-    private Mock<IMinistryAdminService> ministryAdminServiceMock;
-    private Mock<IRegionAdminService> regionAdminServiceMock;
 
     [SetUp]
     public void SetUp()
@@ -44,15 +37,15 @@ public class DirectionSensitiveServiceTests
                 databaseName: "OutOfSchoolTestDB");
 
         options = builder.Options;
-        context = new OutOfSchoolDbContext(options);
+        var context = new OutOfSchoolDbContext(options);
 
         repo = new EntityRepositorySoftDeleted<long, Direction>(context);
-        repositoryWorkshop = new WorkshopRepository(context);
-        localizer = new Mock<IStringLocalizer<SharedResource>>();
-        logger = new Mock<ILogger<DirectionService>>();
-        currentUserServiceMock = new Mock<ICurrentUserService>();
-        ministryAdminServiceMock = new Mock<IMinistryAdminService>();
-        regionAdminServiceMock = new Mock<IRegionAdminService>();
+        var repositoryWorkshop = new WorkshopRepository(context);
+        var localizer = new Mock<IStringLocalizer<SharedResource>>();
+        var logger = new Mock<ILogger<DirectionService>>();
+        var currentUserServiceMock = new Mock<ICurrentUserService>();
+        var ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        var regionAdminServiceMock = new Mock<IRegionAdminService>();
 
         service = new DirectionService(
             repo,

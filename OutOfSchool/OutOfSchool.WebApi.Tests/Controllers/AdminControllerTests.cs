@@ -91,8 +91,6 @@ public class AdminControllerTests
 
         workshopDto = WorkshopV2DtoGenerator.Generate();
         workshopDto.ProviderId = providerId;
-        children = ChildDtoGenerator.Generate(2).WithSocial(new SocialGroupDto { Id = 1 });
-        providers = ProvidersGenerator.Generate(10);
         parent = ParentDtoGenerator.Generate().WithUserId(userId);
         provider = ProviderDtoGenerator.Generate();
         provider.UserId = userId;
@@ -107,12 +105,8 @@ public class AdminControllerTests
     public async Task GetByFilterMinistryAdmin_WhenCalled_ReturnsOkResultObject_WithExpectedCollectionDtos()
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         var expected = new SearchResult<MinistryAdminDto>
         {
             TotalAmount = 10,
@@ -134,12 +128,8 @@ public class AdminControllerTests
     public async Task GetByFilerMinistryAdmin_WhenCalled_ReturnsNoContentResultObject()
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
 
         var expected = new SearchResult<MinistryAdminDto>
         {
@@ -162,12 +152,8 @@ public class AdminControllerTests
     public async Task GetByFilterMinistryAdmin_ReturnsObjectResult()
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.Provider).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.Provider);
 
         sensitiveMinistryAdminService.Setup(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>())).ReturnsAsync(new SearchResult<MinistryAdminDto> { TotalAmount = 0, Entities = new List<MinistryAdminDto>() });
 
@@ -184,12 +170,8 @@ public class AdminControllerTests
     public async Task GetApplications_WhenCalledByAdmin_ShouldReturnOkResultObject()
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         sensitiveApplicationService.Setup(s => s.GetAll(It.IsAny<ApplicationFilter>())).ReturnsAsync(new SearchResult<ApplicationDto>
         {
             Entities = applications,
@@ -208,12 +190,8 @@ public class AdminControllerTests
     public async Task GetApplications_WhenCollectionIsEmpty_ShouldReturnNoContent()
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         sensitiveApplicationService.Setup(s => s.GetAll(It.IsAny<ApplicationFilter>())).ReturnsAsync(new SearchResult<ApplicationDto>()
         {
             Entities = new List<ApplicationDto>(),
@@ -232,12 +210,8 @@ public class AdminControllerTests
     public async Task GetApplications_WhenCalledParentOrProvider_RetursObjectResult()
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.Parent).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.Provider);
         sensitiveApplicationService.Setup(s => s.GetAll(It.IsAny<ApplicationFilter>())).ThrowsAsync(new UnauthorizedAccessException());
 
         // Act
@@ -251,12 +225,8 @@ public class AdminControllerTests
     public async Task UpdateDirections_WhenModelIsValid_ReturnsOkObjectResult()
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         var changedDirection = new DirectionDto()
         {
             Id = 1,
@@ -276,12 +246,8 @@ public class AdminControllerTests
     public async Task UpdateDirections_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         controller.ModelState.AddModelError("UpdateDirection", "Invalid model state.");
 
         // Act
@@ -296,12 +262,8 @@ public class AdminControllerTests
     public async Task UpdateDirections_WhenUserIsNotTechAdmin_ReturnsObjectResult()
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.MinistryAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.MinistryAdmin);
         var changedDirection = new DirectionDto()
         {
             Id = 1,
@@ -321,12 +283,8 @@ public class AdminControllerTests
     public async Task DeleteDirectionById_WhenIdIsValid_ReturnsNoContentResult(long id)
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         sensitiveDirectionService.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Success(direction));
 
         // Act
@@ -342,12 +300,8 @@ public class AdminControllerTests
     public void DeleteDirectionById_WhenIdIsInvalid_ShouldThrowException(long id)
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         sensitiveDirectionService.Setup(x => x.Delete(id));
 
         // Act and Assert
@@ -360,12 +314,8 @@ public class AdminControllerTests
     public async Task DeleteDirectionById_WhenIdIsInvalid_ReturnsNull(long id)
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         sensitiveDirectionService.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Success(direction));
 
         // Act
@@ -380,12 +330,8 @@ public class AdminControllerTests
     public async Task DeleteDirectionById_WhenThereAreRelatedWorkshops_ReturnsBadRequestObjectResult(long id)
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         sensitiveDirectionService.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Failed(new OperationError
         {
             Code = "400",
@@ -405,12 +351,8 @@ public class AdminControllerTests
     public async Task DeleteDirectionById_WhenIdIsValid_ReturnsObjectResult(long id)
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.MinistryAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.MinistryAdmin);
         sensitiveDirectionService.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Success(direction));
 
         // Act
@@ -424,12 +366,8 @@ public class AdminControllerTests
     public async Task GetProviderByFilter_ReturnsOkResult()
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         var expected = new SearchResult<ProviderDto> { TotalAmount = 1, Entities = new List<ProviderDto>() };
         sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
             .ReturnsAsync(expected);
@@ -446,12 +384,10 @@ public class AdminControllerTests
     public async Task GetProviderByFilter_ReturnsObjectResult()
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.MinistryAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.Parent);
+
         var expected = new SearchResult<ProviderDto> { TotalAmount = 1, Entities = new List<ProviderDto>() };
         sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
             .ReturnsAsync(expected);
@@ -467,12 +403,8 @@ public class AdminControllerTests
     public async Task BlockProvider_WithValidIdAndBlocked_ReturnsOkResult()
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         sensitiveProviderService
             .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
                 new ResponseDto(){Result = new object(), HttpStatusCode = HttpStatusCode.Accepted, IsSuccess = true, Message = "test"});
@@ -488,12 +420,8 @@ public class AdminControllerTests
     public async Task BlockProvider_WithValidIdAndBlocked_ReturnsForbidResult()
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
 
         sensitiveProviderService
             .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
@@ -511,12 +439,8 @@ public class AdminControllerTests
     public async Task BlockProvider_WithValidIdAndBlocked_ReturnsNotFoundResult()
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         sensitiveProviderService
             .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
                 new ResponseDto(){Result = new object(), HttpStatusCode = HttpStatusCode.NotFound, IsSuccess = false, Message = "test"});
@@ -533,12 +457,8 @@ public class AdminControllerTests
     public async Task BlockProvider_WithValidIdAndBlocked_DefaultCase_ReturnsNotFoundResult()
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.TechAdmin).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         sensitiveProviderService
             .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
                 new ResponseDto(){Result = new object(), HttpStatusCode = HttpStatusCode.Accepted, IsSuccess = false, Message = "test"});
@@ -555,12 +475,8 @@ public class AdminControllerTests
     public async Task BlockProvider_UserIsNotTechAdmin_ReturnsObjectResult()
     {
         // Arrange
-        var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[]
-            {
-                new Claim(ClaimTypes.Role, nameof(Role.Parent).ToLower()),
-            }));
-        controller.ControllerContext.HttpContext.User = user;
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.Parent);
         sensitiveProviderService
             .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
                 new ResponseDto(){Result = new object(), HttpStatusCode = HttpStatusCode.Accepted, IsSuccess = false, Message = "test"});
