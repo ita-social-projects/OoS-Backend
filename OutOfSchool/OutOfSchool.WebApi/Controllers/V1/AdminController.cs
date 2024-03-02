@@ -82,6 +82,7 @@ public class AdminController : Controller
     /// <returns>List of all applications.</returns>
     /// <response code="200">All entities were found.</response>
     /// <response code="204">No entity was found.</response>
+    /// <response code="403">If the user has no rights to use this method.</response>
     /// <response code="500">If any server error occurs.</response>
     [HasPermission(Permissions.ApplicationRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ApplicationDto>))]
