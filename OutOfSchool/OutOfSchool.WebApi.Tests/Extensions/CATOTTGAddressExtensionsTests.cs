@@ -11,8 +11,8 @@ public class CATOTTGAddressExtensionsTests
     private static CATOTTG territorialCommunityWithParent;
     private static CATOTTG districtWithParent;
     private static CATOTTG regionWithoutParent;
-    private static CATOTTG cityDistrictWithoutParent;
     private static CATOTTG settlementWithoutParent;
+    private static CATOTTG cityDistrictWithSpecialStatusParent;
 
     [OneTimeSetUp]
     public static void OneTimeSetUp()
@@ -62,15 +62,6 @@ public class CATOTTGAddressExtensionsTests
             Category = "B",
         };
 
-        cityDistrictWithoutParent = new CATOTTG()
-        {
-            Id = 1,
-            ParentId = null,
-            Parent = null,
-            Name = "Печерський",
-            Category = "B",
-        };
-
         settlementWithoutParent = new CATOTTG()
         {
             Id = 7,
@@ -78,6 +69,15 @@ public class CATOTTGAddressExtensionsTests
             Parent = null,
             Name = "Київ",
             Category = "K",
+        };
+
+        cityDistrictWithSpecialStatusParent = new CATOTTG()
+        {
+            Id = 8,
+            ParentId = 7,
+            Parent = settlementWithoutParent,
+            Name = "Дарницький",
+            Category = "B",
         };
     }
 
@@ -98,31 +98,15 @@ public class CATOTTGAddressExtensionsTests
     [Test]
     public void GetCityDistrictName_WhenCATOTTGIsNotCityDistrict_ShouldReturnNull()
     {
-        // Arrange
-        string expected = null;
-
         // Act
         var result = CatottgAddressExtensions.GetCityDistrictName(settlementWithParent);
 
         // Assert
-        Assert.AreEqual(expected, result);
+        Assert.IsNull(result);
     }
     #endregion
 
     #region GetSettlementName
-    [Test]
-    public void GetSettlementName_WhenCATOTTGIsSettlement_ShouldReturnSettlementName()
-    {
-        // Arrange
-        string expected = "Корюківка";
-
-        // Act
-        var result = CatottgAddressExtensions.GetSettlementName(settlementWithParent);
-
-        // Assert
-        Assert.AreEqual(expected, result);
-    }
-
     [Test]
     public void GetSettlementName_WhenCATOTTGIsCityDistrictWithParent_ShouldReturnParentName()
     {
@@ -135,6 +119,46 @@ public class CATOTTGAddressExtensionsTests
         // Assert
         Assert.AreEqual(expected, result);
     }
+
+    [Test]
+    public void GetSettlementName_WhenCATOTTGIsCityDistrictWithSpecialStatusParent_ShouldReturnParentName()
+    {
+        // Arrange
+        string expected = "Київ";
+
+        // Act
+        var result = CatottgAddressExtensions.GetSettlementName(cityDistrictWithSpecialStatusParent);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+    }
+
+    [Test]
+    public void GetSettlementName_WhenCATOTTGIsSettlementWithParent_ShouldReturnSettlementName()
+    {
+        // Arrange
+        string expected = "Корюківка";
+
+        // Act
+        var result = CatottgAddressExtensions.GetSettlementName(settlementWithParent);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+    }
+
+    [Test]
+    public void GetSettlementName_WhenCATOTTGIsSettlementWithoutParent_ShouldReturnSettlementName()
+    {
+        // Arrange
+        string expected = "Київ";
+
+        // Act
+        var result = CatottgAddressExtensions.GetSettlementName(settlementWithoutParent);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+    }
+
     #endregion
 
     #region GetTerritorialCommunityName
@@ -149,6 +173,16 @@ public class CATOTTGAddressExtensionsTests
 
         // Assert
         Assert.AreEqual(expected, result);
+    }
+
+    [Test]
+    public void GetTerritorialCommunityName_WhenCATOTTGIsCityDistrictWithSpecialStatusParent_ShouldReturnNull()
+    {
+        // Act
+        var result = CatottgAddressExtensions.GetTerritorialCommunityName(cityDistrictWithSpecialStatusParent);
+
+        // Assert
+        Assert.IsNull(result);
     }
 
     [Test]
@@ -167,28 +201,13 @@ public class CATOTTGAddressExtensionsTests
     [Test]
     public void GetTerritorialCommunityName_WhenCATOTTGIsSettlementWithoutParent_ShouldReturnNull()
     {
-        // Arrange
-        string expected = null;
-
         // Act
         var result = CatottgAddressExtensions.GetTerritorialCommunityName(settlementWithoutParent);
 
         // Assert
-        Assert.AreEqual(expected, result);
+        Assert.IsNull(result);
     }
 
-    [Test]
-    public void GetTerritorialCommunityName_WhenCATOTTGIsCityDistrictWithoutParent_ShouldReturnNull()
-    {
-        // Arrange
-        string expected = null;
-
-        // Act
-        var result = CatottgAddressExtensions.GetTerritorialCommunityName(cityDistrictWithoutParent);
-
-        // Assert
-        Assert.AreEqual(expected, result);
-    }
     #endregion
 
     #region GetDistrictName
@@ -203,6 +222,16 @@ public class CATOTTGAddressExtensionsTests
 
         // Assert
         Assert.AreEqual(expected, result);
+    }
+
+    [Test]
+    public void GetDistrictName_WhenCATOTTGIsCityDistrictWithSpecialStatusParent_ShouldReturnNull()
+    {
+        // Act
+        var result = CatottgAddressExtensions.GetDistrictName(cityDistrictWithSpecialStatusParent);
+
+        // Assert
+        Assert.IsNull(result);
     }
 
     [Test]
@@ -221,28 +250,13 @@ public class CATOTTGAddressExtensionsTests
     [Test]
     public void GetDistrictName_WhenCATOTTGIsSettlementWithoutParent_ShouldReturnNull()
     {
-        // Arrange
-        string expected = null;
-
         // Act
         var result = CatottgAddressExtensions.GetDistrictName(settlementWithoutParent);
 
         // Assert
-        Assert.AreEqual(expected, result);
+        Assert.IsNull(result);
     }
 
-    [Test]
-    public void GetDistrictName_WhenCATOTTGIsCityDistrictWithoutParent_ShouldReturnNull()
-    {
-        // Arrange
-        string expected = null;
-
-        // Act
-        var result = CatottgAddressExtensions.GetDistrictName(cityDistrictWithoutParent);
-
-        // Assert
-        Assert.AreEqual(expected, result);
-    }
     #endregion
 
     #region GetRegionName
@@ -257,6 +271,16 @@ public class CATOTTGAddressExtensionsTests
 
         // Assert
         Assert.AreEqual(expected, result);
+    }
+
+    [Test]
+    public void GetRegionName_WhenCATOTTGIsCityDistrictWithSpecialStatusParent_ShouldReturnNull()
+    {
+        // Act
+        var result = CatottgAddressExtensions.GetRegionName(cityDistrictWithSpecialStatusParent);
+
+        // Assert
+        Assert.IsNull(result);
     }
 
     [Test]
@@ -275,27 +299,11 @@ public class CATOTTGAddressExtensionsTests
     [Test]
     public void GetRegionName_WhenCATOTTGIsSettlementWithoutParent_ShouldReturnNull()
     {
-        // Arrange
-        string expected = null;
-
         // Act
         var result = CatottgAddressExtensions.GetRegionName(settlementWithoutParent);
 
         // Assert
-        Assert.AreEqual(expected, result);
-    }
-
-    [Test]
-    public void GetRegionName_WhenCATOTTGIsCityDistrictWithoutParent_ShouldReturnNull()
-    {
-        // Arrange
-        string expected = null;
-
-        // Act
-        var result = CatottgAddressExtensions.GetRegionName(cityDistrictWithoutParent);
-
-        // Assert
-        Assert.AreEqual(expected, result);
+        Assert.IsNull(result);
     }
     #endregion
 }
