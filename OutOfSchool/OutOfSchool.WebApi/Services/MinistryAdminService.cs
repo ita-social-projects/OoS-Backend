@@ -9,7 +9,7 @@ using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
 
-public class MinistryAdminService : CommunicationService, IMinistryAdminService
+public class MinistryAdminService : CommunicationService, IMinistryAdminService, ISensitiveMinistryAdminService
 {
     private readonly AuthorizationServerConfig authorizationServerConfig;
     private readonly IInstitutionAdminRepository institutionAdminRepository;

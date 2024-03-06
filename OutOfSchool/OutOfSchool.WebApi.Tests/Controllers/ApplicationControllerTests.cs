@@ -83,51 +83,7 @@ public class ApplicationControllerTests
         applications = ApplicationDTOsGenerator.Generate(2).WithWorkshopCard(workshops.First()).WithParent(parent);
     }
 
-    [Test]
-    public async Task GetApplications_WhenCalledByAdmin_ShouldReturnOkResultObject()
-    {
-        // Arrange
-        applicationService.Setup(s => s.GetAll(It.IsAny<ApplicationFilter>())).ReturnsAsync(new SearchResult<ApplicationDto>
-        {
-            Entities = applications,
-            TotalAmount = applications.Count,
-        });
-
-        // Act
-        var result = await controller.Get(new ApplicationFilter()).ConfigureAwait(false) as OkObjectResult;
-
-        // Assert
-        result.Should().NotBeNull();
-        result.StatusCode.Should().Be(StatusCodes.Status200OK);
-    }
-
-    [Test]
-    public void GetApplications_WhenCalledParentOrProvider_ShouldThrowUnauthorizedAccess()
-    {
-        // Arrange
-        applicationService.Setup(s => s.GetAll(It.IsAny<ApplicationFilter>())).ThrowsAsync(new UnauthorizedAccessException());
-
-        // Act & Assert
-        Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await controller.Get(new ApplicationFilter()));
-    }
-
-    [Test]
-    public async Task GetApplications_WhenCollectionIsEmpty_ShouldReturnNoContent()
-    {
-        // Arrange
-        applicationService.Setup(s => s.GetAll(It.IsAny<ApplicationFilter>())).ReturnsAsync(new SearchResult<ApplicationDto>()
-        {
-            Entities = new List<ApplicationDto>(),
-            TotalAmount = 0,
-        });
-
-        // Act
-        var result = await controller.Get(new ApplicationFilter()).ConfigureAwait(false) as NoContentResult;
-
-        // Assert
-        result.Should().NotBeNull();
-        result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
-    }
+    
 
     [Test]
     public async Task GetApplicationById_WhenIdIsValid_ShouldReturnOkObjectResult()

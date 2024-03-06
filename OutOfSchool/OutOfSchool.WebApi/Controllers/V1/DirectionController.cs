@@ -61,12 +61,12 @@ public class DirectionController : ControllerBase
     public async Task<IActionResult> GetByFilter([FromQuery] DirectionFilter filter, bool isAdmins = false)
     {
         var directions = await service.GetByFilter(filter, isAdmins).ConfigureAwait(false);
-
+    
         if (directions.TotalAmount < 1)
         {
             return NoContent();
         }
-
+    
         return Ok(directions);
     }
 
@@ -127,61 +127,5 @@ public class DirectionController : ControllerBase
         {
             return BadRequest(ex.Message);
         }
-    }
-
-    /// <summary>
-    /// To update Direction entity that already exists.
-    /// </summary>
-    /// <param name="directionDto">DirectionDto object with new properties.</param>
-    /// <returns>Direction that was updated.</returns>
-    /// <response code="200">Direction was successfully updated.</response>
-    /// <response code="400">Model is invalid.</response>
-    /// <response code="401">If the user is not authorized.</response>
-    /// <response code="403">If the user has no rights to use this method.</response>
-    /// <response code="500">If any server error occures.</response>
-    [HttpPut]
-    [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DirectionDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Update([FromBody] DirectionDto directionDto)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
-        return Ok(await service.Update(directionDto).ConfigureAwait(false));
-    }
-
-    /// <summary>
-    /// Delete the Direction entity from DB.
-    /// </summary>
-    /// <param name="id">The key of the Direction in table.</param>
-    /// <returns>Status Code.</returns>
-    /// <response code="204">Direction was successfully deleted.</response>
-    /// <response code="400">If some workshops assosiated with this direction.</response>
-    /// <response code="401">If the user is not authorized.</response>
-    /// <response code="403">If the user has no rights to use this method.</response>
-    /// <response code="500">If any server error occures.</response>
-    [HttpDelete("{id}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Delete(long id)
-    {
-        this.ValidateId(id, localizer);
-
-        var result = await service.Delete(id).ConfigureAwait(false);
-        if (!result.Succeeded)
-        {
-            return BadRequest(result.OperationResult);
-        }
-
-        return NoContent();
     }
 }
