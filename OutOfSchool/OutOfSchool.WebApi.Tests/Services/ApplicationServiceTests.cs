@@ -21,7 +21,6 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
-using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
@@ -701,13 +700,13 @@ public class ApplicationServiceTests
 
         // Act
         var response = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
-        Result<ApplicationDto> result = new Result<ApplicationDto>();
-        response.Match<Result<ApplicationDto>>(
-            actionResult => result = new Result<ApplicationDto>(),
-            succeed => result = succeed);
+        ApplicationDto result = new();
+        response.Match(
+            errResult => result = null,
+            response => result = response);
 
         // Assert
-        AssertApplicationsDTOsAreEqual(expected, result.Value);
+        AssertApplicationsDTOsAreEqual(expected, result);
     }
 
     [Test]
@@ -760,13 +759,14 @@ public class ApplicationServiceTests
 
         // Act
         var response = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
-        Result<ApplicationDto> result = new Result<ApplicationDto>();
-        response.Match<Result<ApplicationDto>>(
-            actionResult => result = new Result<ApplicationDto>(),
+        ApplicationDto result = new ApplicationDto();
+        response.Match(
+            actionResult => result = null,
             succeed => result = succeed);
 
         // Assert
-        AssertApplicationsDTOsAreEqual(expected, result.Value);
+        Assert.NotNull(result);
+        AssertApplicationsDTOsAreEqual(expected, result);
     }
 
     [Test]
@@ -782,13 +782,11 @@ public class ApplicationServiceTests
 
         // Act
         var response = await service.Update(application, Guid.NewGuid());
-        Result<ApplicationDto> result = new Result<ApplicationDto>();
-        response.Match<Result<ApplicationDto>>(
-            actionResult => result = new Result<ApplicationDto>(),
-            succeed => result = succeed);
 
         // Assert
-        Assert.IsFalse(result.Succeeded);
+        Assert.IsInstanceOf<ErrorResponse>(response.Match(
+            error => error,
+            succeed => null));
     }
 
     [Test]
@@ -847,13 +845,11 @@ public class ApplicationServiceTests
 
         // Act
         var response = await service.Update(update, Guid.NewGuid());
-        Result<ApplicationDto> result = new Result<ApplicationDto>();
-        response.Match<Result<ApplicationDto>>(
-            actionResult => result = new Result<ApplicationDto>(),
-            succeed => result = succeed);
 
         // Assert
-        Assert.IsFalse(result.Succeeded);
+        Assert.IsInstanceOf<ErrorResponse>(response.Match(
+            error => error,
+            succeed => null));
     }
 
     [Test]
@@ -912,13 +908,11 @@ public class ApplicationServiceTests
 
         // Act
         var response = await service.Update(update, Guid.NewGuid());
-        Result<ApplicationDto> result = new Result<ApplicationDto>();
-        response.Match<Result<ApplicationDto>>(
-            actionResult => result = new Result<ApplicationDto>(),
-            succeed => result = succeed);
 
-        // Act and Assert
-        Assert.True(result.Succeeded);
+        // Assert
+        Assert.IsInstanceOf<ApplicationDto>(response.Match(
+            error => null,
+            succeed => succeed));
     }
 
     [Test]

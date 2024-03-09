@@ -9,7 +9,6 @@ using OutOfSchool.EmailSender;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.StatusPermissions;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
@@ -454,7 +453,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
         return mapper.Map<ApplicationDto>(application);
     }
 
-    public Task<Either<ErrorResponse, Result<ApplicationDto>>> Update(ApplicationUpdate applicationDto, Guid providerId)
+    public Task<Either<ErrorResponse, ApplicationDto>> Update(ApplicationUpdate applicationDto, Guid providerId)
     {
         logger.LogInformation("Updating Application with Id = {Id} started", applicationDto?.Id);
 
@@ -906,7 +905,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
         };
     }
 
-    private async Task<Either<ErrorResponse, Result<ApplicationDto>>> ExecuteUpdateAsync(ApplicationUpdate applicationDto, Guid providerId)
+    private async Task<Either<ErrorResponse, ApplicationDto>> ExecuteUpdateAsync(ApplicationUpdate applicationDto, Guid providerId)
     {
         ApiErrorResponse badRequestApiErrorResponse = new ApiErrorResponse();
         await currentUserService.UserHasRights(
@@ -917,11 +916,8 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         if (currentApplication is null)
         {
-            return Result<ApplicationDto>.Failed(new OperationError
-            {
-                Code = "400",
-                Description = "Application does not exist.",
-            });
+            // TODO: Create error response type and code for invalid application id.
+            return ErrorResponse.BadRequest(badRequestApiErrorResponse);
         }
 
         var previewAppStatus = currentApplication.Status;
@@ -930,7 +926,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
         {
             if (currentApplication.Status == applicationDto.Status)
             {
-                return Result<ApplicationDto>.Success(mapper.Map<ApplicationDto>(currentApplication));
+                return mapper.Map<ApplicationDto>(currentApplication);
             }
 
             if (Application.ValidApplicationStatuses.Contains(applicationDto.Status))
@@ -944,11 +940,6 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
                     if (amountOfApproved >= availableSeats)
                     {
-                        //return Result<ApplicationDto>.Failed(new OperationError
-                        //{
-                        //    Code = "400",
-                        //    Description = "The Workshop is full.",
-                        //});
                         badRequestApiErrorResponse.AddApiError(
                             ApiErrorsTypes.Application.AcceptRejectedWorkshopIsFull());
                         return ErrorResponse.BadRequest(badRequestApiErrorResponse);
@@ -957,11 +948,6 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
                 if (await GetApprovedWorkshopAndChild(currentApplication) >= 1)
                 {
-                    //return Result<ApplicationDto>.Failed(new OperationError
-                    //{
-                    //    Code = "400",
-                    //    Description = "There is already approved workshop.",
-                    //});
                     badRequestApiErrorResponse.AddApiError(
                             ApiErrorsTypes.Application.AcceptRejectedAlreadyApproved());
                     return ErrorResponse.BadRequest(badRequestApiErrorResponse);
@@ -1001,7 +987,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
             await ControlWorkshopStatus(previewAppStatus, updatedApplication.Status, currentApplication.WorkshopId);
 
-            return Result<ApplicationDto>.Success(mapper.Map<ApplicationDto>(updatedApplication));
+            return mapper.Map<ApplicationDto>(updatedApplication);
         }
         catch (DbUpdateConcurrencyException ex)
         {

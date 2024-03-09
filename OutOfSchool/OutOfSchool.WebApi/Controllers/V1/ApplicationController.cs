@@ -395,10 +395,7 @@ public class ApplicationController : ControllerBase
 
             return result.Match<ActionResult>(
             error => StatusCode((int)error.HttpStatusCode, new { error.Message, error.ApiErrorResponse }),
-            result =>
-            {
-                return Ok(result.Value);
-            });
+            result => Ok(result));
         }
         catch (ArgumentException ex)
         {
