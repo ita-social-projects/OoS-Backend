@@ -771,7 +771,7 @@ public class ApplicationServiceTests
     }
 
     [Test]
-    public async Task UpdateApplication_WhenThereIsNoApplicationWithId_ShouldReturnNotSucceeded()
+    public async Task UpdateApplication_WhenThereIsNoApplicationWithId_ShouldReturnErrorResponse()
     {
         // Arrange
         var application = new ApplicationUpdate()
@@ -791,7 +791,7 @@ public class ApplicationServiceTests
     }
 
     [Test]
-    public async Task UpdateApplication_WhenThereIsAlreadyApprovedWorkshop_ShouldReturnNotSucceeded()
+    public async Task UpdateApplication_WhenThereIsAlreadyApprovedWorkshop_ShouldReturnErrorResponse()
     {
         // Arrange
         var id = new Guid("08da8609-a211-4d74-82c0-dc89ea1fb2a7");
@@ -914,6 +914,69 @@ public class ApplicationServiceTests
         Assert.IsInstanceOf<ApplicationDto>(response.Match(
             error => null,
             succeed => succeed));
+    }
+
+    [Test]
+    public async Task UpdateApplication_WhenAmountOfApprovedBiggerThanAvailableSeats_Succeeded()
+    {
+        // Arrange
+        var id = new Guid("08da8609-a211-4d74-82c0-dc89ea1fb2a7");
+        var entity = WithApplication(id);
+        var changedEntity = WithApplication(id, ApplicationStatus.Approved);
+        var workshop = WithWorkshop(new Guid("08da85ea-5b3c-4991-8416-2673d9421ca9"));
+
+        applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>()))
+            .ReturnsAsync(changedEntity);
+
+        applicationRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(entity);
+        applicationRepositoryMock.Setup(a => a.Count(x =>
+                x.WorkshopId == workshop.Id &&
+                Application.ValidApplicationStatuses.Contains(x.Status)))
+            .ReturnsAsync(1);
+        workshopRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
+        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto()
+        { Id = id, Status = ApplicationStatus.Approved });
+
+        var update = new ApplicationUpdate
+        {
+            Id = id,
+            Status = ApplicationStatus.Approved,
+            WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+        };
+
+        workshopServiceCombinerMock.Setup(c =>
+                c.GetById(It.Is<Guid>(i => i == update.WorkshopId)))
+            .ReturnsAsync(new WorkshopDto()
+            {
+                Id = update.WorkshopId,
+                AvailableSeats = 0,
+                Status = WorkshopStatus.Open,
+            });
+
+        workshopRepositoryMock.Setup(w => w.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
+            .ReturnsAsync(new List<Workshop>()
+            {
+                new Workshop()
+                {
+                    Id = update.WorkshopId,
+                },
+            });
+
+        workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MinValue);
+
+        currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
+        currentUserServiceMock.Setup(c => c.UserSubRole).Returns(string.Empty);
+
+        applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
+
+        // Act
+        var response = await service.Update(update, Guid.NewGuid());
+
+        // Assert
+        Assert.IsInstanceOf<ErrorResponse>(response.Match(
+            error => error,
+            succeed => null));
     }
 
     [Test]
