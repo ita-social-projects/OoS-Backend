@@ -916,7 +916,8 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         if (currentApplication is null)
         {
-            // TODO: Create error response type and code for invalid application id.
+            badRequestApiErrorResponse.AddApiError(
+                            ApiErrorsTypes.Common.EntityIdDoesNotExist("Application", applicationDto.Id.ToString()));
             return ErrorResponse.BadRequest(badRequestApiErrorResponse);
         }
 

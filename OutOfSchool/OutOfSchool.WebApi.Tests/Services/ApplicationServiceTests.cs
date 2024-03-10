@@ -706,6 +706,7 @@ public class ApplicationServiceTests
             response => result = response);
 
         // Assert
+        Assert.NotNull(result);
         AssertApplicationsDTOsAreEqual(expected, result);
     }
 

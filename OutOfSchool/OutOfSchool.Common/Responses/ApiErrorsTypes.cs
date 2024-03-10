@@ -14,6 +14,12 @@ public static class ApiErrorsTypes
             $"{nameof(Common)}",
             $"{nameof(PhoneNumberAlreadyTaken)}",
             $"{entityName} creating is not possible. Phone number {phoneNumber} is already taken");
+
+        public static ApiError EntityIdDoesNotExist(string entityName, string id) =>
+        new ApiError(
+            $"{nameof(Common)}",
+            $"{nameof(EntityIdDoesNotExist)}",
+            $"{entityName} with id - {id} does not exist.");
     }
 
     public static class ProviderAdmin
