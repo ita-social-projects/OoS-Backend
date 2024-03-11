@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using OutOfSchool.Common.Enums;
@@ -119,6 +120,48 @@ public class CodeficatorServiceTests
 
         // Assert
         AssertValue(id, result);
+    }
+
+    [Test]
+    public void GetNearestCoordinatesByCATOTTGId_WhenCATOTTGIdInvalid_ShouldThrowNullReferenceException()
+    {
+        // Arrange
+        var invalidCatottgId = long.MaxValue;
+
+        // Act and Assert
+        service.Invoking(s => s.GetNearestCoordinatesByCATOTTGId(invalidCatottgId)).Should().ThrowAsync<NullReferenceException>();
+    }
+
+    [Test]
+    public async Task GetNearestCoordinatesByCATOTTGId_WhenCATOTTGIdIsValid_ShouldReturnValidResult()
+    {
+        // Arrange
+        var validCatottg = repository.Get().FirstOrDefault();
+
+        // Act
+        var (latitude, longitude) = await service.GetNearestCoordinatesByCATOTTGId(validCatottg.Id);
+
+        // Assert
+        Assert.AreEqual(latitude, validCatottg.Latitude);
+        Assert.AreEqual(longitude, validCatottg.Longitude);
+    }
+
+    [Test]
+    public async Task GetNearestCoordinatesByCATOTTGId_WhenCATOTTGHasZeroCoordinates_ShouldReturnParentCatottgCoordinates()
+    {
+        // Arrange
+        var invalidCatottg = await repository.GetById(2);
+        invalidCatottg.Longitude = 0;
+        invalidCatottg.Latitude = 0;
+
+        var validCatottg = await repository.GetById((long)invalidCatottg.ParentId);
+
+        // Act
+        var (latitude, longitude) = await service.GetNearestCoordinatesByCATOTTGId(invalidCatottg.Id);
+
+        // Assert
+        Assert.AreEqual(latitude, validCatottg.Latitude);
+        Assert.AreEqual(longitude, validCatottg.Longitude);
     }
 
     private void AssertValue(long id, AllAddressPartsDto result)

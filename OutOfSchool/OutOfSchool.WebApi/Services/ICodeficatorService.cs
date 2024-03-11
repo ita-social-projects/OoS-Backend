@@ -39,7 +39,7 @@ public interface ICodeficatorService
     public Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(CodeficatorFilter filter);
 
     /// <summary>
-    /// Get the nearest codeficator entry by latitude & longitude.
+    /// Get the nearest codeficator entry by latitude and longitude.
     /// </summary>
     /// <param name="lat">Latitude (id degrees).</param>
     /// <param name="lon">Longitude (in degrees).</param>
@@ -50,7 +50,14 @@ public interface ICodeficatorService
     /// <summary>
     /// Get the subsettlements of current settlement by CATOTTG id.
     /// </summary>
-    /// <param name="catottgId">CATOTTG id</param>
+    /// <param name="catottgId">CATOTTG id.</param>
     /// <returns>The task result contains a <see cref="List{TResult}"/> that contains subsettlements ids.</returns>
     public Task<IEnumerable<long>> GetAllChildrenIdsByParentIdAsync(long catottgId);
+
+    /// <summary>
+    /// Get latitude and longitude by CATOTTG id.
+    /// </summary>
+    /// <param name="catottgId">CATOTTG id.</param>
+    /// <returns>The task result contains a <see cref="List{TResult}"/> that contains coordinates.</returns>
+    public Task<(double Latitude, double Longitude)> GetNearestCoordinatesByCATOTTGId(long catottgId);
 }

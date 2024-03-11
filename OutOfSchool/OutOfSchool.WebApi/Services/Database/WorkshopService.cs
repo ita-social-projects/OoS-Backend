@@ -34,12 +34,14 @@ public class WorkshopService : IWorkshopService
     private readonly IProviderAdminRepository providerAdminRepository;
     private readonly IAverageRatingService averageRatingService;
     private readonly IProviderRepository providerRepository;
+    private readonly ICodeficatorService codeficatorService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
     /// </summary>
     /// <param name="workshopRepository">Repository for Workshop entity.</param>
     /// <param name="dateTimeRangeRepository">Repository for DateTimeRange entity.</param>
+    /// <param name="roomRepository">Repository for chatrooms.</param>
     /// <param name="teacherService">Teacher service.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Automapper DI service.</param>
@@ -47,7 +49,7 @@ public class WorkshopService : IWorkshopService
     /// <param name="providerAdminRepository">Repository for provider admins.</param>
     /// <param name="averageRatingService">Average rating service.</param>
     /// <param name="providerRepository">Repository for providers.</param>
-
+    /// <param name="codeficatorService">Codeficator service.</param>
     public WorkshopService(
         IWorkshopRepository workshopRepository,
         IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository,
@@ -58,7 +60,8 @@ public class WorkshopService : IWorkshopService
         IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService,
         IProviderAdminRepository providerAdminRepository,
         IAverageRatingService averageRatingService,
-        IProviderRepository providerRepository)
+        IProviderRepository providerRepository,
+        ICodeficatorService codeficatorService)
     {
         this.workshopRepository = workshopRepository;
         this.dateTimeRangeRepository = dateTimeRangeRepository;
@@ -70,6 +73,7 @@ public class WorkshopService : IWorkshopService
         this.providerAdminRepository = providerAdminRepository;
         this.averageRatingService = averageRatingService;
         this.providerRepository = providerRepository;
+        this.codeficatorService = codeficatorService;
     }
 
     /// <inheritdoc/>
@@ -82,6 +86,12 @@ public class WorkshopService : IWorkshopService
         if (dto.AvailableSeats is 0 or null)
         {
             dto.AvailableSeats = uint.MaxValue;
+        }
+
+        if (dto.Address.Latitude == 0 && dto.Address.Longitude == 0)
+        {
+            (dto.Address.Latitude, dto.Address.Longitude) =
+                await codeficatorService.GetNearestCoordinatesByCATOTTGId(dto.Address.CATOTTGId);
         }
 
         var workshop = mapper.Map<Workshop>(dto);
@@ -117,6 +127,12 @@ public class WorkshopService : IWorkshopService
         async Task<(Workshop createdWorkshop, MultipleImageUploadingResult imagesUploadResult, Result<string>
             coverImageUploadResult)> CreateWorkshopAndDependencies()
         {
+            if (dto.Address.Latitude == 0 && dto.Address.Longitude == 0)
+            {
+                (dto.Address.Latitude, dto.Address.Longitude) =
+                    await codeficatorService.GetNearestCoordinatesByCATOTTGId(dto.Address.CATOTTGId);
+            }
+
             var createdWorkshop = mapper.Map<Workshop>(dto);
             createdWorkshop.Status = WorkshopStatus.Open;
             var workshop = await workshopRepository.Create(createdWorkshop).ConfigureAwait(false);
@@ -228,7 +244,8 @@ public class WorkshopService : IWorkshopService
     /// <inheritdoc/>
     public async Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId)
     {
-        logger.LogDebug("Getting Workshop (Id, Title) by organization started. Looking ProviderId = {ProviderId}",
+        logger.LogDebug(
+            "Getting Workshop (Id, Title) by organization started. Looking ProviderId = {ProviderId}",
             providerId);
 
         var workshops = await workshopRepository.GetByFilter(
@@ -333,7 +350,7 @@ public class WorkshopService : IWorkshopService
     public async Task<WorkshopBaseDto> Update(WorkshopBaseDto dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
-        logger.LogInformation($"Updating Workshop with Id = {dto?.Id} started.");
+        logger.LogInformation($"Updating Workshop with Id = {dto.Id} started.");
 
         async Task<Workshop> UpdateWorkshopLocally()
         {
@@ -343,6 +360,12 @@ public class WorkshopService : IWorkshopService
             // In case if AddressId was changed. AddresId is one and unique for workshop.
             dto.AddressId = currentWorkshop.AddressId;
             dto.Address.Id = currentWorkshop.AddressId;
+
+            if (dto.Address.Latitude == 0 && dto.Address.Longitude == 0)
+            {
+                (dto.Address.Latitude, dto.Address.Longitude) =
+                    await codeficatorService.GetNearestCoordinatesByCATOTTGId(dto.Address.CATOTTGId);
+            }
 
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherDTO>()).ConfigureAwait(false);
 
@@ -432,6 +455,12 @@ public class WorkshopService : IWorkshopService
             dto.AddressId = currentWorkshop.AddressId;
             dto.Address.Id = currentWorkshop.AddressId;
 
+            if (dto.Address.Latitude == 0 && dto.Address.Longitude == 0)
+            {
+                (dto.Address.Latitude, dto.Address.Longitude) =
+                    await codeficatorService.GetNearestCoordinatesByCATOTTGId(dto.Address.CATOTTGId);
+            }
+
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherDTO>()).ConfigureAwait(false);
 
             mapper.Map(dto, currentWorkshop);
@@ -467,7 +496,8 @@ public class WorkshopService : IWorkshopService
         }
         catch (DbUpdateConcurrencyException exception)
         {
-            logger.LogError(exception,
+            logger.LogError(
+                exception,
                 $"Partial updating {nameof(Workshop)} with ProviderId = {providerId} was failed. Exception: {exception.Message}");
             throw; // TODO Probably should not rethrow this exception to the higher level. See pull request [Provicevk/unified responses #843] as future decision
         }
@@ -485,7 +515,8 @@ public class WorkshopService : IWorkshopService
         }
         catch (DbUpdateConcurrencyException exception)
         {
-            logger.LogError(exception,
+            logger.LogError(
+                exception,
                 $"Block {nameof(Workshop)} with ProviderId = {provider.Id} was failed. Exception: {exception.Message}");
             throw; // TODO Probably should not rethrow this exception to the higher level. See pull request [Provicevk/unified responses #843] as future decision
         }
