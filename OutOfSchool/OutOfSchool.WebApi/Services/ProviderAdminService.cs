@@ -67,10 +67,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             return new ErrorResponse
             {
                 HttpStatusCode = HttpStatusCode.Forbidden,
-                ApiErrorResponse = new ApiErrorResponse(new List<ApiError>()
-                {
-                    ApiErrorsTypes.ProviderAdmin.UserDontHavePermissionToCreate(userId),
-                }),
+                ApiErrorResponse = ApiErrorsTypes.ProviderAdmin.UserDontHavePermissionToCreate(userId).ToResponse(),
             };
         }
 

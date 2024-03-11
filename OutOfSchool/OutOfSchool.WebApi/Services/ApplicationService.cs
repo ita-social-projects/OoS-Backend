@@ -907,7 +907,6 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
     private async Task<Either<ErrorResponse, ApplicationDto>> ExecuteUpdateAsync(ApplicationUpdate applicationDto, Guid providerId)
     {
-        ApiErrorResponse badRequestApiErrorResponse = new ApiErrorResponse();
         await currentUserService.UserHasRights(
             new ParentRights(applicationDto.ParentId),
             new ProviderRights(providerId),
@@ -916,9 +915,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         if (currentApplication is null)
         {
-            badRequestApiErrorResponse.AddApiError(
-                            ApiErrorsTypes.Common.EntityIdDoesNotExist("Application", applicationDto.Id.ToString()));
-            return ErrorResponse.BadRequest(badRequestApiErrorResponse);
+            return ErrorResponse.BadRequest(ApiErrorsTypes.Common.EntityIdDoesNotExist("Application", applicationDto.Id.ToString()).ToResponse());
         }
 
         var previewAppStatus = currentApplication.Status;
@@ -941,17 +938,13 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
                     if (amountOfApproved >= availableSeats)
                     {
-                        badRequestApiErrorResponse.AddApiError(
-                            ApiErrorsTypes.Application.AcceptRejectedWorkshopIsFull());
-                        return ErrorResponse.BadRequest(badRequestApiErrorResponse);
+                        return ErrorResponse.BadRequest(ApiErrorsTypes.Application.AcceptRejectedWorkshopIsFull().ToResponse());
                     }
                 }
 
                 if (await GetApprovedWorkshopAndChild(currentApplication) >= 1)
                 {
-                    badRequestApiErrorResponse.AddApiError(
-                            ApiErrorsTypes.Application.AcceptRejectedAlreadyApproved());
-                    return ErrorResponse.BadRequest(badRequestApiErrorResponse);
+                    return ErrorResponse.BadRequest(ApiErrorsTypes.Application.AcceptRejectedAlreadyApproved().ToResponse());
                 }
             }
 
