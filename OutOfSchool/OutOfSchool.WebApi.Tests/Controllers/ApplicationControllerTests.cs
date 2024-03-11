@@ -13,11 +13,10 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
-using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Models.Providers;
-using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Models.SocialGroup;
-using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Models.Workshops;
+using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
@@ -562,7 +561,7 @@ public class ApplicationControllerTests
             RejectionMessage = applications.First().RejectionMessage,
         };
 
-        applicationService.Setup(s => s.Update(It.IsAny<ApplicationUpdate>(), It.IsAny<Guid>())).ReturnsAsync(Result<ApplicationDto>.Success(applications.First()));
+        applicationService.Setup(s => s.Update(It.IsAny<ApplicationUpdate>(), It.IsAny<Guid>())).ReturnsAsync(applications.First());
         workshopService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(new WorkshopDto());
 
         // Act

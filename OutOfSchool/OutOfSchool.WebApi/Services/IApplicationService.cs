@@ -1,4 +1,4 @@
-﻿using OutOfSchool.WebApi.Common;
+﻿using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
 
@@ -78,7 +78,7 @@ public interface IApplicationService
     /// <param name="applicationDto">Application entity to update.</param>
     /// <param name="providerId">Id of the provider for workshop.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<Result<ApplicationDto>> Update(ApplicationUpdate applicationDto, Guid providerId);
+    Task<Either<ErrorResponse, ApplicationDto>> Update(ApplicationUpdate applicationDto, Guid providerId);
 
     /// <summary>
     /// Determines ability to create a new application for a child based on previous attempts.
