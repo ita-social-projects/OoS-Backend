@@ -297,7 +297,10 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     {
         if (workshop != null)
         {
-            var additionalData = new Dictionary<string, string>();
+            var additionalData = new Dictionary<string, string>()
+            {
+                { "Title", workshop.Title },
+            };
 
             if (addStatusData)
             {
