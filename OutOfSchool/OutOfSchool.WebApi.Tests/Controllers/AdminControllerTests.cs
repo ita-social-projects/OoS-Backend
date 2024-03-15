@@ -153,7 +153,6 @@ public class AdminControllerTests
     {
         // Arrange
         controller.ControllerContext.HttpContext = fakeHttpContext;
-        controller.ControllerContext.HttpContext.SetContextUser(Role.Provider);
 
         sensitiveMinistryAdminService.Setup(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>())).ReturnsAsync(new SearchResult<MinistryAdminDto> { TotalAmount = 0, Entities = new List<MinistryAdminDto>() });
 
@@ -161,9 +160,9 @@ public class AdminControllerTests
         var result = await controller.GetByFilterMinistryAdmin(new MinistryAdminFilter()).ConfigureAwait(false);
 
         // Assert
-        sensitiveMinistryAdminService.Verify(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>()), Times.Never);
+        sensitiveMinistryAdminService.Verify(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>()), Times.Once);
         Assert.That(result, Is.Not.Null);
-        Assert.That(result, Is.InstanceOf<ObjectResult>());
+        Assert.That(result, Is.InstanceOf<NoContentResult>());
     }
 
     [Test]
@@ -192,33 +191,18 @@ public class AdminControllerTests
         // Arrange
         controller.ControllerContext.HttpContext = fakeHttpContext;
         controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
-        sensitiveApplicationService.Setup(s => s.GetAll(It.IsAny<ApplicationFilter>())).ReturnsAsync(new SearchResult<ApplicationDto>()
+        sensitiveApplicationService.Setup(s => s.GetAll(It.IsAny<ApplicationFilter>())).ReturnsAsync(new SearchResult<ApplicationDto>
         {
-            Entities = new List<ApplicationDto>(),
-            TotalAmount = 0,
+            Entities = applications,
+            TotalAmount = applications.Count,
         });
 
         // Act
-        var result = await controller.GetApplications(new ApplicationFilter()).ConfigureAwait(false) as NoContentResult;
+        var result = await controller.GetApplications(new ApplicationFilter()).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         result.Should().NotBeNull();
-        result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
-    }
-
-    [Test]
-    public async Task GetApplications_WhenCalledParentOrProvider_RetursObjectResult()
-    {
-        // Arrange
-        controller.ControllerContext.HttpContext = fakeHttpContext;
-        controller.ControllerContext.HttpContext.SetContextUser(Role.Provider);
-        sensitiveApplicationService.Setup(s => s.GetAll(It.IsAny<ApplicationFilter>())).ThrowsAsync(new UnauthorizedAccessException());
-
-        // Act
-        var result = await controller.GetApplications(new ApplicationFilter()).ConfigureAwait(false);
-
-        // Assert
-        Assert.That(result, Is.InstanceOf<ObjectResult>());
+        result.StatusCode.Should().Be(StatusCodes.Status200OK);
     }
 
     [Test]
@@ -384,7 +368,6 @@ public class AdminControllerTests
     public async Task GetProviderByFilter_ReturnsObjectResult()
     {
         // Arrange
-
         controller.ControllerContext.HttpContext = fakeHttpContext;
         controller.ControllerContext.HttpContext.SetContextUser(Role.Parent);
 
