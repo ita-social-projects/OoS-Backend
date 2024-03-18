@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 
 namespace OutOfSchool.Common.Extensions;
 
@@ -34,5 +35,16 @@ public static class StringExtensions
         return (value.Length > length)
             ? value[^length..]
             : value;
+    }
+
+    public static string RemoveCharsByRegex(this string value, string regexPattern)
+    {
+        if (value.IsNullOrEmpty() || regexPattern.IsNullOrEmpty())
+        {
+            return value;
+        }
+
+        Regex rgx = new(regexPattern);
+        return rgx.Replace(value, string.Empty);
     }
 }
