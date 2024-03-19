@@ -30,7 +30,7 @@ public static class Constants
 
     public const string EmailRegexViewModel = @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$";
 
-    public const string PasswordRegexViewModel = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$";
+    public const string PasswordRegexViewModel = @"^(?=.*[\p{Lu}])(?=.*[\p{Ll}])(?=.*\d)(?=.*[@$!%*?&])[\p{Lu}\p{Ll}\d@$!%*?&]{8,}$";
 
     public const string AddressSeparator = ", ";
 
