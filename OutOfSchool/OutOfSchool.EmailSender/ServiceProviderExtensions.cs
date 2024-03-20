@@ -17,7 +17,7 @@ public static class ServiceProviderExtensions
     {
         if (isDevelopment && string.IsNullOrWhiteSpace(sendGridApiKey))
         {
-            services.AddTransient<IEmailSender, DevEmailSender>();
+            services.AddTransient<IEmailSenderService, DevEmailSender>();
             return services;
         }
 
@@ -32,7 +32,7 @@ public static class ServiceProviderExtensions
             options.HttpErrorAsException = true;
         });
 
-        services.AddTransient<IEmailSender, EmailSender>();
+        services.AddTransient<IEmailSenderService, EmailSenderService>();
         if (emailOptions == null)
         {
             throw new ArgumentNullException(nameof(emailOptions));

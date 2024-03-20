@@ -38,7 +38,7 @@ public class AuthControllerTests
     private AuthController authController;
     private readonly Mock<IStringLocalizer<SharedResource>> fakeLocalizer;
     private static Mock<IOptions<AuthServerConfig>> fakeIdentityServerConfig;
-    private readonly Mock<IEmailSender> fakeEmailSender;
+    private readonly Mock<IEmailSenderService> fakeEmailSender;
     private readonly Mock<IRazorViewToStringRenderer> fakeRenderer;
 
     public AuthControllerTests()
@@ -50,7 +50,7 @@ public class AuthControllerTests
         fakeLogger = new Mock<ILogger<AuthController>>();
         fakeparentRepository = new Mock<IParentRepository>();
         fakeLocalizer = new Mock<IStringLocalizer<SharedResource>>();
-        fakeEmailSender = new Mock<IEmailSender>();
+        fakeEmailSender = new Mock<IEmailSenderService>();
         fakeRenderer = new Mock<IRazorViewToStringRenderer>();
     }
 

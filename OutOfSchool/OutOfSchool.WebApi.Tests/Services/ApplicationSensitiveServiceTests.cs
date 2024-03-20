@@ -62,7 +62,7 @@ public class ApplicationSensitiveServiceTests
             areaAdminServiceMock.Object,
             codeficatorServiceMock.Object,
             new Mock<IRazorViewToStringRenderer>().Object,
-            new Mock<IEmailSender>().Object,
+            new Mock<IEmailSenderService>().Object,
             new Mock<IStringLocalizer<SharedResource>>().Object,
             new Mock<IOptions<HostsConfig>>().Object);
 

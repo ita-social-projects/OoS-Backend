@@ -1,64 +1,60 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Repository;
+using Quartz;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
 namespace OutOfSchool.EmailSender;
-
-public class EmailSender : IEmailSender
+public class EmailSender : IJob
 {
     private readonly IOptions<EmailOptions> emailOptions;
-    private readonly ISendGridClient sendGridClient;
+    private readonly IEmailOutboxRepository outboxRepository;
     private readonly ILogger<EmailSender> logger;
+    private readonly ISendGridClient sendGridClient;
 
     public EmailSender(
         IOptions<EmailOptions> emailOptions,
-        ISendGridClient sendGridClient,
-        ILogger<EmailSender> logger)
+        IEmailOutboxRepository outboxRepository,
+        ILogger<EmailSender> logger,
+        ISendGridClient sendGridClient)
     {
         this.emailOptions = emailOptions;
-        this.sendGridClient = sendGridClient;
+        this.outboxRepository = outboxRepository;
         this.logger = logger;
+        this.sendGridClient = sendGridClient;
     }
 
-    public Task SendAsync(string email, string subject, (string html, string plain) content)
+    public async Task Execute(IJobExecutionContext context)
     {
-        var message = new SendGridMessage()
+        var emailsToSend = outboxRepository.Get(orderBy: new() { { x => x.CreationTime, SortDirection.Ascending } });
+        foreach (var email in emailsToSend)
         {
-            From = new EmailAddress()
+            var message = new SendGridMessage()
             {
-                Email = emailOptions.Value.AddressFrom,
-                Name = emailOptions.Value.NameFrom,
-            },
-            Subject = subject,
-            HtmlContent = content.html,
-            PlainTextContent = content.plain,
-        };
-        message.AddTo(new EmailAddress(email));
+                From = new EmailAddress()
+                {
+                    Email = emailOptions.Value.AddressFrom,
+                    Name = emailOptions.Value.NameFrom,
+                },
+                Subject = email.Subject,
+                HtmlContent = email.HtmlContent,
+                PlainTextContent = email.PlainContent,
+            };
 
-        return SendAsync(message);
-    }
+            message.AddTo(new EmailAddress(email.Email));
 
-    private async Task SendAsync(SendGridMessage message)
-    {
-        if (!emailOptions.Value.Enabled)
-        {
-            return;
-        }
-
-        try
-        {
             var response = await sendGridClient.SendEmailAsync(message).ConfigureAwait(false);
+
             if (!response.IsSuccessStatusCode)
             {
                 logger.LogError("Email was not sent with the following error: {Error}", await response.Body.ReadAsStringAsync().ConfigureAwait(false));
+                continue;
             }
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "Email was not sent due to an exception or reading response body failed");
+
+            await outboxRepository.Delete(email);
         }
     }
 }

@@ -47,7 +47,7 @@ public class ApplicationServiceTests
     private Mock<IAreaAdminService> areaAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<IRazorViewToStringRenderer> rendererMock;
-    private Mock<IEmailSender> emailSenderMock;
+    private Mock<IEmailSenderService> emailSenderMock;
     private Mock<IStringLocalizer<SharedResource>> localizerMock;
     private Mock<IOptions<HostsConfig>> hostsConfigMock;
 
@@ -68,7 +68,7 @@ public class ApplicationServiceTests
         areaAdminServiceMock = new Mock<IAreaAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
         rendererMock = new Mock<IRazorViewToStringRenderer>();
-        emailSenderMock = new Mock<IEmailSender>();
+        emailSenderMock = new Mock<IEmailSenderService>();
         localizerMock = new Mock<IStringLocalizer<SharedResource>>();
         hostsConfigMock = new Mock<IOptions<HostsConfig>>();
 

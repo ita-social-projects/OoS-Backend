@@ -15,7 +15,7 @@
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(BaseVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(BaseVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(BaseVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="$(BaseVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
     <!--MVC-->
@@ -67,7 +67,7 @@
     <PackageVersion Include="AutoMapper" Version="$(AutoMapVersion)" />
     <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="$(AutoMapVersion)" />
     <!--Quartz-->
-    <PackageVersion Include="Quartz.AspNetCore" Version="$(QuartzVersion)" />
+    <PackageVersion Include="Quartz.AspNetCore" Version="3.5.0" />
     <PackageVersion Include="Quartz.Extensions.DependencyInjection" Version="$(QuartzVersion)" />
     <PackageVersion Include="Quartz.Plugins.TimeZoneConverter" Version="$(QuartzVersion)" />
     <PackageVersion Include="Quartz.Serialization.Json" Version="$(QuartzVersion)" />

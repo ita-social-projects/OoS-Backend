@@ -41,7 +41,7 @@ public class CommonMinistryAdminServiceTests
             new Mock<IMapper>().Object,
             areaAdminRepository,
             new Mock<ILogger<CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, AreaAdminRepository>>>().Object,
-            new Mock<IEmailSender>().Object,
+            new Mock<IEmailSenderService>().Object,
             userManager,
             context,
             new Mock<IRazorViewToStringRenderer>().Object,

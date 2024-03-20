@@ -96,7 +96,7 @@ public class MinistryAdminControllerTests
             new Mock<IMapper>().Object,
             ministryAdminRepository,
             new Mock<ILogger<CommonMinistryAdminService<Guid, InstitutionAdmin, MinistryAdminBaseDto, InstitutionAdminRepository>>>().Object,
-        new Mock<IEmailSender>().Object,
+        new Mock<IEmailSenderService>().Object,
             userManager,
             context,
             new Mock<IRazorViewToStringRenderer>().Object,

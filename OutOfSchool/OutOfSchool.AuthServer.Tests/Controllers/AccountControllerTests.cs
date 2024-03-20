@@ -27,7 +27,7 @@ public class AccountControllerTests
     private AccountController accountController;
     private readonly Mock<FakeSignInManager> fakeSignInManager;
     private readonly Mock<FakeUserManager> fakeUserManager;
-    private readonly Mock<IEmailSender> fakeEmailSender;
+    private readonly Mock<IEmailSenderService> fakeEmailSender;
     private readonly Mock<ILogger<AccountController>> fakeLogger;
     private readonly Mock<IStringLocalizer<SharedResource>> fakeLocalizer;
     private readonly Mock<IRazorViewToStringRenderer> fakeRazorViewToStringRenderer;
@@ -38,7 +38,7 @@ public class AccountControllerTests
     {
         fakeSignInManager = new Mock<FakeSignInManager>();
         fakeUserManager = new Mock<FakeUserManager>();
-        fakeEmailSender = new Mock<IEmailSender>();
+        fakeEmailSender = new Mock<IEmailSenderService>();
         fakeLogger = new Mock<ILogger<AccountController>>();
         fakeLocalizer = new Mock<IStringLocalizer<SharedResource>>();
         fakeRazorViewToStringRenderer = new Mock<IRazorViewToStringRenderer>();

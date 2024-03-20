@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.EmailSender;
 
-public interface IEmailSender
+public interface IEmailSenderService
 {
     Task SendAsync(string email, string subject, (string html, string plain) content);
 }

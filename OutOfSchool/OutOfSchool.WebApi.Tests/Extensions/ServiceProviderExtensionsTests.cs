@@ -40,7 +40,7 @@ public class ServiceProviderExtensionsTests
         ServiceProvider provider = services.BuildServiceProvider();
 
         // Assert
-        Assert.IsInstanceOf<DevEmailSender>(provider.GetService<IEmailSender>());
+        Assert.IsInstanceOf<DevEmailSender>(provider.GetService<IEmailSenderService>());
     }
 
     [Test]
@@ -61,7 +61,7 @@ public class ServiceProviderExtensionsTests
         ServiceProvider provider = services.BuildServiceProvider();
 
         // Assert
-        Assert.IsInstanceOf<EmailSender.EmailSender>(provider.GetService<IEmailSender>());
+        Assert.IsInstanceOf<EmailSender.EmailSenderService>(provider.GetService<IEmailSenderService>());
     }
 
     [Test]

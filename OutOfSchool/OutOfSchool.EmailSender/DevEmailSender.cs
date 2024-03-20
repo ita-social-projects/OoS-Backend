@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace OutOfSchool.EmailSender;
 
-public class DevEmailSender : IEmailSender
+public class DevEmailSender : IEmailSenderService
 {
     private readonly ILogger<DevEmailSender> logger;
 
