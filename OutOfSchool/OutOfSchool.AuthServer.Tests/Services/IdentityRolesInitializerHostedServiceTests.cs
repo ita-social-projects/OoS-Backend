@@ -43,7 +43,7 @@ public class IdentityRolesInitializerHostedServiceTests
         // Act
         await initializer.StartAsync(CancellationToken.None);
 
-        // Arrange
+        // Assert
         mockedRoleManager.Verify(rm => rm.CreateAsync(It.IsIn(defaultRoles, roleNameComparer)), expectedExecutionTimes);
     }
 
@@ -62,7 +62,7 @@ public class IdentityRolesInitializerHostedServiceTests
         // Act
         await initializer.StartAsync(CancellationToken.None);
 
-        // Arrange
+        // Assert
         mockedRoleManager.Verify(rm => rm.CreateAsync(It.IsIn(defaultRoles, roleNameComparer)), expectedExecutionTimes);
     }
 
@@ -81,8 +81,47 @@ public class IdentityRolesInitializerHostedServiceTests
         // Act
         await initializer.StartAsync(CancellationToken.None);
 
-        // Arrange
+        // Assert
         mockedRoleManager.Verify(rm => rm.CreateAsync(It.IsIn(defaultRoles, roleNameComparer)), expectedExecutionTimes);
+    }
+
+    [Test]
+    public async Task Initialize_WhenIdentityErrorOccurs_ShouldLogError()
+    {
+        // Arrange
+        var rolesInStore = Array.Empty<IdentityRole>();
+
+        var testErrorRole = new IdentityRole
+        {
+            Name = "parent",
+        };
+        var identityError = new IdentityError
+        {
+            Code = "TestCode",
+            Description = "TestDescription",
+        };
+
+        var expectedLogTimes = Times.AtLeastOnce();
+
+        var mockedRoleManager = CreateMockedRoleManager(rolesInStore);
+
+        mockedRoleManager.Setup(rm => rm.CreateAsync(It.Is(testErrorRole, roleNameComparer)))
+            .ReturnsAsync(IdentityResult.Failed(identityError));
+
+        var initializer = CreateInitializer(mockedRoleManager.Object);
+
+        // Act
+        await initializer.StartAsync(CancellationToken.None);
+
+        // Assert
+        mockedLogger.Verify(
+            logger => logger.Log(
+                It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
+                It.Is<EventId>(eventId => eventId.Id == 0),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            expectedLogTimes);
     }
 
     private IdentityRolesInitializerHostedService CreateInitializer(RoleManager<IdentityRole> roleManager)
