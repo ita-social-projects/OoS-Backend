@@ -34,7 +34,7 @@ public class RegisterViewModel
     [Required(ErrorMessage = "Password is required")]
     [RegularExpression(
         Constants.PasswordRegexViewModel,
-        ErrorMessage = "Password must contain at least one capital, number and symbol(@$!%*?&).")]
+        ErrorMessage = Constants.PasswordValidationErrorMessage)]
     [DataType(DataType.Password)]
     public string Password { get; set; }
 

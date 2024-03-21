@@ -32,6 +32,10 @@ public static class Constants
 
     public const string PasswordRegexViewModel = @"^(?=.*[\p{Lu}])(?=.*[\p{Ll}])(?=.*\d)(?=.*[@$!%*?&])[\p{Lu}\p{Ll}\d@$!%*?&]{8,}$";
 
+    public const string PasswordValidationErrorMessage = "Password must be at least 8 characters long, including upper and lower case letters, digits and special characters (@$!%*?&)";
+
+    public const string PasswordRequiredErrorMessage = "Password is required";
+
     public const string AddressSeparator = ", ";
 
     public const string EnumErrorMessage = "{0} should be in enum range";
