@@ -1,8 +1,8 @@
-﻿using System.Text.RegularExpressions;
+﻿using static OutOfSchool.AuthCommon.Validators.GeneratedRegexes;
 
 namespace OutOfSchool.AuthCommon.Validators;
 
-public class CustomPasswordValidator(string regexPattern, string passwordValidationErrorMessage, string passwordRequiredErrorMessage) : IPasswordValidator<User>
+public class CustomPasswordValidator(string passwordValidationErrorMessage, string passwordRequiredErrorMessage) : IPasswordValidator<User>
 {
     public Task<IdentityResult> ValidateAsync(UserManager<User> manager, User user, string? password)
     {
@@ -14,7 +14,7 @@ public class CustomPasswordValidator(string regexPattern, string passwordValidat
                 Description = passwordRequiredErrorMessage,
             });
         }
-        else if (!Regex.IsMatch(password, regexPattern))
+        else if (!PasswordGeneratedRegex().IsMatch(password))
         {
             errors.Add(new IdentityError()
             {

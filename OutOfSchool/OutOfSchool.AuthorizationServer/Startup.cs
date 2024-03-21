@@ -74,7 +74,6 @@ public static class Startup
 
         services.AddTransient<IPasswordValidator<User>,
             CustomPasswordValidator>(serv => new CustomPasswordValidator(
-                Constants.PasswordRegexViewModel,
                 Constants.PasswordValidationErrorMessage,
                 Constants.PasswordRequiredErrorMessage));
 
