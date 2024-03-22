@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.WebApi.Services.LicenseApprovalNotification;
 
-public class LicenseApprovalNotificationService : ILicenseApprovalNotificationService, INotificationReciever
+public class LicenseApprovalNotificationService : ILicenseApprovalNotificationService//, INotificationReciever
 {
     private readonly INotificationService notificationService;
     private readonly ILogger<LicenseApprovalNotificationService> logger;
@@ -27,13 +27,13 @@ public class LicenseApprovalNotificationService : ILicenseApprovalNotificationSe
         };
 
         await notificationService
-            .Create(NotificationType.System, NotificationAction.LicenseApproval, Guid.Empty, this, additionalData)
+            .Create(NotificationType.System, NotificationAction.LicenseApproval, Guid.Empty, await GetNotificationsRecipientIds(), additionalData)
             .ConfigureAwait(false);
 
         logger.LogInformation("License approval notification generating was finished");
     }
 
-    public async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
+    private async Task<IEnumerable<string>> GetNotificationsRecipientIds()
     {
         // TODO Add filter for AreaAdmin when he will be created, and delete filter for TechAdmin after that
         return (await userRepository

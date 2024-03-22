@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for Application entity.
 /// </summary>
-public class ApplicationService : IApplicationService, INotificationReciever, ISensitiveApplicationService
+public class ApplicationService : IApplicationService, /*INotificationReciever, */ISensitiveApplicationService
 {
     public const string UaMaleEnding = "ий";
     public const string UaFemaleEnding = "а";
@@ -461,7 +461,7 @@ public class ApplicationService : IApplicationService, INotificationReciever, IS
         return ExecuteUpdateAsync(applicationDto, providerId);
     }
 
-    public async Task<IEnumerable<string>> GetNotificationsRecipientIds(
+    private async Task<IEnumerable<string>> GetNotificationsRecipientIds(
         NotificationAction action,
         Dictionary<string, string> additionalData,
         Guid objectId)
@@ -893,7 +893,7 @@ public class ApplicationService : IApplicationService, INotificationReciever, IS
                 NotificationType.Application,
                 NotificationAction.Create,
                 newApplication.Id,
-                this,
+                await GetNotificationsRecipientIds(NotificationAction.Create, additionalData, newApplication.Id),
                 additionalData,
                 groupedData).ConfigureAwait(false);
         }
@@ -968,7 +968,7 @@ public class ApplicationService : IApplicationService, INotificationReciever, IS
                 NotificationType.Application,
                 NotificationAction.Update,
                 updatedApplication.Id,
-                this,
+                await GetNotificationsRecipientIds(NotificationAction.Update, additionalData, updatedApplication.Id),
                 additionalData,
                 groupedData).ConfigureAwait(false);
 

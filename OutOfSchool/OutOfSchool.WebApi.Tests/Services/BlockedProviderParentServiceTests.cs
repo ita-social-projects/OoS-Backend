@@ -127,7 +127,7 @@ public class BlockedProviderParentServiceTests
                 NotificationType.Parent,
                 NotificationAction.ProviderBlock,
                 blockedParentUserId,
-                service,
+                It.IsAny<IEnumerable<string>>(),
                 additionalData,
                 null),
                 Times.Once);
@@ -209,7 +209,7 @@ public class BlockedProviderParentServiceTests
                 NotificationType.Parent,
                 NotificationAction.ProviderUnblock,
                 unblockedParentUserId,
-                service,
+                It.IsAny<IEnumerable<string>>(),
                 additionalData,
                 null),
                 Times.Once);
@@ -298,7 +298,7 @@ public class BlockedProviderParentServiceTests
         Assert.IsNull(result);
     }
     #endregion
-
+    /*
     #region GetNotificationRecipientIds
     [Test]
     public async Task GetNotificationsRecipientIds_WhenObjectIdIsValid_ShouldReturnIEnumerableWithObjectId()
@@ -315,5 +315,5 @@ public class BlockedProviderParentServiceTests
         // Assert
         Assert.AreEqual(expected, result);
     }
-    #endregion
+    #endregion*/
 }

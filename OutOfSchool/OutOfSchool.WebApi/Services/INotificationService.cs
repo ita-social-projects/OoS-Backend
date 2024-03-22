@@ -29,7 +29,7 @@ public interface INotificationService
         NotificationType type,
         NotificationAction action,
         Guid objectId,
-        INotificationReciever service,
+        IEnumerable<string> recipientsIds,
         Dictionary<string, string> additionalData = null,
         string groupedData = null);
 

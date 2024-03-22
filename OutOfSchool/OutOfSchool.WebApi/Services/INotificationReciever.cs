@@ -6,7 +6,7 @@ namespace OutOfSchool.WebApi.Services;
 /// Defines interface for getting notification recievers.
 /// All services, which use notifications, implement this interface.
 /// </summary>
-public interface INotificationReciever
+/*public interface INotificationReciever
 {
     /// <summary>
     /// Get user's ids for notification.
@@ -16,4 +16,4 @@ public interface INotificationReciever
     /// <param name="objectId">ObjectId.</param>
     /// <returns>A <see cref="Task{TResult}"/> returns users' identificators for sending notifications.</returns>
     Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId);
-}
+}*/

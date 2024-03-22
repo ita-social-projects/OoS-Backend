@@ -149,16 +149,9 @@ public class ProviderServiceV2Tests
                 NotificationType.Provider,
                 NotificationAction.Create,
                 expected.Id,
-                providerService,
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<Dictionary<string, string>>(),
                 null))
-            .Callback((
-                NotificationType type,
-                NotificationAction action,
-                Guid objectId,
-                INotificationReciever service,
-                Dictionary<string, string> additionalData,
-                string groupedData) => service.GetNotificationsRecipientIds(action, additionalData, objectId))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -264,7 +257,7 @@ public class ProviderServiceV2Tests
                 NotificationType.Provider,
                 NotificationAction.Create,
                 It.IsAny<Guid>(),
-                providerService,
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<Dictionary<string, string>>(),
                 null)).Returns(Task.CompletedTask);
 
@@ -290,7 +283,7 @@ public class ProviderServiceV2Tests
                 NotificationType.Provider,
                 NotificationAction.Create,
                 It.IsAny<Guid>(),
-                providerService,
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<Dictionary<string, string>>(),
                 null)).Returns(Task.CompletedTask);
 
@@ -328,7 +321,7 @@ public class ProviderServiceV2Tests
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                providerService,
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -397,7 +390,7 @@ public class ProviderServiceV2Tests
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                providerService,
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -435,7 +428,7 @@ public class ProviderServiceV2Tests
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                providerService,
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -476,7 +469,7 @@ public class ProviderServiceV2Tests
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                providerService,
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
