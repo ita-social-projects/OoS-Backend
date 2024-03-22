@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using Moq;
@@ -24,6 +27,8 @@ public class WorkshopServicesCombinerTests
     private Mock<IWorkshopService> workshopService;
     private IMapper mapper;
     private Mock<INotificationService> notificationServiceMock;
+    private Mock<IEntityRepositorySoftDeleted<long, Favorite>> favoriteRepository;
+    private Mock<IApplicationRepository> applicationRepository;
 
     private IWorkshopServicesCombiner service;
 
@@ -34,8 +39,8 @@ public class WorkshopServicesCombinerTests
         var elasticsearchSynchronizationService = new Mock<IElasticsearchSynchronizationService>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
 
-        var favoriteRepository = new Mock<IEntityRepositorySoftDeleted<long, Favorite>>();
-        var applicationRepository = new Mock<IApplicationRepository>();
+        favoriteRepository = new Mock<IEntityRepositorySoftDeleted<long, Favorite>>();
+        applicationRepository = new Mock<IApplicationRepository>();
         var workshopStrategy = new Mock<IWorkshopStrategy>();
         var currentUserService = new Mock<ICurrentUserService>();
         var ministryAdminService = new Mock<IMinistryAdminService>();
@@ -65,10 +70,27 @@ public class WorkshopServicesCombinerTests
     {
         // Arrange
         string titleKey = "Title";
+        var emptyListFavorites = new List<Favorite>();
+        var emptyListApplications = new List<Application>();
 
         var workshop = WorkshopGenerator.Generate();
 
         workshopService.Setup(x => x.GetById(workshop.Id)).ReturnsAsync(mapper.Map<WorkshopDto>(workshop));
+        favoriteRepository.Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Favorite, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Favorite, object>>, SortDirection>>(),
+                It.IsAny<bool>())).Returns(emptyListFavorites.AsTestAsyncEnumerableQuery());
+
+        applicationRepository.Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Application, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
+                It.IsAny<bool>())).Returns(emptyListApplications.AsTestAsyncEnumerableQuery());
 
         // Act
         await service.Delete(workshop.Id).ConfigureAwait(false);

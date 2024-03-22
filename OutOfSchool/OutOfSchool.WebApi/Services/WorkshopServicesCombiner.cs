@@ -24,6 +24,8 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
     private readonly IMapper mapper;
 
+    private IEnumerable<string> notificationsRecipientIds;
+
     public WorkshopServicesCombiner(
         IWorkshopService workshopService,
         IElasticsearchSynchronizationService elasticsearchSynchronizationService,
@@ -152,6 +154,8 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     /// <inheritdoc/>
     public async Task Delete(Guid id)
     {
+        notificationsRecipientIds = await GetNotificationsRecipientIds(NotificationAction.Delete, null, id).ConfigureAwait(false);
+
         var workshopDto = await workshopService.GetById(id).ConfigureAwait(false);
 
         await workshopService.Delete(id).ConfigureAwait(false);
@@ -164,6 +168,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
 
         await SendNotification(workshopDto, NotificationAction.Delete, false).ConfigureAwait(false);
 
+        notificationsRecipientIds = null;
     }
 
     /// <inheritdoc/>
@@ -246,26 +251,33 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         Dictionary<string, string> additionalData,
         Guid objectId)
     {
-        var recipientIds = new List<string>();
+        if (notificationsRecipientIds is not null)
+        {
+            return notificationsRecipientIds;
+        }
+        else
+        {
+            var recipientIds = new List<string>();
 
-        var favoriteWorkshopUsersIds = await favoriteRepository.Get(whereExpression: x => x.WorkshopId == objectId)
-            .Select(x => x.UserId)
-            .ToListAsync()
-            .ConfigureAwait(false);
+            var favoriteWorkshopUsersIds = await favoriteRepository.Get(whereExpression: x => x.WorkshopId == objectId)
+                .Select(x => x.UserId)
+                .ToListAsync()
+                .ConfigureAwait(false);
 
-        Expression<Func<Application, bool>> predicate =
-            x => x.Status != ApplicationStatus.Left
-                 && x.WorkshopId == objectId;
+            Expression<Func<Application, bool>> predicate =
+                x => x.Status != ApplicationStatus.Left
+                     && x.WorkshopId == objectId;
 
-        var appliedUsersIds = await applicationRepository.Get(whereExpression: predicate)
-            .Select(x => x.Parent.UserId)
-            .ToListAsync()
-            .ConfigureAwait(false);
+            var appliedUsersIds = await applicationRepository.Get(whereExpression: predicate)
+                .Select(x => x.Parent.UserId)
+                .ToListAsync()
+                .ConfigureAwait(false);
 
-        recipientIds.AddRange(favoriteWorkshopUsersIds);
-        recipientIds.AddRange(appliedUsersIds);
+            recipientIds.AddRange(favoriteWorkshopUsersIds);
+            recipientIds.AddRange(appliedUsersIds);
 
-        return recipientIds.Distinct();
+            return recipientIds.Distinct();
+        }
     }
 
     /// <inheritdoc/>
