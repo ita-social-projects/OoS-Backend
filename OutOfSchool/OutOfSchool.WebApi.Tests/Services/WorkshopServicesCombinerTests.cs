@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -101,7 +100,7 @@ public class WorkshopServicesCombinerTests
                 NotificationType.Workshop,
                 NotificationAction.Delete,
                 workshop.Id,
-                service as INotificationReciever,
+                It.IsAny<IEnumerable<string>>(),
                 It.Is<Dictionary<string, string>>(c => c.ContainsKey(titleKey) && c[titleKey] == workshop.Title),
                 null),
             Times.Once);

@@ -63,11 +63,11 @@ public class NotificationService : INotificationService
         NotificationType type,
         NotificationAction action,
         Guid objectId,
-        INotificationReciever service,
+        IEnumerable<string> recipientsIds,
         Dictionary<string, string> additionalData = null,
         string groupedData = null)
     {
-        if (!notificationsConfig.Value.Enabled || service is null)
+        if (!notificationsConfig.Value.Enabled || recipientsIds is null)
         {
             return;
         }
@@ -83,8 +83,6 @@ public class NotificationService : INotificationService
             Data = additionalData,
             GroupedData = groupedData,
         };
-
-        var recipientsIds = await service.GetNotificationsRecipientIds(action, additionalData, objectId).ConfigureAwait(false);
 
         foreach (var userId in recipientsIds)
         {

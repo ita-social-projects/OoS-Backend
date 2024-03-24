@@ -148,16 +148,9 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Create,
                 expected.Id,
-                providerService,
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<Dictionary<string, string>>(),
                 null))
-            .Callback((
-                NotificationType type,
-                NotificationAction action,
-                Guid objectId,
-                INotificationReciever service,
-                Dictionary<string, string> additionalData,
-                string groupedData) => service.GetNotificationsRecipientIds(action, additionalData, objectId))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -551,7 +544,7 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                providerService,
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -620,7 +613,7 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                providerService,
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -658,7 +651,7 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                providerService,
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -699,7 +692,7 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                providerService,
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -878,61 +871,6 @@ public class ProviderServiceTests
 
     #endregion
 
-    #region GetNotificationsRecipientIds
-
-    [Test]
-    public async Task GetNotificationsRecipientIds_WhenProviderNotFound_ReturnsEmptyList()
-    {
-        // Arrange
-        var provider = ProvidersGenerator.Generate();
-        var additionalData = new Dictionary<string, string>
-        {
-            { "Status", "Approved" },
-        };
-
-        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
-            .ReturnsAsync(null as Provider);
-
-        // Act
-        var recipientIds = await (providerService as INotificationReciever).GetNotificationsRecipientIds(
-            NotificationAction.Update,
-            additionalData,
-            provider.Id);
-
-        // Assert
-        Assert.IsEmpty(recipientIds);
-    }
-
-    [TestCaseSource(nameof(AdditionalTestData))]
-    public async Task GetNotificationsRecipientIds_WhenIsUpdatedStatusOrLicenseStatus_ReturnsProviderAdminsList(Dictionary<string, string> additionalData)
-    {
-        // Arrange
-        var provider = ProvidersGenerator.Generate();
-        var providerDeputiesIds = new List<string>
-        {
-            Guid.NewGuid().ToString(),
-            Guid.NewGuid().ToString(),
-        };
-
-        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
-            .ReturnsAsync(provider);
-        providerAdminService.Setup(s => s.GetProviderDeputiesIds(provider.Id))
-            .ReturnsAsync(providerDeputiesIds);
-
-        var expected = providerDeputiesIds.Concat(new[] { provider.UserId });
-
-        // Act
-        var recipientIds = await (providerService as INotificationReciever).GetNotificationsRecipientIds(
-            NotificationAction.Update,
-            additionalData,
-            provider.Id);
-
-        // Assert
-        CollectionAssert.IsSubsetOf(expected, recipientIds);
-    }
-
-    #endregion
-
     #region Block
 
     [Test]
@@ -991,7 +929,7 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Block,
                 provider.Id,
-                providerService,
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -1042,7 +980,7 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Block,
                 provider.Id,
-                providerService,
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -1098,7 +1036,7 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Block,
                 provider.Id,
-                providerService,
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -1154,7 +1092,7 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Block,
                 provider.Id,
-                providerService,
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -1238,7 +1176,7 @@ public class ProviderServiceTests
         var existingProvider = fakeProviders.RandomItem();
         var notificationAction = new NotificationAction();
         notificationService.Setup(n => n.Create(It.IsAny<NotificationType>(), notificationAction,
-            existingProvider.Id, providerService, It.IsAny<Dictionary<string, string>>(), null));
+            existingProvider.Id, It.IsAny<IEnumerable<string>>(), It.IsAny<Dictionary<string, string>>(), null));
 
         // Act
         providerService.SendNotification(existingProvider, notificationAction, 
@@ -1246,7 +1184,7 @@ public class ProviderServiceTests
 
         // Assert
         notificationService.Verify(n => n.Create(It.IsAny<NotificationType>(), notificationAction,
-            existingProvider.Id, providerService, It.IsAny<Dictionary<string, string>>(), null), Times.Once);
+            existingProvider.Id, It.IsAny<IEnumerable<string>>(), It.IsAny<Dictionary<string, string>>(), null), Times.Once);
     }
 
     [Test]
@@ -1255,7 +1193,7 @@ public class ProviderServiceTests
         // Arrange
         var notificationAction = new NotificationAction();
         notificationService.Setup(n => n.Create(It.IsAny<NotificationType>(), notificationAction,
-            It.IsAny<Guid>(), providerService, It.IsAny<Dictionary<string, string>>(), null));
+            It.IsAny<Guid>(), It.IsAny<IEnumerable<string>>(), It.IsAny<Dictionary<string, string>>(), null));
 
         // Act
         providerService.SendNotification(null, notificationAction,
@@ -1263,7 +1201,7 @@ public class ProviderServiceTests
 
         // Assert
         notificationService.Verify(n => n.Create(It.IsAny<NotificationType>(), notificationAction,
-            It.IsAny<Guid>(), providerService, It.IsAny<Dictionary<string, string>>(), null), Times.Never);
+            It.IsAny<Guid>(), It.IsAny<IEnumerable<string>>(), It.IsAny<Dictionary<string, string>>(), null), Times.Never);
     }
 
     #endregion
