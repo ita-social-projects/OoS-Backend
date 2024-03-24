@@ -1,8 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace OutOfSchool.EmailSender;
 
 public interface IEmailSenderService
 {
-    Task SendAsync(string email, string subject, (string html, string plain) content);
+    Task SendAsync(string email, string subject, (string html, string plain) content, DateTime expirationTime);
 }

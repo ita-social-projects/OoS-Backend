@@ -1037,6 +1037,6 @@ public class ApplicationService : IApplicationService, INotificationReciever, IS
         };
         var content = await renderer
                 .GetHtmlPlainStringAsync(templateName, applicationStatusViewModel);
-        await emailSender.SendAsync(application.Parent.User.Email, subject, content);
+        await emailSender.SendAsync(application.Parent.User.Email, subject, content, DateTime.MaxValue);
     }
 }

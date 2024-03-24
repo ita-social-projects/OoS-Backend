@@ -297,7 +297,7 @@ public class AccountController : Controller
         };
 
         var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ResetPassword, userActionViewModel);
-        await emailSender.SendAsync(email, subject, content);
+        await emailSender.SendAsync(email, subject, content, DateTime.MaxValue);
 
         logger.LogInformation("{Path} Message to change password was sent. User(id): {UserId}", path, user.Id);
 
@@ -459,7 +459,7 @@ public class AccountController : Controller
         };
 
         var content = await renderer.GetHtmlPlainStringAsync(razorTemplate, userActionViewModel);
-        await emailSender.SendAsync(email, subject, content);
+        await emailSender.SendAsync(email, subject, content, DateTime.MaxValue);
 
         logger.LogInformation("Confirmation message was sent. User(id): {UserId}", user.Id);
 

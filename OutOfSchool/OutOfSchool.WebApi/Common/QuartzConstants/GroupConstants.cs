@@ -8,4 +8,5 @@ public static class GroupConstants
     public const string Notifications = "notifications";
     public const string ApplicationStatusChange = "applicationstatuschange";
     public const string AverageRating = "averagerating";
+    public const string Emails = "emails";
 }

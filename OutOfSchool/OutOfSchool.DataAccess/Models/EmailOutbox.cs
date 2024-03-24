@@ -1,9 +1,8 @@
 ﻿using System;
-
 namespace OutOfSchool.Services.Models;
-public class EmailOutbox : IKeyedEntity<Guid>
+public class EmailOutbox : IKeyedEntity<long>
 {
-    public Guid Id { get; set; }
+    public long Id { get; set; }
 
     public string Email { get; set; }
 
@@ -13,5 +12,7 @@ public class EmailOutbox : IKeyedEntity<Guid>
 
     public string PlainContent { get; set; }
 
-    public DateTime CreationTime { get; set; }
+    public DateTimeOffset CreationTime { get; set; }
+
+    public DateTimeOffset ExpirationTime { get; set; }
 }

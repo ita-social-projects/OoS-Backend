@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Services.Enums;
@@ -8,17 +10,17 @@ using SendGrid;
 using SendGrid.Helpers.Mail;
 
 namespace OutOfSchool.EmailSender;
-public class EmailSender : IJob
+public class EmailSenderJob : IJob
 {
     private readonly IOptions<EmailOptions> emailOptions;
     private readonly IEmailOutboxRepository outboxRepository;
-    private readonly ILogger<EmailSender> logger;
+    private readonly ILogger<EmailSenderJob> logger;
     private readonly ISendGridClient sendGridClient;
 
-    public EmailSender(
+    public EmailSenderJob(
         IOptions<EmailOptions> emailOptions,
         IEmailOutboxRepository outboxRepository,
-        ILogger<EmailSender> logger,
+        ILogger<EmailSenderJob> logger,
         ISendGridClient sendGridClient)
     {
         this.emailOptions = emailOptions;
@@ -29,9 +31,17 @@ public class EmailSender : IJob
 
     public async Task Execute(IJobExecutionContext context)
     {
+        logger.LogInformation("The email sender Quartz job started.");
+
         var emailsToSend = outboxRepository.Get(orderBy: new() { { x => x.CreationTime, SortDirection.Ascending } });
         foreach (var email in emailsToSend)
         {
+            if(email.ExpirationTime > DateTime.UtcNow)
+            {
+                await outboxRepository.Delete(email);
+                logger.LogError("Email was not sent because expiration time passed: {Email}, {ExpirationTime}", email.Email, email.ExpirationTime);
+            }
+
             var message = new SendGridMessage()
             {
                 From = new EmailAddress()
@@ -40,8 +50,8 @@ public class EmailSender : IJob
                     Name = emailOptions.Value.NameFrom,
                 },
                 Subject = email.Subject,
-                HtmlContent = email.HtmlContent,
-                PlainTextContent = email.PlainContent,
+                HtmlContent = DecodeFrom64(email.HtmlContent),
+                PlainTextContent = DecodeFrom64(email.PlainContent),
             };
 
             message.AddTo(new EmailAddress(email.Email));
@@ -56,5 +66,16 @@ public class EmailSender : IJob
 
             await outboxRepository.Delete(email);
         }
+
+        logger.LogInformation("The email sender Quartz job finished.");
+    }
+
+    private string DecodeFrom64(string encodedData)
+    {
+        byte[] encodedDataAsBytes = Convert.FromBase64String(encodedData);
+
+        string returnValue = Encoding.ASCII.GetString(encodedDataAsBytes);
+
+        return returnValue;
     }
 }

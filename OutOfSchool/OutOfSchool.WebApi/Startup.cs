@@ -444,6 +444,7 @@ public static class Startup
             q.AddApplicationStatusChanging(services, quartzConfig);
             q.AddAverageRatingCalculating(services, quartzConfig);
             q.AddLicenseApprovalNotificationGenerating(services, quartzConfig);
+            q.AddEmailSender(services, quartzConfig);
         });
 
         var isRedisEnabled = configuration.GetValue<bool>("Redis:Enabled");
@@ -487,7 +488,7 @@ public static class Startup
         var mailConfig = configuration
             .GetSection(EmailOptions.SectionName)
             .Get<EmailOptions>();
-        services.AddEmailSender(
+        services.AddEmailSenderService(
             builder.Environment.IsDevelopment(),
             mailConfig.SendGridKey,
             builder => builder.Bind(configuration.GetSection(EmailOptions.SectionName)));

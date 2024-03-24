@@ -666,7 +666,7 @@ public class ProviderAdminService : IProviderAdminService
         };
         var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.NewAdminInvitation, adminInvitationViewModel);
 
-        await emailSender.SendAsync(user.Email, subject, content);
+        await emailSender.SendAsync(user.Email, subject, content, DateTime.MaxValue);
     }
 
     private ProviderAdmin GetProviderAdmin(string providerAdminId)
