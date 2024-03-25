@@ -63,6 +63,30 @@ public class NotificationServiceTests
 
     #region Create
     [Test]
+    public async Task Create_NotificationsDisabled_EntityNotCreated()
+    {
+        // Arrange
+        IEnumerable<string> recipientsIds = null;
+
+        var notificationsConfig = new NotificationsConfig
+        {
+            Enabled = false,
+        };
+
+        notificationsConfigMock.Setup(x => x.Value).Returns(notificationsConfig);
+
+        // Act
+        await notificationService.Create(
+            It.IsAny<NotificationType>(),
+            It.IsAny<NotificationAction>(),
+            It.IsAny<Guid>(),
+            recipientsIds).ConfigureAwait(false);
+
+        // Assert
+        notificationRepositoryMock.Verify(x => x.Create(It.IsAny<Notification>()), Times.Never);
+    }
+
+    [Test]
     public async Task Create_RecipientsIdsNull_EntityNotCreated()
     {
         // Arrange
