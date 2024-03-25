@@ -149,7 +149,7 @@ public class AdminControllerTests
     }
 
     [Test]
-    public async Task GetByFilterMinistryAdmin_ReturnsObjectResult()
+    public async Task GetByFilterMinistryAdmin_ReturnsNoContentResult()
     {
         // Arrange
         controller.ControllerContext.HttpContext = fakeHttpContext;
@@ -186,7 +186,7 @@ public class AdminControllerTests
     }
 
     [Test]
-    public async Task GetApplications_WhenCollectionIsEmpty_ShouldReturnNoContent()
+    public async Task GetApplications_ShouldReturnOkResult()
     {
         // Arrange
         controller.ControllerContext.HttpContext = fakeHttpContext;

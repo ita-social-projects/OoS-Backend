@@ -1,4 +1,3 @@
-using Elastic.CommonSchema;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
