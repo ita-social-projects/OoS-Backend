@@ -10,5 +10,7 @@ public class FeatureManagementConfig
 
     public bool Release3 { get; set; }
 
+    public bool ShowForProduction { get; set; }
+
     public bool Images { get; set; }
 }
