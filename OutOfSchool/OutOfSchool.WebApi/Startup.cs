@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.EmailSender;
+using OutOfSchool.RazorTemplatesData.Config;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Services.AverageRatings;
@@ -489,7 +490,8 @@ public static class Startup
         services.AddEmailSender(
             builder.Environment.IsDevelopment(),
             mailConfig.SendGridKey,
-            builder => builder.Bind(configuration.GetSection(EmailOptions.SectionName)));
+            builder => builder.Bind(configuration.GetSection(EmailOptions.SectionName)))
+            .AddEmailRendererConfiguration(new EmailContentConfig(configuration.GetSection("Hosts")["BackendUrl"]));
 
         // Hosts options
         services.Configure<HostsConfig>(configuration.GetSection(HostsConfig.Name));
