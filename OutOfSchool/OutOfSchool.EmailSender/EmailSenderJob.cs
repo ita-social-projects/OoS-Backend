@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -33,6 +34,12 @@ public class EmailSenderJob : IJob
     {
         logger.LogInformation("The email sender Quartz job started.");
 
+        if (!emailOptions.Value.Enabled)
+        {
+            logger.LogError("The email sender is disabled.");
+            return;
+        }
+
         var emailsToSend = outboxRepository.Get(orderBy: new() { { x => x.CreationTime, SortDirection.Ascending } });
         foreach (var email in emailsToSend)
         {
@@ -57,6 +64,12 @@ public class EmailSenderJob : IJob
             message.AddTo(new EmailAddress(email.Email));
 
             var response = await sendGridClient.SendEmailAsync(message).ConfigureAwait(false);
+
+            if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                logger.LogError("Email sending rate limit exceeded.");
+                return;
+            }
 
             if (!response.IsSuccessStatusCode)
             {
