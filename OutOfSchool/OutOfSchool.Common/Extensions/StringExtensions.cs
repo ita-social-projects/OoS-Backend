@@ -44,19 +44,7 @@ public static class StringExtensions
 
     public static bool ContainsAnySymbol(this string source, string symbols)
     {
-        if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(symbols))
-        {
-            return false;
-        }
-
-        foreach (var symbol in symbols)
-        {
-            if (source.Contains(symbol))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return !string.IsNullOrEmpty(source) && !string.IsNullOrEmpty(symbols)
+            && symbols.Any(source.Contains);
     }
 }
