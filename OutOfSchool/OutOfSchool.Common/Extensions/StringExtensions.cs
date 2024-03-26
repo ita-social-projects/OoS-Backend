@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace OutOfSchool.Common.Extensions;
 
@@ -34,5 +35,28 @@ public static class StringExtensions
         return (value.Length > length)
             ? value[^length..]
             : value;
+    }
+
+    public static bool ContainsCharacterType(this string source, Func<char, bool> characterType)
+    {
+        return source.Any(characterType);
+    }
+
+    public static bool ContainsAnySymbol(this string source, string symbols)
+    {
+        if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(symbols))
+        {
+            return false;
+        }
+
+        foreach (var symbol in symbols)
+        {
+            if (source.Contains(symbol))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

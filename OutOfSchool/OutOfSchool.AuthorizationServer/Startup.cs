@@ -72,10 +72,7 @@ public static class Startup
 
         services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-        services.AddTransient<IPasswordValidator<User>,
-            CustomPasswordValidator>(serv => new CustomPasswordValidator(
-                Constants.PasswordValidationErrorMessage,
-                Constants.PasswordRequiredErrorMessage));
+        services.AddTransient<IPasswordValidator<User>, CustomPasswordValidator>();
 
         services.AddIdentity<User, IdentityRole>()
             .AddEntityFrameworkStores<OutOfSchoolDbContext>()

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using OutOfSchool.AuthCommon.Validators;
+using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.AuthCommon.ViewModels;
 
@@ -9,9 +10,7 @@ public class ResetPasswordViewModel
     public string Email { get; set; }
 
     [Required(ErrorMessage = "Password is required")]
-    [RegularExpression(
-        Constants.PasswordRegexViewModel,
-        ErrorMessage = Constants.PasswordValidationErrorMessage)]
+    [CustomPasswordValidation]
     [DataType(DataType.Password)]
     public string Password { get; set; }
 

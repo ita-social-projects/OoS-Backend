@@ -1,28 +1,20 @@
-﻿using static OutOfSchool.AuthCommon.Validators.GeneratedRegexes;
+﻿using Microsoft.Extensions.Localization;
 
 namespace OutOfSchool.AuthCommon.Validators;
 
-public class CustomPasswordValidator(string passwordValidationErrorMessage, string passwordRequiredErrorMessage) : IPasswordValidator<User>
+public class CustomPasswordValidator(IStringLocalizer<SharedResource> localizer) : IPasswordValidator<User>
 {
     public Task<IdentityResult> ValidateAsync(UserManager<User> manager, User user, string? password)
     {
-        List<IdentityError> errors = [];
-        if (string.IsNullOrEmpty(password))
+        if (!CustomPasswordRules.IsValidPassword(password))
         {
-            errors.Add(new IdentityError()
+            var error = new IdentityError
             {
-                Description = passwordRequiredErrorMessage,
-            });
-        }
-        else if (!PasswordGeneratedRegex().IsMatch(password))
-        {
-            errors.Add(new IdentityError()
-            {
-                Description = passwordValidationErrorMessage,
-            });
+                Description = localizer[Constants.PasswordValidationErrorMessage],
+            };
+            return Task.FromResult(IdentityResult.Failed(error));
         }
 
-        return Task.FromResult(errors.Count == 0 ?
-            IdentityResult.Success : IdentityResult.Failed([.. errors]));
+        return Task.FromResult(IdentityResult.Success);
     }
 }
