@@ -69,8 +69,24 @@ public class WorkshopServicesCombinerTests
     {
         // Arrange
         string titleKey = "Title";
-        var emptyListFavorites = new List<Favorite>();
-        var emptyListApplications = new List<Application>();
+        var favorite = new Favorite()
+        {
+            Id = 1,
+            UserId = Guid.NewGuid().ToString(),
+            WorkshopId = Guid.NewGuid(),
+        };
+
+        var application = ApplicationGenerator.Generate().WithParent(ParentGenerator.Generate());
+
+        var favorites = new List<Favorite>();
+        favorites.Add(favorite);
+
+        var applications = new List<Application>();
+        applications.Add(application);
+
+        var recipientsIds = new List<string>();
+        recipientsIds.Add(favorite.UserId);
+        recipientsIds.Add(application.Parent.UserId);
 
         var workshop = WorkshopGenerator.Generate();
 
@@ -81,7 +97,7 @@ public class WorkshopServicesCombinerTests
                 It.IsAny<string>(),
                 It.IsAny<Expression<Func<Favorite, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Favorite, object>>, SortDirection>>(),
-                It.IsAny<bool>())).Returns(emptyListFavorites.AsTestAsyncEnumerableQuery());
+                It.IsAny<bool>())).Returns(favorites.AsTestAsyncEnumerableQuery());
 
         applicationRepository.Setup(x => x.Get(
                 It.IsAny<int>(),
@@ -89,7 +105,7 @@ public class WorkshopServicesCombinerTests
                 It.IsAny<string>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>())).Returns(emptyListApplications.AsTestAsyncEnumerableQuery());
+                It.IsAny<bool>())).Returns(applications.AsTestAsyncEnumerableQuery());
 
         // Act
         await service.Delete(workshop.Id).ConfigureAwait(false);
@@ -100,7 +116,7 @@ public class WorkshopServicesCombinerTests
                 NotificationType.Workshop,
                 NotificationAction.Delete,
                 workshop.Id,
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 It.Is<Dictionary<string, string>>(c => c.ContainsKey(titleKey) && c[titleKey] == workshop.Title),
                 null),
             Times.Once);
