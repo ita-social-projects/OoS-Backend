@@ -25,6 +25,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
     public const string UaMaleEnding = "ий";
     public const string UaFemaleEnding = "а";
     public const string UaUnspecifiedGenderEnding = "ий/a";
+    private const string StatusTitle = "Status";
 
     private readonly IApplicationRepository applicationRepository;
     private readonly IWorkshopRepository workshopRepository;
@@ -839,7 +840,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         {
             var additionalData = new Dictionary<string, string>
             {
-                { "Status", newApplication.Status.ToString() },
+                { StatusTitle, newApplication.Status.ToString() },
             };
 
             string groupedData = newApplication.Status.ToString();
@@ -915,7 +916,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
 
             var additionalData = new Dictionary<string, string>()
             {
-                { "Status", updatedApplication.Status.ToString() },
+                { StatusTitle, updatedApplication.Status.ToString() },
             };
 
             var groupedData = updatedApplication.Status.ToString();
@@ -974,8 +975,8 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         else if (action == NotificationAction.Update)
         {
             if (additionalData != null
-                && additionalData.ContainsKey("Status")
-                && Enum.TryParse(additionalData["Status"], out ApplicationStatus applicationStatus))
+                && additionalData.ContainsKey(StatusTitle)
+                && Enum.TryParse(additionalData[StatusTitle], out ApplicationStatus applicationStatus))
             {
                 if (applicationStatus == ApplicationStatus.Approved
                     || applicationStatus == ApplicationStatus.Rejected)
