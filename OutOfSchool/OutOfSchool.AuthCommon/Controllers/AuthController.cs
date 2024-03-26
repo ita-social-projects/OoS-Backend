@@ -384,7 +384,7 @@ public class AuthController : Controller
                     ActionUrl = callBackUrl,
                 };
                 var content = await renderer.GetHtmlPlainStringAsync(RazorTemplates.ConfirmEmail, userActionViewModel);
-                await emailSender.SendAsync(email, subject, content, DateTime.MaxValue);
+                await emailSender.SendAsync(email, subject, content);
 
                 logger.LogInformation("Message to confirm email was sent. User(id): {UserId}", user.Id);
 

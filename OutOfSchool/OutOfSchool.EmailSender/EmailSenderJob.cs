@@ -11,6 +11,7 @@ using SendGrid;
 using SendGrid.Helpers.Mail;
 
 namespace OutOfSchool.EmailSender;
+
 public class EmailSenderJob : IJob
 {
     private readonly IOptions<EmailOptions> emailOptions;

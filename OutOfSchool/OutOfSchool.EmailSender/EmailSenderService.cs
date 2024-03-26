@@ -16,8 +16,9 @@ public class EmailSenderService : IEmailSenderService
         this.emailOutboxRepository = emailOutboxRepository;
     }
 
-    public async Task SendAsync(string email, string subject, (string html, string plain) content, DateTime expirationTime)
+    public async Task SendAsync(string email, string subject, (string html, string plain) content, DateTime? expirationTime = null)
     {
+        expirationTime ??= DateTime.MaxValue;
         var outboxMessage = new EmailOutbox()
         {
             Email = email,
@@ -25,7 +26,7 @@ public class EmailSenderService : IEmailSenderService
             HtmlContent = EncodeToBase64(content.html),
             PlainContent = EncodeToBase64(content.plain),
             CreationTime = DateTime.Now,
-            ExpirationTime = expirationTime
+            ExpirationTime = (DateTimeOffset)expirationTime
         };
         await emailOutboxRepository.Create(outboxMessage);
     }

@@ -540,7 +540,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
         var content =
             await renderer.GetHtmlPlainStringAsync(RazorTemplates.NewAdminInvitation, adminInvitationViewModel);
 
-        await emailSender.SendAsync(user.Email, subject, content, DateTime.MaxValue);
+        await emailSender.SendAsync(user.Email, subject, content);
     }
 
     private async Task<TEntity> GetMinistryAdmin(string ministryAdminId)
