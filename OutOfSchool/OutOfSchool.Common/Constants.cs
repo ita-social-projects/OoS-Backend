@@ -36,7 +36,7 @@ public static class Constants
 
     public const int PasswordMinLength = 8;
 
-    public const string PasswordValidationSymbols = "@$!%*?&";
+    public const string ValidationSymbols = "@$!%*?&";
 
     public const string AddressSeparator = ", ";
 

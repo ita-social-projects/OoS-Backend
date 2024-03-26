@@ -8,7 +8,7 @@ public static class CustomPasswordRules
             !password.ContainsCharacterType(char.IsUpper) ||
             !password.ContainsCharacterType(char.IsLower) ||
             !password.ContainsCharacterType(char.IsDigit) ||
-            !password.ContainsAnySymbol(Constants.PasswordValidationSymbols))
+            !password.ContainsAnySymbol(Constants.ValidationSymbols))
         {
             return false;
         }
