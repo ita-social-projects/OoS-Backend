@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 
 namespace OutOfSchool.Common.Extensions;
 
