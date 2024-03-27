@@ -45,6 +45,5 @@ public class MappingProfile : Profile
         where TSource : AdminBaseDto
         => mappings
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
-            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => Constants.PhonePrefix + src.PhoneNumber.Right(Constants.PhoneShortLength)))
-        ;
+            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber));
 }
