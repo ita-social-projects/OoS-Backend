@@ -6,7 +6,7 @@ using OutOfSchool.WebApi.Models.BlockedProviderParent;
 
 namespace OutOfSchool.WebApi.Services;
 
-public class BlockedProviderParentService : IBlockedProviderParentService, INotificationReciever
+public class BlockedProviderParentService : IBlockedProviderParentService
 {
     public const string ProviderIdKey = "ProviderId";
     public const string ProviderFullTitleKey = "ProviderFullTitle";
@@ -85,11 +85,14 @@ public class BlockedProviderParentService : IBlockedProviderParentService, INoti
                 { ProviderFullTitleKey, entity.Provider.FullTitle },
                 { ProviderShortTitleKey, entity.Provider.ShortTitle },
             };
+
+            var recipientsIds = new List<string>() { blockedParentUserId.ToString() };
+
             await notificationService.Create(
                 NotificationType.Parent,
                 NotificationAction.ProviderBlock,
                 blockedParentUserId,
-                this,
+                recipientsIds,
                 additionalData).ConfigureAwait(false);
         }
 
@@ -137,11 +140,14 @@ public class BlockedProviderParentService : IBlockedProviderParentService, INoti
                 { ProviderFullTitleKey, entity.Provider.FullTitle },
                 { ProviderShortTitleKey, entity.Provider.ShortTitle },
             };
+
+        var recipientsIds = new List<string>() { unblockedParentUserId.ToString() };
+
         await notificationService.Create(
             NotificationType.Parent,
             NotificationAction.ProviderUnblock,
             unblockedParentUserId,
-            this,
+            recipientsIds,
             additionalData).ConfigureAwait(false);
 
         return Result<BlockedProviderParentDto>.Success(mapper.Map<BlockedProviderParentDto>(entity));
@@ -161,12 +167,4 @@ public class BlockedProviderParentService : IBlockedProviderParentService, INoti
         => blockedProviderParentRepository
             .GetBlockedProviderParentEntities(parentId, providerId)
             .AnyAsync();
-
-    public Task<IEnumerable<string>> GetNotificationsRecipientIds(
-        NotificationAction action,
-        Dictionary<string, string> additionalData,
-        Guid objectId)
-    {
-        return Task.FromResult<IEnumerable<string>>(new List<string>() { objectId.ToString() });
-    }
 }

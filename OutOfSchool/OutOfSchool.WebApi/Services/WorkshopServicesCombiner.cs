@@ -9,7 +9,7 @@ using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 
 namespace OutOfSchool.WebApi.Services;
 
-public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotificationReciever
+public class WorkshopServicesCombiner : IWorkshopServicesCombiner
 {
     private protected readonly IWorkshopService workshopService; // make it private after removing v2 version
     private protected readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService; // make it private after removing v2 version
@@ -107,11 +107,13 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
             { "Title", workshopDto.Title },
         };
 
+        var recipientsIds = await GetNotificationsRecipientIds(workshopDto.WorkshopId).ConfigureAwait(false);
+
         await notificationService.Create(
             NotificationType.Workshop,
             NotificationAction.Update,
             workshopDto.WorkshopId,
-            this,
+            recipientsIds,
             additionalData).ConfigureAwait(false);
 
         return dto;
@@ -152,6 +154,8 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     /// <inheritdoc/>
     public async Task Delete(Guid id)
     {
+        var notificationsRecipientIds = await GetNotificationsRecipientIds(id).ConfigureAwait(false);
+
         var workshopDto = await workshopService.GetById(id).ConfigureAwait(false);
 
         await workshopService.Delete(id).ConfigureAwait(false);
@@ -162,8 +166,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
                 ElasticsearchSyncOperation.Delete)
             .ConfigureAwait(false);
 
-        await SendNotification(workshopDto, NotificationAction.Delete, false).ConfigureAwait(false);
-
+        await SendNotification(workshopDto, NotificationAction.Delete, false, notificationsRecipientIds).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -241,33 +244,6 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     public async Task<Guid> GetWorkshopProviderId(Guid workshopId) =>
         await workshopService.GetWorkshopProviderOwnerIdAsync(workshopId).ConfigureAwait(false);
 
-    public async Task<IEnumerable<string>> GetNotificationsRecipientIds(
-        NotificationAction action,
-        Dictionary<string, string> additionalData,
-        Guid objectId)
-    {
-        var recipientIds = new List<string>();
-
-        var favoriteWorkshopUsersIds = await favoriteRepository.Get(whereExpression: x => x.WorkshopId == objectId)
-            .Select(x => x.UserId)
-            .ToListAsync()
-            .ConfigureAwait(false);
-
-        Expression<Func<Application, bool>> predicate =
-            x => x.Status != ApplicationStatus.Left
-                 && x.WorkshopId == objectId;
-
-        var appliedUsersIds = await applicationRepository.Get(whereExpression: predicate)
-            .Select(x => x.Parent.UserId)
-            .ToListAsync()
-            .ConfigureAwait(false);
-
-        recipientIds.AddRange(favoriteWorkshopUsersIds);
-        recipientIds.AddRange(appliedUsersIds);
-
-        return recipientIds.Distinct();
-    }
-
     /// <inheritdoc/>
     public async Task<IEnumerable<ShortEntityDto>> UpdateProviderStatus(Guid providerId, ProviderStatus providerStatus)
     {
@@ -283,6 +259,30 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         return shortWorkshops;
     }
 
+    private async Task<IEnumerable<string>> GetNotificationsRecipientIds(Guid objectId)
+    {
+        var recipientIds = new List<string>();
+
+        var favoriteWorkshopUsersIds = await favoriteRepository.Get(whereExpression: x => x.WorkshopId == objectId)
+            .Select(x => x.UserId)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        Expression<Func<Application, bool>> predicate =
+            x => x.Status != ApplicationStatus.Left
+                    && x.WorkshopId == objectId;
+
+        var appliedUsersIds = await applicationRepository.Get(whereExpression: predicate)
+            .Select(x => x.Parent.UserId)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        recipientIds.AddRange(favoriteWorkshopUsersIds);
+        recipientIds.AddRange(appliedUsersIds);
+
+        return recipientIds.Distinct();
+    }
+
     private bool IsFilterValid(WorkshopFilter filter)
     {
         return filter != null && filter.MaxStartTime >= filter.MinStartTime
@@ -293,7 +293,8 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     private async Task SendNotification(
         WorkshopDto workshop,
         NotificationAction notificationAction,
-        bool addStatusData)
+        bool addStatusData,
+        IEnumerable<string> recipientsIds)
     {
         if (workshop != null)
         {
@@ -311,7 +312,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
                     NotificationType.Workshop,
                     notificationAction,
                     workshop.Id,
-                    this,
+                    recipientsIds,
                     additionalData)
                 .ConfigureAwait(false);
         }

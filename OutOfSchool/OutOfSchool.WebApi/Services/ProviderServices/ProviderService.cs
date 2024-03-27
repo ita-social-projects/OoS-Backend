@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Services.ProviderServices;
 /// <summary>
 /// Implements the interface with CRUD functionality for Provider entity.
 /// </summary>
-public class ProviderService : IProviderService, INotificationReciever, ISensitiveProviderService
+public class ProviderService : IProviderService, ISensitiveProviderService
 {
     private readonly IProviderRepository providerRepository;
     private readonly IProviderAdminRepository providerAdminRepository;
@@ -412,11 +412,13 @@ public class ProviderService : IProviderService, INotificationReciever, ISensiti
             additionalData.Add("LicenseStatus", provider.LicenseStatus.ToString());
         }
 
+        var recipientsIds = await GetNotificationsRecipientIds(notificationAction, additionalData, provider.Id).ConfigureAwait(false);
+
         await notificationService.Create(
                 NotificationType.Provider,
                 notificationAction,
                 provider.Id,
-                this,
+                recipientsIds,
                 additionalData)
             .ConfigureAwait(false);
     }
@@ -436,7 +438,7 @@ public class ProviderService : IProviderService, INotificationReciever, ISensiti
         }
     }
 
-    async Task<IEnumerable<string>> INotificationReciever.GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
+    private async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
     {
         var recipientIds = new List<string>();
 

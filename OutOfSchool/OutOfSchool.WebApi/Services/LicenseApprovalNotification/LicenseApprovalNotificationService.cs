@@ -2,15 +2,16 @@
 
 namespace OutOfSchool.WebApi.Services.LicenseApprovalNotification;
 
-public class LicenseApprovalNotificationService : ILicenseApprovalNotificationService, INotificationReciever
+public class LicenseApprovalNotificationService : ILicenseApprovalNotificationService
 {
     private readonly INotificationService notificationService;
     private readonly ILogger<LicenseApprovalNotificationService> logger;
     private readonly IEntityRepositorySoftDeleted<string, User> userRepository;
 
-    public LicenseApprovalNotificationService(INotificationService notificationService,
-                                              ILogger<LicenseApprovalNotificationService> logger,
-                                              IEntityRepositorySoftDeleted<string, User> userRepository)
+    public LicenseApprovalNotificationService(
+        INotificationService notificationService,
+        ILogger<LicenseApprovalNotificationService> logger,
+        IEntityRepositorySoftDeleted<string, User> userRepository)
     {
         this.notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -26,14 +27,16 @@ public class LicenseApprovalNotificationService : ILicenseApprovalNotificationSe
             { "Status", "LicenseApproval" },
         };
 
+        var recipientsIds = await GetNotificationsRecipientIds().ConfigureAwait(false);
+
         await notificationService
-            .Create(NotificationType.System, NotificationAction.LicenseApproval, Guid.Empty, this, additionalData)
+            .Create(NotificationType.System, NotificationAction.LicenseApproval, Guid.Empty, recipientsIds, additionalData)
             .ConfigureAwait(false);
 
         logger.LogInformation("License approval notification generating was finished");
     }
 
-    public async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
+    private async Task<IEnumerable<string>> GetNotificationsRecipientIds()
     {
         // TODO Add filter for AreaAdmin when he will be created, and delete filter for TechAdmin after that
         return (await userRepository

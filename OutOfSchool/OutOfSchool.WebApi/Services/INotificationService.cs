@@ -21,7 +21,7 @@ public interface INotificationService
     /// <param name="type">Notificaton type to add.</param>
     /// <param name="action">Notificaton action to add.</param>
     /// <param name="objectId">ObjectId.</param>
-    /// <param name="service">Service which implements interface INotificationReciever.</param>
+    /// <param name="recipientsIds">Id's for sending notifications.</param>
     /// <param name="additionalData">Data need to save with notification.</param>
     /// <param name="groupedData">Field is used in grouping notifications for response type NotificationGrouped.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
@@ -29,7 +29,7 @@ public interface INotificationService
         NotificationType type,
         NotificationAction action,
         Guid objectId,
-        INotificationReciever service,
+        IEnumerable<string> recipientsIds,
         Dictionary<string, string> additionalData = null,
         string groupedData = null);
 

@@ -20,11 +20,12 @@ namespace OutOfSchool.WebApi.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for Application entity.
 /// </summary>
-public class ApplicationService : IApplicationService, INotificationReciever, ISensitiveApplicationService
+public class ApplicationService : IApplicationService, ISensitiveApplicationService
 {
     public const string UaMaleEnding = "ий";
     public const string UaFemaleEnding = "а";
     public const string UaUnspecifiedGenderEnding = "ий/a";
+    private const string StatusTitle = "Status";
 
     private readonly IApplicationRepository applicationRepository;
     private readonly IWorkshopRepository workshopRepository;
@@ -197,7 +198,8 @@ public class ApplicationService : IApplicationService, INotificationReciever, IS
             skip: filter.From,
             take: filter.Size,
             includeProperties: "Workshop,Child,Parent",
-            whereExpression: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            whereExpression: predicate,
+            orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
         logger.LogInformation("There are {Count} applications in the Db", applications.Count);
 
@@ -231,7 +233,8 @@ public class ApplicationService : IApplicationService, INotificationReciever, IS
             skip: filter.From,
             take: filter.Size,
             includeProperties: "Workshop,Child,Parent",
-            whereExpression: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            whereExpression: predicate,
+            orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
         logger.LogInformation("There are {Count} applications in the Db with Parent Id = {Id}", applications.Count, id);
 
@@ -310,7 +313,8 @@ public class ApplicationService : IApplicationService, INotificationReciever, IS
             skip: filter.From,
             take: filter.Size,
             includeProperties: "Workshop,Child,Parent",
-            whereExpression: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            whereExpression: predicate,
+            orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
         logger.LogInformation(
             "There are {Count} applications in the Db with Workshop Id = {Id}",
@@ -350,7 +354,8 @@ public class ApplicationService : IApplicationService, INotificationReciever, IS
             skip: filter.From,
             take: filter.Size,
             includeProperties: "Workshop,Child,Parent",
-            whereExpression: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            whereExpression: predicate,
+            orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
         logger.LogInformation(
             "There are {Count} applications in the Db with Provider Id = {Id}",
@@ -459,55 +464,6 @@ public class ApplicationService : IApplicationService, INotificationReciever, IS
 
         ArgumentNullException.ThrowIfNull(applicationDto, nameof(applicationDto));
         return ExecuteUpdateAsync(applicationDto, providerId);
-    }
-
-    public async Task<IEnumerable<string>> GetNotificationsRecipientIds(
-        NotificationAction action,
-        Dictionary<string, string> additionalData,
-        Guid objectId)
-    {
-        var recipientIds = new List<string>();
-
-        var applications = await applicationRepository.GetByFilter(a => a.Id == objectId, "Workshop.Provider.User")
-            .ConfigureAwait(false);
-        var application = applications.FirstOrDefault();
-
-        if (application is null)
-        {
-            return recipientIds;
-        }
-
-        if (action == NotificationAction.Create)
-        {
-            recipientIds.Add(application.Workshop.Provider.UserId);
-            recipientIds.AddRange(await providerAdminService.GetProviderAdminsIds(application.Workshop.Id)
-                .ConfigureAwait(false));
-            recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(application.Workshop.Provider.Id)
-                .ConfigureAwait(false));
-        }
-        else if (action == NotificationAction.Update)
-        {
-            if (additionalData != null
-                && additionalData.ContainsKey("Status")
-                && Enum.TryParse(additionalData["Status"], out ApplicationStatus applicationStatus))
-            {
-                if (applicationStatus == ApplicationStatus.Approved
-                    || applicationStatus == ApplicationStatus.Rejected)
-                {
-                    recipientIds.Add(application.Parent.UserId);
-                }
-                else if (applicationStatus == ApplicationStatus.Left)
-                {
-                    recipientIds.Add(application.Workshop.Provider.UserId);
-                    recipientIds.AddRange(await providerAdminService.GetProviderAdminsIds(application.Workshop.Id)
-                        .ConfigureAwait(false));
-                    recipientIds.AddRange(await providerAdminService
-                        .GetProviderDeputiesIds(application.Workshop.Provider.Id).ConfigureAwait(false));
-                }
-            }
-        }
-
-        return recipientIds.Distinct();
     }
 
     /// <inheritdoc/>
@@ -884,16 +840,17 @@ public class ApplicationService : IApplicationService, INotificationReciever, IS
         {
             var additionalData = new Dictionary<string, string>
             {
-                { "Status", newApplication.Status.ToString() },
+                { StatusTitle, newApplication.Status.ToString() },
             };
 
             string groupedData = newApplication.Status.ToString();
+            var recipientsIds = await GetNotificationsRecipientIds(NotificationAction.Create, additionalData, newApplication.Id).ConfigureAwait(false);
 
             await notificationService.Create(
                 NotificationType.Application,
                 NotificationAction.Create,
                 newApplication.Id,
-                this,
+                recipientsIds,
                 additionalData,
                 groupedData).ConfigureAwait(false);
         }
@@ -959,16 +916,17 @@ public class ApplicationService : IApplicationService, INotificationReciever, IS
 
             var additionalData = new Dictionary<string, string>()
             {
-                { "Status", updatedApplication.Status.ToString() },
+                { StatusTitle, updatedApplication.Status.ToString() },
             };
 
             var groupedData = updatedApplication.Status.ToString();
+            var recipientsIds = await GetNotificationsRecipientIds(NotificationAction.Update, additionalData, updatedApplication.Id).ConfigureAwait(false);
 
             await notificationService.Create(
                 NotificationType.Application,
                 NotificationAction.Update,
                 updatedApplication.Id,
-                this,
+                recipientsIds,
                 additionalData,
                 groupedData).ConfigureAwait(false);
 
@@ -988,6 +946,55 @@ public class ApplicationService : IApplicationService, INotificationReciever, IS
             logger.LogError(ex, "Updating failed");
             throw;
         }
+    }
+
+    private async Task<IEnumerable<string>> GetNotificationsRecipientIds(
+        NotificationAction action,
+        Dictionary<string, string> additionalData,
+        Guid objectId)
+    {
+        var recipientIds = new List<string>();
+
+        var applications = await applicationRepository.GetByFilter(a => a.Id == objectId, "Workshop.Provider.User")
+            .ConfigureAwait(false);
+        var application = applications.FirstOrDefault();
+
+        if (application is null)
+        {
+            return recipientIds;
+        }
+
+        if (action == NotificationAction.Create)
+        {
+            recipientIds.Add(application.Workshop.Provider.UserId);
+            recipientIds.AddRange(await providerAdminService.GetProviderAdminsIds(application.Workshop.Id)
+                .ConfigureAwait(false));
+            recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(application.Workshop.Provider.Id)
+                .ConfigureAwait(false));
+        }
+        else if (action == NotificationAction.Update)
+        {
+            if (additionalData != null
+                && additionalData.ContainsKey(StatusTitle)
+                && Enum.TryParse(additionalData[StatusTitle], out ApplicationStatus applicationStatus))
+            {
+                if (applicationStatus == ApplicationStatus.Approved
+                    || applicationStatus == ApplicationStatus.Rejected)
+                {
+                    recipientIds.Add(application.Parent.UserId);
+                }
+                else if (applicationStatus == ApplicationStatus.Left)
+                {
+                    recipientIds.Add(application.Workshop.Provider.UserId);
+                    recipientIds.AddRange(await providerAdminService.GetProviderAdminsIds(application.Workshop.Id)
+                        .ConfigureAwait(false));
+                    recipientIds.AddRange(await providerAdminService
+                        .GetProviderDeputiesIds(application.Workshop.Provider.Id).ConfigureAwait(false));
+                }
+            }
+        }
+
+        return recipientIds.Distinct();
     }
 
     private async Task<int> GetAmountOfApprovedApplications(Guid workshopId)

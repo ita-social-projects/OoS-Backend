@@ -10,7 +10,6 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Models.Providers;
-using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Tests.Services.ProviderServicesTests;
@@ -21,7 +20,6 @@ public class PrivateProviderServiceTests
     private PrivateProviderService privateProviderService;
 
     private Mock<IProviderRepository> providersRepositoryMock;
-    private Mock<INotificationService> notificationService;
     private Mock<IProviderService> providerServiceMock;
 
     private List<Provider> fakeProviders;
@@ -64,7 +62,7 @@ public class PrivateProviderServiceTests
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
             .ReturnsAsync(It.IsAny<int>());
-        
+
         // Act
         var result = await privateProviderService.UpdateLicenseStatus(dto, fakeUser.Id).ConfigureAwait(false);
 
