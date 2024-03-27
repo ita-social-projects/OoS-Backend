@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.Services.Models.Configurations;
@@ -51,7 +52,7 @@ internal class ProviderConfiguration : IEntityTypeConfiguration<Provider>
             .HasColumnType(nameof(DataType.Date));
 
         builder.Property(x => x.PhoneNumber)
-            .HasMaxLength(15);
+            .HasMaxLength(Constants.MaxPhoneNumberLengthWithPlusSign);
 
         builder.Property(x => x.Founder)
             .IsRequired()

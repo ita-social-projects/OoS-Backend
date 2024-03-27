@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common.Validators;
 
 namespace OutOfSchool.Common.Models;
 
@@ -18,10 +19,7 @@ public class AdminBaseDto
 
     [DataType(DataType.PhoneNumber)]
     [Required(ErrorMessage = "Phone number is required")]
-    [RegularExpression(
-        Constants.PhoneNumberRegexViewModel,
-        ErrorMessage = Constants.PhoneErrorMessage)]
+    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
-    [MaxLength(Constants.UnifiedPhoneLength)]
     public string PhoneNumber { get; set; }
 }

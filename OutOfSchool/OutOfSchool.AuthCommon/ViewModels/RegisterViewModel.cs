@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.AuthCommon.ViewModels;
@@ -53,9 +54,7 @@ public class RegisterViewModel
 
     [DataType(DataType.PhoneNumber)]
     [Required(ErrorMessage = "Phone number is required")]
-    [RegularExpression(
-        Constants.PhoneNumberRegexViewModel,
-        ErrorMessage = Constants.PhoneErrorMessage)]
+    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     public string PhoneNumber { get; set; }
 
     [DataType(DataType.DateTime)]
