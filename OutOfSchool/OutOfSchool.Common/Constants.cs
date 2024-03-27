@@ -8,19 +8,9 @@ public static class Constants
 
     public const string DefaultAuthScheme = "bearer_or_cookie";
 
-    public const string PhonePrefix = "380";
-
-    public const int PhoneShortLength = 9;
-
-    public const string PhoneNumberFormat = "{0:+380 XX-XXX-XX-XX}";
-
-    public const string PhoneNumberRegexViewModel = @"([0-9]{2})([-]?)([0-9]{3})([-]?)([0-9]{2})([-]?)([0-9]{2})";
-
-    public const string PhoneNumberRegexModel = @"([\d]{9})";
+    public const string PhoneNumberFormat = "{0:XXXX XX-XXX-XX-XX}";
 
     public const string PhoneErrorMessage = "Error! Please check the number is correct";
-
-    public const int UnifiedPhoneLength = 15;
 
     public const int MySQLServerMinimalMajorVersion = 8;
 
@@ -56,4 +46,14 @@ public static class Constants
     /// Longest possible length of provider founder.
     /// </summary>
     public const int MaxProviderFounderLength = 60;
+
+    /// <summary>
+    /// Shortest possible phone number length without '+' prefix.
+    /// </summary>
+    public const int MinPhoneNumberLength = 7;
+
+    /// <summary>
+    /// Longest possible phone number length without '+' prefix.
+    /// </summary>
+    public const int MaxPhoneNumberLength = 15;
 }
