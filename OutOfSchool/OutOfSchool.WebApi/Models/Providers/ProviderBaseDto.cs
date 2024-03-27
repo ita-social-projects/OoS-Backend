@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Util.JsonTools;
@@ -58,11 +59,8 @@ public class ProviderBaseDto : IHasCoverImage, IHasImages
     public DateTime? DirectorDateOfBirth { get; set; } = default;
 
     [DataType(DataType.PhoneNumber)]
-    [RegularExpression(
-        Constants.PhoneNumberRegexModel,
-        ErrorMessage = Constants.PhoneErrorMessage)]
+    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
-    [MaxLength(Constants.UnifiedPhoneLength)]
     [Required(ErrorMessage = "The phone number is required")]
     public string PhoneNumber { get; set; } = string.Empty;
 

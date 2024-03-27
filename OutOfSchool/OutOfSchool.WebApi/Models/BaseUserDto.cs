@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common.Validators;
 
 namespace OutOfSchool.WebApi.Models;
 
@@ -11,9 +12,7 @@ public class BaseUserDto
 
     [DataType(DataType.PhoneNumber)]
     [Required(ErrorMessage = "Phone number is required")]
-    [RegularExpression(
-        Constants.PhoneNumberRegexModel,
-        ErrorMessage = Constants.PhoneErrorMessage)]
+    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
     public string PhoneNumber { get; set; }
 

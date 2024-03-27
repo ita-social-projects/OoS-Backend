@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Util.CustomValidation;
 using OutOfSchool.WebApi.Util.JsonTools;
@@ -20,11 +21,8 @@ public class WorkshopBaseDto : IValidatableObject
 
     [DataType(DataType.PhoneNumber)]
     [Required(ErrorMessage = "Phone number is required")]
-    [RegularExpression(
-        Constants.PhoneNumberRegexModel,
-        ErrorMessage = Constants.PhoneErrorMessage)]
+    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
-    [MaxLength(Constants.UnifiedPhoneLength)]
     public string Phone { get; set; } = string.Empty;
 
     [DataType(DataType.EmailAddress)]
