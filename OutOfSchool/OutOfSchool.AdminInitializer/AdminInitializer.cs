@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OutOfSchool.AdminInitializer.Config;
-using OutOfSchool.Common;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 
@@ -36,7 +35,7 @@ internal class AdminInitializer
             LastName = adminConfiguration.LastName,
             MiddleName = adminConfiguration.MiddleName,
             Email = adminConfiguration.Email,
-            PhoneNumber = Constants.PhonePrefix + adminConfiguration.PhoneNumber,
+            PhoneNumber = adminConfiguration.PhoneNumber,
             CreatingTime = DateTimeOffset.UtcNow,
             Role = adminConfiguration.Role,
             IsRegistered = true,
