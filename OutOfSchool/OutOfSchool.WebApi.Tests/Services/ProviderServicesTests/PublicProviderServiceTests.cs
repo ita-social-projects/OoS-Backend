@@ -9,7 +9,6 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Models.Providers;
-using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Tests.Services.ProviderServicesTests;
@@ -20,7 +19,6 @@ public class PublicProviderServiceTests
     private PublicProviderService publicProviderService;
 
     private Mock<IProviderRepository> providersRepositoryMock;
-    private Mock<INotificationService> notificationService;
     private Mock<IProviderService> providerServiceMock;
 
     private List<Provider> fakeProviders;
@@ -57,7 +55,7 @@ public class PublicProviderServiceTests
             ProviderId = provider.Id,
             Status = ProviderStatus.Approved,
         };
-        
+
         providersRepositoryMock.Setup(r => r.GetById(dto.ProviderId))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())

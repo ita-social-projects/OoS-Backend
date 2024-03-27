@@ -107,6 +107,8 @@ public class BlockedProviderParentServiceTests
             { ProviderShortTitleKey, blockEntity.Provider.ShortTitle },
         };
 
+        var recipientsIds = new List<string>() { userId };
+
         blockedProviderParentRepositoryMock
             .Setup(x => x.GetBlockedProviderParentEntities(blockEntity.ParentId, blockEntity.ProviderId))
             .Returns(new List<BlockedProviderParent>().AsQueryable().BuildMock());
@@ -127,7 +129,7 @@ public class BlockedProviderParentServiceTests
                 NotificationType.Parent,
                 NotificationAction.ProviderBlock,
                 blockedParentUserId,
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 additionalData,
                 null),
                 Times.Once);
@@ -191,6 +193,8 @@ public class BlockedProviderParentServiceTests
             unblockEntity,
         };
 
+        var recipientsIds = new List<string>() { userId };
+
         blockedProviderParentRepositoryMock
             .Setup(x => x.GetBlockedProviderParentEntities(unblockEntity.ParentId, unblockEntity.ProviderId))
             .Returns(blockedParents.AsQueryable().BuildMock());
@@ -209,7 +213,7 @@ public class BlockedProviderParentServiceTests
                 NotificationType.Parent,
                 NotificationAction.ProviderUnblock,
                 unblockedParentUserId,
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 additionalData,
                 null),
                 Times.Once);

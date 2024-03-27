@@ -140,6 +140,8 @@ public class ProviderServiceV2Tests
         expected.ImageIds = new List<string>();
         expected.ProviderSectionItems = Enumerable.Empty<ProviderSectionItemDto>();
 
+        var recipientsIds = new List<string>() { fakeUser.Id };
+
         providersRepositoryMock.Setup(r => r.Create(It.IsAny<Provider>()))
             .ReturnsAsync((Provider p) => p);
         providersRepositoryMock.Setup(r => r.GetById(expected.Id))
@@ -149,7 +151,7 @@ public class ProviderServiceV2Tests
                 NotificationType.Provider,
                 NotificationAction.Create,
                 expected.Id,
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -251,13 +253,16 @@ public class ProviderServiceV2Tests
         var file = new Mock<IFormFile>().Object;
         expectedEntityDto.ImageFiles = new List<IFormFile> { file };
 
+        var recipientsIds = new List<string>() { fakeUser.Id };
+
         providersRepositoryMock.Setup(p => p.Create(It.IsAny<Provider>())).ReturnsAsync(expectedEntity);
+        providersRepositoryMock.Setup(r => r.GetById(expectedEntity.Id)).ReturnsAsync(mapper.Map<Provider>(expectedEntity));
         providerImagesService.Setup(p => p.AddManyImagesAsync(expectedEntity, expectedEntityDto.ImageFiles)).ReturnsAsync(new MultipleImageUploadingResult());
         notificationService.Setup(s => s.Create(
                 NotificationType.Provider,
                 NotificationAction.Create,
                 It.IsAny<Guid>(),
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null)).Returns(Task.CompletedTask);
 
@@ -277,13 +282,16 @@ public class ProviderServiceV2Tests
         var file = new Mock<IFormFile>().Object;
         expectedEntityDto.CoverImage = file;
 
+        var recipientsIds = new List<string>() { fakeUser.Id };
+
         providersRepositoryMock.Setup(p => p.Create(It.IsAny<Provider>())).ReturnsAsync(expectedEntity);
+        providersRepositoryMock.Setup(r => r.GetById(expectedEntity.Id)).ReturnsAsync(mapper.Map<Provider>(expectedEntity));
         providerImagesService.Setup(p => p.AddCoverImageAsync(expectedEntity, expectedEntityDto.CoverImage)).ReturnsAsync(new Result<string>());
         notificationService.Setup(s => s.Create(
                 NotificationType.Provider,
                 NotificationAction.Create,
                 It.IsAny<Guid>(),
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null)).Returns(Task.CompletedTask);
 
@@ -311,6 +319,8 @@ public class ProviderServiceV2Tests
         providerToUpdateDto.FullTitle = updatedTitle;
         expectedProviderDto.FullTitle = updatedTitle;
 
+        var recipientsIds = new List<string>() { fakeUser.Id };
+
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Provider>>>()))
@@ -321,7 +331,7 @@ public class ProviderServiceV2Tests
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -380,6 +390,8 @@ public class ProviderServiceV2Tests
         expected.Status = ProviderStatus.Recheck;
         expected.FullTitle = updatedTitle;
 
+        var recipientsIds = new List<string>() { fakeUser.Id };
+
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Provider>>>()))
@@ -390,7 +402,7 @@ public class ProviderServiceV2Tests
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -420,6 +432,8 @@ public class ProviderServiceV2Tests
         expected.Status = ProviderStatus.Recheck;
         expected.EdrpouIpn = updatedEdrpouIpn;
 
+        var recipientsIds = new List<string>() { fakeUser.Id };
+
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
@@ -428,7 +442,7 @@ public class ProviderServiceV2Tests
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -461,6 +475,8 @@ public class ProviderServiceV2Tests
         expected.LicenseStatus = ProviderLicenseStatus.Pending;
         expected.License = updatedLicense;
 
+        var recipientsIds = new List<string>() { fakeUser.Id };
+
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
@@ -469,7 +485,7 @@ public class ProviderServiceV2Tests
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);

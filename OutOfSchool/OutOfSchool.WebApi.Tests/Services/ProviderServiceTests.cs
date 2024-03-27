@@ -139,6 +139,8 @@ public class ProviderServiceTests
         expected.ImageIds = new List<string>();
         expected.ProviderSectionItems = Enumerable.Empty<ProviderSectionItemDto>();
 
+        var recipientsIds = new List<string>() { fakeUser.Id };
+
         providersRepositoryMock.Setup(r => r.Create(It.IsAny<Provider>()))
             .ReturnsAsync((Provider p) => p);
         providersRepositoryMock.Setup(r => r.GetById(expected.Id))
@@ -148,7 +150,7 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Create,
                 expected.Id,
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -455,6 +457,8 @@ public class ProviderServiceTests
         providerToUpdateDto.FullTitle = updatedTitle;
         expectedProviderDto.FullTitle = updatedTitle;
 
+        var recipientsIds = new List<string>() { fakeUser.Id };
+
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Provider>>>()))
@@ -465,7 +469,7 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -524,6 +528,8 @@ public class ProviderServiceTests
         expected.Status = ProviderStatus.Recheck;
         expected.FullTitle = updatedTitle;
 
+        var recipientsIds = new List<string>() { fakeUser.Id };
+
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Provider>>>()))
@@ -534,7 +540,7 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -564,6 +570,8 @@ public class ProviderServiceTests
         expected.Status = ProviderStatus.Recheck;
         expected.EdrpouIpn = updatedEdrpouIpn;
 
+        var recipientsIds = new List<string>() { fakeUser.Id };
+
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
@@ -572,7 +580,7 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -605,6 +613,8 @@ public class ProviderServiceTests
         expected.LicenseStatus = ProviderLicenseStatus.Pending;
         expected.License = updatedLicense;
 
+        var recipientsIds = new List<string>() { fakeUser.Id };
+
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
@@ -613,7 +623,7 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -821,6 +831,8 @@ public class ProviderServiceTests
             BlockReason = "Test reason",
         };
 
+        var recipientsIds = new List<string>() { provider.UserId };
+
         providersRepositoryMock.Setup(r => r.GetById(provider.Id))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
@@ -839,7 +851,7 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Block,
                 provider.Id,
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -872,6 +884,8 @@ public class ProviderServiceTests
             BlockReason = "Test reason",
         };
 
+        var recipientsIds = new List<string>() { provider.UserId };
+
         providersRepositoryMock.Setup(r => r.GetById(provider.Id))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
@@ -890,7 +904,7 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Block,
                 provider.Id,
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -926,6 +940,8 @@ public class ProviderServiceTests
             BlockReason = "Test reason",
         };
 
+        var recipientsIds = new List<string>() { provider.UserId };
+
         providersRepositoryMock.Setup(r => r.GetById(provider.Id))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
@@ -946,7 +962,7 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Block,
                 provider.Id,
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -982,6 +998,8 @@ public class ProviderServiceTests
             BlockReason = "Test reason",
         };
 
+        var recipientsIds = new List<string>() { provider.UserId };
+
         providersRepositoryMock.Setup(r => r.GetById(provider.Id))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
@@ -1002,7 +1020,7 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Block,
                 provider.Id,
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);

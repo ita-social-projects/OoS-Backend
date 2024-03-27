@@ -44,11 +44,8 @@ public class LicenseApprovalNotificationServiceTest
         string statusKey = "Status";
 
         var user = UserGenerator.Generate();
-        var users = new List<User>();
-        users.Add(user);
-
-        var recipientsIds = new List<string>();
-        recipientsIds.Add(user.Id);
+        var users = new List<User>() { user };
+        var recipientsIds = new List<string>() { user.Id };
 
         var workshop = WorkshopGenerator.Generate();
 

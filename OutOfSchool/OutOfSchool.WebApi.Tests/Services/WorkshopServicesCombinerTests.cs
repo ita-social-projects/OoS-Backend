@@ -78,15 +78,14 @@ public class WorkshopServicesCombinerTests
 
         var application = ApplicationGenerator.Generate().WithParent(ParentGenerator.Generate());
 
-        var favorites = new List<Favorite>();
-        favorites.Add(favorite);
+        var favorites = new List<Favorite>() { favorite };
+        var applications = new List<Application>() { application };
 
-        var applications = new List<Application>();
-        applications.Add(application);
-
-        var recipientsIds = new List<string>();
-        recipientsIds.Add(favorite.UserId);
-        recipientsIds.Add(application.Parent.UserId);
+        var recipientsIds = new List<string>()
+        {
+            favorite.UserId,
+            application.Parent.UserId,
+        };
 
         var workshop = WorkshopGenerator.Generate();
 
