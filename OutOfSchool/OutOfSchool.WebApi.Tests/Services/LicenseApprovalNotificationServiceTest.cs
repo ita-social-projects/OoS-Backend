@@ -42,13 +42,19 @@ public class LicenseApprovalNotificationServiceTest
     {
         // Arrange
         string statusKey = "Status";
-        var emptyListUsers = new List<User>();
+
+        var user = UserGenerator.Generate();
+        var users = new List<User>();
+        users.Add(user);
+
+        var recipientsIds = new List<string>();
+        recipientsIds.Add(user.Id);
 
         var workshop = WorkshopGenerator.Generate();
 
         userRepository.Setup(x => x.GetByFilter(
                 It.IsAny<Expression<Func<User, bool>>>(),
-                string.Empty)).ReturnsAsync(emptyListUsers.AsTestAsyncEnumerableQuery());
+                string.Empty)).ReturnsAsync(users.AsTestAsyncEnumerableQuery());
 
         // Act
         await licenseApprovalNotificationService.Generate().ConfigureAwait(false);
@@ -59,7 +65,7 @@ public class LicenseApprovalNotificationServiceTest
                 NotificationType.System,
                 NotificationAction.LicenseApproval,
                 Guid.Empty,
-                It.IsAny<IEnumerable<string>>(),
+                recipientsIds,
                 It.Is<Dictionary<string, string>>(c => c.ContainsKey(statusKey)),
                 null),
             Times.Once);
