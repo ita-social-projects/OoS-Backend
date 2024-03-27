@@ -56,4 +56,14 @@ public static class Constants
     /// Longest possible phone number length without '+' prefix.
     /// </summary>
     public const int MaxPhoneNumberLength = 15;
+
+    /// <summary>
+    /// Shortest possible phone number length with '+' prefix.
+    /// </summary>
+    public const int MinPhoneNumberLengthWithPlusSign = MinPhoneNumberLength + 1;
+
+    /// <summary>
+    /// Longest possible phone number length with '+' prefix.
+    /// </summary>
+    public const int MaxPhoneNumberLengthWithPlusSign = MaxPhoneNumberLength + 1;
 }
