@@ -30,7 +30,13 @@ public static class Constants
 
     public const string EmailRegexViewModel = @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$";
 
-    public const string PasswordRegexViewModel = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$";
+    public const string PasswordValidationErrorMessage = "Password must be at least 8 characters long, including upper and lower case letters, digits and special characters (@$!%*?&)";
+
+    public const string PasswordRequiredErrorMessage = "Password is required";
+
+    public const int PasswordMinLength = 8;
+
+    public const string ValidationSymbols = "@$!%*?&";
 
     public const string AddressSeparator = ", ";
 

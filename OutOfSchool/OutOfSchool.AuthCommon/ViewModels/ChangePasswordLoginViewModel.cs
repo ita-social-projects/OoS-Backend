@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using OutOfSchool.AuthCommon.Validators;
+using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.AuthCommon.ViewModels;
 
@@ -12,9 +13,7 @@ public class ChangePasswordLoginViewModel : IValidatableObject
     [DataType(DataType.Password)]
     public string CurrentPassword { get; set; }
 
-    [RegularExpression(
-        Constants.PasswordRegexViewModel,
-        ErrorMessage = "Password must contain at least one capital, number and symbol(@$!%*?&).")]
+    [CustomPasswordValidation]
     [DataType(DataType.Password)]
     public string NewPassword { get; set; }
 
