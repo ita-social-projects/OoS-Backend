@@ -135,6 +135,8 @@ public enum Permissions : short
     LogDataRead = 102,
     [Display(GroupName = "SystemManaging", Name = "SuperAdmin", Description = "access to all actions covered with [HasPermission] attribute")]
     AccessAll = short.MaxValue,
+    [Display(GroupName = "AdminDataRead", Name = "AdminDataRead", Description = "access to all admins read the information")]
+    AdminDataRead = 103,
     #endregion
 
     #region MinistryAdmin Control permissions #12

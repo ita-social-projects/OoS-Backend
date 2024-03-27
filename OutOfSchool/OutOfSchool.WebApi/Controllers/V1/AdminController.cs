@@ -59,12 +59,6 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetByFilterMinistryAdmin([FromQuery] MinistryAdminFilter filter)
     {
-        if (!IsTechAdmin())
-        {
-            logger.LogError("You have no rights because you are not an admin");
-            return StatusCode(403, "Forbidden to get ministry admin if you don't have TechAdmin role.");
-        }
-
         var ministryAdmins = await ministryAdminService.GetByFilter(filter).ConfigureAwait(false);
 
         if (ministryAdmins.TotalAmount < 1)
@@ -84,7 +78,7 @@ public class AdminController : Controller
     /// <response code="204">No entity was found.</response>
     /// <response code="403">If the user has no rights to use this method.</response>
     /// <response code="500">If any server error occurs.</response>
-    [HasPermission(Permissions.ApplicationRead)]
+    [HasPermission(Permissions.AdminDataRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ApplicationDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -92,12 +86,6 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> GetApplications([FromQuery] ApplicationFilter filter)
     {
-        if (!IsTechAdmin())
-        {
-            logger.LogError("You have no rights because you are not an admin");
-            return StatusCode(403, "Forbidden to get applications if you don't have TechAdmin role.");
-        }
-
         var applications = await applicationService.GetAll(filter).ConfigureAwait(false);
 
         if (!applications.Entities.Any())
@@ -181,7 +169,7 @@ public class AdminController : Controller
     /// </summary>
     /// <param name="filter">Filter to get a part of all providers that were found.</param>
     /// <returns>The result is a <see cref="SearchResult{ProviderDto}"/> that contains the count of all found providers and a list of providers that were received.</returns>
-    [HasPermission(Permissions.ProviderRead)]
+    [HasPermission(Permissions.AdminDataRead)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -190,12 +178,6 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetProviderByFilter([FromQuery] ProviderFilter filter)
     {
-        if (!IsTechAdmin())
-        {
-            logger.LogError("You have no rights because you are not an admin");
-            return StatusCode(403, "Forbidden to get provider if you don't have TechAdmin role.");
-        }
-
         var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
 
         //TODO clarify frontend about if statement
@@ -221,12 +203,6 @@ public class AdminController : Controller
     [HttpPut]
     public async Task<ActionResult> BlockProvider([FromBody] ProviderBlockDto providerBlockDto)
     {
-        if (!IsTechAdmin())
-        {
-            logger.LogError("You have no rights because you are not an admin");
-            return StatusCode(403, "Forbidden to block provider if you don't have TechAdmin role.");
-        }
-
         var result = await providerService.Block(
             providerBlockDto,
             await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false));

@@ -26,6 +26,7 @@ public static class PermissionsSeeder
         Permissions.AreaAdmins, Permissions.AreaAdminAddNew, Permissions.AreaAdminRemove,
         Permissions.AreaAdminEdit, Permissions.AreaAdminRead, Permissions.AreaAdminBlock,
         Permissions.PersonalInfo,
+        Permissions.AdminDataRead,
     };
 
     private static readonly IEnumerable<Permissions> SeedProviderPermissions = new List<Permissions>
@@ -71,6 +72,7 @@ public static class PermissionsSeeder
         Permissions.RegionAdminRemove, Permissions.RegionAdminBlock,
         Permissions.AreaAdminAddNew, Permissions.AreaAdminRead, Permissions.AreaAdminEdit,
         Permissions.AreaAdminRemove, Permissions.AreaAdminBlock,
+        Permissions.AdminDataRead,
     };
 
     private static readonly IEnumerable<Permissions> SeedParentPermissions = new List<Permissions>
@@ -101,6 +103,7 @@ public static class PermissionsSeeder
         Permissions.AreaAdminAddNew, Permissions.AreaAdminRead, Permissions.AreaAdminEdit,
         Permissions.AreaAdminRemove, Permissions.AreaAdminBlock,
         Permissions.WorkshopEdit,
+        Permissions.AdminDataRead,
     };
 
     private static readonly IEnumerable<Permissions> SeedAreaAdminPermissions = new List<Permissions>
@@ -116,6 +119,7 @@ public static class PermissionsSeeder
         Permissions.PersonalInfo,
         Permissions.AreaAdminRead, Permissions.AreaAdminEdit,
         Permissions.WorkshopEdit,
+        Permissions.AdminDataRead,
     };
 
     public static string SeedPermissions(string role)
