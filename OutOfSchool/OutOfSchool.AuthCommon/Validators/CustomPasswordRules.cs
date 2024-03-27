@@ -28,10 +28,6 @@ public static class CustomPasswordRules
             {
                 hasSymbol = true;
             }
-            else
-            {
-                return false;
-            }
         }
 
         return hasUpperCase && hasLowerCase && hasDigit && hasSymbol;

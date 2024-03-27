@@ -14,6 +14,7 @@ public class CustomPasswordRulesTests
     [TestCase("Ab1bbbbb", false)]
     [TestCase("Ab1'bbbb", false)]
     [TestCase("Ab1bbbb%", true)]
+    [TestCase("Ab1bbbb$_", true)]
     public void IsValidPassword(string password, bool expectedResult)
     {
         // Act
