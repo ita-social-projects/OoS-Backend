@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -19,7 +11,7 @@ namespace OutOfSchool.WebApi.Services;
 public class StatusService : IStatusService
 {
 
-    private readonly IEntityRepository<long, InstitutionStatus> repository;
+    private readonly IEntityRepositorySoftDeleted<long, InstitutionStatus> repository;
     private readonly ILogger<StatusService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
@@ -32,7 +24,7 @@ public class StatusService : IStatusService
     /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
     public StatusService(
-        IEntityRepository<long, InstitutionStatus> repository,
+        IEntityRepositorySoftDeleted<long, InstitutionStatus> repository,
         ILogger<StatusService> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper)
@@ -45,9 +37,9 @@ public class StatusService : IStatusService
 
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<InstitutionStatusDTO>> GetAll()
+    public async Task<IEnumerable<InstitutionStatusDTO>> GetAll(LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogInformation("Getting all Institution Statuses started.");
+        logger.LogInformation($"Getting all Institution Statuses, {localization} localization, started.");
 
         var institutionStatuses = await repository.GetAll().ConfigureAwait(false);
 
@@ -55,17 +47,21 @@ public class StatusService : IStatusService
             ? "InstitutionStatus table is empty."
             : $"All {institutionStatuses.Count()} records were successfully received from the InstitutionStatus table");
 
-        return institutionStatuses.Select(institutionStatus => mapper.Map<InstitutionStatusDTO>(institutionStatus)).ToList();
+        return institutionStatuses.Select(institutionStatus => new InstitutionStatusDTO
+        {
+            Id = institutionStatus.Id,
+            Name = localization == LocalizationType.En ? institutionStatus.NameEn : institutionStatus.Name,
+        }).ToList();
     }
 
     /// <inheritdoc/>
-    public async Task<InstitutionStatusDTO> GetById(long id)
+    public async Task<InstitutionStatusDTO> GetById(long id, LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogInformation($"Getting InstitutionStatus by Id started. Looking Id = {id}.");
+        logger.LogInformation($"Getting InstitutionStatus by Id started, {localization} localization. Looking Id = {id}.");
 
         var institutionStatus = await repository.GetById(id).ConfigureAwait(false);
 
-        if (institutionStatus == null)
+        if (institutionStatus is null)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(id),
@@ -74,7 +70,11 @@ public class StatusService : IStatusService
 
         logger.LogInformation($"Successfully got a institutionStatus with Id = {id}.");
 
-        return mapper.Map<InstitutionStatusDTO>(institutionStatus);
+        return new InstitutionStatusDTO
+        {
+            Id = institutionStatus.Id,
+            Name = localization == LocalizationType.En ? institutionStatus.NameEn : institutionStatus.Name,
+        };
     }
 
     /// <inheritdoc/>
@@ -92,23 +92,39 @@ public class StatusService : IStatusService
     }
 
     /// <inheritdoc/>
-    public async Task<InstitutionStatusDTO> Update(InstitutionStatusDTO dto)
+    public async Task<InstitutionStatusDTO> Update(InstitutionStatusDTO dto, LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogInformation($"Updating InstitutionStatus with Id = {dto?.Id} started.");
+        logger.LogInformation($"Updating InstitutionStatus with Id = {dto?.Id}, {localization} localization started.");
 
-        try
+        ArgumentNullException.ThrowIfNull(dto);
+
+        var institutionStatusLocalized = await repository.GetById(dto.Id).ConfigureAwait(false);
+
+        if (institutionStatusLocalized is null)
         {
-            var institutionStatus = await repository.Update(mapper.Map<InstitutionStatus>(dto)).ConfigureAwait(false);
-
-            logger.LogInformation($"InstitutionStatus with Id = {institutionStatus?.Id} updated succesfully.");
-
-            return mapper.Map<InstitutionStatusDTO>(institutionStatus);
+            var message = $"Updating failed. InstitutionStatus with Id = {dto.Id} doesn't exist in the system.";
+            logger.LogError(message);
+            throw new DbUpdateConcurrencyException(message);
         }
-        catch (DbUpdateConcurrencyException)
+
+        if (localization == LocalizationType.En)
         {
-            logger.LogError($"Updating failed. InstitutionStatus with Id = {dto?.Id} doesn't exist in the system.");
-            throw;
+            institutionStatusLocalized.NameEn = dto.Name;
         }
+        else
+        {
+            institutionStatusLocalized.Name = dto.Name;
+        }
+
+        var institutionStatus = await repository.Update(institutionStatusLocalized).ConfigureAwait(false);
+
+        logger.LogInformation($"InstitutionStatus with Id = {institutionStatus?.Id} updated succesfully.");
+
+        return new InstitutionStatusDTO
+        {
+            Id = institutionStatus.Id,
+            Name = localization == LocalizationType.En ? institutionStatus.NameEn : institutionStatus.Name,
+        };
     }
 
     /// <inheritdoc/>

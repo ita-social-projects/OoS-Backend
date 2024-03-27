@@ -1,22 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 using AutoMapper;
-using Google.Type;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Nest;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.SocialGroup;
-using OutOfSchool.WebApi.Util;
 using DateTime = System.DateTime;
 
 namespace OutOfSchool.WebApi.Services;
@@ -26,10 +12,10 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class ChildService : IChildService
 {
-    private readonly IEntityRepository<Guid, Child> childRepository;
+    private readonly IEntityRepositorySoftDeleted<Guid, Child> childRepository;
     private readonly IParentRepository parentRepository;
     private readonly IApplicationRepository applicationRepository;
-    private readonly IEntityRepository<long, SocialGroup> socialGroupRepository;
+    private readonly IEntityRepositorySoftDeleted<long, SocialGroup> socialGroupRepository;
     private readonly ILogger<ChildService> logger;
     private readonly IMapper mapper;
     private readonly IOptions<ParentConfig> parentConfig;
@@ -44,9 +30,9 @@ public class ChildService : IChildService
     /// <param name="mapper">Automapper DI service.</param>
     /// <param name="parentConfig">Parent configuration.</param>
     public ChildService(
-        IEntityRepository<Guid, Child> childRepository,
+        IEntityRepositorySoftDeleted<Guid, Child> childRepository,
         IParentRepository parentRepository,
-        IEntityRepository<long, SocialGroup> socialGroupRepository,
+        IEntityRepositorySoftDeleted<long, SocialGroup> socialGroupRepository,
         ILogger<ChildService> logger,
         IMapper mapper,
         IApplicationRepository applicationRepository,
@@ -339,7 +325,7 @@ public class ChildService : IChildService
             $"Getting Children by WorkshopId: {workshopId} started. Amount of children to take: {offsetFilter.Size}, skip first: {offsetFilter.From}.");
 
         var applications = await applicationRepository
-            .GetByFilter(p => p.WorkshopId == workshopId && p.Status == ApplicationStatus.Approved)
+            .GetByFilter(p => p.WorkshopId == workshopId && (p.Status == ApplicationStatus.Approved || p.Status == ApplicationStatus.StudyingForYears))
             .ConfigureAwait(false);
         var childrenGuids = new HashSet<Guid>(applications.Select(app => app.ChildId));
 
@@ -434,6 +420,8 @@ public class ChildService : IChildService
         {
             throw new ArgumentException($"Forbidden to delete child which related to the parent.");
         }
+
+        await applicationRepository.DeleteChildApplications(id).ConfigureAwait(false);
 
         await childRepository.Delete(child).ConfigureAwait(false);
 

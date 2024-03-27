@@ -10,9 +10,11 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models;
 
-public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
+public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISoftDeleted, IHasEntityImages<Provider>
 {
     public Guid Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     [Required(ErrorMessage = "Full Title is required")]
     [DataType(DataType.Text)]
@@ -94,6 +96,15 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
 
     public bool IsBlocked { get; set; } = false;
 
+    [DataType(DataType.PhoneNumber)]
+    [RegularExpression(
+       Constants.PhoneNumberRegexModel,
+       ErrorMessage = Constants.PhoneErrorMessage)]
+    [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
+    [MaxLength(Constants.UnifiedPhoneLength)]
+    [Required(ErrorMessage = "PhoneNumber is required")]
+    public string BlockPhoneNumber { get; set; } = string.Empty;
+
     [MaxLength(500)]
     public string BlockReason { get; set; }
 
@@ -135,4 +146,7 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
 
     [NotMapped]
     public static readonly ProviderStatus[] ValidProviderStatuses = { ProviderStatus.Approved, ProviderStatus.Recheck };
+
+    [DataType(DataType.DateTime)]
+    public DateTime UpdatedAt { get; set; }
 }

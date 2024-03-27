@@ -9,17 +9,18 @@ using Microsoft.AspNetCore.Mvc;
 
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Models.SocialGroup;
-using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -30,6 +31,7 @@ public class ChildControllerTests
     private Mock<IChildService> service;
     private Mock<IProviderService> providerService;
     private Mock<IProviderAdminService> providerAdminService;
+    private Mock<IWorkshopServicesCombiner> workshopService;
     private List<ChildDto> children;
     private ChildDto child;
     private ChildCreateDto childCreateDto;
@@ -44,13 +46,15 @@ public class ChildControllerTests
         service = new Mock<IChildService>();
         providerService = new Mock<IProviderService>();
         providerAdminService = new Mock<IProviderAdminService>();
-        controller = new ChildController(service.Object, providerService.Object, providerAdminService.Object);
+        workshopService = new Mock<IWorkshopServicesCombiner>();
+
+        controller = new ChildController(service.Object, providerService.Object, providerAdminService.Object, workshopService.Object);
 
         // TODO: find out why it is a string but not a GUID
         currentUserId = Guid.NewGuid().ToString();
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[] { new Claim("sub", currentUserId) }, "sub"));
+            new Claim[] { new Claim(IdentityResourceClaimsTypes.Sub, currentUserId) }, "sub"));
 
         controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
@@ -73,15 +77,16 @@ public class ChildControllerTests
     }
 
     [Test]
-        public void ChildController_WhenServicesIsNull_ThrowsArgumentNullException()
-        {
-            // Act and Assert
-            Assert.Throws<ArgumentNullException>(() => new ChildController(null, providerService.Object, providerAdminService.Object));
-            Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, null, providerAdminService.Object));
-            Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, providerService.Object, null));            
-        }
+    public void ChildController_WhenServicesIsNull_ThrowsArgumentNullException()
+    {
+        // Act and Assert
+        Assert.Throws<ArgumentNullException>(() => new ChildController(null, providerService.Object, providerAdminService.Object, workshopService.Object));
+        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, null, providerAdminService.Object, workshopService.Object));
+        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, providerService.Object, null, workshopService.Object));
+        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, providerService.Object, providerAdminService.Object, null));
+    }
 
-        [Test]
+    [Test]
     public async Task GetChildren_WhenThereAreChildren_ShouldReturnOkResultObject()
     {
         // Arrange
@@ -241,11 +246,25 @@ public class ChildControllerTests
     }
 
     [Test]
+    public async Task DeleteChild_WhenWorkshopIdIsNotValid_ShouldReturnNotFound()
+    {
+        // Arrange
+        var filter = new OffsetFilter();
+        workshopService.Setup(s => s.Exists(It.IsAny<Guid>())).ReturnsAsync(() => false);
+
+        // Act
+        var result = await controller.GetApprovedByWorkshopId(Guid.NewGuid(), filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<NotFoundObjectResult>(result);
+    }
+
+    [Test]
     public async Task GetApprovedByWorkshopId_WhenThereAreChildren_ShouldReturnOkResultObject()
     {
         // Arrange
         ChildDto child = children.First();
-        WorkshopDTO existingWorkshop = new WorkshopDTO()
+        WorkshopV2Dto existingWorkshop = new WorkshopV2Dto()
         {
             Id = Guid.NewGuid(),
             Title = "Title1",
@@ -287,11 +306,11 @@ public class ChildControllerTests
                 ProviderTitle = existingWorkshop.ProviderTitle,
                 ProviderOwnership = existingWorkshop.ProviderOwnership,
                 Title = existingWorkshop.Title,
-                PayRate = existingWorkshop.PayRate,
+                PayRate = (OutOfSchool.Common.Enums.PayRateType)existingWorkshop.PayRate,
                 CoverImageId = existingWorkshop.CoverImageId,
                 MinAge = existingWorkshop.MinAge,
                 MaxAge = existingWorkshop.MaxAge,
-                Price = existingWorkshop.Price,
+                Price = (decimal)existingWorkshop.Price,
                 DirectionIds = existingWorkshop.DirectionIds,
                 ProviderId = existingWorkshop.ProviderId,
                 Address = existingWorkshop.Address,
@@ -301,17 +320,22 @@ public class ChildControllerTests
                 InstitutionHierarchyId = existingWorkshop.InstitutionHierarchyId,
                 InstitutionId = existingWorkshop.InstitutionId,
                 Institution = existingWorkshop.Institution,
-                AvailableSeats = existingWorkshop.AvailableSeats,
+                AvailableSeats = (uint)existingWorkshop.AvailableSeats,
                 TakenSeats = existingWorkshop.TakenSeats,
             })
             .WithChild(child);
 
+        workshopService.Setup(s => s.Exists(existingWorkshop.Id)).ReturnsAsync(true);
         providerService.Setup(s => s.GetProviderIdForWorkshopById(existingWorkshop.Id)).ReturnsAsync(existingProvider.Id);
         providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), false)).ReturnsAsync(existingProvider);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[] { new Claim(ClaimTypes.Role, nameof(Role.Provider).ToLower()),
-                            new Claim("sub", currentUserId)}));
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.Provider).ToLower()),
+                new Claim("subrole", nameof(Subrole.None).ToLower()),
+                new Claim("sub", currentUserId),
+            }));
 
         controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 

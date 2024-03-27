@@ -13,10 +13,10 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -25,24 +25,33 @@ public class StatusServiceTests
 {
     private IStatusService service;
     private OutOfSchoolDbContext context;
-    private IEntityRepository<long, InstitutionStatus> repository;
+    private IEntityRepositorySoftDeleted<long, InstitutionStatus> repository;
     private DbContextOptions<OutOfSchoolDbContext> options;
     private IMapper mapper;
 
     [SetUp]
     public void Setup()
     {
-        var builder = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
-            .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB");
+        options = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
+            .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
+            .UseLazyLoadingProxies()
+            .EnableSensitiveDataLogging()
+            .Options;
 
-        options = builder.Options;
         context = new OutOfSchoolDbContext(options);
-        repository = new EntityRepository<long, InstitutionStatus>(context);
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        repository = new EntityRepositorySoftDeleted<long, InstitutionStatus>(context);
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         var logger = new Mock<ILogger<StatusService>>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         service = new StatusService(repository, logger.Object, localizer.Object, mapper);
+
         SeedDatabase();
+    }
+
+    [TearDown]
+    public void Dispose()
+    {
+        context.Dispose();
     }
 
     [Test]
@@ -57,7 +66,6 @@ public class StatusServiceTests
         // Assert
         TestHelper.AssertTwoCollectionsEqualByValues(expected, result);
     }
-
 
     [Test]
     public async Task GetById_WhenIdIsValid_ReturnsInstitutionStatus()
@@ -85,7 +93,6 @@ public class StatusServiceTests
         Assert.ThrowsAsync<ArgumentOutOfRangeException>(
             async () => await service.GetById(notExistingId).ConfigureAwait(false));
     }
-
 
     // research why test is failing from time to time
     [Test]
@@ -127,7 +134,10 @@ public class StatusServiceTests
     public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
     {
         // Arrange
-        var changedEntity = mapper.Map<InstitutionStatusDTO>(InstitutionStatusGenerator.Generate());
+        var institutionStatus = InstitutionStatusGenerator.Generate();
+        institutionStatus.Id = 100;
+
+        var changedEntity = mapper.Map<InstitutionStatusDTO>(institutionStatus);
 
         // Act and Assert
         Assert.ThrowsAsync<DbUpdateConcurrencyException>(
@@ -165,15 +175,7 @@ public class StatusServiceTests
 
     private void SeedDatabase()
     {
-        using var context = new OutOfSchoolDbContext(options);
-        {
-            context.Database.EnsureDeleted();
-            context.Database.EnsureCreated();
-
-            var institutionStatuses = InstitutionStatusGenerator.Generate(5);
-            context.InstitutionStatuses.AddRange(institutionStatuses);
-
-            context.SaveChanges();
-        }
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
     }
 }

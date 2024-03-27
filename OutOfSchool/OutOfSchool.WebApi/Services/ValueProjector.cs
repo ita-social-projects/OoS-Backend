@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.SubordinationStructure;
-
-namespace OutOfSchool.WebApi.Services;
+﻿namespace OutOfSchool.WebApi.Services;
 
 public class ValueProjector : IValueProjector
 {

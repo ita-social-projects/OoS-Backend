@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Nest;
-using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData.Enums;
 using OutOfSchool.ElasticsearchData.Models;
@@ -67,14 +66,14 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
 
         if (!string.IsNullOrWhiteSpace(filter.SearchText))
         {
-            queryContainer &= new MultiMatchQuery()
+            queryContainer &= new QueryStringQuery()
             {
                 Fields = Infer.Field<WorkshopES>(w => w.Title)
-                    .And(Infer.Field<WorkshopES>(w => w.ProviderTitle))
-                    .And(Infer.Field<WorkshopES>(w => w.Keywords))
-                    .And(Infer.Field<WorkshopES>(w => w.Description)),
-                Query = filter.SearchText,
-                Fuzziness = Fuzziness.Auto,
+                        .And(Infer.Field<WorkshopES>(w => w.ProviderTitle))
+                        .And(Infer.Field<WorkshopES>(w => w.Keywords))
+                        .And(Infer.Field<WorkshopES>(w => w.Description)),
+                Query = $"{filter.SearchText}* OR {filter.SearchText}~",
+                AllowLeadingWildcard = false,
             };
         }
 
@@ -175,8 +174,8 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
                 Query = new MatchQuery()
                 {
                     Field = filter.IsStrictWorkdays
-                                ? Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().Workdays.Suffix("keyword"))
-                                : Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().Workdays),
+                                ? Infer.Field<WorkshopES>(w => w.DateTimeRanges[0].Workdays.Suffix("keyword"))
+                                : Infer.Field<WorkshopES>(w => w.DateTimeRanges[0].Workdays),
                     Query = filter.Workdays,
                 },
             };
@@ -205,7 +204,7 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
                     Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
                     Query = new NumericRangeQuery()
                     {
-                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().StartTime),
+                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges[0].StartTime),
                         GreaterThanOrEqualTo = filter.MinStartTime.Ticks,
                     },
                 };
@@ -215,7 +214,7 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
                     Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
                     Query = new NumericRangeQuery()
                     {
-                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().EndTime),
+                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges[0].EndTime),
                         LessThan = TimeSpan.FromHours(filter.MaxStartTime.Hours + 1).Ticks,
                     },
                 };
@@ -227,7 +226,7 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
                     Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
                     Query = new NumericRangeQuery()
                     {
-                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().StartTime),
+                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges[0].StartTime),
                         GreaterThanOrEqualTo = filter.MinStartTime.Ticks,
                         LessThan = TimeSpan.FromHours(filter.MaxStartTime.Hours + 1).Ticks,
                     },
@@ -276,6 +275,15 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
             };
 
             return queryContainer;
+        }
+
+        if (filter.FormOfLearning.Any())
+        {
+            queryContainer &= new TermsQuery()
+            {
+                Field = Infer.Field<WorkshopES>(w => w.FormOfLearning),
+                Terms = filter.FormOfLearning.Cast<object>(),
+            };
         }
 
         return queryContainer;

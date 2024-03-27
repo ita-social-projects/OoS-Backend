@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using OutOfSchool.ElasticsearchData.Models;
-
-namespace OutOfSchool.WebApi.Services;
+﻿namespace OutOfSchool.WebApi.Services;
 
 /// <summary>
 /// An interface for the Elasticsearch client.

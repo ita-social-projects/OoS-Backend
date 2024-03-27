@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Models;
+﻿using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Changes;
 
 namespace OutOfSchool.WebApi.Services;
@@ -18,6 +16,16 @@ public interface IChangesLogService
     /// <param name="userId">User ID.</param>
     /// <returns>Number of the added ChangesLog records.</returns>
     int AddEntityChangesToDbContext<TEntity>(TEntity entity, string userId)
+        where TEntity : class, IKeyedEntity, new();
+
+    /// <summary>
+    /// Create and add ChangesLog records for the entity.
+    /// </summary>
+    /// <typeparam name="TEntity">Entity type that exists in the DB.</typeparam>
+    /// <param name="entity">Modified entity.</param>
+    /// <param name="userId">User ID.</param>
+    /// <returns>True - if we did if.</returns>
+    Task<bool> AddCreatingOfEntityToDbContext<TEntity>(TEntity entity, string userId)
         where TEntity : class, IKeyedEntity, new();
 
     /// <summary>
@@ -43,4 +51,12 @@ public interface IChangesLogService
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains the <see cref="SearchResult{ProviderAdminChangesLogDto}"/> that contains found elements.</returns>
     Task<SearchResult<ProviderAdminChangesLogDto>> GetProviderAdminChangesLogAsync(ProviderAdminChangesLogRequest request);
+
+    /// <summary>
+    /// Get ParentBlockedByAdminLog entities that match filter's parameters.
+    /// </summary>
+    /// <param name="request">Filter with specified searching parameters.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The task result contains the <see cref="SearchResult{ParentBlockedByAdminChangesLogDto}"/> that contains found elements.</returns>
+    Task<SearchResult<ParentBlockedByAdminChangesLogDto>> GetParentBlockedByAdminChangesLogAsync(ParentBlockedByAdminChangesLogRequest request);
 }

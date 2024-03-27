@@ -10,6 +10,10 @@ internal class ApplicationConfiguration : IEntityTypeConfiguration<Application>
     {
         builder.HasKey(x => x.Id);
 
+        builder.HasIndex(x => x.IsDeleted);
+
+        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
+
         builder.Property(x => x.Status)
             .HasDefaultValue(ApplicationStatus.Pending);
 

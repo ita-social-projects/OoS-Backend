@@ -11,6 +11,7 @@
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
     <ItemGroup>
@@ -34,7 +35,6 @@
       </PackageReference>
       <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
       <PackageReference Include="Newtonsoft.Json" />
-      <PackageReference Include="MongoDB.Driver.GridFS" />
       <PackageReference Include="StyleCop.Analyzers">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

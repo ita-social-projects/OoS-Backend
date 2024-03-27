@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
-using Google;
 using Google.Apis.Storage.v1.Data;
 using Google.Cloud.Storage.V1;
 using OutOfSchool.Services.Common.Exceptions;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository.Files;

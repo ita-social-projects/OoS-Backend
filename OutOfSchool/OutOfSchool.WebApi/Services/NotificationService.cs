@@ -158,6 +158,25 @@ public class NotificationService : INotificationService
     }
 
     /// <inheritdoc/>
+    public async Task ReadAll(string userId)
+    {
+        logger.LogInformation("Updating ReadDateTime for UserId = {UserId} all unreaded notifications started", userId);
+
+        try
+        {
+            var readDateTime = DateTimeOffset.UtcNow;
+            await notificationRepository.SetReadDateTimeForAllUnreaded(userId, readDateTime).ConfigureAwait(false);
+
+            logger.LogInformation("All unreaded notifications for UserId = {UserId} updated successfully", userId);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            logger.LogError(ex, "Updating ReadDateTime for UserId = {UserId} all unreaded notifications failed", userId);
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
     public async Task ReadUsersNotificationsByType(string userId, NotificationType notificationType)
     {
         logger.LogInformation("Updating ReadDateTime UserId = {UserId} NotificationType = {Type} started", userId, notificationType);
@@ -236,6 +255,7 @@ public class NotificationService : INotificationService
         result.Notifications = allNotifications
             .Where(n => !grouped.Contains(n.Type))
             .Select(notification => mapper.Map<NotificationDto>(notification))
+            .OrderByDescending(n => n.CreatedDateTime)
             .ToList();
 
         return result;
@@ -262,7 +282,10 @@ public class NotificationService : INotificationService
             notifications.Count,
             userId);
 
-        return notifications.Select(notification => mapper.Map<NotificationDto>(notification)).ToList();
+        return notifications
+            .Select(notification => mapper.Map<NotificationDto>(notification))
+            .OrderByDescending(n => n.CreatedDateTime)
+            .ToList();
     }
 
     /// <inheritdoc/>

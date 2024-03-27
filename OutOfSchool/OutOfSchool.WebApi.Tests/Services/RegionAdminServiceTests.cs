@@ -2,17 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AutoMapper;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Responses;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -22,27 +23,33 @@ using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
-using Serilog.Configuration;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
 [TestFixture]
 public class RegionAdminServiceTests
 {
+    private readonly string email = "email@gmail.com";
+
     private Mock<IHttpClientFactory> httpClientFactory;
-    private Mock<IOptions<IdentityServerConfig>> identityServerConfig;
+    private Mock<IOptions<AuthorizationServerConfig>> identityServerConfig;
     private Mock<IOptions<CommunicationConfig>> communicationConfig;
     private Mock<IRegionAdminRepository> regionAdminRepositoryMock;
-    private Mock<IEntityRepository<string, User>> userRepositoryMock;
+    private Mock<IEntityRepositorySoftDeleted<string, User>> userRepositoryMock;
     private IMapper mapper;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock<IEntityRepositorySoftDeleted<string, User>> apiErrorServiceUserRepositoryMock;
 
     private RegionAdminService regionAdminService;
     private RegionAdmin regionAdmin;
     private List<RegionAdmin> regionAdmins;
     private RegionAdminDto regionAdminDto;
     private List<RegionAdminDto> regionAdminsDtos;
+    private ErrorResponse emailAlreadyTakenErrorResponse;
+    private ApiErrorResponse badRequestApiErrorResponse;
+    private ApiErrorService apiErrorService;
 
     [SetUp]
     public void SetUp()
@@ -53,8 +60,14 @@ public class RegionAdminServiceTests
         regionAdminsDtos = AdminGenerator.GenerateRegionAdminsDtos(5);
 
         httpClientFactory = new Mock<IHttpClientFactory>();
-        identityServerConfig = new Mock<IOptions<IdentityServerConfig>>();
+        identityServerConfig = new Mock<IOptions<AuthorizationServerConfig>>();
         communicationConfig = new Mock<IOptions<CommunicationConfig>>();
+
+        badRequestApiErrorResponse = new ApiErrorResponse();
+        badRequestApiErrorResponse.AddApiError(
+            ApiErrorsTypes.Common.EmailAlreadyTaken("RegionAdmin", email));
+        emailAlreadyTakenErrorResponse = ErrorResponse.BadRequest(badRequestApiErrorResponse);
+
         communicationConfig.Setup(x => x.Value)
             .Returns(new CommunicationConfig()
             {
@@ -71,10 +84,13 @@ public class RegionAdminServiceTests
 
         regionAdminRepositoryMock = new Mock<IRegionAdminRepository>();
         var logger = new Mock<ILogger<RegionAdminService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
-        userRepositoryMock = new Mock<IEntityRepository<string, User>>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        apiErrorServiceUserRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
+        var apiErrorServiceLogger = new Mock<ILogger<ApiErrorService>>();
+        apiErrorService = new ApiErrorService(apiErrorServiceUserRepositoryMock.Object, apiErrorServiceLogger.Object);
 
         regionAdminService = new RegionAdminService(
             httpClientFactory.Object,
@@ -85,7 +101,8 @@ public class RegionAdminServiceTests
             userRepositoryMock.Object,
             mapper,
             currentUserServiceMock.Object,
-            ministryAdminServiceMock.Object);
+            ministryAdminServiceMock.Object,
+            apiErrorService);
     }
 
     [Test]
@@ -197,9 +214,22 @@ public class RegionAdminServiceTests
         // Act
         regionAdminService
             .Invoking(x => x
-                .UpdateRegionAdminAsync(It.IsAny<string>(), It.IsAny<RegionAdminDto>(), It.IsAny<string>()))
+                .UpdateRegionAdminAsync(It.IsAny<string>(), It.IsAny<BaseUserDto>(), It.IsAny<string>()))
             .Should()
             .ThrowAsync<ArgumentNullException>();
+    }
+
+    [Test]
+    public async Task Update_WhenAdminNotExist_ReturnsErrorResponse()
+    {
+        // Arrange
+        regionAdminRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(null as RegionAdmin);
+
+        // Act
+        var result = await regionAdminService.UpdateRegionAdminAsync(It.IsAny<string>(), new BaseUserDto(), It.IsAny<string>());
+
+        // Assert
+        Assert.AreEqual(HttpStatusCode.NotFound, result.Match(error => error.HttpStatusCode, null));
     }
 
     [Test]
@@ -242,5 +272,35 @@ public class RegionAdminServiceTests
 
         // Assert
         Assert.That(result, Is.False);
+    }
+
+    [Test]
+    public async Task Create_EmailIsAlreadyTaken_ReturnsErrorResponse()
+    {
+        // Arrange
+        var expected = emailAlreadyTakenErrorResponse
+            .ApiErrorResponse
+            .ApiErrors
+            .First();
+        apiErrorServiceUserRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<string>()))
+            .ReturnsAsync(new List<User> { new User() });
+
+        var regionAdminBaseDto = new RegionAdminBaseDto();
+        regionAdminBaseDto.Email = email;
+
+        // Act
+        var response = await regionAdminService.CreateRegionAdminAsync(It.IsAny<string>(), regionAdminBaseDto, It.IsAny<string>()).ConfigureAwait(false);
+
+        ErrorResponse errorResponse = default;
+        response.Match<ErrorResponse>(
+            actionResult => errorResponse = actionResult,
+            succeed => errorResponse = new ErrorResponse());
+
+        var result = errorResponse.ApiErrorResponse.ApiErrors.First();
+
+        // Assert
+        Assert.AreEqual(expected.Group, result.Group);
+        Assert.AreEqual(expected.Code, result.Code);
+        Assert.AreEqual(expected.Message, result.Message);
     }
 }

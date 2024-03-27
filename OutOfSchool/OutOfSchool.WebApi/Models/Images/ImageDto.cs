@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace OutOfSchool.WebApi.Models.Images;
+﻿namespace OutOfSchool.WebApi.Models.Images;
 
 public class ImageDto
 {

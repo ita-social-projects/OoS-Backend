@@ -13,10 +13,10 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -25,7 +25,7 @@ public class UserServiceTest
 {
     private DbContextOptions<OutOfSchoolDbContext> options;
     private OutOfSchoolDbContext context;
-    private IEntityRepository<string, User> repo;
+    private IEntityRepositorySoftDeleted<string, User> repo;
     private IUserService service;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<UserService>> logger;
@@ -41,9 +41,9 @@ public class UserServiceTest
         options = builder.Options;
         context = new OutOfSchoolDbContext(options);
         localizer = new Mock<IStringLocalizer<SharedResource>>();
-        repo = new EntityRepository<string, User>(context);
+        repo = new EntityRepositorySoftDeleted<string, User>(context);
         logger = new Mock<ILogger<UserService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         service = new UserService(repo, logger.Object, localizer.Object, mapper);
 
         SeedDatabase();
@@ -131,6 +131,30 @@ public class UserServiceTest
         // Act and Assert
         Assert.ThrowsAsync<DbUpdateConcurrencyException>(
             async () => await service.Update(changedEntity).ConfigureAwait(false));
+    }
+
+    [Test]
+    [TestCase("CVc4a6876a-77fb-4ecnne-9c78-a0880286ae3c")]
+    public async Task Delete_WhenIdIsValid_CalledDeleteMethod(string id)
+    {
+        // Arrange
+        var users = await service.GetAll().ConfigureAwait(false);
+
+        // Act
+        await service.Delete(id);
+
+        // Assert
+        Assert.AreEqual(users.Count() - 1, (await service.GetAll().ConfigureAwait(false)).Count());
+    }
+
+    [Test]
+    public void Delete_WhenIdIsInvalid_ShouldThrowArgumentException()
+    {
+        // Arrange
+        var invalidId = "invalidId";
+
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentException>(() => service.Delete(invalidId));
     }
 
     private void SeedDatabase()

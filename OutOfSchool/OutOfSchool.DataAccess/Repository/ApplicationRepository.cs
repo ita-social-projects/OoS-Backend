@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,7 @@ namespace OutOfSchool.Services.Repository;
 /// <summary>
 /// Repository for accessing the Application table in database.
 /// </summary>
-public class ApplicationRepository : EntityRepositoryBase<Guid, Application>, IApplicationRepository
+public class ApplicationRepository : EntityRepositorySoftDeleted<Guid, Application>, IApplicationRepository
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationRepository"/> class.
@@ -82,5 +83,17 @@ public class ApplicationRepository : EntityRepositoryBase<Guid, Application>, IA
                 (int)ApplicationStatus.StudyingForYears,
                 (int)ApplicationStatus.Approved)
             .ConfigureAwait(false);
+    }
+
+    public async Task DeleteChildApplications(Guid childId)
+    {
+        List<Application> applicationsToDelete = await dbContext.Applications
+                                                    .Where(app => app.ChildId == childId).ToListAsync();
+
+        if (applicationsToDelete.Any())
+        {
+            dbContext.Applications.RemoveRange(applicationsToDelete);
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+        }
     }
 }

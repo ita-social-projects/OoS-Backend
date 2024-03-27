@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OutOfSchool.WebApi.Models.Changes;
+﻿namespace OutOfSchool.WebApi.Models.Changes;
 
 public abstract class ChangesLogFilterBase : SearchStringFilter
 {

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using OutOfSchool.Services.Enums;
+﻿using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models.Notifications;
 
 namespace OutOfSchool.WebApi.Services;
@@ -49,6 +46,13 @@ public interface INotificationService
     /// <param name="id">Key of the Notification in table.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     Task<NotificationDto> Read(Guid id);
+
+    /// <summary>
+    /// Set property ReadDateTime field in all unreaded notifications.
+    /// </summary>
+    /// <param name="userId">User's id for notifications.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+    Task ReadAll(string userId);
 
     /// <summary>
     /// Set property ReadDateTime in notifications with specified notificationType.

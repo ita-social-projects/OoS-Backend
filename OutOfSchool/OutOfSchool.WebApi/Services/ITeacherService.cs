@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Images;
+﻿using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Teachers;
-using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services;
 

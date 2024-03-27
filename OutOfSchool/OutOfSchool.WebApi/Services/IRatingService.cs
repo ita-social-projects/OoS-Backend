@@ -1,5 +1,4 @@
-﻿using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Models;
+﻿using OutOfSchool.WebApi.Models;
 using System.Linq.Expressions;
 
 namespace OutOfSchool.WebApi.Services;

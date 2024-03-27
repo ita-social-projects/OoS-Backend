@@ -1,23 +1,31 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
-using Nest;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Responses;
+using OutOfSchool.EmailSender;
+using OutOfSchool.RazorTemplatesData.Models.Emails;
+using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.StatusPermissions;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
-using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Services;
 
 /// <summary>
 /// Implements the interface with CRUD functionality for Application entity.
 /// </summary>
-public class ApplicationService : IApplicationService, INotificationReciever
+public class ApplicationService : IApplicationService, INotificationReciever, ISensitiveApplicationService
 {
+    public const string UaMaleEnding = "ий";
+    public const string UaFemaleEnding = "а";
+    public const string UaUnspecifiedGenderEnding = "ий/a";
+
     private readonly IApplicationRepository applicationRepository;
     private readonly IWorkshopRepository workshopRepository;
     private readonly ILogger<ApplicationService> logger;
@@ -30,7 +38,12 @@ public class ApplicationService : IApplicationService, INotificationReciever
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
     private readonly IRegionAdminService regionAdminService;
+    private readonly IAreaAdminService areaAdminService;
     private readonly ICodeficatorService codeficatorService;
+    private readonly IRazorViewToStringRenderer renderer;
+    private readonly IEmailSender emailSender;
+    private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly IOptions<HostsConfig> hostsConfig;
 
     private readonly string errorNullWorkshopMessage = "Operation failed. Workshop in Application dto is null";
     private readonly string errorBlockedWorkshopMessage = "Unable to create a new application for a workshop because workshop is blocked";
@@ -52,7 +65,12 @@ public class ApplicationService : IApplicationService, INotificationReciever
     /// <param name="currentUserService">Service for managing current user rights.</param>
     /// <param name="ministryAdminService">Service for managing ministry admin rigths.</param>
     /// <param name="regionAdminService">Service for managing region admin rigths.</param>
+    /// <param name="areaAdminService">Service for managing area admin rigths.</param>
     /// <param name="codeficatorService">Codeficator service.</param>
+    /// <param name="renderer">Razor view to string renderer.</param>
+    /// <param name="emailSender">Service for sending Email messages.</param>
+    /// <param name="localizer">Localizer.</param>
+    /// <param name="hostsConfig">Hosts config.</param>
     public ApplicationService(
         IApplicationRepository repository,
         ILogger<ApplicationService> logger,
@@ -66,7 +84,12 @@ public class ApplicationService : IApplicationService, INotificationReciever
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService,
-        ICodeficatorService codeficatorService)
+        IAreaAdminService areaAdminService,
+        ICodeficatorService codeficatorService,
+        IRazorViewToStringRenderer renderer,
+        IEmailSender emailSender,
+        IStringLocalizer<SharedResource> localizer,
+        IOptions<HostsConfig> hostsConfig)
     {
         applicationRepository = repository ?? throw new ArgumentNullException(nameof(repository));
         this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
@@ -83,7 +106,12 @@ public class ApplicationService : IApplicationService, INotificationReciever
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
         this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
+        this.areaAdminService = areaAdminService ?? throw new ArgumentNullException(nameof(areaAdminService));
         this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
+        this.emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
+        this.localizer = localizer ?? throw new ArgumentNullException(nameof(emailSender));
+        this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
+        this.hostsConfig = hostsConfig ?? throw new ArgumentNullException(nameof(hostsConfig));
     }
 
     /// <inheritdoc/>
@@ -139,16 +167,37 @@ public class ApplicationService : IApplicationService, INotificationReciever
             }
         }
 
+        if (currentUserService.IsAreaAdmin())
+        {
+            var areaAdmin = await areaAdminService.GetByUserId(currentUserService.UserId);
+            predicate = predicate
+                .And(p => p.Workshop.InstitutionHierarchy.InstitutionId == areaAdmin.InstitutionId);
+
+            var subSettlementsIds = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
+
+            if (subSettlementsIds.Any())
+            {
+                var tempPredicate = PredicateBuilder.False<Application>();
+
+                foreach (var item in subSettlementsIds)
+                {
+                    tempPredicate = tempPredicate.Or(x => x.Workshop.Provider.LegalAddress.CATOTTGId == item);
+                }
+
+                predicate = predicate.And(tempPredicate);
+            }
+        }
+
         var sortPredicate = SortExpressionBuild(filter);
 
-        var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
+        var totalAmount = await applicationRepository.Count(whereExpression: predicate).ConfigureAwait(false);
 
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            where: predicate,
             includeProperties: "Workshop,Child,Parent",
-            orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            whereExpression: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
         logger.LogInformation("There are {Count} applications in the Db", applications.Count);
 
@@ -176,14 +225,13 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         var sortPredicate = SortExpressionBuild(filter);
 
-        var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
+        var totalAmount = await applicationRepository.Count(whereExpression: predicate).ConfigureAwait(false);
 
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            where: predicate,
             includeProperties: "Workshop,Child,Parent",
-            orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            whereExpression: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
         logger.LogInformation("There are {Count} applications in the Db with Parent Id = {Id}", applications.Count, id);
 
@@ -194,6 +242,22 @@ public class ApplicationService : IApplicationService, INotificationReciever
         };
 
         return searchResult;
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> GetCountByParentId(Guid id)
+    {
+        logger.LogInformation("Getting Applications count by Parent Id started. Looking Parent Id = {Id}", id);
+        if (!currentUserService.IsInRole(Role.Provider) && !currentUserService.IsDeputyOrProviderAdmin())
+        {
+            throw new UnauthorizedAccessException("User has no rights to perform operation");
+        }
+
+        var totalAmount = await applicationRepository.Count(a => a.ParentId == id).ConfigureAwait(false);
+
+        logger.LogInformation("There are {Count} applications in the Db with Parent Id = {Id}", totalAmount, id);
+
+        return totalAmount;
     }
 
     /// <inheritdoc/>
@@ -241,13 +305,12 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         var sortPredicate = SortExpressionBuild(filter);
 
-        var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
+        var totalAmount = await applicationRepository.Count(whereExpression: predicate).ConfigureAwait(false);
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            where: predicate,
             includeProperties: "Workshop,Child,Parent",
-            orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            whereExpression: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
         logger.LogInformation(
             "There are {Count} applications in the Db with Workshop Id = {Id}",
@@ -276,19 +339,18 @@ public class ApplicationService : IApplicationService, INotificationReciever
         filter ??= new ApplicationFilter();
 
         Expression<Func<Workshop, bool>> workshopFilter = w => w.ProviderId == id;
-        var workshops = workshopRepository.Get(where: workshopFilter).Select(w => w.Id);
+        var workshops = workshopRepository.Get(whereExpression: workshopFilter).Select(w => w.Id);
 
         var predicate = PredicateBuild(filter, a => workshops.Contains(a.WorkshopId));
 
         var sortPredicate = SortExpressionBuild(filter);
 
-        var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
+        var totalAmount = await applicationRepository.Count(whereExpression: predicate).ConfigureAwait(false);
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            where: predicate,
             includeProperties: "Workshop,Child,Parent",
-            orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            whereExpression: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
         logger.LogInformation(
             "There are {Count} applications in the Db with Provider Id = {Id}",
@@ -337,19 +399,18 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         Expression<Func<Workshop, bool>> workshopFilter =
             w => isDeputy ? w.ProviderId == providerId : workshopIds.Contains(w.Id);
-        var workshops = workshopRepository.Get(where: workshopFilter).Select(w => w.Id);
+        var workshops = workshopRepository.Get(whereExpression: workshopFilter).Select(w => w.Id);
 
         var predicate = PredicateBuild(filter, a => workshops.Contains(a.WorkshopId));
         var sortPredicate = SortExpressionBuild(filter);
 
-        var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
+        var totalAmount = await applicationRepository.Count(whereExpression: predicate).ConfigureAwait(false);
 
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            where: predicate,
             includeProperties: "Workshop,Child,Parent",
-            orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            whereExpression: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
         logger.LogInformation(
             "There are {Count} applications in the Db with AdminProvider Id = {UserId}",
@@ -370,7 +431,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
     {
         logger.LogInformation("Getting Application by Id started. Looking Id = {Id}", id);
 
-        Expression<Func<Application, bool>> filter = a => a.Id == id;
+        Expression<Func<Application, bool>> filter = a => a.Id == id && !a.Child.IsDeleted && !a.Parent.IsDeleted && !a.Workshop.IsDeleted;
 
         var applications =
             await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
@@ -386,17 +447,17 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
         await currentUserService.UserHasRights(
             new ParentRights(application.ParentId),
+            new ProviderRights(application.Workshop.ProviderId),
             new ProviderAdminWorkshopRights(application.Workshop.ProviderId, application.Workshop.Id));
 
         return mapper.Map<ApplicationDto>(application);
     }
 
-    public Task<Result<ApplicationDto>> Update(ApplicationUpdate applicationDto, Guid providerId)
+    public Task<Either<ErrorResponse, ApplicationDto>> Update(ApplicationUpdate applicationDto, Guid providerId)
     {
         logger.LogInformation("Updating Application with Id = {Id} started", applicationDto?.Id);
 
         ArgumentNullException.ThrowIfNull(applicationDto, nameof(applicationDto));
-
         return ExecuteUpdateAsync(applicationDto, providerId);
     }
 
@@ -542,6 +603,8 @@ public class ApplicationService : IApplicationService, INotificationReciever
             predicate = PredicateBuilder.True<Application>();
         }
 
+        predicate = predicate.And(a => !a.Child.IsDeleted && !a.Parent.IsDeleted && !a.Workshop.IsDeleted);
+
         if (filter.Statuses != null)
         {
             predicate = predicate.And(a => filter.Statuses.Contains(a.Status));
@@ -583,7 +646,10 @@ public class ApplicationService : IApplicationService, INotificationReciever
             predicate = predicate.And(tempPredicate);
         }
 
-        predicate = predicate.And(a => a.IsBlocked == filter.ShowBlocked);
+        if (filter.Show != ShowApplications.All)
+        {
+            predicate = predicate.And(a => a.IsBlockedByProvider == (filter.Show == ShowApplications.Blocked));
+        }
 
         return predicate;
     }
@@ -592,6 +658,11 @@ public class ApplicationService : IApplicationService, INotificationReciever
         ApplicationFilter filter)
     {
         var sortExpression = new Dictionary<Expression<Func<Application, object>>, SortDirection>();
+
+        if (filter.Show == ShowApplications.All)
+        {
+            sortExpression.Add(a => a.IsBlockedByProvider, SortDirection.Ascending);
+        }
 
         if (filter.OrderByStatus)
         {
@@ -737,13 +808,13 @@ public class ApplicationService : IApplicationService, INotificationReciever
         if (isIncreaseTakenSeats && countTakenSeats == workshop.AvailableSeats &&
             workshop.Status != WorkshopStatus.Closed)
         {
-            _ = await combinedWorkshopService.UpdateStatus(new Models.Workshop.WorkshopStatusDto
+            _ = await combinedWorkshopService.UpdateStatus(new WorkshopStatusDto
                 { WorkshopId = workshopId, Status = WorkshopStatus.Closed });
         }
         else if (!isIncreaseTakenSeats && countTakenSeats == workshop.AvailableSeats - 1 &&
                  workshop.Status != WorkshopStatus.Open)
         {
-            _ = await combinedWorkshopService.UpdateStatus(new Models.Workshop.WorkshopStatusDto
+            _ = await combinedWorkshopService.UpdateStatus(new WorkshopStatusDto
                 { WorkshopId = workshopId, Status = WorkshopStatus.Open });
         }
     }
@@ -834,22 +905,17 @@ public class ApplicationService : IApplicationService, INotificationReciever
         };
     }
 
-    private async Task<Result<ApplicationDto>> ExecuteUpdateAsync(ApplicationUpdate applicationDto, Guid providerId)
+    private async Task<Either<ErrorResponse, ApplicationDto>> ExecuteUpdateAsync(ApplicationUpdate applicationDto, Guid providerId)
     {
         await currentUserService.UserHasRights(
             new ParentRights(applicationDto.ParentId),
             new ProviderRights(providerId),
             new ProviderAdminWorkshopRights(providerId, applicationDto.WorkshopId));
-
-        var currentApplication = CheckApplicationExists(applicationDto.Id);
+        var currentApplication = this.CheckApplicationExists(applicationDto.Id);
 
         if (currentApplication is null)
         {
-            return Result<ApplicationDto>.Failed(new OperationError
-            {
-                Code = "400",
-                Description = "Application does not exist.",
-            });
+            return ErrorResponse.BadRequest(ApiErrorsTypes.Common.EntityIdDoesNotExist("Application", applicationDto.Id.ToString()).ToResponse());
         }
 
         var previewAppStatus = currentApplication.Status;
@@ -858,12 +924,12 @@ public class ApplicationService : IApplicationService, INotificationReciever
         {
             if (currentApplication.Status == applicationDto.Status)
             {
-                return Result<ApplicationDto>.Success(mapper.Map<ApplicationDto>(currentApplication));
+                return mapper.Map<ApplicationDto>(currentApplication);
             }
 
-            if (applicationDto.Status == ApplicationStatus.Approved)
+            if (Application.ValidApplicationStatuses.Contains(applicationDto.Status))
             {
-                var providerOwnership = await workshopRepository.GetByFilter(predicate: w => w.Id == currentApplication.WorkshopId && w.Provider.Ownership != OwnershipType.State, includeProperties: "Provider");
+                var providerOwnership = await workshopRepository.GetByFilter(whereExpression: w => w.Id == currentApplication.WorkshopId && w.Provider.Ownership != OwnershipType.State, includeProperties: "Provider");
 
                 if (providerOwnership.Any())
                 {
@@ -872,12 +938,13 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
                     if (amountOfApproved >= availableSeats)
                     {
-                        return Result<ApplicationDto>.Failed(new OperationError
-                        {
-                            Code = "400",
-                            Description = "The Workshop is full.",
-                        });
+                        return ErrorResponse.BadRequest(ApiErrorsTypes.Application.AcceptRejectedWorkshopIsFull().ToResponse());
                     }
+                }
+
+                if (await GetApprovedWorkshopAndChild(currentApplication) >= 1)
+                {
+                    return ErrorResponse.BadRequest(ApiErrorsTypes.Application.AcceptRejectedAlreadyApproved().ToResponse());
                 }
             }
 
@@ -905,9 +972,16 @@ public class ApplicationService : IApplicationService, INotificationReciever
                 additionalData,
                 groupedData).ConfigureAwait(false);
 
+            if (updatedApplication.Status == ApplicationStatus.Approved
+                || updatedApplication.Status == ApplicationStatus.AcceptedForSelection
+                || updatedApplication.Status == ApplicationStatus.Rejected)
+            {
+                await SendApplicationUpdateStatusEmail(updatedApplication);
+            }
+
             await ControlWorkshopStatus(previewAppStatus, updatedApplication.Status, currentApplication.WorkshopId);
 
-            return Result<ApplicationDto>.Success(mapper.Map<ApplicationDto>(updatedApplication));
+            return mapper.Map<ApplicationDto>(updatedApplication);
         }
         catch (DbUpdateConcurrencyException ex)
         {
@@ -918,6 +992,51 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
     private async Task<int> GetAmountOfApprovedApplications(Guid workshopId)
     {
-        return await applicationRepository.Count(x => x.WorkshopId == workshopId && x.Status == ApplicationStatus.Approved);
+        return await applicationRepository.Count(x => x.WorkshopId == workshopId &&
+                                                      Application.ValidApplicationStatuses.Contains(x.Status) &&
+                                                      !x.Child.IsDeleted &&
+                                                      !x.Parent.IsDeleted);
+    }
+
+    private async Task<int> GetApprovedWorkshopAndChild(Application application)
+    {
+        return await applicationRepository.Count(a => application.ChildId == a.ChildId &&
+                                                      application.WorkshopId == a.WorkshopId &&
+                                                      Application.ValidApplicationStatuses.Contains(a.Status));
+    }
+
+    private async Task SendApplicationUpdateStatusEmail(Application application)
+    {
+        (string subject, string templateName) = application.Status switch
+        {
+            ApplicationStatus.Approved =>
+                (localizer["Approved!"], RazorTemplates.ApplicationApprovedEmail),
+            ApplicationStatus.Rejected =>
+                (localizer["Rejected"], RazorTemplates.ApplicationRejectedEmail),
+            ApplicationStatus.AcceptedForSelection =>
+                (localizer["Accepted for selection!"], RazorTemplates.ApplicationAcceptedForSelectionEmail),
+            _ => throw new ArgumentException("Unsupported application status."),
+        };
+
+        var applicationStatusViewModel = new ApplicationStatusViewModel
+        {
+            ChildFullName =
+                $"{application.Child.LastName} " +
+                $"{application.Child.FirstName} " +
+                $"{application.Child.MiddleName}".TrimEnd(),
+            UaEnding = application.Child.Gender switch
+            {
+                Gender.Male => UaMaleEnding,
+                Gender.Female => UaFemaleEnding,
+                _ => UaUnspecifiedGenderEnding,
+            },
+            WorkshopTitle = application.Workshop.Title,
+            WorkshopUrl =
+                $"{hostsConfig.Value.FrontendUrl}{hostsConfig.Value.PathToWorkshopDetailsOnFrontend}{application.WorkshopId}",
+            RejectionMessage = application.RejectionMessage,
+        };
+        var content = await renderer
+                .GetHtmlPlainStringAsync(templateName, applicationStatusViewModel);
+        await emailSender.SendAsync(application.Parent.User.Email, subject, content);
     }
 }

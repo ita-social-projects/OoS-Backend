@@ -51,11 +51,14 @@ public class EmailSender : IEmailSender
         try
         {
             var response = await sendGridClient.SendEmailAsync(message).ConfigureAwait(false);
-            //TODO: Do Something with success?
+            if (!response.IsSuccessStatusCode)
+            {
+                logger.LogError("Email was not sent with the following error: {Error}", await response.Body.ReadAsStringAsync().ConfigureAwait(false));
+            }
         }
         catch (Exception e)
         {
-            logger.LogError(e.Message);
+            logger.LogError(e, "Email was not sent due to an exception or reading response body failed");
         }
     }
 }

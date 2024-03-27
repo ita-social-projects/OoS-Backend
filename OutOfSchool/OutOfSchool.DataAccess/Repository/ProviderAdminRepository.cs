@@ -7,7 +7,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public class ProviderAdminRepository : EntityRepository<(string, Guid), ProviderAdmin>, IProviderAdminRepository
+public class ProviderAdminRepository : EntityRepositorySoftDeleted<(string, Guid), ProviderAdmin>, IProviderAdminRepository
 {
     private readonly OutOfSchoolDbContext db;
 
@@ -20,7 +20,7 @@ public class ProviderAdminRepository : EntityRepository<(string, Guid), Provider
     public async Task<ProviderAdmin?> GetByIdAsync(string userId, Guid providerId)
     {
         return await db.ProviderAdmins
-            .Where(pa => pa.ProviderId == providerId)
+            .Where(pa => pa.ProviderId == providerId && !pa.IsDeleted)
             .SingleOrDefaultAsync(pa => pa.UserId == userId);
     }
 
@@ -34,7 +34,7 @@ public class ProviderAdminRepository : EntityRepository<(string, Guid), Provider
     public async Task<bool> IsExistProviderWithUserIdAsync(string userId)
     {
         var provider = await db.Providers
-            .SingleOrDefaultAsync(p => p.UserId == userId);
+            .SingleOrDefaultAsync(p => p.UserId == userId && !p.IsDeleted);
 
         return provider != null;
     }
@@ -42,7 +42,7 @@ public class ProviderAdminRepository : EntityRepository<(string, Guid), Provider
     public async Task<Provider> GetProviderWithUserIdAsync(string userId)
     {
         var provider = await db.Providers
-            .SingleOrDefaultAsync(p => p.UserId == userId);
+            .SingleOrDefaultAsync(p => p.UserId == userId && !p.IsDeleted);
 
         return provider;
     }
@@ -59,6 +59,6 @@ public class ProviderAdminRepository : EntityRepository<(string, Guid), Provider
     public async Task<int> GetNumberProviderAdminsAsync(Guid providerId)
     {
         return await db.ProviderAdmins
-            .CountAsync(pa => pa.ProviderId == providerId);
+            .CountAsync(pa => pa.ProviderId == providerId && !pa.IsDeleted);
     }
 }

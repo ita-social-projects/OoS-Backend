@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using OutOfSchool.WebApi.Models;
+﻿using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
 

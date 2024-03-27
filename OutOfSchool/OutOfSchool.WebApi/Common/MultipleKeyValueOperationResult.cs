@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace OutOfSchool.WebApi.Common;
+﻿namespace OutOfSchool.WebApi.Common;
 
 /// <summary>
 /// Represents the multiple result of an operation.

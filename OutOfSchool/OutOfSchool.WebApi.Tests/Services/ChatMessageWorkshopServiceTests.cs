@@ -19,6 +19,7 @@ using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -35,7 +36,7 @@ public class ChatMessageWorkshopServiceTests
         WorkshopId = Guid.NewGuid(),
     };
 
-    private IEntityRepository<Guid, ChatMessageWorkshop> messageRepository;
+    private IEntityRepositorySoftDeleted<Guid, ChatMessageWorkshop> messageRepository;
     private Mock<IChatRoomWorkshopService> roomServiceMock;
     private Mock<IHubContext<ChatWorkshopHub>> workshopHub;
     private Mock<ILogger<ChatMessageWorkshopService>> loggerMock;
@@ -60,11 +61,11 @@ public class ChatMessageWorkshopServiceTests
         options = builder.Options;
         dbContext = new OutOfSchoolDbContext(options);
 
-        messageRepository = new EntityRepository<Guid, ChatMessageWorkshop>(dbContext);
+        messageRepository = new EntityRepositorySoftDeleted<Guid, ChatMessageWorkshop>(dbContext);
         roomServiceMock = new Mock<IChatRoomWorkshopService>();
         workshopHub = new Mock<IHubContext<ChatWorkshopHub>>();
         loggerMock = new Mock<ILogger<ChatMessageWorkshopService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
 
         clientsMock = new Mock<IHubClients>();
         clientProxyMock = new Mock<IClientProxy>();
@@ -112,6 +113,7 @@ public class ChatMessageWorkshopServiceTests
 
     #region GetMessagesForChatRoomAsync
     [Test]
+    [Ignore("Testing of unused method")]
     public void GetMessagesForChatRoomAsync_WhenOffsetfilterIsNull_ShouldNotThrowException()
     {
         // Arrange
@@ -123,6 +125,7 @@ public class ChatMessageWorkshopServiceTests
     }
 
     [Test]
+    [Ignore("Testing of unused method")]
     public async Task GetMessagesForChatRoomAsync_WhenCalledWithAllValidParameters_ShouldReturnFoundMessages()
     {
         // Arrange
@@ -141,6 +144,7 @@ public class ChatMessageWorkshopServiceTests
     }
 
     [Test]
+    [Ignore("Testing of unused method")]
     public async Task GetMessagesForChatRoomAsync_WhenCalledWithUnexistedRoomId_ShouldReturnEmptyList()
     {
         // Arrange
@@ -192,6 +196,19 @@ public class ChatMessageWorkshopServiceTests
             Assert.AreEqual(offsetFilter.Size, result.Count);
             Assert.AreEqual(existingChatRoomId, result.FirstOrDefault()?.ChatRoomId);
         });
+    }
+
+    [Test]
+    public async Task GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync_WhenCalledWithInValidParameters_ShouldReturnEmptyList()
+    {
+        // Arrange
+        var invalidChatRoomId = Guid.NewGuid();
+
+        // Act
+        var result = await messageService.GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(invalidChatRoomId, new OffsetFilter(), Role.Provider).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsEmpty(result);
     }
     #endregion
 

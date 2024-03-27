@@ -1,21 +1,18 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.Extensions.Localization;
-using Nest;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services;
 
 /// <summary>
 /// Implements the interface with CRUD functionality for Direction entity.
 /// </summary>
-public class DirectionService : IDirectionService
+public class DirectionService : IDirectionService, ISensitiveDirectionService
 {
-    private readonly IEntityRepository<long, Direction> repository;
+    private readonly IEntityRepositorySoftDeleted<long, Direction> repository;
     private readonly IWorkshopRepository repositoryWorkshop;
     private readonly ILogger<DirectionService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
@@ -36,7 +33,7 @@ public class DirectionService : IDirectionService
     /// <param name="ministryAdminService">Service for manage ministry admin.</param>
     /// <param name="regionAdminService">Service for managing region admin rigths.</param>
     public DirectionService(
-        IEntityRepository<long, Direction> repository,
+        IEntityRepositorySoftDeleted<long, Direction> repository,
         IWorkshopRepository repositoryWorkshop,
         ILogger<DirectionService> logger,
         IStringLocalizer<SharedResource> localizer,
@@ -143,11 +140,11 @@ public class DirectionService : IDirectionService
         };
 
         var directions = await repository
-            .Get(skip: filter.From, take: filter.Size, where: predicate, orderBy: sortExpression)
+            .Get(skip: filter.From, take: filter.Size, whereExpression: predicate, orderBy: sortExpression)
             .ToListAsync();
 
         var workshopCount = await repositoryWorkshop
-            .Get(where: workshopCountFilter
+            .Get(whereExpression: workshopCountFilter
                 .And(w => w.InstitutionHierarchy.Directions.Any(d => directions.Contains(d))))
             .SelectMany(w => w.InstitutionHierarchy.Directions)
             .GroupBy(d => d.Id)
@@ -200,24 +197,27 @@ public class DirectionService : IDirectionService
     {
         logger.LogInformation($"Updating Direction with Id = {dto?.Id} started.");
 
-        try
-        {
-            var direction = await repository.Update(mapper.Map<Direction>(dto)).ConfigureAwait(false);
+        ArgumentNullException.ThrowIfNull(dto);
 
-            logger.LogInformation($"Direction with Id = {direction?.Id} updated succesfully.");
+        var direction = await repository.GetById(dto.Id).ConfigureAwait(false);
 
-            return mapper.Map<DirectionDto>(direction);
-        }
-        catch (DbUpdateConcurrencyException)
+        if (direction is null)
         {
             logger.LogError($"Updating failed. Direction with Id = {dto?.Id} doesn't exist in the system.");
-            throw;
+            throw new DbUpdateConcurrencyException($"Updating failed. Direction with Id = {dto?.Id} doesn't exist in the system.");
         }
+
+        mapper.Map(dto, direction);
+        direction = await repository.Update(direction).ConfigureAwait(false);
+
+        logger.LogInformation($"Direction with Id = {direction?.Id} updated succesfully.");
+
+        return mapper.Map<DirectionDto>(direction);
     }
 
     private void DirectionValidation(DirectionDto dto)
     {
-        if (repository.Get(where: x => x.Title == dto.Title).Any())
+        if (repository.Get(whereExpression: x => x.Title == dto.Title).Any())
         {
             throw new ArgumentException(localizer["There is already a Direction with such a data."]);
         }
@@ -260,7 +260,7 @@ public class DirectionService : IDirectionService
             workshopCountFilter = workshopCountFilter
                 .And<Workshop>(w => w.Address.CATOTTGId == filter.CatottgId);
         }
-        
+
         return (predicate, workshopCountFilter);
     }
 }

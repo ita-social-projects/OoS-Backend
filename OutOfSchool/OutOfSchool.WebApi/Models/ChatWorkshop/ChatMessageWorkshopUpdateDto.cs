@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models.ChatWorkshop;
 
@@ -9,6 +8,6 @@ public class ChatMessageWorkshopUpdateDto
     public Guid Id { get; set; }
 
     [Required]
-    [MaxLength(200)]
+    [MaxLength(Constants.ChatMessageTextMaxLength)]
     public string Text { get; set; }
 }

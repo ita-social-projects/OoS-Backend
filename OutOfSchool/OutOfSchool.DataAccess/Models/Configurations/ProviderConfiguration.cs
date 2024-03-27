@@ -11,6 +11,10 @@ internal class ProviderConfiguration : IEntityTypeConfiguration<Provider>
     {
         builder.HasKey(x => x.Id);
 
+        builder.HasIndex(x => x.IsDeleted);
+
+        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
+
         builder.Property(x => x.FullTitle)
             .IsRequired()
             .HasMaxLength(60) // Same as in short title. Bug ?
@@ -79,5 +83,8 @@ internal class ProviderConfiguration : IEntityTypeConfiguration<Provider>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(x => x.EdrpouIpn);
+
+        builder.Property(x => x.UpdatedAt)
+                .ValueGeneratedOnAddOrUpdate();
     }
 }

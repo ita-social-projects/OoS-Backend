@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OutOfSchool.WebApi.Services;
+﻿namespace OutOfSchool.WebApi.Services;
 
 public interface IValueProjector
 {

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using OutOfSchool.Services.Models.SubordinationStructure;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models.SubordinationStructure;
 

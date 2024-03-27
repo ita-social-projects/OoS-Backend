@@ -1,8 +1,4 @@
-﻿using IdentityModel.Client;
-using System.Drawing.Text;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Repository;
-using Microsoft.AspNetCore.Builder;
+﻿using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Services.LicenseApprovalNotification;
 
@@ -10,11 +6,11 @@ public class LicenseApprovalNotificationService : ILicenseApprovalNotificationSe
 {
     private readonly INotificationService notificationService;
     private readonly ILogger<LicenseApprovalNotificationService> logger;
-    private readonly IEntityRepository<string, User> userRepository;
+    private readonly IEntityRepositorySoftDeleted<string, User> userRepository;
 
     public LicenseApprovalNotificationService(INotificationService notificationService,
                                               ILogger<LicenseApprovalNotificationService> logger,
-                                              IEntityRepository<string, User> userRepository)
+                                              IEntityRepositorySoftDeleted<string, User> userRepository)
     {
         this.notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -39,7 +35,7 @@ public class LicenseApprovalNotificationService : ILicenseApprovalNotificationSe
 
     public async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
     {
-        // TODO Add filter for OtgAdmin when he will be created, and delete filter for TechAdmin after that
+        // TODO Add filter for AreaAdmin when he will be created, and delete filter for TechAdmin after that
         return (await userRepository
             .GetByFilter(u => u.Role.Equals(nameof(Role.TechAdmin), StringComparison.CurrentCultureIgnoreCase)
                       || u.Role.Equals(nameof(Role.RegionAdmin), StringComparison.CurrentCultureIgnoreCase))

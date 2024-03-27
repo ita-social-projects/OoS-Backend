@@ -10,7 +10,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public class CodeficatorRepository : EntityRepository<long, CATOTTG>, ICodeficatorRepository
+public class CodeficatorRepository : EntityRepositorySoftDeleted<long, CATOTTG>, ICodeficatorRepository
 {
     private readonly OutOfSchoolDbContext db;
 
@@ -32,7 +32,7 @@ public class CodeficatorRepository : EntityRepository<long, CATOTTG>, ICodeficat
     }
 
     /// <inheritdoc/>
-    public async Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(string namePart, string categories = default)
+    public async Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(string namePart, string categories = default, long parentId = 0)
     {
         int cityAmountIfNamePartIsEmpty = 100;
 
@@ -42,23 +42,24 @@ public class CodeficatorRepository : EntityRepository<long, CATOTTG>, ICodeficat
                     from pp in db.CATOTTGs.Where(x2 => p.ParentId == x2.Id).DefaultIfEmpty()
                     from ppp in db.CATOTTGs.Where(x3 => pp.ParentId == x3.Id).DefaultIfEmpty()
                     from pppp in db.CATOTTGs.Where(x4 => ppp.ParentId == x4.Id).DefaultIfEmpty()
-                    where string.IsNullOrEmpty(namePart) &&
-                          !(categories.Contains(CodeficatorCategory.SpecialStatusCity.Name) || categories.Contains(CodeficatorCategory.Region.Name))
+                    where ((parentId == 0) ? true : (e.ParentId == parentId || p.ParentId == parentId || pp.ParentId == parentId || ppp.ParentId == parentId || pppp.ParentId == parentId))
+                        && (string.IsNullOrEmpty(namePart) && (parentId == 0) &&
+                            !(categories.Contains(CodeficatorCategory.SpecialStatusCity.Name) || categories.Contains(CodeficatorCategory.Region.Name))
                        ? EF.Property<bool>(e, "IsTop")
                        : ((e.Name.StartsWith(namePart) &&
-                          (CodeficatorCategory.Level1.Name.Contains(e.Category) || CodeficatorCategory.Level4.Name.Contains(e.Category))) ||
-                          (e.Category == CodeficatorCategory.CityDistrict.Name && p.Name.StartsWith(namePart))) && categories.Contains(e.Category)
+                          (CodeficatorCategory.Level1.Name.Contains(e.Category) || CodeficatorCategory.Level4.Name.Contains(e.Category) || CodeficatorCategory.TerritorialCommunity.Name.Contains(e.Category))) ||
+                          (e.Category == CodeficatorCategory.CityDistrict.Name && p.Name.StartsWith(namePart))) && categories.Contains(e.Category))
                     select new CodeficatorAddressDto
                     {
                         Id = e.Id,
                         Category = e.Category,
-                        Settlement = e.Category == CodeficatorCategory.CityDistrict.Name ? p.Name : e.Name,
+                        Settlement = e.Category == CodeficatorCategory.CityDistrict.Name ? p.Name : (e.Category == CodeficatorCategory.TerritorialCommunity.Name ? null : e.Name),
                         Latitude = e.Latitude,
                         Longitude = e.Longitude,
                         Order = e.Order,
-                        TerritorialCommunity = e.Category == CodeficatorCategory.CityDistrict.Name ? pp.Name : p.Name,
-                        District = e.Category == CodeficatorCategory.CityDistrict.Name ? ppp.Name : pp.Name,
-                        Region = e.Category == CodeficatorCategory.CityDistrict.Name ? pppp.Name : ppp.Name,
+                        TerritorialCommunity = e.Category == CodeficatorCategory.CityDistrict.Name ? pp.Name : (e.Category == CodeficatorCategory.TerritorialCommunity.Name ? e.Name : p.Name),
+                        District = e.Category == CodeficatorCategory.CityDistrict.Name ? ppp.Name : (e.Category == CodeficatorCategory.TerritorialCommunity.Name ? p.Name : pp.Name),
+                        Region = e.Category == CodeficatorCategory.CityDistrict.Name ? pppp.Name : (e.Category == CodeficatorCategory.TerritorialCommunity.Name ? pp.Name : ppp.Name),
                         CityDistrict = e.Category == CodeficatorCategory.CityDistrict.Name ? e.Name : null,
                     };
 

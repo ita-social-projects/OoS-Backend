@@ -4,7 +4,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 
 namespace OutOfSchool.WebApi.Services;
@@ -14,7 +14,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     private protected readonly IWorkshopService workshopService; // make it private after removing v2 version
     private protected readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService; // make it private after removing v2 version
     private readonly INotificationService notificationService;
-    private readonly IEntityRepository<long, Favorite> favoriteRepository;
+    private readonly IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository;
     private readonly IApplicationRepository applicationRepository;
     private readonly IWorkshopStrategy workshopStrategy;
     private readonly ICurrentUserService currentUserService;
@@ -28,7 +28,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         IWorkshopService workshopService,
         IElasticsearchSynchronizationService elasticsearchSynchronizationService,
         INotificationService notificationService,
-        IEntityRepository<long, Favorite> favoriteRepository,
+        IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository,
         IApplicationRepository applicationRepository,
         IWorkshopStrategy workshopStrategy,
         ICurrentUserService currentUserService,
@@ -53,7 +53,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopDTO> Create(WorkshopDTO dto)
+    public async Task<WorkshopBaseDto> Create(WorkshopBaseDto dto)
     {
         var workshop = await workshopService.Create(dto).ConfigureAwait(false);
 
@@ -67,7 +67,13 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopDTO> GetById(Guid id)
+    public Task<bool> Exists(Guid id)
+    {
+        return workshopService.Exists(id);
+    }
+
+    /// <inheritdoc/>
+    public async Task<WorkshopDto> GetById(Guid id)
     {
         var workshop = await workshopService.GetById(id).ConfigureAwait(false);
 
@@ -75,7 +81,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopDTO> Update(WorkshopDTO dto)
+    public async Task<WorkshopBaseDto> Update(WorkshopBaseDto dto)
     {
         var workshop = await workshopService.Update(dto).ConfigureAwait(false);
 
@@ -146,6 +152,8 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     /// <inheritdoc/>
     public async Task Delete(Guid id)
     {
+        var workshopDto = await workshopService.GetById(id).ConfigureAwait(false);
+
         await workshopService.Delete(id).ConfigureAwait(false);
 
         await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
@@ -153,6 +161,9 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
                 id,
                 ElasticsearchSyncOperation.Delete)
             .ConfigureAwait(false);
+
+        await SendNotification(workshopDto, NotificationAction.Delete, false).ConfigureAwait(false);
+
     }
 
     /// <inheritdoc/>
@@ -192,7 +203,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
             return new SearchResult<WorkshopCard> { TotalAmount = 0, Entities = new List<WorkshopCard>() };
         }
 
-        var settlementsFilter = mapper.Map<WorkshopBySettlementsFilter>(filter);
+        var settlementsFilter = mapper.Map<WorkshopFilterWithSettlements>(filter);
 
         if (currentUserService.IsMinistryAdmin())
         {
@@ -223,13 +234,8 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<T>> GetByProviderId<T>(Guid id, ExcludeIdFilter filter)
-        where T : WorkshopBaseCard
-    {
-        var workshopBaseCards = await workshopService.GetByProviderId<T>(id, filter).ConfigureAwait(false);
-
-        return workshopBaseCards;
-    }
+    public Task<SearchResult<WorkshopProviderViewCard>> GetByProviderId(Guid id, ExcludeIdFilter filter)
+        => workshopService.GetByProviderId(id, filter);
 
     /// <inheritdoc/>
     public async Task<Guid> GetWorkshopProviderId(Guid workshopId) =>
@@ -242,7 +248,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     {
         var recipientIds = new List<string>();
 
-        var favoriteWorkshopUsersIds = await favoriteRepository.Get(where: x => x.WorkshopId == objectId)
+        var favoriteWorkshopUsersIds = await favoriteRepository.Get(whereExpression: x => x.WorkshopId == objectId)
             .Select(x => x.UserId)
             .ToListAsync()
             .ConfigureAwait(false);
@@ -251,7 +257,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
             x => x.Status != ApplicationStatus.Left
                  && x.WorkshopId == objectId;
 
-        var appliedUsersIds = await applicationRepository.Get(where: predicate)
+        var appliedUsersIds = await applicationRepository.Get(whereExpression: predicate)
             .Select(x => x.Parent.UserId)
             .ToListAsync()
             .ConfigureAwait(false);
@@ -282,5 +288,32 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         return filter != null && filter.MaxStartTime >= filter.MinStartTime
                               && filter.MaxAge >= filter.MinAge
                               && filter.MaxPrice >= filter.MinPrice;
+    }
+
+    private async Task SendNotification(
+        WorkshopDto workshop,
+        NotificationAction notificationAction,
+        bool addStatusData)
+    {
+        if (workshop != null)
+        {
+            var additionalData = new Dictionary<string, string>()
+            {
+                { "Title", workshop.Title },
+            };
+
+            if (addStatusData)
+            {
+                additionalData.Add("Status", workshop.Status.ToString());
+            }
+
+            await notificationService.Create(
+                    NotificationType.Workshop,
+                    notificationAction,
+                    workshop.Id,
+                    this,
+                    additionalData)
+                .ConfigureAwait(false);
+        }
     }
 }

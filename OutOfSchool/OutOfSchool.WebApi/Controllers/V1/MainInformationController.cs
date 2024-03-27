@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

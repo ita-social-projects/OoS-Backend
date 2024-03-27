@@ -1,24 +1,14 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Collections.Concurrent;
 using System.Security.Authentication;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Hubs;
 
-[Authorize(AuthenticationSchemes = "Bearer")]
 [Authorize(Roles = "provider,parent")]
 public class ChatWorkshopHub : Hub
 {
@@ -36,6 +26,7 @@ public class ChatWorkshopHub : Hub
     private readonly IParentRepository parentRepository;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IProviderAdminRepository providerAdminRepository;
+    private readonly IBlockedProviderParentService blockedProviderParentService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatWorkshopHub"/> class.
@@ -56,7 +47,8 @@ public class ChatWorkshopHub : Hub
         IWorkshopRepository workshopRepository,
         IParentRepository parentRepository,
         IStringLocalizer<SharedResource> localizer,
-        IProviderAdminRepository providerAdminRepository)
+        IProviderAdminRepository providerAdminRepository,
+        IBlockedProviderParentService blockedProviderParentService)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.messageService = chatMessageService ?? throw new ArgumentNullException(nameof(chatMessageService));
@@ -66,6 +58,7 @@ public class ChatWorkshopHub : Hub
         this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
         this.localizer = localizer;
         this.providerAdminRepository = providerAdminRepository;
+        this.blockedProviderParentService = blockedProviderParentService;
     }
 
     public override async Task OnConnectedAsync()
@@ -140,6 +133,17 @@ public class ChatWorkshopHub : Hub
             // Deserialize from string to Object
             var chatMessageWorkshopCreateDto = JsonConvert.DeserializeObject<ChatMessageWorkshopCreateDto>(chatNewMessage);
 
+            var chatRoomExists = await roomService.GetByIdAsync(chatMessageWorkshopCreateDto.ChatRoomId).ConfigureAwait(false) is not null;
+
+            if (!chatRoomExists)
+            {
+                logger.LogWarning($"{GettingUserProperties.GetUserRole(Context.User)} with UserId:{GettingUserProperties.GetUserId(Context.User)} is trying to send message to not existing chatRoom");
+
+                var messageForUser = localizer["Some of the message parameters were wrong. Please check your message and try again."];
+                await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", messageForUser).ConfigureAwait(false);
+                return;
+            }
+
             var userHasRights = await this.UserHasRigtsForChatRoomAsync(chatMessageWorkshopCreateDto.WorkshopId, chatMessageWorkshopCreateDto.ParentId).ConfigureAwait(false);
 
             if (!userHasRights)
@@ -153,7 +157,7 @@ public class ChatWorkshopHub : Hub
             }
 
             // Save chatMessage in the system.
-            Role userRole = (Role)Enum.Parse(typeof(Role), Context.User.FindFirst("role").Value, true);
+            Role userRole = (Role)Enum.Parse(typeof(Role), Context.User.FindFirst(IdentityResourceClaimsTypes.Role).Value, true);
             var createdMessageDto = await messageService.CreateAsync(chatMessageWorkshopCreateDto, userRole).ConfigureAwait(false);
 
             // Add Parent's connections to the Group.
@@ -238,7 +242,7 @@ public class ChatWorkshopHub : Hub
         }
     }
 
-    private Task<bool> UserHasRigtsForChatRoomAsync(Guid workshopId, Guid parentId)
+    private async Task<bool> UserHasRigtsForChatRoomAsync(Guid workshopId, Guid parentId)
     {
         var userId = GettingUserProperties.GetUserId(Context.User);
         LogErrorThrowExceptionIfPropertyIsNull(userId, nameof(userId));
@@ -248,16 +252,25 @@ public class ChatWorkshopHub : Hub
 
         bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
 
+        var workshop = await workshopRepository.GetById(workshopId);
+
+        bool isParentBlocked = await blockedProviderParentService.IsBlocked(parentId, workshop.ProviderId);
+
+        if (isParentBlocked)
+        {
+            return false;
+        }
+
         if (userRoleIsProvider)
         {
             var userSubroleName = GettingUserProperties.GetUserSubrole(Context.User);
             LogErrorThrowExceptionIfPropertyIsNull(userSubroleName, nameof(userSubroleName));
             Subrole userSubrole = (Subrole)Enum.Parse(typeof(Subrole), userSubroleName, true);
 
-            return validationService.UserIsWorkshopOwnerAsync(userId, workshopId, userSubrole);
+            return await validationService.UserIsWorkshopOwnerAsync(userId, workshopId, userSubrole);
         }
 
-        return validationService.UserIsParentOwnerAsync(userId, parentId);
+        return await validationService.UserIsParentOwnerAsync(userId, parentId);
     }
 
     private void LogErrorThrowExceptionIfPropertyIsNull(string claim, string nameofClaim)

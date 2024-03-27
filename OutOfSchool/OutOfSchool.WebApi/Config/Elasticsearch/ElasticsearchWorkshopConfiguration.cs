@@ -1,6 +1,4 @@
-using System;
 using Nest;
-using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.WebApi.Util.Elasticsearch;
 
 namespace OutOfSchool.WebApi.Config.Elasticsearch;

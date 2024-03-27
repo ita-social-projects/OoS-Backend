@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Elasticsearch.Net;
 using Nest;
-using OutOfSchool.ElasticsearchData;
-using OutOfSchool.ElasticsearchData.Models;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.AverageRatings;
 

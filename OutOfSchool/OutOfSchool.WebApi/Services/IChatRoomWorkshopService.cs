@@ -1,4 +1,5 @@
-﻿using OutOfSchool.WebApi.Models;
+﻿using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 
 namespace OutOfSchool.WebApi.Services;
@@ -133,5 +134,13 @@ public interface IChatRoomWorkshopService
     /// <param name="filter">Entity that represents searching parameters.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="IEnumerable{ChatRoomWorkshopDtoWithLastMessage}"/> that contains elements that were found.</returns>
-    Task<SearchResult<ChatRoomWorkshopDtoWithLastMessage>> GetChatRoomByFilter(ChatWorkshopFilter filter, Guid userId);
+    Task<SearchResult<ChatRoomWorkshopDtoWithLastMessage>> GetChatRoomByFilter(ChatWorkshopFilter filter, Guid userId, bool searchForProvider = true);
+
+    /// <summary>
+    /// Get count of unread messages for current user.
+    /// </summary>
+    /// <param name="parentOrProviderId">Id of parent or provider.</param>
+    /// <param name="userRole">User role.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    Task<int> GetCurrentUserUnreadMessagesCountAsync(Guid parentOrProviderId, Role userRole);
 }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OutOfSchool.WebApi.Models;
+﻿namespace OutOfSchool.WebApi.Models;
 
 public class ParentDTO
 {

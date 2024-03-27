@@ -1,48 +1,50 @@
-﻿using AutoMapper;
-using Castle.Core.Internal;
+﻿using System.Linq.Expressions;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
-using System.Linq.Expressions;
 
 namespace OutOfSchool.WebApi.Services;
 
 public class RegionAdminService : CommunicationService, IRegionAdminService
 {
-    private readonly IdentityServerConfig identityServerConfig;
+    private readonly AuthorizationServerConfig authorizationServerConfig;
     private readonly IRegionAdminRepository regionAdminRepository;
-    private readonly IEntityRepository<string, User> userRepository;
+    private readonly IEntityRepositorySoftDeleted<string, User> userRepository;
     private readonly IMapper mapper;
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
+    private readonly IApiErrorService apiErrorService;
 
     public RegionAdminService(
         IHttpClientFactory httpClientFactory,
-        IOptions<IdentityServerConfig> identityServerConfig,
+        IOptions<AuthorizationServerConfig> authorizationServerConfig,
         IOptions<CommunicationConfig> communicationConfig,
         IRegionAdminRepository regionAdminRepository,
         ILogger<RegionAdminService> logger,
-        IEntityRepository<string, User> userRepository,
+        IEntityRepositorySoftDeleted<string, User> userRepository,
         IMapper mapper,
         ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService)
-        : base(httpClientFactory, communicationConfig?.Value, logger)
+        IMinistryAdminService ministryAdminService,
+        IApiErrorService apiErrorService)
+        : base(httpClientFactory, communicationConfig, logger)
     {
-        ArgumentNullException.ThrowIfNull(identityServerConfig);
+        ArgumentNullException.ThrowIfNull(authorizationServerConfig);
         ArgumentNullException.ThrowIfNull(regionAdminRepository);
         ArgumentNullException.ThrowIfNull(userRepository);
         ArgumentNullException.ThrowIfNull(mapper);
         ArgumentNullException.ThrowIfNull(ministryAdminService);
 
-        this.identityServerConfig = identityServerConfig.Value;
+        this.authorizationServerConfig = authorizationServerConfig.Value;
         this.regionAdminRepository = regionAdminRepository;
         this.userRepository = userRepository;
         this.mapper = mapper;
         this.currentUserService = currentUserService;
         this.ministryAdminService = ministryAdminService;
+        this.apiErrorService = apiErrorService;
     }
 
     public async Task<RegionAdminDto> GetByIdAsync(string id)
@@ -84,25 +86,26 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
 
         _ = regionAdminBaseDto ?? throw new ArgumentNullException(nameof(regionAdminBaseDto));
 
-        if (await IsSuchEmailExisted(regionAdminBaseDto.Email))
+        var badRequestApiErrorResponse = await apiErrorService.AdminsCreatingIsBadRequestDataAttend(
+            regionAdminBaseDto,
+            $"{nameof(RegionAdmin)}");
+
+        if (badRequestApiErrorResponse.ApiErrors.Count != 0)
         {
-            Logger.LogDebug("RegionAdmin creating is not possible. Username {Email} is already taken", regionAdminBaseDto.Email);
-            throw new InvalidOperationException($"Username {regionAdminBaseDto.Email} is already taken.");
+            return ErrorResponse.BadRequest(badRequestApiErrorResponse);
         }
 
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Post,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateRegionAdmin),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.CreateRegionAdmin),
             Token = token,
             Data = regionAdminBaseDto,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{request.HttpMethodType} Request was sent. User(id): {UserId}. Url: {request.Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -185,6 +188,8 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
 
         var sortExpression = new Dictionary<Expression<Func<RegionAdmin, object>>, SortDirection>
         {
+            { x => x.User.IsBlocked, SortDirection.Ascending },
+            { x => x.User.LastLogin == DateTimeOffset.MinValue, SortDirection.Descending },
             { x => x.User.LastName, SortDirection.Ascending },
         };
 
@@ -193,7 +198,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: "Institution,User,CATOTTG",
-                where: filterPredicate,
+                whereExpression: filterPredicate,
                 orderBy: sortExpression,
                 asNoTracking: true)
             .ToListAsync()
@@ -222,7 +227,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
     /// <inheritdoc/>
     public async Task<Either<ErrorResponse, RegionAdminDto>> UpdateRegionAdminAsync(
         string userId,
-        RegionAdminDto updateRegionAdminDto,
+        BaseUserDto updateRegionAdminDto,
         string token)
     {
         _ = updateRegionAdminDto ?? throw new ArgumentNullException(nameof(updateRegionAdminDto));
@@ -245,16 +250,14 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.UpdateRegionAdmin + updateRegionAdminDto.Id),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.UpdateRegionAdmin + updateRegionAdminDto.Id),
             Token = token,
             Data = mapper.Map<RegionAdminBaseDto>(updateRegionAdminDto),
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{request.HttpMethodType} Request was sent. User(id): {UserId}. Url: {request.Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -294,15 +297,13 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Delete,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.DeleteRegionAdmin + regionAdminId),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.DeleteRegionAdmin + regionAdminId),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{request.HttpMethodType} Request was sent. User(id): {UserId}. Url: {request.Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -343,19 +344,17 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, string.Concat(
+            Url = new Uri(authorizationServerConfig.Authority, string.Concat(
                 CommunicationConstants.BlockRegionAdmin,
                 regionAdminId,
                 "/",
                 isBlocked)),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{request.HttpMethodType} Request was sent. User(id): {UserId}. Url: {request.Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -411,18 +410,16 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, string.Concat(
+            Url = new Uri(authorizationServerConfig.Authority, string.Concat(
                 CommunicationConstants.ReinviteRegionAdmin,
                 regionAdminId,
                 new PathString("/"))),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{request.HttpMethodType} Request was sent. User(id): {UserId}. Url: {request.Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -443,7 +440,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
     /// <inheritdoc/>
     public async Task<bool> IsRegionAdminSubordinateAsync(string ministryAdminUserId, string regionAdminId)
     {
-        _= ministryAdminUserId ?? throw new ArgumentNullException(nameof(ministryAdminUserId));
+        _ = ministryAdminUserId ?? throw new ArgumentNullException(nameof(ministryAdminUserId));
         _ = regionAdminId ?? throw new ArgumentNullException(nameof(regionAdminId));
 
         var ministryAdmin = await ministryAdminService.GetByIdAsync(ministryAdminUserId).ConfigureAwait(false);
@@ -484,12 +481,8 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             predicate = predicate.And(c => c.CATOTTG.Id == filter.CATOTTGId);
         }
 
-        return predicate;
-    }
+        predicate = predicate.And(x => !x.Institution.IsDeleted);
 
-    private async Task<bool> IsSuchEmailExisted(string email)
-    {
-        var result = await userRepository.GetByFilter(x => x.Email == email);
-        return !result.IsNullOrEmpty();
+        return predicate;
     }
 }

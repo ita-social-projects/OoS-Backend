@@ -1,9 +1,5 @@
-﻿using System;
-using System.Security.Authentication;
+﻿using System.Security.Authentication;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
-using OutOfSchool.Common;
-using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Common;

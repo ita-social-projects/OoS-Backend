@@ -1,11 +1,4 @@
-﻿using System.Net.Http;
-
-using System.Threading;
-using System.Threading.Tasks;
-
-using OutOfSchool.WebApi.Config;
-
-namespace OutOfSchool.WebApi.Services.Communication;
+﻿namespace OutOfSchool.WebApi.Services.Communication;
 
 public class RetryPolicyDelegatingHandler : DelegatingHandler
 {

@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Workshops;
+using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Controllers;
 
@@ -16,15 +18,21 @@ namespace OutOfSchool.WebApi.Controllers;
 public class ProviderAdminController : Controller
 {
     private readonly IProviderAdminService providerAdminService;
+    private readonly IUserService userService;
+    private readonly IProviderService providerService;
     private readonly ILogger<ProviderAdminController> logger;
     private string path;
     private string userId;
 
     public ProviderAdminController(
         IProviderAdminService providerAdminService,
+        IUserService userService,
+        IProviderService providerService,
         ILogger<ProviderAdminController> logger)
     {
         this.providerAdminService = providerAdminService;
+        this.userService = userService;
+        this.providerService = providerService;
         this.logger = logger;
     }
 
@@ -39,6 +47,7 @@ public class ProviderAdminController : Controller
     /// </summary>
     /// <param name="providerAdmin">Entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CreateProviderAdminDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -46,9 +55,24 @@ public class ProviderAdminController : Controller
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<ActionResult> Create(CreateProviderAdminDto providerAdmin)
+    public async Task<ActionResult> Create([FromBody] CreateProviderAdminDto providerAdmin)
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
+
+        if (providerAdmin == null)
+        {
+            return BadRequest("ProviderAdmin is null.");
+        }
+
+        if (await IsProviderBlocked(providerAdmin.ProviderId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to create the provider admin at the blocked provider");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to create the provider admin by the blocked provider.");
+        }
 
         if (!ModelState.IsValid)
         {
@@ -64,11 +88,11 @@ public class ProviderAdminController : Controller
             .ConfigureAwait(false);
 
         return response.Match<ActionResult>(
-            error => StatusCode((int)error.HttpStatusCode, error.Message),
+            error => StatusCode((int)error.HttpStatusCode, new { error.Message, error.ApiErrorResponse }),
             result =>
             {
                 logger.LogInformation("Successfully created ProviderAdmin(id): {result.UserId} by User(id): {UserId}", result.UserId, userId);
-                return Ok(result);
+                return Created(string.Empty, result);
             });
     }
 
@@ -78,14 +102,30 @@ public class ProviderAdminController : Controller
     /// <param name="providerId">Provider's id for which operation perform.</param>
     /// <param name="providerAdminModel">Entity to update.</param>
     /// <returns>Updated ProviderAdmin.</returns>
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderAdminDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(Guid providerId, UpdateProviderAdminDto providerAdminModel)
+    public async Task<IActionResult> Update(Guid providerId, [FromBody] UpdateProviderAdminDto providerAdminModel)
     {
+        if (providerAdminModel == null)
+        {
+            return BadRequest("ProviderAdmin is null.");
+        }
+
+        if (await IsProviderBlocked(providerId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to update the provider admin at the blocked provider");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to update the provider admin by the blocked provider.");
+        }
+
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -133,6 +173,16 @@ public class ProviderAdminController : Controller
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
 
+        if (await IsProviderBlocked(providerId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to delete the provider admin at the blocked provider");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to delete the provider admin by the blocked provider.");
+        }
+
         var response = await providerAdminService.DeleteProviderAdminAsync(
                 providerAdminId,
                 userId,
@@ -164,6 +214,16 @@ public class ProviderAdminController : Controller
         {
             logger.LogDebug("IsBlocked parameter is not specified");
             return BadRequest("IsBlocked parameter is required");
+        }
+
+        if (await IsProviderBlocked(providerId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to block the provider admin at the blocked provider");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to block the provider admin by the blocked provider.");
         }
 
         var response = await providerAdminService.BlockProviderAdminAsync(
@@ -293,6 +353,11 @@ public class ProviderAdminController : Controller
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
 
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to reinvite the provider admin by the blocked provider.");
+        }
+
         var response = await providerAdminService.ReinviteProviderAdminAsync(
                 providerAdminId,
                 userId,
@@ -313,4 +378,11 @@ public class ProviderAdminController : Controller
                 return Ok();
             });
     }
+
+    private async Task<bool> IsCurrentUserBlocked() =>
+        await userService.IsBlocked(userId);
+
+    private async Task<bool> IsProviderBlocked(Guid providerId) =>
+        await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false;
+
 }

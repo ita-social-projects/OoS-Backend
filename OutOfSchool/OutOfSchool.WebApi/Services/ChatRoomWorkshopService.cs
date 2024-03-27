@@ -1,10 +1,8 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Services.Models;
+﻿using System.Linq.Expressions;
+using AutoMapper;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
-using OutOfSchool.WebApi.Services.Strategies.Interfaces;
-using System.Linq.Expressions;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -13,10 +11,11 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class ChatRoomWorkshopService : IChatRoomWorkshopService
 {
-    private readonly IEntityRepository<Guid, ChatRoomWorkshop> roomRepository;
+    private readonly IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository;
     private readonly IChatRoomWorkshopModelForChatListRepository roomWorkshopWithLastMessageRepository;
     private readonly ILogger<ChatRoomWorkshopService> logger;
     private readonly IMapper mapper;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatRoomWorkshopService"/> class.
     /// </summary>
@@ -25,7 +24,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Mapper.</param>
     public ChatRoomWorkshopService(
-        IEntityRepository<Guid, ChatRoomWorkshop> chatRoomRepository,
+        IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> chatRoomRepository,
         ILogger<ChatRoomWorkshopService> logger,
         IChatRoomWorkshopModelForChatListRepository roomWorkshopWithLastMessageRepository,
         IMapper mapper)
@@ -49,7 +48,8 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
             {
                 var newChatRoom = await this.CreateAsync(workshopId, parentId).ConfigureAwait(false);
                 logger.LogDebug($"{nameof(ChatRoomWorkshop)} id:{newChatRoom.Id} was saved to DB.");
-                return mapper.Map<ChatRoomWorkshopDto>(newChatRoom);
+
+                return await this.GetUniqueChatRoomAsync(newChatRoom.WorkshopId, newChatRoom.ParentId).ConfigureAwait(false);
             }
             else
             {
@@ -76,7 +76,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
 
         try
         {
-            var query = roomRepository.Get(includeProperties: $"{nameof(ChatRoomWorkshop.ChatMessages)}", where: x => x.Id == id);
+            var query = roomRepository.Get(includeProperties: $"{nameof(ChatRoomWorkshop.ChatMessages)}", whereExpression: x => x.Id == id);
             var chatRooms = await query.ToListAsync().ConfigureAwait(false);
             var chatRoom = chatRooms.Single();
 
@@ -104,7 +104,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         try
         {
             var chatRooms = await roomRepository.GetByFilter(
-                    predicate: x => x.Id == id,
+                    whereExpression: x => x.Id == id,
                     includeProperties: $"{nameof(ChatRoomWorkshop.Parent)},{nameof(ChatRoomWorkshop.Workshop)}")
                 .ConfigureAwait(false);
 
@@ -120,6 +120,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     }
 
     /// <inheritdoc/>
+    [Obsolete("Was not used")]
     public async Task<IEnumerable<ChatRoomWorkshopDto>> GetByParentIdProviderIdAsync(Guid parentId, Guid providerId)
     {
         logger.LogDebug("Process of getting ChatRooms with parentId:{parentId} and providerId:{providerId} was started.", parentId, providerId);
@@ -127,7 +128,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         try
         {
             var rooms = (await roomRepository.GetByFilter(
-                predicate: x => x.ParentId == parentId && x.Workshop.ProviderId == providerId)
+                whereExpression: x => x.ParentId == parentId && x.Workshop.ProviderId == providerId)
                 .ConfigureAwait(false)).Select(x => mapper.Map<ChatRoomWorkshopDto>(x)).ToList();
 
             if (rooms.Count > 0)
@@ -154,6 +155,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     }
 
     /// <inheritdoc/>
+    [Obsolete("Was not used")]
     public async Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetWithMessagesByParentIdProviderIdAsync(Guid parentId, Guid providerId)
     {
         logger.LogDebug("Process of getting ChatRoomWorkshopDtoWithLastMessage with parentId:{parentId} and providerId:{providerId} was started.", parentId, providerId);
@@ -187,6 +189,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     }
 
     /// <inheritdoc/>
+    [Obsolete("Become unused")]
     public async Task<ChatRoomWorkshopDto> GetByParentIdWorkshopIdAsync(Guid parentId, Guid workshopId)
     {
         logger.LogDebug("Process of getting ChatRoom with parentId:{parentId} and workshopId:{workshopId} was started.", parentId, workshopId);
@@ -194,7 +197,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         try
         {
             var room = (await roomRepository.GetByFilter(
-                predicate: x => x.ParentId == parentId && x.WorkshopId == workshopId)
+                whereExpression: x => x.ParentId == parentId && x.WorkshopId == workshopId)
                 .ConfigureAwait(false)).SingleOrDefault();
 
             if (room is null)
@@ -221,6 +224,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     }
 
     /// <inheritdoc/>
+    [Obsolete("Was not used")]
     public async Task<ChatRoomWorkshopDtoWithLastMessage> GetWithMessagesByParentIdWorkshopIdAsync(Guid parentId, Guid workshopId)
     {
         logger.LogDebug(
@@ -297,6 +301,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     }
 
     /// <inheritdoc/>
+    [Obsolete("Unused")]
     public async Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetByWorkshopIdAsync(Guid workshopId)
     {
         logger.LogDebug($"Process of getting  {nameof(ChatRoomWorkshopDtoWithLastMessage)}(s/es) with {nameof(workshopId)}:{workshopId} was started.");
@@ -317,6 +322,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     }
 
     /// <inheritdoc/>
+    [Obsolete("Unused")]
     public async Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetByWorkshopIdsAsync(IEnumerable<Guid> workshopIds)
     {
         string workshopIdsStr = $"{nameof(workshopIds)}:{string.Join(", ", workshopIds)}";
@@ -428,6 +434,18 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         }
     }
 
+    public async Task<int> GetCurrentUserUnreadMessagesCountAsync(Guid parentOrProviderId, Role userRole)
+    {
+        var chatrooms = userRole switch
+        {
+            Role.Parent => await GetByParentIdAsync(parentOrProviderId),
+            Role.Provider => await GetByProviderIdAsync(parentOrProviderId),
+            _ => throw new ArgumentException(nameof(userRole)),
+        };
+
+        return chatrooms.Count(chatroom => chatroom.NotReadByCurrentUserMessagesCount != 0);
+    }
+
     /// <summary>
     /// Create new ChatRoom without checking if it exists.
     /// </summary>
@@ -456,7 +474,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         }
     }
 
-    public async Task<SearchResult<ChatRoomWorkshopDtoWithLastMessage>> GetChatRoomByFilter(ChatWorkshopFilter filter, Guid userId)
+    public async Task<SearchResult<ChatRoomWorkshopDtoWithLastMessage>> GetChatRoomByFilter(ChatWorkshopFilter filter, Guid userId, bool searchForProvider = true)
     {
         logger.LogInformation("Getting ChatRoomWorkshops by filter started.");
 
@@ -465,14 +483,25 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         var filterPredicate = PredicateBuild(filter, userId);
 
         var rooms = roomRepository.Get(
-                where: filterPredicate);
+                whereExpression: filterPredicate);
 
         var roomsCount = rooms.Count();
 
-        var chatRoomsWithMessages = (await roomWorkshopWithLastMessageRepository
-                .GetByWorkshopIdsAsync(rooms.Select(x => x.WorkshopId)).ConfigureAwait(false))
-            .Skip(filter.From)
-            .Take(filter.Size);
+        IEnumerable<ChatRoomWorkshopForChatList> chatRoomsWithMessages;
+        if (searchForProvider)
+        {
+            chatRoomsWithMessages = (await roomWorkshopWithLastMessageRepository
+                .GetByWorkshopIdsAsync(rooms.Select(x => x.WorkshopId), searchForProvider).ConfigureAwait(false))
+                .Skip(filter.From)
+                .Take(filter.Size);
+        }
+        else
+        {
+            chatRoomsWithMessages = (await roomWorkshopWithLastMessageRepository
+                .GetByParentIdAsync(userId).ConfigureAwait(false))
+                .Skip(filter.From)
+                .Take(filter.Size);
+        }
 
         logger.LogInformation(!rooms.Any()
             ? "There was no matching entity found."

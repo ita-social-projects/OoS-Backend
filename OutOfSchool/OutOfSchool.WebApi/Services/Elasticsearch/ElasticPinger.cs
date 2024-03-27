@@ -1,11 +1,5 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Nest;
-using OutOfSchool.WebApi.Config;
 
 namespace OutOfSchool.WebApi.Services;
 

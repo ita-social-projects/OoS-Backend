@@ -1,0 +1,55 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using OutOfSchool.AuthCommon
+
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@model OutOfSchool.AuthCommon.ViewModels.ChangeEmailViewModel
+
+@{
+    ViewData["Title"] = SharedLocalizer["Change email"];
+    Layout = "_Layout";
+}
+
+<div class="wrapper_body">
+    <div class="wrapper">
+        <h2 class="title">@SharedLocalizer["Change email"].Value.ToUpper()</h2>
+
+        <h3 class="instruction">@SharedLocalizer["Enter new email message"].Value.ToUpper()</h3>
+        <div class="warning">
+            @switch (Model.Submit)
+            {
+                case "emailMismatch":
+                    <img src="~/_content/auth/icons/warning.svg" class="warning_icon" alt="warning"/><p>@SharedLocalizer["Change email mismatch current email {0}", Model.CurrentEmail]</p>
+                    break;
+                case "emailUsed":
+                    <img src="~/_content/auth/icons/warning.svg" class="warning_icon" alt="warning"/><p>@SharedLocalizer["Change email new email already used {0}", Model.Email]</p>
+                    break;
+                default:
+                    <img src="~/_content/auth/icons/warning.svg" class="warning_icon" alt="warning"/><p>@SharedLocalizer["Change email alert"]</p>
+                    break;
+            }
+        </div>
+        <form asp-action="ChangeEmail">
+            <input type="hidden" asp-for="ReturnUrl" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <label class="registration_label">@SharedLocalizer["Old email"]</label>
+                <input class="registration_input" asp-for="CurrentEmail" />
+                <div>
+                    <span asp-validation-for="CurrentEmail"></span>
+                </div>
+
+                <label class="registration_label">@SharedLocalizer["New email"]</label>
+                <input class="registration_input" asp-for="Email" />
+                <div>
+                    <span asp-validation-for="Email"></span>
+                </div>
+            <div class="registration_item">
+                <span>
+                    <input type="submit" name="submit" value=@SharedLocalizer["Cancel"] class="registration_button" formnovalidate />
+                    <input type="submit" name="submit" value=@SharedLocalizer["Save"] class="registration_submit registration_button"/>
+                </span>
+            </div>
+        </form>
+    </div>
+</div>

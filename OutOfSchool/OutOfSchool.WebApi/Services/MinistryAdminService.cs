@@ -1,42 +1,41 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using AutoMapper;
-using Castle.Core.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
 
-public class MinistryAdminService : CommunicationService, IMinistryAdminService
+public class MinistryAdminService : CommunicationService, IMinistryAdminService, ISensitiveMinistryAdminService
 {
-    private readonly IdentityServerConfig identityServerConfig;
+    private readonly AuthorizationServerConfig authorizationServerConfig;
     private readonly IInstitutionAdminRepository institutionAdminRepository;
-    private readonly IEntityRepository<string, User> userRepository;
+    private readonly IEntityRepositorySoftDeleted<string, User> userRepository;
     private readonly IMapper mapper;
     private readonly ICurrentUserService currentUserService;
+    private readonly IApiErrorService apiErrorService;
 
     public MinistryAdminService(
         IHttpClientFactory httpClientFactory,
-        IOptions<IdentityServerConfig> identityServerConfig,
+        IOptions<AuthorizationServerConfig> authorizationServerConfig,
         IOptions<CommunicationConfig> communicationConfig,
         IInstitutionAdminRepository institutionAdminRepository,
         ILogger<MinistryAdminService> logger,
-        IEntityRepository<string, User> userRepository,
+        IEntityRepositorySoftDeleted<string, User> userRepository,
         IMapper mapper,
-        ICurrentUserService currentUserService)
-        : base(httpClientFactory, communicationConfig?.Value, logger)
+        ICurrentUserService currentUserService,
+        IApiErrorService apiErrorService)
+        : base(httpClientFactory, communicationConfig, logger)
     {
-        this.identityServerConfig = (identityServerConfig ?? throw new ArgumentNullException(nameof(identityServerConfig))).Value;
+        this.authorizationServerConfig = (authorizationServerConfig ?? throw new ArgumentNullException(nameof(authorizationServerConfig))).Value;
         this.institutionAdminRepository = institutionAdminRepository ?? throw new ArgumentNullException(nameof(institutionAdminRepository));
         this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
+        this.apiErrorService = apiErrorService;
     }
 
     public async Task<MinistryAdminDto> GetByIdAsync(string id)
@@ -78,25 +77,26 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
 
         ArgumentNullException.ThrowIfNull(ministryAdminBaseDto);
 
-        if (await IsSuchEmailExisted(ministryAdminBaseDto.Email))
+        var badRequestApiErrorResponse = await apiErrorService.AdminsCreatingIsBadRequestDataAttend(
+            ministryAdminBaseDto,
+            "MinistryAdmin");
+
+        if (badRequestApiErrorResponse.ApiErrors.Count != 0)
         {
-            Logger.LogDebug("ministryAdmin creating is not possible. Username {Email} is already taken", ministryAdminBaseDto.Email);
-            throw new InvalidOperationException($"Username {ministryAdminBaseDto.Email} is already taken.");
+            return ErrorResponse.BadRequest(badRequestApiErrorResponse);
         }
 
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Post,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateMinistryAdmin),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.CreateMinistryAdmin),
             Token = token,
             Data = ministryAdminBaseDto,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -137,7 +137,10 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             }
             else if (ministryAdmin.InstitutionId != filter.InstitutionId)
             {
-                Logger.LogInformation($"Filter institutionId {filter.InstitutionId} is not equals to logined Ministry admin institutionId {ministryAdmin.InstitutionId}");
+                Logger.LogInformation(
+                    "Filter institutionId {FilterInstitutionId} is not equals to logined Ministry admin institutionId {MinistryAdminInstitutionId}",
+                    filter.InstitutionId,
+                    ministryAdmin.InstitutionId);
 
                 return new SearchResult<MinistryAdminDto>()
                 {
@@ -151,22 +154,25 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
 
         var sortExpression = new Dictionary<Expression<Func<InstitutionAdmin, object>>, SortDirection>
         {
+            { x => x.User.IsBlocked, SortDirection.Ascending },
+            { x => x.User.LastLogin == DateTimeOffset.MinValue, SortDirection.Descending },
             { x => x.User.LastName, SortDirection.Ascending },
         };
+
         var institutionAdmins = await institutionAdminRepository
             .Get(
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: "Institution,User",
-                where: filterPredicate,
+                whereExpression: filterPredicate,
                 orderBy: sortExpression,
                 asNoTracking: true)
             .ToListAsync()
             .ConfigureAwait(false);
 
-        Logger.LogInformation(!institutionAdmins.Any()
-            ? "Parents table is empty."
-            : $"All {institutionAdmins.Count} records were successfully received from the Parent table");
+        Logger.LogInformation(
+            "All {Count} records were successfully received from the Parent table",
+            institutionAdmins.Count);
 
         var ministryAdminsDto = institutionAdmins.Select(admin => mapper.Map<MinistryAdminDto>(admin)).ToList();
 
@@ -182,14 +188,13 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
     /// <inheritdoc/>
     public async Task<Either<ErrorResponse, MinistryAdminDto>> UpdateMinistryAdminAsync(
         string userId,
-        MinistryAdminDto updateMinistryAdminDto,
+        BaseUserDto updateMinistryAdminDto,
         string token)
     {
         _ = updateMinistryAdminDto ?? throw new ArgumentNullException(nameof(updateMinistryAdminDto));
 
-        Logger.LogDebug("ProviderAdmin(id): {MinistryAdminId} updating was started. User(id): {UserId}", updateMinistryAdminDto.Id, userId);
+        Logger.LogDebug("MinistryAdmin(id): {MinistryAdminId} updating was started. User(id): {UserId}", updateMinistryAdminDto.Id, userId);
 
-        // TODO Add checking if ministry Admin belongs to Institution and is exist MinistryAdmin with such UserId
         var ministryAdmin = await institutionAdminRepository.GetByIdAsync(updateMinistryAdminDto.Id)
             .ConfigureAwait(false);
 
@@ -206,16 +211,14 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.UpdateMinistryAdmin + updateMinistryAdminDto.Id),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.UpdateMinistryAdmin + updateMinistryAdminDto.Id),
             Token = token,
             Data = mapper.Map<MinistryAdminBaseDto>(updateMinistryAdminDto),
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -255,15 +258,13 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Delete,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.DeleteMinistryAdmin + ministryAdminId),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.DeleteMinistryAdmin + ministryAdminId),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -304,19 +305,17 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, string.Concat(
+            Url = new Uri(authorizationServerConfig.Authority, string.Concat(
                 CommunicationConstants.BlockMinistryAdmin,
                 ministryAdminId,
                 "/",
                 isBlocked)),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -372,18 +371,16 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Put,
-            Url = new Uri(identityServerConfig.Authority, string.Concat(
+            Url = new Uri(authorizationServerConfig.Authority, string.Concat(
                 CommunicationConstants.ReinviteMinistryAdmin,
                 ministryAdminId,
                 new PathString("/"))),
             Token = token,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -440,12 +437,8 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService
             predicate = predicate.And(a => a.Institution.Id == filter.InstitutionId);
         }
 
-        return predicate;
-    }
+        predicate = predicate.And(p => !p.Institution.IsDeleted);
 
-    private async Task<bool> IsSuchEmailExisted(string email)
-    {
-        var result = await userRepository.GetByFilter(x => x.Email == email);
-        return !result.IsNullOrEmpty();
+        return predicate;
     }
 }

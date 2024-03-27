@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models.SocialGroup;
 
 namespace OutOfSchool.WebApi.Services;
@@ -19,7 +10,7 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class SocialGroupService : ISocialGroupService
 {
-    private readonly IEntityRepository<long, SocialGroup> repository;
+    private readonly IEntityRepositorySoftDeleted<long, SocialGroup> repository;
     private readonly ILogger<SocialGroupService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
@@ -32,8 +23,7 @@ public class SocialGroupService : ISocialGroupService
     /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
     public SocialGroupService(
-        IEntityRepository<long,
-            SocialGroup> repository,
+        IEntityRepositorySoftDeleted<long, SocialGroup> repository,
         ILogger<SocialGroupService> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper)
@@ -115,8 +105,14 @@ public class SocialGroupService : ISocialGroupService
             return null;
         }
 
-        if (localization == LocalizationType.En) socialGroupLocalized.NameEn = dto.Name;
-        else socialGroupLocalized.Name = dto.Name;
+        if (localization == LocalizationType.En)
+        {
+            socialGroupLocalized.NameEn = dto.Name;
+        }
+        else
+        {
+            socialGroupLocalized.Name = dto.Name;
+        }
 
         var socialGroup = await repository.Update(socialGroupLocalized).ConfigureAwait(false);
 

@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
-using OutOfSchool.WebApi.Services.SubordinationStructure;
 
 namespace OutOfSchool.WebApi.Controllers.V1.SubordinationStructure;
 
@@ -149,12 +143,13 @@ public class InstitutionHierarchyController : Controller
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.SystemManagement)]
     [HttpPost]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Create(InstitutionHierarchyDto institutionHierarchyDto)
+    public async Task<IActionResult> Create([FromBody] InstitutionHierarchyDto institutionHierarchyDto)
     {
         var institutionHierarchy = await service.Create(institutionHierarchyDto).ConfigureAwait(false);
 
@@ -176,12 +171,13 @@ public class InstitutionHierarchyController : Controller
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.SystemManagement)]
     [HttpPut]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InstitutionHierarchyDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Update(InstitutionHierarchyDto institutionHierarchyDto)
+    public async Task<ActionResult> Update([FromBody] InstitutionHierarchyDto institutionHierarchyDto)
     {
         return Ok(await service.Update(institutionHierarchyDto).ConfigureAwait(false));
     }

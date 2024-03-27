@@ -5,7 +5,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public interface IProviderAdminRepository : IEntityRepository<(string, Guid), ProviderAdmin>
+public interface IProviderAdminRepository : IEntityRepositorySoftDeleted<(string, Guid), ProviderAdmin>
 {
     Task<bool> IsExistProviderAdminDeputyWithUserIdAsync(Guid providerId, string userId);
 

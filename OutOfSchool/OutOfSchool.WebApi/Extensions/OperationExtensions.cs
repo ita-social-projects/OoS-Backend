@@ -1,7 +1,4 @@
-﻿using System;
-using System.Globalization;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Common.Resources;
+﻿using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources.Codes;
 
 namespace OutOfSchool.WebApi.Extensions;

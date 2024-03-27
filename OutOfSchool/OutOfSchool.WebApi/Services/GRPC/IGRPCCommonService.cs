@@ -1,5 +1,4 @@
 ﻿using Grpc.Net.Client;
-using OutOfSchool.WebApi.Config;
 
 namespace OutOfSchool.WebApi.Services.GRPC;
 

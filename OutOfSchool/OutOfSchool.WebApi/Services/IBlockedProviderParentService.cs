@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using OutOfSchool.WebApi.Common;
+﻿using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 
 namespace OutOfSchool.WebApi.Services;
@@ -33,4 +31,6 @@ public interface IBlockedProviderParentService
     /// <param name="providerId">Key of the Provider in table.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     Task<BlockedProviderParentDto> GetBlock(Guid parentId, Guid providerId);
+
+    Task<bool> IsBlocked(Guid parentId, Guid providerId);
 }

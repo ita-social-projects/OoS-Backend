@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using Bogus;
 
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
+using OutOfSchool.WebApi.Models.Workshops;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 

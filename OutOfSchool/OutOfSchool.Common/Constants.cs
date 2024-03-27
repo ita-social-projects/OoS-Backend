@@ -6,7 +6,7 @@ public static class Constants
 
     public const long DefaultCityCodeficatorId = 31737;
 
-    public const string BearerScheme = "Bearer";
+    public const string DefaultAuthScheme = "bearer_or_cookie";
 
     public const string PhonePrefix = "380";
 
@@ -39,4 +39,16 @@ public static class Constants
     public const string AdminKeyword = "Admin";
 
     public const char MappingSeparator = '¤';
+
+    public const int NameMaxLength = 60;
+
+    public const int ChatMessageTextMaxLength = 256;
+
+    public const string CacheProfilePrivate = "CacheProfilePrivate";
+
+    public const string CacheProfilePublic = "CacheProfilePublic";
+
+    public const string PathToChatHub = "/hubs/chat";
+
+    public const string PathToNotificationHub = "/hubs/notification";
 }

@@ -1,11 +1,9 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using OutOfSchool.WebApi.Common;
 
 namespace OutOfSchool.WebApi.Hubs;
 
-[Authorize(AuthenticationSchemes = "Bearer")]
+[Authorize]
 public class NotificationHub : Hub
 {
     public override async Task OnConnectedAsync()

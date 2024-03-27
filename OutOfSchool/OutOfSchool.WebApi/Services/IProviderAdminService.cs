@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -27,6 +28,12 @@ public interface IProviderAdminService
         string providerAdminId,
         string userId,
         Guid providerId,
+        string token,
+        bool isBlocked);
+
+    Task<Either<ErrorResponse, ActionResult>> BlockProviderAdminsAndDeputiesByProviderAsync(
+        Guid providerId,
+        string userId,
         string token,
         bool isBlocked);
 

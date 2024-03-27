@@ -1,9 +1,17 @@
 using System.Text.Json.Serialization;
 using AutoMapper;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HeaderPropagation;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Primitives;
+using OpenIddict.Validation.AspNetCore;
+using OutOfSchool.EmailSender;
+using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Services.AverageRatings;
+using OutOfSchool.WebApi.Services.Communication.ICommunication;
+using OutOfSchool.WebApi.Services.ProviderServices;
 using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 using OutOfSchool.WebApi.Services.Strategies.WorkshopStrategies;
 using OutOfSchool.WebApi.Util.Mapping;
@@ -14,6 +22,24 @@ public static class Startup
 {
     public static void Configure(this WebApplication app)
     {
+        app.Use(async (context, next) =>
+        {
+            var httpRequest = context.Request;
+            var httpResponse = context.Response;
+
+            bool healthCheck = httpRequest.Path.Equals("/healthz/ready");
+
+            int healthPort = app.Configuration.GetValue<int>("ApplicationPorts:HealthPort");
+
+            if (httpRequest.HttpContext.Connection.LocalPort == healthPort && !healthCheck)
+            {
+                httpResponse.StatusCode = 404;
+                return;
+            }
+
+            await next();
+        });
+
         var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
 
         var proxyOptions = app.Configuration.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
@@ -60,16 +86,19 @@ public static class Startup
         app.UseAuthentication();
         app.UseAuthorization();
 
+        app.UseHeaderPropagation();
+
         app.MapHealthChecks("/healthz/ready", new HealthCheckOptions
             {
                 Predicate = healthCheck => healthCheck.Tags.Contains("readiness"),
                 AllowCachingResponses = false,
             })
+            .RequireHost($"*:{app.Configuration.GetValue<int>("ApplicationPorts:HealthPort")}")
             .WithMetadata(new AllowAnonymousAttribute());
 
         app.MapControllers();
-        app.MapHub<ChatWorkshopHub>("/chathub/workshop");
-        app.MapHub<NotificationHub>("/notificationhub");
+        app.MapHub<ChatWorkshopHub>(Constants.PathToChatHub);
+        app.MapHub<NotificationHub>(Constants.PathToNotificationHub);
     }
 
     public static void AddApplicationServices(this WebApplicationBuilder builder)
@@ -78,20 +107,32 @@ public static class Startup
         var configuration = builder.Configuration;
 
         services.Configure<AppDefaultsConfig>(configuration.GetSection(AppDefaultsConfig.Name));
-        services.Configure<IdentityServerConfig>(configuration.GetSection(IdentityServerConfig.Name));
+        var identityConfig = configuration
+            .GetSection(AuthorizationServerConfig.Name)
+            .Get<AuthorizationServerConfig>();
+
+        services.Configure<AuthorizationServerConfig>(configuration.GetSection(AuthorizationServerConfig.Name));
         services.Configure<ProviderAdminConfig>(configuration.GetSection(ProviderAdminConfig.Name));
         services.Configure<CommunicationConfig>(configuration.GetSection(CommunicationConfig.Name));
         services.Configure<GeocodingConfig>(configuration.GetSection(GeocodingConfig.Name));
         services.Configure<ParentConfig>(configuration.GetSection(ParentConfig.Name));
 
-        services.AddLocalization(options => options.ResourcesPath = "Resources");
-        services.AddAuthentication("Bearer")
-            .AddIdentityServerAuthentication("Bearer", options =>
-            {
-                options.ApiName = "outofschoolapi";
-                options.Authority = configuration["Identity:Authority"];
+        services.AddMemoryCache();
 
-                options.RequireHttpsMetadata = false;
+        services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+        services.AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+        services.AddOpenIddict()
+            .AddValidation(options =>
+            {
+                options.SetIssuer(identityConfig.Authority);
+                options.AddAudiences(identityConfig.ClientId);
+                options.UseIntrospection()
+                    .SetClientId(identityConfig.ClientId)
+                    .SetClientSecret(identityConfig.ClientSecret);
+
+                options.UseSystemNetHttp();
+                options.UseAspNetCore();
             });
 
         services.AddCors(confg =>
@@ -102,7 +143,31 @@ public static class Startup
                     .AllowAnyHeader()
                     .AllowCredentials()));
 
-        services.AddControllers().AddNewtonsoftJson()
+        var cacheProfilesConfigSection = configuration.GetSection(CacheProfilesConfig.Name);
+        var cacheProfilesConfig = cacheProfilesConfigSection.Get<CacheProfilesConfig>();
+
+        services.Configure<CacheProfilesConfig>(cacheProfilesConfigSection);
+
+        services.AddControllers(options =>
+            {
+                options.CacheProfiles.Add(
+                    Constants.CacheProfilePrivate,
+                    new CacheProfile()
+                    {
+                        Location = ResponseCacheLocation.Client,
+                        NoStore = false,
+                        Duration = cacheProfilesConfig.PrivateDurationInSeconds,
+                    });
+                options.CacheProfiles.Add(
+                    Constants.CacheProfilePublic,
+                    new CacheProfile()
+                    {
+                        Location = ResponseCacheLocation.Any,
+                        NoStore = false,
+                        Duration = cacheProfilesConfig.PublicDurationInSeconds,
+                    });
+            })
+            .AddNewtonsoftJson()
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
@@ -114,12 +179,18 @@ public static class Startup
                 new HttpClientHandler()
                 {
                     AutomaticDecompression = DecompressionMethods.GZip,
-                });
+                })
+            .AddHeaderPropagation();
 
+        services.AddRazorPages();
         services.AddHttpContextAccessor();
         services.AddScoped<IProviderAdminService, ProviderAdminService>();
         services.AddScoped<IMinistryAdminService, MinistryAdminService>();
+        services.AddScoped<ISensitiveMinistryAdminService, MinistryAdminService>();
         services.AddScoped<IRegionAdminService, RegionAdminService>();
+        services.AddScoped<IAreaAdminService, AreaAdminService>();
+
+        services.AddScoped<ICommunicationService, CommunicationService>();
 
         // Images limits options
         services.Configure<ImagesLimits<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
@@ -129,7 +200,6 @@ public static class Startup
         // Image options
         services.Configure<GcpStorageImagesSourceConfig>(configuration.GetSection(GcpStorageConfigConstants.GcpStorageImagesConfig));
         services.Configure<ExternalImageSourceConfig>(configuration.GetSection(ExternalImageSourceConfig.Name));
-        //services.AddSingleton<MongoDb>();
         services.Configure<ImageOptions<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
         services.Configure<ImageOptions<Teacher>>(configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
         services.Configure<ImageOptions<Provider>>(configuration.GetSection($"Images:{nameof(Provider)}:Specs"));
@@ -154,16 +224,20 @@ public static class Startup
                 GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
             });
 
-        services.AddDbContext<OutOfSchoolDbContext>(builder =>
-                builder.UseLazyLoadingProxies().UseMySql(connectionString, serverVersion, mySqlOptions =>
-                {
-                    mySqlOptions
-                        .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
-                        .EnableStringComparisonTranslations();
-                }))
-            .AddCustomDataProtection("WebApi");
+        services
+            .AddDbContext<OutOfSchoolDbContext>(options => options
+                .UseLazyLoadingProxies()
+                .UseMySql(
+                    connectionString,
+                    serverVersion,
+                    mySqlOptions =>
+                        mySqlOptions
+                            .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
+                            .EnableStringComparisonTranslations()
+                    ))
+                .AddCustomDataProtection("WebApi");
 
-        services.AddAutoMapper(typeof(MappingProfile), typeof(ElasticProfile));
+        services.AddAutoMapper(typeof(CommonProfile), typeof(MappingProfile), typeof(ElasticProfile));
 
         // Add Elasticsearch client
         var elasticConfig = configuration
@@ -176,13 +250,19 @@ public static class Startup
 
         // entities services
         services.AddTransient<IApplicationService, ApplicationService>();
+        services.AddTransient<ISensitiveApplicationService, ApplicationService>();
         services.AddTransient<IChatMessageWorkshopService, ChatMessageWorkshopService>();
         services.AddTransient<IChatRoomWorkshopService, ChatRoomWorkshopService>();
         services.AddTransient<IChildService, ChildService>();
         services.AddTransient<IDirectionService, DirectionService>();
+        services.AddTransient<ISensitiveDirectionService, DirectionService>();
         services.AddTransient<IFavoriteService, FavoriteService>();
         services.AddTransient<IParentService, ParentService>();
+        services.AddTransient<IParentBlockedByAdminLogService, ParentBlockedByAdminLogService>();
+        services.AddTransient<IPrivateProviderService, PrivateProviderService>();
         services.AddTransient<IProviderService, ProviderService>();
+        services.AddTransient<ISensitiveProviderService, ProviderService>();
+        services.AddTransient<IPublicProviderService, PublicProviderService>();
         services.AddTransient<IProviderTypeService, ProviderTypeService>();
         services.AddTransient<IProviderServiceV2, ProviderServiceV2>();
         services.AddTransient<IRatingService, RatingService>();
@@ -197,6 +277,8 @@ public static class Startup
         services.AddTransient<IWorkshopServicesCombiner, WorkshopServicesCombiner>();
         services.AddTransient<IChangesLogService, ChangesLogService>();
         services.AddTransient<IValueProjector, ValueProjector>();
+        services.AddTransient<IExternalExportProviderService, ExternalExportProviderService>();
+        services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
 
         services.AddTransient<IInstitutionHierarchyService, InstitutionHierarchyService>();
         services.AddTransient<IInstitutionService, InstitutionService>();
@@ -232,12 +314,17 @@ public static class Startup
         });
 
         // entities repositories
+        services.AddTransient(typeof(IEntityAddOnlyRepository<,>), typeof(EntityRepository<,>));
         services.AddTransient(typeof(IEntityRepository<,>), typeof(EntityRepository<,>));
         services.AddTransient(typeof(ISensitiveEntityRepository<>), typeof(SensitiveEntityRepository<>));
+
+        services.AddTransient(typeof(IEntityRepositorySoftDeleted<,>), typeof(EntityRepositorySoftDeleted<,>));
+        services.AddTransient(typeof(ISensitiveEntityRepositorySoftDeleted<>), typeof(SensitiveEntityRepositorySoftDeleted<>));
 
         services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
         services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
         services.AddTransient<IRegionAdminRepository, RegionAdminRepository>();
+        services.AddTransient<IAreaAdminRepository, AreaAdminRepository>();
 
         services.AddTransient<IApplicationRepository, ApplicationRepository>();
         services
@@ -270,6 +357,8 @@ public static class Startup
 
         services.Configure<ChangesLogConfig>(configuration.GetSection(ChangesLogConfig.Name));
 
+        services.AddTransient<IApiErrorService, ApiErrorService>();
+
         // Register the Permission policy handlers
         services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
         services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
@@ -293,6 +382,11 @@ public static class Startup
         // Redis options
         services.AddOptions<RedisConfig>()
             .Bind(configuration.GetSection(RedisConfig.Name))
+            .ValidateDataAnnotations();
+
+        // MemoryCache options
+        services.AddOptions<MemoryCacheConfig>()
+            .Bind(configuration.GetSection(MemoryCacheConfig.Name))
             .ValidateDataAnnotations();
 
         // StatisticReports
@@ -363,6 +457,7 @@ public static class Startup
                 options.Configuration.AbortOnConnectFail = false;
             });
 
+            // TODO: Try to rework or remove if chat will stop working correctly
             services.AddSingleton(typeof(HubLifetimeManager<>), typeof(LocalDistributedHubLifetimeManager<>));
         }
 
@@ -372,10 +467,32 @@ public static class Startup
         });
 
         services.AddSingleton<ICacheService, CacheService>();
+        services.AddSingleton<IMultiLayerCacheService, MultiLayerCache>();
 
         services.AddHealthChecks()
             .AddDbContextCheck<OutOfSchoolDbContext>(
                 "Database",
                 tags: new[] { "readiness" });
+
+        Func<HeaderPropagationContext, StringValues> defaultHeaderDelegate = context =>
+            StringValues.IsNullOrEmpty(context.HeaderValue) ? Guid.NewGuid().ToString() : context.HeaderValue;
+
+        services.AddHeaderPropagation(options =>
+        {
+            options.Headers.Add("Request-Id", defaultHeaderDelegate);
+            options.Headers.Add("X-Request-Id", defaultHeaderDelegate);
+        });
+
+        var mailConfig = configuration
+            .GetSection(EmailOptions.SectionName)
+            .Get<EmailOptions>();
+        services.AddEmailSender(
+            builder.Environment.IsDevelopment(),
+            mailConfig.SendGridKey,
+            builder => builder.Bind(configuration.GetSection(EmailOptions.SectionName)));
+
+        // Hosts options
+        services.Configure<HostsConfig>(configuration.GetSection(HostsConfig.Name));
+
     }
 }

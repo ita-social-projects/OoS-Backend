@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -11,6 +12,8 @@ using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Responses;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -20,23 +23,30 @@ using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
 [TestFixture]
 public class MinistryAdminServiceTests
 {
+    private readonly string email = "email@gmail.com";
+
     private Mock<IHttpClientFactory> httpClientFactory;
-    private Mock<IOptions<IdentityServerConfig>> identityServerConfig;
+    private Mock<IOptions<AuthorizationServerConfig>> identityServerConfig;
     private Mock<IOptions<CommunicationConfig>> communicationConfig;
     private Mock<IInstitutionAdminRepository> institutionAdminRepositoryMock;
-    private Mock<IEntityRepository<string, User>> userRepositoryMock;
+    private Mock<IEntityRepositorySoftDeleted<string, OutOfSchool.Services.Models.User>> userRepositoryMock;
     private IMapper mapper;
     private Mock<ICurrentUserService> currentUserServiceMock;
+    private Mock<IEntityRepositorySoftDeleted<string, User>> apiErrorServiceUserRepositoryMock;
 
     private MinistryAdminService ministryAdminService;
     private InstitutionAdmin institutionAdmin;
     private List<InstitutionAdmin> institutionAdmins;
+    private ErrorResponse emailAlreadyTakenErrorResponse;
+    private ApiErrorResponse badRequestApiErrorResponse;
+    private ApiErrorService apiErrorService;
 
     [SetUp]
     public void SetUp()
@@ -45,8 +55,14 @@ public class MinistryAdminServiceTests
         institutionAdmins = AdminGenerator.GenerateInstitutionAdmins(5).WithUserAndInstitution();
 
         httpClientFactory = new Mock<IHttpClientFactory>();
-        identityServerConfig = new Mock<IOptions<IdentityServerConfig>>();
+        identityServerConfig = new Mock<IOptions<AuthorizationServerConfig>>();
         communicationConfig = new Mock<IOptions<CommunicationConfig>>();
+
+        badRequestApiErrorResponse = new ApiErrorResponse();
+        badRequestApiErrorResponse.AddApiError(
+            ApiErrorsTypes.Common.EmailAlreadyTaken("MinistryAdmin", email));
+        emailAlreadyTakenErrorResponse = ErrorResponse.BadRequest(badRequestApiErrorResponse);
+
         communicationConfig.Setup(x => x.Value)
             .Returns(new CommunicationConfig()
             {
@@ -63,9 +79,12 @@ public class MinistryAdminServiceTests
 
         institutionAdminRepositoryMock = new Mock<IInstitutionAdminRepository>();
         var logger = new Mock<ILogger<MinistryAdminService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
-        userRepositoryMock = new Mock<IEntityRepository<string, User>>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
+        apiErrorServiceUserRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
+        var apiErrorServiceLogger = new Mock<ILogger<ApiErrorService>>();
+        apiErrorService = new ApiErrorService(apiErrorServiceUserRepositoryMock.Object, apiErrorServiceLogger.Object);
 
         ministryAdminService = new MinistryAdminService(
             httpClientFactory.Object,
@@ -75,7 +94,8 @@ public class MinistryAdminServiceTests
             logger.Object,
             userRepositoryMock.Object,
             mapper,
-            currentUserServiceMock.Object);
+            currentUserServiceMock.Object,
+            apiErrorService);
     }
 
     [Test]
@@ -146,5 +166,59 @@ public class MinistryAdminServiceTests
         // Act
         ministryAdminService.Invoking(x => x.GetByFilter(new MinistryAdminFilter())).Should()
             .ThrowAsync<ArgumentNullException>();
+    }
+
+    [Test]
+    public void Update_WhenNullModel_ReturnsException()
+    {
+        // Act
+        ministryAdminService
+            .Invoking(x => x
+                .UpdateMinistryAdminAsync(It.IsAny<string>(), It.IsAny<BaseUserDto>(), It.IsAny<string>()))
+            .Should()
+            .ThrowAsync<ArgumentNullException>();
+    }
+
+    [Test]
+    public async Task Update_WhenAdminNotExist_ReturnsErrorResponse()
+    {
+        // Arrange
+        institutionAdminRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(null as InstitutionAdmin);
+
+        // Act
+        var result = await ministryAdminService.UpdateMinistryAdminAsync(It.IsAny<string>(), new BaseUserDto(), It.IsAny<string>());
+
+        // Assert
+        Assert.AreEqual(HttpStatusCode.NotFound, result.Match(error => error.HttpStatusCode, null));
+    }
+
+    [Test]
+    public async Task Create_EmailIsAlreadyTaken_ReturnsErrorResponse()
+    {
+        // Arrange
+        var expected = emailAlreadyTakenErrorResponse
+            .ApiErrorResponse
+            .ApiErrors
+            .First();
+        apiErrorServiceUserRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<string>()))
+            .ReturnsAsync(new List<User> { new User() });
+
+        var ministryAdminBaseDto = new MinistryAdminBaseDto();
+        ministryAdminBaseDto.Email = email;
+
+        // Act
+        var response = await ministryAdminService.CreateMinistryAdminAsync(It.IsAny<string>(), ministryAdminBaseDto, It.IsAny<string>()).ConfigureAwait(false);
+
+        ErrorResponse errorResponse = default;
+        response.Match<ErrorResponse>(
+            actionResult => errorResponse = actionResult,
+            succeed => errorResponse = new ErrorResponse());
+
+        var result = errorResponse.ApiErrorResponse.ApiErrors.First();
+
+        // Assert
+        Assert.AreEqual(expected.Group, result.Group);
+        Assert.AreEqual(expected.Code, result.Code);
+        Assert.AreEqual(expected.Message, result.Message);
     }
 }

@@ -7,7 +7,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public interface ICodeficatorRepository : IEntityRepository<long, CATOTTG>
+public interface ICodeficatorRepository : IEntityRepositorySoftDeleted<long, CATOTTG>
 {
     /// <summary>
     /// Get elements pair values (Id, Name) by a specific filter.
@@ -22,8 +22,9 @@ public interface ICodeficatorRepository : IEntityRepository<long, CATOTTG>
     /// </summary>
     /// <param name="namePart">Part of name for search.</param>
     /// <param name="categories">Categories for search.</param>
+    /// <param name="parentId">Id for parent codeficator.</param>
     /// <returns>The task result contains a <see cref="List{CodeficatorAddressDto}"/> that contains elements' full addresses.</returns>
-    public Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(string namePart, string categories = default);
+    public Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(string namePart, string categories = default, long parentId = 0);
 
     /// <summary>
     /// Get the list of CATOTTGs Ids by list of CATOTTGs parentIds.

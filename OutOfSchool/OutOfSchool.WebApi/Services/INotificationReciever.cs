@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using OutOfSchool.Services.Enums;
+﻿using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Services;
 

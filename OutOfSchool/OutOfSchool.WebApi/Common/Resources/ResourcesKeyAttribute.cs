@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OutOfSchool.WebApi.Common.Resources;
+﻿namespace OutOfSchool.WebApi.Common.Resources;
 
 [AttributeUsage(AttributeTargets.Field)]
 public class ResourcesKeyAttribute : Attribute

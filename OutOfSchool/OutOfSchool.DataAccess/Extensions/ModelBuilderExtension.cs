@@ -51,21 +51,25 @@ public static class ModelBuilderExtension
             {
                 Id = 1,
                 Name = "Працює",
+                NameEn = "Active",
             },
             new InstitutionStatus
             {
                 Id = 2,
                 Name = "Перебуває в стані реорганізації",
+                NameEn = "Undergoing reorganization",
             },
             new InstitutionStatus
             {
                 Id = 3,
                 Name = "Має намір на реорганізацію",
+                NameEn = "Waiting for reorganization",
             },
             new InstitutionStatus
             {
                 Id = 4,
-                Name = "Відсутній",
+                Name = "Відсутній статус",
+                NameEn = "Without status",
             });
 
         // default seed permissions.
@@ -111,6 +115,13 @@ public static class ModelBuilderExtension
                 RoleName = Role.RegionAdmin.ToString(),
                 PackedPermissions = PermissionsSeeder.SeedPermissions(Role.RegionAdmin.ToString()),
                 Description = "region admin permissions",
+            },
+            new PermissionsForRole
+            {
+                Id = 7,
+                RoleName = Role.AreaAdmin.ToString(),
+                PackedPermissions = PermissionsSeeder.SeedPermissions(Role.AreaAdmin.ToString()),
+                Description = "area admin permissions",
             }
         );
 

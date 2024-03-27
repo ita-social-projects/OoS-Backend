@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public interface IWorkshopRepository : IEntityRepositoryBase<Guid, Workshop>
+public interface IWorkshopRepository : IEntityRepositorySoftDeleted<Guid, Workshop>
 {
     Task<Workshop> GetWithNavigations(Guid id);
 
@@ -33,4 +34,6 @@ public interface IWorkshopRepository : IEntityRepositoryBase<Guid, Workshop>
     /// <returns>Amount of available seats for the specified workshop.</returns>
     /// <exception cref="InvalidOperationException">It can throw exception when method get workshopId but Workshop doesn't exist.</exception>
     Task<uint> GetAvailableSeats(Guid workshopId);
+
+    Task<List<Workshop>> GetAllWithDeleted(Expression<Func<Workshop, bool>> whereExpression);
 }

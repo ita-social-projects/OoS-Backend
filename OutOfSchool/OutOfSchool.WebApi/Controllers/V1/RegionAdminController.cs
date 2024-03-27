@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
@@ -146,7 +145,7 @@ public class RegionAdminController : Controller
             .ConfigureAwait(false);
 
         return response.Match<ActionResult>(
-            error => StatusCode((int)error.HttpStatusCode, error.Message),
+            error => StatusCode((int)error.HttpStatusCode, new { error.Message, error.ApiErrorResponse }),
             result =>
             {
                 logger.LogInformation("Successfully created RegionAdmin(id): {result.UserId} by User(id): {UserId}", result.UserId, currentUserId);
@@ -157,7 +156,7 @@ public class RegionAdminController : Controller
     /// <summary>
     /// To update RegionAdmin entity that already exists.
     /// </summary>
-    /// <param name="updateRegionAdminDto">RegionAdminDto object with new properties.</param>
+    /// <param name="updateRegionAdminDto">BaseUserDto object with new properties.</param>
     /// <returns>RegionAdmin's key.</returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RegionAdminDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -165,7 +164,7 @@ public class RegionAdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HasPermission(Permissions.RegionAdminEdit)]
     [HttpPut]
-    public async Task<ActionResult> Update(RegionAdminDto updateRegionAdminDto)
+    public async Task<ActionResult> Update(BaseUserDto updateRegionAdminDto)
     {
         if (updateRegionAdminDto == null)
         {

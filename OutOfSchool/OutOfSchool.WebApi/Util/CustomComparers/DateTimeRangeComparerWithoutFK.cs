@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using OutOfSchool.Services.Models;
-
 namespace OutOfSchool.WebApi.Util.CustomComparers;
 
 public class DateTimeRangeComparerWithoutFK : IEqualityComparer<DateTimeRange>

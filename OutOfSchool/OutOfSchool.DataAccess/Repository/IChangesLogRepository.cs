@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
@@ -20,5 +21,17 @@ public interface IChangesLogRepository : IEntityRepository<long, ChangesLog>
         string userId,
         IEnumerable<string> trackedProperties,
         Func<Type, object, string> valueProjector)
+        where TEntity : class, IKeyedEntity, new();
+
+    /// <summary>
+    /// Create and add ChangesLog records for the entity.
+    /// </summary>
+    /// <typeparam name="TEntity">Entity type that exists in the DB.</typeparam>
+    /// <param name="entity">Modified entity.</param>
+    /// <param name="userId">User ID.</param>
+    /// <returns>An entity of the added ChangesLog record.</returns>
+    Task<ChangesLog> AddCreatingOfEntityToChangesLog<TEntity>(
+        TEntity entity,
+        string userId)
         where TEntity : class, IKeyedEntity, new();
 }

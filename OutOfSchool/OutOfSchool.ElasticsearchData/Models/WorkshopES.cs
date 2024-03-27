@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using Nest;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.ElasticsearchData.Models;
 
 // TODO: check Nested attribute
-public class WorkshopES
+public class WorkshopES: IHasRating
 {
     public const string TitleKeyword = "title.keyword";
 
@@ -18,6 +19,8 @@ public class WorkshopES
     public string CoverImageId { get; set; }
 
     public float Rating { get; set; }
+
+    public int NumberOfRatings { get; set; }
 
     [Keyword]
     public Guid ProviderId { get; set; }
@@ -71,4 +74,6 @@ public class WorkshopES
     public uint TakenSeats { get; set; }
 
     public ProviderLicenseStatus ProviderLicenseStatus { get; set; }
+
+    public FormOfLearning FormOfLearning { get; set; }
 }

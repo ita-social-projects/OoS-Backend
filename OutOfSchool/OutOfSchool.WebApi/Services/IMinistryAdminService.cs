@@ -37,7 +37,7 @@ public interface IMinistryAdminService
     /// <param name="updateMinistryAdminDto">Entity to update.</param>
     /// <param name="token">Valid token with MinistryAdminUpdate permissions.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<Either<ErrorResponse, MinistryAdminDto>> UpdateMinistryAdminAsync(string userId, MinistryAdminDto updateMinistryAdminDto, string token);
+    Task<Either<ErrorResponse, MinistryAdminDto>> UpdateMinistryAdminAsync(string userId, BaseUserDto updateMinistryAdminDto, string token);
 
     /// <summary>
     /// Delete Ministry Admin.
@@ -66,14 +66,6 @@ public interface IMinistryAdminService
     /// <returns>The task result contains <see langword="true" /> if provider is subordinate of the ministry admin
     /// filter; otherwise, <see langword="false" />.</returns>
     Task<bool> IsProviderSubordinateAsync(string ministryAdminUserId, Guid providerId);
-
-    /// <summary>
-    /// Get Ministry Admins from the database that match filter's parameters.
-    /// </summary>
-    /// <param name="filter">Filter with specified searching parameters.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-    /// The task result contains the <see cref="SearchResult{MinistryAdminDto}"/> that contains found elements.</returns>
-    Task<SearchResult<MinistryAdminDto>> GetByFilter(MinistryAdminFilter filter);
 
     /// <summary>
     /// Reinvite Ministry Admin.

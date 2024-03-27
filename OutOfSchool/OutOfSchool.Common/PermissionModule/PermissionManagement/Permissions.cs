@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Common.PermissionsModule;
 
@@ -60,6 +59,8 @@ public enum Permissions : short
     ParentAddNew = 42,
     [Display(GroupName = "Parent", Name = "Remove", Description = "Can remove Parent data")]
     ParentRemove = 43,
+    [Display(GroupName = "Parent", Name = "Block", Description = "Can block Parent")]
+    ParentBlock = 44,
     #endregion
 
     #region Provider Control permissions #6
@@ -75,6 +76,8 @@ public enum Permissions : short
     ProviderAdmins = 54,
     [Display(GroupName = "Provider", Name = "Provider Approve", Description = "Can approve Provider and License")]
     ProviderApprove = 55,
+    [Display(GroupName = "Provider", Name = "Block", Description = "Can block Provider")]
+    ProviderBlock = 56,
     #endregion
 
     #region Rating control permissions #7
@@ -132,6 +135,8 @@ public enum Permissions : short
     LogDataRead = 102,
     [Display(GroupName = "SystemManaging", Name = "SuperAdmin", Description = "access to all actions covered with [HasPermission] attribute")]
     AccessAll = short.MaxValue,
+    [Display(GroupName = "AdminDataRead", Name = "AdminDataRead", Description = "access to all admins read the information")]
+    AdminDataRead = 103,
     #endregion
 
     #region MinistryAdmin Control permissions #12
@@ -160,5 +165,21 @@ public enum Permissions : short
     RegionAdmins = 124,
     [Display(GroupName = "RegionAdmin", Name = "Block", Description = "Can block region admin")]
     RegionAdminBlock = 125,
+    #endregion
+
+    #region AreaAdmin Control permissions # 14
+    //numbers from range 130-135 will cause troubles with migration
+    [Display(GroupName = "AreaAdmin", Name = "Read", Description = "Can read area admin")]
+    AreaAdminRead = 140,
+    [Display(GroupName = "AreaAdmin", Name = "Edit", Description = "Can edit area admin")]
+    AreaAdminEdit = 141,
+    [Display(GroupName = "AreaAdmin", Name = "Add new", Description = "Can add a new area admin")]
+    AreaAdminAddNew = 142,
+    [Display(GroupName = "AreaAdmin", Name = "Remove", Description = "Can remove area admin")]
+    AreaAdminRemove = 143,
+    [Display(GroupName = "AreaAdmin", Name = "Area Admins", Description = "Can manage area admins")]
+    AreaAdmins = 144,
+    [Display(GroupName = "AreaAdmin", Name = "Block", Description = "Can block area admin")]
+    AreaAdminBlock = 145,
     #endregion
 }

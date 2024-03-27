@@ -1,8 +1,9 @@
 using Nest;
-using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Codeficator;
+using OutOfSchool.WebApi.Models.Workshops;
 using Profile = AutoMapper.Profile;
 
 namespace OutOfSchool.WebApi.Util.Mapping;
@@ -11,7 +12,8 @@ public class ElasticProfile : Profile
 {
     public ElasticProfile()
     {
-        CreateMap<WorkshopDTO, WorkshopES>()
+        CreateMap<WorkshopBaseDto, WorkshopES>()
+            .IncludeBase<object, IHasRating>()
             .ForMember(
                 dest => dest.Keywords,
                 opt =>
@@ -24,7 +26,24 @@ public class ElasticProfile : Profile
                     opt.MapFrom(src =>
                         src.WorkshopDescriptionItems
                             .Aggregate(string.Empty, (accumulator, wdi) =>
-                                $"{accumulator}{wdi.SectionName}{Constants.MappingSeparator}{wdi.Description}{Constants.MappingSeparator}")));
+                                $"{accumulator}{wdi.SectionName}{Constants.MappingSeparator}{wdi.Description}{Constants.MappingSeparator}")))
+            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
+            .ForMember(dest => dest.Status, opt => opt.Ignore())
+            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderStatus, opt => opt.Ignore())
+            .ForMember(dest => dest.Status, opt => opt.Ignore())
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore());
+
+        CreateMap<WorkshopDto, WorkshopES>()
+            .IncludeBase<WorkshopBaseDto, WorkshopES>()
+            .CommonFieldsMapping();
+
+        CreateMap<WorkshopV2Dto, WorkshopES>()
+            .IncludeBase<WorkshopDto, WorkshopES>()
+            .CommonFieldsMapping()
+            .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(src => src.CoverImageId));
 
         CreateMap<AddressDto, AddressES>()
             .ForMember(
@@ -107,29 +126,11 @@ public class ElasticProfile : Profile
                 opt => opt.Ignore());
 
         CreateMap<CATOTTG, CodeficatorAddressES>()
-            .ForMember(
-                dest => dest.Settlement,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Name : src.Name))
-            .ForMember(
-                dest => dest.TerritorialCommunity,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name ? src.Parent.Parent.Name : src.Parent.Name))
-            .ForMember(
-                dest => dest.District,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name
-                        ? src.Parent.Parent.Parent.Name
-                        : src.Parent.Parent.Name))
-            .ForMember(
-                dest => dest.Region,
-                opt => opt.MapFrom(src =>
-                    src.Category == CodeficatorCategory.CityDistrict.Name
-                        ? src.Parent.Parent.Parent.Parent.Name
-                        : src.Parent.Parent.Parent.Name))
-            .ForMember(
-                dest => dest.CityDistrict,
-                opt => opt.MapFrom(src => src.Category == CodeficatorCategory.CityDistrict.Name ? src.Name : null))
+            .ForMember(dest => dest.Settlement, opt => opt.MapFrom(src => CatottgAddressExtensions.GetSettlementName(src)))
+            .ForMember(dest => dest.TerritorialCommunity, opt => opt.MapFrom(src => CatottgAddressExtensions.GetTerritorialCommunityName(src)))
+            .ForMember(dest => dest.District, opt => opt.MapFrom(src => CatottgAddressExtensions.GetDistrictName(src)))
+            .ForMember(dest => dest.Region, opt => opt.MapFrom(src => CatottgAddressExtensions.GetRegionName(src)))
+            .ForMember(dest => dest.CityDistrict, opt => opt.MapFrom(src => CatottgAddressExtensions.GetCityDistrictName(src)))
             .ForMember(dest => dest.FullAddress, opt => opt.Ignore())
             .ForMember(dest => dest.FullName, opt => opt.Ignore());
 
@@ -140,17 +141,18 @@ public class ElasticProfile : Profile
 
         CreateMap<Workshop, WorkshopES>()
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
+            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
             .ForMember(
                 dest => dest.DirectionIds,
-                opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(d => d.Id)))
+                opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Id)))
             .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
             .ForMember(
                 dest => dest.Description,
                 opt =>
                     opt.MapFrom(src =>
-                        src.WorkshopDescriptionItems
+                        src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)
                             .Aggregate(string.Empty, (accumulator, wdi) =>
                                 $"{accumulator}{wdi.SectionName}{Constants.MappingSeparator}{wdi.Description}{Constants.MappingSeparator}")))
 
@@ -158,7 +160,7 @@ public class ElasticProfile : Profile
             .ForMember(dest => dest.TakenSeats, opt =>
                 opt.MapFrom(src =>
                     src.Applications.Count(x =>
-                        x.Status == ApplicationStatus.Approved
-                        || x.Status == ApplicationStatus.StudyingForYears)));
+                        !x.IsDeleted && (x.Status == ApplicationStatus.Approved
+                        || x.Status == ApplicationStatus.StudyingForYears))));
     }
 }

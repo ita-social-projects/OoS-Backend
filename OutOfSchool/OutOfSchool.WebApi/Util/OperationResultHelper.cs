@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using OutOfSchool.WebApi.Common;
+﻿using OutOfSchool.WebApi.Common;
 
 namespace OutOfSchool.WebApi.Util;
 

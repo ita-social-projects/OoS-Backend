@@ -1,14 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 using Elasticsearch.Net;
-using IdentityModel;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Nest;
-using OutOfSchool.ElasticsearchData.Models;
-using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Config.Elasticsearch;
 
 namespace OutOfSchool.WebApi.Extensions;
@@ -38,7 +30,8 @@ public static class ElasticsearchExtension
 
         var settings = new ConnectionSettings(pool)
             .DefaultIndex(config.WorkshopIndexName)
-            .BasicAuthentication(config.User, config.Password);
+            .BasicAuthentication(config.User, config.Password)
+            .EnableApiVersioningHeader();
 
         if (config.EnableDebugMode)
         {
@@ -104,9 +97,9 @@ public static class ElasticsearchExtension
     /// <param name="configurator">Elasticsearch models configurator.</param>
     private static void EnsureIndexCreated(IElasticClient client, string indexName, IElasticsearchEntityTypeConfiguration configurator)
     {
-        var startTime = DateTime.UtcNow.ToEpochTime();
+        var startTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-        while (!client.Ping().IsValid && (DateTime.UtcNow.ToEpochTime() - startTime < Minute))
+        while (!client.Ping().IsValid && (DateTimeOffset.UtcNow.ToUnixTimeSeconds() - startTime < Minute))
         {
             Log.Information("Waiting for Elastic connection");
             Task.Delay(CheckConnectivityDelayMs).Wait();

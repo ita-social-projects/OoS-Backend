@@ -21,7 +21,7 @@ var host = Host.CreateDefaultBuilder(args)
         var serverVersion = new MySqlServerVersion(new Version(mySQLServerVersion));
         if (serverVersion.Version.Major < Constants.MySQLServerMinimalMajorVersion)
         {
-            throw new Exception("MySQL Server version should be 8 or higher.");
+            throw new InvalidOperationException("MySQL Server version should be 8 or higher.");
         }
 
         var connectionString = config.GetMySqlConnectionString<InitializerConnectionOptions>(

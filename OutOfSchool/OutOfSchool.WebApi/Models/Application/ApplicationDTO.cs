@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Models.Application;
 
@@ -17,7 +18,7 @@ public class ApplicationDto
 
     public DateTimeOffset? ApprovedTime { get; set; }
 
-    public bool IsBlocked { get; set; }
+    public bool IsBlockedByProvider { get; set; }
 
     [Required]
     public Guid WorkshopId { get; set; }

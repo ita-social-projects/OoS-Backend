@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public class WorkshopRepository : SensitiveEntityRepository<Workshop>, IWorkshopRepository
+public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>, IWorkshopRepository
 {
     private readonly OutOfSchoolDbContext db;
 
@@ -37,7 +38,7 @@ public class WorkshopRepository : SensitiveEntityRepository<Workshop>, IWorkshop
             .Include(ws => ws.Teachers)
             .Include(ws => ws.DateTimeRanges)
             .Include(ws => ws.Images)
-            .SingleOrDefaultAsync(ws => ws.Id == id);
+            .SingleOrDefaultAsync(ws => ws.Id == id && !ws.IsDeleted);
     }
 
     public async Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids)
@@ -83,5 +84,18 @@ public class WorkshopRepository : SensitiveEntityRepository<Workshop>, IWorkshop
         await dbContext.SaveChangesAsync().ConfigureAwait(false);
 
         return await Task.FromResult(workshop).ConfigureAwait(false);
+    }
+
+    public Task<List<Workshop>> GetAllWithDeleted(Expression<Func<Workshop, bool>> whereExpression)
+    {
+        IQueryable<Workshop> query = db.Workshops;
+
+        if (whereExpression != null)
+        {
+            query = query.Where(whereExpression);
+        }
+
+        return query.ToListAsync();
+
     }
 }

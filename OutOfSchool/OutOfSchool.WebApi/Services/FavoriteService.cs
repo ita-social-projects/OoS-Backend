@@ -1,16 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -19,14 +10,14 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class FavoriteService : IFavoriteService
 {
-    private readonly IEntityRepository<long, Favorite> favoriteRepository;
+    private readonly IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository;
     private readonly IWorkshopService workshopService;
     private readonly ILogger<FavoriteService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
 
     public FavoriteService(
-        IEntityRepository<long, Favorite> favoriteRepository,
+        IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository,
         ILogger<FavoriteService> logger,
         IStringLocalizer<SharedResource> localizer,
         IWorkshopService workshopService,
@@ -97,7 +88,7 @@ public class FavoriteService : IFavoriteService
         logger.LogInformation($"Getting Favorites by User started. Looking UserId = {userId}.");
 
         var favorites = await favoriteRepository
-            .Get(where: x => x.UserId == userId && Provider.ValidProviderStatuses.Contains(x.Workshop.Provider.Status))
+            .Get(whereExpression: x => x.UserId == userId && Provider.ValidProviderStatuses.Contains(x.Workshop.Provider.Status))
             .Select(x => x.WorkshopId)
             .ToListAsync()
             .ConfigureAwait(false);
@@ -142,19 +133,23 @@ public class FavoriteService : IFavoriteService
     {
         logger.LogInformation($"Updating Favorite with Id = {dto?.Id} started.");
 
-        try
-        {
-            var favorite = await favoriteRepository.Update(mapper.Map<Favorite>(dto)).ConfigureAwait(false);
+        ArgumentNullException.ThrowIfNull(dto);
 
-            logger.LogInformation($"Favorite with Id = {favorite?.Id} updated succesfully.");
+        var favorite = await favoriteRepository.GetById(dto.Id).ConfigureAwait(false);
 
-            return mapper.Map<FavoriteDto>(favorite);
-        }
-        catch (DbUpdateConcurrencyException)
+        if (favorite is null)
         {
-            logger.LogError($"Updating failed. Favorite with Id = {dto?.Id} doesn't exist in the system.");
-            throw;
+            var message = $"Updating failed. Favorite with Id = {dto.Id} doesn't exist in the system.";
+            logger.LogError(message);
+            throw new DbUpdateConcurrencyException(message);
         }
+
+        mapper.Map(dto, favorite);
+        favorite = await favoriteRepository.Update(favorite).ConfigureAwait(false);
+
+        logger.LogInformation($"Favorite with Id = {favorite?.Id} updated succesfully.");
+
+        return mapper.Map<FavoriteDto>(favorite);
     }
 
     /// <inheritdoc/>

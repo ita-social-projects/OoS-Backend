@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using OutOfSchool.WebApi.Common;
+﻿using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
 
@@ -54,19 +51,19 @@ public interface IApplicationService
     Task<SearchResult<ApplicationDto>> GetAllByProviderAdmin(string userId, ApplicationFilter filter, Guid providerId = default, bool isDeputy = false);
 
     /// <summary>
-    /// Get applications for admin.
-    /// </summary>
-    /// <param name="filter">Application filter.</param>
-    /// <returns>List of applications.</returns>
-    Task<SearchResult<ApplicationDto>> GetAll(ApplicationFilter filter);
-
-    /// <summary>
     /// Get applications by parent id.
     /// </summary>
     /// <param name="id">Key in the table.</param>
     /// <param name="filter">Application filter.</param>
     /// <returns>List of applications.</returns>
     Task<SearchResult<ApplicationDto>> GetAllByParent(Guid id, ApplicationFilter filter);
+
+    /// <summary>
+    /// Get applications count by parent id.
+    /// </summary>
+    /// <param name="id">Key in the table.</param>
+    /// <returns>Count of applications.</returns>
+    Task<int> GetCountByParentId(Guid id);
 
     /// <summary>
     /// Get applications by child id.
@@ -81,7 +78,7 @@ public interface IApplicationService
     /// <param name="applicationDto">Application entity to update.</param>
     /// <param name="providerId">Id of the provider for workshop.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<Result<ApplicationDto>> Update(ApplicationUpdate applicationDto, Guid providerId);
+    Task<Either<ErrorResponse, ApplicationDto>> Update(ApplicationUpdate applicationDto, Guid providerId);
 
     /// <summary>
     /// Determines ability to create a new application for a child based on previous attempts.

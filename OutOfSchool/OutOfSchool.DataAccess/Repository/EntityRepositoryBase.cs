@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -117,46 +118,35 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     public virtual async Task<IEnumerable<TEntity>> GetAllWithDetails(string includeProperties = "")
     {
         IQueryable<TEntity> query = dbSet;
-        foreach (var includeProperty in includeProperties.Split(
-                     new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            query = query.Include(includeProperty);
-        }
-
+        query = query.IncludeProperties(includeProperties);
         return await query.ToListAsync();
     }
 
-    public virtual async Task<IEnumerable<TEntity>> GetByFilter(Expression<Func<TEntity, bool>> predicate,
+    public virtual async Task<IEnumerable<TEntity>> GetByFilter(
+        Expression<Func<TEntity, bool>> whereExpression,
         string includeProperties = "")
     {
-        var query = this.dbSet.Where(predicate);
-
-        foreach (var includeProperty in includeProperties.Split(
-                     new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            query = query.Include(includeProperty);
-        }
-
+        var query = this.dbSet.Where(whereExpression);
+        query = query.IncludeProperties(includeProperties);
         return await query.ToListAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public virtual IQueryable<TEntity> GetByFilterNoTracking(Expression<Func<TEntity, bool>> predicate,
+    public virtual IQueryable<TEntity> GetByFilterNoTracking(
+        Expression<Func<TEntity, bool>> whereExpression,
         string includeProperties = "")
     {
-        var query = this.dbSet.Where(predicate);
-
-        foreach (var includeProperty in includeProperties.Split(
-                     new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            query = query.Include(includeProperty);
-        }
-
+        var query = this.dbSet.Where(whereExpression);
+        query = query.IncludeProperties(includeProperties);
         return query.AsNoTracking();
     }
 
     /// <inheritdoc/>
     public virtual Task<TEntity> GetById(TKey id) => dbSet.FirstOrDefaultAsync(x => x.Id.Equals(id));
+
+    /// <inheritdoc/>
+    public virtual Task<TEntity> GetByIdWithDetails(TKey id, string includeProperties = "")
+        => dbSet.Where(x => x.Id.Equals(id)).IncludeProperties(includeProperties).FirstOrDefaultAsync();
 
     /// <inheritdoc/>
     public virtual async Task<TEntity> Update(TEntity entity)
@@ -168,20 +158,36 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         return entity;
     }
 
-    /// <inheritdoc/>
-    public virtual Task<int> Count(Expression<Func<TEntity, bool>> where = null)
+    public async Task<TEntity> ReadAndUpdateWith<TDto>(TDto dto, Func<TDto, TEntity, TEntity> map)
+        where TDto : IDto<TEntity, TKey>
     {
-        return where == null
-            ? dbSet.CountAsync()
-            : dbSet.Where(where).CountAsync();
+        ArgumentNullException.ThrowIfNull(dto);
+
+        var entity = await GetById(dto.Id).ConfigureAwait(false);
+
+        if (entity is null)
+        {
+            var name = typeof(TEntity).Name;
+            throw new DbUpdateConcurrencyException($"Updating failed. {name} with Id = {dto.Id} doesn't exist in the system.");
+        }
+
+        return await Update(map(dto, entity)).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public virtual Task<bool> Any(Expression<Func<TEntity, bool>> where = null)
+    public virtual Task<int> Count(Expression<Func<TEntity, bool>> whereExpression = null)
     {
-        return where == null
+        return whereExpression == null
+            ? dbSet.CountAsync()
+            : dbSet.Where(whereExpression).CountAsync();
+    }
+
+    /// <inheritdoc/>
+    public virtual Task<bool> Any(Expression<Func<TEntity, bool>> whereExpression = null)
+    {
+        return whereExpression == null
             ? dbSet.AnyAsync()
-            : dbSet.Where(where).AnyAsync();
+            : dbSet.Where(whereExpression).AnyAsync();
     }
 
     /// <inheritdoc/>
@@ -189,14 +195,14 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         int skip = 0,
         int take = 0,
         string includeProperties = "",
-        Expression<Func<TEntity, bool>> where = null,
+        Expression<Func<TEntity, bool>> whereExpression = null,
         Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null,
         bool asNoTracking = false)
     {
         IQueryable<TEntity> query = dbSet;
-        if (where != null)
+        if (whereExpression != null)
         {
-            query = query.Where(where);
+            query = query.Where(whereExpression);
         }
 
         if ((orderBy != null) && orderBy.Any())
@@ -225,11 +231,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
             query = query.Take(take);
         }
 
-        foreach (var includeProperty in includeProperties.Split(
-                     new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            query = query.Include(includeProperty);
-        }
+        query = query.IncludeProperties(includeProperties);
 
         return query.If(asNoTracking, q => q.AsNoTracking());
     }

@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 
@@ -8,7 +7,7 @@ namespace OutOfSchool.WebApi.Services;
 
 public class AchievementTypeService : IAchievementTypeService
 {
-    private readonly IEntityRepository<long, AchievementType> achievementTypeRepository;
+    private readonly IEntityRepositorySoftDeleted<long, AchievementType> achievementTypeRepository;
     private readonly ILogger<AchievementTypeService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
@@ -21,7 +20,7 @@ public class AchievementTypeService : IAchievementTypeService
     /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
     public AchievementTypeService(
-        IEntityRepository<long, AchievementType> repository,
+        IEntityRepositorySoftDeleted<long, AchievementType> repository,
         ILogger<AchievementTypeService> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper)

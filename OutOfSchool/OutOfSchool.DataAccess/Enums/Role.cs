@@ -7,4 +7,5 @@ public enum Role
     TechAdmin,
     MinistryAdmin,
     RegionAdmin,
+    AreaAdmin,
 }

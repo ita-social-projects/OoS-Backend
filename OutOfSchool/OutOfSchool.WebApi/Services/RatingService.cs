@@ -1,18 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 using AutoMapper;
-using Castle.Core.Internal;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
-using Nest;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -22,7 +11,7 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class RatingService : IRatingService
 {
-    private readonly IEntityRepository<long, Rating> ratingRepository;
+    private readonly IEntityRepositorySoftDeleted<long, Rating> ratingRepository;
     private readonly IWorkshopRepository workshopRepository;
     private readonly IParentRepository parentRepository;
     private readonly ILogger<RatingService> logger;
@@ -41,7 +30,7 @@ public class RatingService : IRatingService
     /// <param name="mapper">Mapper.</param>
     /// <param name="operationWithObjectService">Service operation with rating.</param>
     public RatingService(
-        IEntityRepository<long, Rating> ratingRepository,
+        IEntityRepositorySoftDeleted<long, Rating> ratingRepository,
         IWorkshopRepository workshopRepository,
         IParentRepository parentRepository,
         ILogger<RatingService> logger,
@@ -86,7 +75,7 @@ public class RatingService : IRatingService
     {
         logger.LogInformation("Getting all ratings by filter started.");
 
-        var ratings = await ratingRepository.GetByFilter(predicate: filter).ConfigureAwait(false);
+        var ratings = await ratingRepository.GetByFilter(whereExpression: filter).ConfigureAwait(false);
 
         logger.LogInformation("Getting all ratings by filter finished.");
 
@@ -123,7 +112,7 @@ public class RatingService : IRatingService
         var totalAmount = await ratingRepository.Count(filterPredicate).ConfigureAwait(false);
 
         var ratings = await ratingRepository
-            .Get(filter.From, filter.Size, where: filterPredicate)
+            .Get(filter.From, filter.Size, whereExpression: filterPredicate)
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -209,7 +198,7 @@ public class RatingService : IRatingService
 
         if (await CheckRatingUpdate(dto).ConfigureAwait(false))
         {
-            var rating = await ratingRepository.Update(mapper.Map<Rating>(dto)).ConfigureAwait(false);
+            var rating = await ratingRepository.ReadAndUpdateWith<RatingDto>(dto, mapper.Map).ConfigureAwait(false);
 
             logger.LogInformation($"Rating with Id = {rating?.Id} updated succesfully.");
 

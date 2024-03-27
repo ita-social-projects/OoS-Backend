@@ -117,9 +117,21 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Accepted for selection!" xml:space="preserve">
+    <value>Accepted for selection!</value>
+    <comment>ApplicationService</comment>
+  </data>
   <data name="Address is null." xml:space="preserve">
     <value>Address is null.</value>
     <comment>AdressController</comment>
+  </data>
+  <data name="Application status changed" xml:space="preserve">
+    <value>Application status changed</value>
+    <comment>ApplicationService</comment>
+  </data>
+  <data name="Approved!" xml:space="preserve">
+    <value>Approved!</value>
+    <comment>ApplicationService</comment>
   </data>
   <data name="Block does not exist for ParentId: {0}, ProviderId: {1}." xml:space="preserve">
     <value>Block does not exist for ParentId: {0}, ProviderId: {1}.</value>
@@ -144,6 +156,10 @@
   <data name="Id cannot be 0 or less than 0." xml:space="preserve">
     <value>Id cannot be 0 or less than 0.</value>
     <comment>AdressController</comment>
+  </data>
+  <data name="Rejected" xml:space="preserve">
+    <value>Rejected</value>
+    <comment>ApplicationService</comment>
   </data>
   <data name="Server error. Please try again later or contact technical support." xml:space="preserve">
     <value>Server error. Please try again later or contact technical support.</value>

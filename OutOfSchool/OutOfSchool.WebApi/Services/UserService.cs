@@ -1,16 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
+﻿using System.Data;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services;
@@ -20,7 +11,7 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class UserService : IUserService
 {
-    private readonly IEntityRepository<string, User> repository;
+    private readonly IEntityRepositorySoftDeleted<string, User> repository;
     private readonly ILogger<UserService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
@@ -33,8 +24,7 @@ public class UserService : IUserService
     /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
     public UserService(
-        IEntityRepository<string,
-        User> repository,
+        IEntityRepositorySoftDeleted<string, User> repository,
         ILogger<UserService> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper)
@@ -96,6 +86,48 @@ public class UserService : IUserService
         catch (DbUpdateConcurrencyException)
         {
             logger.LogError($"Updating failed. User with Id = {dto?.Id} doesn't exist in the system.");
+            throw;
+        }
+    }
+
+    public async Task<bool> IsBlocked(string id)
+    {
+        logger.LogInformation("Checking if the User is blocked was started. Getting user by Id = {id}.", id);
+
+        var user = await repository.GetById(id).ConfigureAwait(false);
+
+        if (user is null)
+        {
+            throw new ArgumentException(localizer["There is no User in the Db with such an id"], nameof(id));
+        }
+
+        logger.LogInformation("Successfully got the User with Id = {id}.", id);
+
+        return user.IsBlocked;
+    }
+
+    public async Task Delete(string id)
+    {
+        logger.LogInformation($"Started deleting of user by Id = {id}");
+
+        var user = await repository.GetById(id).ConfigureAwait(false);
+
+        if (user is null)
+        {
+            var message = $"There is no User in the Db with such an id = {id}";
+            logger.LogError(message);
+            throw new ArgumentException(message, nameof(id));
+        }
+
+        try
+        {
+            await repository.Delete(user);
+
+            logger.LogInformation("User is succesfully deleted from database");
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            logger.LogError($"Deleting user with id = {id} - failed");
             throw;
         }
     }

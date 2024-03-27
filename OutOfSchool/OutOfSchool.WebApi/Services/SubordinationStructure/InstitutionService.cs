@@ -1,26 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Extensions.Logging;
-using Nest;
-using OutOfSchool.Redis;
-using OutOfSchool.Services.Models.SubordinationStructure;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Models.Application;
+﻿using AutoMapper;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
 
 namespace OutOfSchool.WebApi.Services.SubordinationStructure;
 
 public class InstitutionService : IInstitutionService
 {
-    private readonly ISensitiveEntityRepository<Institution> repository;
+    private readonly ISensitiveEntityRepositorySoftDeleted<Institution> repository;
     private readonly ILogger<InstitutionService> logger;
     private readonly IMapper mapper;
-    private readonly ICacheService cache;
+    private readonly IMultiLayerCacheService cache;
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
     private readonly IRegionAdminService regionAdminService;
@@ -36,10 +24,10 @@ public class InstitutionService : IInstitutionService
     /// <param name="ministryAdminService">Service for manage ministry admin</param>
     /// <param name="regionAdminService">Service for managing region admin rigths.</param>
     public InstitutionService(
-        ISensitiveEntityRepository<Institution> repository,
+        ISensitiveEntityRepositorySoftDeleted<Institution> repository,
         ILogger<InstitutionService> logger,
         IMapper mapper,
-        ICacheService cache,
+        IMultiLayerCacheService cache,
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService)

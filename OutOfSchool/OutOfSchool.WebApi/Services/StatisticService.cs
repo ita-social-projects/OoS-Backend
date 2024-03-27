@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Services.AverageRatings;
-using System.Linq;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -14,9 +13,11 @@ public class StatisticService : IStatisticService
 {
     private readonly IApplicationRepository applicationRepository;
     private readonly IWorkshopRepository workshopRepository;
-    private readonly IEntityRepository<long, Direction> directionRepository;
+    private readonly IEntityRepositorySoftDeleted<long, Direction> directionRepository;
     private readonly ILogger<StatisticService> logger;
     private readonly IMapper mapper;
+
+    // TODO: Maybe, we have to use an IMemoryCacheService.
     private readonly ICacheService cache;
     private readonly IAverageRatingService averageRatingService;
 
@@ -33,7 +34,7 @@ public class StatisticService : IStatisticService
     public StatisticService(
         IApplicationRepository applicationRepository,
         IWorkshopRepository workshopRepository,
-        IEntityRepository<long, Direction> directionRepository,
+        IEntityRepositorySoftDeleted<long, Direction> directionRepository,
         ILogger<StatisticService> logger,
         IMapper mapper,
         ICacheService cache,
@@ -67,7 +68,7 @@ public class StatisticService : IStatisticService
     public async Task<IEnumerable<DirectionDto>> GetPopularDirectionsFromDatabase(int limit, long catottgId)
     {
         var workshops = workshopRepository.Get(
-            where: w => !w.IsBlocked && Provider.ValidProviderStatuses.Contains(w.Provider.Status));
+            whereExpression: w => !w.IsBlocked && Provider.ValidProviderStatuses.Contains(w.Provider.Status));
 
         var applications = applicationRepository.Get();
 
@@ -81,6 +82,7 @@ public class StatisticService : IStatisticService
 
         var directionsWithWorkshops = workshops
             .SelectMany(w => w.InstitutionHierarchy.Directions)
+            .Where(d => !d.IsDeleted)
             .GroupBy(d => d.Id)
             .Select(g => new
             {
@@ -90,6 +92,7 @@ public class StatisticService : IStatisticService
 
         var directionsWithApplications = applications
             .SelectMany(a => a.Workshop.InstitutionHierarchy.Directions)
+            .Where(d => !d.IsDeleted)
             .GroupBy(d => d.Id)
             .Select(g => new
             {
@@ -162,7 +165,7 @@ public class StatisticService : IStatisticService
         var workshops = workshopRepository
             .Get(
                 includeProperties: $"{nameof(Address)},{nameof(InstitutionHierarchy)}",
-                where: w => !w.IsBlocked && Provider.ValidProviderStatuses.Contains(w.Provider.Status));
+                whereExpression: w => !w.IsBlocked && Provider.ValidProviderStatuses.Contains(w.Provider.Status) && !w.InstitutionHierarchy.IsDeleted);
 
         if (catottgId > 0)
         {
@@ -198,7 +201,9 @@ public class StatisticService : IStatisticService
 
         foreach (var workshop in workshopsCards)
         {
-            workshop.Rating = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.WorkshopId)?.Rate ?? default;
+            var averageRatingDto = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.WorkshopId);
+            workshop.Rating = averageRatingDto?.Rate ?? default;
+            workshop.NumberOfRatings = averageRatingDto?.RateQuantity ?? default;
         }
 
         return workshopsCards;

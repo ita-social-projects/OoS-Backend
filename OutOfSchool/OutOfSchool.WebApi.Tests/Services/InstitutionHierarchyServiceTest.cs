@@ -63,6 +63,7 @@ public class InstitutionHierarchyServiceTests
             Title = "NewTitle",
             HierarchyLevel = 1,
             InstitutionId = institutionId,
+            Directions = new List<Direction>(),
         };
 
         var input = new InstitutionHierarchyDto()
@@ -70,17 +71,18 @@ public class InstitutionHierarchyServiceTests
             Title = "NewTitle",
             HierarchyLevel = 1,
             InstitutionId = institutionId,
+            Directions = new List<DirectionDto>(),
         };
 
         mapper.Setup(m => m.Map<InstitutionHierarchy>(It.IsAny<InstitutionHierarchyDto>())).Returns(expected);
         mapper.Setup(m => m.Map<InstitutionHierarchyDto>(It.IsAny<InstitutionHierarchy>())).Returns(input);
-        repo.Setup(r => r.Create(expected)).ReturnsAsync(expected);
+        repo.Setup(r => r.Create(expected, It.IsAny<List<long>>())).ReturnsAsync(expected);
 
         // Act
         var result = await service.Create(input).ConfigureAwait(false);
 
         // Assert
-        repo.Verify(r => r.Create(expected), Times.Once);
+        repo.Verify(r => r.Create(expected, It.IsAny<List<long>>()), Times.Once);
         Assert.AreEqual(expected.Title, result.Title);
         Assert.AreEqual(expected.HierarchyLevel, result.HierarchyLevel);
         Assert.AreEqual(expected.InstitutionId, result.InstitutionId);
@@ -97,25 +99,8 @@ public class InstitutionHierarchyServiceTests
             Title = "NewTitle",
             HierarchyLevel = 1,
             InstitutionId = institutionId,
+            Directions = new List<DirectionDto>(),
         };
-        var mockDbResponse = new List<InstitutionHierarchy>()
-        {
-            new InstitutionHierarchy()
-            {
-                Title = "NewTitle",
-                HierarchyLevel = 1,
-                InstitutionId = institutionId,
-            },
-        }.AsTestAsyncEnumerableQuery();
-
-        repo.Setup(r => r.Get(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
-                null,
-                false))
-            .Returns(mockDbResponse);
 
         // Act
         var expected = await service.Create(input).ConfigureAwait(false);
@@ -237,15 +222,6 @@ public class InstitutionHierarchyServiceTests
         List<Direction> directions = new List<Direction> { new Direction() { Id = 1, Title = "Direction" } };
         List<DirectionDto> directionsDtos = new List<DirectionDto> { new DirectionDto() { Id = 1, Title = "Direction" } };
 
-        var changedEntity = new InstitutionHierarchy()
-        {
-            Id = hierarchyId,
-            Title = "ChangedTitle1",
-            HierarchyLevel = 1,
-            InstitutionId = institutionId,
-            Directions = directions,
-        };
-
         var changedDto = new InstitutionHierarchyDto()
         {
             Id = hierarchyId,
@@ -255,8 +231,19 @@ public class InstitutionHierarchyServiceTests
             Directions = directionsDtos,
         };
 
-        mapper.Setup(m => m.Map<InstitutionHierarchyDto>(changedEntity)).Returns(changedDto);
+        var changedEntity = new InstitutionHierarchy()
+        {
+            Id = hierarchyId,
+            Title = "ChangedTitle1",
+            HierarchyLevel = 1,
+            InstitutionId = institutionId,
+            Directions = directions,
+        };
+
         mapper.Setup(m => m.Map<InstitutionHierarchy>(changedDto)).Returns(changedEntity);
+        mapper.Setup(m => m.Map<InstitutionHierarchyDto>(changedEntity)).Returns(changedDto);
+
+        repo.Setup(r => r.GetById(changedDto.Id)).ReturnsAsync(changedEntity);
         repo.Setup(r => r.Update(changedEntity, directionsIds)).ReturnsAsync(changedEntity);
 
         // Act

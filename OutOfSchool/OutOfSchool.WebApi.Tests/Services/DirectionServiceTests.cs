@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.Build.Framework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -23,9 +22,9 @@ public class DirectionServiceTests
 {
     private DbContextOptions<OutOfSchoolDbContext> options;
     private OutOfSchoolDbContext context;
-    private IEntityRepository<long, Direction> repo;
+    private IEntityRepositorySoftDeleted<long, Direction> repo;
     private IWorkshopRepository repositoryWorkshop;
-    private IDirectionService service;
+    private DirectionService service;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<DirectionService>> logger;
     private Mock<IMapper> mapper;
@@ -36,6 +35,7 @@ public class DirectionServiceTests
     [SetUp]
     public void SetUp()
     {
+        mapper = new Mock<IMapper>();
         var builder =
             new DbContextOptionsBuilder<OutOfSchoolDbContext>().UseInMemoryDatabase(
                 databaseName: "OutOfSchoolTestDB");
@@ -43,11 +43,10 @@ public class DirectionServiceTests
         options = builder.Options;
         context = new OutOfSchoolDbContext(options);
 
-        repo = new EntityRepository<long, Direction>(context);
+        repo = new EntityRepositorySoftDeleted<long, Direction>(context);
         repositoryWorkshop = new WorkshopRepository(context);
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         logger = new Mock<ILogger<DirectionService>>();
-        mapper = new Mock<IMapper>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
@@ -159,68 +158,14 @@ public class DirectionServiceTests
     }
 
     [Test]
-    [Order(6)]
-    public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
-    {
-        // Arrange
-        var changedEntity = new DirectionDto()
-        {
-            Id = 1,
-            Title = "ChangedTitle1",
-        };
-        var expected = new Direction()
-        {
-            Id = 1,
-            Title = "NewTitle",
-        };
-        mapper.Setup(m => m.Map<Direction>(changedEntity)).Returns(expected);
-        mapper.Setup(m => m.Map<DirectionDto>(expected)).Returns(changedEntity);
-
-        // Act
-        var result = await service.Update(changedEntity).ConfigureAwait(false);
-
-        // Assert
-        Assert.That(changedEntity.Title, Is.EqualTo(result.Title));
-    }
-
-    [Test]
-    [Order(7)]
-    public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
-    {
-        // Arrange
-        var changedEntity = new DirectionDto()
-        {
-            Title = "NewTitle1",
-        };
-        var expected = new Direction()
-        {
-            Title = "NewTitle1",
-        };
-        mapper.Setup(m => m.Map<Direction>(changedEntity)).Returns(expected);
-
-        // Act and Assert
-        Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-            async () => await service.Update(changedEntity).ConfigureAwait(false));
-    }
-
-    [Test]
     [Order(8)]
     [TestCase(1)]
     public async Task Delete_WhenIdIsValid_DeletesEntity(long id)
     {
-        // Arrange
-        var expected = new DirectionDto()
-        {
-            Title = "NewTitle",
-        };
-        mapper.Setup(m => m.Map<DirectionDto>(It.IsAny<Direction>())).Returns(expected);
-
         // Act
         var countBeforeDeleting = (await service.GetAll().ConfigureAwait(false)).Count();
 
-        context.Entry<Direction>(await repo.GetById(id).ConfigureAwait(false)).State = EntityState.Detached;
-
-        await service.Delete(id).ConfigureAwait(false);
+        await ((ISensitiveDirectionService)service).Delete(id);
 
         var countAfterDeleting = (await service.GetAll().ConfigureAwait(false)).Count();
 

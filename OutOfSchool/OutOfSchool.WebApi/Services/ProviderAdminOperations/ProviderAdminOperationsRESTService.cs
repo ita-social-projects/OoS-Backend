@@ -9,23 +9,23 @@ namespace OutOfSchool.WebApi.Services.ProviderAdminOperations;
 /// </summary>
 public class ProviderAdminOperationsRESTService : CommunicationService, IProviderAdminOperationsService
 {
-    private readonly IdentityServerConfig identityServerConfig;
+    private readonly AuthorizationServerConfig authorizationServerConfig;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProviderAdminOperationsRESTService"/> class.
     /// </summary>
     /// <param name="logger">Logger.</param>
-    /// <param name="identityServerConfig">Configuration for connection to IdentityServer.</param>
+    /// <param name="authorizationServerConfig">Configuration for connection to OpenIdDict.</param>
     /// <param name="httpClientFactory">HttpClientFactory. For base class.</param>
     /// <param name="communicationConfig">CommunicationConfig. For base class.</param>
     public ProviderAdminOperationsRESTService(
         ILogger<ProviderAdminOperationsRESTService> logger,
-        IOptions<IdentityServerConfig> identityServerConfig,
+        IOptions<AuthorizationServerConfig> authorizationServerConfig,
         IHttpClientFactory httpClientFactory,
         IOptions<CommunicationConfig> communicationConfig)
-        : base(httpClientFactory, communicationConfig.Value, logger)
+        : base(httpClientFactory, communicationConfig, logger)
     {
-        this.identityServerConfig = identityServerConfig.Value;
+        this.authorizationServerConfig = authorizationServerConfig.Value;
     }
 
     /// <inheritdoc/>
@@ -37,16 +37,14 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Post,
-            Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateProviderAdmin),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.CreateProviderAdmin),
             Token = token,
             Data = providerAdminDto,
-            RequestId = Guid.NewGuid(),
         };
 
         Logger.LogDebug(
-            "{request.HttpMethodType} Request(id): {request.RequestId} was sent. User(id): {UserId}. Url: {request.Url}",
+            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
             request.HttpMethodType,
-            request.RequestId,
             userId,
             request.Url);
 
@@ -54,7 +52,7 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
             .ConfigureAwait(false);
 
         return response
-            .FlatMap<ResponseDto>(r => r.IsSuccess
+            .FlatMap<ResponseDto>(r => r.HttpStatusCode == HttpStatusCode.Created
                 ? r
                 : new ErrorResponse
                 {

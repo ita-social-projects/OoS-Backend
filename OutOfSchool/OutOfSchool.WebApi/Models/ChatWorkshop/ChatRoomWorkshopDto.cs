@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OutOfSchool.WebApi.Models.ChatWorkshop;
+﻿namespace OutOfSchool.WebApi.Models.ChatWorkshop;
 
 public class ChatRoomWorkshopDto
 {
@@ -9,6 +7,8 @@ public class ChatRoomWorkshopDto
     public Guid WorkshopId { get; set; }
 
     public Guid ParentId { get; set; }
+
+    public bool IsBlockedByProvider { get; set; }
 
     public WorkshopInfoForChatListDto Workshop { get; set; }
 

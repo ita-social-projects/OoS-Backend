@@ -2,21 +2,21 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models;
 
-public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>
+public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>, ISoftDeleted, IHasEntityImages<Workshop>
 {
     public Guid Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     [Required(ErrorMessage = "Workshop title is required")]
     [MinLength(1)]
@@ -50,14 +50,17 @@ public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>
     public string Instagram { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Children's min age is required")]
-    [Range(0, 100, ErrorMessage = "Min age should be a number from 0 to 100")]
+    [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
     public int MinAge { get; set; }
 
     [Required(ErrorMessage = "Children's max age is required")]
-    [Range(0, 100, ErrorMessage = "Max age should be a number from 0 to 100")]
+    [Range(0, 120, ErrorMessage = "Max age should be a number from 0 to 120")]
     public int MaxAge { get; set; }
 
     public bool CompetitiveSelection { get; set; } = false;
+
+    [MaxLength(500)]
+    public string CompetitiveSelectionDescription { get; set; }
 
     [Column(TypeName = "decimal(18,2)")]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
@@ -97,6 +100,9 @@ public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>
 
     public uint AvailableSeats { get; set; } = uint.MaxValue;
 
+    [Required]
+    public FormOfLearning FormOfLearning { get; set; }
+
     public virtual Provider Provider { get; set; }
 
     public virtual InstitutionHierarchy InstitutionHierarchy { get; set; }
@@ -117,4 +123,7 @@ public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>
     public virtual List<Image<Workshop>> Images { get; set; }
 
     public bool IsBlocked { get; set; } = false;
+
+    [DataType(DataType.DateTime)]
+    public DateTime UpdatedAt { get; set; }
 }

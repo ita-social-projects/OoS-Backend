@@ -6,7 +6,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public interface IParentRepository : IEntityRepositoryBase<Guid, Parent>
+public interface IParentRepository : IEntityRepositorySoftDeleted<Guid, Parent>
 {
     /// <summary>
     /// Get Perents by theirs Ids.

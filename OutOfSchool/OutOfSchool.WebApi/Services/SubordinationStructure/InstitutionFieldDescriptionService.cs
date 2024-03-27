@@ -1,19 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Redis;
-using OutOfSchool.Services.Models.SubordinationStructure;
-using OutOfSchool.Services.Repository;
+﻿using AutoMapper;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
 
 namespace OutOfSchool.WebApi.Services.SubordinationStructure;
 
 public class InstitutionFieldDescriptionService : IInstitutionFieldDescriptionService
 {
-    private readonly ISensitiveEntityRepository<InstitutionFieldDescription> repository;
+    private readonly ISensitiveEntityRepositorySoftDeleted<InstitutionFieldDescription> repository;
     private readonly ILogger<InstitutionFieldDescriptionService> logger;
     private readonly IMapper mapper;
     private readonly ICacheService cache;
@@ -26,7 +18,7 @@ public class InstitutionFieldDescriptionService : IInstitutionFieldDescriptionSe
     /// <param name="mapper">Mapper.</param>
     /// <param name="cache">Redis cache service.</param>
     public InstitutionFieldDescriptionService(
-        ISensitiveEntityRepository<InstitutionFieldDescription> repository,
+        ISensitiveEntityRepositorySoftDeleted<InstitutionFieldDescription> repository,
         ILogger<InstitutionFieldDescriptionService> logger,
         IMapper mapper,
         ICacheService cache)

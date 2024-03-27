@@ -15,7 +15,7 @@ public class CurrentUserService : ICurrentUserService
 {
     private readonly ClaimsPrincipal? user;
     private readonly IParentRepository parentRepository;
-    private readonly IEntityRepository<Guid, Child> childRepository;
+    private readonly IEntityRepositorySoftDeleted<Guid, Child> childRepository;
     private readonly IProviderRepository providerRepository;
     private readonly IProviderAdminRepository providerAdminRepository;
     private readonly ILogger<CurrentUserService> logger;
@@ -28,7 +28,7 @@ public class CurrentUserService : ICurrentUserService
         IProviderRepository providerRepository,
         IProviderAdminRepository providerAdminRepository,
         IParentRepository parentRepository,
-        IEntityRepository<Guid, Child> childRepository,
+        IEntityRepositorySoftDeleted<Guid, Child> childRepository,
         ILogger<CurrentUserService> logger,
         ICacheService cache,
         IOptions<AppDefaultsConfig> options,
@@ -58,20 +58,23 @@ public class CurrentUserService : ICurrentUserService
         Role.TechAdmin => user?.IsInRole("techadmin") ?? false,
         Role.MinistryAdmin => user?.IsInRole("ministryadmin") ?? false,
         Role.RegionAdmin => user?.IsInRole("regionadmin") ?? false,
-        _ => throw new NotImplementedException("Role not handled")
+        Role.AreaAdmin => user?.IsInRole("areaadmin") ?? false,
+        _ => throw new NotImplementedException("Role not handled"),
     };
 
     public bool IsDeputyOrProviderAdmin() =>
         IsInRole(Role.Provider) &&
         (IsInSubRole(Subrole.ProviderDeputy) || IsInSubRole(Subrole.ProviderAdmin));
 
-    public bool IsAdmin() => IsInRole(Role.TechAdmin) || IsInRole(Role.MinistryAdmin) || IsInRole(Role.RegionAdmin);
+    public bool IsAdmin() => IsInRole(Role.TechAdmin) || IsInRole(Role.MinistryAdmin) || IsInRole(Role.RegionAdmin) || IsInRole(Role.AreaAdmin);
 
     public bool IsTechAdmin() => IsInRole(Role.TechAdmin);
 
     public bool IsMinistryAdmin() => IsInRole(Role.MinistryAdmin);
 
     public bool IsRegionAdmin() => IsInRole(Role.RegionAdmin);
+
+    public bool IsAreaAdmin() => IsInRole(Role.AreaAdmin);
 
     public async Task UserHasRights(params IUserRights[] userTypes)
     {
@@ -133,7 +136,7 @@ public class CurrentUserService : ICurrentUserService
             ProviderRights provider => ProviderHasRights(provider.providerId),
             ProviderDeputyRights providerDeputy => ProviderDeputyHasRights(providerDeputy.providerId),
             null => Task.FromResult(false),
-            _ => throw new NotImplementedException("Unknown user rights type")
+            _ => throw new NotImplementedException("Unknown user rights type"),
         };
 
     private async Task<bool> ParentHasRights(Guid parentId, Guid childId)
