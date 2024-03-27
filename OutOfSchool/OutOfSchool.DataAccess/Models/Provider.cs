@@ -67,6 +67,7 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISo
     [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
     [Required(ErrorMessage = "PhoneNumber is required")]
+    [MaxLength(Constants.MaxPhoneNumberLengthWithPlusSign)]
     public string PhoneNumber { get; set; } = string.Empty;
 
     [Required]
@@ -98,6 +99,7 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISo
     [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
     [Required(ErrorMessage = "PhoneNumber is required")]
+    [MaxLength(Constants.MaxPhoneNumberLengthWithPlusSign)]
     public string BlockPhoneNumber { get; set; } = string.Empty;
 
     [MaxLength(500)]

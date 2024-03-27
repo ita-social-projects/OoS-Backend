@@ -28,6 +28,7 @@ public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>, ISo
     [Required(ErrorMessage = "Phone number is required")]
     [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
+    [MaxLength(Constants.MaxPhoneNumberLengthWithPlusSign)]
     public string Phone { get; set; } = string.Empty;
 
     [DataType(DataType.EmailAddress)]
