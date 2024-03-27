@@ -36,15 +36,4 @@ public static class StringExtensions
             ? value[^length..]
             : value;
     }
-
-    public static bool ContainsCharacterType(this string source, Func<char, bool> characterType)
-    {
-        return source.Any(characterType);
-    }
-
-    public static bool ContainsAnySymbol(this string source, string symbols)
-    {
-        return !string.IsNullOrEmpty(source) && !string.IsNullOrEmpty(symbols)
-            && symbols.Any(source.Contains);
-    }
 }
