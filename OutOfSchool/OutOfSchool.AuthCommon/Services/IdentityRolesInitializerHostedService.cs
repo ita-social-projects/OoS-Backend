@@ -34,14 +34,19 @@ public class IdentityRolesInitializerHostedService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            logger.LogInformation("Adding default roles was cancelled");
+            return;
+        }
+
         using var scope = serviceProvider.CreateScope();
 
-        string[] defaultRoleNames = GetDefaultRoleNames();
+        var defaultRoleNames = GetDefaultRoleNames();
 
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
         var existingRoleNames = await roleManager.Roles
-            .Where(role => defaultRoleNames.Contains(role.Name))
             .Select(role => role.Name)
             .ToArrayAsync(cancellationToken)
             .ConfigureAwait(false);
@@ -50,12 +55,18 @@ public class IdentityRolesInitializerHostedService : IHostedService
             .Except(existingRoleNames)
             .Select(roleName => new IdentityRole { Name = roleName });
 
-        int addedRolesCount = 0;
+        var addedRolesCount = 0;
 
         logger.LogInformation("Starting adding default roles");
 
         foreach (var newRole in newRoles)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                logger.LogInformation("Adding default roles was cancelled");
+                break;
+            }
+
             var roleName = newRole.Name;
 
             logger.LogInformation("Trying to add Role {RoleName}", roleName);
