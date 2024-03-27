@@ -21,6 +21,20 @@ public class CustomPhoneNumberAttributeTests
     }
 
     [Test]
+    public void IsValid_WhenPhoneNumberIsNotString_ShouldReturnFalse()
+    {
+        // Arrange
+        var phoneNumber = 111111111;
+        var customPhoneNumberAttribute = new CustomPhoneNumberAttribute();
+
+        // Act
+        var isValid = customPhoneNumberAttribute.IsValid(phoneNumber);
+
+        // Assert
+        Assert.IsFalse(isValid);
+    }
+
+    [Test]
     public void IsValid_WhenPhoneNumberIsEmpty_ShouldReturnFalse()
     {
         // Arrange
