@@ -218,6 +218,8 @@ public static class Startup
         services.AddTransient<IProfileService, ProfileService>();
         services.AddScoped<IUserService, UserService>();
 
+        services.AddHostedService<IdentityRolesInitializerHostedService>();
+
         services.AddHealthChecks()
             .AddDbContextCheck<OutOfSchoolDbContext>(
                 "Database",
