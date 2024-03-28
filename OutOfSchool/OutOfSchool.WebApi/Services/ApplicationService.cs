@@ -41,7 +41,7 @@ public class ApplicationService : IApplicationService, INotificationReciever, IS
     private readonly IAreaAdminService areaAdminService;
     private readonly ICodeficatorService codeficatorService;
     private readonly IRazorViewToStringRenderer renderer;
-    private readonly IEmailSender emailSender;
+    private readonly IEmailSenderService emailSender;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IOptions<HostsConfig> hostsConfig;
 
@@ -87,7 +87,7 @@ public class ApplicationService : IApplicationService, INotificationReciever, IS
         IAreaAdminService areaAdminService,
         ICodeficatorService codeficatorService,
         IRazorViewToStringRenderer renderer,
-        IEmailSender emailSender,
+        IEmailSenderService emailSender,
         IStringLocalizer<SharedResource> localizer,
         IOptions<HostsConfig> hostsConfig)
     {

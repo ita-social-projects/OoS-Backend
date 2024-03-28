@@ -118,7 +118,7 @@ public class RegionAdminControllerTests
             new Mock<IMapper>().Object,
             regionAdminRepository,
             new Mock<ILogger<CommonMinistryAdminService<long, RegionAdmin, RegionAdminBaseDto, RegionAdminRepository>>>().Object,
-            new Mock<IEmailSender>().Object,
+            new Mock<IEmailSenderService>().Object,
             userManager,
             context,
             new Mock<IRazorViewToStringRenderer>().Object,
