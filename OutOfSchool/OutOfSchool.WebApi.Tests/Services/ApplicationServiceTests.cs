@@ -912,7 +912,7 @@ public class ApplicationServiceTests
         await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
-        emailSenderMock.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<(string, string)>(), It.IsAny<DateTime>()), Times.Once);
+        emailSenderMock.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<(string, string)>(), null), Times.Once);
     }
 
     [Test]
@@ -982,7 +982,7 @@ public class ApplicationServiceTests
                 "ApplicationApprovedEmail",
                 It.Is<ApplicationStatusViewModel>(viewModel => viewModel.UaEnding == expectedEnding)),
             Times.Once);
-        emailSenderMock.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<(string, string)>(), It.IsAny<DateTime>()), Times.Once);
+        emailSenderMock.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<(string, string)>(), null), Times.Once);
     }
 
     private static void AssertApplicationsDTOsAreEqual(ApplicationDto expected, ApplicationDto actual)
