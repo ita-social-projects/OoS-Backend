@@ -18,7 +18,6 @@ using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Strategies.Interfaces;
 using OutOfSchool.WebApi.Util;
 using OutOfSchool.WebApi.Util.Mapping;
-using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
