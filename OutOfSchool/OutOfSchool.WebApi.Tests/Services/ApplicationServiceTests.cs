@@ -550,8 +550,11 @@ public class ApplicationServiceTests
     public async Task UpdateApplication_WhenIdIsValid_ShouldReturnApplication()
     {
         // Arrange
+        var statusKey = "Status";
         var id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd");
-        var changedEntity = WithApplication(id);
+        var changedEntity = WithApplication(id).WithParent(ParentGenerator.Generate());
+        changedEntity.Parent.User = UserGenerator.Generate();
+        changedEntity.Parent.UserId = changedEntity.Parent.User.Id;
 
         var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
 
@@ -569,6 +572,9 @@ public class ApplicationServiceTests
             .ReturnsAsync(changedEntity);
         applicationRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(changedEntity);
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
+        applicationRepositoryMock.Setup(a => a.GetByFilter(It.IsAny<Expression<Func<Application, bool>>>(), It.IsAny<string>()))
+            .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> { changedEntity }));
+
         mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto() {Id = id});
 
         var expected = new ApplicationDto() {Id = id};
@@ -598,6 +604,11 @@ public class ApplicationServiceTests
         currentUserServiceMock.Setup(c => c.UserSubRole).Returns(string.Empty);
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MinValue);
 
+        var recipientsIds = new List<string>()
+        {
+            changedEntity.Parent.UserId,
+        };
+
         // Act
         var response = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
         ApplicationDto result = new();
@@ -608,6 +619,16 @@ public class ApplicationServiceTests
         // Assert
         Assert.NotNull(result);
         AssertApplicationsDTOsAreEqual(expected, result);
+
+        notificationService.Verify(
+            x => x.Create(
+                NotificationType.Application,
+                NotificationAction.Update,
+                changedEntity.Id,
+                recipientsIds,
+                It.Is<Dictionary<string, string>>(c => c.ContainsKey(statusKey) && c[statusKey] == changedEntity.Status.ToString()),
+                changedEntity.Status.ToString()),
+            Times.Once);
     }
 
     [Test]
