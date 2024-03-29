@@ -68,7 +68,7 @@ public class ProviderInfoDto : ProviderInfoBaseDto, IHasRating
     public string PhoneNumber { get; set; } = string.Empty;
 
     [Required]
-    [MaxLength(30)]
+    [MaxLength(Constants.MaxProviderFounderLength)]
     public string Founder { get; set; } = string.Empty;
 
     public ProviderTypeDto Type { get; set; }

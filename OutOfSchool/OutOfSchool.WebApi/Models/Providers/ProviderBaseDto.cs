@@ -67,7 +67,7 @@ public class ProviderBaseDto : IHasCoverImage, IHasImages
     public string PhoneNumber { get; set; } = string.Empty;
 
     [Required]
-    [MaxLength(30)]
+    [MaxLength(Constants.MaxProviderFounderLength)]
     public string Founder { get; set; } = string.Empty;
 
     public long TypeId { get; set; }

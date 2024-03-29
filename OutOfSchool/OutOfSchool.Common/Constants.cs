@@ -51,4 +51,9 @@ public static class Constants
     public const string PathToChatHub = "/hubs/chat";
 
     public const string PathToNotificationHub = "/hubs/notification";
+
+    /// <summary>
+    /// Longest possible length of provider founder.
+    /// </summary>
+    public const int MaxProviderFounderLength = 60;
 }

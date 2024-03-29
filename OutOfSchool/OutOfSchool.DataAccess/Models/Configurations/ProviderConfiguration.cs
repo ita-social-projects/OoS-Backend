@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.Services.Models.Configurations;
@@ -55,7 +56,7 @@ internal class ProviderConfiguration : IEntityTypeConfiguration<Provider>
 
         builder.Property(x => x.Founder)
             .IsRequired()
-            .HasMaxLength(30);
+            .HasMaxLength(Constants.MaxProviderFounderLength);
 
         builder.Property(x => x.Ownership)
             .IsRequired();

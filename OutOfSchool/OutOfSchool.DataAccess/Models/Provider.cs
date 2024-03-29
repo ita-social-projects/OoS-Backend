@@ -72,7 +72,7 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISo
     public string PhoneNumber { get; set; } = string.Empty;
 
     [Required]
-    [MaxLength(180)]
+    [MaxLength(Constants.MaxProviderFounderLength)]
     public string Founder { get; set; } = string.Empty;
 
     [Required]
