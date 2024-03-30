@@ -11,8 +11,4 @@
     <PackageReference Include="Quartz.AspNetCore" />
     <PackageReference Include="SendGrid.Extensions.DependencyInjection" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
-  </ItemGroup>
 </Project>
