@@ -1,6 +1,7 @@
 ﻿using OutOfSchool.EmailSender;
 using OutOfSchool.WebApi.Common.QuartzConstants;
 using Quartz;
+using Quartz.Impl.Matchers;
 
 namespace OutOfSchool.WebApi.Extensions;
 
@@ -29,5 +30,8 @@ public static class EmailSenderExtensions
             .ForJob(emailSenderJobKey)
             .StartNow()
             .WithCronSchedule(quartzConfig.CronSchedules.EmailSenderCronScheduleString));
+
+        quartz.AddJobListener<EmailSenderJobListener>(GroupMatcher<JobKey>.GroupEquals(GroupConstants.Emails));
+        quartz.AddTriggerListener<EmailSenderJobTriggerListener>(GroupMatcher<TriggerKey>.GroupEquals(GroupConstants.Emails));
     }
 }
