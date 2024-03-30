@@ -4,29 +4,25 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Repository;
 using Quartz;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
 namespace OutOfSchool.EmailSender;
 
+[DisallowConcurrentExecution]
 public class EmailSenderJob : IJob
 {
     private readonly IOptions<EmailOptions> emailOptions;
-    private readonly IEmailOutboxRepository outboxRepository;
     private readonly ILogger<EmailSenderJob> logger;
     private readonly ISendGridClient sendGridClient;
 
     public EmailSenderJob(
         IOptions<EmailOptions> emailOptions,
-        IEmailOutboxRepository outboxRepository,
         ILogger<EmailSenderJob> logger,
         ISendGridClient sendGridClient)
     {
         this.emailOptions = emailOptions;
-        this.outboxRepository = outboxRepository;
         this.logger = logger;
         this.sendGridClient = sendGridClient;
     }
@@ -41,44 +37,45 @@ public class EmailSenderJob : IJob
             return;
         }
 
-        var emailsToSend = outboxRepository.Get(orderBy: new() { { x => x.CreationTime, SortDirection.Ascending } });
-        foreach (var email in emailsToSend)
+        JobDataMap dataMap = context.JobDetail.JobDataMap;
+
+        var email = dataMap.GetString("Email");
+        var subject = dataMap.GetString("Subject");
+        var htmlContent = DecodeFrom64(dataMap.GetString("HtmlContent"));
+        var plainContent = DecodeFrom64(dataMap.GetString("PlainContent"));
+        var expirationTime = dataMap.GetDateTime("ExpirationTime");
+
+        if (expirationTime > DateTime.UtcNow)
         {
-            if(email.ExpirationTime > DateTime.UtcNow)
+            logger.LogError("Email was not sent because expiration time passed: {Email}, {ExpirationTime}", email, expirationTime);
+            return;
+        }
+
+        var message = new SendGridMessage()
+        {
+            From = new EmailAddress()
             {
-                await outboxRepository.Delete(email);
-                logger.LogError("Email was not sent because expiration time passed: {Email}, {ExpirationTime}", email.Email, email.ExpirationTime);
-            }
+                Email = emailOptions.Value.AddressFrom,
+                Name = emailOptions.Value.NameFrom,
+            },
+            Subject = subject,
+            HtmlContent = DecodeFrom64(htmlContent),
+            PlainTextContent = DecodeFrom64(plainContent),
+        };
 
-            var message = new SendGridMessage()
-            {
-                From = new EmailAddress()
-                {
-                    Email = emailOptions.Value.AddressFrom,
-                    Name = emailOptions.Value.NameFrom,
-                },
-                Subject = email.Subject,
-                HtmlContent = DecodeFrom64(email.HtmlContent),
-                PlainTextContent = DecodeFrom64(email.PlainContent),
-            };
+        message.AddTo(new EmailAddress(email));
 
-            message.AddTo(new EmailAddress(email.Email));
+        var response = await sendGridClient.SendEmailAsync(message).ConfigureAwait(false);
 
-            var response = await sendGridClient.SendEmailAsync(message).ConfigureAwait(false);
+        if (response.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            logger.LogError("Email sending rate limit exceeded.");
+            return;
+        }
 
-            if (response.StatusCode == HttpStatusCode.TooManyRequests)
-            {
-                logger.LogError("Email sending rate limit exceeded.");
-                return;
-            }
-
-            if (!response.IsSuccessStatusCode)
-            {
-                logger.LogError("Email was not sent with the following error: {Error}", await response.Body.ReadAsStringAsync().ConfigureAwait(false));
-                continue;
-            }
-
-            await outboxRepository.Delete(email);
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogError("Email was not sent with the following error: {Error}", await response.Body.ReadAsStringAsync().ConfigureAwait(false));
         }
 
         logger.LogInformation("The email sender Quartz job finished.");

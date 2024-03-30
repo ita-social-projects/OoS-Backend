@@ -5,7 +5,6 @@ using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.EmailSender;
-using OutOfSchool.Services.Repository;
 
 namespace OutOfSchool.WebApi.Tests.Extensions;
 
@@ -52,9 +51,7 @@ public class ServiceProviderExtensionsTests
         var isDevelopment = false;
         var sendGridApikey = string.Empty;
         var loggerMock = new Mock<ILogger<DevEmailSender>>();
-        var repositoryMock = new Mock<IEmailOutboxRepository>();
         services.AddSingleton(loggerMock.Object);
-        services.AddSingleton(repositoryMock.Object);
 
         // Act
         services.AddEmailSenderService(isDevelopment, sendGridApikey, builder =>

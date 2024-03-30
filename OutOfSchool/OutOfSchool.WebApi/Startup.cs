@@ -325,7 +325,6 @@ public static class Startup
         services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
         services.AddTransient<IRegionAdminRepository, RegionAdminRepository>();
         services.AddTransient<IAreaAdminRepository, AreaAdminRepository>();
-        services.AddTransient<IEmailOutboxRepository, EmailOutboxRepository>();
 
         services.AddTransient<IApplicationRepository, ApplicationRepository>();
         services

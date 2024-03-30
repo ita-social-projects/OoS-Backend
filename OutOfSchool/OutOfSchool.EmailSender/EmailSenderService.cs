@@ -1,34 +1,40 @@
 ﻿using System;
 using System.Text;
 using System.Threading.Tasks;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
+using Quartz;
+using Quartz.Impl;
 
 namespace OutOfSchool.EmailSender;
 
 public class EmailSenderService : IEmailSenderService
 {
-    private readonly IEmailOutboxRepository emailOutboxRepository;
+    private readonly IScheduler scheduler;
 
-    public EmailSenderService(
-        IEmailOutboxRepository emailOutboxRepository)
+    public EmailSenderService()
     {
-        this.emailOutboxRepository = emailOutboxRepository;
+        scheduler = new StdSchedulerFactory().GetScheduler().Result;
+        scheduler.Start().Wait();
     }
 
     public async Task SendAsync(string email, string subject, (string html, string plain) content, DateTime? expirationTime = null)
     {
         expirationTime ??= DateTime.MaxValue;
-        var outboxMessage = new EmailOutbox()
+
+        var jobData = new JobDataMap
         {
-            Email = email,
-            Subject = subject,
-            HtmlContent = EncodeToBase64(content.html),
-            PlainContent = EncodeToBase64(content.plain),
-            CreationTime = DateTime.Now,
-            ExpirationTime = (DateTimeOffset)expirationTime
+            { "Email", email },
+            { "Subject", subject },
+            { "HtmlContent", EncodeToBase64(content.html) },
+            { "PlainContent", EncodeToBase64(content.plain) },
+            { "ExpirationTime", expirationTime },
         };
-        await emailOutboxRepository.Create(outboxMessage);
+
+        var job = JobBuilder.Create<EmailSenderJob>()
+            .UsingJobData(jobData)
+            .StoreDurably()
+            .Build();
+
+        await scheduler.AddJob(job, false);
     }
 
     private string EncodeToBase64(string toEncode)
