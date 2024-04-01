@@ -30,8 +30,8 @@ public class CustomPasswordValidatorTests
                 new Mock<IUserStore<User>>().Object,
                 new Mock<IOptions<IdentityOptions>>().Object,
                 new Mock<IPasswordHasher<User>>().Object,
-                new IUserValidator<User>[0],
-                new IPasswordValidator<User>[0],
+                Array.Empty<IUserValidator<User>>(),
+                Array.Empty<IPasswordValidator<User>>(),
                 new Mock<ILookupNormalizer>().Object,
                 new Mock<IdentityErrorDescriber>().Object,
                 new Mock<IServiceProvider>().Object,
@@ -60,9 +60,10 @@ public class CustomPasswordValidatorTests
         // Arrange
         var user = new User();
         var invalidPassword = "";
+        var expectedErrorMessageName = "PasswordValidationErrorMessage";
         var expectedErrorMessage = "Password is invalid";
         localizer.Setup(x => x[Constants.PasswordValidationErrorMessage])
-            .Returns(new LocalizedString("PasswordValidationErrorMessage", expectedErrorMessage));
+            .Returns(new LocalizedString(expectedErrorMessageName, expectedErrorMessage));
 
         // Act
         var result = await customPasswordValidator.ValidateAsync(userManager.Object, user, invalidPassword);

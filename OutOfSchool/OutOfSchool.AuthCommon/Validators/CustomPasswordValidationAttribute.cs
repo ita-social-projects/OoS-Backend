@@ -6,16 +6,25 @@ public class CustomPasswordValidationAttribute : ValidationAttribute
 {
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
+        ArgumentNullException.ThrowIfNull(validationContext);
+
         var password = value as string;
         if (!CustomPasswordRules.IsValidPassword(password))
         {
-            var localizer = (IStringLocalizer<SharedResource>?)validationContext
-                .GetService(typeof(IStringLocalizer<SharedResource>));
-            var errorMessage = localizer?.GetString(Constants.PasswordValidationErrorMessage)
-                ?? Constants.PasswordValidationErrorMessage;
+            var errorMessage = GetLocalizedErrorMessage(
+                Constants.PasswordValidationErrorMessage,
+                validationContext);
             return new ValidationResult(errorMessage);
         }
 
         return ValidationResult.Success;
+    }
+
+    private static string GetLocalizedErrorMessage(string errorName, ValidationContext validationContext)
+    {
+        var localizer = (IStringLocalizer<SharedResource>?)validationContext
+            .GetService(typeof(IStringLocalizer<SharedResource>));
+        var errorMessage = localizer?.GetString(errorName);
+        return errorMessage ?? errorName;
     }
 }
