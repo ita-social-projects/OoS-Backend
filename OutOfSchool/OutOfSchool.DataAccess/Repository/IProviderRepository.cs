@@ -14,4 +14,8 @@ public interface IProviderRepository : ISensitiveEntityRepositorySoftDeleted<Pro
     Task<List<Provider>> GetAllWithDeleted(DateTime updatedAfter, int from, int size);
 
     Task<int> CountWithDeleted(DateTime updatedAfter);
+
+    Task<List<string>> CheckExistsByEdrpous(List<string> edrpous);
+
+    Task<List<string>> CheckExistsByEmails(List<string> emails);
 }

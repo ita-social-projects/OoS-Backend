@@ -222,4 +222,22 @@ public class AdminController : Controller
 
         return Ok(result.Result);
     }
+
+    /// <summary>
+    /// Check providers for existing entities by data from incoming parameter.
+    /// </summary>
+    /// <param name="data">Values for checking.</param>
+    /// <returns>Crossing data.</returns>
+    [Authorize(Roles = "techadmin")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ImportDataValidate))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPost("~/api/v{version:apiVersion}/providers/import/validate")]
+    public async Task<ActionResult> ValidateImportData([FromBody] ImportDataValidate data)
+    {
+        var result = await providerService.ValidateImportData(data).ConfigureAwait(false);
+        return Ok(result);
+    }
 }

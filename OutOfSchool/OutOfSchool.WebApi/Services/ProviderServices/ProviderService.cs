@@ -438,6 +438,25 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         }
     }
 
+    public async Task<ImportDataValidate> ValidateImportData(ImportDataValidate data)
+    {
+        _ = data ?? throw new ArgumentNullException(nameof(data));
+
+        var result = new ImportDataValidate();
+
+        if (data.Edrpous.Count > 0)
+        {
+            result.Edrpous = await providerRepository.CheckExistsByEdrpous(data.Edrpous);
+        }
+
+        if (data.Emails.Count > 0)
+        {
+            result.Emails = await providerRepository.CheckExistsByEmails(data.Emails);
+        }
+
+        return result;
+    }
+
     private async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
     {
         var recipientIds = new List<string>();

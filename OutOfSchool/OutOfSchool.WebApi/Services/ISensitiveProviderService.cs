@@ -19,4 +19,11 @@ public interface ISensitiveProviderService
     /// <param name="providerBlockDto">Provider to block/unblock.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
     Task<ResponseDto> Block(ProviderBlockDto providerBlockDto, string token = default);
+
+    /// <summary>
+    /// Check providers for existing entities by data.
+    /// </summary>
+    /// <param name="data">Values for checking.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
+    Task<ImportDataValidate> ValidateImportData(ImportDataValidate data);
 }

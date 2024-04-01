@@ -1064,6 +1064,49 @@ public class ProviderServiceTests
 
     #endregion Block
 
+    #region ValidateImportData
+
+    [Test]
+    public void ValidateImportData_ReturnsArgumentNullException_IfDtoIsNull()
+    {
+        // Arrange
+
+        // Act, Assert
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await providerService.ValidateImportData(null).ConfigureAwait(false));
+    }
+
+    [Test]
+    public async Task ValidateImportData_DontExecuteGettingData_IfDtoIsEmpty()
+    {
+        // Arrange
+        var data = new ImportDataValidate();
+
+        // Act
+        var result = await providerService.ValidateImportData(data).ConfigureAwait(false);
+
+        // Assert
+        providersRepositoryMock.Verify(x => x.CheckExistsByEdrpous(data.Edrpous), Times.Never);
+        providersRepositoryMock.Verify(x => x.CheckExistsByEmails(data.Emails), Times.Never);
+    }
+
+    [Test]
+    public async Task ValidateImportData_ExecuteGettingData_IfDtoIsValid()
+    {
+        // Arrange
+        var data = new ImportDataValidate();
+        data.Edrpous.Add("test");
+        data.Emails.Add("test");
+
+        // Act
+        var result = await providerService.ValidateImportData(data).ConfigureAwait(false);
+
+        // Assert
+        providersRepositoryMock.Verify(x => x.CheckExistsByEdrpous(data.Edrpous), Times.Once);
+        providersRepositoryMock.Verify(x => x.CheckExistsByEmails(data.Emails), Times.Once);
+    }
+
+    #endregion ValidateImportData
+
     #region TestDataSets
 
     private static IEnumerable<object> AdditionalTestData()
