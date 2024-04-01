@@ -21,6 +21,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
@@ -140,29 +141,65 @@ public class ApplicationServiceTests
     public async Task CreateApplication_WhenCalled_ShouldReturnApplication()
     {
         // Arrange
+        var statusKey = "Status";
         var workshopList = WithWorkshopsList();
 
-        var newApplication = new Application()
+        var newApplication = ApplicationGenerator.Generate().WithWorkshop(WorkshopGenerator.Generate().WithProvider(ProvidersGenerator.Generate()));
+        newApplication.WorkshopId = workshopList.FirstOrDefault(x => x.Status == WorkshopStatus.Open).Id;
+        newApplication.Workshop.Id = newApplication.WorkshopId;
+        newApplication.Status = ApplicationStatus.Pending;
+
+        var applicationForCreation = new Application()
         {
-            Id = new Guid("6d4caeae-f0c3-492e-99b0-c8c105693376"),
-            WorkshopId = workshopList.FirstOrDefault(x => x.Status == WorkshopStatus.Open).Id,
-            CreationTime = new DateTimeOffset(2022, 01, 12, 12, 34, 15, TimeSpan.Zero),
+            Id = newApplication.Id,
+            WorkshopId = newApplication.WorkshopId,
+            CreationTime = newApplication.CreationTime,
             Status = ApplicationStatus.Pending,
-            ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
-            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+            ChildId = newApplication.ChildId,
+            ParentId = newApplication.ParentId,
         };
+
+        var applicationDto = new ApplicationDto()
+        {
+            Id = newApplication.Id,
+            WorkshopId = newApplication.WorkshopId,
+            CreationTime = newApplication.CreationTime,
+            Status = ApplicationStatus.Pending,
+            ChildId = newApplication.ChildId,
+            ParentId = newApplication.ParentId,
+        };
+
+        applicationRepositoryMock.Setup(w => w.Create(applicationForCreation)).Returns(Task.FromResult(newApplication));
+        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(applicationDto);
+        mapper.Setup(m => m.Map<Application>(It.IsAny<ApplicationCreate>())).Returns(applicationForCreation);
+
         var input = new ApplicationCreate()
         {
-            WorkshopId = workshopList.FirstOrDefault(x => x.Status == WorkshopStatus.Open).Id,
-            ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
-            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+            WorkshopId = newApplication.WorkshopId,
+            ChildId = newApplication.ChildId,
+            ParentId = newApplication.ParentId,
         };
         SetupCreate(newApplication);
+
+        var recipientsIds = new List<string>()
+        {
+            newApplication.Workshop.Provider.UserId,
+        };
 
         // Act
         var result = await service.Create(input).ConfigureAwait(false);
 
         // Assert
+        notificationService.Verify(
+            x => x.Create(
+                NotificationType.Application,
+                NotificationAction.Create,
+                newApplication.Id,
+                recipientsIds,
+                It.Is<Dictionary<string, string>>(c => c.ContainsKey(statusKey) && c[statusKey] == newApplication.Status.ToString()),
+                newApplication.Status.ToString()),
+            Times.Once);
+
         result.Should().BeEquivalentTo(
             new ModelWithAdditionalData<ApplicationDto, int>
             {
@@ -510,11 +547,17 @@ public class ApplicationServiceTests
     }
 
     [Test]
-    public async Task UpdateApplication_WhenIdIsValid_ShouldReturnApplication()
+    [TestCase("provider", ApplicationStatus.Pending, ApplicationStatus.Approved)]
+    [TestCase("parent", ApplicationStatus.Approved, ApplicationStatus.Left)]
+    public async Task UpdateApplication_WhenIdIsValid_ShouldReturnApplication(string userRole, ApplicationStatus statusFrom, ApplicationStatus statusTo)
     {
         // Arrange
+        var statusKey = "Status";
         var id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd");
-        var changedEntity = WithApplication(id);
+        var changedEntity = WithApplication(id, statusFrom).WithParent(ParentGenerator.Generate());
+        changedEntity.Parent.User = UserGenerator.Generate();
+        changedEntity.Parent.UserId = changedEntity.Parent.User.Id;
+        changedEntity.Workshop.WithProvider(ProvidersGenerator.Generate());
 
         var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
 
@@ -532,13 +575,16 @@ public class ApplicationServiceTests
             .ReturnsAsync(changedEntity);
         applicationRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(changedEntity);
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
+        applicationRepositoryMock.Setup(a => a.GetByFilter(It.IsAny<Expression<Func<Application, bool>>>(), It.IsAny<string>()))
+            .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> { changedEntity }));
+
         mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto() {Id = id});
 
         var expected = new ApplicationDto() {Id = id};
         var update = new ApplicationUpdate
         {
             Id = id,
-            Status = ApplicationStatus.Approved,
+            Status = statusTo,
             WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
             ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
         };
@@ -557,9 +603,20 @@ public class ApplicationServiceTests
 
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
 
-        currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
+        currentUserServiceMock.Setup(c => c.UserRole).Returns(userRole);
         currentUserServiceMock.Setup(c => c.UserSubRole).Returns(string.Empty);
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MinValue);
+
+        var recipientsIds = new List<string>();
+
+        if (statusTo == ApplicationStatus.Approved)
+        {
+            recipientsIds.Add(changedEntity.Parent.UserId);
+        }
+        else if (statusTo == ApplicationStatus.Left)
+        {
+            recipientsIds.Add(changedEntity.Workshop.Provider.UserId);
+        }
 
         // Act
         var response = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
@@ -571,6 +628,16 @@ public class ApplicationServiceTests
         // Assert
         Assert.NotNull(result);
         AssertApplicationsDTOsAreEqual(expected, result);
+
+        notificationService.Verify(
+            x => x.Create(
+                NotificationType.Application,
+                NotificationAction.Update,
+                changedEntity.Id,
+                recipientsIds,
+                It.Is<Dictionary<string, string>>(c => c.ContainsKey(statusKey) && c[statusKey] == changedEntity.Status.ToString()),
+                changedEntity.Status.ToString()),
+            Times.Once);
     }
 
     [Test]
@@ -1012,14 +1079,6 @@ public class ApplicationServiceTests
                 It.IsAny<string>()))
             .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> {application}));
         workshopServiceCombinerMock.Setup(x => x.GetById(application.WorkshopId)).ReturnsAsync(workshopMock);
-
-        applicationRepositoryMock.Setup(
-                w => w.Create(It.IsAny<Application>()))
-            .Returns(Task.FromResult(It.IsAny<Application>()));
-        mapper.Setup(m => m.Map<Application>(It.IsAny<ApplicationCreate>()))
-            .Returns(application);
-        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>()))
-            .Returns(new ApplicationDto() {Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd") });
     }
 
     private void SetupGetAll(List<Application> apps)

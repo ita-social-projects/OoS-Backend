@@ -42,17 +42,127 @@ public class NotificationServiceTests
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         notificationsConfigMock = new Mock<IOptions<NotificationsConfig>>();
 
+        var notificationHub = new Mock<IHubContext<NotificationHub>>();
+        var clientsMock = new Mock<IHubClients>();
+        var clientProxyMock = new Mock<IClientProxy>();
+
+        notificationHub.Setup(nh => nh.Clients).Returns(clientsMock.Object);
+        clientsMock.Setup(client => client.Group(It.IsAny<string>())).Returns(clientProxyMock.Object);
+
         notificationService = new NotificationService(
             notificationRepositoryMock.Object,
             new Mock<ILogger<NotificationService>>().Object,
             new Mock<IStringLocalizer<SharedResource>>().Object,
             mapper,
-            new Mock<IHubContext<NotificationHub>>().Object,
+            notificationHub.Object,
             notificationsConfigMock.Object);
 
         userId = Guid.NewGuid().ToString();
         notifications = CreateNotificationsForUser(userId);
     }
+
+    #region Create
+    [Test]
+    public async Task Create_NotificationsDisabled_EntityNotCreated()
+    {
+        // Arrange
+        IEnumerable<string> recipientsIds = null;
+
+        var notificationsConfig = new NotificationsConfig
+        {
+            Enabled = false,
+        };
+
+        notificationsConfigMock.Setup(x => x.Value).Returns(notificationsConfig);
+
+        // Act
+        await notificationService.Create(
+            It.IsAny<NotificationType>(),
+            It.IsAny<NotificationAction>(),
+            It.IsAny<Guid>(),
+            recipientsIds).ConfigureAwait(false);
+
+        // Assert
+        notificationRepositoryMock.Verify(x => x.Create(It.IsAny<Notification>()), Times.Never);
+    }
+
+    [Test]
+    public async Task Create_RecipientsIdsNull_EntityNotCreated()
+    {
+        // Arrange
+        IEnumerable<string> recipientsIds = null;
+
+        var notificationsConfig = new NotificationsConfig
+        {
+            Enabled = true,
+        };
+
+        notificationsConfigMock.Setup(x => x.Value).Returns(notificationsConfig);
+
+        // Act
+        await notificationService.Create(
+            It.IsAny<NotificationType>(),
+            It.IsAny<NotificationAction>(),
+            It.IsAny<Guid>(),
+            recipientsIds).ConfigureAwait(false);
+
+        // Assert
+        notificationRepositoryMock.Verify(x => x.Create(It.IsAny<Notification>()), Times.Never);
+    }
+
+    [Test]
+    public async Task Create_RecipientsIdsEmpty_EntityNotCreated()
+    {
+        // Arrange
+        IEnumerable<string> recipientsIds = new List<string>();
+
+        var notificationsConfig = new NotificationsConfig
+        {
+            Enabled = true,
+        };
+
+        notificationsConfigMock.Setup(x => x.Value).Returns(notificationsConfig);
+
+        // Act
+        await notificationService.Create(
+            It.IsAny<NotificationType>(),
+            It.IsAny<NotificationAction>(),
+            It.IsAny<Guid>(),
+            recipientsIds).ConfigureAwait(false);
+
+        // Assert
+        notificationRepositoryMock.Verify(x => x.Create(It.IsAny<Notification>()), Times.Never);
+    }
+
+    [Test]
+    public async Task Create_RecipientsIdsValid_CreatesSpecificNumberOfTimes()
+    {
+        // Arrange
+        IEnumerable<string> recipientsIds = new List<string>()
+            {
+                Guid.NewGuid().ToString(),
+                Guid.NewGuid().ToString(),
+            };
+
+        var notificationsConfig = new NotificationsConfig
+        {
+            Enabled = true,
+        };
+
+        notificationsConfigMock.Setup(x => x.Value).Returns(notificationsConfig);
+
+        // Act
+        await notificationService.Create(
+            It.IsAny<NotificationType>(),
+            It.IsAny<NotificationAction>(),
+            It.IsAny<Guid>(),
+            recipientsIds).ConfigureAwait(false);
+
+        // Assert
+        notificationRepositoryMock.Verify(x => x.Create(It.IsAny<Notification>()), Times.Exactly(recipientsIds.Count()));
+    }
+
+    #endregion
 
     #region ReadAll
     [Test]

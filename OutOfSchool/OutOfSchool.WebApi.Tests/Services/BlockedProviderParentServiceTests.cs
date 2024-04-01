@@ -107,6 +107,8 @@ public class BlockedProviderParentServiceTests
             { ProviderShortTitleKey, blockEntity.Provider.ShortTitle },
         };
 
+        var recipientsIds = new List<string>() { userId };
+
         blockedProviderParentRepositoryMock
             .Setup(x => x.GetBlockedProviderParentEntities(blockEntity.ParentId, blockEntity.ProviderId))
             .Returns(new List<BlockedProviderParent>().AsQueryable().BuildMock());
@@ -127,7 +129,7 @@ public class BlockedProviderParentServiceTests
                 NotificationType.Parent,
                 NotificationAction.ProviderBlock,
                 blockedParentUserId,
-                service,
+                recipientsIds,
                 additionalData,
                 null),
                 Times.Once);
@@ -191,6 +193,8 @@ public class BlockedProviderParentServiceTests
             unblockEntity,
         };
 
+        var recipientsIds = new List<string>() { userId };
+
         blockedProviderParentRepositoryMock
             .Setup(x => x.GetBlockedProviderParentEntities(unblockEntity.ParentId, unblockEntity.ProviderId))
             .Returns(blockedParents.AsQueryable().BuildMock());
@@ -209,7 +213,7 @@ public class BlockedProviderParentServiceTests
                 NotificationType.Parent,
                 NotificationAction.ProviderUnblock,
                 unblockedParentUserId,
-                service,
+                recipientsIds,
                 additionalData,
                 null),
                 Times.Once);
@@ -296,24 +300,6 @@ public class BlockedProviderParentServiceTests
         // Assert
         blockedProviderParentRepositoryMock.VerifyAll();
         Assert.IsNull(result);
-    }
-    #endregion
-
-    #region GetNotificationRecipientIds
-    [Test]
-    public async Task GetNotificationsRecipientIds_WhenObjectIdIsValid_ShouldReturnIEnumerableWithObjectId()
-    {
-        // Arrange
-        var action = NotificationAction.ProviderBlock;
-        var additionalData = new Dictionary<string, string>();
-        var objectId = Guid.NewGuid();
-        var expected = new List<string>() { objectId.ToString() };
-
-        // Act
-        var result = await service.GetNotificationsRecipientIds(action, additionalData, objectId);
-
-        // Assert
-        Assert.AreEqual(expected, result);
     }
     #endregion
 }
