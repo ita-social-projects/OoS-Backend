@@ -230,7 +230,6 @@ public class AdminController : Controller
     /// <returns>Crossing data.</returns>
     [Authorize(Roles = "techadmin")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ImportDataValidate))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
