@@ -13,11 +13,14 @@ namespace OutOfSchool.AuthServer.Tests.Validators;
 public class CustomPasswordValidationAttributeTests
 {
     private CustomPasswordValidationAttribute attribute;
+    private Mock<ICustomPasswordRules> rules;
 
     [SetUp]
     public void SetUp()
     {
-        attribute = new CustomPasswordValidationAttribute();
+        rules = new Mock<ICustomPasswordRules>();
+        attribute = new CustomPasswordValidationAttribute(rules.Object);
+
     }
 
     [Test]
@@ -26,11 +29,13 @@ public class CustomPasswordValidationAttributeTests
         // Arrange
         var validPassword = "Ab1%234C1";
         var validationContext = new ValidationContext(new object());
+        rules.Setup(x => x.IsValidPassword(validPassword)).Returns(true);
 
         // Act
         var result = attribute.GetValidationResult(validPassword, validationContext);
 
         // Assert
+        rules.VerifyAll();
         Assert.IsNull(result);
     }
 
@@ -39,6 +44,7 @@ public class CustomPasswordValidationAttributeTests
     {
         // Arrange
         var invalidPassword = "";
+        rules.Setup(x => x.IsValidPassword(invalidPassword)).Returns(false);
         var expectedErrorMessage = "Password must be at least 8 characters long";
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var serviceProvider = new Mock<IServiceProvider>();
@@ -52,6 +58,7 @@ public class CustomPasswordValidationAttributeTests
         var result = attribute.GetValidationResult(invalidPassword, validationContext);
 
         // Assert
+        rules.VerifyAll();
         localizer.VerifyAll();
         serviceProvider.VerifyAll();
         Assert.IsNotNull(result);

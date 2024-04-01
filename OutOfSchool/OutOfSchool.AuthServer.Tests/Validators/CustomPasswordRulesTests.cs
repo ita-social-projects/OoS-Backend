@@ -17,8 +17,11 @@ public class CustomPasswordRulesTests
     [TestCase("Ab1bbbb$_", true)]
     public void IsValidPassword(string password, bool expectedResult)
     {
+        // Assert
+        var rules = new CustomPasswordRules();
+
         // Act
-        var result = CustomPasswordRules.IsValidPassword(password);
+        var result = rules.IsValidPassword(password);
 
         // Assert
         Assert.AreEqual(expectedResult, result);

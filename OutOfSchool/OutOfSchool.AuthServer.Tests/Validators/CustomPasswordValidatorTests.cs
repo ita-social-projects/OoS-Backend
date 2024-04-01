@@ -20,11 +20,13 @@ public class CustomPasswordValidatorTests
     private IPasswordValidator<User> customPasswordValidator;
     private Mock<UserManager<User>> userManager;
     private Mock<IStringLocalizer<SharedResource>> localizer;
+    private Mock<ICustomPasswordRules> rules;
 
     [SetUp]
     public void SetUp()
     {
         localizer = new Mock<IStringLocalizer<SharedResource>>();
+        rules = new Mock<ICustomPasswordRules>();
 
         userManager = new Mock<UserManager<User>>(
                 new Mock<IUserStore<User>>().Object,
@@ -37,7 +39,7 @@ public class CustomPasswordValidatorTests
                 new Mock<IServiceProvider>().Object,
                 new Mock<ILogger<UserManager<User>>>().Object);
 
-        customPasswordValidator = new CustomPasswordValidator(localizer.Object);
+        customPasswordValidator = new CustomPasswordValidator(localizer.Object, rules.Object);
     }
 
     [Test]
@@ -46,6 +48,7 @@ public class CustomPasswordValidatorTests
         // Arrange
         var user = new User();
         var validPassword = "A1b2c4%d";
+        rules.Setup(x => x.IsValidPassword(validPassword)).Returns(true);
 
         // Act
         var result = await customPasswordValidator.ValidateAsync(userManager.Object, user, validPassword);
@@ -60,6 +63,7 @@ public class CustomPasswordValidatorTests
         // Arrange
         var user = new User();
         var invalidPassword = "";
+        rules.Setup(x => x.IsValidPassword(invalidPassword)).Returns(false);
         var expectedErrorMessageName = "PasswordValidationErrorMessage";
         var expectedErrorMessage = "Password is invalid";
         localizer.Setup(x => x[Constants.PasswordValidationErrorMessage])

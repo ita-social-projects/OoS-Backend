@@ -1,7 +1,7 @@
 ﻿namespace OutOfSchool.AuthCommon.Validators;
-public static class CustomPasswordRules
+public class CustomPasswordRules : ICustomPasswordRules
 {
-    public static bool IsValidPassword(string? password)
+    public bool IsValidPassword(string? password)
     {
         if (string.IsNullOrEmpty(password) || password.Length < Constants.PasswordMinLength)
         {
