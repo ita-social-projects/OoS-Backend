@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -238,5 +239,28 @@ public class AdminController : Controller
     {
         var result = await providerService.ValidateImportData(data).ConfigureAwait(false);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Export all Providers to CSV file.
+    /// </summary>
+    /// <returns>CSV file containing all providers.</returns>
+    [HttpGet]
+    [HasPermission(Permissions.AdminDataRead)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> ExportProviders()
+    {
+        var providersCsvData = await providerService.GetCsvExportData().ConfigureAwait(false);
+
+        if (providersCsvData is null or { Length: 0 })
+        {
+            return NoContent();
+        }
+
+        return File(providersCsvData, MediaTypeNames.Text.Csv, "providers.csv");
     }
 }

@@ -1,6 +1,7 @@
 using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 using GrpcService;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.WebApi.Models;
@@ -166,6 +167,18 @@ public class MappingProfile : Profile
 
         CreateMap<Provider, ProviderUpdateDto>()
             .Apply(AddCommonProvider2ProviderBaseDto);
+
+        CreateMap<Provider, ProviderCsvDto>()
+            .ForMember(dest => dest.Ownership, opt => opt.MapFrom((dest, src) => dest.Ownership switch
+            {
+                OwnershipType.State => "Державна",
+                OwnershipType.Common => "Комунальна",
+                OwnershipType.Private => "Приватна",
+                _ => string.Empty,
+            }))
+            .ForMember(dest => dest.License, opt => opt.MapFrom(src => string.IsNullOrWhiteSpace(src.License) ? "не вказано" : src.License))
+            .ForMember(dest => dest.Settlement, opt => opt.MapFrom(src => CatottgAddressExtensions.GetSettlementName(src.LegalAddress.CATOTTG)))
+            .ForMember(dest => dest.Address, opt => opt.MapFrom(src => $"{src.LegalAddress.Street}, {src.LegalAddress.BuildingNumber}"));
 
         CreateMap<ProviderDto, ProviderUpdateDto>();
 
