@@ -45,9 +45,9 @@ public class NotificationRepository : SensitiveEntityRepository<Notification>, I
     }
 
     /// <inheritdoc/>
-    public async Task SetReadDateTimeForAllUnreaded(string userId, DateTimeOffset dateTime)
+    public Task SetReadDateTimeForAllUnreaded(string userId, DateTimeOffset dateTime)
     {
-        await db.Notifications
+        return db.Notifications
             .Where(n => n.UserId == userId && n.ReadDateTime == null)
             .ExecuteUpdateAsync(s => s.SetProperty(n => n.ReadDateTime, dateTime));
     }
