@@ -1076,33 +1076,36 @@ public class ProviderServiceTests
     }
 
     [Test]
-    public async Task ValidateImportData_DontExecuteGettingData_IfDtoIsEmpty()
+    [TestCase(false, false)]
+    [TestCase(true, false)]
+    [TestCase(false, true)]
+    [TestCase(true, true)]
+    public async Task ValidateImportData_ExecuteGettingData_IfDtoIsValid(bool checkEdrpous, bool checkEmails)
     {
         // Arrange
+        var timesEdrpous = Times.Never;
+        var timesEmails = Times.Never;
+
         var data = new ImportDataValidate();
+
+        if (checkEdrpous)
+        {
+            data.Edrpous.Add("test");
+            timesEdrpous = Times.Once;
+        }
+
+        if (checkEmails)
+        {
+            data.Emails.Add("test");
+            timesEmails = Times.Once;
+        }
 
         // Act
         var result = await providerService.ValidateImportData(data).ConfigureAwait(false);
 
         // Assert
-        providersRepositoryMock.Verify(x => x.CheckExistsByEdrpous(data.Edrpous), Times.Never);
-        providersRepositoryMock.Verify(x => x.CheckExistsByEmails(data.Emails), Times.Never);
-    }
-
-    [Test]
-    public async Task ValidateImportData_ExecuteGettingData_IfDtoIsValid()
-    {
-        // Arrange
-        var data = new ImportDataValidate();
-        data.Edrpous.Add("test");
-        data.Emails.Add("test");
-
-        // Act
-        var result = await providerService.ValidateImportData(data).ConfigureAwait(false);
-
-        // Assert
-        providersRepositoryMock.Verify(x => x.CheckExistsByEdrpous(data.Edrpous), Times.Once);
-        providersRepositoryMock.Verify(x => x.CheckExistsByEmails(data.Emails), Times.Once);
+        providersRepositoryMock.Verify(x => x.CheckExistsByEdrpous(data.Edrpous), timesEdrpous);
+        providersRepositoryMock.Verify(x => x.CheckExistsByEmails(data.Emails), timesEmails);
     }
 
     #endregion ValidateImportData
