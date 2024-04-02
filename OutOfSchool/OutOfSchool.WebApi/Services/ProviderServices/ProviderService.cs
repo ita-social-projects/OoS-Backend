@@ -302,15 +302,8 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     /// <inheritdoc/>
     public async Task<byte[]> GetCsvExportData()
     {
-        var sortExpression = new Dictionary<Expression<Func<Provider, object>>, SortDirection>
-        {
-            { x => x.IsBlocked, SortDirection.Ascending },
-            { x => x.Status, SortDirection.Ascending },
-            { x => x.UpdatedAt, SortDirection.Descending },
-        };
-
         var providers = await providerRepository
-            .Get(orderBy: sortExpression, asNoTracking: true)
+            .Get(asNoTracking: true)
             .ToArrayAsync()
             .ConfigureAwait(false);
 
