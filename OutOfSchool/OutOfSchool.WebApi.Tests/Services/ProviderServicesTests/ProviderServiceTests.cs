@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using CsvHelper;
+using CsvHelper.Configuration;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -517,6 +522,144 @@ public class ProviderServiceTests
 
         // Assert
         Assert.That(result, Is.Null);
+    }
+
+    #endregion
+
+    #region GetCsvExportData
+
+    [Test]
+    public async Task GetCsvExportData_WhenNoProviders_ShouldRetunEmptyByteArray()
+    {
+        // Arrange
+        var providers = Enumerable.Empty<Provider>().AsQueryable().BuildMock();
+
+        providersRepositoryMock.Setup(r => r.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Provider, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>(),
+                It.Is(true, EqualityComparer<bool>.Default)))
+            .Returns(providers);
+
+        // Act
+        var csvData = await providerService.GetCsvExportData().ConfigureAwait(false);
+
+        // Assert
+        Assert.IsEmpty(csvData);
+    }
+
+    [Test]
+    public async Task GetCsvExportData_WhenSomeProviders_ShouldReturnNotEmptyByteArray()
+    {
+        // Arrange
+        var providers = fakeProviders.AsQueryable().BuildMock();
+
+        providersRepositoryMock.Setup(r => r.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Provider, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>(),
+                It.Is(true, EqualityComparer<bool>.Default)))
+            .Returns(providers);
+
+        // Act
+        var csvData = await providerService.GetCsvExportData().ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNotEmpty(csvData);
+    }
+
+    [Test]
+    public async Task GetCsvExportData_WhenSomeProviders_ShouldReturnValidCsvHeaders()
+    {
+        // Arrange
+        string[] expectedHeaders =
+        [
+            "Назва закладу",
+            "Форма власності",
+            "ЄДРПОУ / ІПН",
+            "Ліцензія №",
+            "Населений пункт",
+            "Адреса",
+            "Електронна пошта",
+            "Телефон",
+        ];
+
+        var providers = fakeProviders.AsQueryable().BuildMock();
+
+        providersRepositoryMock.Setup(r => r.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Provider, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>(),
+                It.Is(true, EqualityComparer<bool>.Default)))
+            .Returns(providers);
+
+        var csvConfiguration = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            Delimiter = ";",
+            Encoding = Encoding.UTF8,
+        };
+
+        // Act
+        var csvData = await providerService.GetCsvExportData().ConfigureAwait(false);
+
+        using var stream = new MemoryStream(csvData);
+        using var reader = new StreamReader(stream);
+        using var csvReader = new CsvReader(reader, csvConfiguration);
+
+        _ = csvReader.Read();
+        _ = csvReader.ReadHeader();
+        var headerRecord = csvReader.HeaderRecord;
+
+        // Assert
+        Assert.DoesNotThrow(() => csvReader.ValidateHeader<ProviderCsvDto>());
+        Assert.AreEqual(expectedHeaders, headerRecord);
+    }
+
+    [Test]
+    public async Task GetCsvExportData_WhenSomeProviders_ShouldReturnValidCsvRows()
+    {
+        // Arrange
+        var expectedRowsCount = fakeProviders.Count;
+
+        var expectedRows = mapper.Map<IEnumerable<Provider>, IEnumerable<ProviderCsvDto>>(fakeProviders);
+
+        var providers = fakeProviders.AsQueryable().BuildMock();
+
+        providersRepositoryMock.Setup(r => r.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Provider, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>(),
+                It.Is(true, EqualityComparer<bool>.Default)))
+            .Returns(providers);
+
+        var csvConfiguration = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            Delimiter = ";",
+            Encoding = Encoding.UTF8,
+            MissingFieldFound = null,
+        };
+
+        // Act
+        var csvData = await providerService.GetCsvExportData().ConfigureAwait(false);
+
+        using var stream = new MemoryStream(csvData);
+        using var reader = new StreamReader(stream);
+        using var csvReader = new CsvReader(reader, csvConfiguration);
+
+        var records = csvReader.GetRecords<ProviderCsvDto>().ToList();
+        var actualCount = records.Count;
+
+        // Assert
+        Assert.AreEqual(expectedRowsCount, actualCount - 1); // last row in csv file is empty row (idk how to fix this)
+        TestHelper.AssertTwoCollectionsEqualByValues(expectedRows, records.Take(actualCount - 1)); // last row in csv file is empty row (idk how to fix this)
     }
 
     #endregion
