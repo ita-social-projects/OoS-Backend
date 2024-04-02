@@ -552,4 +552,42 @@ public class AdminControllerTests
         // Assert
         result.AssertResponseOkResultAndValidateValue(responseDto.Result);
     }
+
+    [Test]
+    public async Task ExportProviders_WhenNoProvidersInDb_ReturnsNoContentResult()
+    {
+        // Arrange
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
+
+        sensitiveProviderService
+            .Setup(s => s.GetCsvExportData())
+            .ReturnsAsync([]);
+
+        // Act
+        var result = await controller.ExportProviders().ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<NoContentResult>(result);
+    }
+
+    [Test]
+    public async Task ExportProviders_WhenSomeProvidersInDb_ReturnsFileContentResult()
+    {
+        // Arrange
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
+
+        sensitiveProviderService
+            .Setup(s => s.GetCsvExportData())
+            .ReturnsAsync([1, 2, 3, 4, 5]);
+
+        // Act
+        var result = await controller.ExportProviders().ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<FileContentResult>(result);
+    }
 }
