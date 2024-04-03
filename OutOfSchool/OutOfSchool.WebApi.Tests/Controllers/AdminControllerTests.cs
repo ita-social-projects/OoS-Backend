@@ -472,6 +472,23 @@ public class AdminControllerTests
         Assert.That(result, Is.InstanceOf<ObjectResult>());
     }
 
+    [Test]
+    public async Task ValidateImportData_CheckData_ReturnsOkResult()
+    {
+        // Arrange
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
+        sensitiveProviderService
+            .Setup(x => x.ValidateImportData(It.IsAny<ImportDataValidate>())).ReturnsAsync(
+                new ImportDataValidate());
+
+        // Act
+        var result = await controller.ValidateImportData(It.IsAny<ImportDataValidate>());
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+    }
+
     private HttpContext GetFakeHttpContext()
     {
         var authProps = new AuthenticationProperties();
