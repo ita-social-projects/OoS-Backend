@@ -245,8 +245,9 @@ public class AdminController : Controller
     /// Export all Providers to CSV file.
     /// </summary>
     /// <returns>CSV file containing all providers.</returns>
-    [HttpGet]
-    [HasPermission(Permissions.AdminDataRead)]
+    [HttpGet("~/api/v{version:apiVersion}/admin/providers/export")]
+    [Authorize(Roles = "techadmin")]
+    [FeatureGate(nameof(Feature.TechAdminExport))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

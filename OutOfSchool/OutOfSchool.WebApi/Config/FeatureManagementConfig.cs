@@ -13,4 +13,6 @@ public class FeatureManagementConfig
     public bool ShowForProduction { get; set; }
 
     public bool Images { get; set; }
+
+    public bool TechAdminExport { get; set; }
 }
