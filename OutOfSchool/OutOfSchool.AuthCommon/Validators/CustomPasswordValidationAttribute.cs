@@ -9,7 +9,7 @@ public class CustomPasswordValidationAttribute : ValidationAttribute
         ArgumentNullException.ThrowIfNull(validationContext);
 
         var passwordRules = (ICustomPasswordRules?)validationContext.GetService(typeof(ICustomPasswordRules))
-            ?? throw new NullReferenceException("Unable to receive CustomPasswordRules");
+            ?? throw new ArgumentNullException(typeof(ICustomPasswordRules).Name);
 
         var password = value as string;
         if (!passwordRules.IsValidPassword(password))

@@ -106,12 +106,12 @@ public class CustomPasswordValidationAttributeTests
     {
         // Arrange
         var password = "123";
-        var expectedExceptionMessage = "Unable to receive CustomPasswordRules";
+        var expectedExceptionMessage = "Value cannot be null. (Parameter 'ICustomPasswordRules')";
         serviceProvider.Setup(x => x.GetService(typeof(ICustomPasswordRules))).Returns(null);
         var validationContext = new ValidationContext(password, serviceProvider.Object, null);
 
         // Act & Assert
-        Exception ex = Assert.Throws<NullReferenceException>(() => attribute.GetValidationResult(password, validationContext));
+        Exception ex = Assert.Throws<ArgumentNullException>(() => attribute.GetValidationResult(password, validationContext));
         Assert.That(ex.Message, Is.EqualTo(expectedExceptionMessage));
     }
 }
