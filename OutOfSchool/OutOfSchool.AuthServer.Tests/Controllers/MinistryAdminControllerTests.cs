@@ -21,9 +21,9 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using System;
-using OutOfSchool.EmailSender;
 using OutOfSchool.AuthCommon;
 using System.Linq;
+using OutOfSchool.EmailSender.Services;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
 

@@ -1,4 +1,4 @@
-﻿using OutOfSchool.EmailSender;
+﻿using OutOfSchool.EmailSender.Quartz;
 using OutOfSchool.WebApi.Common.QuartzConstants;
 using Quartz;
 using Quartz.Impl.Matchers;

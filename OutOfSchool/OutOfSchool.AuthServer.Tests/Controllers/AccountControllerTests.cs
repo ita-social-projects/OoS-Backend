@@ -4,7 +4,6 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.EmailSender;
 using OutOfSchool.AuthCommon.Controllers;
 using OutOfSchool.AuthCommon.ViewModels;
 using Microsoft.AspNetCore.Identity;
@@ -19,6 +18,7 @@ using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.AuthCommon.Services.Interfaces;
 using System.Net;
 using System;
+using OutOfSchool.EmailSender.Services;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
 

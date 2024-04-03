@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.EmailSender;
+using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Services.AverageRatings;
@@ -278,7 +279,7 @@ public static class Startup
         services.AddTransient<IChangesLogService, ChangesLogService>();
         services.AddTransient<IValueProjector, ValueProjector>();
         services.AddTransient<IExternalExportProviderService, ExternalExportProviderService>();
-        services.AddTransient<ISendGridAccessibilityService, SendGridAccessibilityService>();
+        services.AddScoped<ISendGridAccessibilityService, SendGridAccessibilityService>();
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
 
         services.AddTransient<IInstitutionHierarchyService, InstitutionHierarchyService>();

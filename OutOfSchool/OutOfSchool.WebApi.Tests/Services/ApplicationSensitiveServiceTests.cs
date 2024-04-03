@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.EmailSender;
+using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;

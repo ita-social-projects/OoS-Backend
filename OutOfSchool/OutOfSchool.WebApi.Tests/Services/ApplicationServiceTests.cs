@@ -13,7 +13,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
-using OutOfSchool.EmailSender;
+using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Enums;

@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using OutOfSchool.EmailSender.Services;
 using SendGrid.Extensions.DependencyInjection;
 
 namespace OutOfSchool.EmailSender;

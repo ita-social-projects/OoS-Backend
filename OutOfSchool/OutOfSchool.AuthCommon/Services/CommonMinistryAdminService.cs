@@ -4,6 +4,7 @@ using Microsoft.Extensions.Localization;
 using OutOfSchool.AuthCommon.Extensions;
 using OutOfSchool.AuthCommon.Services.Password;
 using OutOfSchool.Common.Models;
+using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.Services.Enums;
 

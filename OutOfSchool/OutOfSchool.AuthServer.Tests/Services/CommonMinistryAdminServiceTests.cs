@@ -10,7 +10,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.Common.Models;
-using OutOfSchool.EmailSender;
+using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;

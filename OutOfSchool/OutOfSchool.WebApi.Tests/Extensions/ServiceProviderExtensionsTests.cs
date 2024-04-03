@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.EmailSender;
+using OutOfSchool.EmailSender.Services;
 
 namespace OutOfSchool.WebApi.Tests.Extensions;
 
@@ -61,7 +62,7 @@ public class ServiceProviderExtensionsTests
         ServiceProvider provider = services.BuildServiceProvider();
 
         // Assert
-        Assert.IsInstanceOf<EmailSender.EmailSenderService>(provider.GetService<IEmailSenderService>());
+        Assert.IsInstanceOf<EmailSenderService>(provider.GetService<IEmailSenderService>());
     }
 
     [Test]

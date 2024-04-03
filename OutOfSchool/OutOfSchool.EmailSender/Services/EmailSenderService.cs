@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Text;
 using System.Threading.Tasks;
+using OutOfSchool.EmailSender.Quartz;
 using Quartz;
 using Quartz.Impl;
 
-namespace OutOfSchool.EmailSender;
+namespace OutOfSchool.EmailSender.Services;
 
 public class EmailSenderService : IEmailSenderService
 {
@@ -22,11 +23,11 @@ public class EmailSenderService : IEmailSenderService
 
         var jobData = new JobDataMap
         {
-            { "Email", email },
-            { "Subject", subject },
-            { "HtmlContent", EncodeToBase64(content.html) },
-            { "PlainContent", EncodeToBase64(content.plain) },
-            { "ExpirationTime", expirationTime },
+            { EmailSenderStringConstants.Email, email },
+            { EmailSenderStringConstants.Subject, subject },
+            { EmailSenderStringConstants.HtmlContent, EncodeToBase64(content.html) },
+            { EmailSenderStringConstants.PlainContent, EncodeToBase64(content.plain) },
+            { EmailSenderStringConstants.ExpirationTime, expirationTime },
         };
 
         var job = JobBuilder.Create<EmailSenderJob>()

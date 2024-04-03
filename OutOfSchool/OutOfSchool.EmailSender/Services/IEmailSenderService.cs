@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace OutOfSchool.EmailSender;
+namespace OutOfSchool.EmailSender.Services;
 
 public interface IEmailSenderService
 {

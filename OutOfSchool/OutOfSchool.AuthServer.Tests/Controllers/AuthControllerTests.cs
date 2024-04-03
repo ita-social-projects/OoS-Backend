@@ -17,7 +17,7 @@ using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Controllers;
 using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.AuthCommon.ViewModels;
-using OutOfSchool.EmailSender;
+using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
