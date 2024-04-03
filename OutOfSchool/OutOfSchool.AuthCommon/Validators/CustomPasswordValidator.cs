@@ -2,22 +2,10 @@
 
 namespace OutOfSchool.AuthCommon.Validators;
 
-public class CustomPasswordValidator : IPasswordValidator<User>
+public class CustomPasswordValidator(IStringLocalizer<SharedResource> localizer, ICustomPasswordRules passwordRules) : IPasswordValidator<User>
 {
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly ICustomPasswordRules passwordRules;
-
-    public CustomPasswordValidator(IStringLocalizer<SharedResource> localizer)
-    {
-        this.localizer = localizer;
-        passwordRules = new CustomPasswordRules();
-    }
-
-    public CustomPasswordValidator(IStringLocalizer<SharedResource> localizer, ICustomPasswordRules passwordRules)
-    {
-        this.localizer = localizer;
-        this.passwordRules = passwordRules;
-    }
+    private readonly IStringLocalizer<SharedResource> localizer = localizer;
+    private readonly ICustomPasswordRules passwordRules = passwordRules;
 
     public Task<IdentityResult> ValidateAsync(UserManager<User> manager, User user, string? password)
     {

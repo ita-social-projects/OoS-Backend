@@ -14,13 +14,14 @@ public class CustomPasswordValidationAttributeTests
 {
     private CustomPasswordValidationAttribute attribute;
     private Mock<ICustomPasswordRules> rules;
+    private Mock<IServiceProvider> serviceProvider;
 
     [SetUp]
     public void SetUp()
     {
         rules = new Mock<ICustomPasswordRules>();
-        attribute = new CustomPasswordValidationAttribute(rules.Object);
-
+        attribute = new CustomPasswordValidationAttribute();
+        serviceProvider = new Mock<IServiceProvider>();
     }
 
     [Test]
@@ -28,13 +29,15 @@ public class CustomPasswordValidationAttributeTests
     {
         // Arrange
         var validPassword = "Ab1%234C1";
-        var validationContext = new ValidationContext(new object());
         rules.Setup(x => x.IsValidPassword(validPassword)).Returns(true);
+        serviceProvider.Setup(x => x.GetService(typeof(ICustomPasswordRules))).Returns(rules.Object);
+        var validationContext = new ValidationContext(validPassword, serviceProvider.Object, null);
 
         // Act
         var result = attribute.GetValidationResult(validPassword, validationContext);
 
         // Assert
+        serviceProvider.VerifyAll();
         rules.VerifyAll();
         Assert.IsNull(result);
     }
@@ -44,14 +47,14 @@ public class CustomPasswordValidationAttributeTests
     {
         // Arrange
         var invalidPassword = "";
-        rules.Setup(x => x.IsValidPassword(invalidPassword)).Returns(false);
         var expectedErrorMessage = "Password must be at least 8 characters long";
+        rules.Setup(x => x.IsValidPassword(invalidPassword)).Returns(false);
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
-        var serviceProvider = new Mock<IServiceProvider>();
         localizer.Setup(x => x[Constants.PasswordValidationErrorMessage])
             .Returns(new LocalizedString("Error", expectedErrorMessage));
         serviceProvider.Setup(x => x.GetService(typeof(IStringLocalizer<SharedResource>)))
             .Returns(localizer.Object);
+        serviceProvider.Setup(x => x.GetService(typeof(ICustomPasswordRules))).Returns(rules.Object);
         var validationContext = new ValidationContext(invalidPassword, serviceProvider.Object, null);
 
         // Act
@@ -74,5 +77,19 @@ public class CustomPasswordValidationAttributeTests
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => attribute.GetValidationResult(password, validationContext));
+    }
+
+    [Test]
+    public void IsValid_WithCustomPasswordRulesIsNotExist_ThrowNullReferenceException()
+    {
+        // Arrange
+        var password = "123";
+        var expectedExceptionMessage = "Unable to receive CustomPasswordRules";
+        serviceProvider.Setup(x => x.GetService(typeof(ICustomPasswordRules))).Returns(null);
+        var validationContext = new ValidationContext(password, serviceProvider.Object, null);
+
+        // Act & Assert
+        Exception ex = Assert.Throws<NullReferenceException>(() => attribute.GetValidationResult(password, validationContext));
+        Assert.That(ex.Message, Is.EqualTo(expectedExceptionMessage));
     }
 }

@@ -72,6 +72,7 @@ public static class Startup
 
         services.AddLocalization(options => options.ResourcesPath = "Resources");
 
+        services.AddTransient<ICustomPasswordRules, CustomPasswordRules>();
         services.AddTransient<IPasswordValidator<User>, CustomPasswordValidator>();
 
         services.AddIdentity<User, IdentityRole>()
