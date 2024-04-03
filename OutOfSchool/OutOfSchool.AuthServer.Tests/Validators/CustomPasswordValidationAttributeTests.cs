@@ -69,6 +69,28 @@ public class CustomPasswordValidationAttributeTests
     }
 
     [Test]
+    public void IsValid_WithInvalidPasswordAndLocalizerIsNotExist_ShouldReturnErrorName()
+    {
+        // Arrange
+        var invalidPassword = "";
+        var expectedErrorName = Constants.PasswordValidationErrorMessage;
+        rules.Setup(x => x.IsValidPassword(invalidPassword)).Returns(false);
+        serviceProvider.Setup(x => x.GetService(typeof(IStringLocalizer<SharedResource>)))
+            .Returns(null);
+        serviceProvider.Setup(x => x.GetService(typeof(ICustomPasswordRules))).Returns(rules.Object);
+        var validationContext = new ValidationContext(invalidPassword, serviceProvider.Object, null);
+
+        // Act
+        var result = attribute.GetValidationResult(invalidPassword, validationContext);
+
+        // Assert
+        rules.VerifyAll();
+        serviceProvider.VerifyAll();
+        Assert.IsNotNull(result);
+        Assert.AreEqual(expectedErrorName, result.ErrorMessage);
+    }
+
+    [Test]
     public void IsValid_WithValidateContextIsNull_ThrowArgumentNullException()
     {
         // Arrange
