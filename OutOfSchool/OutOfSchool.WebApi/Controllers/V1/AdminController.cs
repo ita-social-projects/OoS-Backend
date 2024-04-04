@@ -235,6 +235,7 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost("~/api/v{version:apiVersion}/providers/import/validate")]
+    [FeatureGate(nameof(Feature.TechAdminImport))]
     public async Task<ActionResult> ValidateImportData([FromBody] ImportDataValidate data)
     {
         var result = await providerService.ValidateImportData(data).ConfigureAwait(false);

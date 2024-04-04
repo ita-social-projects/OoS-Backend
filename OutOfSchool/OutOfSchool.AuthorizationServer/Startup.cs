@@ -8,11 +8,11 @@ using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Extensions;
 using OutOfSchool.AuthCommon.Services;
 using OutOfSchool.AuthCommon.Services.Interfaces;
+using OutOfSchool.AuthCommon.Validators;
 using OutOfSchool.AuthorizationServer.Config;
 using OutOfSchool.AuthorizationServer.Extensions;
 using OutOfSchool.AuthorizationServer.KeyManagement;
 using OutOfSchool.AuthorizationServer.Services;
-
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
 namespace OutOfSchool.AuthorizationServer;
@@ -72,14 +72,10 @@ public static class Startup
 
         services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-        services.AddIdentity<User, IdentityRole>(options =>
-            {
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireNonAlphanumeric = true;
-                options.Password.RequireUppercase = true;
-                options.Password.RequiredLength = 8;
-            })
+        services.AddTransient<ICustomPasswordRules, CustomPasswordRules>();
+        services.AddTransient<IPasswordValidator<User>, CustomPasswordValidator>();
+
+        services.AddIdentity<User, IdentityRole>()
             .AddEntityFrameworkStores<OutOfSchoolDbContext>()
             .AddDefaultTokenProviders();
 

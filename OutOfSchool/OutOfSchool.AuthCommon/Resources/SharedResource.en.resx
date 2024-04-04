@@ -291,8 +291,8 @@
   <data name="Password confirmation is required" xml:space="preserve">
     <value>Password confirmation is required</value>
   </data>
-  <data name="Password must contain at least one capital, number and symbol(@$!%*?&amp;)." xml:space="preserve">
-    <value>Error! The password must be at least 8 characters long, including one uppercase letter, number, and special characters (@$!%*?&amp;).</value>
+  <data name="Password must be at least 8 characters long, including upper and lower case letters, digits and special characters (@$!%*?&amp;)" xml:space="preserve">
+    <value>The password must be at least 8 characters long and include upper and lower case letters, digits and special characters (@$!%*?&amp;)</value>
   </data>
   <data name="Check the entered data. Please use only cyrillic and symbols( ' - )" xml:space="preserve">
     <value>Check the entered data. Please use only Cyrillic and special characters( ' - ).</value>
