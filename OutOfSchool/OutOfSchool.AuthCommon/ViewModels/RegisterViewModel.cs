@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.AuthCommon.Validators;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 
@@ -33,9 +34,7 @@ public class RegisterViewModel
     public DateTime DateOfBirth { get; set; }
 
     [Required(ErrorMessage = "Password is required")]
-    [RegularExpression(
-        Constants.PasswordRegexViewModel,
-        ErrorMessage = "Password must contain at least one capital, number and symbol(@$!%*?&).")]
+    [CustomPasswordValidation]
     [DataType(DataType.Password)]
     public string Password { get; set; }
 

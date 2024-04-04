@@ -80,6 +80,62 @@ public class ProviderRepositoryTests
         Assert.True(providerAdmins.All(x => (bool)x.CurrentValues["IsDeleted"] == true));
     }
 
+    [Test]
+    public async Task CheckExistsByEdrpous_ReturnValues_ExcludeExistsValues()
+    {
+        // Arrange
+        using var context = GetContext();
+        var providerRepository = GetProviderRepository(context);
+
+        var firstEdrpou = context.Providers.First().EdrpouIpn;
+
+        var data = new List<string>()
+        {
+            firstEdrpou,
+            firstEdrpou + "1",
+            firstEdrpou + "2",
+        };
+
+        var expectedResult = new List<string>()
+        {
+            firstEdrpou,
+        };
+
+        // Act
+        var result = await providerRepository.CheckExistsByEdrpous(data).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(expectedResult, result);
+    }
+
+    [Test]
+    public async Task CheckExistsByEmails_ReturnValues_ExcludeExistsValues()
+    {
+        // Arrange
+        using var context = GetContext();
+        var providerRepository = GetProviderRepository(context);
+
+        var firstEmail = context.Providers.First().Email;
+
+        var data = new List<string>()
+        {
+            firstEmail,
+            "q" + firstEmail,
+            "qq" + firstEmail,
+        };
+
+        var expectedResult = new List<string>()
+        {
+            firstEmail,
+        };
+
+        // Act
+        var result = await providerRepository.CheckExistsByEmails(data).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(expectedResult, result);
+    }
+
     #endregion
 
     #region private

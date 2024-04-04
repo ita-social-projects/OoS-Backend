@@ -372,6 +372,10 @@ a {
   color: #333333;
 }
 
+input.registration_input::-ms-reveal {
+  display: none;
+}
+
 .registration_input-password {
   font-size: 20px;
   padding-right: 30px !important;

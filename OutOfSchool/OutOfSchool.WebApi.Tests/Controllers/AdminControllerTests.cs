@@ -22,7 +22,6 @@ using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Application;
 using OutOfSchool.WebApi.Models.Providers;
-using OutOfSchool.WebApi.Models.SocialGroup;
 using OutOfSchool.WebApi.Models.Workshops;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
@@ -470,6 +469,23 @@ public class AdminControllerTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.InstanceOf<ObjectResult>());
+    }
+
+    [Test]
+    public async Task ValidateImportData_CheckData_ReturnsOkResult()
+    {
+        // Arrange
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
+        sensitiveProviderService
+            .Setup(x => x.ValidateImportData(It.IsAny<ImportDataValidate>())).ReturnsAsync(
+                new ImportDataValidate());
+
+        // Act
+        var result = await controller.ValidateImportData(It.IsAny<ImportDataValidate>());
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
     }
 
     private HttpContext GetFakeHttpContext()

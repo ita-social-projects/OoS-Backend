@@ -45,12 +45,10 @@ public class NotificationRepository : SensitiveEntityRepository<Notification>, I
     }
 
     /// <inheritdoc/>
-    public async Task SetReadDateTimeForAllUnreaded(string userId, DateTimeOffset dateTime)
+    public Task SetReadDateTimeForAllUnreaded(string userId, DateTimeOffset dateTime)
     {
-        // TODO: replace it in EFCore8 with bulk update
-        await db.Database.ExecuteSqlRawAsync(
-            @"UPDATE Notifications SET ReadDateTime = {0} WHERE UserId = {1} AND ReadDateTime IS NULL;",
-            dateTime,
-            userId);
+        return db.Notifications
+            .Where(n => n.UserId == userId && n.ReadDateTime == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(n => n.ReadDateTime, dateTime));
     }
 }

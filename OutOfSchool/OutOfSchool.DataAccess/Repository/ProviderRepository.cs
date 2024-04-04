@@ -103,4 +103,20 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
 
         return query.CountAsync();
     }
+
+    public Task<List<string>> CheckExistsByEdrpous(List<string> edrpous)
+    {
+        return db.Providers
+            .Where(x => edrpous.Contains(x.EdrpouIpn))
+            .Select(x => x.EdrpouIpn)
+            .ToListAsync();
+    }
+
+    public Task<List<string>> CheckExistsByEmails(List<string> emails)
+    {
+        return db.Providers
+            .Where(x => emails.Contains(x.Email))
+            .Select(x => x.Email)
+            .ToListAsync();
+    }
 }
