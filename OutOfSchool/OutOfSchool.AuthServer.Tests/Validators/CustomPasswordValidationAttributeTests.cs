@@ -102,7 +102,7 @@ public class CustomPasswordValidationAttributeTests
     }
 
     [Test]
-    public void IsValid_WithCustomPasswordRulesIsNotExist_ThrowNullReferenceException()
+    public void IsValid_WithCustomPasswordRulesIsNotExist_ThrowArgumentNullException()
     {
         // Arrange
         var password = "123";
