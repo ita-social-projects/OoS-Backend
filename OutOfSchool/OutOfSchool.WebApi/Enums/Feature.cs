@@ -11,4 +11,5 @@ public enum Feature
     Release3,
     Images,
     ShowForProduction,
+    TechAdminImport,
 }
