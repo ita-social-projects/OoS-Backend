@@ -12,4 +12,5 @@ public enum Feature
     Images,
     ShowForProduction,
     TechAdminImport,
+    TechAdminExport,
 }

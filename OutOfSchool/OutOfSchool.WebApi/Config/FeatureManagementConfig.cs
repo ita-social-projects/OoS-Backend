@@ -15,4 +15,6 @@ public class FeatureManagementConfig
     public bool TechAdminImport { get; set; }
 
     public bool Images { get; set; }
+
+    public bool TechAdminExport { get; set; }
 }
