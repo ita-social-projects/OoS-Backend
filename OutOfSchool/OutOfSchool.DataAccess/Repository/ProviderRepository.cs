@@ -117,7 +117,7 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
         return db.Providers
             .Include(x => x.User)
             .Where(x => emails.Contains(x.User.Email))
-            .Select(x => x.Email)
+            .Select(x => x.User.Email)
             .ToListAsync();
     }
 }

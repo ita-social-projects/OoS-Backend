@@ -23,7 +23,7 @@ public class ProviderRepositoryTests
     public async Task SetUp()
     {
         providers = ProvidersGenerator.Generate(3)
-            .WithWorkshops();
+            .WithWorkshops().WithUser();
 
         AddProviderAdmins(providers);
 
@@ -115,7 +115,7 @@ public class ProviderRepositoryTests
         using var context = GetContext();
         var providerRepository = GetProviderRepository(context);
 
-        var firstEmail = context.Providers.First().Email;
+        var firstEmail = context.Providers.First().User.Email;
 
         var data = new List<string>()
         {

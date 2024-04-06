@@ -91,4 +91,14 @@ public static class ProvidersGenerator
         }
         return providers;
     }
+
+    public static Provider WithUser(this Provider provider)
+    {
+        provider.User = UserGenerator.Generate();
+        provider.UserId = provider.User.Id;
+        return provider;
+    }
+
+    public static List<Provider> WithUser(this List<Provider> providers)
+        => providers.Select(x => x.WithUser()).ToList();
 }
