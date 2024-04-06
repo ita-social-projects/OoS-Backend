@@ -129,7 +129,7 @@ public class EmailSenderJobTests
     }
 
     [Test]
-    public void Execute_WithSendGridError_ShouldThrowException()
+    public async Task Execute_WithSendGridError_ShouldThrowException()
     {
         // Arrange
         _mockEmailOptions.Setup(options => options.Value).Returns(new EmailOptions { Enabled = true });
@@ -146,9 +146,12 @@ public class EmailSenderJobTests
         _mockSendGridClient.Setup(client => client.SendEmailAsync(It.IsAny<SendGridMessage>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Response(HttpStatusCode.BadRequest, null, null));
 
+        // Act
+        await _emailSenderJob.Execute(mockContext.Object);
+
         // Assert
         _mockSendGridClient.Verify(
             client => client.SendEmailAsync(It.IsAny<SendGridMessage>(), It.IsAny<CancellationToken>()),
-            Times.Never);
+            Times.Once);
     }
 }
