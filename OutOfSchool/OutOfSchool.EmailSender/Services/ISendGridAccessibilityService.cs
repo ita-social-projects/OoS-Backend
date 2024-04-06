@@ -4,6 +4,6 @@ namespace OutOfSchool.EmailSender.Services;
 
 public interface ISendGridAccessibilityService
 {
-    bool IsSendGridAccessible { get; set; }
-    DateTimeOffset? GetNextStartDate();
+    bool IsSendGridAccessible(DateTimeOffset now);
+    void SetSendGridInaccessible(DateTimeOffset now);
 }

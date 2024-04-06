@@ -1,26 +1,23 @@
 ﻿using System;
+using Microsoft.Extensions.Options;
 
 namespace OutOfSchool.EmailSender.Services;
 
 public class SendGridAccessibilityService : ISendGridAccessibilityService
 {
-    public SendGridAccessibilityService()
+    private readonly IOptions<EmailOptions> emailOptions;
+    private const int defaultTimeoutTime = 240;
+
+    public SendGridAccessibilityService(IOptions<EmailOptions> emailOptions)
     {
-        IsSendGridAccessible = true;
+        this.emailOptions = emailOptions;
     }
 
-    public bool IsSendGridAccessible { get; set; }
+    private DateTimeOffset accessibleAfter = DateTimeOffset.Now;
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <returns>Midnight of the next day is SendGrid accessible and null if it is not.</returns>
-    public DateTimeOffset? GetNextStartDate()
-    {
-        if (IsSendGridAccessible)
-        {
-            return null;
-        }
-        return DateTimeOffset.Now.Date.AddDays(1);
-    }
+    public void SetSendGridInaccessible(DateTimeOffset now)
+      => accessibleAfter = now + TimeSpan.FromMinutes(emailOptions.Value.TimeoutTime ?? defaultTimeoutTime);
+
+    public bool IsSendGridAccessible(DateTimeOffset now)
+      => accessibleAfter <= now;
 }

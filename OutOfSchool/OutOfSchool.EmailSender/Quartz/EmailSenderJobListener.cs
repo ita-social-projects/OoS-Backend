@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using OutOfSchool.EmailSender.Services;
 using Quartz;
@@ -30,7 +31,7 @@ public class EmailSenderJobListener : IJobListener
     {
         if (jobException != null)
         {
-            sendGridAccessibilityService.IsSendGridAccessible = false;
+            sendGridAccessibilityService.SetSendGridInaccessible(DateTimeOffset.Now);
         }
         return Task.CompletedTask;
     }
