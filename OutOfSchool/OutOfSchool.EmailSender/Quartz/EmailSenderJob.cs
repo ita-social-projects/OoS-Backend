@@ -43,11 +43,11 @@ public class EmailSenderJob : IJob
 
             var email = dataMap.GetString(EmailSenderStringConstants.Email);
             var subject = dataMap.GetString(EmailSenderStringConstants.Subject);
-            var htmlContent = DecodeFrom64(dataMap.GetString(EmailSenderStringConstants.HtmlContent));
-            var plainContent = DecodeFrom64(dataMap.GetString(EmailSenderStringConstants.PlainContent));
+            var htmlContent = dataMap.GetString(EmailSenderStringConstants.HtmlContent);
+            var plainContent = dataMap.GetString(EmailSenderStringConstants.PlainContent);
             var expirationTime = dataMap.GetDateTime(EmailSenderStringConstants.ExpirationTime);
 
-            if (expirationTime > DateTime.UtcNow)
+            if (expirationTime < DateTimeOffset.Now)
             {
                 logger.LogError("Email was not sent because expiration time passed: {Email}, {ExpirationTime}", email, expirationTime);
                 return;

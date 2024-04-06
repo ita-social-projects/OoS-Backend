@@ -3,7 +3,6 @@ using System.Text;
 using System.Threading.Tasks;
 using OutOfSchool.EmailSender.Quartz;
 using Quartz;
-using Quartz.Impl;
 
 namespace OutOfSchool.EmailSender.Services;
 
@@ -11,10 +10,10 @@ public class EmailSenderService : IEmailSenderService
 {
     private readonly IScheduler scheduler;
 
-    public EmailSenderService()
+    public EmailSenderService(IScheduler scheduler)
     {
-        scheduler = new StdSchedulerFactory().GetScheduler().Result;
-        scheduler.Start().Wait();
+        this.scheduler = scheduler;
+        this.scheduler.Start().Wait();
     }
 
     public async Task SendAsync(string email, string subject, (string html, string plain) content, DateTime? expirationTime = null)

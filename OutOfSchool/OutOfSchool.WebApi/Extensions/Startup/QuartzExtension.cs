@@ -1,4 +1,5 @@
 using Quartz;
+using Quartz.Impl;
 
 namespace OutOfSchool.WebApi.Extensions.Startup;
 
@@ -53,6 +54,14 @@ public static class QuartzExtension
         });
 
         services.AddQuartzServer(options => { options.WaitForJobsToComplete = true; });
+
+        services.AddSingleton<IScheduler>(provider =>
+        {
+            var schedulerFactory = new StdSchedulerFactory();
+            var scheduler = schedulerFactory.GetScheduler().Result;
+            scheduler.Start().Wait();
+            return scheduler;
+        });
 
         return services;
     }

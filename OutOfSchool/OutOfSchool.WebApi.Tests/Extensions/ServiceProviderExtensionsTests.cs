@@ -6,6 +6,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.EmailSender;
 using OutOfSchool.EmailSender.Services;
+using Quartz;
 
 namespace OutOfSchool.WebApi.Tests.Extensions;
 
@@ -52,7 +53,9 @@ public class ServiceProviderExtensionsTests
         var isDevelopment = false;
         var sendGridApikey = string.Empty;
         var loggerMock = new Mock<ILogger<DevEmailSender>>();
+        var schedulerMock = new Mock<IScheduler>();
         services.AddSingleton(loggerMock.Object);
+        services.AddSingleton(schedulerMock.Object);
 
         // Act
         services.AddEmailSenderService(isDevelopment, sendGridApikey, builder =>
