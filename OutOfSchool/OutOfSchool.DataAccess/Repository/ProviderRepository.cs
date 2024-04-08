@@ -115,8 +115,9 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
     public Task<List<string>> CheckExistsByEmails(List<string> emails)
     {
         return db.Providers
-            .Where(x => emails.Contains(x.Email))
-            .Select(x => x.Email)
+            .Include(x => x.User)
+            .Where(x => emails.Contains(x.User.Email))
+            .Select(x => x.User.Email)
             .ToListAsync();
     }
 }
