@@ -129,7 +129,7 @@ public class EmailSenderJobTests
     }
 
     [Test]
-    public async Task Execute_WithSendGridError_ShouldThrowException()
+    public async Task Execute_WithSendGridError_ShouldNotSendEmail()
     {
         // Arrange
         _mockEmailOptions.Setup(options => options.Value).Returns(new EmailOptions { Enabled = true });

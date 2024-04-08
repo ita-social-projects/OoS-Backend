@@ -13,7 +13,6 @@ public class EmailSenderService : IEmailSenderService
     public EmailSenderService(IScheduler scheduler)
     {
         this.scheduler = scheduler;
-        this.scheduler.Start().Wait();
     }
 
     public async Task SendAsync(string email, string subject, (string html, string plain) content, DateTime? expirationTime = null)
