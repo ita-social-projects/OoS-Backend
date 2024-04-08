@@ -13,16 +13,18 @@ public class DevEmailSender : IEmailSenderService
         this.logger = logger;
     }
 
-    public Task SendAsync(string email, string subject, (string html, string plain) content, DateTime? expirationTime)
+    public Task SendAsync(string email, string subject, (string html, string plain) content, DateTime? expirationTime = null)
     {
+        expirationTime ??= DateTime.MaxValue;
         // This code runs only in dev for testing purposes
         // so can ignore "not log user-controlled data".
 #pragma warning disable S5145
         logger.LogDebug(
-            "Sending mail to {Email} with subject '{Subject}' and content: {Content}",
+            "Sending mail to {Email} with subject '{Subject}' and content: {Content} with expirationTime: {ExpirationTime}",
             email,
             subject,
-            content.html);
+            content.html,
+            expirationTime);
 #pragma warning restore S5145
         return Task.CompletedTask;
     }
