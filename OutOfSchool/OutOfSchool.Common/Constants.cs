@@ -38,7 +38,7 @@ public static class Constants
 
     public const string ValidationSymbols = "@$!%*?&";
 
-    public const string NormalizedCATOTTGNameRegex = @"[^а-яА-ЯіІїЇєЄґҐ\-\s]";
+    public const string CATOTTGNameMatchPattern = "АБВГҐДЕЄЖЗИІЇЙКЛМНОПРСТУФХЦЧШЩЬЮЯабвгґдеєжзиіїйклмнопрстуфхцчшщьюя -";
 
     public const string AddressSeparator = ", ";
 
