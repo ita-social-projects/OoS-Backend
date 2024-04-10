@@ -14,7 +14,6 @@ namespace OutOfSchool.Services.Repository;
 
 public class CodeficatorRepository : EntityRepositorySoftDeleted<long, CATOTTG>, ICodeficatorRepository
 {
-    private const string Apostrophe = "’";
     private readonly OutOfSchoolDbContext db;
 
     public CodeficatorRepository(OutOfSchoolDbContext dbContext)
@@ -51,9 +50,9 @@ public class CodeficatorRepository : EntityRepositorySoftDeleted<long, CATOTTG>,
                         && (string.IsNullOrEmpty(namePart) && (parentId == 0) &&
                             !(categories.Contains(CodeficatorCategory.SpecialStatusCity.Name) || categories.Contains(CodeficatorCategory.Region.Name))
                        ? EF.Property<bool>(e, "IsTop")
-                       : ((e.Name.RemoveSubstring(Apostrophe).StartsWith(namePart) &&
+                       : ((e.Name.Replace('’'.ToString(), string.Empty).StartsWith(namePart) &&
                           (CodeficatorCategory.Level1.Name.Contains(e.Category) || CodeficatorCategory.Level4.Name.Contains(e.Category) || CodeficatorCategory.TerritorialCommunity.Name.Contains(e.Category))) ||
-                          (e.Category == CodeficatorCategory.CityDistrict.Name && p.Name.RemoveSubstring(Apostrophe).StartsWith(namePart))) && categories.Contains(e.Category))
+                          (e.Category == CodeficatorCategory.CityDistrict.Name && p.Name.Replace('’'.ToString(), string.Empty).StartsWith(namePart))) && categories.Contains(e.Category))
                     select new CodeficatorAddressDto
                     {
                         Id = e.Id,

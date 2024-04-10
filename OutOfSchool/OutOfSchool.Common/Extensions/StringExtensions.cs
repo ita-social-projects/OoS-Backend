@@ -46,14 +46,4 @@ public static class StringExtensions
 
         return Regex.Replace(value, regexPattern, string.Empty);
     }
-
-    public static string RemoveSubstring(this string value, string substring)
-    {
-        if (value.IsNullOrEmpty() || substring.IsNullOrEmpty())
-        {
-            return value;
-        }
-
-        return value.Replace(substring, string.Empty);
-    }
 }
