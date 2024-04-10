@@ -69,6 +69,7 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
             queryContainer &= new QueryStringQuery()
             {
                 Fields = Infer.Field<WorkshopES>(w => w.Title)
+                        .And(Infer.Field<WorkshopES>(w => w.ShortTitle))
                         .And(Infer.Field<WorkshopES>(w => w.ProviderTitle))
                         .And(Infer.Field<WorkshopES>(w => w.Keywords))
                         .And(Infer.Field<WorkshopES>(w => w.Description)),
