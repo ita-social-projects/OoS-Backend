@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Resources;
+﻿using System.Resources;
 using OutOfSchool.BusinessLogic.Common.Resources;
 using OutOfSchool.BusinessLogic.Common.Resources.Codes;
 

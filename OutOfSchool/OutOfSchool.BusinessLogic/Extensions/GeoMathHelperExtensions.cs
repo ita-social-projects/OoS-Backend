@@ -1,6 +1,5 @@
 ﻿using H3Lib;
 using H3Lib.Extensions;
-using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.BusinessLogic.Extensions;
 

@@ -4,9 +4,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.Workshops;
-using OutOfSchool.ElasticsearchData.Models;
 using Profile = AutoMapper.Profile;
-using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.BusinessLogic.Util.Mapping;
 

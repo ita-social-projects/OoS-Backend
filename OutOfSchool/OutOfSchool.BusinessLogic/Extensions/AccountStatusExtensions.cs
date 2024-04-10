@@ -1,5 +1,4 @@
 ﻿using OutOfSchool.BusinessLogic.Enums;
-using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.BusinessLogic.Extensions;
 

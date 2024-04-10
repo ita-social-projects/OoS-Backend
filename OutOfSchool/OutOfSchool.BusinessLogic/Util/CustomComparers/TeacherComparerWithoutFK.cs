@@ -1,5 +1,3 @@
-using OutOfSchool.Services.Models;
-
 namespace OutOfSchool.BusinessLogic.Util.CustomComparers;
 
 public class TeacherComparerWithoutFK : IEqualityComparer<Teacher>

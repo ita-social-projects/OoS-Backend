@@ -1,5 +1,3 @@
-using OutOfSchool.Common.Config;
-
 namespace OutOfSchool.BusinessLogic.Config;
 
 public class WebApiConnectionOptions : IMySqlGuidConnectionOptions

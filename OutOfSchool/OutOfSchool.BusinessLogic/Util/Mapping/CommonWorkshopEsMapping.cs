@@ -1,6 +1,5 @@
 using AutoMapper;
 using OutOfSchool.BusinessLogic.Models.Workshops;
-using OutOfSchool.ElasticsearchData.Models;
 
 namespace OutOfSchool.BusinessLogic.Util.Mapping;
 

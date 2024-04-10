@@ -1,5 +1,3 @@
-using OutOfSchool.Common.Config;
-
 namespace OutOfSchool.BusinessLogic.Config.Quartz;
 
 public class QuartzConnectionOptions : IMySqlConnectionOptions

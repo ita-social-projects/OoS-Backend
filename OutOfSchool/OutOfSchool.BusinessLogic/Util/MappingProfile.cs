@@ -18,12 +18,6 @@ using OutOfSchool.BusinessLogic.Models.StatisticReports;
 using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Util.CustomComparers;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Common.Extensions;
-using OutOfSchool.Services.Models.SubordinationStructure;
-using OutOfSchool.Services.Models.ChatWorkshop;
-using OutOfSchool.Common.PermissionsModule;
-using OutOfSchool.BusinessLogic.Extensions;
 
 namespace OutOfSchool.BusinessLogic.Util;
 
