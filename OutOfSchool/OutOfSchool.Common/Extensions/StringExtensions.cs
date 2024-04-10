@@ -44,6 +44,6 @@ public static class StringExtensions
             return value;
         }
 
-        return Regex.Replace(value, regexPattern, string.Empty);
+        return Regex.Replace(value, regexPattern, string.Empty, RegexOptions.None, TimeSpan.FromMilliseconds(200));
     }
 }
