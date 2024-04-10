@@ -79,6 +79,7 @@
         <PackageReference Include="Microsoft.AspNetCore.HeaderPropagation" />
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\OutOfSchool.BusinessLogic\OutOfSchool.BusinessLogic.csproj" />
         <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
         <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
         <ProjectReference Include="..\OutOfSchool.ElasticsearchData\OutOfSchool.ElasticsearchData.csproj" />
@@ -94,9 +95,6 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
         </AdditionalFiles>
-    </ItemGroup>
-    <ItemGroup>
-        <Folder Include="Common\Exceptions\" />
     </ItemGroup>
     <ItemGroup>
         <Compile Update="Resources\Images\ImageResource.Designer.cs">
