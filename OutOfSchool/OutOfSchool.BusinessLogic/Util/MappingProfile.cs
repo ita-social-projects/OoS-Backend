@@ -1,7 +1,6 @@
 using AutoMapper;
-using OutOfSchool.Common.Enums;
-using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Models.Images;
+using Google.Protobuf.WellKnownTypes;
+using GrpcService;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Achievement;
 using OutOfSchool.BusinessLogic.Models.Application;
@@ -18,6 +17,9 @@ using OutOfSchool.BusinessLogic.Models.StatisticReports;
 using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Util.CustomComparers;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.BusinessLogic.Util;
 
@@ -364,17 +366,16 @@ public class MappingProfile : Profile
         CreateMap<Direction, DirectionDto>()
             .ForMember(dest => dest.WorkshopsCount, opt => opt.Ignore());
 
-        // TODO: Fix GRPC not generating models from proto file
-        //CreateMap<CreateProviderAdminDto, CreateProviderAdminRequest>()
-        //    .ForMember(dest => dest.RequestId, opt => opt.Ignore())
-        //    .ForMember(c => c.CreatingTime, m => m.MapFrom(c => Timestamp.FromDateTimeOffset(c.CreatingTime)))
-        //    .ForMember(c => c.ProviderId, m => m.MapFrom(c => c.ProviderId.ToString()))
-        //    .ForMember(c => c.ManagedWorkshopIds, m => m.MapFrom(src => src.ManagedWorkshopIds.Select(id => id.ToString()).ToList()));
+        CreateMap<CreateProviderAdminDto, CreateProviderAdminRequest>()
+            .ForMember(dest => dest.RequestId, opt => opt.Ignore())
+            .ForMember(c => c.CreatingTime, m => m.MapFrom(c => Timestamp.FromDateTimeOffset(c.CreatingTime)))
+            .ForMember(c => c.ProviderId, m => m.MapFrom(c => c.ProviderId.ToString()))
+            .ForMember(c => c.ManagedWorkshopIds, m => m.MapFrom(src => src.ManagedWorkshopIds.Select(id => id.ToString()).ToList()));
 
-        //CreateMap<CreateProviderAdminReply, CreateProviderAdminDto>()
-        //    .ForMember(c => c.CreatingTime, m => m.MapFrom(c => c.CreatingTime.ToDateTimeOffset()))
-        //    .ForMember(c => c.ProviderId, m => m.MapFrom(c => Guid.Parse(c.ProviderId)))
-        //    .ForMember(c => c.ManagedWorkshopIds, opt => opt.MapFrom(src => src.ManagedWorkshopIds.Select(Guid.Parse).ToList()));
+        CreateMap<CreateProviderAdminReply, CreateProviderAdminDto>()
+            .ForMember(c => c.CreatingTime, m => m.MapFrom(c => c.CreatingTime.ToDateTimeOffset()))
+            .ForMember(c => c.ProviderId, m => m.MapFrom(c => Guid.Parse(c.ProviderId)))
+            .ForMember(c => c.ManagedWorkshopIds, opt => opt.MapFrom(src => src.ManagedWorkshopIds.Select(Guid.Parse).ToList()));
 
         CreateMap<User, ShortUserDto>()
             .ForMember(dest => dest.Gender, opt => opt.Ignore())
