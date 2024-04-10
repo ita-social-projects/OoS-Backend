@@ -1,6 +1,6 @@
 ﻿using Bogus;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.WebApi.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 using System.Collections.Generic;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
