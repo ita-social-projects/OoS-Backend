@@ -1,7 +1,5 @@
-using Microsoft.Extensions.FileSystemGlobbing.Internal;
 using System;
-using System.Linq;
-using System.Text;
+using System.Text.RegularExpressions;
 
 namespace OutOfSchool.Common.Extensions;
 
@@ -39,21 +37,14 @@ public static class StringExtensions
             : value;
     }
 
-    public static string RemoveAllCharsExceptPattern(this string value, string pattern)
+    public static string RemoveCharsByRegexPattern(this string value, string regexPattern)
     {
-        if (value.IsNullOrEmpty() || pattern.IsNullOrEmpty())
+        if (value.IsNullOrEmpty() || regexPattern.IsNullOrEmpty())
         {
             return value;
         }
 
-        var resultValue = value.Where(pattern.Contains);
-        StringBuilder sb = new();
-        foreach (var c in resultValue)
-        {
-            sb.Append(c);
-        }
-
-        return sb.ToString();
+        return Regex.Replace(value, regexPattern, string.Empty);
     }
 
     public static string RemoveSubstring(this string value, string substring)
