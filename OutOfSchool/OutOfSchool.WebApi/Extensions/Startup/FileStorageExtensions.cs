@@ -1,10 +1,10 @@
 using Google.Cloud.Storage.V1;
 using Microsoft.Extensions.Options;
+using OutOfSchool.BusinessLogic.Common.QuartzConstants;
+using OutOfSchool.BusinessLogic.Services.Gcp;
+using OutOfSchool.BusinessLogic.Util.FakeImplementations;
 using OutOfSchool.Services.Contexts;
 using OutOfSchool.Services.Repository.Files;
-using OutOfSchool.WebApi.Common.QuartzConstants;
-using OutOfSchool.WebApi.Services.Gcp;
-using OutOfSchool.WebApi.Util.FakeImplementations;
 using Quartz;
 
 namespace OutOfSchool.WebApi.Extensions.Startup;

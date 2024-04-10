@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
-using OutOfSchool.Services.Models.Images;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Common.Resources.Codes;
 using OutOfSchool.BusinessLogic.Models.Images;
+using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.BusinessLogic.Services.Images;
 // TODO: make synchronization to remove incorrect operations' ids
@@ -12,7 +12,7 @@ namespace OutOfSchool.BusinessLogic.Services.Images;
 /// This instance does not save the given entity changes.
 /// </summary>
 /// <typeparam name="TEntity">Entity type.</typeparam>
-internal class ImageDependentEntityImagesInteractionService<TEntity> : IImageDependentEntityImagesInteractionService<TEntity>
+public class ImageDependentEntityImagesInteractionService<TEntity> : IImageDependentEntityImagesInteractionService<TEntity>
     where TEntity : class, IKeyedEntity, IImageDependentEntity<TEntity>, new()
 {
     /// <summary>

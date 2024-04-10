@@ -1,5 +1,5 @@
-﻿using OutOfSchool.WebApi.Common.QuartzConstants;
-using OutOfSchool.WebApi.Services.ApplicationStatusChange;
+﻿using OutOfSchool.BusinessLogic.Common.QuartzConstants;
+using OutOfSchool.BusinessLogic.Services.ApplicationStatusChange;
 using Quartz;
 
 namespace OutOfSchool.WebApi.Extensions.Startup;

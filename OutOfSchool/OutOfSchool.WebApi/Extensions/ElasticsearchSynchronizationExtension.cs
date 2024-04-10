@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
-using OutOfSchool.WebApi.Common.QuartzConstants;
-using OutOfSchool.WebApi.Services.Elasticsearch;
+using OutOfSchool.BusinessLogic.Common.QuartzConstants;
+using OutOfSchool.BusinessLogic.Services.Elasticsearch;
 using Quartz;
 
 namespace OutOfSchool.WebApi.Extensions;
