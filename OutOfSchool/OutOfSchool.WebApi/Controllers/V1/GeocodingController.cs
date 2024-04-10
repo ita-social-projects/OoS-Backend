@@ -2,8 +2,8 @@
 
 using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Models.Geocoding;
 using OutOfSchool.Common.Models;
-using OutOfSchool.WebApi.Models.Geocoding;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

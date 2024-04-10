@@ -1,8 +1,8 @@
 ﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models.Providers;
-using OutOfSchool.WebApi.Services.ProviderServices;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

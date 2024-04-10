@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

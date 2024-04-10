@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Workshops;
-using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Controllers;
 

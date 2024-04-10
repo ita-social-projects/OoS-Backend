@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.StatisticReports;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.StatisticReports;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
