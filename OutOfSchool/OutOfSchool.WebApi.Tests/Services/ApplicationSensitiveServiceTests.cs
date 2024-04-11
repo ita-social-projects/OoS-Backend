@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.EmailSender;
+using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -62,7 +62,7 @@ public class ApplicationSensitiveServiceTests
             areaAdminServiceMock.Object,
             codeficatorServiceMock.Object,
             new Mock<IRazorViewToStringRenderer>().Object,
-            new Mock<IEmailSender>().Object,
+            new Mock<IEmailSenderService>().Object,
             new Mock<IStringLocalizer<SharedResource>>().Object,
             new Mock<IOptions<HostsConfig>>().Object);
 

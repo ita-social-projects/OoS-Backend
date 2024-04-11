@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
-using OutOfSchool.EmailSender;
+using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Enums;
@@ -42,7 +42,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
     private readonly IAreaAdminService areaAdminService;
     private readonly ICodeficatorService codeficatorService;
     private readonly IRazorViewToStringRenderer renderer;
-    private readonly IEmailSender emailSender;
+    private readonly IEmailSenderService emailSender;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IOptions<HostsConfig> hostsConfig;
 
@@ -88,7 +88,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         IAreaAdminService areaAdminService,
         ICodeficatorService codeficatorService,
         IRazorViewToStringRenderer renderer,
-        IEmailSender emailSender,
+        IEmailSenderService emailSender,
         IStringLocalizer<SharedResource> localizer,
         IOptions<HostsConfig> hostsConfig)
     {

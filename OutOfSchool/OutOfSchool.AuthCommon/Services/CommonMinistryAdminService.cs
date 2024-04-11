@@ -4,6 +4,7 @@ using Microsoft.Extensions.Localization;
 using OutOfSchool.AuthCommon.Extensions;
 using OutOfSchool.AuthCommon.Services.Password;
 using OutOfSchool.Common.Models;
+using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.Services.Enums;
 
@@ -14,7 +15,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
     where TDto : MinistryAdminBaseDto
     where TRepositoty : IInstitutionAdminRepositoryBase<TId, TEntity>
 {
-    private readonly IEmailSender emailSender;
+    private readonly IEmailSenderService emailSender;
     private readonly IMapper mapper;
     private readonly ILogger<CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty>> logger;
     private readonly TRepositoty institutionAdminRepository;
@@ -27,7 +28,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
         IMapper mapper,
         TRepositoty institutionAdminRepository,
         ILogger<CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty>> logger,
-        IEmailSender emailSender,
+        IEmailSenderService emailSender,
         UserManager<User> userManager,
         OutOfSchoolDbContext context,
         IRazorViewToStringRenderer renderer,

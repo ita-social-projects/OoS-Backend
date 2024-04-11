@@ -20,10 +20,10 @@ using Microsoft.AspNetCore.Identity;
 using OutOfSchool.RazorTemplatesData.Services;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.AuthCommon;
-using OutOfSchool.EmailSender;
 using System.Linq;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using OutOfSchool.EmailSender.Services;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
 
@@ -118,7 +118,7 @@ public class AreaAdminControllerTests
             new Mock<IMapper>().Object,
             areaAdminRepository,
             new Mock<ILogger<CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, AreaAdminRepository>>>().Object,
-            new Mock<IEmailSender>().Object,
+            new Mock<IEmailSenderService>().Object,
             userManager,
             context,
             new Mock<IRazorViewToStringRenderer>().Object,

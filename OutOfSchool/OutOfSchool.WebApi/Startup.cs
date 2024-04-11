@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.EmailSender;
+using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Services.AverageRatings;
@@ -278,6 +279,7 @@ public static class Startup
         services.AddTransient<IChangesLogService, ChangesLogService>();
         services.AddTransient<IValueProjector, ValueProjector>();
         services.AddTransient<IExternalExportProviderService, ExternalExportProviderService>();
+        services.AddSingleton<ISendGridAccessibilityService, SendGridAccessibilityService>();
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
 
         services.AddTransient<IInstitutionHierarchyService, InstitutionHierarchyService>();
@@ -443,6 +445,7 @@ public static class Startup
             q.AddApplicationStatusChanging(services, quartzConfig);
             q.AddAverageRatingCalculating(services, quartzConfig);
             q.AddLicenseApprovalNotificationGenerating(services, quartzConfig);
+            q.AddEmailSender(services, quartzConfig);
         });
 
         var isRedisEnabled = configuration.GetValue<bool>("Redis:Enabled");
@@ -486,7 +489,7 @@ public static class Startup
         var mailConfig = configuration
             .GetSection(EmailOptions.SectionName)
             .Get<EmailOptions>();
-        services.AddEmailSender(
+        services.AddEmailSenderService(
             builder.Environment.IsDevelopment(),
             mailConfig.SendGridKey,
             builder => builder.Bind(configuration.GetSection(EmailOptions.SectionName)));
