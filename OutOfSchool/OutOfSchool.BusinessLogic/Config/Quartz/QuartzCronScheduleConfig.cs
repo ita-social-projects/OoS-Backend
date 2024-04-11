@@ -15,4 +15,6 @@ public class QuartzCronScheduleConfig
     public string AverageRatingCalculatingCronScheduleString { get; set; }
 
     public string LicenseApprovalNotificationCronScheduleString { get; set; }
+
+    public string EmailSenderCronScheduleString { get; set; }
 }

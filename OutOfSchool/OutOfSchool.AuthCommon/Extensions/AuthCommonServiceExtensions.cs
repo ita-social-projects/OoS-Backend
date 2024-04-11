@@ -28,7 +28,7 @@ public static class AuthCommonServiceExtensions
         var mailConfig = config
             .GetSection(EmailOptions.SectionName)
             .Get<EmailOptions>();
-        services.AddEmailSender(
+        services.AddEmailSenderService(
             isDevelopment,
             mailConfig.SendGridKey,
             builder => builder.Bind(config.GetSection(EmailOptions.SectionName)));

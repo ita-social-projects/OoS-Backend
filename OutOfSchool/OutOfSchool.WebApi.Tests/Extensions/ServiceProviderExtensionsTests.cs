@@ -5,6 +5,8 @@ using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.EmailSender;
+using OutOfSchool.EmailSender.Services;
+using Quartz;
 
 namespace OutOfSchool.WebApi.Tests.Extensions;
 
@@ -23,7 +25,7 @@ public class ServiceProviderExtensionsTests
     }
 
     [Test]
-    public void AddEmailSender_WhenIsDevelopmentIsTrueAndSendGridApiKeyIsEmpty_DevEmailSenderServiceShouldRegister()
+    public void AddEmailSenderService_WhenIsDevelopmentIsTrueAndSendGridApiKeyIsEmpty_DevEmailSenderServiceShouldRegister()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -33,39 +35,41 @@ public class ServiceProviderExtensionsTests
         services.AddSingleton(loggerMock.Object);
 
         // Act
-        services.AddEmailSender(isDevelopment, sendGridApikey, builder =>
+        services.AddEmailSenderService(isDevelopment, sendGridApikey, builder =>
         {
             ConfigureEmailOptions(builder);
         });
         ServiceProvider provider = services.BuildServiceProvider();
 
         // Assert
-        Assert.IsInstanceOf<DevEmailSender>(provider.GetService<IEmailSender>());
+        Assert.IsInstanceOf<DevEmailSender>(provider.GetService<IEmailSenderService>());
     }
 
     [Test]
-    public void AddEmailSender_WhenIsDevelopmentIsFalseAndSendGridApiKeyIsEmpty_EmailSenderServiceShouldRegister()
+    public void AddEmailSenderService_WhenIsDevelopmentIsFalseAndSendGridApiKeyIsEmpty_EmailSenderServiceShouldRegister()
     {
         // Arrange
         var services = new ServiceCollection();
         var isDevelopment = false;
         var sendGridApikey = string.Empty;
         var loggerMock = new Mock<ILogger<DevEmailSender>>();
+        var schedulerMock = new Mock<IScheduler>();
         services.AddSingleton(loggerMock.Object);
+        services.AddSingleton(schedulerMock.Object);
 
         // Act
-        services.AddEmailSender(isDevelopment, sendGridApikey, builder =>
+        services.AddEmailSenderService(isDevelopment, sendGridApikey, builder =>
         {
             ConfigureEmailOptions(builder);
         });
         ServiceProvider provider = services.BuildServiceProvider();
 
         // Assert
-        Assert.IsInstanceOf<EmailSender.EmailSender>(provider.GetService<IEmailSender>());
+        Assert.IsInstanceOf<EmailSenderService>(provider.GetService<IEmailSenderService>());
     }
 
     [Test]
-    public void AddEmailSender_WhenIsNotDevelopmentAndEmailOptionsIsNull_ShouldThrowArgumentNullException()
+    public void AddEmailSenderService_WhenIsNotDevelopmentAndEmailOptionsIsNull_ShouldThrowArgumentNullException()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -73,6 +77,6 @@ public class ServiceProviderExtensionsTests
         var sendGridApikey = string.Empty;
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => services.AddEmailSender(isDevelopment, sendGridApikey, null));
+        Assert.Throws<ArgumentNullException>(() => services.AddEmailSenderService(isDevelopment, sendGridApikey, null));
     }
 }

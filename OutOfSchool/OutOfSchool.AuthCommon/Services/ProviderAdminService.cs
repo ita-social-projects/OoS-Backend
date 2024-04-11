@@ -7,6 +7,7 @@ using OutOfSchool.AuthCommon.Extensions;
 using OutOfSchool.AuthCommon.Services.Password;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
+using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.Services.Enums;
 
@@ -14,7 +15,7 @@ namespace OutOfSchool.AuthCommon.Services;
 
 public class ProviderAdminService : IProviderAdminService
 {
-    private readonly IEmailSender emailSender;
+    private readonly IEmailSenderService emailSender;
     private readonly IMapper mapper;
     private readonly ILogger<ProviderAdminService> logger;
     private readonly IProviderAdminRepository providerAdminRepository;
@@ -31,7 +32,7 @@ public class ProviderAdminService : IProviderAdminService
         IMapper mapper,
         IProviderAdminRepository providerAdminRepository,
         ILogger<ProviderAdminService> logger,
-        IEmailSender emailSender,
+        IEmailSenderService emailSender,
         UserManager<User> userManager,
         OutOfSchoolDbContext context,
         IRazorViewToStringRenderer renderer,

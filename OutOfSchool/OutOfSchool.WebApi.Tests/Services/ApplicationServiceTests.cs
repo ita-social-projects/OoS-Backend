@@ -19,7 +19,7 @@ using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
-using OutOfSchool.EmailSender;
+using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Enums;
@@ -49,7 +49,7 @@ public class ApplicationServiceTests
     private Mock<IAreaAdminService> areaAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<IRazorViewToStringRenderer> rendererMock;
-    private Mock<IEmailSender> emailSenderMock;
+    private Mock<IEmailSenderService> emailSenderMock;
     private Mock<IStringLocalizer<SharedResource>> localizerMock;
     private Mock<IOptions<HostsConfig>> hostsConfigMock;
 
@@ -70,7 +70,7 @@ public class ApplicationServiceTests
         areaAdminServiceMock = new Mock<IAreaAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
         rendererMock = new Mock<IRazorViewToStringRenderer>();
-        emailSenderMock = new Mock<IEmailSender>();
+        emailSenderMock = new Mock<IEmailSenderService>();
         localizerMock = new Mock<IStringLocalizer<SharedResource>>();
         hostsConfigMock = new Mock<IOptions<HostsConfig>>();
 
@@ -980,7 +980,7 @@ public class ApplicationServiceTests
         await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
-        emailSenderMock.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<(string, string)>()), Times.Once);
+        emailSenderMock.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<(string, string)>(), null), Times.Once);
     }
 
     [Test]
@@ -1050,7 +1050,7 @@ public class ApplicationServiceTests
                 "ApplicationApprovedEmail",
                 It.Is<ApplicationStatusViewModel>(viewModel => viewModel.UaEnding == expectedEnding)),
             Times.Once);
-        emailSenderMock.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<(string, string)>()), Times.Once);
+        emailSenderMock.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<(string, string)>(), null), Times.Once);
     }
 
     private static void AssertApplicationsDTOsAreEqual(ApplicationDto expected, ApplicationDto actual)

@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using OutOfSchool.EmailSender.Services;
 using SendGrid.Extensions.DependencyInjection;
 
 namespace OutOfSchool.EmailSender;
@@ -9,7 +10,7 @@ public static class ServiceProviderExtensions
 {
     public const string PlaceholderForSendGridApiKey = "x";
 
-    public static IServiceCollection AddEmailSender(
+    public static IServiceCollection AddEmailSenderService(
         this IServiceCollection services,
         bool isDevelopment,
         string sendGridApiKey,
@@ -17,7 +18,7 @@ public static class ServiceProviderExtensions
     {
         if (isDevelopment && string.IsNullOrWhiteSpace(sendGridApiKey))
         {
-            services.AddTransient<IEmailSender, DevEmailSender>();
+            services.AddTransient<IEmailSenderService, DevEmailSender>();
             return services;
         }
 
@@ -32,7 +33,7 @@ public static class ServiceProviderExtensions
             options.HttpErrorAsException = true;
         });
 
-        services.AddTransient<IEmailSender, EmailSender>();
+        services.AddTransient<IEmailSenderService, EmailSenderService>();
         if (emailOptions == null)
         {
             throw new ArgumentNullException(nameof(emailOptions));

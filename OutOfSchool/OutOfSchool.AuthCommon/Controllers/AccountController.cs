@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Extensions;
 using OutOfSchool.AuthCommon.ViewModels;
+using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 
 namespace OutOfSchool.AuthCommon.Controllers;
@@ -13,7 +14,7 @@ public class AccountController : Controller
     private const string ReturnUrl = "Login";
     private readonly SignInManager<User> signInManager;
     private readonly UserManager<User> userManager;
-    private readonly IEmailSender emailSender;
+    private readonly IEmailSenderService emailSender;
     private readonly ILogger<AccountController> logger;
     private readonly IRazorViewToStringRenderer renderer;
     private readonly IStringLocalizer<SharedResource> localizer;
@@ -23,7 +24,7 @@ public class AccountController : Controller
     public AccountController(
         SignInManager<User> signInManager,
         UserManager<User> userManager,
-        IEmailSender emailSender,
+        IEmailSenderService emailSender,
         ILogger<AccountController> logger,
         IRazorViewToStringRenderer renderer,
         IStringLocalizer<SharedResource> localizer,

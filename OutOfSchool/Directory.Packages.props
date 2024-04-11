@@ -15,7 +15,7 @@
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(BaseVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(BaseVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(BaseVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="$(BaseVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
     <!--MVC-->

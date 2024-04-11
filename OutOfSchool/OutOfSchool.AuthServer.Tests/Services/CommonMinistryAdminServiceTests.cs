@@ -10,7 +10,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.Common.Models;
-using OutOfSchool.EmailSender;
+using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
@@ -41,7 +41,7 @@ public class CommonMinistryAdminServiceTests
             new Mock<IMapper>().Object,
             areaAdminRepository,
             new Mock<ILogger<CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, AreaAdminRepository>>>().Object,
-            new Mock<IEmailSender>().Object,
+            new Mock<IEmailSenderService>().Object,
             userManager,
             context,
             new Mock<IRazorViewToStringRenderer>().Object,

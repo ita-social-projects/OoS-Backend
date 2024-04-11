@@ -4,6 +4,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.ViewModels;
+using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.Services.Enums;
 
@@ -24,7 +25,7 @@ public class AuthController : Controller
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly AuthServerConfig identityServerConfig;
     private readonly IRazorViewToStringRenderer renderer;
-    private readonly IEmailSender emailSender;
+    private readonly IEmailSenderService emailSender;
     private string userId;
 
     /// <summary>
@@ -49,7 +50,7 @@ public class AuthController : Controller
         IStringLocalizer<SharedResource> localizer,
         IOptions<AuthServerConfig> identityServerConfig,
         IRazorViewToStringRenderer renderer,
-        IEmailSender emailSender)
+        IEmailSenderService emailSender)
     {
         this.logger = logger;
         this.parentRepository = parentRepository;

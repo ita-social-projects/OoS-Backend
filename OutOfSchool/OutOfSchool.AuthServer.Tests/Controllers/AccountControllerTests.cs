@@ -4,7 +4,6 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.EmailSender;
 using OutOfSchool.AuthCommon.Controllers;
 using OutOfSchool.AuthCommon.ViewModels;
 using Microsoft.AspNetCore.Identity;
@@ -19,6 +18,7 @@ using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.AuthCommon.Services.Interfaces;
 using System.Net;
 using System;
+using OutOfSchool.EmailSender.Services;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
 
@@ -27,7 +27,7 @@ public class AccountControllerTests
     private AccountController accountController;
     private readonly Mock<FakeSignInManager> fakeSignInManager;
     private readonly Mock<FakeUserManager> fakeUserManager;
-    private readonly Mock<IEmailSender> fakeEmailSender;
+    private readonly Mock<IEmailSenderService> fakeEmailSender;
     private readonly Mock<ILogger<AccountController>> fakeLogger;
     private readonly Mock<IStringLocalizer<SharedResource>> fakeLocalizer;
     private readonly Mock<IRazorViewToStringRenderer> fakeRazorViewToStringRenderer;
@@ -38,7 +38,7 @@ public class AccountControllerTests
     {
         fakeSignInManager = new Mock<FakeSignInManager>();
         fakeUserManager = new Mock<FakeUserManager>();
-        fakeEmailSender = new Mock<IEmailSender>();
+        fakeEmailSender = new Mock<IEmailSenderService>();
         fakeLogger = new Mock<ILogger<AccountController>>();
         fakeLocalizer = new Mock<IStringLocalizer<SharedResource>>();
         fakeRazorViewToStringRenderer = new Mock<IRazorViewToStringRenderer>();
