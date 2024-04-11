@@ -1,11 +1,11 @@
 ﻿using System;
 using AutoMapper;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Tests.Common;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Util;
-using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.IntegrationTests.AdminsUpdateTests;
 
