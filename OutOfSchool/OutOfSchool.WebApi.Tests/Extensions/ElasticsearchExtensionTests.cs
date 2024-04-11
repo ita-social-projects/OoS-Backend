@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Nest;
 using NUnit.Framework;
-using OutOfSchool.WebApi.Config;
+using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.WebApi.Extensions;
 
 namespace OutOfSchool.WebApi.Tests.Extensions;

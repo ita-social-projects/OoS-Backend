@@ -2,19 +2,15 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
 using Moq;
-
 using NUnit.Framework;
-
+using OutOfSchool.BusinessLogic.Config;
+using OutOfSchool.BusinessLogic.Services.Communication;
+using OutOfSchool.BusinessLogic.Services.ProviderAdminOperations;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Services.Communication;
-using OutOfSchool.WebApi.Services.ProviderAdminOperations;
 
 namespace OutOfSchool.WebApi.Tests.ProviderAdminOperations;
 
