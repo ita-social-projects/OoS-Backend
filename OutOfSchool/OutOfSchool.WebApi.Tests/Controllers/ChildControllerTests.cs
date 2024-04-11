@@ -3,24 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Application;
+using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.BusinessLogic.Models.SocialGroup;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Application;
-using OutOfSchool.WebApi.Models.Providers;
-using OutOfSchool.WebApi.Models.SocialGroup;
-using OutOfSchool.WebApi.Models.Workshops;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 

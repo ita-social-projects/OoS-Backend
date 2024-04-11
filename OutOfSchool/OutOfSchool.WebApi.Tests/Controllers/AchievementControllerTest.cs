@@ -5,14 +5,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Achievement;
+using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Achievement;
-using OutOfSchool.WebApi.Models.Providers;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 

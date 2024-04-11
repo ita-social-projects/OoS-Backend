@@ -9,12 +9,12 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Controllers;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
