@@ -6,6 +6,7 @@ global using Microsoft.AspNetCore.Mvc.ApiExplorer;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.FeatureManagement;
 global using MySqlConnector;
+global using OutOfSchool.BusinessLogic;
 global using OutOfSchool.BusinessLogic.Config;
 global using OutOfSchool.BusinessLogic.Config.DataAccess;
 global using OutOfSchool.BusinessLogic.Config.Images;

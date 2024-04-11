@@ -96,17 +96,4 @@
             <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
         </AdditionalFiles>
     </ItemGroup>
-    <ItemGroup>
-        <Compile Update="Resources\Images\ImageResource.Designer.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>ImageResource.resx</DependentUpon>
-        </Compile>
-    </ItemGroup>
-    <ItemGroup>
-        <EmbeddedResource Update="Resources\Images\ImageResource.resx">
-            <Generator>ResXFileCodeGenerator</Generator>
-            <LastGenOutput>ImageResource.Designer.cs</LastGenOutput>
-        </EmbeddedResource>
-    </ItemGroup>
 </Project>
