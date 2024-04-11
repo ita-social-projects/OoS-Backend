@@ -9,13 +9,14 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
+using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
 using OutOfSchool.Redis;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.SubordinationStructure;
-using OutOfSchool.WebApi.Services.SubordinationStructure;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
