@@ -37,6 +37,7 @@ global using OutOfSchool.Services.Models.ChatWorkshop;
 global using OutOfSchool.Services.Models.SubordinationStructure;
 global using OutOfSchool.Services.Repository;
 global using OutOfSchool.WebApi;
+global using OutOfSchool.WebApi.Config;
 global using OutOfSchool.WebApi.Extensions;
 global using OutOfSchool.WebApi.Extensions.Startup;
 global using OutOfSchool.WebApi.Middlewares;

@@ -1,4 +1,4 @@
-﻿namespace OutOfSchool.BusinessLogic.Config;
+﻿namespace OutOfSchool.WebApi.Config;
 
 public class FeatureManagementConfig
 {
