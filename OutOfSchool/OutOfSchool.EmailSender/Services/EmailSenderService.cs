@@ -38,7 +38,7 @@ public class EmailSenderService : IEmailSenderService
 
     private string EncodeToBase64(string toEncode)
     {
-        byte[] toEncodeAsBytes = Encoding.ASCII.GetBytes(toEncode);
+        byte[] toEncodeAsBytes = Encoding.UTF8.GetBytes(toEncode);
 
         string returnValue = Convert.ToBase64String(toEncodeAsBytes);
 

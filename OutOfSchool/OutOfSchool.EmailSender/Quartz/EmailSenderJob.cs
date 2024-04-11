@@ -96,7 +96,7 @@ public class EmailSenderJob : IJob
     {
         byte[] encodedDataAsBytes = Convert.FromBase64String(encodedData);
 
-        string returnValue = Encoding.ASCII.GetString(encodedDataAsBytes);
+        string returnValue = Encoding.UTF8.GetString(encodedDataAsBytes);
 
         return returnValue;
     }
