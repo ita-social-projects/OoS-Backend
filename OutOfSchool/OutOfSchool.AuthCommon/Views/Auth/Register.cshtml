@@ -16,8 +16,8 @@
         <h1 class="icon_title">@SharedLocalizer["Register"].Value.ToUpper()</h1>
         <div class="registration_goal">@SharedLocalizer["Registration goal"]</div>
         <div class="icon_wrapper">
-            <form onsubmit="return validateForm(this)" onclick="validateFormOnEvent(this)" onkeyup="validateFormOnEvent(this)" asp-controller="Auth"
-                  asp-action="Register" method="post">
+            <form onsubmit="return validateForm(this)" onclick="validateFormOnEvent()" onkeyup="validateFormOnEvent()" asp-controller="Auth"
+                  asp-action="Register" method="post" id="form_register">
                 <input type="hidden" asp-for="ReturnUrl" />
                 <div asp-validation-summary="ModelOnly"></div>
                 <ul class="registration_list">
@@ -51,7 +51,7 @@
                                 @SharedLocalizer["Service provider"]
                             </div>
                             <div class="registration_divider"></div>
-
+                    
                         </div>
                     </li>
 
@@ -142,7 +142,7 @@
                                 @SharedLocalizer["Password"]<span class="registration_star">*</span>
                             </label>
                             <input class="registration_input registration_input-password registration_input_required"
-                                   type="Password" asp-for="Password" id="password">
+                                   type="password" asp-for="Password" id="password">
                             <div class="registration_privacy_password">
                                 <img src="~/_content/auth/icons/ic_eye.svg" alt="eye" class="registration_eye" id="password_eye">
                             </div>
@@ -207,7 +207,7 @@
                     <div class="title registered_question">
                         <span>@SharedLocalizer["Already registered?"]</span>
                         <a class="link" asp-controller="Auth" asp-action="Login"
-                           asp-route-returnUrl="@Model.ReturnUrl", asp-route-providerRegistration="false">@SharedLocalizer["Sign In"]</a>
+                           asp-route-returnUrl="@Model.ReturnUrl" asp-route-providerRegistration="false">@SharedLocalizer["Sign In"]</a>
                     </div>
                 </ul>
             </form>
@@ -215,4 +215,5 @@
     </div>
 </div>
 @await Html.PartialAsync("_JqueryPartial")
+<script src="~/_content/auth/js/password_validator.js" type="text/javascript" asp-append-version="true"></script>
 <script src="~/_content/auth/js/site.js" type="text/javascript" asp-append-version="true"></script>
