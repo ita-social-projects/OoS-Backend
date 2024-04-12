@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Models;
@@ -38,7 +37,8 @@ public class CodeficatorRepository : EntityRepositorySoftDeleted<long, CATOTTG>,
     {
         int cityAmountIfNamePartIsEmpty = 100;
 
-        namePart = namePart.RemoveCharsByRegexPattern(Constants.ExceptUkrainianLettersDashSpaceRegex);
+        namePart = namePart.RemoveCharsByRegexPattern(
+            StringExtensions.ExcludeAllCharsExceptUkrainianCharsDashSpace());
 
         // TODO: Refactor this query, please
         var query = from e in db.CATOTTGs
