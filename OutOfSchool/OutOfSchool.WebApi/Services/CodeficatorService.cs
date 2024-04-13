@@ -120,6 +120,18 @@ public class CodeficatorService : ICodeficatorService
         return result;
     }
 
+    public async Task<(double Latitude, double Longitude)> GetNearestCoordinatesByCATOTTGId(long catottgId)
+    {
+        var cATOTTG = await codeficatorRepository.GetById(catottgId).ConfigureAwait(false);
+
+        if (cATOTTG.Latitude == 0 && cATOTTG.Longitude == 0)
+        {
+            return await GetNearestCoordinatesByCATOTTGId((long)cATOTTG.ParentId);
+        }
+
+        return (cATOTTG.Latitude, cATOTTG.Longitude);
+    }
+
     #region privateMethods
 
     private static Expression<Func<CATOTTG, bool>> GetFilter(long? parentId, CodeficatorCategory level)

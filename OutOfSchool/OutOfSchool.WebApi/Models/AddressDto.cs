@@ -15,8 +15,10 @@ public class AddressDto
     [MaxLength(15)]
     public string BuildingNumber { get; set; } = string.Empty;
 
+    [Required(ErrorMessage = "Latitude is required")]
     public double Latitude { get; set; }
 
+    [Required(ErrorMessage = "Longitude is required")]
     public double Longitude { get; set; }
 
     [Required(ErrorMessage = "CATOTTGId is required")]
