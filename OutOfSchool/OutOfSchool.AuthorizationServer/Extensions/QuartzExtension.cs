@@ -15,7 +15,7 @@ public static class QuartzExtension
     /// <param name="configureJobs">Expose Quartz Configurator to Configure Jobs.</param>
     /// <returns><see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
-    public static IServiceCollection AddDefaultQuartz(
+    public static async Task<IServiceCollection> AddDefaultQuartz(
         this IServiceCollection services,
         IConfiguration configuration,
         string quartzConnectionString = "QuartzConnection",
@@ -56,13 +56,9 @@ public static class QuartzExtension
 
         services.AddQuartzServer(options => { options.WaitForJobsToComplete = true; });
 
-        services.AddSingleton<IScheduler>(provider =>
-        {
-            var schedulerFactory = new StdSchedulerFactory();
-            var scheduler = schedulerFactory.GetScheduler().Result;
-            scheduler.Start().Wait();
-            return scheduler;
-        });
+        var schedulerFactory = new StdSchedulerFactory();
+        var scheduler = await schedulerFactory.GetScheduler();
+        await scheduler.Start();
 
         return services;
     }

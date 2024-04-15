@@ -19,7 +19,7 @@ namespace OutOfSchool.AuthorizationServer;
 
 public static class Startup
 {
-    public static void AddApplicationServices(this WebApplicationBuilder builder)
+    public static async Task AddApplicationServices(this WebApplicationBuilder builder)
     {
         var services = builder.Services;
         var config = builder.Configuration;
@@ -35,7 +35,7 @@ public static class Startup
         }
 
         var quartzConfig = config.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
-        services.AddDefaultQuartz(
+        await services.AddDefaultQuartz(
             config,
             quartzConfig.ConnectionStringKey);
 
