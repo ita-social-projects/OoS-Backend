@@ -55,17 +55,17 @@ public class AchievementRepositoryTests
         var achievementRepository = GetAchievementRepository(context);
         var childrenIds = children.Select(x => x.Id).ToList();
 
-        var teacherTitles = new List<string>() { teachers[1].Title, teachers[2].Title };
+        var teacherTitles = new List<string>() { teachers[1].Title, teachers[2].Title, "New Test Title" };
 
         // Act
         var expectedAchievement = await achievementRepository.Update(achievement, childrenIds, teacherTitles);
 
         // Assert
-        Assert.AreEqual(expectedAchievement.Teachers.Count, 2);
+        Assert.AreEqual(expectedAchievement.Teachers.Count, 3);
 
         var teachersFromDB = context.AchievementTeachers.Where(x => x.AchievementId == expectedAchievement.Id).ToList();
         Assert.AreEqual(teachersFromDB.Count(x => x.IsDeleted), 1);
-        Assert.AreEqual(teachersFromDB.Count(x => !x.IsDeleted), 2);
+        Assert.AreEqual(teachersFromDB.Count(x => !x.IsDeleted), 3);
         Assert.AreEqual(expectedAchievement.Teachers.Select(x => x.Title), teacherTitles);
     }
 
