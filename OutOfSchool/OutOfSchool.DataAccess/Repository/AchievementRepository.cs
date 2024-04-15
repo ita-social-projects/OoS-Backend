@@ -77,9 +77,9 @@ public class AchievementRepository : EntityRepositorySoftDeleted<Guid, Achieveme
 
         newAchievement.Teachers.RemoveAll(x => !teachers.Contains(x.Title));
 
-        var deletedTeachers = newAchievement.Teachers.Where(x => teachers.Contains(x.Title) && x.IsDeleted);
+        var teachersToRestore = newAchievement.Teachers.Where(x => teachers.Contains(x.Title) && x.IsDeleted);
 
-        foreach (var teacher in deletedTeachers)
+        foreach (var teacher in teachersToRestore)
         {
             teacher.IsDeleted = false;
         }
