@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Text.RegularExpressions;
 
 namespace OutOfSchool.Common.Extensions;
@@ -47,6 +47,6 @@ public static partial class StringExtensions
         return regexPattern.Replace(value, string.Empty);
     }
 
-    [GeneratedRegex(@"[^‡-ˇ¿-ﬂ≥≤øØ∫™¥•\-\s]", RegexOptions.None, 200)]
+    [GeneratedRegex(@"[^–∞-—è–ê-–Ø—ñ–Ü—ó–á—î–Ñ“ë“ê\-\s]", RegexOptions.None, 200)]
     public static partial Regex ExcludeAllCharsExceptUkrainianCharsDashSpace();
 }
