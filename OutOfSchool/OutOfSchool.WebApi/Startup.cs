@@ -102,7 +102,7 @@ public static class Startup
         app.MapHub<NotificationHub>(Constants.PathToNotificationHub);
     }
 
-    public static void AddApplicationServices(this WebApplicationBuilder builder)
+    public static async Task AddApplicationServices(this WebApplicationBuilder builder)
     {
         var services = builder.Services;
         var configuration = builder.Configuration;
@@ -428,7 +428,7 @@ public static class Startup
         services.AddProxy();
 
         var quartzConfig = configuration.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
-        services.AddDefaultQuartz(
+        await services.AddDefaultQuartz(
             configuration,
             quartzConfig.ConnectionStringKey,
             q =>

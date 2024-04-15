@@ -14,7 +14,7 @@ builder.Host.UseSerilog((ctx, lc) => lc
 GlobalLogContext.PushProperty("AppVersion", builder.Configuration.GetSection("AppDefaults:Version").Value);
 
 // Add services to the container.
-builder.AddApplicationServices();
+await builder.AddApplicationServices();
 
 var app = builder.Build();
 
