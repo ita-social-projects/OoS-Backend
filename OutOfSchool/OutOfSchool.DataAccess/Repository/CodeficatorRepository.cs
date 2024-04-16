@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
 
@@ -36,6 +37,9 @@ public class CodeficatorRepository : EntityRepositorySoftDeleted<long, CATOTTG>,
     {
         int cityAmountIfNamePartIsEmpty = 100;
 
+        namePart = namePart.RemoveCharsByRegexPattern(
+            StringExtensions.ExcludeAllCharsExceptUkrainianCharsDashSpace());
+
         // TODO: Refactor this query, please
         var query = from e in db.CATOTTGs
                     from p in db.CATOTTGs.Where(x1 => e.ParentId == x1.Id).DefaultIfEmpty()
@@ -46,9 +50,9 @@ public class CodeficatorRepository : EntityRepositorySoftDeleted<long, CATOTTG>,
                         && (string.IsNullOrEmpty(namePart) && (parentId == 0) &&
                             !(categories.Contains(CodeficatorCategory.SpecialStatusCity.Name) || categories.Contains(CodeficatorCategory.Region.Name))
                        ? EF.Property<bool>(e, "IsTop")
-                       : ((e.Name.StartsWith(namePart) &&
+                       : ((e.Name.Replace("’", string.Empty).StartsWith(namePart) &&
                           (CodeficatorCategory.Level1.Name.Contains(e.Category) || CodeficatorCategory.Level4.Name.Contains(e.Category) || CodeficatorCategory.TerritorialCommunity.Name.Contains(e.Category))) ||
-                          (e.Category == CodeficatorCategory.CityDistrict.Name && p.Name.StartsWith(namePart))) && categories.Contains(e.Category))
+                          (e.Category == CodeficatorCategory.CityDistrict.Name && p.Name.Replace("’", string.Empty).StartsWith(namePart))) && categories.Contains(e.Category))
                     select new CodeficatorAddressDto
                     {
                         Id = e.Id,
