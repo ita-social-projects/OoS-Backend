@@ -478,11 +478,11 @@ public class AdminControllerTests
         controller.ControllerContext.HttpContext = fakeHttpContext;
         controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         sensitiveProviderService
-            .Setup(x => x.ValidateImportData(It.IsAny<ImportDataValidate>())).ReturnsAsync(
-                new ImportDataValidate());
+            .Setup(x => x.ValidateImportData(It.IsAny<ImportDataValidateRequest>())).ReturnsAsync(
+                new ImportDataValidateResponse());
 
         // Act
-        var result = await controller.ValidateImportData(It.IsAny<ImportDataValidate>());
+        var result = await controller.ValidateImportData(It.IsAny<ImportDataValidateRequest>());
 
         // Assert
         Assert.That(result, Is.InstanceOf<OkObjectResult>());

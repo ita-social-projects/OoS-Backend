@@ -230,13 +230,13 @@ public class AdminController : Controller
     /// <param name="data">Values for checking.</param>
     /// <returns>Crossing data.</returns>
     [Authorize(Roles = "techadmin")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ImportDataValidate))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ImportDataValidateResponse))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost("~/api/v{version:apiVersion}/providers/import/validate")]
     [FeatureGate(nameof(Feature.TechAdminImport))]
-    public async Task<ActionResult> ValidateImportData([FromBody] ImportDataValidate data)
+    public async Task<ActionResult> ValidateImportData([FromBody] ImportDataValidateRequest data)
     {
         var result = await providerService.ValidateImportData(data).ConfigureAwait(false);
         return Ok(result);
