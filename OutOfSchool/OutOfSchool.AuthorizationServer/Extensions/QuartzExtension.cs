@@ -56,10 +56,6 @@ public static class QuartzExtension
 
         services.AddQuartzServer(options => { options.WaitForJobsToComplete = true; });
 
-        var schedulerFactory = new StdSchedulerFactory();
-        var scheduler = await schedulerFactory.GetScheduler();
-        await scheduler.Start();
-
         return services;
     }
 }

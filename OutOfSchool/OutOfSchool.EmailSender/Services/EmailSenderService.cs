@@ -8,11 +8,11 @@ namespace OutOfSchool.EmailSender.Services;
 
 public class EmailSenderService : IEmailSenderService
 {
-    private readonly IScheduler scheduler;
+    private readonly ISchedulerFactory schedulerFactory;
 
-    public EmailSenderService(IScheduler scheduler)
+    public EmailSenderService(ISchedulerFactory schedulerFactory)
     {
-        this.scheduler = scheduler;
+        this.schedulerFactory = schedulerFactory;
     }
 
     public async Task SendAsync(string email, string subject, (string html, string plain) content, DateTime? expirationTime = null)
@@ -33,6 +33,7 @@ public class EmailSenderService : IEmailSenderService
             .StoreDurably()
             .Build();
 
+        var scheduler = await schedulerFactory.GetScheduler();
         await scheduler.AddJob(job, false);
     }
 
