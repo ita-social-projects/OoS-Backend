@@ -23,7 +23,7 @@ public static class AchievementTeacherGenerator
     /// <param name="count">count of instances to generate.</param>
     public static List<AchievementTeacher> Generate(int count) => faker.Generate(count);
 
-    public static AchievementTeacher WithAchievenent(this AchievementTeacher achievementTeacher, Achievement achievement)
+    public static AchievementTeacher WithAchievement(this AchievementTeacher achievementTeacher, Achievement achievement)
     {
         _ = achievementTeacher ?? throw new ArgumentNullException(nameof(achievementTeacher));
 
@@ -33,11 +33,11 @@ public static class AchievementTeacherGenerator
         return achievementTeacher;
     }
 
-    public static List<AchievementTeacher> WithAchievenent(this List<AchievementTeacher> achievementTeachers, Achievement achievement)
+    public static List<AchievementTeacher> WithAchievement(this List<AchievementTeacher> achievementTeachers, Achievement achievement)
     {
         _ = achievementTeachers ?? throw new ArgumentNullException(nameof(achievementTeachers));
 
-        achievementTeachers.ForEach(x => x.WithAchievenent(achievement));
+        achievementTeachers.ForEach(x => x.WithAchievement(achievement));
 
         return achievementTeachers;
     }

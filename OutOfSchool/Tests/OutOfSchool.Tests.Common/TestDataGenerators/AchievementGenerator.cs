@@ -33,7 +33,7 @@ public static class AchievementGenerator
     public static Achievement WithAchievementTeachers(this Achievement achievement)
     {
         achievement.Teachers = AchievementTeacherGenerator.Generate(new Random().Next(1, 4))
-            .WithAchievenent(achievement);
+            .WithAchievement(achievement);
         
         return achievement;
     }
