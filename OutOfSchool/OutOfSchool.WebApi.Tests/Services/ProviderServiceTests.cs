@@ -1086,17 +1086,17 @@ public class ProviderServiceTests
         var timesEdrpous = Times.Never;
         var timesEmails = Times.Never;
 
-        var data = new ImportDataValidate();
+        var data = new ImportDataValidateRequest();
 
         if (checkEdrpous)
         {
-            data.Edrpous.Add("test");
+            data.Edrpous.Add(1, "test");
             timesEdrpous = Times.Once;
         }
 
         if (checkEmails)
         {
-            data.Emails.Add("test");
+            data.Emails.Add(1, "test");
             timesEmails = Times.Once;
         }
 

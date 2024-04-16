@@ -104,20 +104,24 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
         return query.CountAsync();
     }
 
-    public Task<List<string>> CheckExistsByEdrpous(List<string> edrpous)
+    public async Task<List<int>> CheckExistsByEdrpous(Dictionary<int, string> edrpous)
     {
-        return db.Providers
-            .Where(x => edrpous.Contains(x.EdrpouIpn))
+        var existingEdrpouIpn = await db.Providers
+            .Where(x => edrpous.Values.Contains(x.EdrpouIpn))
             .Select(x => x.EdrpouIpn)
             .ToListAsync();
+
+        return edrpous.Where(x => existingEdrpouIpn.Contains(x.Value)).Select(x => x.Key).ToList();
     }
 
-    public Task<List<string>> CheckExistsByEmails(List<string> emails)
+    public async Task<List<int>> CheckExistsByEmails(Dictionary<int, string> emails)
     {
-        return db.Providers
+        var existingEmails = await db.Providers
             .Include(x => x.User)
-            .Where(x => emails.Contains(x.User.Email))
+            .Where(x => emails.Values.Contains(x.User.Email))
             .Select(x => x.User.Email)
             .ToListAsync();
+
+        return emails.Where(x => existingEmails.Contains(x.Value)).Select(x => x.Key).ToList();
     }
 }

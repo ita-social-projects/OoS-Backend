@@ -25,7 +25,7 @@ public interface ISensitiveProviderService
     /// </summary>
     /// <param name="data">Values for checking.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
-    Task<ImportDataValidate> ValidateImportData(ImportDataValidate data);
+    Task<ImportDataValidateResponse> ValidateImportData(ImportDataValidateRequest data);
 
     /// <summary>
     /// Get export data. Data is in CSV format, where each row is <see cref="ProviderCsvDto"/>.
