@@ -1,0 +1,34 @@
+@using Microsoft.Extensions.Primitives
+@using Microsoft.AspNetCore.Mvc.Localization
+@using OutOfSchool.AuthCommon
+
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@{
+    ViewData["Title"] = SharedLocalizer["Getting out of Extracurricular activities"];
+    Layout = "_Layout";
+}
+
+<div class="wrapper_body">
+    <div class="wrapper">
+        <h1 class="icon_title">@SharedLocalizer["Log out"].Value.ToUpper()</h1>
+        <h3>@SharedLocalizer["Are you sure you want to sign out?"]</h3>
+
+        <form asp-controller="Token" asp-action="Logout" method="post">
+            @* Flow the request parameters so they can be received by the LogoutPost action: *@
+            @foreach (var parameter in Context.Request.HasFormContentType ?
+            (IEnumerable<KeyValuePair<string, StringValues>>)Context.Request.Form : Context.Request.Query)
+            {
+                <input type="hidden" name="@parameter.Key" value="@parameter.Value" />
+            }
+            <div class="logout_wrapper">
+
+                <button class="btn-lg" type="button" id="cancelBtn">@SharedLocalizer["No"].Value.ToUpper()</button>
+                <input class="btn-lg btn-success" name="Confirm" type="submit" value="@SharedLocalizer["Yes"].Value.ToUpper()" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@await Html.PartialAsync("_JqueryPartial")
+<script src="~/_content/auth/js/logout.js" type="text/javascript" asp-append-version="true"></script>

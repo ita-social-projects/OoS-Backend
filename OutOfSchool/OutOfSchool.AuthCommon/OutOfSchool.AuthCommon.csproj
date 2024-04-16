@@ -37,10 +37,19 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <Content Remove="stylecop.json" />
+        <Content Remove="wwwroot\js\logout.js" />
         <AdditionalFiles Include="stylecop.json" />
     </ItemGroup>
 
     <ItemGroup>
         <Watch Include="wwwroot\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Watch Remove="wwwroot\js\logout.js" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="wwwroot\js\logout.js" />
     </ItemGroup>
 </Project>

@@ -405,4 +405,19 @@ Login: {0}
   <data name="Your account is deleted" xml:space="preserve">
     <value>Цей акаунт було видалено</value>
   </data>
+  <data name="Are you sure you want to sign out?" xml:space="preserve">
+    <value>Ви впевнені, що хочете вийти?</value>
+  </data>
+  <data name="Getting out of Extracurricular activities" xml:space="preserve">
+    <value>Вихід з Позашкілля</value>
+  </data>
+  <data name="Log out" xml:space="preserve">
+    <value>Вийти</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Ні</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Так</value>
+  </data>
 </root>
