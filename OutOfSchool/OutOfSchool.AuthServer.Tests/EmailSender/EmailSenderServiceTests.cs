@@ -14,14 +14,16 @@ namespace OutOfSchool.AuthServer.Tests.EmailSender;
 [TestFixture]
 public class EmailSenderServiceTests
 {
+    private Mock<ISchedulerFactory> mockSchedulerFactory;
     private Mock<IScheduler> mockScheduler;
     private EmailSenderService emailSenderService;
 
     [SetUp]
     public void Setup()
     {
+        mockSchedulerFactory = new Mock<ISchedulerFactory>();
         mockScheduler = new Mock<IScheduler>();
-        emailSenderService = new EmailSenderService(mockScheduler.Object);
+        emailSenderService = new EmailSenderService(mockSchedulerFactory.Object);
     }
 
     [Test]
@@ -31,6 +33,8 @@ public class EmailSenderServiceTests
         string email = "test@example.com";
         string subject = "Test Email";
         var content = ("<html><body><h1>Hello</h1></body></html>", "Hello");
+        mockSchedulerFactory.Setup(f => f.GetScheduler(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockScheduler.Object);
 
         // Act
         await emailSenderService.SendAsync(email, subject, content);
@@ -50,6 +54,8 @@ public class EmailSenderServiceTests
         var content = ("<html><body><h1>Hello</h1></body></html>", "Hello");
         string encodedHtml = Convert.ToBase64String(Encoding.ASCII.GetBytes(content.Item1));
         string encodedPlain = Convert.ToBase64String(Encoding.ASCII.GetBytes(content.Item2));
+        mockSchedulerFactory.Setup(f => f.GetScheduler(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockScheduler.Object);
 
         // Act
         await emailSenderService.SendAsync(email, subject, content);
@@ -57,12 +63,12 @@ public class EmailSenderServiceTests
         // Assert
         mockScheduler.Verify(
             scheduler => scheduler.AddJob(It.Is<JobDetailImpl>(job =>
-                job.JobDataMap[EmailSenderStringConstants.Email].Equals(email) &&
-                job.JobDataMap[EmailSenderStringConstants.Subject].Equals(subject) &&
-                job.JobDataMap[EmailSenderStringConstants.HtmlContent].Equals(encodedHtml) &&
-                job.JobDataMap[EmailSenderStringConstants.PlainContent].Equals(encodedPlain)),
-            false,
-            It.IsAny<CancellationToken>()),
-        Times.Once);
+                    job.JobDataMap[EmailSenderStringConstants.Email].Equals(email) &&
+                    job.JobDataMap[EmailSenderStringConstants.Subject].Equals(subject) &&
+                    job.JobDataMap[EmailSenderStringConstants.HtmlContent].Equals(encodedHtml) &&
+                    job.JobDataMap[EmailSenderStringConstants.PlainContent].Equals(encodedPlain)),
+                false,
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 }
