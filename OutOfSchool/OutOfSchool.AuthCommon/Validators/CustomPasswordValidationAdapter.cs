@@ -4,24 +4,16 @@ using Microsoft.Extensions.Localization;
 
 namespace OutOfSchool.AuthCommon.Validators;
 
-public class CustomPasswordValidationAdapter : AttributeAdapterBase<CustomPasswordValidationAttribute>
+public class CustomPasswordValidationAdapter(
+    CustomPasswordValidationAttribute attribute,
+    IStringLocalizer? stringLocalizer)
+    : AttributeAdapterBase<CustomPasswordValidationAttribute>(attribute, stringLocalizer)
 {
     private readonly string validationPrefix = "data-val-validpass";
-    private readonly IStringLocalizer? localizer;
-
-    public CustomPasswordValidationAdapter(
-        CustomPasswordValidationAttribute attribute,
-        IStringLocalizer? stringLocalizer)
-        : base(attribute, stringLocalizer)
-    {
-        // Property not exposed in base class, need to duplicate :(
-        this.localizer = stringLocalizer;
-    }
 
     public override string GetErrorMessage(ModelValidationContextBase validationContext)
     {
-        var errorMessage = localizer?.GetString(Constants.PasswordValidationErrorMessage);
-        return errorMessage ?? Constants.PasswordValidationErrorMessage;
+        return GetErrorMessage(validationContext.ModelMetadata);
     }
 
     public override void AddValidation(ClientModelValidationContext context)
