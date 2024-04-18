@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common.Validators;
 using OutOfSchool.BusinessLogic.Validators;
+
 namespace OutOfSchool.BusinessLogic.Models.Providers;
 
 public class ProviderBlockDto
@@ -11,11 +13,8 @@ public class ProviderBlockDto
     public bool IsBlocked { get; set; }
 
     [DataType(DataType.PhoneNumber)]
-    [RegularExpression(
-       Constants.PhoneNumberRegexModel,
-       ErrorMessage = Constants.PhoneErrorMessage)]
+    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
-    [MaxLength(Constants.UnifiedPhoneLength)]
     [RequiredIf("IsBlocked", true, ErrorMessage = "PhoneNumber is required")]
     public string BlockPhoneNumber { get; set; } = string.Empty;
 

@@ -381,7 +381,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                 user.MiddleName = ministryAdminUpdateDto.MiddleName;
                 user.Email = ministryAdminUpdateDto.Email;
                 user.UserName = ministryAdminUpdateDto.Email;
-                user.PhoneNumber = Constants.PhonePrefix + ministryAdminUpdateDto.PhoneNumber;
+                user.PhoneNumber = ministryAdminUpdateDto.PhoneNumber;
 
                 var updateResult = await userManager.UpdateAsync(user);
 

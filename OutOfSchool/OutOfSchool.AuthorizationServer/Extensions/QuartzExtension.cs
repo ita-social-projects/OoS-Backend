@@ -1,5 +1,6 @@
 using OutOfSchool.AuthorizationServer.Config;
 using Quartz;
+using Quartz.Impl;
 
 namespace OutOfSchool.AuthorizationServer.Extensions;
 
@@ -14,7 +15,7 @@ public static class QuartzExtension
     /// <param name="configureJobs">Expose Quartz Configurator to Configure Jobs.</param>
     /// <returns><see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
-    public static IServiceCollection AddDefaultQuartz(
+    public static async Task<IServiceCollection> AddDefaultQuartz(
         this IServiceCollection services,
         IConfiguration configuration,
         string quartzConnectionString = "QuartzConnection",

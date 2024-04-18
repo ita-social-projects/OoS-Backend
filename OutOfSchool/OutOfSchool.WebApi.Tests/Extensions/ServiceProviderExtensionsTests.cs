@@ -53,9 +53,9 @@ public class ServiceProviderExtensionsTests
         var isDevelopment = false;
         var sendGridApikey = string.Empty;
         var loggerMock = new Mock<ILogger<DevEmailSender>>();
-        var schedulerMock = new Mock<IScheduler>();
+        var schedulerFactoryMock = new Mock<ISchedulerFactory>();
         services.AddSingleton(loggerMock.Object);
-        services.AddSingleton(schedulerMock.Object);
+        services.AddSingleton(schedulerFactoryMock.Object);
 
         // Act
         services.AddEmailSenderService(isDevelopment, sendGridApikey, builder =>

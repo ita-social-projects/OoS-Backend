@@ -89,16 +89,16 @@ public class ProviderRepositoryTests
 
         var firstEdrpou = context.Providers.First().EdrpouIpn;
 
-        var data = new List<string>()
+        var data = new Dictionary<int, string>()
         {
-            firstEdrpou,
-            firstEdrpou + "1",
-            firstEdrpou + "2",
+            { 1, firstEdrpou },
+            { 2, firstEdrpou + "1" },
+            { 3, firstEdrpou + "2" },
         };
 
-        var expectedResult = new List<string>()
+        var expectedResult = new List<int>()
         {
-            firstEdrpou,
+            1,
         };
 
         // Act
@@ -117,16 +117,16 @@ public class ProviderRepositoryTests
 
         var firstEmail = context.Providers.First().User.Email;
 
-        var data = new List<string>()
+        var data = new Dictionary<int, string>()
         {
-            firstEmail,
-            "q" + firstEmail,
-            "qq" + firstEmail,
+            { 1, firstEmail },
+            { 2, "q" + firstEmail },
+            { 3, "qq" + firstEmail },
         };
 
-        var expectedResult = new List<string>()
+        var expectedResult = new List<int>()
         {
-            firstEmail,
+            1,
         };
 
         // Act

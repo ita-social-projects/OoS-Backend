@@ -474,11 +474,11 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         }
     }
 
-    public async Task<ImportDataValidate> ValidateImportData(ImportDataValidate data)
+    public async Task<ImportDataValidateResponse> ValidateImportData(ImportDataValidateRequest data)
     {
         _ = data ?? throw new ArgumentNullException(nameof(data));
 
-        var result = new ImportDataValidate();
+        var result = new ImportDataValidateResponse();
 
         if (data.Edrpous.Count > 0)
         {

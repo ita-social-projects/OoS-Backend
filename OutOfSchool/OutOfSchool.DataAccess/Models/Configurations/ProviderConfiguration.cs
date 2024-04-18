@@ -52,7 +52,7 @@ internal class ProviderConfiguration : IEntityTypeConfiguration<Provider>
             .HasColumnType(nameof(DataType.Date));
 
         builder.Property(x => x.PhoneNumber)
-            .HasMaxLength(15);
+            .HasMaxLength(Constants.MaxPhoneNumberLengthWithPlusSign);
 
         builder.Property(x => x.Founder)
             .IsRequired()

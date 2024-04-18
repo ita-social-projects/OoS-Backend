@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;
@@ -63,12 +64,10 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISo
     public DateTime? DirectorDateOfBirth { get; set; } = default;
 
     [DataType(DataType.PhoneNumber)]
-    [RegularExpression(
-        Constants.PhoneNumberRegexModel,
-        ErrorMessage = Constants.PhoneErrorMessage)]
+    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
-    [MaxLength(Constants.UnifiedPhoneLength)]
     [Required(ErrorMessage = "PhoneNumber is required")]
+    [MaxLength(Constants.MaxPhoneNumberLengthWithPlusSign)]
     public string PhoneNumber { get; set; } = string.Empty;
 
     [Required]
@@ -97,12 +96,10 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISo
     public bool IsBlocked { get; set; } = false;
 
     [DataType(DataType.PhoneNumber)]
-    [RegularExpression(
-       Constants.PhoneNumberRegexModel,
-       ErrorMessage = Constants.PhoneErrorMessage)]
+    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
-    [MaxLength(Constants.UnifiedPhoneLength)]
     [Required(ErrorMessage = "PhoneNumber is required")]
+    [MaxLength(Constants.MaxPhoneNumberLengthWithPlusSign)]
     public string BlockPhoneNumber { get; set; } = string.Empty;
 
     [MaxLength(500)]

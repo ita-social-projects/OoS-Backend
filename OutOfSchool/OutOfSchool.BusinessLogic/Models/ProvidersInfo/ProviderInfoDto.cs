@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
@@ -59,11 +60,8 @@ public class ProviderInfoDto : ProviderInfoBaseDto, IHasRating
     public DateTime? DirectorDateOfBirth { get; set; } = default;
 
     [DataType(DataType.PhoneNumber)]
-    [RegularExpression(
-        Constants.PhoneNumberRegexModel,
-        ErrorMessage = Constants.PhoneErrorMessage)]
+    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
-    [MaxLength(Constants.UnifiedPhoneLength)]
     [Required(ErrorMessage = "The phone number is required")]
     public string PhoneNumber { get; set; } = string.Empty;
 

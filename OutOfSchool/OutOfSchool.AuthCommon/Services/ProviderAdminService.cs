@@ -242,7 +242,7 @@ public class ProviderAdminService : IProviderAdminService
                 user.LastName = updateDto.LastName;
                 user.MiddleName = updateDto.MiddleName;
                 user.Email = updateDto.Email;
-                user.PhoneNumber = Constants.PhonePrefix + updateDto.PhoneNumber;
+                user.PhoneNumber = updateDto.PhoneNumber;
 
                 var newPropertiesValues = GetTrackedUserProperties(user);
 
