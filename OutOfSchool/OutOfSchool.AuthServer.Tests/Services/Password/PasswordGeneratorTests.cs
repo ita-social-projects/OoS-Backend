@@ -1,6 +1,5 @@
 ﻿using NUnit.Framework;
 using OutOfSchool.AuthCommon.Services.Password;
-using System.Linq;
 
 namespace OutOfSchool.AuthServer.Tests.Services.Password;
 
