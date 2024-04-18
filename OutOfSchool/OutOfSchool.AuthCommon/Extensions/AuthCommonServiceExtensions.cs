@@ -1,5 +1,6 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Config.ExternalUriModels;
 using OutOfSchool.AuthCommon.Services;
@@ -42,6 +43,7 @@ public static class AuthCommonServiceExtensions
                 options.DataAnnotationLocalizerProvider = (_, factory) =>
                     factory.Create(typeof(SharedResource));
             });
+        services.AddSingleton<IValidationAttributeAdapterProvider, CustomClientValidationProvider>();
         services.AddRazorPages();
         services.AddAutoMapper(typeof(MappingProfile));
         services.AddTransient(typeof(IEntityAddOnlyRepository<,>), typeof(EntityRepository<,>));

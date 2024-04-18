@@ -94,11 +94,10 @@ function validateFormMaturity(form) {
     if (!form.maturity.checked) {
         $("#maturity").css("visibility", "visible");
         return false;
-    }
-    else {
+    } else {
         $("#maturity").css("visibility", "hidden");
         return true;
-    }    
+    }
 }
 
 function validateFormAccept(form) {
@@ -118,20 +117,15 @@ function validateForm(form) {
     return isValidMature && isValidAccept;
 }
 
-function validateFormOnEvent(form) {
-    let valid = allFieldsValid(form);
+function validateFormOnEvent() {
+    let valid = allFieldsValid();
     $("#btn_register").prop("disabled", !valid)
 }
 
-function allFieldsValid(form) {
-    if(!$("#checkbox_age_confirm").prop("checked") || !$("#checkbox_rules_agreement").prop("checked")){
+function allFieldsValid() {
+    if (!$("#checkbox_age_confirm").prop("checked") || !$("#checkbox_rules_agreement").prop("checked")) {
         return false;
     }
-
-    let registrationInputs = form.getElementsByClassName("registration_input_required");
-    for (var i = 0; i < registrationInputs.length; i++) {
-        if (registrationInputs.item(i).value === '')
-            return false;
-    }
-    return true;
+    
+    return $("#form_register").valid();
 }
