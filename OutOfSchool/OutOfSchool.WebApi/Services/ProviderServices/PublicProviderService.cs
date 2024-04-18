@@ -11,6 +11,7 @@ public class PublicProviderService : IPublicProviderService
     private readonly IProviderRepository providerRepository;
     private readonly ILogger<ProviderService> logger;
     private readonly IProviderService providerService;
+    private readonly IChangesLogService changesLogService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PublicProviderService"/> class.
@@ -22,11 +23,13 @@ public class PublicProviderService : IPublicProviderService
     public PublicProviderService(
         IProviderRepository providerRepository,
         ILogger<ProviderService> logger,
-        IProviderService providerService)
+        IProviderService providerService,
+        IChangesLogService changesLogService)
     {
         this.providerRepository = providerRepository;
         this.logger = logger;
         this.providerService = providerService;
+        this.changesLogService = changesLogService;
     }
 
     public async Task<ProviderStatusDto> UpdateStatus(ProviderStatusDto dto, string userId)
@@ -45,6 +48,9 @@ public class PublicProviderService : IPublicProviderService
         // TODO: validate if current user has permission to update the provider status
         provider.Status = dto.Status;
         provider.StatusReason = dto.StatusReason;
+
+        changesLogService.AddEntityChangesToDbContext(provider, userId);
+
         await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
 
         logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.Status}");
