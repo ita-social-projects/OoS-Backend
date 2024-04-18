@@ -318,7 +318,7 @@ public class MappingProfile : Profile
         CreateMap<Parent, ParentDtoWithContactInfo>()
             .ForMember(dest => dest.Email, opt => opt.MapFrom(s => s.User.Email))
             .ForMember(dest => dest.EmailConfirmed, opt => opt.MapFrom(s => s.User.EmailConfirmed))
-            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(s => s.User.PhoneNumber.Right(Constants.PhoneShortLength)))
+            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(s => s.User.PhoneNumber))
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(s => s.User.LastName))
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(s => s.User.MiddleName ?? string.Empty))
             .ForMember(dest => dest.FirstName, opt => opt.MapFrom(s => s.User.FirstName))
@@ -353,7 +353,7 @@ public class MappingProfile : Profile
         CreateMap<User, ProviderAdminDto>()
             .ForMember(dest => dest.IsDeputy, opt => opt.Ignore())
             .ForMember(dest => dest.AccountStatus, m => m.Ignore())
-            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber.Right(Constants.PhoneShortLength)));
+            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber));
 
         CreateMap<User, FullProviderAdminDto>()
             .IncludeBase<User, ProviderAdminDto>()
@@ -391,7 +391,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.User.MiddleName ?? string.Empty))
-            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber.Right(Constants.PhoneShortLength)))
+            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
         ;
 
