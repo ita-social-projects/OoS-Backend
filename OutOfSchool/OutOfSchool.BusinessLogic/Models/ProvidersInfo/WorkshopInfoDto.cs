@@ -1,12 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Util.CustomValidation;
+using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Validators;
-using OutOfSchool.WebApi.Models.Workshops;
-using OutOfSchool.WebApi.Util.CustomValidation;
-using OutOfSchool.WebApi.Util.JsonTools;
 
 namespace OutOfSchool.BusinessLogic.Models.ProvidersInfo;
 

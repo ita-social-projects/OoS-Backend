@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using OutOfSchool.Common.Validators;
 using OutOfSchool.BusinessLogic.Validators;
+using OutOfSchool.Common.Validators;
 
 namespace OutOfSchool.BusinessLogic.Models.Providers;
 

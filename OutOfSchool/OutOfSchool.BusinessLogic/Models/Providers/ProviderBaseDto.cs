@@ -1,12 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
+using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
-using OutOfSchool.BusinessLogic.Util.JsonTools;
-using Microsoft.AspNetCore.Http;
 
 namespace OutOfSchool.BusinessLogic.Models.Providers;
 

@@ -1,4 +1,4 @@
-﻿namespace OutOfSchool.WebApi.Models.Providers;
+﻿namespace OutOfSchool.BusinessLogic.Models.Providers;
 
 public class ImportDataValidateResponse
 {
