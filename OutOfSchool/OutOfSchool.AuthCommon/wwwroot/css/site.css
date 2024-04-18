@@ -270,6 +270,13 @@ a {
   padding-top: 8px;
 }
 
+.logout_wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+}
+
 .password_link {
   text-align: right;
 }
@@ -424,26 +431,26 @@ input.registration_input::-ms-reveal {
   padding-right: 5px;
 }
 
-.registration_button {
-  border: none;
-  outline: none;
-  height: 34px;
-  padding: 10px 30px;
-  margin: 16px auto;
-  border-radius: 20px;
-  font-family: "Open Sans", sans-serif;
-  font-style: normal;
-  font-weight: bold;
-  font-size: 13px;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
+.registration_button, .btn-lg {
+    border: none;
+    outline: none;
+    height: 34px;
+    padding: 10px 30px;
+    margin: 16px auto;
+    border-radius: 20px;
+    font-family: "Open Sans", sans-serif;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
 }
 
-.registration_submit {
-  background: #3849f9;
-  color: #ffffff;
+.registration_submit, .btn-success {
+    background: #3849f9;
+    color: #ffffff;
 }
 
 .registration_cancel {
