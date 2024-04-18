@@ -3,63 +3,43 @@
 public static class PasswordGenerator
 {
     /// <summary>
-    /// Generates a Random Password
-    /// respecting the given strength requirements.
+    /// Generates a Random Password.
     /// </summary>
-    /// <param name="passwordOptions">A valid PasswordOptions object
-    /// containing the password strength requirements.</param>
     /// <returns>A random password.</returns>
-    public static string GenerateRandomPassword(PasswordOptions passwordOptions)
+    public static string GenerateRandomPassword()
     {
-        string[] randomChars = new[]
+        string[] allowedCharSets =
+        [
+            "ABCDEFGHJKLMNOPQRSTUVWXYZ",
+            "abcdefghijkmnopqrstuvwxyz",
+            "0123456789",
+            Constants.ValidationSymbols,
+        ];
+
+        CryptoRandom rand = new();
+
+        List<char> password = [];
+
+        foreach (var charSet in allowedCharSets)
         {
-            "ABCDEFGHJKLMNOPQRSTUVWXYZ",    // uppercase
-            "abcdefghijkmnopqrstuvwxyz",    // lowercase
-            "0123456789",                   // digits
-            "!@$?_-",                       // non-alphanumeric
-        };
-
-        CryptoRandom rand = new CryptoRandom();
-
-        List<char> chars = new List<char>();
-
-        if (passwordOptions.RequireUppercase)
-        {
-            chars.Insert(
-                rand.Next(0, chars.Count),
-                randomChars[0][rand.Next(0, randomChars[0].Length)]);
+            password.Insert(
+                rand.Next(0, password.Count),
+                charSet[rand.Next(0, charSet.Length)]);
         }
 
-        if (passwordOptions.RequireLowercase)
+        while (password.Count < Constants.PasswordMinLength)
         {
-            chars.Insert(
-                rand.Next(0, chars.Count),
-                randomChars[1][rand.Next(0, randomChars[1].Length)]);
+            var randomCharSetIndex = rand.Next(0, allowedCharSets.Length);
+            var randomChar =
+                allowedCharSets[randomCharSetIndex][
+                rand.Next(0, allowedCharSets[randomCharSetIndex].Length)];
+
+            if (!password.Contains(randomChar))
+            {
+                password.Add(randomChar);
+            }
         }
 
-        if (passwordOptions.RequireDigit)
-        {
-            chars.Insert(
-                rand.Next(0, chars.Count),
-                randomChars[2][rand.Next(0, randomChars[2].Length)]);
-        }
-
-        if (passwordOptions.RequireNonAlphanumeric)
-        {
-            chars.Insert(
-                rand.Next(0, chars.Count),
-                randomChars[3][rand.Next(0, randomChars[3].Length)]);
-        }
-
-        for (int i = chars.Count; i < passwordOptions.RequiredLength
-                                  || chars.Distinct().Count() < passwordOptions.RequiredUniqueChars; i++)
-        {
-            string rcs = randomChars[rand.Next(0, randomChars.Length)];
-            chars.Insert(
-                rand.Next(0, chars.Count),
-                rcs[rand.Next(0, rcs.Length)]);
-        }
-
-        return new string(chars.ToArray());
+        return new string(password.ToArray());
     }
 }

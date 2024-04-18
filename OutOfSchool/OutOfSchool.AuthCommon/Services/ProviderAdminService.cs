@@ -67,7 +67,7 @@ public class ProviderAdminService : IProviderAdminService
         var user = mapper.Map<User>(providerAdminDto);
 
         var password = PasswordGenerator
-            .GenerateRandomPassword(userManager.Options.Password);
+            .GenerateRandomPassword();
 
         var executionStrategy = context.Database.CreateExecutionStrategy();
         return await executionStrategy.Execute(providerAdminDto, CreateProviderAdminOperation).ConfigureAwait(false);
@@ -577,7 +577,7 @@ public class ProviderAdminService : IProviderAdminService
                 }
 
                 var user = await userManager.FindByIdAsync(providerAdminId);
-                var password = PasswordGenerator.GenerateRandomPassword(userManager.Options.Password);
+                var password = PasswordGenerator.GenerateRandomPassword();
                 await userManager.RemovePasswordAsync(user);
                 var result = await userManager.AddPasswordAsync(user, password);
 
