@@ -1,4 +1,6 @@
-﻿namespace OutOfSchool.AuthCommon.Services.Password;
+﻿using System.Security.Cryptography;
+
+namespace OutOfSchool.AuthCommon.Services.Password;
 
 public static class PasswordGenerator
 {
@@ -16,23 +18,21 @@ public static class PasswordGenerator
             Constants.ValidationSymbols,
         ];
 
-        CryptoRandom rand = new();
-
         List<char> password = [];
 
         foreach (var charSet in allowedCharSets)
         {
             password.Insert(
-                rand.Next(0, password.Count),
-                charSet[rand.Next(0, charSet.Length)]);
+                GetRandomInt32(password.Count),
+                charSet[GetRandomInt32(charSet.Length)]);
         }
 
         while (password.Count < Constants.PasswordMinLength)
         {
-            var randomCharSetIndex = rand.Next(0, allowedCharSets.Length);
+            var randomCharSetIndex = GetRandomInt32(allowedCharSets.Length);
             var randomChar =
                 allowedCharSets[randomCharSetIndex][
-                rand.Next(0, allowedCharSets[randomCharSetIndex].Length)];
+                GetRandomInt32(allowedCharSets[randomCharSetIndex].Length)];
 
             if (!password.Contains(randomChar))
             {
@@ -41,5 +41,10 @@ public static class PasswordGenerator
         }
 
         return new string(password.ToArray());
+    }
+
+    private static int GetRandomInt32(int toExclusive)
+    {
+        return toExclusive == 0 ? 0 : RandomNumberGenerator.GetInt32(toExclusive);
     }
 }
