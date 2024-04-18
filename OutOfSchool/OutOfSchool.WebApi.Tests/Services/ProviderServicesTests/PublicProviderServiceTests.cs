@@ -9,6 +9,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Models.Providers;
+using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Tests.Services.ProviderServicesTests;
@@ -20,6 +21,7 @@ public class PublicProviderServiceTests
 
     private Mock<IProviderRepository> providersRepositoryMock;
     private Mock<IProviderService> providerServiceMock;
+    private Mock<IChangesLogService> changesLogServiceMock;
 
     private List<Provider> fakeProviders;
     private User fakeUser;
@@ -35,11 +37,13 @@ public class PublicProviderServiceTests
         // TODO: configure mock and writer tests for provider admins
         var logger = new Mock<ILogger<ProviderService>>();
         providerServiceMock = new Mock<IProviderService>();
+        changesLogServiceMock = new Mock<IChangesLogService>();
 
         publicProviderService = new PublicProviderService(
             providersRepositoryMock.Object,
             logger.Object,
-            providerServiceMock.Object);
+            providerServiceMock.Object,
+            changesLogServiceMock.Object);
     }
 
     #region UpdateStatus
@@ -86,6 +90,42 @@ public class PublicProviderServiceTests
 
         // Assert
         Assert.IsNull(result);
+    }
+
+    [Test]
+    public async Task UpdateStatus_WhenDtoIsValid_UpdateAddedInChangesLog()
+    {
+        // Arrange
+        var expectedCallTimes = Times.Once;
+
+        var provider = ProvidersGenerator.Generate();
+        provider.Status = ProviderStatus.Pending;
+        var dto = new ProviderStatusDto
+        {
+            ProviderId = provider.Id,
+            Status = ProviderStatus.Approved,
+        };
+
+        providersRepositoryMock.Setup(r => r.GetById(dto.ProviderId))
+            .ReturnsAsync(provider);
+        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+            .ReturnsAsync(It.IsAny<int>());
+
+        changesLogServiceMock.Setup(
+                s => s.AddEntityChangesToDbContext(
+                    It.IsAny<Provider>(),
+                    It.IsAny<string>()))
+            .Returns(1);
+
+        // Act
+        var result = await publicProviderService.UpdateStatus(dto, fakeUser.Id).ConfigureAwait(false);
+
+        // Assert
+        changesLogServiceMock.Verify(
+                s => s.AddEntityChangesToDbContext(
+                    It.IsAny<Provider>(),
+                    It.IsAny<string>()),
+                expectedCallTimes);
     }
 
     #endregion
