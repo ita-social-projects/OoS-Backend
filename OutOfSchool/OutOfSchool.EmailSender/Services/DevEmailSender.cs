@@ -13,9 +13,9 @@ public class DevEmailSender : IEmailSenderService
         this.logger = logger;
     }
 
-    public Task SendAsync(string email, string subject, (string html, string plain) content, DateTime? expirationTime = null)
+    public Task SendAsync(string email, string subject, (string html, string plain) content, DateTimeOffset? expirationTime = null)
     {
-        expirationTime ??= DateTime.MaxValue;
+        expirationTime ??= DateTimeOffset.MaxValue;
         // This code runs only in dev for testing purposes
         // so can ignore "not log user-controlled data".
 #pragma warning disable S5145

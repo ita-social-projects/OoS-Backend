@@ -33,11 +33,12 @@ public class EmailSenderServiceTests
         string email = "test@example.com";
         string subject = "Test Email";
         var content = ("<html><body><h1>Hello</h1></body></html>", "Hello");
+        var expirationTime = DateTimeOffset.Now.AddHours(1);
         mockSchedulerFactory.Setup(f => f.GetScheduler(It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockScheduler.Object);
 
         // Act
-        await emailSenderService.SendAsync(email, subject, content);
+        await emailSenderService.SendAsync(email, subject, content, expirationTime);
 
         // Assert
         mockScheduler.Verify(
