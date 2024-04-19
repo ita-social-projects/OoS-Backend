@@ -96,8 +96,6 @@ public class PublicProviderServiceTests
     public async Task UpdateStatus_WhenDtoIsValid_UpdateAddedInChangesLog()
     {
         // Arrange
-        var expectedCallTimes = Times.Once;
-
         var provider = ProvidersGenerator.Generate();
         provider.Status = ProviderStatus.Pending;
         var dto = new ProviderStatusDto
@@ -113,8 +111,8 @@ public class PublicProviderServiceTests
 
         changesLogServiceMock.Setup(
                 s => s.AddEntityChangesToDbContext(
-                    It.IsAny<Provider>(),
-                    It.IsAny<string>()))
+                    It.Is<Provider>(p => p.Id == dto.ProviderId),
+                    It.Is(fakeUser.Id, StringComparer.Ordinal)))
             .Returns(1);
 
         // Act
@@ -123,9 +121,9 @@ public class PublicProviderServiceTests
         // Assert
         changesLogServiceMock.Verify(
                 s => s.AddEntityChangesToDbContext(
-                    It.IsAny<Provider>(),
-                    It.IsAny<string>()),
-                expectedCallTimes);
+                    It.Is<Provider>(p => p.Id == dto.ProviderId),
+                    It.Is(fakeUser.Id, StringComparer.Ordinal)),
+                Times.Once);
     }
 
     #endregion

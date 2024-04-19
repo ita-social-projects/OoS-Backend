@@ -49,6 +49,8 @@ public class PublicProviderService : IPublicProviderService
         provider.Status = dto.Status;
         provider.StatusReason = dto.StatusReason;
 
+        // `AddEntityChangesToDbContext` not saves changes in dbContext
+        // All added changes would be saved only after calling `providerRepository.UnitOfWork.CompleteAsync()`
         changesLogService.AddEntityChangesToDbContext(provider, userId);
 
         await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
