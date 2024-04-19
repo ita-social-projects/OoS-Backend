@@ -52,6 +52,12 @@ public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChanges
                 oldValueTmp = dbContext.Institutions.Where(x => x.Id == Guid.Parse(oldValue)).SingleOrDefault().Title;
                 newValueTmp = dbContext.Institutions.Where(x => x.Id == Guid.Parse(newValue)).SingleOrDefault().Title;
             }
+            if (propertyName == "InstitutionStatusId")
+            {
+                propertyNameTmp = "InstitutionStatus";
+                oldValueTmp = dbContext.InstitutionStatuses.Where(x => x.Id == long.Parse(oldValue)).SingleOrDefault().Name;
+                newValueTmp = dbContext.InstitutionStatuses.Where(x => x.Id == long.Parse(newValue)).SingleOrDefault().Name;
+            }
 
             result.Add(CreateChangesLogRecord(
                 entityType,
