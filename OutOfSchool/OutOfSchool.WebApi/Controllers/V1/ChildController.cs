@@ -1,6 +1,5 @@
 ﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
