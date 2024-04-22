@@ -337,13 +337,13 @@ public class AuthController : Controller
             return View("Register", model);
         }
 
-        if (Request.Form[Role.Provider.ToString()].Count == 1)
+        if (Request.Form[nameof(Role.Provider)].Count == 1)
         {
-            model.Role = Role.Provider.ToString().ToLower();
+            model.Role = nameof(Role.Provider).ToLower();
         }
-        else if (Request.Form[Role.Parent.ToString()].Count == 1)
+        else if (Request.Form[nameof(Role.Parent)].Count == 1)
         {
-            model.Role = Role.Parent.ToString().ToLower();
+            model.Role = nameof(Role.Parent).ToLower();
         }
         else
         {
@@ -395,7 +395,7 @@ public class AuthController : Controller
                 {
                     await signInManager.SignInAsync(user, false);
 
-                    if (user.Role == Role.Parent.ToString().ToLower())
+                    if (user.Role.Equals(nameof(Role.Parent), StringComparison.OrdinalIgnoreCase))
                     {
                         var parent = new Parent()
                         {
