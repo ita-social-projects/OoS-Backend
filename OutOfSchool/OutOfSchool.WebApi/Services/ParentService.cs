@@ -18,6 +18,7 @@ public class ParentService : IParentService
     private readonly ILogger<ParentService> logger;
     private readonly IEntityRepositorySoftDeleted<Guid, Child> repositoryChild;
     private readonly IMapper mapper;
+    private readonly IUserService userService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ParentService"/> class.
@@ -28,21 +29,23 @@ public class ParentService : IParentService
     /// <param name="repositoryChild">Repository for child entity.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Mapper.</param>
+    /// <param name="userService">Service for Users.</param>
     public ParentService(
         IParentRepository repositoryParent,
         ICurrentUserService currentUserService,
         IParentBlockedByAdminLogService parentBlockedByAdminLogService,
         ILogger<ParentService> logger,
         IEntityRepositorySoftDeleted<Guid, Child> repositoryChild,
-        IMapper mapper)
+        IMapper mapper,
+        IUserService userService)
     {
         this.repositoryParent = repositoryParent ?? throw new ArgumentNullException(nameof(repositoryParent));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.repositoryChild = repositoryChild ?? throw new ArgumentNullException(nameof(repositoryChild));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
-        this.parentBlockedByAdminLogService = parentBlockedByAdminLogService
-            ?? throw new ArgumentNullException(nameof(parentBlockedByAdminLogService));
+        this.parentBlockedByAdminLogService = parentBlockedByAdminLogService ?? throw new ArgumentNullException(nameof(parentBlockedByAdminLogService));
+        this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
     }
 
     /// <inheritdoc/>
@@ -52,19 +55,25 @@ public class ParentService : IParentService
 
         await currentUserService.UserHasRights(new ParentRights(id));
 
-        var entity = new Parent() {Id = id};
+        var entity = await repositoryParent.GetById(id).ConfigureAwait(false);
 
-        try
+        if (entity is null)
+        {
+            var message = $"Parent with Id = {id} doesn't exist in the system.";
+            logger.LogError(message);
+            throw new ArgumentException(message, nameof(id));
+        }
+
+        await repositoryParent.RunInTransaction(async () =>
         {
             await repositoryParent.Delete(entity).ConfigureAwait(false);
 
             logger.LogInformation("Parent with Id = {Id} successfully deleted", id);
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            logger.LogError("Deleting failed. Parent with Id = {Id} doesn't exist in the system", id);
-            throw;
-        }
+
+            await userService.Delete(entity.UserId);
+
+            logger.LogInformation("User with Id = {entity.UserId} successfully deleted", entity.UserId);
+        });
     }
 
     /// <inheritdoc/>
