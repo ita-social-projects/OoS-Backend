@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿using OutOfSchool.Common;
+using NUnit.Framework;
+using System.Linq;
 using OutOfSchool.AuthCommon.Services.Password;
 
 namespace OutOfSchool.AuthServer.Tests.Services.Password;
@@ -14,6 +16,11 @@ public class PasswordGeneratorTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.That(result, Does.Match(@"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8}$"));
+        Assert.IsTrue(result.Any(char.IsUpper));
+        Assert.IsTrue(result.Any(char.IsLower));
+        Assert.IsTrue(result.Any(char.IsDigit));
+        Assert.IsTrue(result.Any(Constants.ValidationSymbols.Contains));
+        Assert.IsFalse(result.Any(c => !char.IsLetterOrDigit(c) && !Constants.ValidationSymbols.Contains(c)));
+        Assert.AreEqual(Constants.PasswordMinLength, result.Length);
     }
 }
