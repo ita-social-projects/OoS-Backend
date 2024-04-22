@@ -72,7 +72,7 @@ public class ParentService : IParentService
 
             await userService.Delete(entity.UserId);
 
-            logger.LogInformation("User with Id = {entity.UserId} successfully deleted", entity.UserId);
+            logger.LogInformation("User with Id = {UserId} successfully deleted", entity.UserId);
         });
     }
 
