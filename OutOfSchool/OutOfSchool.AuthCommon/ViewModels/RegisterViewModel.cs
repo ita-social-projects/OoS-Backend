@@ -1,7 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.AuthCommon.Validators;
-using OutOfSchool.Common.Validators;
-using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.AuthCommon.ViewModels;
 
@@ -27,12 +25,6 @@ public class RegisterViewModel
         ErrorMessage = Constants.NameErrorMessage)]
     public string? MiddleName { get; set; }
 
-    [EnumDataType(typeof(Gender), ErrorMessage = Constants.EnumErrorMessage)]
-    public Gender Gender { get; set; }
-
-    [DataType(DataType.Date)]
-    public DateTime DateOfBirth { get; set; }
-
     [Required(ErrorMessage = "Password is required")]
     [CustomPasswordValidation]
     [DataType(DataType.Password)]
@@ -50,11 +42,6 @@ public class RegisterViewModel
         Constants.EmailRegexViewModel,
         ErrorMessage = "Email is not valid")]
     public string Email { get; set; }
-
-    [DataType(DataType.PhoneNumber)]
-    [Required(ErrorMessage = "Phone number is required")]
-    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
-    public string PhoneNumber { get; set; }
 
     [DataType(DataType.DateTime)]
     public DateTimeOffset CreatingTime { get; set; }

@@ -317,7 +317,6 @@ public class AuthController : Controller
         {
             ReturnUrl = returnUrl,
             ProviderRegistration = providerRegistration ?? GetProviderRegistrationFromUri(returnUrl),
-            DateOfBirth = DateTime.Now.AddYears(-18),
         });
     }
 
@@ -358,7 +357,6 @@ public class AuthController : Controller
             LastName = model.LastName,
             MiddleName = model.MiddleName,
             Email = model.Email,
-            PhoneNumber = model.PhoneNumber,
             CreatingTime = DateTimeOffset.UtcNow,
             Role = model.Role,
             IsRegistered = false,
@@ -402,8 +400,8 @@ public class AuthController : Controller
                         var parent = new Parent()
                         {
                             UserId = user.Id,
-                            Gender = model.Gender,
-                            DateOfBirth = model.DateOfBirth,
+                            Gender = Gender.Male,
+                            DateOfBirth = DateTime.Now.AddYears(-18),
                         };
 
                         Func<Task<Parent>> operation = async () => await parentRepository.Create(parent).ConfigureAwait(false);
