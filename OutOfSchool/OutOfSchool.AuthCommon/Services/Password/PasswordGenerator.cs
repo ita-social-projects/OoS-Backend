@@ -20,24 +20,20 @@ public static class PasswordGenerator
 
         List<char> password = [];
 
-        foreach (var charSet in allowedCharSets)
-        {
-            password.Insert(
-                GetRandomInt32(password.Count),
-                charSet[GetRandomInt32(charSet.Length)]);
-        }
-
-        while (password.Count < Constants.PasswordMinLength)
+        while (password.Count < Constants.PasswordMinLength - allowedCharSets.Length)
         {
             var randomCharSetIndex = GetRandomInt32(allowedCharSets.Length);
             var randomChar =
                 allowedCharSets[randomCharSetIndex][
                 GetRandomInt32(allowedCharSets[randomCharSetIndex].Length)];
+            password.Add(randomChar);
+        }
 
-            if (!password.Contains(randomChar))
-            {
-                password.Add(randomChar);
-            }
+        foreach (var charSet in allowedCharSets)
+        {
+            password.Insert(
+                GetRandomInt32(password.Count),
+                charSet[GetRandomInt32(charSet.Length)]);
         }
 
         return new string(password.ToArray());
