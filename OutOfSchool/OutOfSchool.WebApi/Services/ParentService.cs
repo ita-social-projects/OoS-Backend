@@ -67,13 +67,10 @@ public class ParentService : IParentService
         await repositoryParent.RunInTransaction(async () =>
         {
             await repositoryParent.Delete(entity).ConfigureAwait(false);
-
-            logger.LogInformation("Parent with Id = {Id} successfully deleted", id);
-
-            await userService.Delete(entity.UserId);
-
-            logger.LogInformation("User with Id = {UserId} successfully deleted", entity.UserId);
+            await userService.Delete(entity.UserId).ConfigureAwait(false);
         });
+
+        logger.LogInformation("Parent with Id = {Id} successfully deleted", id);
     }
 
     /// <inheritdoc/>

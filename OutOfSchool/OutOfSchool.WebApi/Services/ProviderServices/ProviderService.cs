@@ -756,13 +756,10 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         await providerRepository.RunInTransaction(async () =>
         {
             await providerRepository.Delete(entity).ConfigureAwait(false);
-
-            logger.LogInformation("Provider with Id = {Id} successfully deleted", id);
-
-            await userService.Delete(entity.UserId);
-
-            logger.LogInformation("User with Id = {entity.UserId} successfully deleted", entity.UserId);
+            await userService.Delete(entity.UserId).ConfigureAwait(false);
         });
+
+        logger.LogInformation("Provider with Id = {Id} successfully deleted", id);
 
         var request = new Request()
         {
