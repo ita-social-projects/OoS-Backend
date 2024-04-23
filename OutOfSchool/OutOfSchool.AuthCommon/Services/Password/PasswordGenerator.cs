@@ -10,37 +10,24 @@ public static class PasswordGenerator
     /// <returns>A random password.</returns>
     public static string GenerateRandomPassword()
     {
-        string[] allowedCharSets =
-        [
-            "ABCDEFGHJKLMNOPQRSTUVWXYZ",
-            "abcdefghijkmnopqrstuvwxyz",
-            "0123456789",
-            Constants.ValidationSymbols,
-        ];
-
-        List<char> password = [];
-
-        while (password.Count < Constants.PasswordMinLength - allowedCharSets.Length)
+        return string.Create(Constants.PasswordMinLength, 0, static (span, count) =>
         {
-            var randomCharSetIndex = GetRandomInt32(allowedCharSets.Length);
-            var randomChar =
-                allowedCharSets[randomCharSetIndex][
-                GetRandomInt32(allowedCharSets[randomCharSetIndex].Length)];
-            password.Add(randomChar);
-        }
+            ReadOnlySpan<char> allAllowedChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789" + Constants.ValidationSymbols;
+            ReadOnlySpan<char> separators = "Zz9&";
+            int charSetLowerIndex = 0;
+            foreach (char separator in separators)
+            {
+                int separatorIndex = allAllowedChars.IndexOf(separator);
+                int charSetUpperIndex = separatorIndex == allAllowedChars.Length - 1
+                    ? allAllowedChars.Length
+                    : separatorIndex + 1;
+                ReadOnlySpan<char> charSet = allAllowedChars[charSetLowerIndex..charSetUpperIndex];
+                span[count++] = charSet[RandomNumberGenerator.GetInt32(charSet.Length)];
+                charSetLowerIndex += charSetUpperIndex - charSetLowerIndex;
+            }
 
-        foreach (var charSet in allowedCharSets)
-        {
-            password.Insert(
-                GetRandomInt32(password.Count),
-                charSet[GetRandomInt32(charSet.Length)]);
-        }
-
-        return new string(password.ToArray());
-    }
-
-    private static int GetRandomInt32(int toExclusive)
-    {
-        return toExclusive == 0 ? 0 : RandomNumberGenerator.GetInt32(toExclusive);
+            RandomNumberGenerator.GetItems(allAllowedChars, span[count..]);
+            RandomNumberGenerator.Shuffle(span);
+        });
     }
 }

@@ -20,7 +20,8 @@ public class PasswordGeneratorTests
         Assert.IsTrue(result.Any(char.IsLower));
         Assert.IsTrue(result.Any(char.IsDigit));
         Assert.IsTrue(result.Any(Constants.ValidationSymbols.Contains));
-        Assert.IsFalse(result.Any(c => !char.IsLetterOrDigit(c) && !Constants.ValidationSymbols.Contains(c)));
+        Assert.IsFalse(result.Any(c => !char.IsLetterOrDigit(c) && !Constants.ValidationSymbols.Contains(c)),
+            "Password shouldn't contain any other symbols than digits, upper/lowercase letters, and allowed special symbols");
         Assert.AreEqual(Constants.PasswordMinLength, result.Length);
     }
 }
