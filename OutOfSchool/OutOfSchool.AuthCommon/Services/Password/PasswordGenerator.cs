@@ -22,7 +22,7 @@ public static class PasswordGenerator
     public static string GenerateRandomPassword()
     {
         Span<char> password = stackalloc char[Constants.PasswordMinLength];
-        int index = 8 - AllowedCharSets.Length;
+        int index = Constants.PasswordMinLength - AllowedCharSets.Length;
         RandomNumberGenerator.GetItems(AllPasswordChars, password[..index]);
         foreach (var charSet in AllowedCharSets)
         {
