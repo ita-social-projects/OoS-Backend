@@ -4,30 +4,34 @@ namespace OutOfSchool.AuthCommon.Services.Password;
 
 public static class PasswordGenerator
 {
+    private const string Uppercase = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
+    private const string Lowercase = "abcdefghijkmnopqrstuvwxyz";
+    private const string Digits = "0123456789";
+    private const string AllPasswordChars =
+        Uppercase + Lowercase + Digits + Constants.ValidationSymbols;
+
+    private static readonly string[] AllowedCharSets =
+    [
+        Uppercase, Lowercase, Digits, Constants.ValidationSymbols,
+    ];
+
     /// <summary>
     /// Generates a Random Password.
     /// </summary>
     /// <returns>A random password.</returns>
     public static string GenerateRandomPassword()
     {
-        return string.Create(Constants.PasswordMinLength, 0, static (span, count) =>
+        Span<char> password = stackalloc char[Constants.PasswordMinLength];
+        int index = 8 - AllowedCharSets.Length;
+        RandomNumberGenerator.GetItems(AllPasswordChars, password[..index]);
+        foreach (var charSet in AllowedCharSets)
         {
-            ReadOnlySpan<char> allAllowedChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789" + Constants.ValidationSymbols;
-            ReadOnlySpan<char> separators = "Zz9&";
-            int charSetLowerIndex = 0;
-            foreach (char separator in separators)
-            {
-                int separatorIndex = allAllowedChars.IndexOf(separator);
-                int charSetUpperIndex = separatorIndex == allAllowedChars.Length - 1
-                    ? allAllowedChars.Length
-                    : separatorIndex + 1;
-                ReadOnlySpan<char> charSet = allAllowedChars[charSetLowerIndex..charSetUpperIndex];
-                span[count++] = charSet[RandomNumberGenerator.GetInt32(charSet.Length)];
-                charSetLowerIndex += charSetUpperIndex - charSetLowerIndex;
-            }
+            var rndIndex = RandomNumberGenerator.GetInt32(index);
+            (password[rndIndex], password[index]) =
+                (charSet[RandomNumberGenerator.GetInt32(charSet.Length)], password[rndIndex]);
+            index++;
+        }
 
-            RandomNumberGenerator.GetItems(allAllowedChars, span[count..]);
-            RandomNumberGenerator.Shuffle(span);
-        });
+        return new string(password);
     }
 }
