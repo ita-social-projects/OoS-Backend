@@ -182,9 +182,8 @@ public class ParentServiceTests
     public async Task Delete_WhenIdIsValid_ShouldCallDeleteMethods()
     {
         // Arrange
-        Guid parentId = Guid.NewGuid();
         Parent parent = ParentGenerator.Generate();
-        parent.Id = parentId;
+        var parentId = parent.Id;
 
         currentUserServiceMock.Setup(x => x.UserHasRights(It.IsAny<ParentRights>())).Returns(() => Task.FromResult(true));
         parentRepositoryMock.Setup(r => r.GetById(parentId)).ReturnsAsync(parent);
