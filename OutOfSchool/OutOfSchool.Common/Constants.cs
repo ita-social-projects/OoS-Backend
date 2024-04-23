@@ -79,7 +79,7 @@ public static class Constants
     public const int AdultAge = 18;
 
     /// <summary>
-    /// Error message for day of birth validation
+    /// Error message for day of birth validation.
     /// </summary>
     public const string DayOfBirthErrorMessage = "Error! Please check the day of birth is correct";
 }
