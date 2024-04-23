@@ -43,8 +43,13 @@ public class CustomAgeAttribute : DataTypeAttribute
     /// <summary>
     /// Checks that the date is valid.
     /// </summary>
+    /// <remarks>
+    /// This method returns <c>true</c> if the <paramref name="value" /> is null.
+    /// It is assumed the <see cref="RequiredAttribute" /> is used if the value may not be null.
+    /// </remarks>
     /// <param name="value">Value to validate.</param>
     /// <returns><c>true</c> if valid, otherwise <c>false</c>.</returns>
+    /// <exception cref="InvalidOperationException"> is thrown if the min and max ages are not valid.</exception>
     public override bool IsValid(object value)
     {
         EnsureThatMinAndMaxAgesAreValid();
