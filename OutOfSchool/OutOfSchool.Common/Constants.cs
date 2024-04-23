@@ -72,4 +72,14 @@ public static class Constants
     /// Longest possible phone number length with '+' prefix.
     /// </summary>
     public const int MaxPhoneNumberLengthWithPlusSign = MaxPhoneNumberLength + 1;
+
+    /// <summary>
+    /// Minimum age for user (parent, provider).
+    /// </summary>
+    public const int AdultAge = 18;
+
+    /// <summary>
+    /// Error message for day of birth validation
+    /// </summary>
+    public const string DayOfBirthErrorMessage = "Error! Please check the day of birth is correct";
 }
