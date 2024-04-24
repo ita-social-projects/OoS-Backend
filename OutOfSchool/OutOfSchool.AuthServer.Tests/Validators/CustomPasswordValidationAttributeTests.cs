@@ -49,34 +49,27 @@ public class CustomPasswordValidationAttributeTests
         var invalidPassword = "";
         var expectedErrorMessage = "Password must be at least 8 characters long";
         rules.Setup(x => x.IsValidPassword(invalidPassword)).Returns(false);
-        var localizer = new Mock<IStringLocalizer<SharedResource>>();
-        localizer.Setup(x => x[Constants.PasswordValidationErrorMessage])
-            .Returns(new LocalizedString("Error", expectedErrorMessage));
-        serviceProvider.Setup(x => x.GetService(typeof(IStringLocalizer<SharedResource>)))
-            .Returns(localizer.Object);
         serviceProvider.Setup(x => x.GetService(typeof(ICustomPasswordRules))).Returns(rules.Object);
         var validationContext = new ValidationContext(invalidPassword, serviceProvider.Object, null);
+        attribute.ErrorMessage = expectedErrorMessage;
 
         // Act
         var result = attribute.GetValidationResult(invalidPassword, validationContext);
 
         // Assert
         rules.VerifyAll();
-        localizer.VerifyAll();
         serviceProvider.VerifyAll();
         Assert.IsNotNull(result);
         Assert.AreEqual(expectedErrorMessage, result.ErrorMessage);
     }
 
     [Test]
-    public void IsValid_WithInvalidPasswordAndLocalizerIsNotExist_ShouldReturnErrorName()
+    public void IsValid_WithInvalidPasswordAndLocalizerIsNotExist_ShouldReturnDefaultError()
     {
         // Arrange
         var invalidPassword = "";
         var expectedErrorName = Constants.PasswordValidationErrorMessage;
         rules.Setup(x => x.IsValidPassword(invalidPassword)).Returns(false);
-        serviceProvider.Setup(x => x.GetService(typeof(IStringLocalizer<SharedResource>)))
-            .Returns(null);
         serviceProvider.Setup(x => x.GetService(typeof(ICustomPasswordRules))).Returns(rules.Object);
         var validationContext = new ValidationContext(invalidPassword, serviceProvider.Object, null);
 

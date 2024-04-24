@@ -15,6 +15,9 @@ namespace OutOfSchool.WebApi.Tests.Services.Database;
 [TestFixture]
 public class ChangesLogRepositoryTests
 {
+    private const long InstitutionStatusId1 = 1;
+    private const long InstitutionStatusId2 = 2;
+
     private DbContextOptions<OutOfSchoolDbContext> dbContextOptions;
     private ValueProjector valueProjector = new ValueProjector();
 
@@ -36,6 +39,7 @@ public class ChangesLogRepositoryTests
         provider.LegalAddress.CATOTTGId = 4970;
         provider.LegalAddress.CATOTTG.Id = 4970;
         provider.InstitutionId = institution1.Id;
+        provider.InstitutionStatusId = InstitutionStatusId1; // Safe to use, because institution statuses would be seeded on context building phase
         user = UserGenerator.Generate();
 
         dbContextOptions = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
@@ -276,6 +280,38 @@ public class ChangesLogRepositoryTests
         Assert.AreEqual(1, context.ChangesLog.Local.Count);
         Assert.AreEqual(oldInstitution, legalChanges.OldValue);
         Assert.AreEqual(newInstitution, legalChanges.NewValue);
+        Assert.AreEqual(user.Id, legalChanges.UserId);
+    }
+
+    [Test]
+    public async Task AddChangesLogToDbContext_WhenInstitutionStatusIdIsModified_AddsLogToDbContext()
+    {
+        // Arrange
+        using var context = GetContext();
+        var changesLogRepository = GetChangesLogRepository(context);
+        var trackedProperties = new[] { "InstitutionStatusId" };
+        var provider = await context.Providers.Include(p => p.InstitutionStatus).FirstAsync();
+
+        var oldInstitutionStatusName = (await context.InstitutionStatuses.SingleAsync(i => i.Id == InstitutionStatusId1)).Name;
+        var newInstitutionStatusName = (await context.InstitutionStatuses.SingleAsync(i => i.Id == InstitutionStatusId2)).Name;
+
+        // Act
+        provider.InstitutionStatusId = InstitutionStatusId2; // Safe to use, because institution statuses would be seeded on context building phase
+
+        var added = changesLogRepository.AddChangesLogToDbContext(
+            provider,
+            user.Id,
+            trackedProperties,
+            valueProjector.ProjectValue);
+
+        // Assert
+        var legalChanges = context.ChangesLog.Local
+            .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.InstitutionStatus));
+
+        Assert.AreEqual(added.ToList(), context.ChangesLog.Local.ToList());
+        Assert.AreEqual(1, context.ChangesLog.Local.Count);
+        Assert.AreEqual(oldInstitutionStatusName, legalChanges.OldValue);
+        Assert.AreEqual(newInstitutionStatusName, legalChanges.NewValue);
         Assert.AreEqual(user.Id, legalChanges.UserId);
     }
 

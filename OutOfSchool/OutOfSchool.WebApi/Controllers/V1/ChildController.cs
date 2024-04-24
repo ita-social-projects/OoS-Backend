@@ -44,7 +44,7 @@ public class ChildController : ControllerBase
     /// </summary>
     /// <param name="filter">Filter to get a part of all children that were found.</param>
     /// <returns>The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
-    [HasPermission(Permissions.SystemManagement)]
+    [Authorize(Roles = "techadmin,ministryadmin")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ChildDto>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
