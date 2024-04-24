@@ -12,10 +12,9 @@ public class CustomAgeAttributeTests
     {
         // Arrange
         var dateOfBirth = null as DateTime?;
-        var customDayOfBirthAttribute = new CustomAgeAttribute();
 
         // Act
-        var isValid = customDayOfBirthAttribute.IsValid(dateOfBirth);
+        var isValid = new CustomAgeAttribute().IsValid(dateOfBirth);
 
         // Assert
         Assert.IsTrue(isValid);
@@ -26,10 +25,9 @@ public class CustomAgeAttributeTests
     {
         // Arrange
         var dateOfBirth = "1999-01-01";
-        var customDayOfBirthAttribute = new CustomAgeAttribute();
 
         // Act
-        var isValid = customDayOfBirthAttribute.IsValid(dateOfBirth);
+        var isValid = new CustomAgeAttribute().IsValid(dateOfBirth);
 
         // Assert
         Assert.IsFalse(isValid);
@@ -40,10 +38,9 @@ public class CustomAgeAttributeTests
     {
         // Arrange
         var dateOfBirth = DateTime.UtcNow;
-        var customDayOfBirthAttribute = new CustomAgeAttribute();
 
         // Act
-        var isValid = customDayOfBirthAttribute.IsValid(dateOfBirth);
+        var isValid = new CustomAgeAttribute().IsValid(dateOfBirth);
 
         // Assert
         Assert.IsTrue(isValid);
@@ -54,10 +51,9 @@ public class CustomAgeAttributeTests
     {
         // Arrange
         var dateOfBirth = DateOnly.FromDateTime(DateTime.UtcNow);
-        var customDayOfBirthAttribute = new CustomAgeAttribute();
 
         // Act
-        var isValid = customDayOfBirthAttribute.IsValid(dateOfBirth);
+        var isValid = new CustomAgeAttribute().IsValid(dateOfBirth);
 
         // Assert
         Assert.IsTrue(isValid);
@@ -68,13 +64,9 @@ public class CustomAgeAttributeTests
     {
         // Arrange
         var dateOfBirth = DateTime.UtcNow;
-        var customDayOfBirthAttribute = new CustomAgeAttribute() { MinAge = -1 };
-
-        // Act
-        TestDelegate action = () => customDayOfBirthAttribute.IsValid(dateOfBirth);
 
         // Assert
-        Assert.Throws<InvalidOperationException>(action);
+        Assert.Throws<InvalidOperationException>(() => new CustomAgeAttribute() { MinAge = -1 }.IsValid(dateOfBirth));
     }
 
     [Test]
@@ -82,13 +74,9 @@ public class CustomAgeAttributeTests
     {
         // Arrange
         var dateOfBirth = DateTime.UtcNow;
-        var customDayOfBirthAttribute = new CustomAgeAttribute() { MaxAge = -1 };
-
-        // Act
-        TestDelegate action = () => customDayOfBirthAttribute.IsValid(dateOfBirth);
 
         // Assert
-        Assert.Throws<InvalidOperationException>(action);
+        Assert.Throws<InvalidOperationException>(() => new CustomAgeAttribute() { MaxAge = -1 }.IsValid(dateOfBirth));
     }
 
     [Test]
@@ -96,13 +84,9 @@ public class CustomAgeAttributeTests
     {
         // Arrange
         var dateOfBirth = DateTime.UtcNow;
-        var customDayOfBirthAttribute = new CustomAgeAttribute() { MaxAge = 1, MinAge = 2 };
-
-        // Act
-        TestDelegate action = () => customDayOfBirthAttribute.IsValid(dateOfBirth);
 
         // Assert
-        Assert.Throws<InvalidOperationException>(action);
+        Assert.Throws<InvalidOperationException>(() => new CustomAgeAttribute() { MaxAge = 1, MinAge = 2 }.IsValid(dateOfBirth));
     }
 
     [Test]
@@ -110,10 +94,9 @@ public class CustomAgeAttributeTests
     {
         // Arrange
         var dateOfBirth = DateTime.UtcNow.AddYears(-1);
-        var customDayOfBirthAttribute = new CustomAgeAttribute() { MinAge = 2 };
 
         // Act
-        var isValid = customDayOfBirthAttribute.IsValid(dateOfBirth);
+        var isValid = new CustomAgeAttribute() { MinAge = 2 }.IsValid(dateOfBirth);
 
         // Assert
         Assert.IsFalse(isValid);
@@ -124,10 +107,9 @@ public class CustomAgeAttributeTests
     {
         // Arrange
         var dateOfBirth = DateTime.UtcNow.AddYears(-3);
-        var customDayOfBirthAttribute = new CustomAgeAttribute() { MaxAge = 2 };
 
         // Act
-        var isValid = customDayOfBirthAttribute.IsValid(dateOfBirth);
+        var isValid = new CustomAgeAttribute() { MaxAge = 2 }.IsValid(dateOfBirth);
 
         // Assert
         Assert.IsFalse(isValid);
@@ -138,10 +120,9 @@ public class CustomAgeAttributeTests
     {
         // Arrange
         var dateOfBirth = DateTime.UtcNow.AddYears(-3);
-        var customDayOfBirthAttribute = new CustomAgeAttribute() { MinAge = 3 };
 
         // Act
-        var isValid = customDayOfBirthAttribute.IsValid(dateOfBirth);
+        var isValid = new CustomAgeAttribute() { MinAge = 3 }.IsValid(dateOfBirth);
 
         // Assert
         Assert.IsTrue(isValid);
@@ -152,10 +133,9 @@ public class CustomAgeAttributeTests
     {
         // Arrange
         var dateOfBirth = DateTime.UtcNow.AddYears(-3);
-        var customDayOfBirthAttribute = new CustomAgeAttribute() { MaxAge = 3 };
 
         // Act
-        var isValid = customDayOfBirthAttribute.IsValid(dateOfBirth);
+        var isValid = new CustomAgeAttribute() { MaxAge = 3 }.IsValid(dateOfBirth);
 
         // Assert
         Assert.IsTrue(isValid);
@@ -166,10 +146,9 @@ public class CustomAgeAttributeTests
     {
         // Arrange
         var dateOfBirth = DateTime.UtcNow.AddYears(-3);
-        var customDayOfBirthAttribute = new CustomAgeAttribute() { MinAge = 2, MaxAge = 4 };
 
         // Act
-        var isValid = customDayOfBirthAttribute.IsValid(dateOfBirth);
+        var isValid = new CustomAgeAttribute() { MinAge = 2, MaxAge = 4 }.IsValid(dateOfBirth);
 
         // Assert
         Assert.IsTrue(isValid);
