@@ -401,7 +401,7 @@ public class AuthController : Controller
                         {
                             UserId = user.Id,
                             Gender = Gender.Male,
-                            DateOfBirth = DateTime.Now.AddYears(-18),
+                            DateOfBirth = DateTime.UtcNow.AddYears(-Constants.AdultAge),
                         };
 
                         Func<Task<Parent>> operation = async () => await parentRepository.Create(parent).ConfigureAwait(false);
