@@ -36,11 +36,6 @@ public class CustomAgeAttribute : DataTypeAttribute
     public bool UseUTC { get; init; } = true;
 
     /// <summary>
-    /// Gets the date time kind based on <see cref="UseUTC"/> value.
-    /// </summary>
-    private DateTimeKind DateTimeKind => UseUTC ? DateTimeKind.Utc : DateTimeKind.Local;
-
-    /// <summary>
     /// Checks that the date is valid.
     /// </summary>
     /// <remarks>
@@ -60,24 +55,23 @@ public class CustomAgeAttribute : DataTypeAttribute
             return true;
         }
 
-        var currentDate = UseUTC ? DateTime.UtcNow : DateTime.Now;
+        var currentDate = DateOnly.FromDateTime(UseUTC ? DateTime.UtcNow : DateTime.Now);
 
-        DateTime? possibleBirthDate = value switch
+        DateOnly? possibleBirthDate = value switch
         {
-            DateTime date => date,
-            DateOnly date => date.ToDateTime(TimeOnly.FromDateTime(currentDate), DateTimeKind),
+            DateTime dateTime => DateOnly.FromDateTime(dateTime),
+            DateOnly dateOnly => dateOnly,
             _ => null,
         };
 
-        if (possibleBirthDate is not DateTime birthDate)
+        if (possibleBirthDate is not DateOnly birthDate)
         {
             return false;
         }
 
-        var totalDays = (currentDate - birthDate).TotalDays;
-        var approximateAge = (int)(totalDays / ApproximateDaysInYear);
+        var (minDate, maxDate) = CalculateMinAndMaxDate(currentDate);
 
-        return approximateAge >= MinAge && approximateAge <= MaxAge;
+        return birthDate >= minDate && birthDate <= maxDate;
     }
 
     /// <summary>
@@ -95,5 +89,23 @@ public class CustomAgeAttribute : DataTypeAttribute
         {
             throw new InvalidOperationException("MaxAge cannot be less than MinAge.");
         }
+    }
+
+    /// <summary>
+    /// Calculates min and max possible date.
+    /// </summary>
+    /// <param name="currentDate">Current date.</param>
+    /// <returns>Min and max possible dates.</returns>
+    private (DateOnly Min, DateOnly Max) CalculateMinAndMaxDate(DateOnly currentDate)
+    {
+        var maxYearOffset = currentDate.Year - 1;
+
+        var minAge = int.Clamp(MinAge, 0, maxYearOffset);
+        var maxAge = int.Clamp(MaxAge, 0, maxYearOffset);
+
+        var minDate = currentDate.AddYears(-maxAge);
+        var maxDate = currentDate.AddYears(-minAge);
+
+        return (minDate, maxDate);
     }
 }
