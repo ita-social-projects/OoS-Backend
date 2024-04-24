@@ -941,6 +941,8 @@ public class ProviderServiceTests
         var deleteUserArguments = new List<string>();
         providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(fakeProviders.Single(p => p.Id == providerToDeleteDto.Id));
+        providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task>>()))
+            .Returns((Func<Task> f) => f.Invoke());
         providersRepositoryMock.Setup(r => r.Delete(Capture.In(deleteMethodArguments)));
         userServiceMock.Setup(r => r.Delete(Capture.In(deleteUserArguments)));
         currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(true);
