@@ -2,7 +2,6 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Localization;
@@ -11,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.AuthCommon.Services.Interfaces;
+using OutOfSchool.AuthServer.Tests.Controllers;
 using OutOfSchool.Common.Models;
 using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Services;
@@ -18,6 +18,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 using System;
 using System.Net;
 using System.Threading.Tasks;
@@ -27,25 +28,18 @@ namespace OutOfSchool.AuthCommon.Services.Tests;
 [TestFixture]
 public class CommonMinistryAdminServiceTests
 {
-    private readonly Mock<IEmailSenderService> fakeEmailSender;
-    private readonly Mock<IMapper> fakeMapper;
-    private readonly Mock<ILogger<CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, AreaAdminRepository>>> fakeLogger;
+    private Mock<IMapper> fakeMapper;
     private AreaAdminRepository areaAdminRepository;
-    private readonly Mock<UserManager<User>> fakeUserManager;
+    private Mock<UserManager<User>> fakeUserManager;
     private OutOfSchoolDbContext context;
-    private readonly Mock<IRazorViewToStringRenderer> fakeRenderer;
-    private readonly Mock<IStringLocalizer<SharedResource>> fakeLocalizer;
-    private readonly Mock<IUrlHelper> fakeUrlHelper;
+    private Mock<IUrlHelper> fakeUrlHelper;
 
     private ICommonMinistryAdminService<AreaAdminBaseDto> areaCommonMinistryAdminService;
 
-    public CommonMinistryAdminServiceTests()
+    [SetUp]
+    public async Task SetUp()
     {
-        fakeEmailSender = new Mock<IEmailSenderService>();
         fakeMapper = new Mock<IMapper>();
-        fakeLogger = new Mock<ILogger<CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, AreaAdminRepository>>>();
-        fakeRenderer = new Mock<IRazorViewToStringRenderer>();
-        fakeLocalizer = new Mock<IStringLocalizer<SharedResource>>();
         fakeUrlHelper = new Mock<IUrlHelper>();
         fakeUserManager = new Mock<UserManager<User>>(
              new Mock<IUserStore<User>>().Object,
@@ -57,11 +51,7 @@ public class CommonMinistryAdminServiceTests
              new Mock<IdentityErrorDescriber>().Object,
              new Mock<IServiceProvider>().Object,
              new Mock<ILogger<UserManager<User>>>().Object);
-    }
 
-    [SetUp]
-    public async Task SetUp()
-    {
         context = GetContext();
 
         areaAdminRepository = new AreaAdminRepository(context);
@@ -69,12 +59,12 @@ public class CommonMinistryAdminServiceTests
         areaCommonMinistryAdminService = new CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, AreaAdminRepository>(
             fakeMapper.Object,
             areaAdminRepository,
-            fakeLogger.Object,
-            fakeEmailSender.Object,
+            new Mock<ILogger<CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, AreaAdminRepository>>>().Object,
+            new Mock<IEmailSenderService>().Object,
             fakeUserManager.Object,
             context,
-            fakeRenderer.Object,
-            fakeLocalizer.Object);
+            new Mock<IRazorViewToStringRenderer>().Object,
+            new Mock<IStringLocalizer<SharedResource>>().Object);
 
         await Seed();
     }
@@ -83,12 +73,13 @@ public class CommonMinistryAdminServiceTests
     public async Task Create_WhenParametersIsValid_ReturnsOkResponse()
     {
         // Arrange
-        var (user, areaAdminBaseDto, areaAdmin) = CreateTestData();
+        var user = UserGenerator.Generate();
+        var areaAdminBaseDto = AdminGenerator.GenerateAreaAdminBaseDto(); 
+        var areaAdmin = AdminGenerator.GenerateAreaAdmin();
         var role = Role.AreaAdmin;
         var userId = string.Empty;
         var userRole = "areaadmin";
         IUrlHelper url = fakeUrlHelper.Object;
-        fakeUrlHelper.Setup(x => x.Action(It.IsAny<UrlActionContext>())).Returns("url");
         fakeMapper.Setup(x => x.Map<User>(areaAdminBaseDto)).Returns(user);
         fakeUserManager.Setup(x => x.CreateAsync(user, It.IsAny<string>())).ReturnsAsync(IdentityResult.Success);
         fakeUserManager.Setup(x => x.AddToRoleAsync(user, userRole)).ReturnsAsync(IdentityResult.Success);
@@ -148,7 +139,9 @@ public class CommonMinistryAdminServiceTests
     public async Task Update_WhenAllValid_ReturnsOkResponse()
     {
         // Arrange
-        var (user, areaAdminBaseDto, _) = CreateTestData();
+        var user = UserGenerator.Generate();
+        var areaAdminBaseDto = AdminGenerator.GenerateAreaAdminBaseDto();
+        areaAdminBaseDto.UserId = string.Empty;
         fakeUserManager.Setup(x => x.FindByIdAsync(It.IsAny<string>())).ReturnsAsync(user);
         fakeUserManager.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
         fakeUserManager.Setup(x => x.UpdateSecurityStampAsync(user)).ReturnsAsync(IdentityResult.Success);
@@ -179,35 +172,5 @@ public class CommonMinistryAdminServiceTests
         context.Add(new AreaAdmin { UserId = string.Empty });
         context.Add(new User { Id = string.Empty, FirstName = string.Empty, LastName = string.Empty, Email = string.Empty });
         await context.SaveChangesAsync();
-    }
-
-    private (User, AreaAdminBaseDto, AreaAdmin) CreateTestData()
-    {
-        var user = new User
-        {
-            FirstName = "Іван",
-            LastName = "Петренко",
-        };
-
-        var areaAdminBaseDto = new AreaAdminBaseDto
-        {
-            UserId = string.Empty,
-            FirstName = "Іван",
-            LastName = "Петренко",
-            Email = "test@example.com",
-            PhoneNumber = "985646549",
-            CreatingTime = DateTimeOffset.Now,
-            InstitutionId = Guid.NewGuid(),
-            CATOTTGId = 28675,
-        };
-
-        var areaAdmin = new AreaAdmin
-        {
-            InstitutionId = areaAdminBaseDto.InstitutionId,
-            User = user,
-            UserId = string.Empty,
-        };
-
-        return (user, areaAdminBaseDto, areaAdmin);
     }
 }
