@@ -71,7 +71,7 @@ public class CustomAgeAttribute : DataTypeAttribute
 
         var (minDate, maxDate) = CalculateMinAndMaxDate(currentDate);
 
-        return birthDate >= minDate && birthDate <= maxDate;
+        return birthDate > minDate && birthDate < maxDate;
     }
 
     /// <summary>
@@ -103,8 +103,8 @@ public class CustomAgeAttribute : DataTypeAttribute
         var minAge = int.Clamp(MinAge, 0, maxYearOffset);
         var maxAge = int.Clamp(MaxAge, 0, maxYearOffset);
 
-        var minDate = currentDate.AddYears(-maxAge);
-        var maxDate = currentDate.AddYears(-minAge);
+        var minDate = currentDate.AddYears(-maxAge).AddDays(-1);
+        var maxDate = currentDate.AddYears(-minAge).AddDays(1);
 
         return (minDate, maxDate);
     }
