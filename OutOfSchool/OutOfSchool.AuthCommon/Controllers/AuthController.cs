@@ -397,12 +397,7 @@ public class AuthController : Controller
 
                     if (user.Role.Equals(nameof(Role.Parent), StringComparison.OrdinalIgnoreCase))
                     {
-                        var parent = new Parent()
-                        {
-                            UserId = user.Id,
-                            Gender = Gender.Male,
-                            DateOfBirth = DateTime.UtcNow.AddYears(-Constants.AdultAge),
-                        };
+                        var parent = Parent.CreateDraft(user.Id); // use draft parent, because user would edit info later through profile endpoints
 
                         Func<Task<Parent>> operation = async () => await parentRepository.Create(parent).ConfigureAwait(false);
 
