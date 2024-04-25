@@ -10,11 +10,6 @@ namespace OutOfSchool.Common.Validators;
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter, AllowMultiple = false)]
 public class CustomAgeAttribute : DataTypeAttribute
 {
-    /// <summary>
-    /// The approximate number of days in a year including leap years.
-    /// </summary>
-    public const double ApproximateDaysInYear = 365.2425;
-
     public CustomAgeAttribute()
         : base(DataType.Date)
     {
