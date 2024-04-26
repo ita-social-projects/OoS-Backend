@@ -66,9 +66,9 @@ internal class ProviderConfiguration : IEntityTypeConfiguration<Provider>
         builder.Property(x => x.InstitutionType)
             .IsRequired();
 
-        builder.Property(x => x.Status)
-            .IsRequired()
-            .HasDefaultValue(ProviderStatus.Pending);
+        //builder.Property(x => x.Status)
+        //    .IsRequired()
+        //    .HasDefaultValue(ProviderStatus.Pending);
 
         builder.Property(x => x.LicenseStatus)
             .IsRequired()

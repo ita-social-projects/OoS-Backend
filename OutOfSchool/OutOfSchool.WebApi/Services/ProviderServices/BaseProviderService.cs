@@ -18,9 +18,10 @@ namespace OutOfSchool.WebApi.Services.ProviderServices;
 /// <summary>
 /// Implements the interface with CRUD functionality for Provider entity.
 /// </summary>
-public class ProviderService : IProviderService, INotificationReciever
+public class BaseProviderService<T> : IProviderService, INotificationReciever
+    where T : Provider, new()
 {
-    private readonly IProviderRepository providerRepository;
+    private readonly IProviderFakeRepository<T> providerRepository;
     private readonly IProviderAdminRepository providerAdminRepository;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
@@ -74,8 +75,8 @@ public class ProviderService : IProviderService, INotificationReciever
     /// <param name="userService">Service for manage users.</param>
     /// <param name="authorizationServerConfig">Path to authorization server.</param>
     /// <param name="communicationService">Service for communication.</param>
-    public ProviderService(
-        IProviderRepository providerRepository,
+    public BaseProviderService(
+        IProviderFakeRepository<T> providerRepository,
         IEntityRepositorySoftDeleted<string, User> usersRepository,
         ILogger<ProviderService> logger,
         IStringLocalizer<SharedResource> localizer,
@@ -519,7 +520,7 @@ public class ProviderService : IProviderService, INotificationReciever
             providerDto.ActualAddress = null;
         }
 
-        var providerDomainModel = mapper.Map<Provider>(providerDto);
+        var providerDomainModel = mapper.Map<T>(providerDto);
 
         // BUG: concurrency issue:
         //      while first repository with this particular user id is not saved to DB - we can create any number of repositories for this user.
@@ -921,10 +922,5 @@ public class ProviderService : IProviderService, INotificationReciever
             .ConfigureAwait(false);
 
         return providersWithTheSameEdrpouIpn.Any();
-    }
-
-    public Task<ProviderDto> GetById(Guid id, IProviderFakeRepository<Provider> repo)
-    {
-        throw new NotImplementedException();
     }
 }

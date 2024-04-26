@@ -43,7 +43,7 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
     [AllowAnonymous]
-    public async Task<IActionResult> Get([FromQuery] ProviderFilter filter)
+    public async Task<IActionResult> Get([FromQuery] BaseProviderFilter filter)
     {
         var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
 
@@ -67,7 +67,7 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByFilter([FromQuery] ProviderFilter filter)
+    public async Task<IActionResult> GetByFilter([FromQuery] BaseProviderFilter filter)
     {
         var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
 

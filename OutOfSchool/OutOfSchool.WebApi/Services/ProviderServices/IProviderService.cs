@@ -25,7 +25,7 @@ public interface IProviderService
     /// <param name="filter">Filter with specified searching parameters.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains the <see cref="SearchResult{ProviderDto}"/> that contains found elements.</returns>
-    Task<SearchResult<ProviderDto>> GetByFilter(ProviderFilter filter = null);
+    Task<SearchResult<ProviderDto>> GetByFilter(BaseProviderFilter filter = null);
 
     /// <summary>
     /// Get entity by it's key.

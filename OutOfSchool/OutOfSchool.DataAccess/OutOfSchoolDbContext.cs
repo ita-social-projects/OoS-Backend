@@ -23,6 +23,8 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<Provider> Providers { get; set; }
 
+    public DbSet<PublicProvider> PublicProviders { get; set; }
+
     public DbSet<ProviderAdmin> ProviderAdmins { get; set; }
 
     public DbSet<ChatRoomWorkshop> ChatRoomWorkshops { get; set; }
@@ -151,6 +153,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new ParentConfiguration());
         builder.ApplyConfiguration(new ProviderAdminConfiguration());
         builder.ApplyConfiguration(new ProviderConfiguration());
+        builder.ApplyConfiguration(new PublicProviderConfiguration());
         builder.ApplyConfiguration(new ProviderSectionItemConfiguration());
         builder.ApplyConfiguration(new QuartzJobConfiguration());
         builder.ApplyConfiguration(new RatingConfiguration());

@@ -41,7 +41,7 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
     [AllowAnonymous]
-    public async Task<IActionResult> Get([FromQuery] ProviderFilter filter)
+    public async Task<IActionResult> Get([FromQuery] BaseProviderFilter filter)
     {
         var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
 

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.EmailSender;
 using OutOfSchool.RazorTemplatesData.Services;
+using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Services.AverageRatings;
 using OutOfSchool.WebApi.Services.Communication.ICommunication;
@@ -305,6 +306,7 @@ public static class Startup
             >();
         services.AddTransient<IParentRepository, ParentRepository>();
         services.AddTransient<IProviderRepository, ProviderRepository>();
+        services.AddTransient<IPublicProviderRepository, PublicProviderRepository>();
         services.AddTransient<IWorkshopRepository, WorkshopRepository>();
         //services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
         var featuresConfig = configuration.GetSection(FeatureManagementConfig.Name).Get<FeatureManagementConfig>();

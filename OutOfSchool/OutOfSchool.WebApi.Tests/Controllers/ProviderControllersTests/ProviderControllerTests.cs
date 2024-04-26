@@ -92,11 +92,11 @@ public class ProviderControllerTests
             Entities = providers.Select(x => mapper.Map<ProviderDto>(x)).ToList(),
         };
 
-        providerService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
+        providerService.Setup(x => x.GetByFilter(It.IsAny<BaseProviderFilter>()))
             .ReturnsAsync(expected);
 
         // Act
-        var result = await providerController.Get(new ProviderFilter()).ConfigureAwait(false);
+        var result = await providerController.Get(new BaseProviderFilter()).ConfigureAwait(false);
 
         // Assert
         result.AssertResponseOkResultAndValidateValue(expected);
@@ -106,11 +106,11 @@ public class ProviderControllerTests
     public async Task GetProviders_WhenNoRecordsInDB_ReturnsNoContentResult()
     {
         // Arrange
-        providerService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
+        providerService.Setup(x => x.GetByFilter(It.IsAny<BaseProviderFilter>()))
             .ReturnsAsync(new SearchResult<ProviderDto> { TotalAmount = 0, Entities = new List<ProviderDto>() });
 
         // Act
-        var result = await providerController.Get(new ProviderFilter()).ConfigureAwait(false);
+        var result = await providerController.Get(new BaseProviderFilter()).ConfigureAwait(false);
 
         // Assert
         Assert.IsInstanceOf<NoContentResult>(result);

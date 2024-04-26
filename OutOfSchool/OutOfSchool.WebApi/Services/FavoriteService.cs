@@ -69,7 +69,7 @@ public class FavoriteService : IFavoriteService
         logger.LogInformation("Getting Favorites by User started. Looking UserId = {UserId}", userId);
 
         var favoritesQuery = await favoriteRepository
-            .GetByFilter(x => x.UserId == userId && Provider.ValidProviderStatuses.Contains(x.Workshop.Provider.Status))
+            .GetByFilter(x => x.UserId == userId) //&& Provider.ValidProviderStatuses.Contains(x.Workshop.Provider.Status))
             .ConfigureAwait(false);
 
         var favorites = favoritesQuery.ToList();
@@ -88,7 +88,7 @@ public class FavoriteService : IFavoriteService
         logger.LogInformation($"Getting Favorites by User started. Looking UserId = {userId}.");
 
         var favorites = await favoriteRepository
-            .Get(whereExpression: x => x.UserId == userId && Provider.ValidProviderStatuses.Contains(x.Workshop.Provider.Status))
+            .Get(whereExpression: x => x.UserId == userId)// && Provider.ValidProviderStatuses.Contains(x.Workshop.Provider.Status))
             .Select(x => x.WorkshopId)
             .ToListAsync()
             .ConfigureAwait(false);

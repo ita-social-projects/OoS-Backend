@@ -10,7 +10,7 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models;
 
-public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISoftDeleted, IHasEntityImages<Provider>
+public class ProviderBase : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISoftDeleted, IHasEntityImages<Provider>
 {
     public Guid Id { get; set; }
 
@@ -82,12 +82,6 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISo
 
     [Required]
     public long TypeId { get; set; }
-
-    //[Required]
-    //public ProviderStatus Status { get; set; }
-
-    //[MaxLength(500)]
-    //public string StatusReason { get; set; }
 
     [MaxLength(30)]
     public string License { get; set; }

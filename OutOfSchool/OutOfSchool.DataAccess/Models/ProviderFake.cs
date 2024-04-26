@@ -10,8 +10,9 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models;
 
-public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISoftDeleted, IHasEntityImages<Provider>
+public class ProviderFake : IKeyedEntity<Guid>, IImageDependentEntity<ProviderFake>, ISoftDeleted, IHasEntityImages<ProviderFake>
 {
+    public ProviderFake() {}
     public Guid Id { get; set; }
 
     public bool IsDeleted { get; set; }
@@ -83,12 +84,6 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISo
     [Required]
     public long TypeId { get; set; }
 
-    //[Required]
-    //public ProviderStatus Status { get; set; }
-
-    //[MaxLength(500)]
-    //public string StatusReason { get; set; }
-
     [MaxLength(30)]
     public string License { get; set; }
 
@@ -149,4 +144,7 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISo
 
     [DataType(DataType.DateTime)]
     public DateTime UpdatedAt { get; set; }
+    List<Image<ProviderFake>> IImageDependentEntity<ProviderFake>.Images { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+    List<Image<ProviderFake>> IHasEntityImages<ProviderFake>.Images => throw new NotImplementedException();
 }

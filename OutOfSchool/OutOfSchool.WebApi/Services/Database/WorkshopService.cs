@@ -685,7 +685,7 @@ public class WorkshopService : IWorkshopService
         }
         else
         {
-            predicate = predicate.And(x => Provider.ValidProviderStatuses.Contains(x.Provider.Status));
+            //predicate = predicate.And(x => Provider.ValidProviderStatuses.Contains(x.Provider.Status));
             predicate = predicate.And(x => !x.IsBlocked);
 
             if (filter.CATOTTGId > 0)

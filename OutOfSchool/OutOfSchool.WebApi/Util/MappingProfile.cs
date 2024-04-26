@@ -82,8 +82,8 @@ public class MappingProfile : Profile
             .IncludeBase<Workshop, WorkshopBaseDto>()
             .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats()))
             .IncludeBase<object, IHasRating>()
-            .ForMember(dest => dest.IsBlocked, opt => opt.MapFrom(src => src.Provider.IsBlocked))
-            .ForMember(dest => dest.ProviderStatus, opt => opt.MapFrom(src => src.Provider.Status));
+            .ForMember(dest => dest.IsBlocked, opt => opt.MapFrom(src => src.Provider.IsBlocked));
+            //.ForMember(dest => dest.ProviderStatus, opt => opt.MapFrom(src => src.Provider.Status));
 
         CreateMap<WorkshopDto, Workshop>()
             .IncludeBase<WorkshopBaseDto, Workshop>();
@@ -604,7 +604,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Region, opt => opt.MapFrom(src => CatottgAddressExtensions.GetRegionName(src)))
             .ForMember(dest => dest.CityDistrict, opt => opt.MapFrom(src => CatottgAddressExtensions.GetCityDistrictName(src)));
 
-        CreateMap<Provider, ProviderStatusDto>()
+        CreateMap<PublicProvider, ProviderStatusDto>()
             .ForMember(dest => dest.ProviderId, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
             .ForMember(dest => dest.StatusReason, opt => opt.MapFrom(src => string.Empty));
@@ -634,8 +634,8 @@ public class MappingProfile : Profile
         => mappings
             .ForMember(dest => dest.Institution, opt => opt.Ignore())
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
-            .ForMember(dest => dest.Status, opt => opt.Ignore())
-            .ForMember(dest => dest.StatusReason, opt => opt.Ignore())
+            //.ForMember(dest => dest.Status, opt => opt.Ignore())
+            //.ForMember(dest => dest.StatusReason, opt => opt.Ignore())
             .ForMember(dest => dest.LicenseStatus, opt => opt.Ignore())
         ;
 
