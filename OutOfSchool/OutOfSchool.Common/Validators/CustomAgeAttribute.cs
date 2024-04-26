@@ -16,12 +16,12 @@ public class CustomAgeAttribute : DataTypeAttribute
     }
 
     /// <summary>
-    /// Gets the minimum age of the persom in years.
+    /// Gets the minimum age of the person in years.
     /// </summary>
     public int MinAge { get; init; } = 0;
 
     /// <summary>
-    /// Gets the maximum age of the persom in years.
+    /// Gets the maximum age of the person in years.
     /// </summary>
     public int MaxAge { get; init; } = int.MaxValue;
 
@@ -66,7 +66,7 @@ public class CustomAgeAttribute : DataTypeAttribute
 
         var (minDate, maxDate) = CalculateMinAndMaxDate(currentDate);
 
-        return birthDate > minDate && birthDate < maxDate;
+        return birthDate > minDate && birthDate <= maxDate;
     }
 
     /// <summary>
@@ -96,10 +96,10 @@ public class CustomAgeAttribute : DataTypeAttribute
         var maxYearOffset = currentDate.Year - 1;
 
         var minAge = int.Clamp(MinAge, 0, maxYearOffset);
-        var maxAge = int.Clamp(MaxAge, 0, maxYearOffset);
+        var maxAge = int.Clamp(int.Max(MaxAge, MaxAge + 1), 0, maxYearOffset);
 
-        var minDate = currentDate.AddYears(-maxAge).AddDays(-1);
-        var maxDate = currentDate.AddYears(-minAge).AddDays(1);
+        var minDate = currentDate.AddYears(-maxAge);
+        var maxDate = currentDate.AddYears(-minAge);
 
         return (minDate, maxDate);
     }

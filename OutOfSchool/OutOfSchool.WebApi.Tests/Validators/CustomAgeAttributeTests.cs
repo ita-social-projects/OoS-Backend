@@ -5,26 +5,10 @@ using OutOfSchool.Common.Validators;
 
 namespace OutOfSchool.WebApi.Tests.Validators;
 
-[TestFixture(Seed1)]
-[TestFixture(Seed2)]
-[TestFixture(Seed3)]
-[TestFixture(Seed4)]
+[TestFixture]
 public class CustomAgeAttributeTests
 {
-    public const int Seed1 = 69_420;
-    public const int Seed2 = 42_690;
-    public const int Seed3 = 1_234_567_890;
-    public const int Seed4 = 777777777;
-
-    private readonly Faker faker;
-
-    public CustomAgeAttributeTests(int seed)
-    {
-        this.faker = new()
-        {
-            Random = new Randomizer(seed),
-        };
-    }
+    private readonly Faker faker = new();
 
     [Test]
     public void IsValid_WhenDateIsNull_ShouldReturnTrue()
@@ -138,7 +122,7 @@ public class CustomAgeAttributeTests
     public void IsValid_WhenDateIsExactlyMinAge_ShouldReturnTrue()
     {
         // Arrange
-        var dateOfBirth = DateTime.UtcNow.AddYears(-3);
+        var dateOfBirth = faker.Date.Past(1, DateTime.UtcNow.AddYears(-3));
 
         // Act
         var isValid = new CustomAgeAttribute() { MinAge = 3 }.IsValid(dateOfBirth);
@@ -151,7 +135,7 @@ public class CustomAgeAttributeTests
     public void IsValid_WhenDateIsExactlyMaxAge_ShouldReturnTrue()
     {
         // Arrange
-        var dateOfBirth = DateTime.UtcNow.AddYears(-3);
+        var dateOfBirth = faker.Date.Past(1, DateTime.UtcNow.AddYears(-3));
 
         // Act
         var isValid = new CustomAgeAttribute() { MaxAge = 3 }.IsValid(dateOfBirth);
@@ -161,23 +145,23 @@ public class CustomAgeAttributeTests
     }
 
     [Test]
-    public void IsValid_WhenDateIsOneDayAfterMinAge_ShouldReturnFalse()
+    public void IsValid_WhenDateIsTodayMinAgeYearsAgo_ShouldReturnTrue()
     {
         // Arrange
-        var dateOfBirth = DateTime.UtcNow.AddYears(-3).AddDays(1);
+        var dateOfBirth = DateTime.UtcNow.AddYears(-3);
 
         // Act
         var isValid = new CustomAgeAttribute() { MinAge = 3 }.IsValid(dateOfBirth);
 
         // Assert
-        Assert.IsFalse(isValid);
+        Assert.IsTrue(isValid);
     }
 
     [Test]
-    public void IsValid_WhenDateIsOneDayBeforeMaxAge_ShouldReturnFalse()
+    public void IsValid_WhenDateIsTodayMaxAgePlusOneYearsAgo_ShouldReturnFalse()
     {
         // Arrange
-        var dateOfBirth = DateTime.UtcNow.AddYears(-3).AddDays(-1);
+        var dateOfBirth = DateTime.UtcNow.AddYears(-4);
 
         // Act
         var isValid = new CustomAgeAttribute() { MaxAge = 3 }.IsValid(dateOfBirth);
