@@ -106,10 +106,10 @@ public class CustomAgeAttributeTests
     }
 
     [Test]
-    public void IsValid_WhenDateIsGreaterThanMaxAge_ShouldReturnFalse()
+    public void IsValid_WhenDateIsGreaterThanMaxAgePlusOne_ShouldReturnFalse()
     {
         // Arrange
-        var dateOfBirth = faker.Date.Past(100, DateTime.UtcNow.AddYears(-2));
+        var dateOfBirth = faker.Date.Past(1, DateTime.UtcNow.AddYears(-3));
 
         // Act
         var isValid = new CustomAgeAttribute() { MaxAge = 2 }.IsValid(dateOfBirth);
@@ -122,7 +122,10 @@ public class CustomAgeAttributeTests
     public void IsValid_WhenDateIsExactlyMinAge_ShouldReturnTrue()
     {
         // Arrange
-        var dateOfBirth = faker.Date.Past(1, DateTime.UtcNow.AddYears(-3));
+        var minDate = DateTime.UtcNow.AddYears(-4);
+        var maxDate = DateTime.UtcNow.AddYears(-3);
+
+        var dateOfBirth = faker.Date.Between(minDate, maxDate);
 
         // Act
         var isValid = new CustomAgeAttribute() { MinAge = 3 }.IsValid(dateOfBirth);
@@ -135,7 +138,10 @@ public class CustomAgeAttributeTests
     public void IsValid_WhenDateIsExactlyMaxAge_ShouldReturnTrue()
     {
         // Arrange
-        var dateOfBirth = faker.Date.Past(1, DateTime.UtcNow.AddYears(-3));
+        var minDate = DateTime.UtcNow.AddYears(-3).AddDays(1);
+        var maxDate = DateTime.UtcNow.AddYears(-2);
+
+        var dateOfBirth = faker.Date.Between(minDate, maxDate);
 
         // Act
         var isValid = new CustomAgeAttribute() { MaxAge = 3 }.IsValid(dateOfBirth);
