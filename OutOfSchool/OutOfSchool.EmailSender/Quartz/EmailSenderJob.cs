@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -45,7 +46,7 @@ public class EmailSenderJob : IJob
             var subject = dataMap.GetString(EmailSenderStringConstants.Subject);
             var htmlContent = dataMap.GetString(EmailSenderStringConstants.HtmlContent);
             var plainContent = dataMap.GetString(EmailSenderStringConstants.PlainContent);
-            var expirationTime = DateTimeOffset.Parse(dataMap.GetString(EmailSenderStringConstants.ExpirationTime));
+            var expirationTime = DateTimeOffset.Parse(dataMap.GetString(EmailSenderStringConstants.ExpirationTime), CultureInfo.CurrentCulture);
 
             if (expirationTime < DateTimeOffset.Now)
             {
