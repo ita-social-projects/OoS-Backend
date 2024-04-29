@@ -40,12 +40,12 @@ public class Parent : IKeyedEntity<Guid>, ISoftDeleted, IHasUser
     /// Creates draft parent, that is later will be edited through API.
     /// </summary>
     /// <param name="userId">User id.</param>
-    /// <param name="currentTime">Current time.</param>
+    /// <param name="utcNow">Current UTC time.</param>
     /// <returns>New draft parent.</returns>
-    public static Parent CreateDraft(string userId, DateTime currentTime) => new()
+    public static Parent CreateDraft(string userId, DateTime utcNow) => new()
     {
         UserId = userId,
         Gender = Enums.Gender.Male,
-        DateOfBirth = currentTime.AddYears(-Constants.AdultAge),
+        DateOfBirth = utcNow.AddYears(-Constants.AdultAge),
     };
 }
