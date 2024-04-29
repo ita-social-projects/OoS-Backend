@@ -13,23 +13,23 @@ public class ParentDraftCreationTests
     public void CreateDraft_ReturnsMaleGender()
     {
         // Assert
-        Assert.AreEqual(Gender.Male, Parent.CreateDraft("test").Gender);
+        Assert.AreEqual(Gender.Male, Parent.CreateDraft("test", DateTime.UtcNow).Gender);
     }
 
     [Test]
     public void CreateDraft_ReturnsMaleValidAge()
     {
         // Arrange
-        var expectedDate = DateTime.Now.AddYears(-Constants.AdultAge).Date;
+        var expectedDate = DateTime.UtcNow.AddYears(-Constants.AdultAge).Date;
 
         // Assert
-        Assert.AreEqual(expectedDate, Parent.CreateDraft("test").DateOfBirth.GetValueOrDefault().Date);
+        Assert.AreEqual(expectedDate, Parent.CreateDraft("test", DateTime.UtcNow).DateOfBirth.GetValueOrDefault().Date);
     }
 
     [Test]
     public void CreateDraft_ReturnsMaleValidUserId()
     {
         // Assert
-        Assert.AreEqual("test", Parent.CreateDraft("test").UserId);
+        Assert.AreEqual("test", Parent.CreateDraft("test", DateTime.UtcNow).UserId);
     }
 }
