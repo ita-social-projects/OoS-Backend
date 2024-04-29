@@ -9,8 +9,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Services.Interfaces;
-using OutOfSchool.AuthServer.Tests.Controllers;
 using OutOfSchool.Common.Models;
 using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Services;
@@ -64,7 +64,8 @@ public class CommonMinistryAdminServiceTests
             fakeUserManager.Object,
             context,
             new Mock<IRazorViewToStringRenderer>().Object,
-            new Mock<IStringLocalizer<SharedResource>>().Object);
+            new Mock<IStringLocalizer<SharedResource>>().Object,
+            new Mock<IOptions<HostsConfig>>().Object);
 
         await Seed();
     }

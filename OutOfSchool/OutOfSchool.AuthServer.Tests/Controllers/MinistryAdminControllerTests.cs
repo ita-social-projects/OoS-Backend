@@ -24,6 +24,8 @@ using System;
 using OutOfSchool.AuthCommon;
 using System.Linq;
 using OutOfSchool.EmailSender.Services;
+using Microsoft.Extensions.Options;
+using OutOfSchool.AuthCommon.Config;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
 
@@ -100,7 +102,8 @@ public class MinistryAdminControllerTests
             userManager,
             context,
             new Mock<IRazorViewToStringRenderer>().Object,
-            new Mock<IStringLocalizer<SharedResource>>().Object);
+            new Mock<IStringLocalizer<SharedResource>>().Object,
+            new Mock<IOptions<HostsConfig>>().Object);
 
         ministryAdminControllerWithRealService = new MinistryAdminController(new Mock<ILogger<MinistryAdminController>>().Object, ministryAdminService);
     }

@@ -24,6 +24,8 @@ using System.Linq;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using OutOfSchool.EmailSender.Services;
+using Microsoft.Extensions.Options;
+using OutOfSchool.AuthCommon.Config;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
 
@@ -122,7 +124,8 @@ public class AreaAdminControllerTests
             userManager,
             context,
             new Mock<IRazorViewToStringRenderer>().Object,
-            new Mock<IStringLocalizer<SharedResource>>().Object);
+            new Mock<IStringLocalizer<SharedResource>>().Object,
+            new Mock<IOptions<HostsConfig>>().Object);
 
         areaAdminControllerWithRealService = new AreaAdminController(fakeLogger.Object, areaAdminService);
         }
