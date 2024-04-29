@@ -33,6 +33,7 @@ public class CommonMinistryAdminServiceTests
     private Mock<UserManager<User>> fakeUserManager;
     private OutOfSchoolDbContext context;
     private Mock<IUrlHelper> fakeUrlHelper;
+    private Mock<IOptions<HostsConfig>> fakeHostsConfig;
 
     private ICommonMinistryAdminService<AreaAdminBaseDto> areaCommonMinistryAdminService;
 
@@ -56,6 +57,13 @@ public class CommonMinistryAdminServiceTests
 
         areaAdminRepository = new AreaAdminRepository(context);
 
+        fakeHostsConfig = new Mock<IOptions<HostsConfig>>();
+        var config = new HostsConfig()
+        {
+            BackendUrl = "http://localhost:5443"
+        };
+        fakeHostsConfig.Setup(x => x.Value).Returns(config);
+
         areaCommonMinistryAdminService = new CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, AreaAdminRepository>(
             fakeMapper.Object,
             areaAdminRepository,
@@ -65,7 +73,7 @@ public class CommonMinistryAdminServiceTests
             context,
             new Mock<IRazorViewToStringRenderer>().Object,
             new Mock<IStringLocalizer<SharedResource>>().Object,
-            new Mock<IOptions<HostsConfig>>().Object);
+            fakeHostsConfig.Object);
 
         await Seed();
     }

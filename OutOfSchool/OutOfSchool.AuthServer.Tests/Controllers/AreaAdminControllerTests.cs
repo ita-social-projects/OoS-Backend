@@ -39,6 +39,7 @@ public class AreaAdminControllerTests
     private AreaAdminController areaAdminControllerWithRealService;
     private ICommonMinistryAdminService<AreaAdminBaseDto> areaAdminService;
     private AreaAdminRepository areaAdminRepository;
+    private Mock<IOptions<HostsConfig>> fakeHostsConfig;
 
     public AreaAdminControllerTests()
     {
@@ -116,6 +117,13 @@ public class AreaAdminControllerTests
         var userManager = new UserManager<User>(
             new UserStore<User>(context), null, null, null, null, null, null, null, null);
 
+        fakeHostsConfig = new Mock<IOptions<HostsConfig>>();
+        var config = new HostsConfig()
+        {
+            BackendUrl = "http://localhost:5443"
+        };
+        fakeHostsConfig.Setup(x => x.Value).Returns(config);
+
         areaAdminService = new CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, AreaAdminRepository>(
             new Mock<IMapper>().Object,
             areaAdminRepository,
@@ -125,7 +133,7 @@ public class AreaAdminControllerTests
             context,
             new Mock<IRazorViewToStringRenderer>().Object,
             new Mock<IStringLocalizer<SharedResource>>().Object,
-            new Mock<IOptions<HostsConfig>>().Object);
+            fakeHostsConfig.Object);
 
         areaAdminControllerWithRealService = new AreaAdminController(fakeLogger.Object, areaAdminService);
         }
