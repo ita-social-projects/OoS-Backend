@@ -35,6 +35,7 @@ public static class AuthCommonServiceExtensions
             builder => builder.Bind(config.GetSection(EmailOptions.SectionName)));
 
         services.Configure<ChangesLogConfig>(config.GetSection(ChangesLogConfig.Name));
+        services.Configure<HostsConfig>(config.GetSection(HostsConfig.Name));
 
         services.AddControllersWithViews()
             .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
