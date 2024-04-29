@@ -31,30 +31,17 @@ namespace OutOfSchool.AuthServer.Tests.Controllers;
 [TestFixture]
 public class AuthControllerTests
 {
-    private readonly Mock<FakeUserManager> fakeUserManager;
-    private readonly Mock<IUserManagerAdditionalService> fakeUserManagerAdditionalService;
-    private readonly Mock<FakeSignInManager> fakeSignInManager;
-    private readonly Mock<IInteractionService> fakeInteractionService;
-    private readonly Mock<ILogger<AuthController>> fakeLogger;
-    private readonly Mock<IParentRepository> fakeparentRepository;
+    private Mock<FakeUserManager> fakeUserManager;
+    private Mock<IUserManagerAdditionalService> fakeUserManagerAdditionalService;
+    private Mock<FakeSignInManager> fakeSignInManager;
+    private Mock<IInteractionService> fakeInteractionService;
+    private Mock<ILogger<AuthController>> fakeLogger;
+    private Mock<IParentRepository> fakeparentRepository;
     private AuthController authController;
-    private readonly Mock<IStringLocalizer<SharedResource>> fakeLocalizer;
+    private Mock<IStringLocalizer<SharedResource>> fakeLocalizer;
     private static Mock<IOptions<AuthServerConfig>> fakeIdentityServerConfig;
-    private readonly Mock<IEmailSenderService> fakeEmailSender;
-    private readonly Mock<IRazorViewToStringRenderer> fakeRenderer;
-
-    public AuthControllerTests()
-    {
-        fakeUserManager = new Mock<FakeUserManager>();
-        fakeUserManagerAdditionalService = new Mock<IUserManagerAdditionalService>();
-        fakeInteractionService = new Mock<IInteractionService>();
-        fakeSignInManager = new Mock<FakeSignInManager>();
-        fakeLogger = new Mock<ILogger<AuthController>>();
-        fakeparentRepository = new Mock<IParentRepository>();
-        fakeLocalizer = new Mock<IStringLocalizer<SharedResource>>();
-        fakeEmailSender = new Mock<IEmailSenderService>();
-        fakeRenderer = new Mock<IRazorViewToStringRenderer>();
-    }
+    private Mock<IEmailSenderService> fakeEmailSender;
+    private Mock<IRazorViewToStringRenderer> fakeRenderer;
 
     [OneTimeSetUp]
     public void OneTimeSetup()
@@ -69,6 +56,16 @@ public class AuthControllerTests
     [SetUp]
     public void Setup()
     {
+        fakeUserManager = new Mock<FakeUserManager>();
+        fakeUserManagerAdditionalService = new Mock<IUserManagerAdditionalService>();
+        fakeInteractionService = new Mock<IInteractionService>();
+        fakeSignInManager = new Mock<FakeSignInManager>();
+        fakeLogger = new Mock<ILogger<AuthController>>();
+        fakeparentRepository = new Mock<IParentRepository>();
+        fakeLocalizer = new Mock<IStringLocalizer<SharedResource>>();
+        fakeEmailSender = new Mock<IEmailSenderService>();
+        fakeRenderer = new Mock<IRazorViewToStringRenderer>();
+
         fakeLocalizer
             .Setup(localizer => localizer[It.IsAny<string>()])
             .Returns(new LocalizedString("mock", "error"));
@@ -529,7 +526,7 @@ public class AuthControllerTests
         var result = await authController.Register(viewModel);
 
         // Assert
-        // fakeUserManager.VerifyAll(); - fails when tested as not standalone test
+        fakeUserManager.VerifyAll();
         fakeSignInManager.VerifyAll();
         fakeEmailSender.VerifyAll();
         fakeparentRepository.VerifyAll();
