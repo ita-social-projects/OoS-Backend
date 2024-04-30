@@ -55,6 +55,9 @@ public class ProviderAdminServiceTests
              new Mock<ILogger<UserManager<User>>>().Object);
 
         context = GetContext();
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
+
         providerAdminRepository = new ProviderAdminRepository(context);
 
         fakeGrpcConfig = new Mock<IOptions<GrpcConfig>>();
@@ -113,7 +116,9 @@ public class ProviderAdminServiceTests
         IUrlHelper url = fakeUrlHelper.Object;
         var userId = string.Empty;
         var userRole = "provider";
-        await SeedWorkshops(workshops);
+
+        context.AddRange(workshops);
+        await context.SaveChangesAsync();
 
         fakeMapper.Setup(x => x.Map<User>(createProviderAdminDto)).Returns(user);
         fakeUserManager.Setup(x => x.CreateAsync(user, It.IsAny<string>()))
@@ -133,6 +138,32 @@ public class ProviderAdminServiceTests
         createProviderAdminDto.Should().BeEquivalentTo(result.Result);
     }
 
+    [Test]
+    public async Task CreateProviderAdminAsync_WhenEmailsAreIdentical_ReturnsBadRequest()
+    {
+        // Arrange
+        var user = UserGenerator.Generate();
+        var createProviderAdminDto = AdminGenerator.GenerateCreateProviderAdminDto();
+        user.Email = createProviderAdminDto.Email;
+
+        IUrlHelper url = fakeUrlHelper.Object;
+        var userId = string.Empty;
+
+        context.Add(user);
+        await context.SaveChangesAsync();
+
+        fakeMapper.Setup(x => x.Map<User>(createProviderAdminDto)).Returns(user);
+
+
+        // Act
+        var result = await providerAdminService
+            .CreateProviderAdminAsync(createProviderAdminDto, url, userId);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(HttpStatusCode.BadRequest, result.HttpStatusCode);
+    }
+
     private static OutOfSchoolDbContext GetContext()
     {
         return new OutOfSchoolDbContext(
@@ -140,14 +171,5 @@ public class ProviderAdminServiceTests
             .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
             .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .Options);
-    }
-
-    private async Task SeedWorkshops(List<Workshop> workshops)
-    {
-        var context = GetContext();
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
-        context.AddRange(workshops);
-        await context.SaveChangesAsync();
     }
 }
