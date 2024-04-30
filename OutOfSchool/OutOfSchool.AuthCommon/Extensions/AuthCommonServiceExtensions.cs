@@ -1,9 +1,12 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Config.ExternalUriModels;
 using OutOfSchool.AuthCommon.Services;
 using OutOfSchool.AuthCommon.Util;
 using OutOfSchool.AuthCommon.Validators;
+using OutOfSchool.AuthCommon.ViewModels;
 using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.AuthCommon.Extensions;
@@ -69,5 +72,8 @@ public static class AuthCommonServiceExtensions
 
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
         services.AddGrpc();
+
+        services.AddFluentValidationAutoValidation();
+        services.AddScoped<IValidator<RegisterViewModel>, RegisterViewModelValidator>();
     }
 }
