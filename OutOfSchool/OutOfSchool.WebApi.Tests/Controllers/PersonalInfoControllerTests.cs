@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 

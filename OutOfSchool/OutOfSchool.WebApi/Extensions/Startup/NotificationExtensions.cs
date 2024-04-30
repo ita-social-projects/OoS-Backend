@@ -1,6 +1,6 @@
-﻿using OutOfSchool.WebApi.Common.QuartzConstants;
-using OutOfSchool.WebApi.Services.LicenseApprovalNotification;
-using OutOfSchool.WebApi.Services.NotificationsClearing;
+﻿using OutOfSchool.BusinessLogic.Common.QuartzConstants;
+using OutOfSchool.BusinessLogic.Services.LicenseApprovalNotification;
+using OutOfSchool.BusinessLogic.Services.NotificationsClearing;
 using Quartz;
 
 namespace OutOfSchool.WebApi.Extensions.Startup;

@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Elasticsearch.Net;
 using Nest;
-using OutOfSchool.WebApi.Config.Elasticsearch;
+using OutOfSchool.BusinessLogic.Config.Elasticsearch;
 
 namespace OutOfSchool.WebApi.Extensions;
 

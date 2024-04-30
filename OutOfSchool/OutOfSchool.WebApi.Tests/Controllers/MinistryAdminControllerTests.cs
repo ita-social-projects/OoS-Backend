@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 

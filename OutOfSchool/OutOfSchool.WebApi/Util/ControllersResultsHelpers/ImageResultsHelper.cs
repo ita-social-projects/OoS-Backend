@@ -1,5 +1,5 @@
-﻿using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models.Images;
+﻿using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models.Images;
 
 namespace OutOfSchool.WebApi.Util.ControllersResultsHelpers;
 

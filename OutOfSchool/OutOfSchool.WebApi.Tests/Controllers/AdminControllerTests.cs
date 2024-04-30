@@ -13,19 +13,20 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Application;
+using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Application;
-using OutOfSchool.WebApi.Models.Providers;
-using OutOfSchool.WebApi.Models.Workshops;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
-using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 

@@ -1,8 +1,8 @@
 ﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

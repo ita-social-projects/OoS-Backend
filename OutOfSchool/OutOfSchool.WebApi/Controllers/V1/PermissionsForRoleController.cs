@@ -1,6 +1,6 @@
 ﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.WebApi.Models;
+using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

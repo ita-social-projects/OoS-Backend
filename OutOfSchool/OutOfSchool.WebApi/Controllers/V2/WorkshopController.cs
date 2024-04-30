@@ -2,10 +2,10 @@
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement.Mvc;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Workshops;
-using OutOfSchool.WebApi.Services.ProviderServices;
 using OutOfSchool.WebApi.Util.ControllersResultsHelpers;
 
 namespace OutOfSchool.WebApi.Controllers.V2;

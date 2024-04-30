@@ -3,23 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-
 using AutoMapper;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
 using Moq;
-
 using NUnit.Framework;
-
+using OutOfSchool.BusinessLogic.Config;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 

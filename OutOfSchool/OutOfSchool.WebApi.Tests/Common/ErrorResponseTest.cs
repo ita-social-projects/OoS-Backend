@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Net;
+﻿using System.Net;
 using NUnit.Framework;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;

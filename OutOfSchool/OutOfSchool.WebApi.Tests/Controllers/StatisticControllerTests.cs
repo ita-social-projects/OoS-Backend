@@ -5,10 +5,10 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Workshops;
-using OutOfSchool.WebApi.Services;
 using Range = Moq.Range;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;

@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using AutoMapper;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
-using OutOfSchool.WebApi.Models.Workshops;
-using OutOfSchool.WebApi.Util;
-using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.IntegrationTests.MappingIntergrationTests;
 

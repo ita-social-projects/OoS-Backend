@@ -8,6 +8,10 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -15,10 +19,6 @@ using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Models.ChatWorkshop;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
-using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 

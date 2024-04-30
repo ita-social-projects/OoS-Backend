@@ -1,11 +1,11 @@
 ﻿using System.Security.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Application;
+using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Application;
-using OutOfSchool.WebApi.Models.ChatWorkshop;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

@@ -8,11 +8,12 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.ChatWorkshop;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 

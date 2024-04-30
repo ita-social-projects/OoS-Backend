@@ -8,12 +8,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 

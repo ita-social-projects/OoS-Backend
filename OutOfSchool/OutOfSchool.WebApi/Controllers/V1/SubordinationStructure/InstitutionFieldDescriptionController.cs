@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.WebApi.Models.SubordinationStructure;
+using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 
 namespace OutOfSchool.WebApi.Controllers.V1.SubordinationStructure;
 

@@ -1,5 +1,5 @@
-﻿using OutOfSchool.WebApi.Common.QuartzConstants;
-using OutOfSchool.WebApi.Services.StatisticReports;
+﻿using OutOfSchool.BusinessLogic.Common.QuartzConstants;
+using OutOfSchool.BusinessLogic.Services.StatisticReports;
 using Quartz;
 
 namespace OutOfSchool.WebApi.Extensions.Startup;

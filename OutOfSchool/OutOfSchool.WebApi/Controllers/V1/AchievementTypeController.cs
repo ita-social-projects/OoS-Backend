@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Models;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

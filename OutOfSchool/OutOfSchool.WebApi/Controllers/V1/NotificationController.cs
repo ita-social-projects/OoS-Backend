@@ -1,8 +1,8 @@
 ﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models.Notifications;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models.Notifications;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

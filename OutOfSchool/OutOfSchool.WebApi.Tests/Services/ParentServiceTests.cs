@@ -4,16 +4,16 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models.Parent;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models.Parent;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
-using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 

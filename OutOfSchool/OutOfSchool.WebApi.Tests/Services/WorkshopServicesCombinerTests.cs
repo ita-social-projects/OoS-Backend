@@ -5,6 +5,11 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
@@ -13,11 +18,6 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Models.Workshops;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Services.Strategies.Interfaces;
-using OutOfSchool.WebApi.Util;
-using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 

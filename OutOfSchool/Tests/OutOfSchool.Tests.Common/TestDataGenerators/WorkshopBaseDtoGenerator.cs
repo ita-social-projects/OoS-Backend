@@ -1,7 +1,7 @@
 ﻿using Bogus;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 using System;
 using System.Collections.Generic;
 

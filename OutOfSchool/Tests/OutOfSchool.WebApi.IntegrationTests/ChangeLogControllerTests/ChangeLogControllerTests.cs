@@ -8,18 +8,19 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Config;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Changes;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Changes;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
-using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.IntegrationTests.ChangeLogControllerTests;
 
@@ -65,7 +66,7 @@ public class ChangeLogControllerTests
 
         var request = new ParentBlockedByAdminChangesLogRequest()
         {
-            ShowParents = Enums.ShowParents.All,
+            ShowParents = ShowParents.All,
             DateTo = DateTime.MaxValue,
         };
 

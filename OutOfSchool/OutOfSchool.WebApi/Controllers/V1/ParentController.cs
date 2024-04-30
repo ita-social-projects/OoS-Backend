@@ -1,8 +1,8 @@
 using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Parent;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Parent;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

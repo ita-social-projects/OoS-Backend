@@ -1,8 +1,8 @@
 ﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services.AverageRatings;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services.AverageRatings;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
