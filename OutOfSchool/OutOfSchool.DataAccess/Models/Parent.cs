@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using OutOfSchool.Common;
 using OutOfSchool.Services.Common;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ChatWorkshop;
@@ -35,17 +34,4 @@ public class Parent : IKeyedEntity<Guid>, ISoftDeleted, IHasUser
     public virtual User User { get; set; }
 
     public virtual ICollection<ChatRoomWorkshop> ChatRooms { get; set; }
-
-    /// <summary>
-    /// Creates draft parent, that is later will be edited through API.
-    /// </summary>
-    /// <param name="userId">User id.</param>
-    /// <param name="utcNow">Current UTC time.</param>
-    /// <returns>New draft parent.</returns>
-    public static Parent CreateDraft(string userId, DateTime utcNow) => new()
-    {
-        UserId = userId,
-        Gender = Enums.Gender.Male,
-        DateOfBirth = utcNow.AddYears(-Constants.AdultAge),
-    };
 }

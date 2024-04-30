@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
-using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models;
@@ -22,6 +21,5 @@ public class ShortUserDto : BaseUserDto
 
     [DataType(DataType.Date)]
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    [CustomAge(MinAge = Constants.AdultAge, ErrorMessage = Constants.DayOfBirthErrorMessage)]
     public DateTime? DateOfBirth { get; set; }
 }

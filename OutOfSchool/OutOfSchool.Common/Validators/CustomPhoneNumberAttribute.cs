@@ -20,12 +20,9 @@ public class CustomPhoneNumberAttribute : DataTypeAttribute
     /// <summary>
     /// Checks that the phone number is valid.
     /// </summary>
-    /// <remarks>
-    /// This method returns <c>true</c> if the <paramref name="value" /> is null.
-    /// It is assumed the <see cref="RequiredAttribute" /> is used if the value may not be null.
-    /// </remarks>
     /// <param name="value">Value to validate.</param>
     /// <returns><c>true</c> if valid, otherwise <c>false</c>.</returns>
+    /// <exception cref="InvalidOperationException"> is thrown if the current attribute is ill-formed. Inherited from <see cref="DataTypeAttribute.IsValid(object)"/>.</exception>
     public override bool IsValid(object value)
     {
         // If value is required then consumer should use RequiredAttribute with this attribute
@@ -51,6 +48,12 @@ public class CustomPhoneNumberAttribute : DataTypeAttribute
             return false;
         }
 
-        return possibleDigits.IndexOfAnyExcept(DigitSearchValues) == -1;
+        if (possibleDigits.IndexOfAnyExcept(DigitSearchValues) != -1)
+        {
+            return false;
+        }
+
+        // base.IsValid - always returns true
+        return base.IsValid(value);
     }
 }

@@ -84,6 +84,47 @@
                             <span asp-validation-for="MiddleName"></span>
                         </div>
                     </li>
+                    <li class="registration_item"
+                        id="li_gender"
+                        style="@(Model.ProviderRegistration ? "display: none;" : "")">
+                        <label class="registration_label" asp-for="Gender">
+                            @SharedLocalizer["Gender"]<span class="registration_star">*</span>
+                        </label>
+                        <div class="registration_gender">
+                            <input type="radio" asp-for="Gender" id="gender_female" value="@Gender.Male"/><label>@SharedLocalizer["Gender Male"]</label>
+                            <input type="radio" asp-for="Gender" id="gender_male" value="@Gender.Female"/><label>@SharedLocalizer["Gender Female"]</label>
+                        </div>
+                        <div>
+                            <span asp-validation-for="Gender"></span>
+                        </div>
+                    </li>
+                    <li class="registration_item"
+                        id="li_date_of_birth"
+                        style="@(Model.ProviderRegistration ? "display: none;" : "")">
+                        <label class="registration_label" asp-for="DateOfBirth">
+                            @SharedLocalizer["Date of birth"]<span class="registration_star">*</span>
+                        </label>
+                        <div class="registration_gender">
+                            <input class="registration_input" type="date" asp-for="DateOfBirth"
+                                   id="date_of_birth" min="@DateTime.Now.AddYears(-120).ToString("yyyy-MM-dd")"
+                                   max="@DateTime.Now.AddYears(-18).ToString("yyyy-MM-dd")">
+                        </div>
+                        <div>
+                            <span asp-validation-for="DateOfBirth"></span>
+                        </div>
+                    </li>
+                    <li class="registration_item">
+                        <label class="registration_label" asp-for="PhoneNumber">
+                            @SharedLocalizer["Phone"]<span class="registration_star">*</span>
+                        </label>
+                        <div class="registration_phone">
+                            <input class="registration_input registration_input_required" maxlength="15" type="text"
+                                   asp-for="PhoneNumber" id="phone_number">
+                        </div>
+                        <div>
+                            <span asp-validation-for="PhoneNumber"></span>
+                        </div>
+                    </li>
                     <li class="registration_item">
                         <label class="registration_label" asp-for="Email">
                             @SharedLocalizer["Email"]<span class="registration_star">*</span>
