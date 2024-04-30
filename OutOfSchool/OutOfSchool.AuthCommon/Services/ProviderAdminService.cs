@@ -58,7 +58,7 @@ public class ProviderAdminService : IProviderAdminService
             changesLogConfig.Value.TrackedProperties.TryGetValue("ProviderAdmin", out var properties)
             ? properties
             : Array.Empty<string>();
-        _ = hostsConfig?.Value.BackendUrl ?? throw new ArgumentNullException(nameof(hostsConfig));
+        _ = hostsConfig?.Value ?? throw new ArgumentNullException(nameof(hostsConfig));
     }
 
     public async Task<ResponseDto> CreateProviderAdminAsync(
