@@ -65,8 +65,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
 
         var user = mapper.Map<User>(ministryAdminBaseDto);
 
-        var password = PasswordGenerator
-            .GenerateRandomPassword(userManager.Options.Password);
+        var password = PasswordGenerator.GenerateRandomPassword();
 
         var executionStrategy = context.Database.CreateExecutionStrategy();
         return await executionStrategy.Execute(CreateMinistryAdminOperation).ConfigureAwait(false);
@@ -476,7 +475,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                 }
 
                 var user = await userManager.FindByIdAsync(ministryAdminId);
-                var password = PasswordGenerator.GenerateRandomPassword(userManager.Options.Password);
+                var password = PasswordGenerator.GenerateRandomPassword();
                 await userManager.RemovePasswordAsync(user);
                 var result = await userManager.AddPasswordAsync(user, password);
 

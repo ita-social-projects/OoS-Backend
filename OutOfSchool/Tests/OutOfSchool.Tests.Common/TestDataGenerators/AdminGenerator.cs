@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Bogus;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
@@ -8,6 +9,8 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
 public static class AdminGenerator
 {
+    private static readonly string PhoneFormat = "##########";
+
     private static readonly Faker<MinistryAdminDto> Faker = new Faker<MinistryAdminDto>()
         .RuleFor(x => x.Id, f => f.Random.Guid().ToString())
         .RuleFor(x => x.FirstName, f => f.Name.FirstName())
@@ -19,9 +22,9 @@ public static class AdminGenerator
         .RuleFor(x => x.UserId, Guid.NewGuid().ToString());
 
     private static readonly Faker<RegionAdmin> FakerRegionAdmin = new Faker<RegionAdmin>()
-    .RuleFor(x => x.UserId, f => f.Random.Guid().ToString())
-    .RuleFor(x => x.InstitutionId, _ => Guid.NewGuid())
-    .RuleFor(x => x.CATOTTGId, f => f.Random.Long());
+        .RuleFor(x => x.UserId, f => f.Random.Guid().ToString())
+        .RuleFor(x => x.InstitutionId, _ => Guid.NewGuid())
+        .RuleFor(x => x.CATOTTGId, f => f.Random.Long());
 
     private static readonly Faker<RegionAdminDto> FakerRegionAdminDto = new Faker<RegionAdminDto>()
         .RuleFor(x => x.Id, f => f.Random.Guid().ToString())
@@ -31,9 +34,9 @@ public static class AdminGenerator
         .RuleFor(x => x.CATOTTGId, f => f.Random.Long());
 
     private static readonly Faker<AreaAdmin> FakerAreaAdmin = new Faker<AreaAdmin>()
-    .RuleFor(x => x.UserId, f => f.Random.Guid().ToString())
-    .RuleFor(x => x.InstitutionId, _ => Guid.NewGuid())
-    .RuleFor(x => x.CATOTTGId, f => f.Random.Long());
+        .RuleFor(x => x.UserId, f => f.Random.Guid().ToString())
+        .RuleFor(x => x.InstitutionId, _ => Guid.NewGuid())
+        .RuleFor(x => x.CATOTTGId, f => f.Random.Long());
 
     private static readonly Faker<AreaAdminDto> FakerAreaAdminDto = new Faker<AreaAdminDto>()
         .RuleFor(x => x.Id, f => f.Random.Guid().ToString())
@@ -42,7 +45,14 @@ public static class AdminGenerator
         .RuleFor(x => x.InstitutionId, _ => Guid.NewGuid())
         .RuleFor(x => x.CATOTTGId, f => f.Random.Long());
 
-
+    private static readonly Faker<AreaAdminBaseDto> FakerAreaAdminBaseDto = new Faker<AreaAdminBaseDto>()
+        .RuleFor(x => x.UserId, f => f.Random.Guid().ToString())
+        .RuleFor(x => x.FirstName, f => f.Name.FirstName())
+        .RuleFor(x => x.LastName, f => f.Name.LastName())
+        .RuleFor(x => x.Email, f => f.Internet.Email())
+        .RuleFor(x => x.PhoneNumber, f => f.Phone.PhoneNumber(PhoneFormat))
+        .RuleFor(x => x.InstitutionId, _ => Guid.NewGuid())
+        .RuleFor(x => x.CATOTTGId, f => f.Random.Long());
 
     public static MinistryAdminDto GenerateMinistryAdminDto() => Faker.Generate();
     public static InstitutionAdmin GenerateInstitutionAdmin() => FakerInstitutionAdmin.Generate();
@@ -50,6 +60,7 @@ public static class AdminGenerator
     public static RegionAdminDto GenerateRegionAdminDto() => FakerRegionAdminDto.Generate();
     public static AreaAdmin GenerateAreaAdmin() => FakerAreaAdmin.Generate();
     public static AreaAdminDto GenerateAreaAdminDto() => FakerAreaAdminDto.Generate();
+    public static AreaAdminBaseDto GenerateAreaAdminBaseDto() => FakerAreaAdminBaseDto.Generate();
     public static List<MinistryAdminDto> GenerateMinistryAdminsDtos(int count) => Faker.Generate(count);
     public static List<InstitutionAdmin> GenerateInstitutionAdmins(int count) => FakerInstitutionAdmin.Generate(count);
     public static List<RegionAdmin> GenerateRegionAdmins(int count) => FakerRegionAdmin.Generate(count);

@@ -4,6 +4,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
@@ -27,6 +28,7 @@ public class ParentServiceTests
     private Mock<ILogger<ParentService>> loggerMock;
     private Mock<IEntityRepositorySoftDeleted<Guid, Child>> repositoryChildMock;
     private IMapper mapper;
+    private Mock<IUserService> userService;
 
     [SetUp]
     public void SetUp()
@@ -37,6 +39,7 @@ public class ParentServiceTests
         loggerMock = new Mock<ILogger<ParentService>>();
         repositoryChildMock = new Mock<IEntityRepositorySoftDeleted<Guid, Child>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        userService = new Mock<IUserService>();
 
         parentService = new ParentService(
             parentRepositoryMock.Object,
@@ -44,7 +47,8 @@ public class ParentServiceTests
             parentBlockedByAdminLogServiceMock.Object,
             loggerMock.Object,
             repositoryChildMock.Object,
-            mapper);
+            mapper,
+            userService.Object);
     }
 
     #region BlockUblockParent
@@ -60,6 +64,7 @@ public class ParentServiceTests
             IsBlocked = true,
             Reason = "Reason to block the parent",
         };
+
         User parentUser = UserGenerator.Generate();
         parentUser.IsBlocked = false;
         Parent parent = new()
@@ -157,6 +162,40 @@ public class ParentServiceTests
 
         // Act and Assert
         Assert.ThrowsAsync<ArgumentNullException>(async () => await parentService.BlockUnblockParent(parentBlockUnblockValid));
+    }
+    #endregion
+
+    #region Delete
+    [Test]
+    public async Task Delete_WhenIdIsNotValid_ThrowException()
+    {
+        // Arrange
+        Guid parentId = Guid.NewGuid();
+        currentUserServiceMock.Setup(x => x.UserHasRights(It.IsAny<ParentRights>())).Returns(() => Task.FromResult(true));
+        parentRepositoryMock.Setup(r => r.GetById(parentId)).ReturnsAsync(null as Parent);
+
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentException>(async () => await parentService.Delete(parentId).ConfigureAwait(false));
+    }
+
+    [Test]
+    public async Task Delete_WhenIdIsValid_ShouldCallDeleteMethods()
+    {
+        // Arrange
+        Parent parent = ParentGenerator.Generate();
+        var parentId = parent.Id;
+
+        currentUserServiceMock.Setup(x => x.UserHasRights(It.IsAny<ParentRights>())).Returns(() => Task.FromResult(true));
+        parentRepositoryMock.Setup(r => r.GetById(parentId)).ReturnsAsync(parent);
+        parentRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task>>()))
+            .Returns((Func<Task> f) => f.Invoke());
+
+        // Act
+        await parentService.Delete(parentId).ConfigureAwait(false);
+
+        // Assert
+        parentRepositoryMock.Verify(x => x.Delete(parent), Times.Once);
+        userService.Verify(x => x.Delete(parent.UserId), Times.Once);
     }
     #endregion
 }
