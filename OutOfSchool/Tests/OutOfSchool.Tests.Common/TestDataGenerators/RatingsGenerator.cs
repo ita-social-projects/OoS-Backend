@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 using Bogus;
-using OutOfSchool.WebApi.Models;
+using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 

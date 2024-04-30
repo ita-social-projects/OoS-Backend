@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Extensions;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Extensions;
 
 namespace OutOfSchool.WebApi.Tests.Extensions;
 

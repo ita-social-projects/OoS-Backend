@@ -6,16 +6,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
+using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
+using OutOfSchool.BusinessLogic.Services.Strategies.WorkshopStrategies;
+using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.EmailSender;
 using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Repository.Files;
-using OutOfSchool.WebApi.Services.AverageRatings;
-using OutOfSchool.WebApi.Services.Communication.ICommunication;
-using OutOfSchool.WebApi.Services.ProviderServices;
-using OutOfSchool.WebApi.Services.Strategies.Interfaces;
-using OutOfSchool.WebApi.Services.Strategies.WorkshopStrategies;
-using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi;
 

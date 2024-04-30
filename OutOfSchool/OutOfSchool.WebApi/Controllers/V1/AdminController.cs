@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.FeatureManagement.Mvc;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Application;
+using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Application;
-using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

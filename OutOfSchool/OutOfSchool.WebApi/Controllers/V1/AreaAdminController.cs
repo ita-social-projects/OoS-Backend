@@ -2,11 +2,11 @@ using System.Net.Mime;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

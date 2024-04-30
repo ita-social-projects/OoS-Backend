@@ -1,7 +1,7 @@
 ﻿using Bogus;
 
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Models;
+using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 

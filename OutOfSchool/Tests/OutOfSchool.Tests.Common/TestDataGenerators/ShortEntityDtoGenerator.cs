@@ -1,5 +1,5 @@
 ﻿using Bogus;
-using OutOfSchool.WebApi.Models;
+using OutOfSchool.BusinessLogic.Models;
 using System;
 using System.Collections.Generic;
 

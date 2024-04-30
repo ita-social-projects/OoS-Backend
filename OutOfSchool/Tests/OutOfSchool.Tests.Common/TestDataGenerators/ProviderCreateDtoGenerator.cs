@@ -1,11 +1,11 @@
 ﻿using Bogus;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.WebApi.Models.Providers;
+using OutOfSchool.BusinessLogic.Models.Providers;
 using System;
 using System.Collections.Generic;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Models;
+using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 public static class ProviderCreateDtoGenerator

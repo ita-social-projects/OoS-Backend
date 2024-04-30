@@ -9,18 +9,18 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Config;
+using OutOfSchool.BusinessLogic.Extensions;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.ProviderAdminOperations;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Services.ProviderAdminOperations;
-using OutOfSchool.WebApi.Util;
-using OutOfSchool.WebApi.Util.Mapping;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
 

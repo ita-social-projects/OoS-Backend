@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Teachers;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Teachers;
 using OutOfSchool.WebApi.Util.ControllersResultsHelpers;
 
 namespace OutOfSchool.WebApi.Controllers.V2;

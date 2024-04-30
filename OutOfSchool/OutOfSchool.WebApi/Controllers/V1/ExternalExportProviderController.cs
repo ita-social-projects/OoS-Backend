@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.ProvidersInfo;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.ProvidersInfo;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

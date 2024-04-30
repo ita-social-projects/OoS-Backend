@@ -5,8 +5,8 @@ using Bogus;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Providers;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Providers;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 

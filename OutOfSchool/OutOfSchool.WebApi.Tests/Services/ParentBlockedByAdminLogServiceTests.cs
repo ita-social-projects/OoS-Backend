@@ -1,11 +1,11 @@
-﻿using FluentAssertions;
+﻿using System;
+using System.Threading.Tasks;
+using FluentAssertions;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Services;
-using System;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 

@@ -1,7 +1,7 @@
 ﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.WebApi.Models.BlockedProviderParent;
-using OutOfSchool.WebApi.Services.ProviderServices;
+using OutOfSchool.BusinessLogic.Models.BlockedProviderParent;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

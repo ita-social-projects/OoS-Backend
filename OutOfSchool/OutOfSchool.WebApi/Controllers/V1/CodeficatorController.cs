@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.Common.Models;
-using OutOfSchool.WebApi.Models.Codeficator;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
