@@ -164,6 +164,29 @@ public class ProviderAdminServiceTests
         Assert.AreEqual(HttpStatusCode.BadRequest, result.HttpStatusCode);
     }
 
+    [Test]
+    public void HostsConfig_WhenValueNull_ThrowsException()
+    {
+        // Arrange
+        var mockHostsConfig = new Mock<IOptions<HostsConfig>>();
+        mockHostsConfig.Setup(x => x.Value).Returns((HostsConfig)null);
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new ProviderAdminService(
+            fakeMapper.Object,
+            providerAdminRepository,
+            new Mock<ILogger<ProviderAdminService>>().Object,
+            new Mock<IEmailSenderService>().Object,
+            fakeUserManager.Object,
+            context,
+            new Mock<IRazorViewToStringRenderer>().Object,
+            new Mock<IProviderAdminChangesLogService>().Object,
+            fakeGrpcConfig.Object,
+            fakeExternalUrisConfig.Object,
+            fakeChangesLogConfig.Object,
+            mockHostsConfig.Object));
+    }
+
     private static OutOfSchoolDbContext GetContext()
     {
         return new OutOfSchoolDbContext(
