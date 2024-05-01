@@ -24,6 +24,8 @@ using System.Linq;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using OutOfSchool.EmailSender.Services;
+using Microsoft.Extensions.Options;
+using OutOfSchool.AuthCommon.Config;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
 
@@ -37,6 +39,7 @@ public class RegionAdminControllerTests
     private RegionAdminController regionAdminControllerWithRealService;
     private ICommonMinistryAdminService<RegionAdminBaseDto> regionAdminService;
     private RegionAdminRepository regionAdminRepository;
+    private Mock<IOptions<HostsConfig>> fakeHostsConfig;
 
     public RegionAdminControllerTests()
     {
@@ -114,6 +117,13 @@ public class RegionAdminControllerTests
         var userManager = new UserManager<User>(
             new UserStore<User>(context), null, null, null, null, null, null, null, null);
 
+        fakeHostsConfig = new Mock<IOptions<HostsConfig>>();
+        var config = new HostsConfig()
+        {
+            BackendUrl = "http://localhost:5443"
+        };
+        fakeHostsConfig.Setup(x => x.Value).Returns(config);
+
         regionAdminService = new CommonMinistryAdminService<long, RegionAdmin, RegionAdminBaseDto, RegionAdminRepository>(
             new Mock<IMapper>().Object,
             regionAdminRepository,
@@ -122,7 +132,8 @@ public class RegionAdminControllerTests
             userManager,
             context,
             new Mock<IRazorViewToStringRenderer>().Object,
-            new Mock<IStringLocalizer<SharedResource>>().Object);
+            new Mock<IStringLocalizer<SharedResource>>().Object,
+            fakeHostsConfig.Object);
 
         regionAdminControllerWithRealService = new RegionAdminController(fakeLogger.Object, regionAdminService);
         }

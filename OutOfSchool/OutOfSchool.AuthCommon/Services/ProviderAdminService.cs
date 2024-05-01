@@ -39,7 +39,8 @@ public class ProviderAdminService : IProviderAdminService
         IProviderAdminChangesLogService providerAdminChangesLogService,
         IOptions<GrpcConfig> grpcConfig,
         IOptions<AngularClientScopeExternalUrisConfig> externalUrisConfig,
-        IOptions<ChangesLogConfig> changesLogConfig)
+        IOptions<ChangesLogConfig> changesLogConfig,
+        IOptions<HostsConfig> hostsConfig)
     {
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
@@ -57,6 +58,7 @@ public class ProviderAdminService : IProviderAdminService
             changesLogConfig.Value.TrackedProperties.TryGetValue("ProviderAdmin", out var properties)
             ? properties
             : Array.Empty<string>();
+        _ = hostsConfig?.Value ?? throw new ArgumentNullException(nameof(hostsConfig));
     }
 
     public async Task<ResponseDto> CreateProviderAdminAsync(
