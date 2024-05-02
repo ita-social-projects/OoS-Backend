@@ -15,9 +15,9 @@ public class EmailSenderService : IEmailSenderService
         this.schedulerFactory = schedulerFactory;
     }
 
-    public async Task SendAsync(string email, string subject, (string html, string plain) content, DateTime? expirationTime = null)
+    public async Task SendAsync(string email, string subject, (string html, string plain) content, DateTimeOffset? expirationTime = null)
     {
-        expirationTime ??= DateTime.MaxValue;
+        expirationTime ??= DateTimeOffset.MaxValue;
 
         var jobData = new JobDataMap
         {
@@ -25,7 +25,7 @@ public class EmailSenderService : IEmailSenderService
             { EmailSenderStringConstants.Subject, subject },
             { EmailSenderStringConstants.HtmlContent, EncodeToBase64(content.html) },
             { EmailSenderStringConstants.PlainContent, EncodeToBase64(content.plain) },
-            { EmailSenderStringConstants.ExpirationTime, expirationTime },
+            { EmailSenderStringConstants.ExpirationTime, expirationTime.ToString() },
         };
 
         var job = JobBuilder.Create<EmailSenderJob>()
