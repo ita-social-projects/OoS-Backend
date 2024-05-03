@@ -1,6 +1,8 @@
-﻿using Quartz;
+﻿using Microsoft.Extensions.Logging;
+using OutOfSchool.BusinessLogic.Services.NotificationsClearing;
+using Quartz;
 
-namespace OutOfSchool.BusinessLogic.Services.NotificationsClearing;
+namespace OutOfSchool.BackgroundJobs.Jobs;
 
 public class NotificationsClearingQuartsJob : IJob
 {

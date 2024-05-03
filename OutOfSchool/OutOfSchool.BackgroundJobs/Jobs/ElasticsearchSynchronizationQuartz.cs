@@ -1,6 +1,8 @@
-﻿using Quartz;
+﻿using Microsoft.Extensions.DependencyInjection;
+using OutOfSchool.BusinessLogic.Services;
+using Quartz;
 
-namespace OutOfSchool.BusinessLogic.Services.Elasticsearch;
+namespace OutOfSchool.BackgroundJobs.Jobs;
 
 public class ElasticsearchSynchronizationQuartz : IJob
 {

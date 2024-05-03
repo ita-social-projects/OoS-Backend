@@ -1,6 +1,8 @@
-﻿using Quartz;
+﻿using Microsoft.Extensions.Logging;
+using OutOfSchool.BusinessLogic.Services.StatisticReports;
+using Quartz;
 
-namespace OutOfSchool.BusinessLogic.Services.StatisticReports;
+namespace OutOfSchool.BackgroundJobs.Jobs;
 
 public class StatisticReportsMakingQuartsJob : IJob
 {

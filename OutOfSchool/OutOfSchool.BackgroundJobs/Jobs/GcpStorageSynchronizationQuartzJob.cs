@@ -1,6 +1,8 @@
+using Microsoft.Extensions.Logging;
+using OutOfSchool.BusinessLogic.Services.Gcp;
 using Quartz;
 
-namespace OutOfSchool.BusinessLogic.Services.Gcp;
+namespace OutOfSchool.BackgroundJobs.Jobs;
 
 public class GcpStorageSynchronizationQuartzJob : IJob
 {

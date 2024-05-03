@@ -1,6 +1,8 @@
-﻿using Quartz;
+﻿using Microsoft.Extensions.Logging;
+using OutOfSchool.BusinessLogic.Services.LicenseApprovalNotification;
+using Quartz;
 
-namespace OutOfSchool.BusinessLogic.Services.LicenseApprovalNotification;
+namespace OutOfSchool.BackgroundJobs.Jobs;
 
 public class LicenseApprovalNotificationQuartzJob : IJob
 {

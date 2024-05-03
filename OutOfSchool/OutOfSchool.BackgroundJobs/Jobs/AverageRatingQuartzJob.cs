@@ -1,6 +1,8 @@
-﻿using Quartz;
+﻿using Microsoft.Extensions.Logging;
+using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using Quartz;
 
-namespace OutOfSchool.BusinessLogic.Services.AverageRatings;
+namespace OutOfSchool.BackgroundJobs.Jobs;
 
 public class AverageRatingQuartzJob : IJob
 {
