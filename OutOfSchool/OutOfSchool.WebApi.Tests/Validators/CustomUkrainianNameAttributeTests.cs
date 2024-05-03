@@ -22,6 +22,7 @@ public class CustomUkrainianNameAttributeTests
         "О'Коннор", "Оставф'єнко", "Прокоп'єнко",
         "Васильович", "Петрович", "Владиславович", "Михайлович",
         "Валер'янович", "Мар'янович", "Прізвище'запострофом",
+        "Дар'я", "Ємельян", "Ґар'єнко", "Ібраґімович", "Ївашко", "Приїжко",
     ];
 
     public static IEnumerable<object[]> InvalidNamesContainingInvalidSymbols =>
@@ -42,6 +43,7 @@ public class CustomUkrainianNameAttributeTests
 
     public static IEnumerable<string> NonUkrainianSingleNameStrings =>
     [
+        "Валер'ian", "Veler'ян",
         "Anastasia", "Mariia", "Vladyslav", "Dmytro",
         "明美", "明里", "愛子", "金锦津錦", "金澤", "김연아",
     ];
