@@ -16,17 +16,17 @@ public class BaseUserDto
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
     public string PhoneNumber { get; set; }
 
-    [Required(ErrorMessage = "LastName is required")]
+    [Required(ErrorMessage = Constants.RequiredLastNameErrorMessage)]
     [MaxLength(Constants.NameMaxLength)]
-    [CustomUkrainianName]
+    [CustomUkrainianName(ErrorMessage = Constants.InvalidLastNameErrorMessage)]
     public string LastName { get; set; }
 
     [MaxLength(Constants.NameMaxLength)]
-    [CustomUkrainianName]
+    [CustomUkrainianName(ErrorMessage = Constants.InvalidMiddleNameErrorMessage)]
     public string MiddleName { get; set; }
 
-    [Required(ErrorMessage = "FirstName is required")]
+    [Required(ErrorMessage = Constants.RequiredFirstNameErrorMessage)]
     [MaxLength(Constants.NameMaxLength)]
-    [CustomUkrainianName]
+    [CustomUkrainianName(ErrorMessage = Constants.InvalidFirstNameErrorMessage)]
     public string FirstName { get; set; }
 }

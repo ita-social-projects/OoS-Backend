@@ -6,18 +6,18 @@ namespace OutOfSchool.BusinessLogic.Models;
 
 public class ChildBaseDto
 {
-    [Required(ErrorMessage = "First name is required")]
+    [Required(ErrorMessage = Constants.RequiredFirstNameErrorMessage)]
     [StringLength(Constants.NameMaxLength, MinimumLength = 1)]
-    [CustomUkrainianName(ErrorMessage = "First name contains invalid characters")]
+    [CustomUkrainianName(ErrorMessage = Constants.InvalidFirstNameErrorMessage)]
     public string FirstName { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Last name is required")]
+    [Required(ErrorMessage = Constants.RequiredLastNameErrorMessage)]
     [StringLength(Constants.NameMaxLength, MinimumLength = 1)]
-    [CustomUkrainianName(ErrorMessage = "Last name contains invalid characters")]
+    [CustomUkrainianName(ErrorMessage = Constants.InvalidLastNameErrorMessage)]
     public string LastName { get; set; } = string.Empty;
 
     [StringLength(Constants.NameMaxLength)]
-    [CustomUkrainianName(ErrorMessage = "Middle name contains invalid characters")]
+    [CustomUkrainianName(ErrorMessage = Constants.InvalidMiddleNameErrorMessage)]
     public string MiddleName { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Date of birth is required")]
