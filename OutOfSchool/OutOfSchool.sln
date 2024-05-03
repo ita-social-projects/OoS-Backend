@@ -48,7 +48,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.AuthorizationSe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.AuthCommon", "OutOfSchool.AuthCommon\OutOfSchool.AuthCommon.csproj", "{6E58B52D-363A-4AF1-940E-7B546C5DB100}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.BusinessLogic", "OutOfSchool.BusinessLogic\OutOfSchool.BusinessLogic.csproj", "{2365AF72-5A4F-4B70-9C00-7E59597E253A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.BusinessLogic", "OutOfSchool.BusinessLogic\OutOfSchool.BusinessLogic.csproj", "{2365AF72-5A4F-4B70-9C00-7E59597E253A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.BackgroundJobs", "OutOfSchool.BackgroundJobs\OutOfSchool.BackgroundJobs.csproj", "{A139159B-E506-4727-B218-BD4D83827F73}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -124,6 +126,10 @@ Global
 		{2365AF72-5A4F-4B70-9C00-7E59597E253A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2365AF72-5A4F-4B70-9C00-7E59597E253A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2365AF72-5A4F-4B70-9C00-7E59597E253A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A139159B-E506-4727-B218-BD4D83827F73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A139159B-E506-4727-B218-BD4D83827F73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A139159B-E506-4727-B218-BD4D83827F73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A139159B-E506-4727-B218-BD4D83827F73}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
