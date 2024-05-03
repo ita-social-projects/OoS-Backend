@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models;
@@ -6,17 +7,17 @@ namespace OutOfSchool.BusinessLogic.Models;
 public class ChildBaseDto
 {
     [Required(ErrorMessage = "First name is required")]
-    [StringLength(60, MinimumLength = 1)]
-    [RegularExpression(@"^(?i)[А-ЯҐЄІЇ](([\'\-][А-ЯҐЄІЇ])?[А-ЯҐЄІЇ]*)*$", ErrorMessage = "First name contains invalid characters")]
+    [StringLength(Constants.NameMaxLength, MinimumLength = 1)]
+    [CustomUkrainianName(ErrorMessage = "First name contains invalid characters")]
     public string FirstName { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Last name is required")]
-    [StringLength(60, MinimumLength = 1)]
-    [RegularExpression(@"^(?i)[А-ЯҐЄІЇ](([\'\-][А-ЯҐЄІЇ])?[А-ЯҐЄІЇ]*)*$", ErrorMessage = "Last name contains invalid characters")]
+    [StringLength(Constants.NameMaxLength, MinimumLength = 1)]
+    [CustomUkrainianName(ErrorMessage = "Last name contains invalid characters")]
     public string LastName { get; set; } = string.Empty;
 
-    [StringLength(60)]
-    [RegularExpression(@"^(?i)[А-ЯҐЄІЇ](([\'\-][А-ЯҐЄІЇ])?[А-ЯҐЄІЇ]*)*$", ErrorMessage = "Middle name contains invalid characters")]
+    [StringLength(Constants.NameMaxLength)]
+    [CustomUkrainianName(ErrorMessage = "Middle name contains invalid characters")]
     public string MiddleName { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Date of birth is required")]

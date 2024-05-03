@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models;
@@ -11,19 +12,19 @@ public class TeacherDTO
 
     [Required(ErrorMessage = "First name is required")]
     [DataType(DataType.Text)]
-    [MaxLength(60)]
-    [RegularExpression(@"^([^0-9]*)$", ErrorMessage = "First name cannot contains digits")]
+    [MaxLength(Constants.NameMaxLength)]
+    [CustomUkrainianName(ErrorMessage = "First name cannot contains digits")]
     public string FirstName { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Last name is required")]
     [DataType(DataType.Text)]
-    [MaxLength(60)]
-    [RegularExpression(@"^([^0-9]*)$", ErrorMessage = "Last name cannot contains digits")]
+    [MaxLength(Constants.NameMaxLength)]
+    [CustomUkrainianName(ErrorMessage = "Last name cannot contains digits")]
     public string LastName { get; set; } = string.Empty;
 
     [DataType(DataType.Text)]
-    [MaxLength(60)]
-    [RegularExpression(@"^([^0-9]*)$", ErrorMessage = "Middle name cannot contains digits")]
+    [MaxLength(Constants.NameMaxLength)]
+    [CustomUkrainianName(ErrorMessage = "Middle name cannot contains digits")]
     public string MiddleName { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Gender is required")]
