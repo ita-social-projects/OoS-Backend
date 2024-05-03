@@ -64,6 +64,8 @@ public class CustomUkrainianNameAttributeTests
         "'Мар'ян",
         "Мар'ян'",
         "Мар'я'н",
+        "мар'ян",
+        "маr'ян",
     ];
 
     public static IEnumerable<object[]> ValidComminSingleNamesTestParams => ValidCommonSingleNamesStrings.Select(n => new object[] { n });
