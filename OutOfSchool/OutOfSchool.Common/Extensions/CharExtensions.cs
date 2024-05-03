@@ -12,7 +12,7 @@ public static class CharExtensions
     /// <returns> <see langword="true"/> if <paramref name="c"/> is Ukrainian capital char, otherwise <see langword="false"/>.</returns>
     public static bool IsUkrainianCapitalChar(this char c)
     {
-        return c is (not ('Ы' or 'Ъ') and >= 'А' and <= 'Я') or 'Ґ' or 'Є' or 'І' or 'Ї';
+        return c is (not ('Ы' or 'Ъ' or 'Э') and >= 'А' and <= 'Я') or 'Ґ' or 'Є' or 'І' or 'Ї';
     }
 
     /// <summary>
@@ -22,7 +22,7 @@ public static class CharExtensions
     /// <returns> <see langword="true"/> if <paramref name="c"/> is Ukrainian non-capital char, otherwise <see langword="false"/>.</returns>
     public static bool IsUkrainianNonCapitalChar(this char c)
     {
-        return c is (not ('ы' or 'ъ') and >= 'а' and <= 'я') or 'ґ' or 'є' or 'і' or 'ї';
+        return c is (not ('ы' or 'ъ' or 'э') and >= 'а' and <= 'я') or 'ґ' or 'є' or 'і' or 'ї';
     }
 
     /// <summary>
@@ -32,6 +32,6 @@ public static class CharExtensions
     /// <returns> <see langword="true"/> if <paramref name="c"/> is Ukrainian char, otherwise <see langword="false"/>.</returns>
     public static bool IsUkrainianChar(this char c)
     {
-        return c is (not ('Ы' or 'ы' or 'Ъ' or 'ъ') and >= 'а' and <= 'я') or (>= 'А' and <= 'Я') or 'Ґ' or 'ґ' or 'Є' or 'є' or 'І' or 'і' or 'Ї' or 'ї';
+        return c is (not ('Ы' or 'ы' or 'Ъ' or 'ъ' or 'Э' or 'э') and >= 'а' and <= 'я') or (>= 'А' and <= 'Я') or 'Ґ' or 'ґ' or 'Є' or 'є' or 'І' or 'і' or 'Ї' or 'ї';
     }
 }

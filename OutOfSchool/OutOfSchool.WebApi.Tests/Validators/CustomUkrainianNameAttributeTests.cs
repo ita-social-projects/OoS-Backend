@@ -69,6 +69,11 @@ public class CustomUkrainianNameAttributeTests
         "маr'ян",
     ];
 
+    public static IEnumerable<string> ValidEdgeCaseNames =>
+    [
+        "Бронівогневолодислав-Едуардолеонардоконстантинослав-Володимиренкліменжільєнко-Громінревінградинтеменко", // yep this is real ukrainian name :)
+    ];
+
     public static IEnumerable<object[]> ValidComminSingleNamesTestParams =>
         ValidCommonSingleNamesStrings.Select(n => new object[] { n });
 
@@ -86,6 +91,9 @@ public class CustomUkrainianNameAttributeTests
 
     public static IEnumerable<object[]> InvalidNamesContainingInvalidApostrophesTestParams =>
         InvalidNamesContainingInvalidApostrophes.Select(n => new object[] { n });
+
+    public static IEnumerable<object[]> ValidEdgeCaseNamesTestParams =>
+        ValidEdgeCaseNames.Select(n => new object[] { n });
 
     [Test]
     public void IsValid_WhenNameIsNull_ShouldReturnTrue()
@@ -203,12 +211,22 @@ public class CustomUkrainianNameAttributeTests
     }
 
     [TestCaseSource(nameof(InvalidNamesContainingInvalidApostrophesTestParams))]
-    public void IsValid_WhenNameIsContainsInvalidApostrophes(object value)
+    public void IsValid_WhenNameIsContainsInvalidApostrophes_ShouldReturnFalse(object value)
     {
         // Act
         var isValid = new CustomUkrainianNameAttribute().IsValid(value);
 
         // Assert
         Assert.IsFalse(isValid);
+    }
+
+    [TestCaseSource(nameof(ValidEdgeCaseNamesTestParams))]
+    public void IsValid_WhenNameIsValidEdgeCase_ShouldReturnTrue(object value)
+    {
+        // Act
+        var isValid = new CustomUkrainianNameAttribute().IsValid(value);
+
+        // Assert
+        Assert.IsTrue(isValid);
     }
 }
