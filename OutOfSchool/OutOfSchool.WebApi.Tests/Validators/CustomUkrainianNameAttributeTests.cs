@@ -46,7 +46,7 @@ public class CustomUkrainianNameAttributeTests
         "Валер'ian", "Veler'ян",
         "Anastasia", "Mariia", "Vladyslav", "Dmytro",
         "明美", "明里", "愛子", "金锦津錦", "金澤", "김연아",
-        "Рыбаков", "Рыбак", "Объектов", "Объект", "Ёженов", "Проёжов",
+        "Рыбаков", "Рыбак", "Объектов", "Объект", "Ёженов", "Проёжов", "Эвклид", "Проэкт",
     ];
 
     public static IEnumerable<string> InvalidMultipleNamesContainingWhitespaces =>
