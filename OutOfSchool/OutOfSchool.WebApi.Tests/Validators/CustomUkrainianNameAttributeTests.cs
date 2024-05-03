@@ -40,9 +40,41 @@ public class CustomUkrainianNameAttributeTests
         ["Мар'я'н"],
     ];
 
+    public static IEnumerable<string> NonUkrainianSingleNameStrings =>
+    [
+        "Anastasia", "Mariia", "Vladyslav", "Dmytro",
+        "明美", "明里", "愛子", "金锦津錦", "金澤", "김연아",
+    ];
+
+    public static IEnumerable<string> InvalidMultipleNamesContainingWhitespaces =>
+    [
+        "Ім'я - - Ім'я",
+        "Ім'я -  ім'я  - Ім'я",
+        "Ім'я-               Ім'я",
+        "Ім'я-",
+        "-Ім'я",
+        "-Ім'я-",
+    ];
+
+    public static IEnumerable<string> InvalidNamesContainingInvalidApostrophes =>
+    [
+        "'Мар'ян'",
+        "'Мар'ян",
+        "Мар'ян'",
+        "Мар'я'н",
+    ];
+
     public static IEnumerable<object[]> ValidComminSingleNamesTestParams => ValidCommonSingleNamesStrings.Select(n => new object[] { n });
 
     public static IEnumerable<object[]> ValidCommonDoubleNamesTestParams => ValidCommonSingleNamesStrings.Select(n => new object[] { $"{n}-{n}" });
+
+    public static IEnumerable<object[]> InvalidNamesContainingInvalidSymbolsTestParams => InvalidNamesContainingInvalidSymbols.Select(n => new object[] { n });
+
+    public static IEnumerable<object[]> InvalidNonUkrainianSingleNamesTestParams => NonUkrainianSingleNameStrings.Select(n => new object[] { n });
+
+    public static IEnumerable<object[]> InvalidMultipleNamesContainingWhitespacesTestParams => InvalidMultipleNamesContainingWhitespaces.Select(n => new object[] { n });
+
+    public static IEnumerable<object[]> InvalidNamesContainingInvalidApostrophesTestParams => InvalidNamesContainingInvalidApostrophes.Select(n => new object[] { n });
 
     [Test]
     public void IsValid_WhenNameIsNull_ShouldReturnTrue()
@@ -103,36 +135,6 @@ public class CustomUkrainianNameAttributeTests
         Assert.IsTrue(isValid);
     }
 
-    // TODO:
-    // Invalid cases:
-    // Done: 1. "-----"
-    // Done: 2. "В--д---ав"
-    // Done: 3. "Влади-"
-    // Done: 4. "  -   "
-    // Done: 5. "  '   "
-    // Done: 6. "  О   "
-    // Done: 7. "123"
-    // 8. "О"
-    // 9. "О-Коннор"
-    // Done: 10. "'"
-    // Done: 11. "-"
-    // 12. "Vladyslav"
-    // 13. "Влаdислав"
-    // 14. "Влаdис лав"
-    // 15. " Влаdислав"
-    // 16. "Влаdислав "
-    // 17. "Влаdислав - Владислав"
-    // 18. "Влаdислав - - Владислав"
-    // 19. "Влаdислав -  влад  - Владислав"
-    // 20. "Влаdислав-               Владислав"
-    // 21. "Влаdислав-"
-    // 22. "Vladyslav-Vladyslav"
-    // 23. "'Мар'ян'"
-    // 24. "владислав"
-    // 25. "мар'Ян"
-    // 26. "вЛаДиСлАв"
-    // 27. "Мар'я'н"
-
     [Test]
     public void IsValid_WhenNameIsNotString_ShouldReturnFalse()
     {
@@ -146,8 +148,51 @@ public class CustomUkrainianNameAttributeTests
         Assert.IsFalse(isValid);
     }
 
-    [TestCaseSource(nameof(InvalidNamesContainingInvalidSymbols))]
+    [TestCaseSource(nameof(InvalidNamesContainingInvalidSymbolsTestParams))]
     public void IsValid_WhenNameIsContainingInvalidSymbols_ShouldReturnFalse(object value)
+    {
+        // Act
+        var isValid = new CustomUkrainianNameAttribute().IsValid(value);
+
+        // Assert
+        Assert.IsFalse(isValid);
+    }
+
+    [TestCaseSource(nameof(InvalidNonUkrainianSingleNamesTestParams))]
+    public void IsValid_WhenNameIsNonUkrainianName_ShouldReturnFalse(object value)
+    {
+        // Act
+        var isValid = new CustomUkrainianNameAttribute().IsValid(value);
+
+        // Assert
+        Assert.IsFalse(isValid);
+    }
+
+    [Test]
+    public void IsValid_WhenNameIsContainsDigits_ShouldReturnFalse()
+    {
+        // Assert
+        var value = "Ім'я123";
+
+        // Act
+        var isValid = new CustomUkrainianNameAttribute().IsValid(value);
+
+        // Assert
+        Assert.IsFalse(isValid);
+    }
+
+    [TestCaseSource(nameof(InvalidMultipleNamesContainingWhitespacesTestParams))]
+    public void IsValid_WhenNameIsContainsWhitespaces_ShouldReturnFalse(object value)
+    {
+        // Act
+        var isValid = new CustomUkrainianNameAttribute().IsValid(value);
+
+        // Assert
+        Assert.IsFalse(isValid);
+    }
+
+    [TestCaseSource(nameof(InvalidNamesContainingInvalidApostrophesTestParams))]
+    public void IsValid_WhenNameIsContainsInvalidApostrophes(object value)
     {
         // Act
         var isValid = new CustomUkrainianNameAttribute().IsValid(value);
