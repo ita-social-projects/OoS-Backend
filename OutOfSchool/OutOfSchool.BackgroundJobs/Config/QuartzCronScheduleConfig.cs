@@ -1,4 +1,4 @@
-namespace OutOfSchool.BusinessLogic.Config.Quartz;
+namespace OutOfSchool.BackgroundJobs.Config;
 
 public class QuartzCronScheduleConfig
 {

@@ -1,4 +1,5 @@
-﻿using OutOfSchool.BusinessLogic.Common.QuartzConstants;
+﻿using OutOfSchool.BackgroundJobs.Config;
+using OutOfSchool.BusinessLogic.Common.QuartzConstants;
 using OutOfSchool.BusinessLogic.Services.LicenseApprovalNotification;
 using OutOfSchool.BusinessLogic.Services.NotificationsClearing;
 using Quartz;

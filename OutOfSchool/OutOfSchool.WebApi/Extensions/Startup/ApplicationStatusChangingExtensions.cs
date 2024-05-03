@@ -1,4 +1,5 @@
-﻿using OutOfSchool.BusinessLogic.Common.QuartzConstants;
+﻿using OutOfSchool.BackgroundJobs.Config;
+using OutOfSchool.BusinessLogic.Common.QuartzConstants;
 using OutOfSchool.BusinessLogic.Services.ApplicationStatusChange;
 using Quartz;
 

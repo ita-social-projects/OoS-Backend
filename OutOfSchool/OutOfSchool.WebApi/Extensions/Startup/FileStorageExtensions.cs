@@ -1,5 +1,6 @@
 using Google.Cloud.Storage.V1;
 using Microsoft.Extensions.Options;
+using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BusinessLogic.Common.QuartzConstants;
 using OutOfSchool.BusinessLogic.Services.Gcp;
 using OutOfSchool.BusinessLogic.Util.FakeImplementations;

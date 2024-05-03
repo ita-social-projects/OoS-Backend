@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
+using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;

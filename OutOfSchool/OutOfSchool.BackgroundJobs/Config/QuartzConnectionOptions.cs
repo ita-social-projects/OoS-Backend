@@ -1,4 +1,6 @@
-namespace OutOfSchool.BusinessLogic.Config.Quartz;
+using OutOfSchool.Common.Config;
+
+namespace OutOfSchool.BackgroundJobs.Config;
 
 public class QuartzConnectionOptions : IMySqlConnectionOptions
 {

@@ -1,3 +1,4 @@
+using OutOfSchool.BackgroundJobs.Config;
 using Quartz;
 using Quartz.Impl;
 
