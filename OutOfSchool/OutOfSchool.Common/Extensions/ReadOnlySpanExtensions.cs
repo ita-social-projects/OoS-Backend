@@ -3,7 +3,7 @@
 namespace OutOfSchool.Common.Extensions;
 
 /// <summary>
-/// Extention methods for the <see cref="ReadOnlySpan{T}"/> class.
+/// Extention methods for the <see cref="ReadOnlySpan{T}"/> struct.
 /// </summary>
 public static class ReadOnlySpanExtensions
 {

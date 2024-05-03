@@ -1,7 +1,7 @@
 ﻿namespace OutOfSchool.Common.Extensions;
 
 /// <summary>
-/// Extention methods for the <see cref="char"/> class.
+/// Extention methods for the <see cref="char"/> type.
 /// </summary>
 public static class CharExtensions
 {
