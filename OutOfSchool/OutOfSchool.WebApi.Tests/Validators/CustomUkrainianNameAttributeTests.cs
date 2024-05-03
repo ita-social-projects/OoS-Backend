@@ -68,17 +68,23 @@ public class CustomUkrainianNameAttributeTests
         "маr'ян",
     ];
 
-    public static IEnumerable<object[]> ValidComminSingleNamesTestParams => ValidCommonSingleNamesStrings.Select(n => new object[] { n });
+    public static IEnumerable<object[]> ValidComminSingleNamesTestParams =>
+        ValidCommonSingleNamesStrings.Select(n => new object[] { n });
 
-    public static IEnumerable<object[]> ValidCommonDoubleNamesTestParams => ValidCommonSingleNamesStrings.Select(n => new object[] { $"{n}-{n}" });
+    public static IEnumerable<object[]> ValidCommonDoubleNamesTestParams =>
+        ValidCommonSingleNamesStrings.Select(n => new object[] { $"{n}-{n}" });
 
-    public static IEnumerable<object[]> InvalidNamesContainingInvalidSymbolsTestParams => InvalidNamesContainingInvalidSymbols.Select(n => new object[] { n });
+    public static IEnumerable<object[]> InvalidNamesContainingInvalidSymbolsTestParams =>
+        InvalidNamesContainingInvalidSymbols.Select(n => new object[] { n });
 
-    public static IEnumerable<object[]> InvalidNonUkrainianSingleNamesTestParams => NonUkrainianSingleNameStrings.Select(n => new object[] { n });
+    public static IEnumerable<object[]> InvalidNonUkrainianSingleNamesTestParams =>
+        NonUkrainianSingleNameStrings.Select(n => new object[] { n });
 
-    public static IEnumerable<object[]> InvalidMultipleNamesContainingWhitespacesTestParams => InvalidMultipleNamesContainingWhitespaces.Select(n => new object[] { n });
+    public static IEnumerable<object[]> InvalidMultipleNamesContainingWhitespacesTestParams =>
+        InvalidMultipleNamesContainingWhitespaces.Select(n => new object[] { n });
 
-    public static IEnumerable<object[]> InvalidNamesContainingInvalidApostrophesTestParams => InvalidNamesContainingInvalidApostrophes.Select(n => new object[] { n });
+    public static IEnumerable<object[]> InvalidNamesContainingInvalidApostrophesTestParams =>
+        InvalidNamesContainingInvalidApostrophes.Select(n => new object[] { n });
 
     [Test]
     public void IsValid_WhenNameIsNull_ShouldReturnTrue()
