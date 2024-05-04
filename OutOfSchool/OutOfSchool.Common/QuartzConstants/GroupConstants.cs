@@ -1,4 +1,4 @@
-namespace OutOfSchool.BusinessLogic.Common.QuartzConstants;
+namespace OutOfSchool.Common.QuartzConstants;
 
 public static class GroupConstants
 {

@@ -1,8 +1,8 @@
 ﻿using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Jobs;
-using OutOfSchool.BusinessLogic.Common.QuartzConstants;
 using OutOfSchool.BusinessLogic.Services.LicenseApprovalNotification;
 using OutOfSchool.BusinessLogic.Services.NotificationsClearing;
+using OutOfSchool.Common.QuartzConstants;
 using Quartz;
 
 namespace OutOfSchool.WebApi.Extensions.Startup;

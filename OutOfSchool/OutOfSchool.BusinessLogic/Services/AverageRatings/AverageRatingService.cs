@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using NuGet.Packaging;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.BusinessLogic.Common.QuartzConstants;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.Common.QuartzConstants;
 
 namespace OutOfSchool.BusinessLogic.Services.AverageRatings;
 

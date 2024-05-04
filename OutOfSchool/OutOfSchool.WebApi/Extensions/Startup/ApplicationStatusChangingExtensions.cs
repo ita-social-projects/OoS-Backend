@@ -1,6 +1,6 @@
 ﻿using OutOfSchool.BackgroundJobs.Config;
-using OutOfSchool.BusinessLogic.Common.QuartzConstants;
 using OutOfSchool.BusinessLogic.Services.ApplicationStatusChange;
+using OutOfSchool.Common.QuartzConstants;
 using Quartz;
 
 namespace OutOfSchool.WebApi.Extensions.Startup;

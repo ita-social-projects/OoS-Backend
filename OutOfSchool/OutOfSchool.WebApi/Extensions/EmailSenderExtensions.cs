@@ -1,5 +1,5 @@
 ﻿using OutOfSchool.BackgroundJobs.Config;
-using OutOfSchool.BusinessLogic.Common.QuartzConstants;
+using OutOfSchool.Common.QuartzConstants;
 using OutOfSchool.EmailSender.Quartz;
 using Quartz;
 using Quartz.Impl.Matchers;
