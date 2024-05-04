@@ -99,6 +99,11 @@ public static class Constants
     public const string RequiredLastNameErrorMessage = "Last name is required";
 
     /// <summary>
+    /// Ukrainian name regex pattern that allows only characters that allowed in Ukrainian name.
+    /// </summary>
+    public const string UkrainianNameRegexPattern = @"^[А-ЩЬЮЯҐЄІЇа-щьюяґєії0-9\'\-\ ]+$";
+
+    /// <summary>
     /// Minimum age for user (parent, provider).
     /// </summary>
     public const int AdultAge = 18;
