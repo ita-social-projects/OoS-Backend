@@ -65,6 +65,6 @@ public class CustomUkrainianNameAttributeAdapterTests
 
         // Assert
         Assert.AreEqual(expectedAddedAtributesCount, attributes.Count);
-        Assert.AreEqual(attributes["data-val"], "true");
+        Assert.AreEqual("true", attributes["data-val"]);
     }
 }

@@ -68,7 +68,6 @@ public class CustomPasswordValidationAdapterTests
         // Assert
         Assert.AreEqual(expectedAddedAtributesCount, attributes.Count);
         Assert.AreEqual(expectedPrefixCount, attributes.Keys.Count(key => key.StartsWith("data-val-validpass")));
-        Assert.AreEqual(attributes["data-val"], "true");
+        Assert.AreEqual("true", attributes["data-val"]);
     }
-
 }
