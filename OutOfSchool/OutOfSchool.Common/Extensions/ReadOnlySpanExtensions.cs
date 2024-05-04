@@ -8,15 +8,15 @@ namespace OutOfSchool.Common.Extensions;
 public static class ReadOnlySpanExtensions
 {
     /// <summary>
-    /// Checks if <paramref name="span"/> contains only Ukrainian non-capital characters.
+    /// Checks if <paramref name="span"/> contains only characters that allowed in Ukrainian name.
     /// </summary>
     /// <param name="span"> <see cref="ReadOnlySpan{T}"/> to check.</param>
-    /// <returns> <see langword="true"/> if <paramref name="span"/> contains only Ukrainian non-capital characters, otherwise <see langword="false"/>.</returns>
-    public static bool ContainsOnlyNonCapitalUkrainianCharacter(this ReadOnlySpan<char> span)
+    /// <returns><see langword="true"/> if <paramref name="span"/> contains only characters that allowed in Ukrainian name, otherwise <see langword="false"/>.</returns>
+    public static bool IsUkrainianName(this ReadOnlySpan<char> span)
     {
         foreach (var ch in span)
         {
-            if (!ch.IsUkrainianNonCapitalChar())
+            if (!ch.IsUkrainianNameChar())
             {
                 return false;
             }
