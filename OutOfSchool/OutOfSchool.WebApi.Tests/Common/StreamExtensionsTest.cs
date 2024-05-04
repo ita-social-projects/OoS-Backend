@@ -11,8 +11,6 @@ namespace OutOfSchool.WebApi.Tests.Common;
 [TestFixture]
 public class StreamExtensionsTest
 {
-    private sealed record TestObject(string Property);
-
     [Test]
     public void ReadAndDeserializeFromJson_WhenStreamIsNull_ThrowArgumentNullException()
     {
@@ -100,4 +98,6 @@ public class StreamExtensionsTest
         // Assert
         Assert.AreEqual(ExpectedJsonString, jsonString);
     }
+
+    private sealed record TestObject(string Property);
 }
