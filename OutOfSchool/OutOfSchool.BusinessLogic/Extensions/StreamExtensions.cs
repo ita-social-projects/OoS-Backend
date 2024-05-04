@@ -24,7 +24,7 @@ public static class StreamExtensions
     {
         ArgumentNullException.ThrowIfNull(stream);
 
-        if (!stream.CanRead)
+        if (!stream.CanWrite)
         {
             throw new NotSupportedException("Can't write to this stream");
         }
