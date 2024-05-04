@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.Common.Validators;
 
 namespace OutOfSchool.AuthCommon.Validators;
 
@@ -11,11 +12,13 @@ public class CustomClientValidationProvider : IValidationAttributeAdapterProvide
 
     public IAttributeAdapter? GetAttributeAdapter(ValidationAttribute attribute, IStringLocalizer? stringLocalizer)
     {
-        if (attribute is CustomPasswordValidationAttribute customPasswordValidationAttribute)
+        return attribute switch
         {
-            return new CustomPasswordValidationAdapter(customPasswordValidationAttribute, stringLocalizer);
-        }
-
-        return baseProvider.GetAttributeAdapter(attribute, stringLocalizer);
+            CustomPasswordValidationAttribute customPasswordValidationAttribute =>
+                new CustomPasswordValidationAdapter(customPasswordValidationAttribute, stringLocalizer),
+            CustomUkrainianNameAttribute customUkrainianNameAttribute =>
+                new CustomUkrainianNameAttributeAdapter(customUkrainianNameAttribute, stringLocalizer),
+            _ => baseProvider.GetAttributeAdapter(attribute, stringLocalizer),
+        };
     }
 }
