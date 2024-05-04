@@ -6,23 +6,17 @@ namespace OutOfSchool.AuthCommon.ViewModels;
 public class RegisterViewModel
 {
     [Required(ErrorMessage = "FirstName is required")]
-    [MaxLength(60)]
-    [RegularExpression(
-        Constants.NameRegexViewModel,
-        ErrorMessage = Constants.NameErrorMessage)]
+    [MaxLength(Constants.NameMaxLength)]
+    [CustomUkrainianName(ErrorMessage = Constants.NameErrorMessage)]
     public string FirstName { get; set; }
 
     [Required(ErrorMessage = "LastName is required")]
-    [MaxLength(60)]
-    [RegularExpression(
-        Constants.NameRegexViewModel,
-        ErrorMessage = Constants.NameErrorMessage)]
+    [MaxLength(Constants.NameMaxLength)]
+    [CustomUkrainianName(ErrorMessage = Constants.NameErrorMessage)]
     public string LastName { get; set; }
 
-    [MaxLength(60)]
-    [RegularExpression(
-        Constants.NameRegexViewModel,
-        ErrorMessage = Constants.NameErrorMessage)]
+    [MaxLength(Constants.NameMaxLength)]
+    [CustomUkrainianName(ErrorMessage = Constants.NameErrorMessage)]
     public string? MiddleName { get; set; }
 
     [Required(ErrorMessage = "Password is required")]
