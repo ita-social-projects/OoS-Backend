@@ -144,6 +144,31 @@ public class ChatRoomWorkshopServiceTests
         Assert.AreNotEqual(default(int), result.Id);
         Assert.AreEqual(dbContext.ChatRoomWorkshops.LastOrDefault()?.Id, result.Id);
     }
+
+    [Test]
+    public async Task CreateOrReturnExisting_WhenParentIsBlockedByProvider_ShouldReturnNull()
+    {
+        // Arrange
+        var roomCount = dbContext.ChatRoomWorkshops.Count();
+        var workshopId = workshops[2].Id;
+        var parentId = parents[0].Id;
+
+        blockedProviderParentServiceMock.Setup(x => x.IsBlocked(It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync(true);
+
+        var chatRoomService = new ChatRoomWorkshopService(
+            roomRepository,
+            loggerMock.Object,
+            roomWithSpecialModelRepositoryMock.Object,
+            workshopServiceMock.Object,
+            blockedProviderParentServiceMock.Object,
+            mapper);
+
+        // Act
+        var result = await roomService.CreateOrReturnExistingAsync(workshopId, parentId).ConfigureAwait(false);
+
+        // Assert
+        Assert.Null(result);
+    }
     #endregion
 
     #region Delete
