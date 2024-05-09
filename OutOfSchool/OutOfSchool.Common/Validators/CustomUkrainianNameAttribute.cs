@@ -18,8 +18,8 @@ public class CustomUkrainianNameAttribute : DataTypeAttribute
     /// Checks that the value is valid Ukrainian name.
     /// </summary>
     /// <remarks>
-    /// This method returns <c>true</c> if the <paramref name="value" /> is null.
-    /// It is assumed the <see cref="RequiredAttribute" /> is used if the value may not be null.
+    /// This method returns <c>true</c> if the <paramref name="value" /> is null or empty.
+    /// It is assumed the <see cref="RequiredAttribute" /> is used if the value may not be null or empty.
     /// </remarks>
     /// <param name="value">Value to validate.</param>
     /// <returns> <c>true</c> if valid, otherwise <c>false</c>.</returns>
@@ -28,6 +28,6 @@ public class CustomUkrainianNameAttribute : DataTypeAttribute
         null => true,
         string { Length: 0 } => true,
         string str => str.AsSpan().IsUkrainianName(),
-        not string => false,
+        _ => false,
     };
 }

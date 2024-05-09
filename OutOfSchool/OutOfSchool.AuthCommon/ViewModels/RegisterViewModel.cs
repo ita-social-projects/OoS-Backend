@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.AuthCommon.Validators;
+using OutOfSchool.Common.Validators;
 
 namespace OutOfSchool.AuthCommon.ViewModels;
 

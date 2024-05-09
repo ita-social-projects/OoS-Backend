@@ -33,7 +33,7 @@ public class CustomUkrainianNameAttributeTests
         "Рыбаков", "Рыбак", "Объектов", "Объект", "Ёженов", "Проёжов", "Эвклид", "Проэкт",
     ];
 
-    public static IEnumerable<object[]> ValidComminSingleNamesTestParams =>
+    public static IEnumerable<object[]> ValidCommonSingleNamesTestParams =>
         ValidCommonSingleNamesStrings.Select(n => new object[] { n });
 
     public static IEnumerable<object[]> ValidCommonDoubleNamesTestParams =>
@@ -81,7 +81,7 @@ public class CustomUkrainianNameAttributeTests
         Assert.IsTrue(isValid);
     }
 
-    [TestCaseSource(nameof(ValidComminSingleNamesTestParams))]
+    [TestCaseSource(nameof(ValidCommonSingleNamesTestParams))]
     public void IsValid_WhenNameIsValidCommonSingleName_ShouldReturnTrue(object value)
     {
         // Act
@@ -125,7 +125,7 @@ public class CustomUkrainianNameAttributeTests
     }
 
     [Test]
-    public void IsValid_WhenNameIsContainsDigits_ShouldReturnTrue()
+    public void IsValid_WhenNameContainsDigits_ShouldReturnTrue()
     {
         // Assert
         var value = "Ім'я123";
