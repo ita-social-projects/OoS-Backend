@@ -35,7 +35,7 @@ public class CustomPhoneNumberAttributeTests
     }
 
     [Test]
-    public void IsValid_WhenPhoneNumberIsEmpty_ShouldReturnFalse()
+    public void IsValid_WhenPhoneNumberIsEmpty_ShouldReturnTrue()
     {
         // Arrange
         var phoneNumber = string.Empty;
@@ -45,7 +45,7 @@ public class CustomPhoneNumberAttributeTests
         var isValid = customPhoneNumberAttribute.IsValid(phoneNumber);
 
         // Assert
-        Assert.IsFalse(isValid);
+        Assert.IsTrue(isValid);
     }
 
     [Test]
