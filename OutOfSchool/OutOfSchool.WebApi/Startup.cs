@@ -445,6 +445,7 @@ public static class Startup
             q.AddApplicationStatusChanging(services, quartzConfig);
             q.AddAverageRatingCalculating(services, quartzConfig);
             q.AddLicenseApprovalNotificationGenerating(services, quartzConfig);
+
             q.AddEmailSender(services, quartzConfig);
         });
 
