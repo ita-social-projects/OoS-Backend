@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using OutOfSchool.BackgroundJobs.Config;
-using OutOfSchool.BusinessLogic.Services.ApplicationStatusChange;
+using OutOfSchool.BackgroundJobs.Jobs;
 using OutOfSchool.Common.QuartzConstants;
 using Quartz;
 

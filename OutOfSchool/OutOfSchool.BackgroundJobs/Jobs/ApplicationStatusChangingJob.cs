@@ -1,6 +1,7 @@
-﻿using Quartz;
+﻿using OutOfSchool.BusinessLogic.Services;
+using Quartz;
 
-namespace OutOfSchool.BusinessLogic.Services.ApplicationStatusChange;
+namespace OutOfSchool.BackgroundJobs.Jobs;
 
 public class ApplicationStatusChangingJob : IJob
 {
