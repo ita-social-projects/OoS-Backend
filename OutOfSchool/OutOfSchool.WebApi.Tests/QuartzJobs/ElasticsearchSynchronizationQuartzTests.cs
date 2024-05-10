@@ -17,6 +17,14 @@ public class ElasticsearchSynchronizationQuartzTests
     private readonly Mock<IElasticPinger> elasticPingerMock = new();
     private readonly Mock<IJobExecutionContext> jobExecutionContextMock = new();
 
+    [SetUp]
+    public void SetUp()
+    {
+        elasticsearchSynchronizationServiceMock.Reset();
+        elasticPingerMock.Reset();
+        jobExecutionContextMock.Reset();
+    }
+
     [Test]
     public async Task Execute_WhenElasticPingerIsHealthy_ShouldCallElasticsearchSynchronizationServiceSynchronize()
     {
