@@ -17,7 +17,10 @@ public static class GcpStorageSynchronizationExtensions
     /// <param name="services">Service collection.</param>
     /// <param name="quartzConfig">Quartz configuration.</param>
     /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
-    public static void AddGcpSynchronization(this IServiceCollectionQuartzConfigurator quartz, IServiceCollection services, QuartzConfig quartzConfig)
+    public static void AddGcpSynchronization(
+        this IServiceCollectionQuartzConfigurator quartz,
+        IServiceCollection services,
+        QuartzConfig quartzConfig)
     {
         _ = services ?? throw new ArgumentNullException(nameof(services));
         _ = quartzConfig ?? throw new ArgumentNullException(nameof(quartzConfig));

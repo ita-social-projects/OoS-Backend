@@ -16,7 +16,10 @@ public static class StatisticReportExtensions
     /// <param name="services">Service collection.</param>
     /// <param name="quartzConfig">Quartz configuration.</param>
     /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
-    public static void AddStatisticReportsCreating(this IServiceCollectionQuartzConfigurator quartz, IServiceCollection services, QuartzConfig quartzConfig)
+    public static void AddStatisticReportsCreating(
+        this IServiceCollectionQuartzConfigurator quartz,
+        IServiceCollection services,
+        QuartzConfig quartzConfig)
     {
         _ = services ?? throw new ArgumentNullException(nameof(services));
         _ = quartzConfig ?? throw new ArgumentNullException(nameof(quartzConfig));

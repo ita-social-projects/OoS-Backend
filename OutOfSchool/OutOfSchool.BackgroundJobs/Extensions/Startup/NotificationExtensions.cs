@@ -17,7 +17,10 @@ public static class NotificationExtensions
     /// <param name="services">Service collection.</param>
     /// <param name="quartzConfig">Quartz configuration.</param>
     /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
-    public static void AddOldNotificationsClearing(this IServiceCollectionQuartzConfigurator quartz, IServiceCollection services, QuartzConfig quartzConfig)
+    public static void AddOldNotificationsClearing(
+        this IServiceCollectionQuartzConfigurator quartz,
+        IServiceCollection services,
+        QuartzConfig quartzConfig)
     {
         _ = services ?? throw new ArgumentNullException(nameof(services));
         _ = quartzConfig ?? throw new ArgumentNullException(nameof(quartzConfig));
@@ -41,7 +44,10 @@ public static class NotificationExtensions
     /// <param name="services">Service collection.</param>
     /// <param name="quartzConfig">Quartz configuration.</param>
     /// <exception cref="ArgumentNullException">Whenever the services collection or the quartzConfig are null.</exception>
-    public static void AddLicenseApprovalNotificationGenerating(this IServiceCollectionQuartzConfigurator quartz, IServiceCollection services, QuartzConfig quartzConfig)
+    public static void AddLicenseApprovalNotificationGenerating(
+        this IServiceCollectionQuartzConfigurator quartz,
+        IServiceCollection services,
+        QuartzConfig quartzConfig)
     {
         _ = services ?? throw new ArgumentNullException(nameof(services));
         _ = quartzConfig ?? throw new ArgumentNullException(nameof(quartzConfig));

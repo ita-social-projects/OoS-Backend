@@ -15,7 +15,10 @@ public static class ApplicationStatusChangingExtensions
     /// <param name="services">Services collection.</param>
     /// <param name="quartzConfig">Quartz configuration.</param>
     /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
-    public static void AddApplicationStatusChanging(this IServiceCollectionQuartzConfigurator quartz, IServiceCollection services, QuartzConfig quartzConfig)
+    public static void AddApplicationStatusChanging(
+        this IServiceCollectionQuartzConfigurator quartz,
+        IServiceCollection services,
+        QuartzConfig quartzConfig)
     {
         _ = services ?? throw new ArgumentNullException(nameof(services));
         _ = quartzConfig ?? throw new ArgumentNullException(nameof(quartzConfig));
