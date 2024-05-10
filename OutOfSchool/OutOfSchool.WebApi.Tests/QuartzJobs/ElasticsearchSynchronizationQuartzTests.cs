@@ -13,26 +13,20 @@ namespace OutOfSchool.WebApi.Tests.QuartzJobs;
 [TestFixture]
 public class ElasticsearchSynchronizationQuartzTests
 {
-    private readonly Mock<IElasticsearchSynchronizationService> elasticsearchSynchronizationServiceMock = new();
-    private readonly Mock<IElasticPinger> elasticPingerMock = new();
-    private readonly Mock<IJobExecutionContext> jobExecutionContextMock = new();
-
-    [SetUp]
-    public void SetUp()
-    {
-        elasticsearchSynchronizationServiceMock.Reset();
-        elasticPingerMock.Reset();
-        jobExecutionContextMock.Reset();
-    }
-
     [Test]
     public async Task Execute_WhenElasticPingerIsHealthy_ShouldCallElasticsearchSynchronizationServiceSynchronize()
     {
         // Arrange
+        var elasticsearchSynchronizationServiceMock = new Mock<IElasticsearchSynchronizationService>();
+        var elasticPingerMock = new Mock<IElasticPinger>();
+        var jobExecutionContextMock = new Mock<IJobExecutionContext>();
+
         elasticPingerMock.SetupGet(x => x.IsHealthy).Returns(true);
         jobExecutionContextMock.SetupGet(x => x.CancellationToken).Returns(It.IsAny<CancellationToken>());
 
-        var job = new ElasticsearchSynchronizationQuartz(GetServiceProvider());
+        var serviceProvider = CreateServiceProvider(elasticsearchSynchronizationServiceMock.Object, elasticPingerMock.Object);
+
+        var job = new ElasticsearchSynchronizationQuartz(serviceProvider);
 
         // Act
         await job.Execute(jobExecutionContextMock.Object);
@@ -45,10 +39,16 @@ public class ElasticsearchSynchronizationQuartzTests
     public async Task Execute_WhenElasticPingerIsNotHealthy_ShouldNotCallElasticsearchSynchronizationServiceSynchronize()
     {
         // Arrange
+        var elasticsearchSynchronizationServiceMock = new Mock<IElasticsearchSynchronizationService>();
+        var elasticPingerMock = new Mock<IElasticPinger>();
+        var jobExecutionContextMock = new Mock<IJobExecutionContext>();
+
         elasticPingerMock.SetupGet(x => x.IsHealthy).Returns(false);
         jobExecutionContextMock.SetupGet(x => x.CancellationToken).Returns(It.IsAny<CancellationToken>());
 
-        var job = new ElasticsearchSynchronizationQuartz(GetServiceProvider());
+        var serviceProvider = CreateServiceProvider(elasticsearchSynchronizationServiceMock.Object, elasticPingerMock.Object);
+
+        var job = new ElasticsearchSynchronizationQuartz(serviceProvider);
 
         // Act
         await job.Execute(jobExecutionContextMock.Object);
@@ -57,12 +57,14 @@ public class ElasticsearchSynchronizationQuartzTests
         elasticsearchSynchronizationServiceMock.Verify(x => x.Synchronize(It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    private IServiceProvider GetServiceProvider()
+    private static IServiceProvider CreateServiceProvider(
+        IElasticsearchSynchronizationService elasticsearchSynchronizationService,
+        IElasticPinger elasticPinger)
     {
         var serviceCollection = new ServiceCollection();
 
-        serviceCollection.AddTransient(sp => elasticsearchSynchronizationServiceMock.Object);
-        serviceCollection.AddSingleton(sp => elasticPingerMock.Object);
+        serviceCollection.AddTransient(sp => elasticsearchSynchronizationService);
+        serviceCollection.AddSingleton(sp => elasticPinger);
 
         return serviceCollection.BuildServiceProvider();
     }

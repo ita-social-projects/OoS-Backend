@@ -12,14 +12,14 @@ namespace OutOfSchool.WebApi.Tests.QuartzJobs;
 [TestFixture]
 public class LicenseApprovalNotificationQuartzJobTests
 {
-    private readonly Mock<ILicenseApprovalNotificationService> licenseApprovalNotificationServiceMock = new();
-    private readonly Mock<ILogger<LicenseApprovalNotificationQuartzJob>> loggerMock = new();
-    private readonly Mock<IJobExecutionContext> jobExecutionContextMock = new();
-
     [Test]
     public async Task Execute_ShouldCallLicenseApprovalNotificationServiceGenerate()
     {
         // Arrange
+        var licenseApprovalNotificationServiceMock = new Mock<ILicenseApprovalNotificationService>();
+        var loggerMock = new Mock<ILogger<LicenseApprovalNotificationQuartzJob>>();
+        var jobExecutionContextMock = new Mock<IJobExecutionContext>();
+
         var job = new LicenseApprovalNotificationQuartzJob(licenseApprovalNotificationServiceMock.Object, loggerMock.Object);
 
         // Act

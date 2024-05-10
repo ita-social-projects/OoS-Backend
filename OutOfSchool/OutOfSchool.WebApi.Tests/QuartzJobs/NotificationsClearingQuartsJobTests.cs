@@ -12,14 +12,14 @@ namespace OutOfSchool.WebApi.Tests.QuartzJobs;
 [TestFixture]
 public class NotificationsClearingQuartsJobTests
 {
-    private readonly Mock<INotificationsClearingService> notificationsClearingServiceMock = new();
-    private readonly Mock<ILogger<NotificationsClearingQuartsJob>> loggerMock = new();
-    private readonly Mock<IJobExecutionContext> jobExecutionContextMock = new();
-
     [Test]
     public async Task Execute_ShouldCallNotificationsClearingServiceClearNotifications()
     {
         // Arrange
+        var notificationsClearingServiceMock = new Mock<INotificationsClearingService>();
+        var loggerMock = new Mock<ILogger<NotificationsClearingQuartsJob>>();
+        var jobExecutionContextMock = new Mock<IJobExecutionContext>();
+
         var job = new NotificationsClearingQuartsJob(notificationsClearingServiceMock.Object, loggerMock.Object);
 
         // Act

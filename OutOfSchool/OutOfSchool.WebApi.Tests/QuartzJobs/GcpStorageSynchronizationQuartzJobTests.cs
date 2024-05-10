@@ -12,14 +12,14 @@ namespace OutOfSchool.WebApi.Tests.QuartzJobs;
 [TestFixture]
 public class GcpStorageSynchronizationQuartzJobTests
 {
-    private readonly Mock<IGcpStorageSynchronizationService> gcpStorageSynchronizationServiceMock = new();
-    private readonly Mock<ILogger<GcpStorageSynchronizationQuartzJob>> loggerMock = new();
-    private readonly Mock<IJobExecutionContext> jobExecutionContextMock = new();
-
     [Test]
     public async Task Execute_ShouldCallGcpStorageSynchronizationServiceSynchronizeAsync()
     {
         // Arrange
+        var gcpStorageSynchronizationServiceMock = new Mock<IGcpStorageSynchronizationService>();
+        var loggerMock = new Mock<ILogger<GcpStorageSynchronizationQuartzJob>>();
+        var jobExecutionContextMock = new Mock<IJobExecutionContext>();
+
         var job = new GcpStorageSynchronizationQuartzJob(gcpStorageSynchronizationServiceMock.Object, loggerMock.Object);
 
         // Act

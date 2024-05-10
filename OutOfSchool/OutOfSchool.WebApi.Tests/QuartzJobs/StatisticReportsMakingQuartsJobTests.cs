@@ -12,14 +12,14 @@ namespace OutOfSchool.WebApi.Tests.QuartzJobs;
 [TestFixture]
 public class StatisticReportsMakingQuartsJobTests
 {
-    private readonly Mock<IStatisticReportsMakingService> statisticReportsMakingServiceMock = new();
-    private readonly Mock<ILogger<StatisticReportsMakingQuartsJob>> loggerMock = new();
-    private readonly Mock<IJobExecutionContext> jobExecutionContextMock = new();
-
     [Test]
     public async Task Execute_ShouldCallStatisticReportsMakingServiceCreateStatisticReports()
     {
         // Arrange
+        var statisticReportsMakingServiceMock = new Mock<IStatisticReportsMakingService>();
+        var loggerMock = new Mock<ILogger<StatisticReportsMakingQuartsJob>>();
+        var jobExecutionContextMock = new Mock<IJobExecutionContext>();
+
         var job = new StatisticReportsMakingQuartsJob(statisticReportsMakingServiceMock.Object, loggerMock.Object);
 
         // Act
