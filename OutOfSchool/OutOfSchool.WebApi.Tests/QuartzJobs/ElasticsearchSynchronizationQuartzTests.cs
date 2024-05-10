@@ -18,13 +18,13 @@ public class ElasticsearchSynchronizationQuartzTests
     {
         // Arrange
         var elasticsearchSynchronizationServiceMock = new Mock<IElasticsearchSynchronizationService>();
-        var elasticPingerMock = new Mock<IElasticPinger>();
+        var elasticHealthServiceMock = new Mock<IElasticsearchHealthService>();
         var jobExecutionContextMock = new Mock<IJobExecutionContext>();
 
-        elasticPingerMock.SetupGet(x => x.IsHealthy).Returns(true);
+        elasticHealthServiceMock.SetupGet(x => x.IsHealthy).Returns(true);
         jobExecutionContextMock.SetupGet(x => x.CancellationToken).Returns(It.IsAny<CancellationToken>());
 
-        var serviceProvider = CreateServiceProvider(elasticsearchSynchronizationServiceMock.Object, elasticPingerMock.Object);
+        var serviceProvider = CreateServiceProvider(elasticsearchSynchronizationServiceMock.Object, elasticHealthServiceMock.Object);
 
         var job = new ElasticsearchSynchronizationQuartz(serviceProvider);
 
@@ -40,13 +40,13 @@ public class ElasticsearchSynchronizationQuartzTests
     {
         // Arrange
         var elasticsearchSynchronizationServiceMock = new Mock<IElasticsearchSynchronizationService>();
-        var elasticPingerMock = new Mock<IElasticPinger>();
+        var elasticHealthServiceMock = new Mock<IElasticsearchHealthService>();
         var jobExecutionContextMock = new Mock<IJobExecutionContext>();
 
-        elasticPingerMock.SetupGet(x => x.IsHealthy).Returns(false);
+        elasticHealthServiceMock.SetupGet(x => x.IsHealthy).Returns(false);
         jobExecutionContextMock.SetupGet(x => x.CancellationToken).Returns(It.IsAny<CancellationToken>());
 
-        var serviceProvider = CreateServiceProvider(elasticsearchSynchronizationServiceMock.Object, elasticPingerMock.Object);
+        var serviceProvider = CreateServiceProvider(elasticsearchSynchronizationServiceMock.Object, elasticHealthServiceMock.Object);
 
         var job = new ElasticsearchSynchronizationQuartz(serviceProvider);
 
@@ -59,12 +59,12 @@ public class ElasticsearchSynchronizationQuartzTests
 
     private static IServiceProvider CreateServiceProvider(
         IElasticsearchSynchronizationService elasticsearchSynchronizationService,
-        IElasticPinger elasticPinger)
+        IElasticsearchHealthService elasticHealthService)
     {
         var serviceCollection = new ServiceCollection();
 
         serviceCollection.AddTransient(sp => elasticsearchSynchronizationService);
-        serviceCollection.AddSingleton(sp => elasticPinger);
+        serviceCollection.AddSingleton(sp => elasticHealthService);
 
         return serviceCollection.BuildServiceProvider();
     }

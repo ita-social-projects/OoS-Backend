@@ -1,6 +1,6 @@
 ﻿namespace OutOfSchool.BusinessLogic.Services;
 
-public interface IElasticPinger
+public interface IElasticsearchHealthService
 {
     bool IsHealthy { get; }
 }

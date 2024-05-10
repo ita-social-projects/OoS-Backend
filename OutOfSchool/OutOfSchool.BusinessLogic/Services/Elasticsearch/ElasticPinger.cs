@@ -3,7 +3,7 @@ using Nest;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class ElasticPinger : IElasticPinger, IHostedService, IDisposable
+public class ElasticPinger : IElasticsearchHealthService, IHostedService, IDisposable
 {
     private readonly ILogger<ElasticPinger> logger;
     private Timer timer;

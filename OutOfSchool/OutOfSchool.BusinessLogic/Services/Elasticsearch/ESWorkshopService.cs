@@ -12,7 +12,7 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
     private readonly IWorkshopService workshopService;
     private readonly IAverageRatingService averageRatingService;
     private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
-    private readonly IElasticPinger esPinger;
+    private readonly IElasticsearchHealthService elasticHealthService;
     private readonly ILogger<ESWorkshopService> logger;
     private readonly IMapper mapper;
 
@@ -21,28 +21,28 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
     /// </summary>
     /// <param name="workshopService">Service that provides access to Workshops in the database.</param>
     /// <param name="esProvider">Provider to the Elasticsearch workshops index.</param>
-    /// <param name="elasticPinger">Background worker pings the Elasticsearch.</param>
+    /// <param name="elasticHealthService">Background worker pings the Elasticsearch.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="averageRatingService">Service that provides access to average ratings in the database.</param>
     /// <param name="mapper">AutoMapper interface.</param>
     public ESWorkshopService(
         IWorkshopService workshopService,
         IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
-        IElasticPinger elasticPinger,
+        IElasticsearchHealthService elasticHealthService,
         ILogger<ESWorkshopService> logger,
         IAverageRatingService averageRatingService,
         IMapper mapper)
     {
         this.workshopService = workshopService;
         this.esProvider = esProvider;
-        this.esPinger = elasticPinger;
+        this.elasticHealthService = elasticHealthService;
         this.logger = logger;
         this.averageRatingService = averageRatingService;
         this.mapper = mapper;
     }
 
     /// <inheritdoc/>
-    public bool IsElasticAlive => esPinger.IsHealthy;
+    public bool IsElasticAlive => elasticHealthService.IsHealthy;
 
     /// <inheritdoc/>
     public async Task<bool> Index(WorkshopES entity)

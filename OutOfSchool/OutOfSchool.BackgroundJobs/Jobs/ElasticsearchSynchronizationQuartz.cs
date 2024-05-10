@@ -17,8 +17,8 @@ public class ElasticsearchSynchronizationQuartz : IJob
     public async Task Execute(IJobExecutionContext context)
     {
         using var scope = services.CreateScope();
-        var elasticPinger = scope.ServiceProvider.GetRequiredService<IElasticPinger>();
-        if (elasticPinger.IsHealthy)
+        var elasticHealthService = scope.ServiceProvider.GetRequiredService<IElasticsearchHealthService>();
+        if (elasticHealthService.IsHealthy)
         {
             var elasticsearchSynchronizationService =
                 scope.ServiceProvider

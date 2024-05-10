@@ -368,7 +368,7 @@ public static class Startup
         services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
         services.AddSingleton<ElasticPinger>();
-        services.AddSingleton<IElasticPinger>(provider => provider.GetService<ElasticPinger>());
+        services.AddSingleton<IElasticsearchHealthService>(provider => provider.GetService<ElasticPinger>());
         services.AddHostedService<ElasticPinger>(provider => provider.GetService<ElasticPinger>());
 
         services.AddSingleton(Log.Logger);
