@@ -12,7 +12,7 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
     private readonly IWorkshopService workshopService;
     private readonly IAverageRatingService averageRatingService;
     private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
-    private readonly ElasticPinger esPinger;
+    private readonly IElasticPinger esPinger;
     private readonly ILogger<ESWorkshopService> logger;
     private readonly IMapper mapper;
 
@@ -28,7 +28,7 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
     public ESWorkshopService(
         IWorkshopService workshopService,
         IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
-        ElasticPinger elasticPinger,
+        IElasticPinger elasticPinger,
         ILogger<ESWorkshopService> logger,
         IAverageRatingService averageRatingService,
         IMapper mapper)
