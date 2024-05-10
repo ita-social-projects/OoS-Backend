@@ -1,8 +1,11 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using MySqlConnector;
 using OutOfSchool.BackgroundJobs.Config;
+using OutOfSchool.Common.Extensions.Startup;
 using Quartz;
-using Quartz.Impl;
 
-namespace OutOfSchool.WebApi.Extensions.Startup;
+namespace OutOfSchool.BackgroundJobs.Extensions.Startup;
 
 public static class QuartzExtension
 {

@@ -1,9 +1,10 @@
-﻿using OutOfSchool.BackgroundJobs.Config;
+﻿using Microsoft.Extensions.DependencyInjection;
+using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BusinessLogic.Services.ApplicationStatusChange;
 using OutOfSchool.Common.QuartzConstants;
 using Quartz;
 
-namespace OutOfSchool.WebApi.Extensions.Startup;
+namespace OutOfSchool.BackgroundJobs.Extensions.Startup;
 
 public static class ApplicationStatusChangingExtensions
 {

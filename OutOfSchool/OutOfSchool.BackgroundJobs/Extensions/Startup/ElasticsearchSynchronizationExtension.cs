@@ -1,9 +1,13 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using OutOfSchool.BackgroundJobs.Jobs;
+using OutOfSchool.BusinessLogic.Config;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Common.QuartzConstants;
 using Quartz;
 
-namespace OutOfSchool.WebApi.Extensions;
+namespace OutOfSchool.BackgroundJobs.Extensions.Startup;
 
 public static class ElasticsearchSynchronizationExtension
 {
@@ -19,7 +23,7 @@ public static class ElasticsearchSynchronizationExtension
         this IServiceCollectionQuartzConfigurator quartz,
         IServiceCollection services,
         IConfiguration configuration,
-        Action<OptionsBuilder<ElasticsearchSynchronizationSchedulerConfig>>
+        Action<OptionsBuilder<ElasticsearchSynchronizationSchedulerConfig>>?
             elasticsearchSynchronizationSchedulerConfig = null)
     {
         _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
