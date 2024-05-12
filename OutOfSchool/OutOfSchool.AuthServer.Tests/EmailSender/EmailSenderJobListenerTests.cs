@@ -1,9 +1,11 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Logging;
+using Moq;
 using NUnit.Framework;
 using OutOfSchool.EmailSender.Quartz;
 using OutOfSchool.EmailSender.Services;
 using Quartz;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OutOfSchool.AuthServer.Tests.EmailSender;
@@ -12,13 +14,22 @@ namespace OutOfSchool.AuthServer.Tests.EmailSender;
 public class EmailSenderJobListenerTests
 {
     private Mock<ISendGridAccessibilityService> _mockSendGridAccessibilityService;
+    private Mock<ISchedulerFactory> _mockSchedulerFactory;
+    private Mock<IScheduler> _mockScheduler;
+    private Mock<ILogger<EmailSenderJobListener>> _mockLogger;
     private EmailSenderJobListener _emailSenderJobListener;
 
     [SetUp]
     public void Setup()
     {
         _mockSendGridAccessibilityService = new Mock<ISendGridAccessibilityService>();
-        _emailSenderJobListener = new EmailSenderJobListener(_mockSendGridAccessibilityService.Object);
+        _mockSchedulerFactory = new Mock<ISchedulerFactory>();
+        _mockScheduler = new Mock<IScheduler>();
+        _mockLogger = new Mock<ILogger<EmailSenderJobListener>>();
+        _emailSenderJobListener = new EmailSenderJobListener(
+            _mockSendGridAccessibilityService.Object,
+            _mockSchedulerFactory.Object,
+            _mockLogger.Object);
     }
 
     [Test]
@@ -54,18 +65,28 @@ public class EmailSenderJobListenerTests
     }
 
     [Test]
-    public async Task JobWasExecuted_WithJobException_ShouldCallSetSendGridInaccessible()
+    public async Task JobWasExecuted_WithJobException_ShouldCallSetSendGridInaccessibleAndRescheduleJob()
     {
         // Arrange
-        var context = new Mock<IJobExecutionContext>().Object;
+        var mockContext = new Mock<IJobExecutionContext>();
+        mockContext.Setup(x => x.Trigger).Returns(TriggerBuilder.Create().Build());
         var jobException = new JobExecutionException();
+        _mockSchedulerFactory.Setup(f => f.GetScheduler(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_mockScheduler.Object);
+        _mockSendGridAccessibilityService.Setup(x => x.GetAccessibilityTime(It.IsAny<DateTimeOffset>())).Returns(DateTimeOffset.Now);
+        _mockScheduler.Setup(x => x.RescheduleJob(It.IsAny<TriggerKey>(), It.IsAny<ITrigger>(), It.IsAny<CancellationToken>())).ReturnsAsync(DateTimeOffset.Now);
 
         // Act
-        await _emailSenderJobListener.JobWasExecuted(context, jobException);
+        await _emailSenderJobListener.JobWasExecuted(mockContext.Object, jobException);
 
         // Assert
         _mockSendGridAccessibilityService.Verify(
             s => s.SetSendGridInaccessible(It.IsAny<DateTimeOffset>()),
+            Times.Once
+        );
+
+        _mockScheduler.Verify(
+            s => s.RescheduleJob(It.IsAny<TriggerKey>(), It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()),
             Times.Once
         );
     }

@@ -16,6 +16,7 @@ public class EmailSenderServiceTests
 {
     private Mock<ISchedulerFactory> mockSchedulerFactory;
     private Mock<IScheduler> mockScheduler;
+    private Mock<ISendGridAccessibilityService> mockEndGridAccessibilityService;
     private EmailSenderService emailSenderService;
 
     [SetUp]
@@ -23,11 +24,14 @@ public class EmailSenderServiceTests
     {
         mockSchedulerFactory = new Mock<ISchedulerFactory>();
         mockScheduler = new Mock<IScheduler>();
-        emailSenderService = new EmailSenderService(mockSchedulerFactory.Object);
+        mockEndGridAccessibilityService = new Mock<ISendGridAccessibilityService>();
+        emailSenderService = new EmailSenderService(
+            mockSchedulerFactory.Object,
+            mockEndGridAccessibilityService.Object);
     }
 
     [Test]
-    public async Task SendAsync_AddsJobToScheduler()
+    public async Task SendAsync_SchedulesJob()
     {
         // Arrange
         string email = "test@example.com";
@@ -42,7 +46,7 @@ public class EmailSenderServiceTests
 
         // Assert
         mockScheduler.Verify(
-            scheduler => scheduler.AddJob(It.IsAny<IJobDetail>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
+            scheduler => scheduler.ScheduleJob(It.IsAny<IJobDetail>(), It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -63,12 +67,12 @@ public class EmailSenderServiceTests
 
         // Assert
         mockScheduler.Verify(
-            scheduler => scheduler.AddJob(It.Is<JobDetailImpl>(job =>
+            scheduler => scheduler.ScheduleJob(It.Is<JobDetailImpl>(job =>
                     job.JobDataMap[EmailSenderStringConstants.Email].Equals(email) &&
                     job.JobDataMap[EmailSenderStringConstants.Subject].Equals(subject) &&
                     job.JobDataMap[EmailSenderStringConstants.HtmlContent].Equals(encodedHtml) &&
                     job.JobDataMap[EmailSenderStringConstants.PlainContent].Equals(encodedPlain)),
-                false,
+                It.IsAny<ITrigger>(),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }

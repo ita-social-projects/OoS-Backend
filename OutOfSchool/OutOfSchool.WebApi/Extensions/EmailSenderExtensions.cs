@@ -32,6 +32,5 @@ public static class EmailSenderExtensions
             .WithCronSchedule(quartzConfig.CronSchedules.EmailSenderCronScheduleString));
 
         quartz.AddJobListener<EmailSenderJobListener>(GroupMatcher<JobKey>.GroupEquals(GroupConstants.Emails));
-        quartz.AddTriggerListener<EmailSenderJobTriggerListener>(GroupMatcher<TriggerKey>.GroupEquals(GroupConstants.Emails));
     }
 }
