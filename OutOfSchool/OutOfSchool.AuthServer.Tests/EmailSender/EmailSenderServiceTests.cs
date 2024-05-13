@@ -16,7 +16,6 @@ public class EmailSenderServiceTests
 {
     private Mock<ISchedulerFactory> mockSchedulerFactory;
     private Mock<IScheduler> mockScheduler;
-    private Mock<ISendGridAccessibilityService> mockEndGridAccessibilityService;
     private EmailSenderService emailSenderService;
 
     [SetUp]
@@ -24,10 +23,10 @@ public class EmailSenderServiceTests
     {
         mockSchedulerFactory = new Mock<ISchedulerFactory>();
         mockScheduler = new Mock<IScheduler>();
-        mockEndGridAccessibilityService = new Mock<ISendGridAccessibilityService>();
+        var mockSendGridAccessibilityService = new Mock<ISendGridAccessibilityService>();
         emailSenderService = new EmailSenderService(
             mockSchedulerFactory.Object,
-            mockEndGridAccessibilityService.Object);
+            mockSendGridAccessibilityService.Object);
     }
 
     [Test]

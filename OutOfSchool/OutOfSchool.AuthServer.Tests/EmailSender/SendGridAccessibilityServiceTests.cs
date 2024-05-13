@@ -83,4 +83,32 @@ public class SendGridAccessibilityServiceTests
         Assert.True(earlyResult);
         Assert.True(result);
     }
+
+    [Test]
+    public void GetAccessibilityTime_WithAccessibleSendGrid_ReturnsDateTimeOffsetNow()
+    {
+        // Arrange
+        var now = DateTimeOffset.Now;
+
+        // Act
+        var accessTime = _emailService.GetAccessibilityTime(now);
+
+        // Assert
+        Assert.AreEqual(now, accessTime);
+    }
+
+    [Test]
+    public void GetAccessibilityTime_WithInaccessibleSendGrid_ReturnsAccessibilityTime()
+    {
+        // Arrange
+        var now = DateTimeOffset.Now;
+
+        // Act
+        _emailService.SetSendGridInaccessible(now);
+        var accessTime = _emailService.GetAccessibilityTime(now);
+
+        // Assert
+        Assert.AreNotEqual(now, accessTime);
+        Assert.AreEqual(now.AddMinutes(300), accessTime);
+    }
 }

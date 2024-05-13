@@ -39,7 +39,7 @@ public static class Startup
         await services.AddDefaultQuartz(
             config,
             quartzConfig.ConnectionStringKey,
-            t => t.AddEmailSender(services, quartzConfig));
+            t => t.AddEmailSender(quartzConfig));
 
         var connectionString = config.GetMySqlConnectionString<AuthorizationConnectionOptions>(
             "DefaultConnection",

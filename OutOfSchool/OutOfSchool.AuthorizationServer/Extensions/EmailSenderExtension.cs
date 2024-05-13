@@ -9,10 +9,8 @@ public static class EmailSenderExtension
 {
     public static void AddEmailSender(
         this IServiceCollectionQuartzConfigurator quartz,
-        IServiceCollection services,
         QuartzConfig quartzConfig)
     {
-        _ = services ?? throw new ArgumentNullException(nameof(services));
         _ = quartzConfig ?? throw new ArgumentNullException(nameof(quartzConfig));
 
         var emailSenderJobKey = new JobKey(EmailSenderConstants.EmailJob, EmailSenderConstants.EmailGroup);
