@@ -20,7 +20,7 @@ public class ApplicationStatusChangingExtensionsTests
         var servicesRegistering = new ServiceCollection();
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => servicesRegistering.AddQuartz(q => q.AddApplicationStatusChanging(servicesRegistering, null)));
+        Assert.Throws<ArgumentNullException>(() => servicesRegistering.AddQuartz(q => q.AddApplicationStatusChanging(null)));
     }
 
     [Test]
@@ -40,7 +40,7 @@ public class ApplicationStatusChangingExtensionsTests
         };
 
         // Act
-        servicesRegistering.AddQuartz(q => q.AddApplicationStatusChanging(servicesRegistering, quartzConfig));
+        servicesRegistering.AddQuartz(q => q.AddApplicationStatusChanging(quartzConfig));
 
         using var services = servicesRegistering.BuildServiceProvider();
 
