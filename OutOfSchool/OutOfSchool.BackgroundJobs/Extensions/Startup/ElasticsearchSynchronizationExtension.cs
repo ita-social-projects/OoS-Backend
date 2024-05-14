@@ -33,10 +33,7 @@ public static class ElasticsearchSynchronizationExtension
 
         services.AddTransient<IElasticsearchSynchronizationService, ElasticsearchSynchronizationService>();
 
-        if (elasticsearchSynchronizationSchedulerConfig == null)
-        {
-            throw new ArgumentNullException(nameof(elasticsearchSynchronizationSchedulerConfig));
-        }
+        ArgumentNullException.ThrowIfNull(elasticsearchSynchronizationSchedulerConfig);
 
         var elasticsearchSynchronizationSchedulerConfigBuilder =
             services.AddOptions<ElasticsearchSynchronizationSchedulerConfig>();
