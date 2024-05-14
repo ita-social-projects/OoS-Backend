@@ -445,7 +445,7 @@ public static class Startup
             q.AddElasticsearchSynchronization(services, configuration);
             q.AddStatisticReportsCreating(services, quartzConfig);
             q.AddOldNotificationsClearing(services, quartzConfig);
-            q.AddApplicationStatusChanging(services, quartzConfig);
+            q.AddApplicationStatusChanging(quartzConfig);
             q.AddAverageRatingCalculating(services, quartzConfig);
             q.AddLicenseApprovalNotificationGenerating(services, quartzConfig);
             q.AddEmailSender(services, quartzConfig);
