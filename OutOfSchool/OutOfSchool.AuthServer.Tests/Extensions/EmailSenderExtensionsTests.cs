@@ -15,7 +15,7 @@ namespace OutOfSchool.AuthServer.Tests.Extensions;
 public class EmailSenderExtensionsTests
 {
     [Test]
-    public async Task AddEmailSender_WithValidConfig_AddsJobAndTrigger()
+    public async Task AddEmailSender_WithValidConfig_AddsJob()
     {
         // Arrange
         var servicesRegistering = new ServiceCollection();
