@@ -979,7 +979,8 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
                 && Enum.TryParse(additionalData[StatusTitle], out ApplicationStatus applicationStatus))
             {
                 if (applicationStatus == ApplicationStatus.Approved
-                    || applicationStatus == ApplicationStatus.Rejected)
+                    || applicationStatus == ApplicationStatus.Rejected
+                    || applicationStatus == ApplicationStatus.AcceptedForSelection)
                 {
                     recipientIds.Add(application.Parent.UserId);
                 }
