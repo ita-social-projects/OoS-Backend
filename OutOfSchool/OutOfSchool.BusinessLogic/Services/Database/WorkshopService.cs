@@ -2,15 +2,15 @@
 using AutoMapper;
 using H3Lib;
 using H3Lib.Extensions;
-using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models.Images;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -339,6 +339,11 @@ public class WorkshopService : IWorkshopService
         {
             await UpdateDateTimeRanges(dto.DateTimeRanges, dto.Id).ConfigureAwait(false);
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto!.Id).ConfigureAwait(false);
+            var currentWorkshopTakenSeats = currentWorkshop.Applications.TakenSeats();
+            if (dto.AvailableSeats < currentWorkshopTakenSeats)
+            {
+                throw new ArgumentException("The number of available seats must be equal or exceed the number of taken seats");
+            }
 
             // In case if AddressId was changed. AddresId is one and unique for workshop.
             dto.AddressId = currentWorkshop.AddressId;
@@ -349,6 +354,26 @@ public class WorkshopService : IWorkshopService
             if (dto.AvailableSeats is 0 or null)
             {
                 dto.AvailableSeats = uint.MaxValue;
+            }
+
+            if (dto.AvailableSeats == uint.MaxValue
+                && currentWorkshop.AvailableSeats == currentWorkshopTakenSeats)
+            {
+                await UpdateStatus(new()
+                {
+                    WorkshopId = currentWorkshop.Id,
+                    Status = WorkshopStatus.Open,
+                }).ConfigureAwait(false);
+            }
+
+            if (dto.AvailableSeats < uint.MaxValue
+                && dto.AvailableSeats == currentWorkshopTakenSeats)
+            {
+                await UpdateStatus(new()
+                {
+                    WorkshopId = currentWorkshop.Id,
+                    Status = WorkshopStatus.Closed,
+                }).ConfigureAwait(false);
             }
 
             mapper.Map(dto, currentWorkshop);
@@ -380,18 +405,7 @@ public class WorkshopService : IWorkshopService
 
         if (currentWorkshop.Status != dto.Status)
         {
-            if (currentWorkshop.AvailableSeats != uint.MaxValue)
-            {
-                currentWorkshop.Status = dto.Status;
-            }
-            else
-            {
-                logger.LogInformation(
-                    $"Unable to update status for workshop(id) {dto.WorkshopId}. Number of seats has not restriction.");
-                throw new ArgumentException(
-                    "Unable to update status for workshop because of number of seats has not restriction.");
-            }
-
+            currentWorkshop.Status = dto.Status;
             try
             {
                 await workshopRepository.Update(currentWorkshop).ConfigureAwait(false);
