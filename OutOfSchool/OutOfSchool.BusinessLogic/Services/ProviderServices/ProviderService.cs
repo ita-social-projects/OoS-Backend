@@ -589,6 +589,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         var users = await usersRepository.GetByFilter(u => u.Id.Equals(providerDto.UserId)).ConfigureAwait(false);
         providerDomainModel.User = users.Single();
         providerDomainModel.User.IsRegistered = true;
+        providerDomainModel.User.PhoneNumber = providerDto.PhoneNumber;
         providerDomainModel.Status = ProviderStatus.Pending;
         providerDomainModel.LicenseStatus = providerDomainModel.License == null
             ? ProviderLicenseStatus.NotProvided
