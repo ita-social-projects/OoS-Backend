@@ -56,6 +56,7 @@ public class ProviderBaseDto : IHasCoverImage, IHasImages
 
     [DataType(DataType.Date)]
     [Required(ErrorMessage = "The date of birth is required")]
+    [CustomAge(MinAge = Constants.AdultAge, ErrorMessage = Constants.DayOfBirthErrorMessage)]
     public DateTime? DirectorDateOfBirth { get; set; } = default;
 
     [DataType(DataType.PhoneNumber)]
