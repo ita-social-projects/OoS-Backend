@@ -4,7 +4,7 @@ using OutOfSchool.EmailSender.Quartz;
 using Quartz;
 using Quartz.Impl.Matchers;
 
-namespace OutOfSchool.WebApi.Extensions;
+namespace OutOfSchool.BackgroundJobs.Extensions.Startup;
 
 public static class EmailSenderExtensions
 {
@@ -12,15 +12,12 @@ public static class EmailSenderExtensions
     /// Adds all essential methods to send emails.
     /// </summary>
     /// <param name="quartz">Quartz Configurator.</param>
-    /// <param name="services">Service collection.</param>
     /// <param name="quartzConfig">Quartz configuration.</param>
     /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
     public static void AddEmailSender(
         this IServiceCollectionQuartzConfigurator quartz,
-        IServiceCollection services,
         QuartzConfig quartzConfig)
     {
-        _ = services ?? throw new ArgumentNullException(nameof(services));
         _ = quartzConfig ?? throw new ArgumentNullException(nameof(quartzConfig));
 
         var emailSenderJobKey = new JobKey(JobConstants.EmailSender, GroupConstants.Emails);

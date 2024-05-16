@@ -448,7 +448,7 @@ public static class Startup
             q.AddApplicationStatusChanging(quartzConfig);
             q.AddAverageRatingCalculating(services, quartzConfig);
             q.AddLicenseApprovalNotificationGenerating(services, quartzConfig);
-            q.AddEmailSender(services, quartzConfig);
+            q.AddEmailSender(quartzConfig);
         });
 
         var isRedisEnabled = configuration.GetValue<bool>("Redis:Enabled");
