@@ -395,15 +395,6 @@ public class AuthController : Controller
                 {
                     await signInManager.SignInAsync(user, false);
 
-                    if (user.Role.Equals(nameof(Role.Parent), StringComparison.OrdinalIgnoreCase))
-                    {
-                        var parent = Parent.CreateDraft(user.Id, DateTime.UtcNow); // use draft parent, because user would edit info later through profile endpoints
-
-                        Func<Task<Parent>> operation = async () => await parentRepository.Create(parent).ConfigureAwait(false);
-
-                        await parentRepository.RunInTransaction(operation).ConfigureAwait(false);
-                    }
-
                     logger.LogInformation("User(id): {UserId} was successfully registered with Role: {UserRole}", user.Id, user.Role);
 
                     return View("ConfirmEmail", model);
