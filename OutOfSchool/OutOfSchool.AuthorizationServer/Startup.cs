@@ -13,6 +13,7 @@ using OutOfSchool.AuthorizationServer.Config;
 using OutOfSchool.AuthorizationServer.Extensions;
 using OutOfSchool.AuthorizationServer.KeyManagement;
 using OutOfSchool.AuthorizationServer.Services;
+using OutOfSchool.EmailSender.Services;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
 namespace OutOfSchool.AuthorizationServer;
@@ -37,7 +38,8 @@ public static class Startup
         var quartzConfig = config.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
         await services.AddDefaultQuartz(
             config,
-            quartzConfig.ConnectionStringKey);
+            quartzConfig.ConnectionStringKey,
+            t => t.AddEmailSender(quartzConfig));
 
         var connectionString = config.GetMySqlConnectionString<AuthorizationConnectionOptions>(
             "DefaultConnection",
@@ -213,6 +215,7 @@ public static class Startup
         services.AddTransient<IInteractionService, InteractionService>();
         services.AddTransient<IProfileService, ProfileService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddSingleton<ISendGridAccessibilityService, SendGridAccessibilityService>();
 
         services.AddHostedService<IdentityRolesInitializerHostedService>();
 

@@ -9,10 +9,14 @@ namespace OutOfSchool.EmailSender.Services;
 public class EmailSenderService : IEmailSenderService
 {
     private readonly ISchedulerFactory schedulerFactory;
+    private readonly ISendGridAccessibilityService sendGridAccessibilityService;
 
-    public EmailSenderService(ISchedulerFactory schedulerFactory)
+    public EmailSenderService(
+        ISchedulerFactory schedulerFactory,
+        ISendGridAccessibilityService sendGridAccessibilityService)
     {
         this.schedulerFactory = schedulerFactory;
+        this.sendGridAccessibilityService = sendGridAccessibilityService;
     }
 
     public async Task SendAsync(string email, string subject, (string html, string plain) content, DateTimeOffset? expirationTime = null)
@@ -28,13 +32,20 @@ public class EmailSenderService : IEmailSenderService
             { EmailSenderStringConstants.ExpirationTime, expirationTime.ToString() },
         };
 
-        var job = JobBuilder.Create<EmailSenderJob>()
+        var scheduler = await schedulerFactory.GetScheduler();
+
+        var job = JobBuilder
+            .Create<EmailSenderJob>()
+            .WithIdentity($"emailSenderJob_{Guid.NewGuid()}", "emails")
             .UsingJobData(jobData)
-            .StoreDurably()
             .Build();
 
-        var scheduler = await schedulerFactory.GetScheduler();
-        await scheduler.AddJob(job, false);
+        var trigger = TriggerBuilder
+            .Create()
+            .StartAt(sendGridAccessibilityService.GetAccessibilityTime(DateTimeOffset.Now))
+            .Build();
+
+        await scheduler.ScheduleJob(job, trigger);
     }
 
     private string EncodeToBase64(string toEncode)

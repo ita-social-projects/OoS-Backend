@@ -20,4 +20,7 @@ public class SendGridAccessibilityService : ISendGridAccessibilityService
 
     public bool IsSendGridAccessible(DateTimeOffset now)
       => accessibleAfter <= now;
+
+    public DateTimeOffset GetAccessibilityTime(DateTimeOffset now) =>
+        accessibleAfter <= now ? now : accessibleAfter;
 }

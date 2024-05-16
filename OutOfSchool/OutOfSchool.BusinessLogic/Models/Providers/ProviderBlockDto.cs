@@ -15,7 +15,7 @@ public class ProviderBlockDto
     [DataType(DataType.PhoneNumber)]
     [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
-    [RequiredIf("IsBlocked", true, ErrorMessage = "PhoneNumber is required")]
+    [RequiredIf(nameof(IsBlocked), true, ErrorMessage = "PhoneNumber is required")]
     public string BlockPhoneNumber { get; set; } = string.Empty;
 
     [MaxLength(500)]

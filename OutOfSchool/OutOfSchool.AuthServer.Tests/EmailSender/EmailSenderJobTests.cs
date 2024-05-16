@@ -12,6 +12,7 @@ using SendGrid.Helpers.Mail;
 using System.Net;
 using System.Text;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace OutOfSchool.AuthServer.Tests.EmailSender;
 
@@ -39,11 +40,29 @@ public class EmailSenderJobTests
     }
 
     [Test]
+    public async Task Execute_WithEmptyMergedJobData_ShouldNotSendEmail()
+    {
+        // Arrange
+        _mockEmailOptions.Setup(options => options.Value).Returns(new EmailOptions { Enabled = false });
+        var mockContext = new Mock<IJobExecutionContext>();
+        mockContext.Setup(x => x.MergedJobDataMap).Returns([]);
+
+        // Act
+        await _emailSenderJob.Execute(mockContext.Object);
+
+        // Assert
+        _mockSendGridClient.Verify(
+            client => client.SendEmailAsync(It.IsAny<SendGridMessage>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Test]
     public async Task Execute_WithDisabledEmailOptions_ShouldNotSendEmail()
     {
         // Arrange
         _mockEmailOptions.Setup(options => options.Value).Returns(new EmailOptions { Enabled = false });
         var mockContext = new Mock<IJobExecutionContext>();
+        mockContext.Setup(x => x.MergedJobDataMap).Returns([new KeyValuePair<string, object>("1", "2")]);
 
         // Act
         await _emailSenderJob.Execute(mockContext.Object);
@@ -60,7 +79,7 @@ public class EmailSenderJobTests
         // Arrange
         _mockEmailOptions.Setup(options => options.Value).Returns(new EmailOptions { Enabled = true });
         var mockContext = new Mock<IJobExecutionContext>();
-        mockContext.Setup(context => context.JobDetail.JobDataMap)
+        mockContext.Setup(context => context.MergedJobDataMap)
             .Returns(new JobDataMap
             {
                 { EmailSenderStringConstants.Email, "test@example.com" },
@@ -85,7 +104,7 @@ public class EmailSenderJobTests
         // Arrange
         _mockEmailOptions.Setup(options => options.Value).Returns(new EmailOptions { Enabled = true });
         var mockContext = new Mock<IJobExecutionContext>();
-        mockContext.Setup(context => context.JobDetail.JobDataMap)
+        mockContext.Setup(context => context.MergedJobDataMap)
             .Returns(new JobDataMap
             {
                 { EmailSenderStringConstants.Email, "test@example.com" },
@@ -112,7 +131,7 @@ public class EmailSenderJobTests
         // Arrange
         _mockEmailOptions.Setup(options => options.Value).Returns(new EmailOptions { Enabled = true });
         var mockContext = new Mock<IJobExecutionContext>();
-        mockContext.Setup(context => context.JobDetail.JobDataMap)
+        mockContext.Setup(context => context.MergedJobDataMap)
             .Returns(new JobDataMap
             {
                 { EmailSenderStringConstants.Email, "test@example.com" },
@@ -134,7 +153,7 @@ public class EmailSenderJobTests
         // Arrange
         _mockEmailOptions.Setup(options => options.Value).Returns(new EmailOptions { Enabled = true });
         var mockContext = new Mock<IJobExecutionContext>();
-        mockContext.Setup(context => context.JobDetail.JobDataMap)
+        mockContext.Setup(context => context.MergedJobDataMap)
             .Returns(new JobDataMap
             {
                 { EmailSenderStringConstants.Email, "test@example.com" },
@@ -147,7 +166,7 @@ public class EmailSenderJobTests
             .ReturnsAsync(new Response(HttpStatusCode.BadRequest, null, null));
 
         // Act
-        await _emailSenderJob.Execute(mockContext.Object);
+        Assert.ThrowsAsync<JobExecutionException>(() => _emailSenderJob.Execute(mockContext.Object));
 
         // Assert
         _mockSendGridClient.Verify(
