@@ -6,6 +6,8 @@ using NUnit.Framework;
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.Common.QuartzConstants;
+using OutOfSchool.EmailSender.Quartz;
+using OutOfSchool.EmailSender.Services;
 using Quartz;
 
 namespace OutOfSchool.WebApi.Tests.QuartzJobs.Extensions.Startup;
@@ -28,25 +30,17 @@ public class EmailSenderExtensionsTests
     {
         // Arrange
         var servicesRegistering = new ServiceCollection();
-
         servicesRegistering.AddSingleton<ILoggerFactory>(new LoggerFactory());
-
-        var quartzConfig = new QuartzConfig()
-        {
-            CronSchedules = new QuartzCronScheduleConfig()
-            {
-                EmailSenderCronScheduleString = "0 0 0 1 OCT ? *",
-            },
-        };
+        servicesRegistering.AddSingleton<ISendGridAccessibilityService, SendGridAccessibilityService>();
+        servicesRegistering.AddTransient<ILogger<EmailSenderJobListener>, Logger<EmailSenderJobListener>>();
+        var quartzConfig = new QuartzConfig { CronSchedules = new QuartzCronScheduleConfig { EmailSenderCronScheduleString = "0 0 0 1 * ? *" } };
 
         // Act
         servicesRegistering.AddQuartz(q => q.AddEmailSender(quartzConfig));
-
         using var services = servicesRegistering.BuildServiceProvider();
 
         // Assert
         var scheduler = await services.GetRequiredService<ISchedulerFactory>().GetScheduler();
-
-        Assert.IsTrue(await scheduler.CheckExists(new JobKey(JobTriggerConstants.EmailSender, GroupConstants.Emails)));
+        Assert.IsTrue(await scheduler.CheckExists(new JobKey(JobConstants.EmailSender, GroupConstants.Emails)));
     }
 }
