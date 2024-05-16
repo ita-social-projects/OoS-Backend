@@ -315,7 +315,13 @@ public class MappingProfile : Profile
 
         CreateMap<Parent, ParentDTO>().ReverseMap();
 
-        CreateMap<Parent, ParentCreateDto>().ReverseMap();
+        CreateMap<ParentCreateDto, Parent>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+            .ForMember(dest => dest.Children, opt => opt.Ignore())
+            .ForMember(dest => dest.UserId, opt => opt.Ignore())
+            .ForMember(dest => dest.User, opt => opt.Ignore())
+            .ForMember(dest => dest.ChatRooms, opt => opt.Ignore());
 
         CreateMap<Parent, ParentDtoWithContactInfo>()
             .ForMember(dest => dest.Email, opt => opt.MapFrom(s => s.User.Email))
