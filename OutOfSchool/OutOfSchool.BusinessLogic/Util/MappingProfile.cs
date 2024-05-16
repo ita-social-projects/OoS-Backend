@@ -315,6 +315,8 @@ public class MappingProfile : Profile
 
         CreateMap<Parent, ParentDTO>().ReverseMap();
 
+        CreateMap<Parent, ParentCreateDto>().ReverseMap();
+
         CreateMap<Parent, ParentDtoWithContactInfo>()
             .ForMember(dest => dest.Email, opt => opt.MapFrom(s => s.User.Email))
             .ForMember(dest => dest.EmailConfirmed, opt => opt.MapFrom(s => s.User.EmailConfirmed))
