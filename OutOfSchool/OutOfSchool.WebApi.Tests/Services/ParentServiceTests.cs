@@ -29,6 +29,7 @@ public class ParentServiceTests
     private Mock<IEntityRepositorySoftDeleted<Guid, Child>> repositoryChildMock;
     private IMapper mapper;
     private Mock<IUserService> userService;
+    private Mock<IEntityRepositorySoftDeleted<string, User>> userRepositoryMock;
 
     [SetUp]
     public void SetUp()
@@ -40,6 +41,7 @@ public class ParentServiceTests
         repositoryChildMock = new Mock<IEntityRepositorySoftDeleted<Guid, Child>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         userService = new Mock<IUserService>();
+        userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
 
         parentService = new ParentService(
             parentRepositoryMock.Object,
@@ -48,7 +50,8 @@ public class ParentServiceTests
             loggerMock.Object,
             repositoryChildMock.Object,
             mapper,
-            userService.Object);
+            userService.Object,
+            userRepositoryMock.Object);
     }
 
     #region BlockUblockParent
