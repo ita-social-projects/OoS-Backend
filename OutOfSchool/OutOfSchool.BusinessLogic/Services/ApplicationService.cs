@@ -14,6 +14,7 @@ using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using System.Linq;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -930,9 +931,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
                 additionalData,
                 groupedData).ConfigureAwait(false);
 
-            if (updatedApplication.Status == ApplicationStatus.Approved
-                || updatedApplication.Status == ApplicationStatus.AcceptedForSelection
-                || updatedApplication.Status == ApplicationStatus.Rejected)
+            if (GetStatusesForParentsNotification().Contains(updatedApplication.Status))
             {
                 await SendApplicationUpdateStatusEmail(updatedApplication);
             }
@@ -946,6 +945,11 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
             logger.LogError(ex, "Updating failed");
             throw;
         }
+    }
+
+    private ApplicationStatus[] GetStatusesForParentsNotification()
+    {
+        return new ApplicationStatus[] {ApplicationStatus.Approved, ApplicationStatus.Rejected, ApplicationStatus.AcceptedForSelection };
     }
 
     private async Task<IEnumerable<string>> GetNotificationsRecipientIds(
@@ -978,9 +982,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
                 && additionalData.ContainsKey(StatusTitle)
                 && Enum.TryParse(additionalData[StatusTitle], out ApplicationStatus applicationStatus))
             {
-                if (applicationStatus == ApplicationStatus.Approved
-                    || applicationStatus == ApplicationStatus.Rejected
-                    || applicationStatus == ApplicationStatus.AcceptedForSelection)
+                if (GetStatusesForParentsNotification().Contains(applicationStatus))
                 {
                     recipientIds.Add(application.Parent.UserId);
                 }
