@@ -1,8 +1,8 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -13,6 +13,8 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
 {
     private readonly IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository;
     private readonly IChatRoomWorkshopModelForChatListRepository roomWorkshopWithLastMessageRepository;
+    private readonly IWorkshopService workshopService;
+    private readonly IBlockedProviderParentService blockedProviderParentService;
     private readonly ILogger<ChatRoomWorkshopService> logger;
     private readonly IMapper mapper;
 
@@ -27,11 +29,15 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> chatRoomRepository,
         ILogger<ChatRoomWorkshopService> logger,
         IChatRoomWorkshopModelForChatListRepository roomWorkshopWithLastMessageRepository,
+        IWorkshopService workshopService,
+        IBlockedProviderParentService blockedProviderParentService,
         IMapper mapper)
     {
         this.roomRepository = chatRoomRepository ?? throw new ArgumentNullException(nameof(chatRoomRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.roomWorkshopWithLastMessageRepository = roomWorkshopWithLastMessageRepository ?? throw new ArgumentNullException(nameof(roomWorkshopWithLastMessageRepository));
+        this.workshopService = workshopService ?? throw new ArgumentNullException(nameof(workshopService));
+        this.blockedProviderParentService = blockedProviderParentService ?? throw new ArgumentNullException(nameof(blockedProviderParentService));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
@@ -42,6 +48,15 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
 
         try
         {
+            var workshop = await workshopService.GetById(workshopId);
+            var isBlocked = await blockedProviderParentService.IsBlocked(parentId, workshop.ProviderId);
+
+            if (isBlocked is true)
+            {
+                logger.LogDebug($"Chatroom for workshopId: {workshopId} and parentId: {parentId} is not created because parent is blocked by providerId: {workshop.ProviderId}");
+                return null;
+            }
+
             var existingChatRoom = await this.GetUniqueChatRoomAsync(workshopId, parentId).ConfigureAwait(false);
 
             if (existingChatRoom is null)
