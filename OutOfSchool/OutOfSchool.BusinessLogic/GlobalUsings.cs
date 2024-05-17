@@ -18,7 +18,6 @@ global using OutOfSchool.BusinessLogic;
 global using OutOfSchool.BusinessLogic.Config;
 global using OutOfSchool.BusinessLogic.Config.DataAccess;
 global using OutOfSchool.BusinessLogic.Config.Images;
-global using OutOfSchool.BusinessLogic.Config.Quartz;
 global using OutOfSchool.BusinessLogic.Extensions;
 global using OutOfSchool.BusinessLogic.Hubs;
 global using OutOfSchool.BusinessLogic.Services;
