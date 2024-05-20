@@ -34,6 +34,12 @@ public static class WorkshopGenerator
 
     public static List<Workshop> Generate(int count) => faker.Generate(count);
 
+    public static Workshop WithId(this Workshop workshop, Guid id)
+    {
+        workshop.Id = id;
+        return workshop;
+    }
+
     public static Workshop WithProvider(this Workshop workshop, Provider provider = null)
     {
         provider ??= ProvidersGenerator.Generate();

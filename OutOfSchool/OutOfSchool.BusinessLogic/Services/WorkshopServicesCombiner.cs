@@ -73,9 +73,9 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopDto> GetById(Guid id)
+    public async Task<WorkshopDto> GetById(Guid id, bool asNoTracking = false)
     {
-        var workshop = await workshopService.GetById(id).ConfigureAwait(false);
+        var workshop = await workshopService.GetById(id, asNoTracking).ConfigureAwait(false);
 
         return workshop;
     }

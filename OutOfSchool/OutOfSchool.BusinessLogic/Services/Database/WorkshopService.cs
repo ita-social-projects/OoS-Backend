@@ -202,11 +202,11 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopDto> GetById(Guid id)
+    public async Task<WorkshopDto> GetById(Guid id, bool asNoTracking = false)
     {
         logger.LogInformation($"Getting Workshop by Id started. Looking Id = {id}.");
 
-        var workshop = await workshopRepository.GetWithNavigations(id).ConfigureAwait(false);
+        var workshop = await workshopRepository.GetWithNavigations(id, asNoTracking).ConfigureAwait(false);
 
         if (workshop == null)
         {
@@ -339,11 +339,6 @@ public class WorkshopService : IWorkshopService
         {
             await UpdateDateTimeRanges(dto.DateTimeRanges, dto.Id).ConfigureAwait(false);
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto!.Id).ConfigureAwait(false);
-            var currentWorkshopTakenSeats = currentWorkshop.Applications.TakenSeats();
-            if (dto.AvailableSeats < currentWorkshopTakenSeats)
-            {
-                throw new ArgumentException("The number of available seats must be equal or exceed the number of taken seats");
-            }
 
             // In case if AddressId was changed. AddresId is one and unique for workshop.
             dto.AddressId = currentWorkshop.AddressId;
@@ -351,10 +346,9 @@ public class WorkshopService : IWorkshopService
 
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherDTO>()).ConfigureAwait(false);
 
-            if (dto.AvailableSeats is 0 or null)
-            {
-                dto.AvailableSeats = uint.MaxValue;
-            }
+            dto.AvailableSeats = dto.AvailableSeats.GetMaxValueIfNullOrZero();
+
+            var currentWorkshopTakenSeats = currentWorkshop.Applications.TakenSeats();
 
             if (dto.AvailableSeats == uint.MaxValue
                 && currentWorkshop.AvailableSeats == currentWorkshopTakenSeats)
@@ -891,13 +885,27 @@ public class WorkshopService : IWorkshopService
         var ranges = mapper.Map<List<DateTimeRange>>(dtos);
         foreach (var range in ranges)
         {
-            if (await dateTimeRangeRepository.Any(r => r.Id == range.Id))
+            if (await dateTimeRangeRepository.Any(r => r.Id == range.Id).ConfigureAwait(false))
             {
                 range.WorkshopId = workshopId;
-                await dateTimeRangeRepository.Update(range);
+                await dateTimeRangeRepository.Update(range).ConfigureAwait(false);
             }
         }
     }
+
+    //private async Task UpdateDateTimeRanges(List<DateTimeRangeDto> dtos, Guid workshopId)
+    //{
+    //    var ranges = mapper.Map<List<DateTimeRange>>(dtos);
+    //    foreach (var range in ranges)
+    //    {
+    //        var existingRange = await dateTimeRangeRepository.GetById(range.Id).ConfigureAwait(false);
+    //        if (existingRange != null)
+    //        {
+    //            existingRange.WorkshopId = workshopId;
+    //            await dateTimeRangeRepository.Update(existingRange).ConfigureAwait(false);
+    //        }
+    //    }
+    //}
 
     private async Task UpdateWorkshop()
     {

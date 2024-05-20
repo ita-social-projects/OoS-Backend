@@ -31,14 +31,21 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
         await db.SaveChangesAsync();
     }
 
-    public async Task<Workshop> GetWithNavigations(Guid id)
+    /// <inheritdoc/>
+    public async Task<Workshop> GetWithNavigations(Guid id, bool asNoTracking = false)
     {
-        return await db.Workshops
+        IQueryable<Workshop> query = db.Workshops
             .Include(ws => ws.Address)
             .Include(ws => ws.Teachers)
             .Include(ws => ws.DateTimeRanges)
-            .Include(ws => ws.Images)
-            .SingleOrDefaultAsync(ws => ws.Id == id && !ws.IsDeleted);
+            .Include(ws => ws.Images);
+
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
+
+        return await query.SingleOrDefaultAsync(ws => ws.Id == id && !ws.IsDeleted);
     }
 
     public async Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids)
