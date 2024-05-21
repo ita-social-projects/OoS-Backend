@@ -559,7 +559,7 @@ public class ChatRoomWorkshopServiceTests
         var expectedEmptyList = new List<ChatRoomWorkshopDtoWithLastMessage>();
 
         roomWithSpecialModelRepositoryMock
-            .Setup(x => x.GetByParentIdAsync(invalidParentId, It.IsAny<bool>()))
+            .Setup(x => x.GetByParentIdAsync(invalidParentId, false))
             .Returns(Task.FromResult(new List<ChatRoomWorkshopForChatList>()));
 
         // Act
@@ -580,7 +580,7 @@ public class ChatRoomWorkshopServiceTests
         var expectedEmptyList = new List<ChatRoomWorkshopDtoWithLastMessage>();
 
         roomWithSpecialModelRepositoryMock
-            .Setup(x => x.GetByWorkshopIdsAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<bool>()))
+            .Setup(x => x.GetByWorkshopIdsAsync(It.IsAny<IEnumerable<Guid>>(), true))
             .Returns(Task.FromResult(new List<ChatRoomWorkshopForChatList>()));
 
         // Act
