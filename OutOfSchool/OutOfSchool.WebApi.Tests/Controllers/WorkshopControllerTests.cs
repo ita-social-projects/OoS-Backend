@@ -105,7 +105,7 @@ public class WorkshopControllerTests
     public async Task GetWorkshopById_WhenIdIsValid_ShouldReturnOkResultObject()
     {
         // Arrange
-        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), false)).ReturnsAsync(workshop);
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
 
         // Act
         var result = await controller.GetById(workshop.Id).ConfigureAwait(false) as OkObjectResult;
@@ -120,7 +120,7 @@ public class WorkshopControllerTests
     public async Task GetWorkshopById_WhenThereIsNoWorkshopWithId_ShouldReturnNoContent()
     {
         // Arrange
-        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), false)).ReturnsAsync((WorkshopDto)null);
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync((WorkshopDto)null);
 
         // Act
         var result = await controller.GetById(workshop.Id).ConfigureAwait(false) as NoContentResult;
@@ -537,7 +537,7 @@ public class WorkshopControllerTests
 
         var updateRequest = WithWorkshopStatusDto(workshop.Id, WorkshopStatus.Open);
 
-        workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId, false))
+        workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId, It.IsAny<bool>()))
             .ReturnsAsync(workshop);
         workshopServiceMoq.Setup(x => x.UpdateStatus(updateRequest))
             .ReturnsAsync(updateRequest);
@@ -559,7 +559,7 @@ public class WorkshopControllerTests
 
         var updateRequest = WithWorkshopStatusDto(nonExistentId, WorkshopStatus.Open);
 
-        workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId, false))
+        workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId, It.IsAny<bool>()))
             .ReturnsAsync(null as WorkshopDto);
 
         // Act
@@ -580,7 +580,7 @@ public class WorkshopControllerTests
         workshop.ProviderOwnership = OwnershipType.Common;
 
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
-        workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId, false))
+        workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId, It.IsAny<bool>()))
             .ReturnsAsync(workshop);
         workshopServiceMoq.Setup(x => x.UpdateStatus(updateRequest)).
             ThrowsAsync(new ArgumentException(It.IsAny<string>()));
@@ -599,7 +599,7 @@ public class WorkshopControllerTests
         // Arrange
         var workShopStatusDto = WithWorkshopStatusDto(workshop.Id, WorkshopStatus.Open);
         var notAuthorProvider = new ProviderDto() { Id = It.IsAny<Guid>(), UserId = userId };
-        workshopServiceMoq.Setup(x => x.GetById(workShopStatusDto.WorkshopId, false))
+        workshopServiceMoq.Setup(x => x.GetById(workShopStatusDto.WorkshopId, It.IsAny<bool>()))
             .ReturnsAsync(workshop);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(notAuthorProvider);
 
@@ -620,7 +620,7 @@ public class WorkshopControllerTests
     {
         // Arrange
         workshop.ProviderId = provider.Id;
-        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), false)).ReturnsAsync(workshop);
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
         providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
         workshopServiceMoq.Setup(x => x.Delete(workshop.Id)).Returns(Task.CompletedTask);
@@ -640,7 +640,7 @@ public class WorkshopControllerTests
     public async Task DeleteWorkshop_WhenThereIsNoWorkshopWithId_ShouldNoContentResult()
     {
         // Arrange
-        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), false)).ReturnsAsync(() => null);
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(() => null);
 
         // Act
         var result = await controller.Delete(workshop.Id) as NoContentResult;
@@ -656,7 +656,7 @@ public class WorkshopControllerTests
     public async Task DeleteWorkshop_WhenIdProviderHasNoRights_ShouldReturn403ObjectResult()
     {
         // Arrange
-        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), false)).ReturnsAsync(workshop);
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
         var notAuthorProvider = new ProviderDto() { Id = It.IsAny<Guid>(), UserId = userId };
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(notAuthorProvider);
 
