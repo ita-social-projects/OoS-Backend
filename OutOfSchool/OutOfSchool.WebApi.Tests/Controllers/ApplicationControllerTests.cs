@@ -246,7 +246,7 @@ public class ApplicationControllerTests
     {
         // Arrange
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
-        workshopService.Setup(s => s.GetById(It.IsAny<Guid>(), false)).ReturnsAsync(workshopDto);
+        workshopService.Setup(s => s.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshopDto);
         providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
         List<ApplicationDto> app = applications.ToList();
         applicationService.Setup(s => s.GetAllByWorkshop(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<ApplicationFilter>()))
@@ -299,7 +299,7 @@ public class ApplicationControllerTests
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
         providerService.Setup(s => s.GetByUserId(userId, It.IsAny<bool>())).ReturnsAsync(newProvider);
-        workshopService.Setup(s => s.GetById(id, false)).ReturnsAsync(newWorkshop);
+        workshopService.Setup(s => s.GetById(id, It.IsAny<bool>())).ReturnsAsync(newWorkshop);
         providerService.Setup(s => s.GetById(id)).ReturnsAsync(newProvider);
         List<ApplicationDto> app1 = applications.Where(a => a.Workshop.ProviderId == id).ToList();
         applicationService.Setup(s => s.GetAllByProvider(id, filter))
@@ -329,7 +329,7 @@ public class ApplicationControllerTests
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
         providerService.Setup(s => s.GetByUserId(userId, It.IsAny<bool>())).ReturnsAsync(newProvider);
-        workshopService.Setup(s => s.GetById(id, false)).ReturnsAsync(newWorkshop);
+        workshopService.Setup(s => s.GetById(id, It.IsAny<bool>())).ReturnsAsync(newWorkshop);
         providerService.Setup(s => s.GetById(id)).ReturnsAsync(newProvider);
         List<ApplicationDto> app1 = applications.Where(a => a.Workshop.ProviderId == id).ToList();
         applicationService.Setup(s => s.GetAllByProvider(id, filter))
@@ -355,7 +355,7 @@ public class ApplicationControllerTests
 
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
-        workshopService.Setup(s => s.GetById(id, false)).ReturnsAsync(new WorkshopDto());
+        workshopService.Setup(s => s.GetById(id, It.IsAny<bool>())).ReturnsAsync(new WorkshopDto());
         applicationService.Setup(s => s.GetAllByWorkshop(id, It.IsAny<Guid>(), filter))
             .ThrowsAsync(new UnauthorizedAccessException());
 
@@ -405,7 +405,7 @@ public class ApplicationControllerTests
         };
 
         var workshop = new WorkshopDto();
-        workshopService.Setup(s => s.GetById(app.WorkshopId, false)).ReturnsAsync(workshop);
+        workshopService.Setup(s => s.GetById(app.WorkshopId, It.IsAny<bool>())).ReturnsAsync(workshop);
 
         blockedProviderParentService.Setup(s => s.IsBlocked(app.ParentId, workshop.ProviderId))
         .ReturnsAsync(false);
@@ -468,7 +468,7 @@ public class ApplicationControllerTests
 
         var workshop = new WorkshopDto();
 
-        workshopService.Setup(s => s.GetById(workshopId, false)).ReturnsAsync(workshop);
+        workshopService.Setup(s => s.GetById(workshopId, It.IsAny<bool>())).ReturnsAsync(workshop);
 
         blockedProviderParentService.Setup(s => s.IsBlocked(blockedParentId, workshop.ProviderId))
             .ReturnsAsync(true);
@@ -497,7 +497,7 @@ public class ApplicationControllerTests
             WorkshopId = nonExistentWorkshopId,
         };
 
-        workshopService.Setup(s => s.GetById(nonExistentWorkshopId, false)).ReturnsAsync((WorkshopDto)null);
+        workshopService.Setup(s => s.GetById(nonExistentWorkshopId, It.IsAny<bool>())).ReturnsAsync((WorkshopDto)null);
 
         // Act
         var result = await controller.Create(applicationWithNonExistentWorkshop).ConfigureAwait(false) as BadRequestObjectResult;
@@ -525,7 +525,7 @@ public class ApplicationControllerTests
             ParentId = anotherParent.Id,
         };
 
-        workshopService.Setup(s => s.GetById(applicationCreate.WorkshopId, false)).ReturnsAsync(new WorkshopDto()); 
+        workshopService.Setup(s => s.GetById(applicationCreate.WorkshopId, It.IsAny<bool>())).ReturnsAsync(new WorkshopDto()); 
 
         blockedProviderParentService.Setup(s => s.IsBlocked(applicationCreate.ParentId, It.IsAny<Guid>())).ReturnsAsync(false);
 
@@ -562,7 +562,7 @@ public class ApplicationControllerTests
         };
 
         applicationService.Setup(s => s.Update(It.IsAny<ApplicationUpdate>(), It.IsAny<Guid>())).ReturnsAsync(applications.First());
-        workshopService.Setup(s => s.GetById(It.IsAny<Guid>(), false)).ReturnsAsync(new WorkshopDto());
+        workshopService.Setup(s => s.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(new WorkshopDto());
 
         // Act
         var result = await controller.Update(shortApplication).ConfigureAwait(false);
@@ -605,7 +605,7 @@ public class ApplicationControllerTests
 
         applicationService.Setup(s => s.Update(shortApplication, It.IsAny<Guid>()))
             .ThrowsAsync(new UnauthorizedAccessException());
-        workshopService.Setup(s => s.GetById(shortApplication.WorkshopId, false)).ReturnsAsync(new WorkshopDto());
+        workshopService.Setup(s => s.GetById(shortApplication.WorkshopId, It.IsAny<bool>())).ReturnsAsync(new WorkshopDto());
 
         // Act & Assert
         Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await controller.Update(shortApplication));
