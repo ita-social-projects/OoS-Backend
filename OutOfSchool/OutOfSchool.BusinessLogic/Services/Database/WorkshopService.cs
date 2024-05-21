@@ -899,29 +899,25 @@ public class WorkshopService : IWorkshopService
         var currentWorkshopTakenSeats = currentWorkshop.Applications.TakenSeats();
 
         if (newAvailableSeats == uint.MaxValue
-            && currentWorkshop.AvailableSeats == currentWorkshopTakenSeats)
+            && currentWorkshop.AvailableSeats == currentWorkshopTakenSeats
+            && currentWorkshop.Status == WorkshopStatus.Closed)
         {
-            if (currentWorkshop.Status == WorkshopStatus.Closed)
+            await UpdateStatus(new()
             {
-                await UpdateStatus(new()
-                {
-                    WorkshopId = currentWorkshop.Id,
-                    Status = WorkshopStatus.Open,
-                }).ConfigureAwait(false);
-            }
+                WorkshopId = currentWorkshop.Id,
+                Status = WorkshopStatus.Open,
+            }).ConfigureAwait(false);
         }
 
         if (newAvailableSeats < uint.MaxValue
-            && newAvailableSeats == currentWorkshopTakenSeats)
+            && newAvailableSeats == currentWorkshopTakenSeats
+            && currentWorkshop.Status == WorkshopStatus.Open)
         {
-            if (currentWorkshop.Status == WorkshopStatus.Open)
+            await UpdateStatus(new()
             {
-                await UpdateStatus(new()
-                {
-                    WorkshopId = currentWorkshop.Id,
-                    Status = WorkshopStatus.Closed,
-                }).ConfigureAwait(false);
-            }
+                WorkshopId = currentWorkshop.Id,
+                Status = WorkshopStatus.Closed,
+            }).ConfigureAwait(false);
         }
     }
 }
