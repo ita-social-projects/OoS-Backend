@@ -361,7 +361,7 @@ public class WorkshopController : ControllerBase
             return StatusCode(403, "Forbidden to update workshops, which are not related to you");
         }
 
-        if (!await IsAvailableSeatsValid(dto.AvailableSeats, dto.Id))
+        if (!await combinedWorkshopService.IsAvailableSeatsValid(dto.AvailableSeats, dto.Id))
         {
             return BadRequest("The number of available seats must be equal or greater than the number of taken seats");
         }
@@ -518,11 +518,5 @@ public class WorkshopController : ControllerBase
             providerId;
 
         return await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false;
-    }
-
-    private async Task<bool> IsAvailableSeatsValid(uint? availableSeats, Guid workshopId)
-    {
-        var workshop = await combinedWorkshopService.GetById(workshopId, true).ConfigureAwait(false);
-        return availableSeats.GetMaxValueIfNullOrZero() >= workshop.TakenSeats;
     }
 }

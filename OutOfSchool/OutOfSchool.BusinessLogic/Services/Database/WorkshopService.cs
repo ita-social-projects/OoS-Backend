@@ -348,27 +348,8 @@ public class WorkshopService : IWorkshopService
 
             dto.AvailableSeats = dto.AvailableSeats.GetMaxValueIfNullOrZero();
 
-            var currentWorkshopTakenSeats = currentWorkshop.Applications.TakenSeats();
-
-            if (dto.AvailableSeats == uint.MaxValue
-                && currentWorkshop.AvailableSeats == currentWorkshopTakenSeats)
-            {
-                await UpdateStatus(new()
-                {
-                    WorkshopId = currentWorkshop.Id,
-                    Status = WorkshopStatus.Open,
-                }).ConfigureAwait(false);
-            }
-
-            if (dto.AvailableSeats < uint.MaxValue
-                && dto.AvailableSeats == currentWorkshopTakenSeats)
-            {
-                await UpdateStatus(new()
-                {
-                    WorkshopId = currentWorkshop.Id,
-                    Status = WorkshopStatus.Closed,
-                }).ConfigureAwait(false);
-            }
+            await UpdateWorkshopStatusBySeatsLimitAndAvailability(
+                (uint)dto.AvailableSeats, currentWorkshop).ConfigureAwait(false);
 
             mapper.Map(dto, currentWorkshop);
 
@@ -441,6 +422,11 @@ public class WorkshopService : IWorkshopService
             dto.Address.Id = currentWorkshop.AddressId;
 
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherDTO>()).ConfigureAwait(false);
+
+            dto.AvailableSeats = dto.AvailableSeats.GetMaxValueIfNullOrZero();
+
+            await UpdateWorkshopStatusBySeatsLimitAndAvailability(
+                (uint)dto.AvailableSeats, currentWorkshop).ConfigureAwait(false);
 
             mapper.Map(dto, currentWorkshop);
 
@@ -893,20 +879,6 @@ public class WorkshopService : IWorkshopService
         }
     }
 
-    //private async Task UpdateDateTimeRanges(List<DateTimeRangeDto> dtos, Guid workshopId)
-    //{
-    //    var ranges = mapper.Map<List<DateTimeRange>>(dtos);
-    //    foreach (var range in ranges)
-    //    {
-    //        var existingRange = await dateTimeRangeRepository.GetById(range.Id).ConfigureAwait(false);
-    //        if (existingRange != null)
-    //        {
-    //            existingRange.WorkshopId = workshopId;
-    //            await dateTimeRangeRepository.Update(existingRange).ConfigureAwait(false);
-    //        }
-    //    }
-    //}
-
     private async Task UpdateWorkshop()
     {
         try
@@ -921,4 +893,29 @@ public class WorkshopService : IWorkshopService
     }
 
     private void ValidateOffsetFilter(OffsetFilter offsetFilter) => ModelValidationHelper.ValidateOffsetFilter(offsetFilter);
+
+    private async Task UpdateWorkshopStatusBySeatsLimitAndAvailability(uint newAvailableSeats, Workshop currentWorkshop)
+    {
+        var currentWorkshopTakenSeats = currentWorkshop.Applications.TakenSeats();
+
+        if (newAvailableSeats == uint.MaxValue
+            && currentWorkshop.AvailableSeats == currentWorkshopTakenSeats)
+        {
+            await UpdateStatus(new()
+            {
+                WorkshopId = currentWorkshop.Id,
+                Status = WorkshopStatus.Open,
+            }).ConfigureAwait(false);
+        }
+
+        if (newAvailableSeats < uint.MaxValue
+            && newAvailableSeats == currentWorkshopTakenSeats)
+        {
+            await UpdateStatus(new()
+            {
+                WorkshopId = currentWorkshop.Id,
+                Status = WorkshopStatus.Closed,
+            }).ConfigureAwait(false);
+        }
+    }
 }

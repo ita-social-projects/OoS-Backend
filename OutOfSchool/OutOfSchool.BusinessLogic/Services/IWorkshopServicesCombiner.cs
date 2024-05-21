@@ -131,4 +131,13 @@ public interface IWorkshopServicesCombiner
     /// <param name="providerStatus">ProviderStatus of Provider to be changed.</param>
     /// <returns><see cref="IEnumerable{T}"/> of Workshops for the specified provider.</returns>
     Task<IEnumerable<ShortEntityDto>> UpdateProviderStatus(Guid providerId, ProviderStatus providerStatus);
+
+    /// <summary>
+    /// Checks if the given available seats value is valid for the specified workshop.
+    /// </summary>
+    /// <param name="availableSeats">The number of available seats to validate.</param>
+    /// <param name="workshopId">The unique Id of the workshop.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.
+    /// The task result indicates whether the available seats value is valid.</returns>
+    Task<bool> IsAvailableSeatsValid(uint? availableSeats, Guid workshopId);
 }

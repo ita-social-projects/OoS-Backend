@@ -1,11 +1,11 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
-using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -257,6 +257,13 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
         }
 
         return shortWorkshops;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> IsAvailableSeatsValid(uint? availableSeats, Guid workshopId)
+    {
+        var workshop = await workshopService.GetById(workshopId, true).ConfigureAwait(false);
+        return availableSeats.GetMaxValueIfNullOrZero() >= workshop.TakenSeats;
     }
 
     private async Task<IEnumerable<string>> GetNotificationsRecipientIds(Guid objectId)
