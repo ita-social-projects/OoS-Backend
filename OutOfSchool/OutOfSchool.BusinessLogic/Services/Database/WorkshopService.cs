@@ -901,21 +901,27 @@ public class WorkshopService : IWorkshopService
         if (newAvailableSeats == uint.MaxValue
             && currentWorkshop.AvailableSeats == currentWorkshopTakenSeats)
         {
-            await UpdateStatus(new()
+            if (currentWorkshop.Status == WorkshopStatus.Closed)
             {
-                WorkshopId = currentWorkshop.Id,
-                Status = WorkshopStatus.Open,
-            }).ConfigureAwait(false);
+                await UpdateStatus(new()
+                {
+                    WorkshopId = currentWorkshop.Id,
+                    Status = WorkshopStatus.Open,
+                }).ConfigureAwait(false);
+            }
         }
 
         if (newAvailableSeats < uint.MaxValue
             && newAvailableSeats == currentWorkshopTakenSeats)
         {
-            await UpdateStatus(new()
+            if (currentWorkshop.Status == WorkshopStatus.Open)
             {
-                WorkshopId = currentWorkshop.Id,
-                Status = WorkshopStatus.Closed,
-            }).ConfigureAwait(false);
+                await UpdateStatus(new()
+                {
+                    WorkshopId = currentWorkshop.Id,
+                    Status = WorkshopStatus.Closed,
+                }).ConfigureAwait(false);
+            }
         }
     }
 }
