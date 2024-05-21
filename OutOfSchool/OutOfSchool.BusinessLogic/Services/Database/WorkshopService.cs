@@ -910,7 +910,7 @@ public class WorkshopService : IWorkshopService
         }
 
         if (newAvailableSeats < uint.MaxValue
-            && newAvailableSeats == currentWorkshopTakenSeats
+            && newAvailableSeats <= currentWorkshopTakenSeats
             && currentWorkshop.Status == WorkshopStatus.Open)
         {
             await UpdateStatus(new()
