@@ -700,7 +700,7 @@ public class WorkshopServiceTests
             .ReturnsAsync(workshop);
         workshopRepository
             .Setup(
-                w => w.GetWithNavigations(workshopId, false))
+                w => w.GetWithNavigations(workshopId, It.IsAny<bool>()))
             .ReturnsAsync(workshop);
         mapperMock.Setup(m => m.Map<WorkshopDto>(workshop)).Returns(new WorkshopDto() { Id = workshop.Id });
         averageRatingServiceMock.Setup(r => r.GetByEntityIdAsync(workshopId)).ReturnsAsync(new AverageRatingDto() { EntityId = workshop.Id });
@@ -754,7 +754,7 @@ public class WorkshopServiceTests
     private void SetupUpdate(Workshop workshop)
     {
         workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
-        workshopRepository.Setup(w => w.GetWithNavigations(It.IsAny<Guid>(), false)).ReturnsAsync(workshop);
+        workshopRepository.Setup(w => w.GetWithNavigations(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
         workshopRepository.Setup(w => w.UnitOfWork.CompleteAsync()).ReturnsAsync(It.IsAny<int>());
         mapperMock.Setup(m => m.Map<WorkshopBaseDto>(workshop))
             .Returns(mapper.Map<WorkshopBaseDto>(workshop));
