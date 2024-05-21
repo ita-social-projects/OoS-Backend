@@ -231,7 +231,7 @@ public class ApplicationServiceTests
 
         currentUserServiceMock.Setup(x => x.UserHasRights(It.IsAny<ParentRights>())).Returns(() => Task.FromResult(true));
 
-        workshopServiceCombinerMock.Setup(x => x.GetById(application.WorkshopId, false)).Returns(Task.FromResult(new WorkshopDto()));
+        workshopServiceCombinerMock.Setup(x => x.GetById(application.WorkshopId, It.IsAny<bool>())).Returns(Task.FromResult(new WorkshopDto()));
 
         var applications = new List<Application>
         {
@@ -593,7 +593,7 @@ public class ApplicationServiceTests
         };
 
         workshopServiceCombinerMock.Setup(c =>
-                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), false))
+                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), It.IsAny<bool>()))
             .ReturnsAsync(new WorkshopDto()
             {
                 Id = update.WorkshopId,
@@ -677,7 +677,7 @@ public class ApplicationServiceTests
         };
 
         workshopServiceCombinerMock.Setup(c =>
-                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), false))
+                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), It.IsAny<bool>()))
             .ReturnsAsync(new WorkshopDto()
             {
                 Id = update.WorkshopId,
@@ -755,7 +755,7 @@ public class ApplicationServiceTests
         };
 
         workshopServiceCombinerMock.Setup(c =>
-                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), false))
+                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), It.IsAny<bool>()))
             .ReturnsAsync(new WorkshopDto()
             {
                 Id = update.WorkshopId,
@@ -818,7 +818,7 @@ public class ApplicationServiceTests
         };
 
         workshopServiceCombinerMock.Setup(c =>
-                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), false))
+                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), It.IsAny<bool>()))
             .ReturnsAsync(new WorkshopDto()
             {
                 Id = update.WorkshopId,
@@ -881,7 +881,7 @@ public class ApplicationServiceTests
         };
 
         workshopServiceCombinerMock.Setup(c =>
-                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), false))
+                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), It.IsAny<bool>()))
             .ReturnsAsync(new WorkshopDto()
             {
                 Id = update.WorkshopId,
@@ -963,7 +963,7 @@ public class ApplicationServiceTests
         };
 
         workshopServiceCombinerMock.Setup(c =>
-                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), false))
+                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), It.IsAny<bool>()))
             .ReturnsAsync(new WorkshopDto()
             {
                 Id = update.WorkshopId,
@@ -1028,7 +1028,7 @@ public class ApplicationServiceTests
         };
 
         workshopServiceCombinerMock.Setup(c =>
-                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), false))
+                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), It.IsAny<bool>()))
             .ReturnsAsync(new WorkshopDto()
             {
                 Id = update.WorkshopId,
@@ -1083,7 +1083,7 @@ public class ApplicationServiceTests
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<string>()))
             .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> {application}));
-        workshopServiceCombinerMock.Setup(x => x.GetById(application.WorkshopId, false)).ReturnsAsync(workshopMock);
+        workshopServiceCombinerMock.Setup(x => x.GetById(application.WorkshopId, It.IsAny<bool>())).ReturnsAsync(workshopMock);
     }
 
     private void SetupGetAll(List<Application> apps)
