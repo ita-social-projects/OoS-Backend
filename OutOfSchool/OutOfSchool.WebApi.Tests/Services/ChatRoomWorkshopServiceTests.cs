@@ -122,7 +122,7 @@ public class ChatRoomWorkshopServiceTests
 
         // Assert
         Assert.IsInstanceOf<ChatRoomWorkshopDto>(result);
-        Assert.AreNotEqual(0, roomCount);
+        Assert.AreNotEqual(default(int), roomCount);
         Assert.AreEqual(roomCount, dbContext.ChatRoomWorkshops.Count());
         Assert.AreEqual(dbContext.ChatRoomWorkshops.Where(x => x.ParentId == parentId && x.WorkshopId == workshopId).FirstOrDefault()?.Id, result.Id);
     }
@@ -141,7 +141,7 @@ public class ChatRoomWorkshopServiceTests
         // Assert
         Assert.IsInstanceOf<ChatRoomWorkshopDto>(result);
         Assert.AreEqual(roomCount + 1, dbContext.ChatRoomWorkshops.Count());
-        Assert.AreNotEqual(0, result.Id);
+        Assert.AreNotEqual(default(int), result.Id);
         Assert.AreEqual(dbContext.ChatRoomWorkshops.LastOrDefault()?.Id, result.Id);
     }
 
