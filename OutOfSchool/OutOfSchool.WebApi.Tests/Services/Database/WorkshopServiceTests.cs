@@ -406,8 +406,9 @@ public class WorkshopServiceTests
         WorkshopBaseDto workshopBaseDto = null;
 
         // Act and Assert
-        Func<Task> act = () => workshopService.Update(workshopBaseDto);
-        await act.Should().ThrowAsync<ArgumentNullException>();
+        await workshopService
+            .Awaiting(m => m.Update(workshopBaseDto))
+            .Should().ThrowAsync<ArgumentNullException>();
     }
 
     [Test]
