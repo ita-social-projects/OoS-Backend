@@ -32,6 +32,7 @@ public class NotificationServiceTests
     private Mock<INotificationRepository> notificationRepositoryMock;
     private IMapper mapper;
     private Mock<IOptions<NotificationsConfig>> notificationsConfigMock;
+    private Mock<IHubContext<NotificationHub>> notificationHub;
 
     private string userId;
     private List<Notification> notifications;
@@ -43,7 +44,7 @@ public class NotificationServiceTests
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         notificationsConfigMock = new Mock<IOptions<NotificationsConfig>>();
 
-        var notificationHub = new Mock<IHubContext<NotificationHub>>();
+        notificationHub = new Mock<IHubContext<NotificationHub>>();
         var clientsMock = new Mock<IHubClients>();
         var clientProxyMock = new Mock<IClientProxy>();
 
@@ -151,6 +152,10 @@ public class NotificationServiceTests
         };
 
         notificationsConfigMock.Setup(x => x.Value).Returns(notificationsConfig);
+        var mockClients = new Mock<IHubClients>();
+        var mockClientProxy = new Mock<IClientProxy>();
+        mockClients.Setup(clients => clients.Group(It.IsAny<string>())).Returns(mockClientProxy.Object);
+        notificationHub.Setup(x => x.Clients).Returns(() => mockClients.Object);
 
         // Act
         await notificationService.Create(
@@ -161,6 +166,11 @@ public class NotificationServiceTests
 
         // Assert
         notificationRepositoryMock.Verify(x => x.Create(It.IsAny<Notification>()), Times.Exactly(recipientsIds.Count()));
+        notificationHub.Verify(x => x.Clients.Group(It.IsAny<string>()), Times.Exactly(recipientsIds.Count()));
+        foreach (var recipientId in recipientsIds)
+        {
+            notificationHub.Verify(x => x.Clients.Group(recipientId), Times.Once);
+        }
     }
 
     #endregion

@@ -56,7 +56,7 @@ public class NotificationService : INotificationService
 
         var notificationDtoReturn = mapper.Map<NotificationDto>(newNotification);
 
-        var unreadNotificationsCount = GetAmountOfNewUsersNotificationsAsync(notification.UserId);
+        var unreadNotificationsCount = await GetAmountOfNewUsersNotificationsAsync(notification.UserId);
 
         await notificationHub.Clients
             .Group(notification.UserId)
@@ -99,7 +99,7 @@ public class NotificationService : INotificationService
 
             logger.LogInformation("Notification with Id = {Id} was created successfully", newNotificationDto?.Id);
 
-            var unreadNotificationsCount = GetAmountOfNewUsersNotificationsAsync(notification.UserId);
+            var unreadNotificationsCount = await GetAmountOfNewUsersNotificationsAsync(notification.UserId);
 
             await notificationHub.Clients
                 .Group(notification.UserId)
