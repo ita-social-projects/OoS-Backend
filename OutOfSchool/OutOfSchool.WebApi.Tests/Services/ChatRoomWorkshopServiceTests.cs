@@ -241,7 +241,7 @@ public class ChatRoomWorkshopServiceTests
         {
             new ChatRoomWorkshopForChatList() { Id = Guid.NewGuid(), ParentId = existingParentId },
         };
-        roomWithSpecialModelRepositoryMock.Setup(x => x.GetByParentIdAsync(existingParentId, false)).ReturnsAsync(validRooms);
+        roomWithSpecialModelRepositoryMock.Setup(x => x.GetByParentIdAsync(existingParentId, default)).ReturnsAsync(validRooms);
 
         // Act
         var result = await roomService.GetByParentIdAsync(existingParentId).ConfigureAwait(false);
@@ -259,7 +259,7 @@ public class ChatRoomWorkshopServiceTests
         var notExistingParentId = Guid.NewGuid();
         var validRooms = new List<ChatRoomWorkshopForChatList>();
 
-        roomWithSpecialModelRepositoryMock.Setup(x => x.GetByParentIdAsync(notExistingParentId, false)).ReturnsAsync(validRooms);
+        roomWithSpecialModelRepositoryMock.Setup(x => x.GetByParentIdAsync(notExistingParentId, default)).ReturnsAsync(validRooms);
 
         // Act
         var result = await roomService.GetByParentIdAsync(notExistingParentId).ConfigureAwait(false);
@@ -322,7 +322,7 @@ public class ChatRoomWorkshopServiceTests
         {
             new ChatRoomWorkshopForChatList() { Id = Guid.NewGuid(), WorkshopId = existingWorkshopId, Workshop = new WorkshopInfoForChatList() { Id = existingWorkshopId } },
         };
-        roomWithSpecialModelRepositoryMock.Setup(x => x.GetByWorkshopIdAsync(existingWorkshopId, true)).ReturnsAsync(validRooms);
+        roomWithSpecialModelRepositoryMock.Setup(x => x.GetByWorkshopIdAsync(existingWorkshopId, default)).ReturnsAsync(validRooms);
 
         // Act
         var result = await roomService.GetByWorkshopIdAsync(existingWorkshopId).ConfigureAwait(false);
@@ -341,7 +341,7 @@ public class ChatRoomWorkshopServiceTests
         var notExistingWorkshopId = Guid.NewGuid();
         var validRooms = new List<ChatRoomWorkshopForChatList>();
 
-        roomWithSpecialModelRepositoryMock.Setup(x => x.GetByWorkshopIdAsync(notExistingWorkshopId, true)).ReturnsAsync(validRooms);
+        roomWithSpecialModelRepositoryMock.Setup(x => x.GetByWorkshopIdAsync(notExistingWorkshopId, default)).ReturnsAsync(validRooms);
 
         // Act
         var result = await roomService.GetByWorkshopIdAsync(notExistingWorkshopId).ConfigureAwait(false);
@@ -499,7 +499,7 @@ public class ChatRoomWorkshopServiceTests
         var expectedCount = chatRooms.Count(r => r.NotReadByCurrentUserMessagesCount > 0);
 
         roomWithSpecialModelRepositoryMock
-            .Setup(x => x.GetByParentIdAsync(parentId, false))
+            .Setup(x => x.GetByParentIdAsync(parentId, default))
             .ReturnsAsync(chatRooms);
 
         // Act
