@@ -190,7 +190,7 @@ public class WorkshopServiceTests
         SetupGetById(workshop);
 
         // Act
-        var result = await workshopService.GetById(id).ConfigureAwait(false);
+        var result = await workshopService.GetById(id, false).ConfigureAwait(false);
 
         // Assert
         result.Should().BeEquivalentTo(ExpectedWorkshopGetByIdSuccess(id));
@@ -205,7 +205,7 @@ public class WorkshopServiceTests
         SetupGetById(workshop);
 
         // Act
-        var result = await workshopService.GetById(It.IsAny<Guid>()).ConfigureAwait(false);
+        var result = await workshopService.GetById(It.IsAny<Guid>(), false).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
