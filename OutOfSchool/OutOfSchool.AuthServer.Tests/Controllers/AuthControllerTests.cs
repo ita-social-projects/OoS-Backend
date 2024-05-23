@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Bogus;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -20,9 +19,7 @@ using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.AuthCommon.ViewModels;
 using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Services;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
@@ -36,7 +33,6 @@ public class AuthControllerTests
     private Mock<FakeSignInManager> fakeSignInManager;
     private Mock<IInteractionService> fakeInteractionService;
     private Mock<ILogger<AuthController>> fakeLogger;
-    private Mock<IParentRepository> fakeparentRepository;
     private AuthController authController;
     private Mock<IStringLocalizer<SharedResource>> fakeLocalizer;
     private static Mock<IOptions<AuthServerConfig>> fakeIdentityServerConfig;
@@ -61,7 +57,6 @@ public class AuthControllerTests
         fakeInteractionService = new Mock<IInteractionService>();
         fakeSignInManager = new Mock<FakeSignInManager>();
         fakeLogger = new Mock<ILogger<AuthController>>();
-        fakeparentRepository = new Mock<IParentRepository>();
         fakeLocalizer = new Mock<IStringLocalizer<SharedResource>>();
         fakeEmailSender = new Mock<IEmailSenderService>();
         fakeRenderer = new Mock<IRazorViewToStringRenderer>();
@@ -75,7 +70,6 @@ public class AuthControllerTests
             fakeSignInManager.Object,
             fakeInteractionService.Object, 
             fakeLogger.Object,
-            fakeparentRepository.Object,
             fakeLocalizer.Object,
             fakeIdentityServerConfig.Object,
             fakeRenderer.Object,
