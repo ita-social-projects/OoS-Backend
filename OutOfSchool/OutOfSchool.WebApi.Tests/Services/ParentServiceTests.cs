@@ -1,15 +1,18 @@
 ﻿using System;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Parent;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
@@ -53,6 +56,166 @@ public class ParentServiceTests
             userService.Object,
             userRepositoryMock.Object);
     }
+
+    #region Create
+    [Test]
+    public void Create_WhenDtoIsNull_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await parentService.Create(null).ConfigureAwait(false));
+    }
+
+    [TestCase(null)]
+    [TestCase("")]
+    public void Create_WhenUserIdIsInvalid_ShouldLogErrorAndThrowInvalidOperationException(string userId)
+    {
+        // Arrange
+        currentUserServiceMock.SetupGet(s => s.UserId).Returns(userId);
+
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await parentService.Create(new ParentCreateDto()).ConfigureAwait(false));
+
+        loggerMock.Verify(
+            logger => logger.Log(
+                It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
+                It.Is<EventId>(eventId => eventId.Id == 0),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            Times.Once);
+    }
+
+    [Test]
+    public void Create_WhenUserNotExists_ShouldLogErrorAndThrowInvalidOperationException()
+    {
+        // Arrange
+        currentUserServiceMock.SetupGet(s => s.UserId).Returns("userId");
+
+        userRepositoryMock
+            .Setup(r => r.GetById("userId"))
+            .ReturnsAsync(null as User);
+
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await parentService.Create(new ParentCreateDto()).ConfigureAwait(false));
+
+        loggerMock.Verify(
+            logger => logger.Log(
+                It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
+                It.Is<EventId>(eventId => eventId.Id == 0),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            Times.Once);
+    }
+
+    [Test]
+    public void Create_WhenParentExists_ShouldLogErrorAndThrowInvalidOperationException()
+    {
+        // Arrange
+        currentUserServiceMock.SetupGet(s => s.UserId).Returns("userId");
+
+        parentRepositoryMock
+            .Setup(r => r.Any(It.IsAny<Expression<Func<Parent, bool>>>()))
+            .ReturnsAsync(true);
+
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await parentService.Create(new ParentCreateDto()).ConfigureAwait(false));
+
+        loggerMock.Verify(
+            logger => logger.Log(
+                It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
+                It.Is<EventId>(eventId => eventId.Id == 0),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task Create_WhenUserExists_ShouldSetUserIsRegistered()
+    {
+        // Arrange
+        var user = UserGenerator.Generate();
+
+        currentUserServiceMock.SetupGet(s => s.UserId).Returns(user.Id);
+
+        userRepositoryMock
+            .Setup(r => r.GetById(user.Id))
+            .ReturnsAsync(user);
+
+        parentRepositoryMock
+            .Setup(r => r.Create(It.IsAny<Parent>()))
+            .ReturnsAsync(new Parent());
+
+        parentRepositoryMock
+            .SetupGet(r => r.UnitOfWork)
+            .Returns(new Mock<IUnitOfWork>().Object);
+
+        // Act
+        await parentService.Create(new ParentCreateDto()).ConfigureAwait(false);
+
+        // Assert
+        Assert.True(user.IsRegistered);
+    }
+
+    [Test]
+    public async Task Create_WhenUserExists_ShouldSetUserPhoneNumber()
+    {
+        // Arrange
+        var user = UserGenerator.Generate();
+        var expectedPhoneNumber = "+380999999999";
+
+        currentUserServiceMock.SetupGet(s => s.UserId).Returns(user.Id);
+
+        userRepositoryMock
+            .Setup(r => r.GetById(user.Id))
+            .ReturnsAsync(user);
+
+        parentRepositoryMock
+            .Setup(r => r.Create(It.IsAny<Parent>()))
+            .ReturnsAsync(new Parent());
+
+        parentRepositoryMock
+            .SetupGet(r => r.UnitOfWork)
+            .Returns(new Mock<IUnitOfWork>().Object);
+
+        // Act
+        await parentService.Create(new ParentCreateDto() { PhoneNumber = expectedPhoneNumber }).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(expectedPhoneNumber, user.PhoneNumber);
+    }
+
+    [Test]
+    public async Task Create_WhenUserExists_ShouldReturnValidIds()
+    {
+        // Arrange
+        var user = UserGenerator.Generate();
+        var parent = ParentGenerator.Generate();
+
+        currentUserServiceMock.SetupGet(s => s.UserId).Returns(user.Id);
+
+        userRepositoryMock
+            .Setup(r => r.GetById(user.Id))
+            .ReturnsAsync(user);
+
+        parentRepositoryMock
+            .Setup(r => r.Create(It.IsAny<Parent>()))
+            .ReturnsAsync(parent);
+
+        parentRepositoryMock
+            .SetupGet(r => r.UnitOfWork)
+            .Returns(new Mock<IUnitOfWork>().Object);
+
+        // Act
+        var result = await parentService.Create(new ParentCreateDto()).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(parent.Id, result.Id);
+        Assert.AreEqual(parent.UserId, result.UserId);
+    }
+
+    #endregion
 
     #region BlockUblockParent
     [Test]
