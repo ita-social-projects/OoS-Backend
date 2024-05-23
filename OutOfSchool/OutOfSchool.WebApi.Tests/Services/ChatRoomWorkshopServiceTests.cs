@@ -93,7 +93,7 @@ public class ChatRoomWorkshopServiceTests
         loggerMock = new Mock<ILogger<ChatRoomWorkshopService>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         workshopServiceMock = new Mock<IWorkshopService>();
-        workshopServiceMock.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(new WorkshopDto() { ProviderId = Guid.Empty });
+        workshopServiceMock.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(new WorkshopDto() { ProviderId = Guid.Empty });
         blockedProviderParentServiceMock = new Mock<IBlockedProviderParentService>();
         blockedProviderParentServiceMock.Setup(x => x.IsBlocked(It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync(false);
 
