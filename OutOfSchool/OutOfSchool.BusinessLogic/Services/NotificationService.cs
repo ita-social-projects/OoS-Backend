@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Models.Notifications;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -56,6 +56,13 @@ public class NotificationService : INotificationService
 
         var notificationDtoReturn = mapper.Map<NotificationDto>(newNotification);
 
+        var unreadNotificationsCount = await GetAmountOfNewUsersNotificationsAsync(notification.UserId);
+
+        await notificationHub.Clients
+            .Group(notification.UserId)
+            .SendAsync("ReceiveNotification", JsonConvert.SerializeObject(new { unreadNotificationsCount, notificationDtoReturn }))
+            .ConfigureAwait(false);
+
         return notificationDtoReturn;
     }
 
@@ -92,10 +99,12 @@ public class NotificationService : INotificationService
 
             logger.LogInformation("Notification with Id = {Id} was created successfully", newNotificationDto?.Id);
 
+            var unreadNotificationsCount = await GetAmountOfNewUsersNotificationsAsync(notification.UserId);
+
             await notificationHub.Clients
-                    .Group(userId)
-                    .SendAsync("ReceiveNotification", JsonConvert.SerializeObject(newNotificationDto))
-                    .ConfigureAwait(false);
+                .Group(notification.UserId)
+                .SendAsync("ReceiveNotification", JsonConvert.SerializeObject(new { unreadNotificationsCount, newNotificationDto }))
+                .ConfigureAwait(false);
 
             logger.LogInformation(
                 "Notification with Id = {Id} was sent to {UserId} successfully",

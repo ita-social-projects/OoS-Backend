@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Bogus;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
@@ -32,6 +34,7 @@ public class NotificationServiceTests
     private Mock<INotificationRepository> notificationRepositoryMock;
     private IMapper mapper;
     private Mock<IOptions<NotificationsConfig>> notificationsConfigMock;
+    private Mock<IHubContext<NotificationHub>> notificationHub;
 
     private string userId;
     private List<Notification> notifications;
@@ -43,7 +46,7 @@ public class NotificationServiceTests
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         notificationsConfigMock = new Mock<IOptions<NotificationsConfig>>();
 
-        var notificationHub = new Mock<IHubContext<NotificationHub>>();
+        notificationHub = new Mock<IHubContext<NotificationHub>>();
         var clientsMock = new Mock<IHubClients>();
         var clientProxyMock = new Mock<IClientProxy>();
 
@@ -136,14 +139,11 @@ public class NotificationServiceTests
     }
 
     [Test]
-    public async Task Create_RecipientsIdsValid_CreatesSpecificNumberOfTimes()
+    public async Task Create_RecipientsIdsValid_CreatesSpecificNumberOfTimesAndSendNotifications()
     {
         // Arrange
-        IEnumerable<string> recipientsIds = new List<string>()
-            {
-                Guid.NewGuid().ToString(),
-                Guid.NewGuid().ToString(),
-            };
+        var faker = new Faker();
+        var recipientsIds = faker.Make(faker.Random.Int(1, 10), () => Guid.NewGuid().ToString());
 
         var notificationsConfig = new NotificationsConfig
         {
@@ -151,16 +151,89 @@ public class NotificationServiceTests
         };
 
         notificationsConfigMock.Setup(x => x.Value).Returns(notificationsConfig);
+        var mockClients = new Mock<IHubClients>();
+        var mockClientProxy = new Mock<IClientProxy>();
+        mockClients.Setup(clients => clients.Group(It.IsAny<string>())).Returns(mockClientProxy.Object);
+        notificationHub.Setup(x => x.Clients).Returns(() => mockClients.Object);
+
+        var unreadNotifications = new Faker<Notification>().GenerateBetween(0, faker.Random.Number(10));
+        notificationRepositoryMock
+            .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Notification, bool>>>(), It.IsAny<string>()))
+            .Returns(Task.FromResult(unreadNotifications.AsEnumerable()));
+        notificationRepositoryMock.Setup(x => x.Create(It.IsAny<Notification>())).Returns<Notification>(Task.FromResult);
 
         // Act
         await notificationService.Create(
             It.IsAny<NotificationType>(),
             It.IsAny<NotificationAction>(),
             It.IsAny<Guid>(),
-            recipientsIds).ConfigureAwait(false);
+            recipientsIds)
+            .ConfigureAwait(false);
 
         // Assert
         notificationRepositoryMock.Verify(x => x.Create(It.IsAny<Notification>()), Times.Exactly(recipientsIds.Count()));
+        foreach (var recipientId in recipientsIds)
+        {
+            notificationHub.Verify(x => x.Clients.Group(recipientId), Times.Once);
+        }
+
+        var countOfUnread = $"unreadNotificationsCount\":{unreadNotifications.Count}";
+        mockClientProxy.Verify(
+            x => x.SendCoreAsync(
+                "ReceiveNotification",
+                It.Is<object[]>(
+                    arg => arg.Length > 0
+                        && arg[0].ToString().Contains(countOfUnread)
+                        && recipientsIds.Any(id => arg[0].ToString().Contains(id))),
+                It.IsAny<CancellationToken>()),
+            Times.Exactly(recipientsIds.Count));
+    }
+
+    [Test]
+    public async Task Create_NotificationDtoValid_CreatesNotificationAndSend()
+    {
+        // Arrange
+        var faker = new Faker();
+        var notificationId = Guid.NewGuid();
+        var notificationDto = new NotificationDto()
+        {
+            Id = notificationId,
+        };
+
+        var notificationsConfig = new NotificationsConfig
+        {
+            Enabled = true,
+        };
+
+        notificationsConfigMock.Setup(x => x.Value).Returns(notificationsConfig);
+        var mockClients = new Mock<IHubClients>();
+        var mockClientProxy = new Mock<IClientProxy>();
+        mockClients.Setup(clients => clients.Group(It.IsAny<string>())).Returns(mockClientProxy.Object);
+        notificationHub.Setup(x => x.Clients).Returns(() => mockClients.Object);
+
+        var unreadNotifications = new Faker<Notification>().GenerateBetween(0, faker.Random.Number(10));
+        notificationRepositoryMock
+            .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Notification, bool>>>(), It.IsAny<string>()))
+            .Returns(Task.FromResult(unreadNotifications.AsEnumerable()));
+        notificationRepositoryMock.Setup(x => x.Create(It.IsAny<Notification>())).ReturnsAsync(new Notification() { Id = notificationId });
+
+        // Act
+        await notificationService.Create(notificationDto)
+            .ConfigureAwait(false);
+
+        // Assert
+        notificationRepositoryMock.Verify(x => x.Create(It.IsAny<Notification>()), Times.Once);
+
+        var countOfUnread = $"unreadNotificationsCount\":{unreadNotifications.Count}";
+        mockClientProxy.Verify(
+            x => x.SendCoreAsync(
+                "ReceiveNotification",
+                It.Is<object[]>(
+                    arg => arg.Length > 0
+                        && arg[0].ToString().Contains(countOfUnread)
+                        && arg[0].ToString().Contains(notificationDto.Id.ToString())),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     #endregion
