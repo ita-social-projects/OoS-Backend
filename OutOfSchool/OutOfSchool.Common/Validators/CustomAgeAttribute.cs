@@ -8,13 +8,8 @@ namespace OutOfSchool.Common.Validators;
 /// This attribute can be used on <see cref="DateTime"/> or <see cref="DateOnly"/> types.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter, AllowMultiple = false)]
-public class CustomAgeAttribute : DataTypeAttribute
+public class CustomAgeAttribute() : DataTypeAttribute(DataType.Date)
 {
-    public CustomAgeAttribute()
-        : base(DataType.Date)
-    {
-    }
-
     /// <summary>
     /// Gets the minimum age of the person in years.
     /// </summary>

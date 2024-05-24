@@ -8,13 +8,8 @@ namespace OutOfSchool.Common.Validators;
 /// Validation attribute for phone number. It allows only digits and '+' sign, length must be between 7 and 15 symbols.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter, AllowMultiple = false)]
-public class CustomPhoneNumberAttribute : DataTypeAttribute
+public class CustomPhoneNumberAttribute() : DataTypeAttribute(DataType.PhoneNumber)
 {
-    public CustomPhoneNumberAttribute()
-        : base(DataType.PhoneNumber)
-    {
-    }
-
     private static SearchValues<char> DigitSearchValues { get; } = SearchValues.Create("0123456789");
 
     /// <summary>
