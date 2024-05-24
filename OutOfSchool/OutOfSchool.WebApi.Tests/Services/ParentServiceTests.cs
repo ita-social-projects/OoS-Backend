@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
+using Bogus;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -33,6 +34,7 @@ public class ParentServiceTests
     private IMapper mapper;
     private Mock<IUserService> userService;
     private Mock<IEntityRepositorySoftDeleted<string, User>> userRepositoryMock;
+    private Faker faker;
 
     [SetUp]
     public void SetUp()
@@ -45,6 +47,7 @@ public class ParentServiceTests
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         userService = new Mock<IUserService>();
         userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
+        faker = new();
 
         parentService = new ParentService(
             parentRepositoryMock.Object,
@@ -77,8 +80,8 @@ public class ParentServiceTests
 
         loggerMock.Verify(
             logger => logger.Log(
-                It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
-                It.Is<EventId>(eventId => eventId.Id == 0),
+                LogLevel.Error,
+                0,
                 It.IsAny<It.IsAnyType>(),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception, string>>()),
@@ -100,8 +103,8 @@ public class ParentServiceTests
 
         loggerMock.Verify(
             logger => logger.Log(
-                It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
-                It.Is<EventId>(eventId => eventId.Id == 0),
+                LogLevel.Error,
+                0,
                 It.IsAny<It.IsAnyType>(),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception, string>>()),
@@ -123,8 +126,8 @@ public class ParentServiceTests
 
         loggerMock.Verify(
             logger => logger.Log(
-                It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
-                It.Is<EventId>(eventId => eventId.Id == 0),
+                LogLevel.Error,
+                0,
                 It.IsAny<It.IsAnyType>(),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception, string>>()),
@@ -148,13 +151,15 @@ public class ParentServiceTests
             .ReturnsAsync(new Parent());
 
         parentRepositoryMock
-            .SetupGet(r => r.UnitOfWork)
-            .Returns(new Mock<IUnitOfWork>().Object);
+            .Setup(r => r.UnitOfWork.CompleteAsync())
+            .ReturnsAsync(1);
 
         // Act
         await parentService.Create(new ParentCreateDto()).ConfigureAwait(false);
 
         // Assert
+        parentRepositoryMock.Verify(r => r.UnitOfWork.CompleteAsync(), Times.Once);
+
         Assert.True(user.IsRegistered);
     }
 
@@ -163,7 +168,7 @@ public class ParentServiceTests
     {
         // Arrange
         var user = UserGenerator.Generate();
-        var expectedPhoneNumber = "+380999999999";
+        var expectedPhoneNumber = faker.Phone.PhoneNumber("+############");
 
         currentUserServiceMock.SetupGet(s => s.UserId).Returns(user.Id);
 
@@ -176,13 +181,15 @@ public class ParentServiceTests
             .ReturnsAsync(new Parent());
 
         parentRepositoryMock
-            .SetupGet(r => r.UnitOfWork)
-            .Returns(new Mock<IUnitOfWork>().Object);
+            .Setup(r => r.UnitOfWork.CompleteAsync())
+            .ReturnsAsync(1);
 
         // Act
         await parentService.Create(new ParentCreateDto() { PhoneNumber = expectedPhoneNumber }).ConfigureAwait(false);
 
         // Assert
+        parentRepositoryMock.Verify(r => r.UnitOfWork.CompleteAsync(), Times.Once);
+
         Assert.AreEqual(expectedPhoneNumber, user.PhoneNumber);
     }
 
@@ -204,13 +211,15 @@ public class ParentServiceTests
             .ReturnsAsync(parent);
 
         parentRepositoryMock
-            .SetupGet(r => r.UnitOfWork)
-            .Returns(new Mock<IUnitOfWork>().Object);
+            .Setup(r => r.UnitOfWork.CompleteAsync())
+            .ReturnsAsync(1);
 
         // Act
         var result = await parentService.Create(new ParentCreateDto()).ConfigureAwait(false);
 
         // Assert
+        parentRepositoryMock.Verify(r => r.UnitOfWork.CompleteAsync(), Times.Once);
+
         Assert.AreEqual(parent.Id, result.Id);
         Assert.AreEqual(parent.UserId, result.UserId);
     }
