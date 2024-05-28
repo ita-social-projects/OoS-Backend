@@ -53,7 +53,10 @@ public class EmailSenderJob : IJob
             var subject = dataMap.GetString(EmailSenderStringConstants.Subject);
             var htmlContent = dataMap.GetString(EmailSenderStringConstants.HtmlContent);
             var plainContent = dataMap.GetString(EmailSenderStringConstants.PlainContent);
-            var expirationTime = DateTimeOffset.Parse(dataMap.GetString(EmailSenderStringConstants.ExpirationTime), CultureInfo.CurrentCulture);
+            var expirationTime = DateTimeOffset.ParseExact(
+                dataMap.GetString(EmailSenderStringConstants.ExpirationTime),
+                "dd.MM.yyyy HH:mm:ss zzz",
+                CultureInfo.InvariantCulture);
 
             if (expirationTime < DateTimeOffset.Now)
             {
