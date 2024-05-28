@@ -86,7 +86,7 @@ public class EmailSenderJobTests
                 { EmailSenderStringConstants.Subject, "Test Email" },
                 { EmailSenderStringConstants.HtmlContent, Convert.ToBase64String(Encoding.ASCII.GetBytes("<html><body><h1>Hello</h1></body></html>")) },
                 { EmailSenderStringConstants.PlainContent, Convert.ToBase64String(Encoding.ASCII.GetBytes("Hello")) },
-                { EmailSenderStringConstants.ExpirationTime, DateTimeOffset.Now.AddMinutes(-10).ToString() }
+                { EmailSenderStringConstants.ExpirationTime, DateTimeOffset.Now.AddMinutes(-10).ToString("dd.MM.yyyy HH:mm:ss zzz") }
             });
 
         // Act
@@ -111,7 +111,7 @@ public class EmailSenderJobTests
                 { EmailSenderStringConstants.Subject, "Test Email" },
                 { EmailSenderStringConstants.HtmlContent, Convert.ToBase64String(Encoding.ASCII.GetBytes("<html><body><h1>Hello</h1></body></html>")) },
                 { EmailSenderStringConstants.PlainContent, Convert.ToBase64String(Encoding.ASCII.GetBytes("Hello")) },
-                { EmailSenderStringConstants.ExpirationTime, DateTimeOffset.Now.AddDays(1).ToString() }
+                { EmailSenderStringConstants.ExpirationTime, DateTimeOffset.Now.AddDays(1).ToString("dd.MM.yyyy HH:mm:ss zzz") }
             });
         _mockSendGridClient.Setup(client => client.SendEmailAsync(It.IsAny<SendGridMessage>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Response(HttpStatusCode.OK, null, null));
@@ -138,7 +138,7 @@ public class EmailSenderJobTests
                 { EmailSenderStringConstants.Subject, "Test Email" },
                 { EmailSenderStringConstants.HtmlContent, Convert.ToBase64String(Encoding.ASCII.GetBytes("<html><body><h1>Hello</h1></body></html>")) },
                 { EmailSenderStringConstants.PlainContent, Convert.ToBase64String(Encoding.ASCII.GetBytes("Hello")) },
-                { EmailSenderStringConstants.ExpirationTime, DateTimeOffset.Now.AddDays(1).ToString() }
+                { EmailSenderStringConstants.ExpirationTime, DateTimeOffset.Now.AddDays(1).ToString("dd.MM.yyyy HH:mm:ss zzz") }
             });
         _mockSendGridClient.Setup(client => client.SendEmailAsync(It.IsAny<SendGridMessage>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Response(HttpStatusCode.TooManyRequests, null, null));
@@ -160,7 +160,7 @@ public class EmailSenderJobTests
                 { EmailSenderStringConstants.Subject, "Test Email" },
                 { EmailSenderStringConstants.HtmlContent, Convert.ToBase64String(Encoding.ASCII.GetBytes("<html><body><h1>Hello</h1></body></html>")) },
                 { EmailSenderStringConstants.PlainContent, Convert.ToBase64String(Encoding.ASCII.GetBytes("Hello")) },
-                { EmailSenderStringConstants.ExpirationTime, DateTimeOffset.Now.AddDays(1).ToString() }
+                { EmailSenderStringConstants.ExpirationTime, DateTimeOffset.Now.AddDays(1).ToString("dd.MM.yyyy HH:mm:ss zzz") }
             });
         _mockSendGridClient.Setup(client => client.SendEmailAsync(It.IsAny<SendGridMessage>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Response(HttpStatusCode.BadRequest, null, null));
