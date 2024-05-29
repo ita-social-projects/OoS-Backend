@@ -92,8 +92,9 @@ public class WorkshopRepositoryTests
         Assert.IsEmpty(images);
     }
 
-    [Test]
-    public async Task GetWithNavigations_WhenGetValidEntity_ReturnValue()
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task GetWithNavigations_WhenGetValidEntity_ReturnValue(bool asNoTracking)
     {
         // Arrange
         using var context = GetContext();
@@ -101,14 +102,15 @@ public class WorkshopRepositoryTests
         var workshop = context.Workshops.First();
 
         // Act
-        var expectedWorkshop = await workshopRepository.GetWithNavigations(workshop.Id);
+        var expectedWorkshop = await workshopRepository.GetWithNavigations(workshop.Id, asNoTracking);
 
         // Assert
         Assert.IsNotNull(expectedWorkshop);
     }
 
-    [Test]
-    public async Task GetWithNavigations_WhenGetValidEntity_ReturnEmpty()
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task GetWithNavigations_WhenGetValidEntity_ReturnEmpty(bool asNoTracking)
     {
         // Arrange
         using var context = GetContext();
@@ -117,7 +119,7 @@ public class WorkshopRepositoryTests
 
         // Act
         await workshopRepository.Delete(workshop);
-        var expectedWorkshop = await workshopRepository.GetWithNavigations(workshop.Id);
+        var expectedWorkshop = await workshopRepository.GetWithNavigations(workshop.Id, asNoTracking);
 
         // Assert
         Assert.IsNull(expectedWorkshop);
