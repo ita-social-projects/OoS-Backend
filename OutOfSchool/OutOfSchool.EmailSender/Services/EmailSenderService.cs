@@ -29,7 +29,7 @@ public class EmailSenderService : IEmailSenderService
             { EmailSenderStringConstants.Subject, subject },
             { EmailSenderStringConstants.HtmlContent, EncodeToBase64(content.html) },
             { EmailSenderStringConstants.PlainContent, EncodeToBase64(content.plain) },
-            { EmailSenderStringConstants.ExpirationTime, ((DateTimeOffset)expirationTime).ToString("dd.MM.yyyy HH:mm:ss zzz") },
+            { EmailSenderStringConstants.ExpirationTime, ((DateTimeOffset)expirationTime).ToString(EmailSenderStringConstants.DateTimeStringFormat) },
         };
 
         var scheduler = await schedulerFactory.GetScheduler();
