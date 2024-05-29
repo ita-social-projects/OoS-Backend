@@ -524,6 +524,25 @@ public class WorkshopControllerTests
         Assert.IsNotNull(result);
         Assert.AreEqual(Forbidden, result.StatusCode);
     }
+
+    [Test]
+    public async Task UpdateWorkshop_WhenDtoAvailableSeatsIsInvalid_ShouldReturnBadRequestObjectResult()
+    {
+        // Arrange
+        workshopUpdateDto.ProviderId = provider.Id;
+        providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
+        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
+        workshopServiceMoq.Setup(x => x.IsAvailableSeatsValid(It.IsAny<uint?>(), It.IsAny<Guid>())).ReturnsAsync(false);
+
+        // Act
+        var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as ObjectResult;
+
+        // Assert
+        providerServiceMoq.VerifyAll();
+        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopBaseDto>()), Times.Never);
+        Assert.IsNotNull(result);
+        Assert.AreEqual(BadRequest, result.StatusCode);
+    }
     #endregion
 
     #region UpdateStatus
