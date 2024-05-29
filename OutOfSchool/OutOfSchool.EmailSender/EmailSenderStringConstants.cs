@@ -7,4 +7,5 @@ public static class EmailSenderStringConstants
     public const string HtmlContent = "HtmlContent";
     public const string PlainContent = "PlainContent";
     public const string ExpirationTime = "ExpirationTime";
+    public const string DateTimeStringFormat = "dd.MM.yyyy HH:mm:ss zzz";
 }
