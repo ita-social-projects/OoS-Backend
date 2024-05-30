@@ -67,6 +67,42 @@ public class WorkshopServicesCombinerTests
     }
 
     [Test]
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task GetById_WithValidId_ShouldReturnDto(bool asNoTracking)
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var workshopDto = WorkshopDtoGenerator.Generate();
+        workshopService.Setup(x => x.GetById(id, asNoTracking)).ReturnsAsync(workshopDto);
+
+        // Assert
+        var result = await service.GetById(id, asNoTracking).ConfigureAwait(false);
+
+        // Act
+        Assert.IsNotNull(result);
+        Assert.AreEqual(workshopDto, result);
+    }
+
+    [Test]
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task GetById_WithNotExistId_ShouldReturnNull(bool asNoTracking)
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var workshopDto = null as WorkshopDto;
+        workshopService.Setup(x => x.GetById(id, asNoTracking)).ReturnsAsync(workshopDto);
+
+        // Assert
+        var result = await service.GetById(id, asNoTracking).ConfigureAwait(false);
+
+        // Act
+        Assert.IsNull(result);
+        workshopService.Verify(x => x.GetById(id, asNoTracking), Times.Once);
+    }
+
+    [Test]
     public async Task UpdateStatus_WhenDtoIsNull_ThrowsArgumentNullException()
     {
         // Arrange
