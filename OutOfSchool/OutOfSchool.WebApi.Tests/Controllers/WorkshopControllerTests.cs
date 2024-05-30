@@ -533,7 +533,6 @@ public class WorkshopControllerTests
         workshopUpdateDto.ProviderId = provider.Id;
         providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
-        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
         workshopServiceMoq.Setup(x => x.IsAvailableSeatsValid(It.IsAny<uint?>(), It.IsAny<WorkshopDto>())).Returns(false);
 
         // Act
@@ -541,27 +540,7 @@ public class WorkshopControllerTests
 
         // Assert
         providerServiceMoq.VerifyAll();
-        workshopServiceMoq.VerifyAll();
-        Assert.IsNotNull(result);
-        Assert.AreEqual(BadRequest, result.StatusCode);
-    }
-
-    [Test]
-    public async Task UpdateWorkshop_WhenWorkshopEntityNotExist_ShouldReturnBadRequestObjectResult()
-    {
-        // Arrange
-        workshopUpdateDto.ProviderId = provider.Id;
-        var workshopDto = null as WorkshopDto;
-        providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
-        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshopDto);
-
-        // Act
-        var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as ObjectResult;
-
-        // Assert
-        providerServiceMoq.VerifyAll();
-        workshopServiceMoq.VerifyAll();
+        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopBaseDto>()), Times.Never);
         Assert.IsNotNull(result);
         Assert.AreEqual(BadRequest, result.StatusCode);
     }
