@@ -280,7 +280,8 @@ public class WorkshopServicesCombinerTests
         workshopService.Setup(x => x.GetById(id, true)).ReturnsAsync(workshopDto);
 
         // Assert
-        var result = await service.IsAvailableSeatsValid(availableSeats, id).ConfigureAwait(false);
+        var result = await service.IsAvailableSeatsValidForWorkshop(
+            availableSeats, id).ConfigureAwait(false);
 
         // Act
         Assert.AreEqual(expectedResult, result);

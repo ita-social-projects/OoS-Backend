@@ -260,9 +260,14 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
     }
 
     /// <inheritdoc/>
-    public async Task<bool> IsAvailableSeatsValid(uint? availableSeats, Guid workshopId)
+    public async Task<bool?> IsAvailableSeatsValidForWorkshop(uint? availableSeats, Guid workshopId)
     {
         var workshop = await workshopService.GetById(workshopId, true).ConfigureAwait(false);
+        if (workshop == null)
+        {
+            return null;
+        }
+
         return availableSeats.GetMaxValueIfNullOrZero() >= workshop.TakenSeats;
     }
 

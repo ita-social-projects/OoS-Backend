@@ -138,6 +138,7 @@ public interface IWorkshopServicesCombiner
     /// <param name="availableSeats">The number of available seats to validate.</param>
     /// <param name="workshopId">The unique Id of the workshop.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.
-    /// The task result indicates whether the available seats value is valid.</returns>
-    Task<bool> IsAvailableSeatsValid(uint? availableSeats, Guid workshopId);
+    /// The task result indicates whether the available seats value is valid,
+    /// or null if workshop does not exist.</returns>
+    Task<bool?> IsAvailableSeatsValidForWorkshop(uint? availableSeats, Guid workshopId);
 }

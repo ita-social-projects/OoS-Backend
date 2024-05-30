@@ -206,7 +206,15 @@ public class WorkshopController : ControllerBase
             return StatusCode(StatusCodes.Status403Forbidden, "Forbidden to update workshops for another providers.");
         }
 
-        if (!await combinedWorkshopService.IsAvailableSeatsValid(dto.AvailableSeats, dto.Id))
+        var result = await combinedWorkshopService.IsAvailableSeatsValidForWorkshop(
+            dto.AvailableSeats, dto.Id).ConfigureAwait(false);
+
+        if (result is null)
+        {
+            return BadRequest("The workshop does not exist.");
+        }
+
+        if ((bool)!result)
         {
             return BadRequest("The number of available seats must be equal or greater than the number of taken seats");
         }
