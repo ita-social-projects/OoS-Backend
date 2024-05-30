@@ -469,11 +469,15 @@ public class ChangesLogServiceTests
     }
 
     [Test]
-    public async Task GetProviderAdminChangesLog_WhenCalled_ReturnsSearchResult()
+    [TestCase(ProviderAdminType.All)]
+    [TestCase(ProviderAdminType.Assistants)]
+    [TestCase(ProviderAdminType.Deputies)]
+    public async Task GetProviderAdminChangesLog_WhenCalled_ReturnsSearchResult(ProviderAdminType providerAdminType)
     {
         // Arange
         var changesLogService = GetChangesLogService();
         var request = new ProviderAdminChangesLogRequest();
+        request.AdminType = providerAdminType;
 
         var entitiesCount = 5;
         var totalAmount = 10;
