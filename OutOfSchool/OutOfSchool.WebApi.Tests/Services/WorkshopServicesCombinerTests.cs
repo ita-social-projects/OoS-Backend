@@ -74,6 +74,7 @@ public class WorkshopServicesCombinerTests
         // Arrange
         var id = Guid.NewGuid();
         var workshopDto = WorkshopDtoGenerator.Generate();
+        workshopDto.Id = id;
         workshopService.Setup(x => x.GetById(id, asNoTracking)).ReturnsAsync(workshopDto);
 
         // Assert
@@ -260,5 +261,29 @@ public class WorkshopServicesCombinerTests
                 It.Is<Dictionary<string, string>>(c => c.ContainsKey(titleKey) && c[titleKey] == workshop.Title),
                 null),
             Times.Once);
+    }
+
+    [Test]
+    [TestCase(3U, 3U, true)]
+    [TestCase(5U, 3U, true)]
+    [TestCase(uint.MaxValue, 3U, true)]
+    [TestCase(null, 3U, true)]
+    [TestCase(4U, 6U, false)]
+    public async Task IsAvailableSeatsValid_WithExistIdAndValidAvailableSeats_ShouldReturnExpectedResult(
+        uint? availableSeats, uint takenSeats, bool expectedResult)
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var workshopDto = WorkshopDtoGenerator.Generate();
+        workshopDto.Id = id;
+        workshopDto.TakenSeats = takenSeats;
+        workshopService.Setup(x => x.GetById(id, true)).ReturnsAsync(workshopDto);
+
+        // Assert
+        var result = await service.IsAvailableSeatsValid(availableSeats, id).ConfigureAwait(false);
+
+        // Act
+        Assert.AreEqual(expectedResult, result);
+        workshopService.Verify(x => x.GetById(id, true), Times.Once);
     }
 }
