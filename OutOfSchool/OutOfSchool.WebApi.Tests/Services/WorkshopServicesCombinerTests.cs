@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using Moq;
+using Nest;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
@@ -269,7 +270,7 @@ public class WorkshopServicesCombinerTests
     [TestCase(uint.MaxValue, 3U, true)]
     [TestCase(null, 3U, true)]
     [TestCase(4U, 6U, false)]
-    public async Task IsAvailableSeatsValid_WithExistIdAndValidAvailableSeats_ShouldReturnExpectedResult(
+    public async Task IsAvailableSeatsValidForWorkshop_WithExistIdAndValidAvailableSeats_ShouldReturnExpectedResult(
         uint? availableSeats, uint takenSeats, bool expectedResult)
     {
         // Arrange
@@ -279,12 +280,29 @@ public class WorkshopServicesCombinerTests
         workshopDto.TakenSeats = takenSeats;
         workshopService.Setup(x => x.GetById(id, true)).ReturnsAsync(workshopDto);
 
-        // Assert
+        // Act
         var result = await service.IsAvailableSeatsValidForWorkshop(
             availableSeats, id).ConfigureAwait(false);
 
-        // Act
+        // Assert
         Assert.AreEqual(expectedResult, result);
+        workshopService.Verify(x => x.GetById(id, true), Times.Once);
+    }
+
+    [Test]
+    public async Task IsAvailableSeatsValidForWorkshop_WithNotExistingWorkshop_ShouldReturnNull()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        workshopService.Setup(x => x.GetById(id, true))
+            .ReturnsAsync(null as WorkshopDto);
+
+        // Act
+        var result = await service.IsAvailableSeatsValidForWorkshop(
+            It.IsAny<uint>(), id).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNull(result);
         workshopService.Verify(x => x.GetById(id, true), Times.Once);
     }
 }
