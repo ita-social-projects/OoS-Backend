@@ -847,14 +847,8 @@ public class WorkshopServiceTests
             .WithChild(ChildGenerator.Generate());
         for (int i = 0; i < allApplications; i++)
         {
-            if (i < approvedApplications)
-            {
-                applications[i].Status = ApplicationStatus.Approved;
-            }
-            else
-            {
-                applications[i].Status = ApplicationStatus.Rejected;
-            }
+            applications[i].Status = i < approvedApplications
+                ? ApplicationStatus.Approved : ApplicationStatus.Rejected;
         }
 
         return applications;
