@@ -200,13 +200,25 @@ public class WorkshopController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Update([FromForm] WorkshopV2Dto dto)
     {
+        if (dto == null)
+        {
+            return BadRequest("Workshop is null.");
+        }
+
         var userHasRights = await IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
         if (!userHasRights)
         {
             return StatusCode(StatusCodes.Status403Forbidden, "Forbidden to update workshops for another providers.");
         }
 
-        if (!await combinedWorkshopService.IsAvailableSeatsValid(dto.AvailableSeats, dto.Id))
+        var workshop = await combinedWorkshopService.GetById(dto.Id, true).ConfigureAwait(false);
+
+        if (workshop is null)
+        {
+            return BadRequest("Workshop does not exist.");
+        }
+
+        if (!combinedWorkshopService.IsAvailableSeatsValid(dto.AvailableSeats, workshop))
         {
             return BadRequest("The number of available seats must be equal or greater than the number of taken seats");
         }

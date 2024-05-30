@@ -481,7 +481,8 @@ public class WorkshopControllerTests
         workshopUpdateDto.ProviderId = provider.Id;
         providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
-        workshopServiceMoq.Setup(x => x.IsAvailableSeatsValid(It.IsAny<uint?>(), It.IsAny<Guid>())).ReturnsAsync(true);
+        workshopServiceMoq.Setup(x => x.IsAvailableSeatsValid(It.IsAny<uint?>(), It.IsAny<WorkshopDto>())).Returns(true);
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
         workshopServiceMoq.Setup(x => x.Update(workshopUpdateDto)).ReturnsAsync(workshopUpdateDto);
 
         // Act
@@ -532,7 +533,7 @@ public class WorkshopControllerTests
         workshopUpdateDto.ProviderId = provider.Id;
         providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
-        workshopServiceMoq.Setup(x => x.IsAvailableSeatsValid(It.IsAny<uint?>(), It.IsAny<Guid>())).ReturnsAsync(false);
+        workshopServiceMoq.Setup(x => x.IsAvailableSeatsValid(It.IsAny<uint?>(), It.IsAny<WorkshopDto>())).Returns(false);
 
         // Act
         var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as ObjectResult;

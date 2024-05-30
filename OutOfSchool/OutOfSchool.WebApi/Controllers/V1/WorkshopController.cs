@@ -361,7 +361,14 @@ public class WorkshopController : ControllerBase
             return StatusCode(403, "Forbidden to update workshops, which are not related to you");
         }
 
-        if (!await combinedWorkshopService.IsAvailableSeatsValid(dto.AvailableSeats, dto.Id))
+        var workshop = await combinedWorkshopService.GetById(dto.Id, true).ConfigureAwait(false);
+
+        if (workshop is null)
+        {
+            return BadRequest("Workshop does not exist.");
+        }
+
+        if (!combinedWorkshopService.IsAvailableSeatsValid(dto.AvailableSeats, workshop))
         {
             return BadRequest("The number of available seats must be equal or greater than the number of taken seats");
         }
