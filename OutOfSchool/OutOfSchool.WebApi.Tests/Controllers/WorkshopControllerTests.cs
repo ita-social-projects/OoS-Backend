@@ -571,6 +571,20 @@ public class WorkshopControllerTests
         Assert.IsNotNull(result);
         Assert.AreEqual(BadRequest, result.StatusCode);
     }
+
+    [Test]
+    public async Task UpdateWorkshop_WhenDtoIsNull_ShouldReturnBadRequestObjectResult()
+    {
+        // Arrange
+        WorkshopBaseDto workshopBaseDto = null;
+
+        // Act
+        var result = await controller.Update(workshopBaseDto).ConfigureAwait(false) as ObjectResult;
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(BadRequest, result.StatusCode);
+    }
     #endregion
 
     #region UpdateStatus
