@@ -400,6 +400,49 @@ public class WorkshopServiceTests
     }
 
     [Test]
+    [TestCase(5U, uint.MaxValue, 5, WorkshopStatus.Closed, WorkshopStatus.Open)]
+    [TestCase(5U, 5U, 5, WorkshopStatus.Open, WorkshopStatus.Closed)]
+    [TestCase(5U, 3U, 5, WorkshopStatus.Open, WorkshopStatus.Closed)]
+    public async Task Update_WhenDtoIsValid_ShouldChangeStatusAndInvokeUpdate(
+        uint currentAvailableSeats,
+        uint newAvailableSeats,
+        int currentTakenSeats,
+        WorkshopStatus currentWorkshopStatus,
+        WorkshopStatus expectedWorkshopStatus)
+    {
+        // Arrange
+        var changedFirstEntity = WorkshopGenerator.Generate().WithAddress();
+        changedFirstEntity.Applications = SetupApplications(changedFirstEntity, currentTakenSeats);
+        changedFirstEntity.Teachers = TeachersGenerator.Generate(3).WithWorkshop(changedFirstEntity);
+        changedFirstEntity.DateTimeRanges = [];
+        changedFirstEntity.Provider = ProvidersGenerator.Generate();
+        changedFirstEntity.Status = currentWorkshopStatus;
+        changedFirstEntity.AvailableSeats = currentAvailableSeats;
+
+        SetupUpdate(changedFirstEntity);
+
+        var changeFirstEntityDto = mapper.Map<WorkshopBaseDto>(changedFirstEntity);
+        changeFirstEntityDto.AvailableSeats = newAvailableSeats;
+
+        workshopRepository.Setup(x => x.Update(changedFirstEntity)).ReturnsAsync(changedFirstEntity);
+        var workshopStatusDto = new WorkshopStatusDto()
+        {
+            WorkshopId = changedFirstEntity.Id,
+            Status = expectedWorkshopStatus,
+        };
+        mapperMock.Setup(m => m.Map<WorkshopStatusWithTitleDto>(It.IsAny<WorkshopStatusDto>()))
+            .Returns(mapper.Map<WorkshopStatusWithTitleDto>(workshopStatusDto));
+
+        // Act
+        var result = await workshopService.Update(changeFirstEntityDto).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        workshopRepository.Verify(x => x.Update(changedFirstEntity), Times.Once);
+        changedFirstEntity.Status.Should().Be(expectedWorkshopStatus);
+    }
+
+    [Test]
     public async Task Update_WhenDtoIsNull_ShouldThrowArgumentNullException()
     {
         // Arrange
@@ -795,6 +838,27 @@ public class WorkshopServiceTests
                 .Select(w => new WorkshopCard() { ProviderId = w.ProviderId, WorkshopId = w.Id, }).ToList());
     }
 
+    private List<Application> SetupApplications(Workshop workshop, int approvedApplications)
+    {
+        var allApplications = approvedApplications + 3;
+        var applications = ApplicationGenerator.Generate(allApplications)
+            .WithWorkshop(workshop)
+            .WithParent(ParentGenerator.Generate())
+            .WithChild(ChildGenerator.Generate());
+        for (int i = 0; i < allApplications; i++)
+        {
+            if (i < approvedApplications)
+            {
+                applications[i].Status = ApplicationStatus.Approved;
+            }
+            else
+            {
+                applications[i].Status = ApplicationStatus.Rejected;
+            }
+        }
+
+        return applications;
+    }
     #endregion
 
     #region Expected
