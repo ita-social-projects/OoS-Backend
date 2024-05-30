@@ -214,7 +214,7 @@ public class WorkshopController : ControllerBase
             return BadRequest("The workshop does not exist.");
         }
 
-        if ((bool)!result)
+        if (result == false)
         {
             return BadRequest("The number of available seats must be equal or greater than the number of taken seats");
         }
