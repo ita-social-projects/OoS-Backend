@@ -558,8 +558,9 @@ public class WorkshopControllerTests
         providerServiceMoq.Setup(x => x.IsBlocked(provider.Id)).ReturnsAsync(false);
         providerServiceMoq.Setup(x => x.GetByUserId(userId, It.IsAny<bool>()))
             .ReturnsAsync(provider);
+        bool? validationResult = false;
         workshopServiceMoq.Setup(x => x.IsAvailableSeatsValidForWorkshop(
-            It.IsAny<uint?>(), workshopUpdateDto.Id)).ReturnsAsync(false);
+            It.IsAny<uint?>(), workshopUpdateDto.Id)).ReturnsAsync(validationResult);
 
         // Act
         var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as ObjectResult;
