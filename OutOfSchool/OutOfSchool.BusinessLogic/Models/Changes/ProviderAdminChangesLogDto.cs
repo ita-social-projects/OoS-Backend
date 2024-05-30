@@ -10,7 +10,7 @@ public class ProviderAdminChangesLogDto
 
     public string ProviderTitle { get; set; }
 
-    public string WorkshopTitle { get; set; }
+    public bool IsDeputy { get; set; }
 
     public string WorkshopCity { get; set; }
 

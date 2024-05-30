@@ -143,31 +143,17 @@ public class ProviderAdminService : IProviderAdminService
                         "You have to specify related workshops to be able to create workshop admin");
                 }
 
-                await providerAdminRepository.Create(providerAdmin).ConfigureAwait(false);
+                var newProviderAdmin = await providerAdminRepository.Create(providerAdmin).ConfigureAwait(false);
 
-                var newPropertiesValues = GetTrackedUserProperties(user);
-
-                foreach (var newProperty in newPropertiesValues)
+                if (newProviderAdmin is not null)
                 {
                     await providerAdminChangesLogService.SaveChangesLogAsync(
                         providerAdmin,
                         userId,
                         OperationType.Create,
-                        newProperty.Key,
                         string.Empty,
-                        newProperty.Value)
-                    .ConfigureAwait(false);
-                }
-
-                foreach (var workshop in providerAdmin.ManagedWorkshops)
-                {
-                    await providerAdminChangesLogService.SaveChangesLogAsync(
-                        providerAdmin,
-                        userId,
-                        OperationType.Create,
-                        "WorkshopId",
                         string.Empty,
-                        workshop.Id.ToString())
+                        user.Email)
                     .ConfigureAwait(false);
                 }
 

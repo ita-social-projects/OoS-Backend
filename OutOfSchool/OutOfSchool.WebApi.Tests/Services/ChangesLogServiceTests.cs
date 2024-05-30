@@ -485,7 +485,7 @@ public class ChangesLogServiceTests
                 ProviderAdminUser = UserGenerator.Generate(),
                 User = user,
                 Provider = provider,
-                ManagedWorkshop = workshop,
+                IsDeputy = true,
             })
             .AsQueryable()
             .BuildMock();
@@ -544,7 +544,7 @@ public class ChangesLogServiceTests
                 ProviderAdminUser = UserGenerator.Generate(),
                 User = user,
                 Provider = provider,
-                ManagedWorkshop = workshop,
+                IsDeputy = true,
             })
             .AsQueryable()
             .BuildMock();
@@ -609,7 +609,7 @@ public class ChangesLogServiceTests
                 ProviderAdminUser = UserGenerator.Generate(),
                 User = user,
                 Provider = provider,
-                ManagedWorkshop = workshop,
+                IsDeputy = true,
             })
             .AsQueryable()
             .BuildMock();

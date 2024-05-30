@@ -31,6 +31,7 @@ public class ProviderAdminChangesLogService : IProviderAdminChangesLogService
             PropertyName = propertyName,
             OldValue = oldValue,
             NewValue = newValue,
+            IsDeputy = entity.IsDeputy,
         };
 
         var result = await providerAdminChangesLogRepository.Create(logRecord);

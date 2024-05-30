@@ -307,7 +307,7 @@ public class ChangesLogService : IChangesLogService
                 ProviderAdminId = x.ProviderAdminUserId,
                 ProviderAdminFullName = $"{x.ProviderAdminUser.LastName} {x.ProviderAdminUser.FirstName} {x.ProviderAdminUser.MiddleName}".TrimEnd(),
                 ProviderTitle = x.Provider.FullTitle,
-                WorkshopTitle = x.ManagedWorkshop.Title,
+                IsDeputy = x.IsDeputy,
                 WorkshopCity = x.Provider.LegalAddress.CATOTTG.Name,
                 OperationType = x.OperationType,
                 OperationDate = x.OperationDate,
@@ -434,8 +434,8 @@ public class ChangesLogService : IChangesLogService
         expr = request.AdminType switch
         {
             ProviderAdminType.All => expr,
-            ProviderAdminType.Deputies => expr.And(x => x.ManagedWorkshopId == null),
-            ProviderAdminType.Assistants => expr.And(x => x.ManagedWorkshopId != null),
+            ProviderAdminType.Deputies => expr.And(x => x.IsDeputy),
+            ProviderAdminType.Assistants => expr.And(x => !x.IsDeputy),
             _ => throw new NotImplementedException(),
         };
 
@@ -465,7 +465,7 @@ public class ChangesLogService : IChangesLogService
                         || x.User.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
                         || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
                         || x.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.ManagedWorkshop.Address.CATOTTG.Name.Contains(word, StringComparison.InvariantCulture));
+                        || x.Provider.LegalAddress.CATOTTG.Name.Contains(word, StringComparison.InvariantCulture));
             }
 
             expr = expr.And(tempExpr);
