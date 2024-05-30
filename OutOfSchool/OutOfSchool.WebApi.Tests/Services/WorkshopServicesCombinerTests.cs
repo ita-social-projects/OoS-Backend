@@ -269,17 +269,21 @@ public class WorkshopServicesCombinerTests
     [TestCase(uint.MaxValue, 3U, true)]
     [TestCase(null, 3U, true)]
     [TestCase(4U, 6U, false)]
-    public void IsAvailableSeatsValid_WithExistIdAndValidAvailableSeats_ShouldReturnExpectedResult(
+    public async Task IsAvailableSeatsValid_WithExistIdAndValidAvailableSeats_ShouldReturnExpectedResult(
         uint? availableSeats, uint takenSeats, bool expectedResult)
     {
         // Arrange
+        var id = Guid.NewGuid();
         var workshopDto = WorkshopDtoGenerator.Generate();
+        workshopDto.Id = id;
         workshopDto.TakenSeats = takenSeats;
+        workshopService.Setup(x => x.GetById(id, true)).ReturnsAsync(workshopDto);
 
         // Assert
-        var result = service.IsAvailableSeatsValid(availableSeats, workshopDto);
+        var result = await service.IsAvailableSeatsValid(availableSeats, id).ConfigureAwait(false);
 
         // Act
         Assert.AreEqual(expectedResult, result);
+        workshopService.Verify(x => x.GetById(id, true), Times.Once);
     }
 }
