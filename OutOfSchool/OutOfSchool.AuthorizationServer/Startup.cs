@@ -1,3 +1,5 @@
+using Elastic.Apm.DiagnosticSource;
+using Elastic.Apm.EntityFrameworkCore;
 using GrpcServiceServer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Net.Http.Headers;
@@ -24,6 +26,10 @@ public static class Startup
     {
         var services = builder.Services;
         var config = builder.Configuration;
+
+        services.AddElasticApmForAspNetCore(
+            new HttpDiagnosticsSubscriber(),
+            new EfCoreDiagnosticsSubscriber());
 
         var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 

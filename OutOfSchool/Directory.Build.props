@@ -1,10 +1,10 @@
 <Project>
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
         <WarningsAsErrors>$(WarningsAsErrors);NU1605;IDE0005</WarningsAsErrors>
     </PropertyGroup>
-    
+
     <Target Name="PostClean" AfterTargets="Clean">
         <RemoveDir Directories="$(BaseIntermediateOutputPath)"/><!-- obj -->
         <RemoveDir Directories="$(BaseOutputPath)"/><!-- bin -->
