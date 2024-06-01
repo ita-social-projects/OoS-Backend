@@ -214,7 +214,7 @@
     <value>Змінити імейл</value>
   </data>
   <data name="Enter new email message" xml:space="preserve">
-    <value>Введіть ваш новий імейл на який буде надіслана інструкція по зміні імейлу</value>
+    <value>Введіть ваш новий імейл на який буде надіслана інструкція зі зміни імейла</value>
   </data>
   <data name="Change email alert" xml:space="preserve">
     <value>Зверніть увагу, що після зміни імейлу ви не матимете змоги увійти у систему зі старим імейлом</value>
@@ -318,7 +318,7 @@
     <value>Зберегти</value>
   </data>
   <data name="Change email {0} sent" xml:space="preserve">
-    <value>Інструкція по зміні імейлу була надіслана на {0}. Зайдіть на імейл і виконайте дії вказані в листі.</value>
+    <value>Інструкція зі зміни імейла була надіслана на {0}. Зайдіть на імейл і виконайте дії вказані в листі.</value>
   </data>
   <data name="Cancel" xml:space="preserve">
     <value>Скасувати</value>
@@ -340,7 +340,7 @@ Login: {0}
     <value>Вказаний email {0} вже зареєстровано за іншим користувачем, введіть інший email</value>
   </data>
   <data name="Change email mismatch current email {0}" xml:space="preserve">
-    <value>Вказаний email {0} не співпадеє з поточним</value>
+    <value>Вказаний email {0} не співпадає з поточним</value>
   </data>
   <data name="Change password email message" xml:space="preserve">
     <value>Підтвердіть зміну паролю </value>
