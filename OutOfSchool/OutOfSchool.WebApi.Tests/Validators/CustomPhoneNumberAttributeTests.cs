@@ -11,10 +11,9 @@ public class CustomPhoneNumberAttributeTests
     {
         // Arrange
         var phoneNumber = null as string;
-        var customPhoneNumberAttribute = new CustomPhoneNumberAttribute();
 
         // Act
-        var isValid = customPhoneNumberAttribute.IsValid(phoneNumber);
+        var isValid = new CustomPhoneNumberAttribute().IsValid(phoneNumber);
 
         // Assert
         Assert.IsTrue(isValid);
@@ -25,10 +24,9 @@ public class CustomPhoneNumberAttributeTests
     {
         // Arrange
         var phoneNumber = 111111111;
-        var customPhoneNumberAttribute = new CustomPhoneNumberAttribute();
 
         // Act
-        var isValid = customPhoneNumberAttribute.IsValid(phoneNumber);
+        var isValid = new CustomPhoneNumberAttribute().IsValid(phoneNumber);
 
         // Assert
         Assert.IsFalse(isValid);
@@ -39,10 +37,9 @@ public class CustomPhoneNumberAttributeTests
     {
         // Arrange
         var phoneNumber = string.Empty;
-        var customPhoneNumberAttribute = new CustomPhoneNumberAttribute();
 
         // Act
-        var isValid = customPhoneNumberAttribute.IsValid(phoneNumber);
+        var isValid = new CustomPhoneNumberAttribute().IsValid(phoneNumber);
 
         // Assert
         Assert.IsTrue(isValid);
@@ -53,10 +50,9 @@ public class CustomPhoneNumberAttributeTests
     {
         // Arrange
         var phoneNumber = "1111111";
-        var customPhoneNumberAttribute = new CustomPhoneNumberAttribute();
 
         // Act
-        var isValid = customPhoneNumberAttribute.IsValid(phoneNumber);
+        var isValid = new CustomPhoneNumberAttribute().IsValid(phoneNumber);
 
         // Assert
         Assert.IsFalse(isValid);
@@ -67,10 +63,9 @@ public class CustomPhoneNumberAttributeTests
     {
         // Arrange
         var phoneNumber = "+111111";
-        var customPhoneNumberAttribute = new CustomPhoneNumberAttribute();
 
         // Act
-        var isValid = customPhoneNumberAttribute.IsValid(phoneNumber);
+        var isValid = new CustomPhoneNumberAttribute().IsValid(phoneNumber);
 
         // Assert
         Assert.IsFalse(isValid);
@@ -81,10 +76,9 @@ public class CustomPhoneNumberAttributeTests
     {
         // Arrange
         var phoneNumber = "+1111111111111111";
-        var customPhoneNumberAttribute = new CustomPhoneNumberAttribute();
 
         // Act
-        var isValid = customPhoneNumberAttribute.IsValid(phoneNumber);
+        var isValid = new CustomPhoneNumberAttribute().IsValid(phoneNumber);
 
         // Assert
         Assert.IsFalse(isValid);
@@ -95,10 +89,9 @@ public class CustomPhoneNumberAttributeTests
     {
         // Arrange
         var phoneNumber = "+111111abc11";
-        var customPhoneNumberAttribute = new CustomPhoneNumberAttribute();
 
         // Act
-        var isValid = customPhoneNumberAttribute.IsValid(phoneNumber);
+        var isValid = new CustomPhoneNumberAttribute().IsValid(phoneNumber);
 
         // Assert
         Assert.IsFalse(isValid);
@@ -109,10 +102,9 @@ public class CustomPhoneNumberAttributeTests
     {
         // Arrange
         var phoneNumber = "+11111111111";
-        var customPhoneNumberAttribute = new CustomPhoneNumberAttribute();
 
         // Act
-        var isValid = customPhoneNumberAttribute.IsValid(phoneNumber);
+        var isValid = new CustomPhoneNumberAttribute().IsValid(phoneNumber);
 
         // Assert
         Assert.IsTrue(isValid);

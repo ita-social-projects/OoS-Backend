@@ -317,7 +317,6 @@ public class AuthController : Controller
         {
             ReturnUrl = returnUrl,
             ProviderRegistration = providerRegistration ?? GetProviderRegistrationFromUri(returnUrl),
-            DateOfBirth = DateTime.Now.AddYears(-18),
         });
     }
 
@@ -338,13 +337,13 @@ public class AuthController : Controller
             return View("Register", model);
         }
 
-        if (Request.Form[Role.Provider.ToString()].Count == 1)
+        if (Request.Form[nameof(Role.Provider)].Count == 1)
         {
-            model.Role = Role.Provider.ToString().ToLower();
+            model.Role = nameof(Role.Provider).ToLower();
         }
-        else if (Request.Form[Role.Parent.ToString()].Count == 1)
+        else if (Request.Form[nameof(Role.Parent)].Count == 1)
         {
-            model.Role = Role.Parent.ToString().ToLower();
+            model.Role = nameof(Role.Parent).ToLower();
         }
         else
         {
@@ -358,7 +357,6 @@ public class AuthController : Controller
             LastName = model.LastName,
             MiddleName = model.MiddleName,
             Email = model.Email,
-            PhoneNumber = model.PhoneNumber,
             CreatingTime = DateTimeOffset.UtcNow,
             Role = model.Role,
             IsRegistered = false,
@@ -397,14 +395,9 @@ public class AuthController : Controller
                 {
                     await signInManager.SignInAsync(user, false);
 
-                    if (user.Role == Role.Parent.ToString().ToLower())
+                    if (user.Role.Equals(nameof(Role.Parent), StringComparison.OrdinalIgnoreCase))
                     {
-                        var parent = new Parent()
-                        {
-                            UserId = user.Id,
-                            Gender = model.Gender,
-                            DateOfBirth = model.DateOfBirth,
-                        };
+                        var parent = Parent.CreateDraft(user.Id, DateTime.UtcNow); // use draft parent, because user would edit info later through profile endpoints
 
                         Func<Task<Parent>> operation = async () => await parentRepository.Create(parent).ConfigureAwait(false);
 
