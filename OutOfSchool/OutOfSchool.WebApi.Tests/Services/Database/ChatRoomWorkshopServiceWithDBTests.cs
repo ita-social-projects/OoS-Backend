@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
@@ -37,6 +38,8 @@ public class ChatRoomWorkshopServiceWithDBTests
 
     private IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository;
     private IChatRoomWorkshopModelForChatListRepository roomWorkshopModelForChatListRepository;
+    private Mock<IWorkshopService> workshopServiceMock;
+    private Mock<IBlockedProviderParentService> blockedProviderParentServiceMock;
     private Mock<ILogger<ChatRoomWorkshopService>> loggerMock;
     private IMapper mapper;
 
@@ -54,11 +57,11 @@ public class ChatRoomWorkshopServiceWithDBTests
         users[2].Role = Role.Provider.ToString().ToLower();
         users[3].Role = Role.Provider.ToString().ToLower();
 
-        parents = new Parent[2]
-        {
+        parents =
+        [
             new Parent() { Id = Guid.NewGuid(), UserId = users[0].Id, Gender = Gender.Male, DateOfBirth = DateTime.Today},
             new Parent() { Id = Guid.NewGuid(), UserId = users[1].Id, Gender = Gender.Female, DateOfBirth = DateTime.Today},
-        };
+        ];
 
         providers = ProvidersGenerator.Generate(2).ToArray();
         providers[0].UserId = users[2].Id;
@@ -69,15 +72,15 @@ public class ChatRoomWorkshopServiceWithDBTests
         workshops[1].ProviderId = providers[0].Id;
         workshops[2].ProviderId = providers[1].Id;
 
-        rooms = new ChatRoomWorkshop[6]
-        {
+        rooms =
+        [
             new ChatRoomWorkshop() { Id = Guid.NewGuid(), WorkshopId = workshops[0].Id, ParentId = parents[0].Id, },
             new ChatRoomWorkshop() { Id = Guid.NewGuid(), WorkshopId = workshops[0].Id, ParentId = parents[1].Id, },
             new ChatRoomWorkshop() { Id = Guid.NewGuid(), WorkshopId = workshops[1].Id, ParentId = parents[0].Id, },
             new ChatRoomWorkshop() { Id = Guid.NewGuid(), WorkshopId = workshops[1].Id, ParentId = parents[1].Id, },
             new ChatRoomWorkshop() { Id = Guid.NewGuid(), WorkshopId = workshops[2].Id, ParentId = parents[0].Id, },
             new ChatRoomWorkshop() { Id = Guid.NewGuid(), WorkshopId = workshops[2].Id, ParentId = parents[1].Id, },
-        };
+        ];
 
         var builder =
             new DbContextOptionsBuilder<OutOfSchoolDbContext>()
@@ -91,11 +94,17 @@ public class ChatRoomWorkshopServiceWithDBTests
         roomWorkshopModelForChatListRepository = new ChatRoomWorkshopModelForChatListRepository(dbContext);
         loggerMock = new Mock<ILogger<ChatRoomWorkshopService>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        workshopServiceMock = new Mock<IWorkshopService>();
+        workshopServiceMock.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(new WorkshopDto() { ProviderId = Guid.Empty });
+        blockedProviderParentServiceMock = new Mock<IBlockedProviderParentService>();
+        blockedProviderParentServiceMock.Setup(x => x.IsBlocked(It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync(false);
 
         roomService = new ChatRoomWorkshopService(
             roomRepository,
             loggerMock.Object,
             roomWorkshopModelForChatListRepository,
+            workshopServiceMock.Object,
+            blockedProviderParentServiceMock.Object,
             mapper);
 
         SeedDatabase();

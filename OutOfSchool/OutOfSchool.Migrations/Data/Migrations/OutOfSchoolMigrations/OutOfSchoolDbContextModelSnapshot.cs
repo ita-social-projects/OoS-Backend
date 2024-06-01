@@ -31,7 +31,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ChildrenId");
 
-                    b.ToTable("AchievementChild", (string)null);
+                    b.ToTable("AchievementChild");
                 });
 
             modelBuilder.Entity("ChildSocialGroup", b =>
@@ -46,7 +46,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("SocialGroupsId");
 
-                    b.ToTable("ChildSocialGroup", (string)null);
+                    b.ToTable("ChildSocialGroup");
                 });
 
             modelBuilder.Entity("DirectionInstitutionHierarchy", b =>
@@ -61,7 +61,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("InstitutionHierarchiesId");
 
-                    b.ToTable("DirectionInstitutionHierarchy", (string)null);
+                    b.ToTable("DirectionInstitutionHierarchy");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
@@ -78,7 +78,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DataProtectionKeys", (string)null);
+                    b.ToTable("DataProtectionKeys");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -242,7 +242,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("Achievements", (string)null);
+                    b.ToTable("Achievements");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.AchievementTeacher", b =>
@@ -270,7 +270,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("AchievementTeachers", (string)null);
+                    b.ToTable("AchievementTeachers");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.AchievementType", b =>
@@ -297,7 +297,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("AchievementTypes", (string)null);
+                    b.ToTable("AchievementTypes");
 
                     b.HasData(
                         new
@@ -390,7 +390,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("Addresses", (string)null);
+                    b.ToTable("Addresses");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Application", b =>
@@ -441,7 +441,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("Applications", (string)null);
+                    b.ToTable("Applications");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.AreaAdmin", b =>
@@ -468,7 +468,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("AreaAdmins", (string)null);
+                    b.ToTable("AreaAdmins");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.AverageRating", b =>
@@ -497,7 +497,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("AverageRatings", (string)null);
+                    b.ToTable("AverageRatings");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.BlockedProviderParent", b =>
@@ -543,7 +543,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ProviderId");
 
-                    b.ToTable("BlockedProviderParents", (string)null);
+                    b.ToTable("BlockedProviderParents");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.CATOTTG", b =>
@@ -596,7 +596,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("CATOTTGs", (string)null);
+                    b.ToTable("CATOTTGs");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChangesLog", b =>
@@ -639,7 +639,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ChangesLog", (string)null);
+                    b.ToTable("ChangesLog");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatWorkshop.ChatMessageWorkshop", b =>
@@ -676,7 +676,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("ChatMessageWorkshops", (string)null);
+                    b.ToTable("ChatMessageWorkshops");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatWorkshop.ChatRoomWorkshop", b =>
@@ -707,7 +707,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("ChatRoomWorkshops", (string)null);
+                    b.ToTable("ChatRoomWorkshops");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Child", b =>
@@ -761,7 +761,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("Children", (string)null);
+                    b.ToTable("Children");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformation", b =>
@@ -779,7 +779,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CompanyInformation", (string)null);
+                    b.ToTable("CompanyInformation");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformationItem", b =>
@@ -803,7 +803,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("CompanyInformationId");
 
-                    b.ToTable("CompanyInformationItems", (string)null);
+                    b.ToTable("CompanyInformationItems");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.DateTimeRange", b =>
@@ -835,7 +835,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("DateTimeRanges", null, t =>
+                    b.ToTable("DateTimeRanges", t =>
                         {
                             t.HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "EndTime >= StartTime");
                         });
@@ -865,7 +865,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("Directions", (string)null);
+                    b.ToTable("Directions");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ElasticsearchSyncRecord", b =>
@@ -888,7 +888,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ElasticsearchSyncRecords", (string)null);
+                    b.ToTable("ElasticsearchSyncRecords");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Favorite", b =>
@@ -917,7 +917,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("Favorites", (string)null);
+                    b.ToTable("Favorites");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.FileInDb", b =>
@@ -933,7 +933,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FilesInDb", (string)null);
+                    b.ToTable("FilesInDb");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Provider>", b =>
@@ -946,7 +946,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("EntityId", "ExternalStorageId");
 
-                    b.ToTable("ProviderImages", (string)null);
+                    b.ToTable("ProviderImages");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", b =>
@@ -959,7 +959,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("EntityId", "ExternalStorageId");
 
-                    b.ToTable("WorkshopImages", (string)null);
+                    b.ToTable("WorkshopImages");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionAdmin", b =>
@@ -981,7 +981,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("InstitutionAdmins", (string)null);
+                    b.ToTable("InstitutionAdmins");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionStatus", b =>
@@ -1007,7 +1007,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("InstitutionStatuses", (string)null);
+                    b.ToTable("InstitutionStatuses");
 
                     b.HasData(
                         new
@@ -1075,7 +1075,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.OperationWithObject", b =>
@@ -1112,7 +1112,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("RowSeparator");
 
-                    b.ToTable("OperationsWithObjects", (string)null);
+                    b.ToTable("OperationsWithObjects");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
@@ -1143,7 +1143,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Parents", (string)null);
+                    b.ToTable("Parents");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ParentBlockedByAdminLog", b =>
@@ -1175,7 +1175,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ParentBlockedByAdminLog", (string)null);
+                    b.ToTable("ParentBlockedByAdminLog");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.PermissionsForRole", b =>
@@ -1199,7 +1199,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PermissionsForRoles", (string)null);
+                    b.ToTable("PermissionsForRoles");
 
                     b.HasData(
                         new
@@ -1401,7 +1401,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Providers", (string)null);
+                    b.ToTable("Providers");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ProviderAdmin", b =>
@@ -1429,7 +1429,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ProviderId");
 
-                    b.ToTable("ProviderAdmins", (string)null);
+                    b.ToTable("ProviderAdmins");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ProviderAdminChangesLog", b =>
@@ -1438,8 +1438,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    b.Property<Guid?>("ManagedWorkshopId")
-                        .HasColumnType("binary(16)");
+                    b.Property<bool>("IsDeputy")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("NewValue")
                         .HasMaxLength(500)
@@ -1473,15 +1473,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ManagedWorkshopId");
-
                     b.HasIndex("ProviderAdminUserId");
 
                     b.HasIndex("ProviderId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProviderAdminChangesLog", (string)null);
+                    b.ToTable("ProviderAdminChangesLog");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ProviderSectionItem", b =>
@@ -1512,7 +1510,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ProviderId");
 
-                    b.ToTable("ProviderSectionItems", (string)null);
+                    b.ToTable("ProviderSectionItems");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ProviderType", b =>
@@ -1527,7 +1525,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProviderTypes", (string)null);
+                    b.ToTable("ProviderTypes");
 
                     b.HasData(
                         new
@@ -1611,7 +1609,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("QuartzJobs", (string)null);
+                    b.ToTable("QuartzJobs");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Rating", b =>
@@ -1645,7 +1643,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("Ratings", (string)null);
+                    b.ToTable("Ratings");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.RegionAdmin", b =>
@@ -1672,7 +1670,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("RegionAdmins", (string)null);
+                    b.ToTable("RegionAdmins");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SocialGroup", b =>
@@ -1699,7 +1697,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("SocialGroups", (string)null);
+                    b.ToTable("SocialGroups");
 
                     b.HasData(
                         new
@@ -1765,7 +1763,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("StatisticReports", (string)null);
+                    b.ToTable("StatisticReports");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.StatisticReportCSV", b =>
@@ -1878,7 +1876,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("StatisticReportsCSV", (string)null);
+                    b.ToTable("StatisticReportsCSV");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SubordinationStructure.Institution", b =>
@@ -1906,7 +1904,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("Institutions", (string)null);
+                    b.ToTable("Institutions");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SubordinationStructure.InstitutionFieldDescription", b =>
@@ -1936,7 +1934,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("InstitutionFieldDescriptions", (string)null);
+                    b.ToTable("InstitutionFieldDescriptions");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SubordinationStructure.InstitutionHierarchy", b =>
@@ -1971,7 +1969,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("InstitutionHierarchies", (string)null);
+                    b.ToTable("InstitutionHierarchies");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Teacher", b =>
@@ -2023,7 +2021,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("Teachers", (string)null);
+                    b.ToTable("Teachers");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.User", b =>
@@ -2262,7 +2260,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ProviderId");
 
-                    b.ToTable("Workshops", (string)null);
+                    b.ToTable("Workshops");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.WorkshopDescriptionItem", b =>
@@ -2295,7 +2293,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("WorkshopDescriptionItems", (string)null);
+                    b.ToTable("WorkshopDescriptionItems");
                 });
 
             modelBuilder.Entity("ProviderAdminWorkshop", b =>
@@ -2310,7 +2308,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ProviderAdminsUserId");
 
-                    b.ToTable("ProviderAdminWorkshop", (string)null);
+                    b.ToTable("ProviderAdminWorkshop");
                 });
 
             modelBuilder.Entity("AchievementChild", b =>
@@ -2751,10 +2749,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ProviderAdminChangesLog", b =>
                 {
-                    b.HasOne("OutOfSchool.Services.Models.Workshop", "ManagedWorkshop")
-                        .WithMany()
-                        .HasForeignKey("ManagedWorkshopId");
-
                     b.HasOne("OutOfSchool.Services.Models.User", "ProviderAdminUser")
                         .WithMany()
                         .HasForeignKey("ProviderAdminUserId")
@@ -2772,8 +2766,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("ManagedWorkshop");
 
                     b.Navigation("Provider");
 

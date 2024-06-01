@@ -469,11 +469,17 @@ public class ChangesLogServiceTests
     }
 
     [Test]
-    public async Task GetProviderAdminChangesLog_WhenCalled_ReturnsSearchResult()
+    [TestCase(ProviderAdminType.All, "")]
+    [TestCase(ProviderAdminType.Assistants, "")]
+    [TestCase(ProviderAdminType.Deputies, "")]
+    [TestCase(ProviderAdminType.All, "test")]
+    public async Task GetProviderAdminChangesLog_WhenCalled_ReturnsSearchResult(ProviderAdminType providerAdminType, string searchString)
     {
         // Arange
         var changesLogService = GetChangesLogService();
         var request = new ProviderAdminChangesLogRequest();
+        request.AdminType = providerAdminType;
+        request.SearchString = searchString;
 
         var entitiesCount = 5;
         var totalAmount = 10;
@@ -485,7 +491,7 @@ public class ChangesLogServiceTests
                 ProviderAdminUser = UserGenerator.Generate(),
                 User = user,
                 Provider = provider,
-                ManagedWorkshop = workshop,
+                IsDeputy = true,
             })
             .AsQueryable()
             .BuildMock();
@@ -544,7 +550,7 @@ public class ChangesLogServiceTests
                 ProviderAdminUser = UserGenerator.Generate(),
                 User = user,
                 Provider = provider,
-                ManagedWorkshop = workshop,
+                IsDeputy = true,
             })
             .AsQueryable()
             .BuildMock();
@@ -609,7 +615,7 @@ public class ChangesLogServiceTests
                 ProviderAdminUser = UserGenerator.Generate(),
                 User = user,
                 Provider = provider,
-                ManagedWorkshop = workshop,
+                IsDeputy = true,
             })
             .AsQueryable()
             .BuildMock();

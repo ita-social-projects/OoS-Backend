@@ -23,25 +23,29 @@ public class EmailSenderServiceTests
     {
         mockSchedulerFactory = new Mock<ISchedulerFactory>();
         mockScheduler = new Mock<IScheduler>();
-        emailSenderService = new EmailSenderService(mockSchedulerFactory.Object);
+        var mockSendGridAccessibilityService = new Mock<ISendGridAccessibilityService>();
+        emailSenderService = new EmailSenderService(
+            mockSchedulerFactory.Object,
+            mockSendGridAccessibilityService.Object);
     }
 
     [Test]
-    public async Task SendAsync_AddsJobToScheduler()
+    public async Task SendAsync_SchedulesJob()
     {
         // Arrange
         string email = "test@example.com";
         string subject = "Test Email";
         var content = ("<html><body><h1>Hello</h1></body></html>", "Hello");
+        var expirationTime = DateTimeOffset.Now.AddHours(1);
         mockSchedulerFactory.Setup(f => f.GetScheduler(It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockScheduler.Object);
 
         // Act
-        await emailSenderService.SendAsync(email, subject, content);
+        await emailSenderService.SendAsync(email, subject, content, expirationTime);
 
         // Assert
         mockScheduler.Verify(
-            scheduler => scheduler.AddJob(It.IsAny<IJobDetail>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
+            scheduler => scheduler.ScheduleJob(It.IsAny<IJobDetail>(), It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -62,12 +66,12 @@ public class EmailSenderServiceTests
 
         // Assert
         mockScheduler.Verify(
-            scheduler => scheduler.AddJob(It.Is<JobDetailImpl>(job =>
+            scheduler => scheduler.ScheduleJob(It.Is<JobDetailImpl>(job =>
                     job.JobDataMap[EmailSenderStringConstants.Email].Equals(email) &&
                     job.JobDataMap[EmailSenderStringConstants.Subject].Equals(subject) &&
                     job.JobDataMap[EmailSenderStringConstants.HtmlContent].Equals(encodedHtml) &&
                     job.JobDataMap[EmailSenderStringConstants.PlainContent].Equals(encodedPlain)),
-                false,
+                It.IsAny<ITrigger>(),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }

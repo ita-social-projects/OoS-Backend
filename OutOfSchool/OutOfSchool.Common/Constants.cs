@@ -74,6 +74,46 @@ public static class Constants
     public const int MaxPhoneNumberLengthWithPlusSign = MaxPhoneNumberLength + 1;
 
     /// <summary>
+    /// Error message for invalid first name.
+    /// </summary>
+    public const string InvalidFirstNameErrorMessage = "First name contains invalid characters";
+
+    /// <summary>
+    /// Error message for invalid middle name.
+    /// </summary>
+    public const string InvalidMiddleNameErrorMessage = "Middle name contains invalid characters";
+
+    /// <summary>
+    /// Error message for invalid last name.
+    /// </summary>
+    public const string InvalidLastNameErrorMessage = "Last name contains invalid characters";
+
+    /// <summary>
+    /// Error message for required first name.
+    /// </summary>
+    public const string RequiredFirstNameErrorMessage = "First name is required";
+
+    /// <summary>
+    /// Error message for required middle name.
+    /// </summary>
+    public const string RequiredLastNameErrorMessage = "Last name is required";
+
+    /// <summary>
+    /// Ukrainian name regex pattern that allows only characters that allowed in Ukrainian name.
+    /// </summary>
+    public const string UkrainianNameRegexPattern = @"^[А-ЩЬЮЯҐЄІЇа-щьюяґєії0-9\'\-\ ]+$";
+
+    /// <summary>
+    /// Minimum age for user (parent, provider).
+    /// </summary>
+    public const int AdultAge = 18;
+
+    /// <summary>
+    /// Error message for day of birth validation.
+    /// </summary>
+    public const string DayOfBirthErrorMessage = "Error! Please check the day of birth is correct";
+
+    /// <summary>
     /// Minimum age for user (parent, provider).
     /// </summary>
     public const int AdultAge = 18;

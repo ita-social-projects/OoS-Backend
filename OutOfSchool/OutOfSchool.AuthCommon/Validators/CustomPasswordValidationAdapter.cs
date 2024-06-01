@@ -13,11 +13,15 @@ public class CustomPasswordValidationAdapter(
 
     public override string GetErrorMessage(ModelValidationContextBase validationContext)
     {
+        ArgumentNullException.ThrowIfNull(validationContext);
+
         return GetErrorMessage(validationContext.ModelMetadata);
     }
 
     public override void AddValidation(ClientModelValidationContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         MergeAttribute(context.Attributes, "data-val", "true");
         MergeAttribute(context.Attributes, validationPrefix, GetErrorMessage(context));
         MergeAttribute(context.Attributes, $"{validationPrefix}-minlength", Constants.PasswordMinLength.ToString());

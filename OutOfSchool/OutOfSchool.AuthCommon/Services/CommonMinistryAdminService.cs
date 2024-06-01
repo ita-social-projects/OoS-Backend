@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
+using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Extensions;
 using OutOfSchool.AuthCommon.Services.Password;
 using OutOfSchool.Common.Models;
@@ -32,7 +34,8 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
         UserManager<User> userManager,
         OutOfSchoolDbContext context,
         IRazorViewToStringRenderer renderer,
-        IStringLocalizer<SharedResource> localizer)
+        IStringLocalizer<SharedResource> localizer,
+        IOptions<HostsConfig> hostsConfig)
     {
         ArgumentNullException.ThrowIfNull(mapper);
         ArgumentNullException.ThrowIfNull(institutionAdminRepository);
@@ -42,6 +45,8 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(renderer);
         ArgumentNullException.ThrowIfNull(localizer);
+        ArgumentNullException.ThrowIfNull(hostsConfig);
+        ArgumentNullException.ThrowIfNull(hostsConfig.Value.BackendUrl);
 
         this.mapper = mapper;
         this.institutionAdminRepository = institutionAdminRepository;

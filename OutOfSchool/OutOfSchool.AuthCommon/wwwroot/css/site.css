@@ -271,10 +271,16 @@ a {
 }
 
 .logout_wrapper {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.logout_wrapper_item {
+  justify-content: center;
+  flex: 1 1 auto;
+  width: 75px;
 }
 
 .password_link {

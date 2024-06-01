@@ -39,7 +39,8 @@ public class ProviderAdminService : IProviderAdminService
         IProviderAdminChangesLogService providerAdminChangesLogService,
         IOptions<GrpcConfig> grpcConfig,
         IOptions<AngularClientScopeExternalUrisConfig> externalUrisConfig,
-        IOptions<ChangesLogConfig> changesLogConfig)
+        IOptions<ChangesLogConfig> changesLogConfig,
+        IOptions<HostsConfig> hostsConfig)
     {
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
@@ -57,6 +58,7 @@ public class ProviderAdminService : IProviderAdminService
             changesLogConfig.Value.TrackedProperties.TryGetValue("ProviderAdmin", out var properties)
             ? properties
             : Array.Empty<string>();
+        _ = hostsConfig?.Value ?? throw new ArgumentNullException(nameof(hostsConfig));
     }
 
     public async Task<ResponseDto> CreateProviderAdminAsync(
@@ -141,31 +143,17 @@ public class ProviderAdminService : IProviderAdminService
                         "You have to specify related workshops to be able to create workshop admin");
                 }
 
-                await providerAdminRepository.Create(providerAdmin).ConfigureAwait(false);
+                var newProviderAdmin = await providerAdminRepository.Create(providerAdmin).ConfigureAwait(false);
 
-                var newPropertiesValues = GetTrackedUserProperties(user);
-
-                foreach (var newProperty in newPropertiesValues)
+                if (newProviderAdmin is not null)
                 {
                     await providerAdminChangesLogService.SaveChangesLogAsync(
                         providerAdmin,
                         userId,
                         OperationType.Create,
-                        newProperty.Key,
                         string.Empty,
-                        newProperty.Value)
-                    .ConfigureAwait(false);
-                }
-
-                foreach (var workshop in providerAdmin.ManagedWorkshops)
-                {
-                    await providerAdminChangesLogService.SaveChangesLogAsync(
-                        providerAdmin,
-                        userId,
-                        OperationType.Create,
-                        "WorkshopId",
                         string.Empty,
-                        workshop.Id.ToString())
+                        user.Email)
                     .ConfigureAwait(false);
                 }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
@@ -29,6 +30,28 @@ public class CustomPasswordValidationAdapterTests
     }
 
     [Test]
+    public void AddValidation_WhenContextIsNull_ShouldThrowException()
+    {
+        // Arrange
+        var attribute = new CustomPasswordValidationAttribute();
+        var adapter = new CustomPasswordValidationAdapter(attribute, localizer.Object);
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => adapter.AddValidation(null));
+    }
+
+    [Test]
+    public void GetErrorMessage_WhenValidationContextIsNull_ShouldThrowException()
+    {
+        // Arrange
+        var attribute = new CustomPasswordValidationAttribute();
+        var adapter = new CustomPasswordValidationAdapter(attribute, localizer.Object);
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => adapter.GetErrorMessage(null));
+    }
+
+    [Test]
     public void AddValidation_ShouldPopulateContextAttributes()
     {
         // Arrange
@@ -45,7 +68,6 @@ public class CustomPasswordValidationAdapterTests
         // Assert
         Assert.AreEqual(expectedAddedAtributesCount, attributes.Count);
         Assert.AreEqual(expectedPrefixCount, attributes.Keys.Count(key => key.StartsWith("data-val-validpass")));
-        Assert.AreEqual(attributes["data-val"], "true");
+        Assert.AreEqual("true", attributes["data-val"]);
     }
-
 }

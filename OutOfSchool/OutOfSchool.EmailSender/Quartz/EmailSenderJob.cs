@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,19 +35,28 @@ public class EmailSenderJob : IJob
         { 
             logger.LogInformation("The email sender Quartz job started.");
 
+            if (!context.MergedJobDataMap.Any())
+            {
+                logger.LogDebug("Default Quartz job with no data processing. Skipping.");
+                return;
+            }
+
             if (!emailOptions.Value.Enabled)
             {
                 logger.LogError("The email sender is disabled.");
                 return;
             }
 
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            JobDataMap dataMap = context.MergedJobDataMap;
 
             var email = dataMap.GetString(EmailSenderStringConstants.Email);
             var subject = dataMap.GetString(EmailSenderStringConstants.Subject);
             var htmlContent = dataMap.GetString(EmailSenderStringConstants.HtmlContent);
             var plainContent = dataMap.GetString(EmailSenderStringConstants.PlainContent);
-            var expirationTime = dataMap.GetDateTime(EmailSenderStringConstants.ExpirationTime);
+            var expirationTime = DateTimeOffset.ParseExact(
+                dataMap.GetString(EmailSenderStringConstants.ExpirationTime),
+                EmailSenderStringConstants.DateTimeStringFormat,
+                CultureInfo.InvariantCulture);
 
             if (expirationTime < DateTimeOffset.Now)
             {
@@ -83,12 +94,17 @@ public class EmailSenderJob : IJob
         }
         catch (JobExecutionException ex)
         {
+            ex.RefireImmediately = false;
             logger.LogError(ex.Message);
             throw;
         }
         catch (Exception ex)
         {
             logger.LogError(ex.Message);
+            throw new JobExecutionException
+            {
+                RefireImmediately = false
+            };
         }
     }
 

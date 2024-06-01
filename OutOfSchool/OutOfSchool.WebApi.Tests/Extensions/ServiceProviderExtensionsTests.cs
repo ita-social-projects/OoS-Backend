@@ -32,7 +32,11 @@ public class ServiceProviderExtensionsTests
         var isDevelopment = true;
         var sendGridApikey = string.Empty;
         var loggerMock = new Mock<ILogger<DevEmailSender>>();
+        var schedulerFactoryMock = new Mock<ISchedulerFactory>();
+        var sendGridAccessibilityService = new Mock<ISendGridAccessibilityService>();
         services.AddSingleton(loggerMock.Object);
+        services.AddSingleton(schedulerFactoryMock.Object);
+        services.AddSingleton(sendGridAccessibilityService.Object);
 
         // Act
         services.AddEmailSenderService(isDevelopment, sendGridApikey, builder =>
@@ -54,8 +58,10 @@ public class ServiceProviderExtensionsTests
         var sendGridApikey = string.Empty;
         var loggerMock = new Mock<ILogger<DevEmailSender>>();
         var schedulerFactoryMock = new Mock<ISchedulerFactory>();
+        var sendGridAccessibilityService = new Mock<ISendGridAccessibilityService>();
         services.AddSingleton(loggerMock.Object);
         services.AddSingleton(schedulerFactoryMock.Object);
+        services.AddSingleton(sendGridAccessibilityService.Object);
 
         // Act
         services.AddEmailSenderService(isDevelopment, sendGridApikey, builder =>

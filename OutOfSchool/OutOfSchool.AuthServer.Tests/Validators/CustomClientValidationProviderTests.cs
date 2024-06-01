@@ -4,6 +4,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.AuthCommon;
 using OutOfSchool.AuthCommon.Validators;
+using OutOfSchool.Common.Validators;
 
 namespace OutOfSchool.AuthServer.Tests.Validators;
 
@@ -21,7 +22,7 @@ public class CustomClientValidationProviderTests
     }
     
     [Test]
-    public void GetAttributeAdapter_WithCustomAttribute_ShouldReturnCustomAdapter()
+    public void GetAttributeAdapter_WithCustomPasswordAttribute_ShouldReturnCustomPasswordAdapter()
     {
         // Arrange
         var attribute = new CustomPasswordValidationAttribute();
@@ -31,5 +32,18 @@ public class CustomClientValidationProviderTests
 
         // Assert
         Assert.IsInstanceOf<CustomPasswordValidationAdapter>(result);
+    }
+
+    [Test]
+    public void GetAttributeAdapter_WithCustomUkrainianNameAttribute_ShouldReturnCustomUkrainianNameAttribute()
+    {
+        // Arrange
+        var attribute = new CustomUkrainianNameAttribute();
+
+        // Act
+        var result = adapterProvider.GetAttributeAdapter(attribute, localizer.Object);
+
+        // Assert
+        Assert.IsInstanceOf<CustomUkrainianNameAttributeAdapter>(result);
     }
 }

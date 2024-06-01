@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
+using OutOfSchool.BackgroundJobs.Config;
+using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
@@ -366,6 +368,7 @@ public static class Startup
         services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
         services.AddSingleton<ElasticPinger>();
+        services.AddSingleton<IElasticsearchHealthService>(provider => provider.GetService<ElasticPinger>());
         services.AddHostedService<ElasticPinger>(provider => provider.GetService<ElasticPinger>());
 
         services.AddSingleton(Log.Logger);
@@ -442,10 +445,10 @@ public static class Startup
             q.AddElasticsearchSynchronization(services, configuration);
             q.AddStatisticReportsCreating(services, quartzConfig);
             q.AddOldNotificationsClearing(services, quartzConfig);
-            q.AddApplicationStatusChanging(services, quartzConfig);
+            q.AddApplicationStatusChanging(quartzConfig);
             q.AddAverageRatingCalculating(services, quartzConfig);
             q.AddLicenseApprovalNotificationGenerating(services, quartzConfig);
-            q.AddEmailSender(services, quartzConfig);
+            q.AddEmailSender(quartzConfig);
         });
 
         var isRedisEnabled = configuration.GetValue<bool>("Redis:Enabled");

@@ -5,8 +5,8 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using NUnit.Framework;
+using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BusinessLogic.Config;
-using OutOfSchool.BusinessLogic.Config.Quartz;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Extensions.Startup;
 

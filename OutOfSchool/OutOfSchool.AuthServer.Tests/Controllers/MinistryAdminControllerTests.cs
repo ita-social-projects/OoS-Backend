@@ -24,6 +24,8 @@ using System;
 using OutOfSchool.AuthCommon;
 using System.Linq;
 using OutOfSchool.EmailSender.Services;
+using Microsoft.Extensions.Options;
+using OutOfSchool.AuthCommon.Config;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
 
@@ -37,6 +39,7 @@ public class MinistryAdminControllerTests
     private MinistryAdminController ministryAdminControllerWithRealService;
     private ICommonMinistryAdminService<MinistryAdminBaseDto> ministryAdminService;
     private InstitutionAdminRepository ministryAdminRepository;
+    private Mock<IOptions<HostsConfig>> fakeHostsConfig;
 
     public MinistryAdminControllerTests()
     {
@@ -92,6 +95,13 @@ public class MinistryAdminControllerTests
         var userManager = new UserManager<User>(
             new UserStore<User>(context), null, null, null, null, null, null, null, null);
 
+        fakeHostsConfig = new Mock<IOptions<HostsConfig>>();
+        var config = new HostsConfig()
+        {
+            BackendUrl = "http://localhost:5443"
+        };
+        fakeHostsConfig.Setup(x => x.Value).Returns(config);
+
         ministryAdminService = new CommonMinistryAdminService<Guid, InstitutionAdmin, MinistryAdminBaseDto, InstitutionAdminRepository>(
             new Mock<IMapper>().Object,
             ministryAdminRepository,
@@ -100,7 +110,8 @@ public class MinistryAdminControllerTests
             userManager,
             context,
             new Mock<IRazorViewToStringRenderer>().Object,
-            new Mock<IStringLocalizer<SharedResource>>().Object);
+            new Mock<IStringLocalizer<SharedResource>>().Object,
+            fakeHostsConfig.Object);
 
         ministryAdminControllerWithRealService = new MinistryAdminController(new Mock<ILogger<MinistryAdminController>>().Object, ministryAdminService);
     }

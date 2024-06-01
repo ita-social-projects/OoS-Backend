@@ -34,6 +34,11 @@ public class CustomPhoneNumberAttribute() : DataTypeAttribute(DataType.PhoneNumb
             return false;
         }
 
+        if (phoneNumber.Length == 0)
+        {
+            return true;
+        }
+
         var phoneNumberSpan = phoneNumber.AsSpan();
 
         if (phoneNumberSpan is not ['+', .. var possibleDigits])
