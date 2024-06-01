@@ -10,11 +10,6 @@ namespace OutOfSchool.Common.Validators;
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter, AllowMultiple = false)]
 public class CustomAgeAttribute() : DataTypeAttribute(DataType.Date)
 {
-    public CustomAgeAttribute()
-        : base(DataType.Date)
-    {
-    }
-
     /// <summary>
     /// Gets the minimum age of the person in years.
     /// </summary>

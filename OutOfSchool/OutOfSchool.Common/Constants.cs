@@ -112,14 +112,4 @@ public static class Constants
     /// Error message for day of birth validation.
     /// </summary>
     public const string DayOfBirthErrorMessage = "Error! Please check the day of birth is correct";
-
-    /// <summary>
-    /// Minimum age for user (parent, provider).
-    /// </summary>
-    public const int AdultAge = 18;
-
-    /// <summary>
-    /// Error message for day of birth validation.
-    /// </summary>
-    public const string DayOfBirthErrorMessage = "Error! Please check the day of birth is correct";
 }
