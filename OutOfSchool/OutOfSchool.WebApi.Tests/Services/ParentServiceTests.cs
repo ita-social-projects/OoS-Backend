@@ -1,15 +1,19 @@
 ﻿using System;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
+using Bogus;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Parent;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
@@ -29,6 +33,8 @@ public class ParentServiceTests
     private Mock<IEntityRepositorySoftDeleted<Guid, Child>> repositoryChildMock;
     private IMapper mapper;
     private Mock<IUserService> userService;
+    private Mock<IEntityRepositorySoftDeleted<string, User>> userRepositoryMock;
+    private Faker faker;
 
     [SetUp]
     public void SetUp()
@@ -40,6 +46,8 @@ public class ParentServiceTests
         repositoryChildMock = new Mock<IEntityRepositorySoftDeleted<Guid, Child>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         userService = new Mock<IUserService>();
+        userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
+        faker = new();
 
         parentService = new ParentService(
             parentRepositoryMock.Object,
@@ -48,8 +56,175 @@ public class ParentServiceTests
             loggerMock.Object,
             repositoryChildMock.Object,
             mapper,
-            userService.Object);
+            userService.Object,
+            userRepositoryMock.Object);
     }
+
+    #region Create
+    [Test]
+    public void Create_WhenDtoIsNull_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await parentService.Create(null).ConfigureAwait(false));
+    }
+
+    [TestCase(null)]
+    [TestCase("")]
+    public void Create_WhenUserIdIsInvalid_ShouldLogErrorAndThrowInvalidOperationException(string userId)
+    {
+        // Arrange
+        currentUserServiceMock.SetupGet(s => s.UserId).Returns(userId);
+
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await parentService.Create(new ParentCreateDto()).ConfigureAwait(false));
+
+        loggerMock.Verify(
+            logger => logger.Log(
+                LogLevel.Error,
+                0,
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            Times.Once);
+    }
+
+    [Test]
+    public void Create_WhenUserNotExists_ShouldLogErrorAndThrowInvalidOperationException()
+    {
+        // Arrange
+        currentUserServiceMock.SetupGet(s => s.UserId).Returns("userId");
+
+        userRepositoryMock
+            .Setup(r => r.GetById("userId"))
+            .ReturnsAsync(null as User);
+
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await parentService.Create(new ParentCreateDto()).ConfigureAwait(false));
+
+        loggerMock.Verify(
+            logger => logger.Log(
+                LogLevel.Error,
+                0,
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            Times.Once);
+    }
+
+    [Test]
+    public void Create_WhenParentExists_ShouldLogErrorAndThrowInvalidOperationException()
+    {
+        // Arrange
+        currentUserServiceMock.SetupGet(s => s.UserId).Returns("userId");
+
+        parentRepositoryMock
+            .Setup(r => r.Any(It.IsAny<Expression<Func<Parent, bool>>>()))
+            .ReturnsAsync(true);
+
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await parentService.Create(new ParentCreateDto()).ConfigureAwait(false));
+
+        loggerMock.Verify(
+            logger => logger.Log(
+                LogLevel.Error,
+                0,
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task Create_WhenUserExists_ShouldSetUserIsRegistered()
+    {
+        // Arrange
+        var user = UserGenerator.Generate();
+
+        currentUserServiceMock.SetupGet(s => s.UserId).Returns(user.Id);
+
+        userRepositoryMock
+            .Setup(r => r.GetById(user.Id))
+            .ReturnsAsync(user);
+
+        parentRepositoryMock
+            .Setup(r => r.Create(It.IsAny<Parent>()))
+            .ReturnsAsync(new Parent());
+
+        parentRepositoryMock
+            .Setup(r => r.UnitOfWork.CompleteAsync())
+            .ReturnsAsync(1);
+
+        // Act
+        await parentService.Create(new ParentCreateDto()).ConfigureAwait(false);
+
+        // Assert
+        parentRepositoryMock.Verify(r => r.UnitOfWork.CompleteAsync(), Times.Once);
+
+        Assert.True(user.IsRegistered);
+    }
+
+    [Test]
+    public async Task Create_WhenUserExists_ShouldSetUserPhoneNumber()
+    {
+        // Arrange
+        var user = UserGenerator.Generate();
+        var expectedPhoneNumber = faker.Phone.PhoneNumber("+############");
+
+        currentUserServiceMock.SetupGet(s => s.UserId).Returns(user.Id);
+
+        userRepositoryMock
+            .Setup(r => r.GetById(user.Id))
+            .ReturnsAsync(user);
+
+        parentRepositoryMock
+            .Setup(r => r.Create(It.IsAny<Parent>()))
+            .ReturnsAsync(new Parent());
+
+        parentRepositoryMock
+            .Setup(r => r.UnitOfWork.CompleteAsync())
+            .ReturnsAsync(1);
+
+        // Act
+        await parentService.Create(new ParentCreateDto() { PhoneNumber = expectedPhoneNumber }).ConfigureAwait(false);
+
+        // Assert
+        parentRepositoryMock.Verify(r => r.UnitOfWork.CompleteAsync(), Times.Once);
+
+        Assert.AreEqual(expectedPhoneNumber, user.PhoneNumber);
+    }
+
+    [Test]
+    public async Task Create_WhenUserExists_ShouldReturnValidIds()
+    {
+        // Arrange
+        var user = UserGenerator.Generate();
+        var parent = ParentGenerator.Generate();
+
+        currentUserServiceMock.SetupGet(s => s.UserId).Returns(user.Id);
+
+        userRepositoryMock
+            .Setup(r => r.GetById(user.Id))
+            .ReturnsAsync(user);
+
+        parentRepositoryMock
+            .Setup(r => r.Create(It.IsAny<Parent>()))
+            .ReturnsAsync(parent);
+
+        parentRepositoryMock
+            .Setup(r => r.UnitOfWork.CompleteAsync())
+            .ReturnsAsync(1);
+
+        // Act
+        var result = await parentService.Create(new ParentCreateDto()).ConfigureAwait(false);
+
+        // Assert
+        parentRepositoryMock.Verify(r => r.UnitOfWork.CompleteAsync(), Times.Once);
+
+        Assert.AreEqual(parent.Id, result.Id);
+        Assert.AreEqual(parent.UserId, result.UserId);
+    }
+
+    #endregion
 
     #region BlockUblockParent
     [Test]

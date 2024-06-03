@@ -22,7 +22,6 @@ using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
@@ -36,7 +35,6 @@ public class AuthControllerTests
     private Mock<FakeSignInManager> fakeSignInManager;
     private Mock<IInteractionService> fakeInteractionService;
     private Mock<ILogger<AuthController>> fakeLogger;
-    private Mock<IParentRepository> fakeparentRepository;
     private AuthController authController;
     private Mock<IStringLocalizer<SharedResource>> fakeLocalizer;
     private static Mock<IOptions<AuthServerConfig>> fakeIdentityServerConfig;
@@ -61,7 +59,6 @@ public class AuthControllerTests
         fakeInteractionService = new Mock<IInteractionService>();
         fakeSignInManager = new Mock<FakeSignInManager>();
         fakeLogger = new Mock<ILogger<AuthController>>();
-        fakeparentRepository = new Mock<IParentRepository>();
         fakeLocalizer = new Mock<IStringLocalizer<SharedResource>>();
         fakeEmailSender = new Mock<IEmailSenderService>();
         fakeRenderer = new Mock<IRazorViewToStringRenderer>();
@@ -75,7 +72,6 @@ public class AuthControllerTests
             fakeSignInManager.Object,
             fakeInteractionService.Object, 
             fakeLogger.Object,
-            fakeparentRepository.Object,
             fakeLocalizer.Object,
             fakeIdentityServerConfig.Object,
             fakeRenderer.Object,
@@ -451,89 +447,6 @@ public class AuthControllerTests
         // Assert
         Assert.That(errorMessageFromController, Is.EqualTo(error.Description));
         Assert.IsInstanceOf<ViewResult>(result);
-    }
-
-    [Test]
-    public async Task Register_UserInParentRole_CreatesParentWithDefaultValuesAndReturnsView()
-    {
-        // Arrange 
-        var user = default(User);
-        var viewModel = new Faker<RegisterViewModel>().Generate();
-
-        fakeUserManager.Setup(manager =>
-                manager.CreateAsync(
-                    It.Is<User>(user => user.Email == viewModel.Email
-                        && user.UserName == viewModel.Email
-                        && !user.IsRegistered
-                        && !user.IsBlocked),
-                    viewModel.Password))
-            .Callback<User, string>((theUser, pwd) => user = theUser) // used to capture the generated user, especially User.Id
-            .Returns(Task.FromResult(IdentityResult.Success));
-
-        fakeUserManager.Setup(manager =>
-                manager.AddToRoleAsync(
-                    It.Is<User>(theUser => user == theUser),
-                    nameof(Role.Parent).ToLower()))
-            .Returns(Task.FromResult(IdentityResult.Success));
-
-        fakeUserManager.Setup(manager =>
-                manager.GenerateEmailConfirmationTokenAsync(
-                    It.Is<User>(theUser => user == theUser)))
-            .Returns(Task.FromResult("some token"));
-
-        fakeEmailSender.Setup(sender =>
-                sender.SendAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<(string, string)>(),
-                    null))
-            .Returns(Task.CompletedTask);
-
-        fakeSignInManager.Setup(manager =>
-                manager.SignInAsync(
-                    It.Is<User>(theUser => user == theUser),
-                    false,
-                    null))
-            .Returns(Task.CompletedTask);
-
-        fakeparentRepository.Setup(repo =>
-                repo.RunInTransaction(
-                    It.IsAny<Func<Task<Parent>>>()))
-            .Callback<Func<Task<Parent>>>(func => func().GetAwaiter().GetResult()) // used to force repo.Create() (below) to be invoked
-            .Returns(Task.FromResult(It.IsAny<Parent>()));
-
-        fakeparentRepository.Setup(repo => 
-                repo.Create(
-                    It.Is<Parent>(parent => parent.UserId == user.Id
-                        && parent.Gender == Gender.Male
-                        && parent.DateOfBirth.HasValue
-                        && (DateTime.UtcNow.AddYears(-Common.Constants.AdultAge) - parent.DateOfBirth.Value).TotalMinutes < 1)))
-            .Returns(Task.FromResult(It.IsAny<Parent>()));
-
-        var httpContext = new DefaultHttpContext();
-        httpContext.Request.Scheme = "http";
-        httpContext.Request.Host = new HostString("localhost");
-        httpContext.Request.ContentType = "application/x-www-form-urlencoded";
-        httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues> { { nameof(Role.Parent), "1" } });
-
-        authController.ControllerContext = new ControllerContext
-        {
-            HttpContext = httpContext
-        };
-        authController.Url = new Mock<IUrlHelper>().Object;
-
-        // Act
-        var result = await authController.Register(viewModel);
-
-        // Assert
-        fakeUserManager.VerifyAll();
-        fakeSignInManager.VerifyAll();
-        fakeEmailSender.VerifyAll();
-        fakeparentRepository.VerifyAll();
-
-        Assert.IsEmpty(authController.ModelState.Values);
-        Assert.IsInstanceOf<ViewResult>(result);
-        Assert.IsInstanceOf<RegisterViewModel>((result as ViewResult).Model);
     }
 
     [Test]

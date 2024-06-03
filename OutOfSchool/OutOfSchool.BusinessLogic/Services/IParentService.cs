@@ -47,4 +47,11 @@ public interface IParentService
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     /// The result contains a boolean indicating the success or failure of the operation.</returns>
     Task<Result<bool>> BlockUnblockParent(BlockUnblockParentDto parentBlockUnblock);
+
+    /// <summary>
+    /// Create new Parent in DB.
+    /// </summary>
+    /// <param name="parentCreateDto">DTO containing necessary information to create new Parent.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    Task<ParentDTO> Create(ParentCreateDto parentCreateDto);
 }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Parent;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.WebApi.Controllers.V1;
@@ -35,6 +36,48 @@ public class ParentControllerTests
             ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
         };
     }
+
+    #region Create
+
+    [Test]
+    public async Task Create_WhenServiceReturnsDto_ReturnsCreatedAtActionResult()
+    {
+        // Arrange
+        var parentDto = new ParentDTO()
+        {
+            Id = Guid.NewGuid(),
+            UserId = Guid.NewGuid().ToString(),
+        };
+
+        serviceParent
+            .Setup(x => x.Create(It.IsAny<ParentCreateDto>()))
+            .ReturnsAsync(parentDto);
+
+        // Act
+        var result = await controller.Create(new ParentCreateDto()) as CreatedAtActionResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(StatusCodes.Status201Created, result.StatusCode);
+    }
+
+    [Test]
+    public async Task Create_WhenServiceThrowsInvalidOperationException_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        serviceParent
+            .Setup(x => x.Create(It.IsAny<ParentCreateDto>()))
+            .ThrowsAsync(new InvalidOperationException());
+
+        // Act
+        var result = await controller.Create(new ParentCreateDto()) as BadRequestObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(StatusCodes.Status400BadRequest, result.StatusCode);
+    }
+
+    #endregion
 
     #region DeleteParent
 

@@ -19,6 +19,7 @@ public class ParentService : IParentService
     private readonly IEntityRepositorySoftDeleted<Guid, Child> repositoryChild;
     private readonly IMapper mapper;
     private readonly IUserService userService;
+    private readonly IEntityRepositorySoftDeleted<string, User> usersRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ParentService"/> class.
@@ -30,6 +31,7 @@ public class ParentService : IParentService
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Mapper.</param>
     /// <param name="userService">Service for Users.</param>
+    /// <param name="usersRepository">Repository for Users.</param>
     public ParentService(
         IParentRepository repositoryParent,
         ICurrentUserService currentUserService,
@@ -37,7 +39,8 @@ public class ParentService : IParentService
         ILogger<ParentService> logger,
         IEntityRepositorySoftDeleted<Guid, Child> repositoryChild,
         IMapper mapper,
-        IUserService userService)
+        IUserService userService,
+        IEntityRepositorySoftDeleted<string, User> usersRepository)
     {
         this.repositoryParent = repositoryParent ?? throw new ArgumentNullException(nameof(repositoryParent));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -46,6 +49,52 @@ public class ParentService : IParentService
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.parentBlockedByAdminLogService = parentBlockedByAdminLogService ?? throw new ArgumentNullException(nameof(parentBlockedByAdminLogService));
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        this.usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
+    }
+
+    /// <inheritdoc/>
+    public async Task<ParentDTO> Create(ParentCreateDto parentCreateDto)
+    {
+        ArgumentNullException.ThrowIfNull(parentCreateDto);
+
+        var userId = currentUserService.UserId;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            logger.LogError("Unable to create new parent. UserId is null or empty.");
+            throw new InvalidOperationException($"Unable to create new parent. UserId is null or empty.");
+        }
+
+        var user = await usersRepository.GetById(userId).ConfigureAwait(false);
+
+        if (user is null)
+        {
+            logger.LogError("Unable to create new parent. User with UserId = {UserId} not found.", userId);
+            throw new InvalidOperationException($"Unable to create new parent. User with UserId = {userId} not found.");
+        }
+
+        if (await repositoryParent.Any(p => p.UserId == userId).ConfigureAwait(false))
+        {
+            logger.LogError("Unable to create new parent. Parent with UserId = {UserId} already exists.", userId);
+            throw new InvalidOperationException($"Unable to create new parent. Parent with UserId = {userId} already exists.");
+        }
+
+        logger.LogInformation("Creating Parent for UserId = {UserId} started", userId);
+
+        var newParent = mapper.Map<Parent>(parentCreateDto);
+
+        user.IsRegistered = true;
+        user.PhoneNumber = parentCreateDto.PhoneNumber;
+
+        newParent.User = user;
+
+        var parent = await repositoryParent.Create(newParent).ConfigureAwait(false);
+
+        await repositoryParent.UnitOfWork.CompleteAsync();
+
+        logger.LogInformation("Successfully created Parent with Id = {Id} for UserId = {UserId}", parent.Id, userId);
+
+        return mapper.Map<ParentDTO>(parent);
     }
 
     /// <inheritdoc/>

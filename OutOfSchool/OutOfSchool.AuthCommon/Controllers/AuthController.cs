@@ -21,7 +21,6 @@ public class AuthController : Controller
     private readonly IUserManagerAdditionalService userManagerAdditionalService;
     private readonly IInteractionService interactionService;
     private readonly ILogger<AuthController> logger;
-    private readonly IParentRepository parentRepository;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly AuthServerConfig identityServerConfig;
     private readonly IRazorViewToStringRenderer renderer;
@@ -35,7 +34,6 @@ public class AuthController : Controller
     /// <param name="userManagerAdditionalService">Additional operations with user manager, including transactions.</param>
     /// <param name="signInManager"> ASP.Net Core Identity Sign in Manager.</param>
     /// <param name="interactionService"> Identity Server 4 interaction service.</param>
-    /// <param name="parentRepository"> Repository for Parent model.</param>
     /// <param name="logger"> ILogger class.</param>
     /// <param name="localizer"> Localizer.</param>
     /// <param name="identityServerConfig"> IdentityServer config.</param>
@@ -46,14 +44,12 @@ public class AuthController : Controller
         SignInManager<User> signInManager,
         IInteractionService interactionService,
         ILogger<AuthController> logger,
-        IParentRepository parentRepository,
         IStringLocalizer<SharedResource> localizer,
         IOptions<AuthServerConfig> identityServerConfig,
         IRazorViewToStringRenderer renderer,
         IEmailSenderService emailSender)
     {
         this.logger = logger;
-        this.parentRepository = parentRepository;
         this.signInManager = signInManager;
         this.userManager = userManager;
         this.userManagerAdditionalService = userManagerAdditionalService;
@@ -394,15 +390,6 @@ public class AuthController : Controller
                 if (roleAssignResult.Succeeded)
                 {
                     await signInManager.SignInAsync(user, false);
-
-                    if (user.Role.Equals(nameof(Role.Parent), StringComparison.OrdinalIgnoreCase))
-                    {
-                        var parent = Parent.CreateDraft(user.Id, DateTime.UtcNow); // use draft parent, because user would edit info later through profile endpoints
-
-                        Func<Task<Parent>> operation = async () => await parentRepository.Create(parent).ConfigureAwait(false);
-
-                        await parentRepository.RunInTransaction(operation).ConfigureAwait(false);
-                    }
 
                     logger.LogInformation("User(id): {UserId} was successfully registered with Role: {UserRole}", user.Id, user.Role);
 

@@ -28,6 +28,32 @@ public class ParentController : ControllerBase
     }
 
     /// <summary>
+    /// Create new Parent entity in DB.
+    /// </summary>
+    /// <param name="parentCreateDto">DTO containing necessary information to create new Parent.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [Authorize(Roles = "parent")]
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> Create([FromBody] ParentCreateDto parentCreateDto)
+    {
+        try
+        {
+            var parentDto = await serviceParent.Create(parentCreateDto).ConfigureAwait(false);
+
+            return CreatedAtAction(nameof(GetProfile), parentDto);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    /// <summary>
     /// Delete Parent entity from DB.
     /// </summary>
     /// <param name="id">The key in table.</param>
