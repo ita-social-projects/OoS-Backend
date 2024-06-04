@@ -60,7 +60,7 @@ public class PersonalInfoControllerTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(result.StatusCode, 200);
+        Assert.AreEqual(StatusCodes.Status200OK, result.StatusCode);
     }
 
     [Test]
@@ -92,7 +92,7 @@ public class PersonalInfoControllerTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(result.StatusCode, 200);
+        Assert.AreEqual(StatusCodes.Status200OK, result.StatusCode);
     }
 
     #endregion
