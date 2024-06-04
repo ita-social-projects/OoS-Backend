@@ -47,7 +47,6 @@ public class WorkshopService : IWorkshopService
     /// <param name="providerAdminRepository">Repository for provider admins.</param>
     /// <param name="averageRatingService">Average rating service.</param>
     /// <param name="providerRepository">Repository for providers.</param>
-
     public WorkshopService(
         IWorkshopRepository workshopRepository,
         IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository,

@@ -269,7 +269,7 @@ public class WorkshopServicesCombinerTests
     [TestCase(uint.MaxValue, 3U, true)]
     [TestCase(null, 3U, true)]
     [TestCase(4U, 6U, false)]
-    public async Task IsAvailableSeatsValidForWorkshop_WithExistIdAndValidAvailableSeats_ShouldReturnExpectedResult(
+    public void IsAvailableSeatsValidForWorkshop_ReturnsExpectedResult(
         uint? availableSeats, uint takenSeats, bool expectedResult)
     {
         // Arrange
@@ -277,31 +277,11 @@ public class WorkshopServicesCombinerTests
         var workshopDto = WorkshopDtoGenerator.Generate();
         workshopDto.Id = id;
         workshopDto.TakenSeats = takenSeats;
-        workshopService.Setup(x => x.GetById(id, true)).ReturnsAsync(workshopDto);
 
         // Act
-        var result = await service.IsAvailableSeatsValidForWorkshop(
-            availableSeats, id).ConfigureAwait(false);
+        var result = service.IsAvailableSeatsValidForWorkshop(availableSeats, workshopDto);
 
         // Assert
         Assert.AreEqual(expectedResult, result);
-        workshopService.Verify(x => x.GetById(id, true), Times.Once);
-    }
-
-    [Test]
-    public async Task IsAvailableSeatsValidForWorkshop_WithNotExistingWorkshop_ShouldReturnNull()
-    {
-        // Arrange
-        var id = Guid.NewGuid();
-        workshopService.Setup(x => x.GetById(id, true))
-            .ReturnsAsync(null as WorkshopDto);
-
-        // Act
-        var result = await service.IsAvailableSeatsValidForWorkshop(
-            It.IsAny<uint>(), id).ConfigureAwait(false);
-
-        // Assert
-        Assert.IsNull(result);
-        workshopService.Verify(x => x.GetById(id, true), Times.Once);
     }
 }

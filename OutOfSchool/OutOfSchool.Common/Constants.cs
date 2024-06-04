@@ -1,4 +1,7 @@
-﻿namespace OutOfSchool.Common;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
+namespace OutOfSchool.Common;
 
 public static class Constants
 {
@@ -47,6 +50,11 @@ public static class Constants
     public const string PathToChatHub = "/hubs/chat";
 
     public const string PathToNotificationHub = "/hubs/notification";
+
+    public const string WorkshopNotFoundErrorMessage = "Workshop not found.";
+
+    public const string InvalidAvailableSeatsForWorkshopErrorMessage =
+        "The number of available seats must be equal or greater than the number of taken seats.";
 
     /// <summary>
     /// Longest possible length of provider founder.

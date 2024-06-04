@@ -206,24 +206,16 @@ public class WorkshopController : ControllerBase
             return StatusCode(StatusCodes.Status403Forbidden, "Forbidden to update workshops for another providers.");
         }
 
-        var result = await combinedWorkshopService.IsAvailableSeatsValidForWorkshop(
-            dto.AvailableSeats, dto.Id).ConfigureAwait(false);
-
-        if (result is null)
-        {
-            return BadRequest("The workshop does not exist.");
-        }
-
-        if (result == false)
-        {
-            return BadRequest("The number of available seats must be equal or greater than the number of taken seats");
-        }
-
         try
         {
             var updatingResult = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
 
-            return Ok(CreateUpdateResponse(updatingResult));
+            if (!updatingResult.Succeeded)
+            {
+                return BadRequest(updatingResult.OperationResult.Errors.FirstOrDefault().Description);
+            }
+
+            return Ok(CreateUpdateResponse(updatingResult.Value));
         }
         catch (ArgumentException e)
         {

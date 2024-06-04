@@ -1,6 +1,7 @@
-﻿using OutOfSchool.Common.Enums;
+﻿using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -52,8 +53,13 @@ public interface IWorkshopServicesCombiner
     /// Update existing entity in the database.
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopBaseDto"/>.</returns>
-    Task<WorkshopBaseDto> Update(WorkshopBaseDto dto);
+    /// <returns>A <see cref="Task{TResult}"/> containing a <see cref="Result{WorkshopBaseDto}"/>
+    /// that indicates the success or failure of the operation.
+    /// If the operation succeeds, the <see cref="Result{WorkshopBaseDto}.Value"/> property
+    /// contains the updated <see cref="WorkshopBaseDto"/>.
+    /// If the operation fails, the <see cref="Result{WorkshopBaseDto}.OperationResult"/> property
+    /// contains error information.</returns>
+    Task<Result<WorkshopBaseDto>> Update(WorkshopBaseDto dto);
 
     /// <summary>
     /// Update status field for existing entity in the database.
@@ -136,9 +142,7 @@ public interface IWorkshopServicesCombiner
     /// Checks if the given available seats value is valid for the specified workshop.
     /// </summary>
     /// <param name="availableSeats">The number of available seats to validate.</param>
-    /// <param name="workshopId">The unique Id of the workshop.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.
-    /// The task result indicates whether the available seats value is valid,
-    /// or null if workshop does not exist.</returns>
-    Task<bool?> IsAvailableSeatsValidForWorkshop(uint? availableSeats, Guid workshopId);
+    /// <param name="workshop">The workshop for which the available seats value is being validated.</param>
+    /// <returns> A boolean value indicating whether the available seats value is valid for the workshop.</returns>
+    bool IsAvailableSeatsValidForWorkshop(uint? availableSeats, WorkshopDto workshop);
 }

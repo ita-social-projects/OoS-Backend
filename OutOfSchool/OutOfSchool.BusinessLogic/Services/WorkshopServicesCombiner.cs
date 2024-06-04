@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
@@ -81,17 +82,35 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopBaseDto> Update(WorkshopBaseDto dto)
+    public async Task<Result<WorkshopBaseDto>> Update(WorkshopBaseDto dto)
     {
-        var workshop = await workshopService.Update(dto).ConfigureAwait(false);
+        var currentWorkshop = await GetById(dto.Id, true).ConfigureAwait(false);
+        if (currentWorkshop is null)
+        {
+            return Result<WorkshopBaseDto>.Failed(new OperationError
+            {
+                Code = HttpStatusCode.BadRequest.ToString(),
+                Description = Constants.WorkshopNotFoundErrorMessage,
+            });
+        }
+
+        if (!IsAvailableSeatsValidForWorkshop(dto.AvailableSeats, currentWorkshop))
+        {
+            return Result<WorkshopBaseDto>.Failed(new OperationError
+            {
+                Code = HttpStatusCode.BadRequest.ToString(),
+                Description = Constants.InvalidAvailableSeatsForWorkshopErrorMessage,
+            });
+        }
+
+        var updatedWorkshop = await workshopService.Update(dto).ConfigureAwait(false);
 
         await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
                 ElasticsearchSyncEntity.Workshop,
-                workshop.Id,
-                ElasticsearchSyncOperation.Update)
-            .ConfigureAwait(false);
+                updatedWorkshop.Id,
+                ElasticsearchSyncOperation.Update).ConfigureAwait(false);
 
-        return workshop;
+        return Result<WorkshopBaseDto>.Success(updatedWorkshop);
     }
 
     /// <inheritdoc/>
@@ -260,14 +279,8 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
     }
 
     /// <inheritdoc/>
-    public async Task<bool?> IsAvailableSeatsValidForWorkshop(uint? availableSeats, Guid workshopId)
+    public bool IsAvailableSeatsValidForWorkshop(uint? availableSeats, WorkshopDto workshop)
     {
-        var workshop = await workshopService.GetById(workshopId, true).ConfigureAwait(false);
-        if (workshop == null)
-        {
-            return null;
-        }
-
         return availableSeats.GetMaxValueIfNullOrZero() >= workshop.TakenSeats;
     }
 

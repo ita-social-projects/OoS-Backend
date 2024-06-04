@@ -1,4 +1,5 @@
-﻿using OutOfSchool.BusinessLogic.Models.Workshops;
+﻿using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -15,8 +16,13 @@ public interface IWorkshopServicesCombinerV2 : IWorkshopServicesCombiner
     /// Update existing entity in the database.
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopResultDto"/>.</returns>
-    new Task<WorkshopResultDto> Update(WorkshopV2Dto dto);
+    /// <returns>A <see cref="Task{TResult}"/> containing a <see cref="Result{WorkshopBaseDto}"/>
+    /// that indicates the success or failure of the operation.
+    /// If the operation succeeds, the <see cref="Result{WorkshopResultDto}.Value"/> property
+    /// contains the updated <see cref="WorkshopResultDto"/>.
+    /// If the operation fails, the <see cref="Result{WorkshopResultDto}.OperationResult"/> property
+    /// contains error information.</returns>
+    new Task<Result<WorkshopResultDto>> Update(WorkshopV2Dto dto);
 
     /// <summary>
     ///  Delete entity.
