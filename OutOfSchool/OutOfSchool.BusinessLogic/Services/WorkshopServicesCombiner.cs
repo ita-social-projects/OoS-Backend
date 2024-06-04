@@ -278,7 +278,12 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
         return shortWorkshops;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Checks if the given available seats value is valid for the specified workshop.
+    /// </summary>
+    /// <param name="availableSeats">The number of available seats to validate.</param>
+    /// <param name="workshop">The workshop for which the available seats value is being validated.</param>
+    /// <returns> A boolean value indicating whether the available seats value is valid for the workshop.</returns>
     public bool IsAvailableSeatsValidForWorkshop(uint? availableSeats, WorkshopDto workshop)
     {
         return availableSeats.GetMaxValueIfNullOrZero() >= workshop.TakenSeats;

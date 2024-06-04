@@ -262,26 +262,4 @@ public class WorkshopServicesCombinerTests
                 null),
             Times.Once);
     }
-
-    [Test]
-    [TestCase(3U, 3U, true)]
-    [TestCase(5U, 3U, true)]
-    [TestCase(uint.MaxValue, 3U, true)]
-    [TestCase(null, 3U, true)]
-    [TestCase(4U, 6U, false)]
-    public void IsAvailableSeatsValidForWorkshop_ReturnsExpectedResult(
-        uint? availableSeats, uint takenSeats, bool expectedResult)
-    {
-        // Arrange
-        var id = Guid.NewGuid();
-        var workshopDto = WorkshopDtoGenerator.Generate();
-        workshopDto.Id = id;
-        workshopDto.TakenSeats = takenSeats;
-
-        // Act
-        var result = service.IsAvailableSeatsValidForWorkshop(availableSeats, workshopDto);
-
-        // Assert
-        Assert.AreEqual(expectedResult, result);
-    }
 }

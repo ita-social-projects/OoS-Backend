@@ -365,7 +365,9 @@ public class WorkshopController : ControllerBase
 
         if (!result.Succeeded)
         {
-            return BadRequest(result.OperationResult.Errors.FirstOrDefault().Description);
+            var errors = result.OperationResult?.Errors;
+            return BadRequest(errors?.FirstOrDefault()?.Description
+                ?? Constants.UnknownErrorDuringUpdateMessage);
         }
 
         return Ok(result.Value);
