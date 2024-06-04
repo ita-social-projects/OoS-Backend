@@ -48,23 +48,20 @@ public class UserService : IUserService
         return users.Select(user => mapper.Map<ShortUserDto>(user)).ToList();
     }
 
-    // TODO: use repository.GetById() method
     public async Task<ShortUserDto> GetById(string id)
     {
-        logger.LogInformation($"Getting User by Id started. Looking Id = {id}.");
+        logger.LogInformation("Getting User by Id started. Looking Id = {Id}.", id);
 
-        Expression<Func<User, bool>> filter = p => p.Id == id;
+        var user = await repository.GetById(id).ConfigureAwait(false);
 
-        var users = await repository.GetByFilter(filter).ConfigureAwait(false);
-
-        if (!users.Any())
+        if (user is null)
         {
             throw new ArgumentException(localizer["There is no User in the Db with such an id"], nameof(id));
         }
 
-        logger.LogInformation($"Successfully got an User with Id = {id}.");
+        logger.LogInformation("Successfully got an User with Id = {Id}.", id);
 
-        return mapper.Map<ShortUserDto>(users.First());
+        return mapper.Map<ShortUserDto>(user);
     }
 
     public async Task<ShortUserDto> Update(ShortUserDto dto)

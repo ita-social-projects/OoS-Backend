@@ -42,17 +42,14 @@ public class PersonalInfoController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetPersonalInfo()
     {
-        ShortUserDto info;
+        var info = null as ShortUserDto;
+
         if (currentUserService.IsInRole(Role.Parent))
         {
             info = await parentService.GetPersonalInfoByUserId(currentUserService.UserId);
         }
-        else
-        {
-            info = await userService.GetById(currentUserService.UserId);
-        }
 
-        return info is null ? NoContent() : Ok(info);
+        return Ok(info ?? (await userService.GetById(currentUserService.UserId)));
     }
 
 

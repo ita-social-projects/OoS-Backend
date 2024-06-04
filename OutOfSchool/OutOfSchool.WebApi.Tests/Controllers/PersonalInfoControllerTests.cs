@@ -8,6 +8,7 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
@@ -27,6 +28,74 @@ public class PersonalInfoControllerTests
         userService = new Mock<IUserService>();
         currentUserService = new Mock<ICurrentUserService>();
     }
+
+    #region GetPersonalInfo
+
+    [Test]
+    public async Task GetPersonalInfo_WhenUserIsParent_ReturnsOkObjectResult()
+    {
+        // Arrange
+        var userId = Guid.NewGuid().ToString();
+
+        httpContext.Setup(x => x.User.FindFirst("sub"))
+            .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
+
+        httpContext.Setup(x => x.User.IsInRole("parent"))
+            .Returns(true);
+
+        var controller = new PersonalInfoController(
+            userService.Object,
+            parentService.Object,
+            currentUserService.Object)
+        {
+            ControllerContext = new ControllerContext { HttpContext = httpContext.Object },
+        };
+
+        parentService.Setup(x => x.GetPersonalInfoByUserId(userId)).ReturnsAsync(new ShortUserDto());
+        currentUserService.Setup(c => c.UserId).Returns(userId);
+        currentUserService.Setup(c => c.IsInRole(Role.Parent)).Returns(true);
+
+        // Act
+        var result = await controller.GetPersonalInfo().ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(result.StatusCode, 200);
+    }
+
+    [Test]
+    public async Task GetPersonalInfo_WhenUserIsNotParent_ReturnsOkObjectResult()
+    {
+        // Arrange
+        var userId = Guid.NewGuid().ToString();
+
+        httpContext.Setup(x => x.User.FindFirst("sub"))
+            .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
+
+        httpContext.Setup(x => x.User.IsInRole("parent"))
+            .Returns(false);
+
+        var controller = new PersonalInfoController(
+            userService.Object,
+            parentService.Object,
+            currentUserService.Object)
+        {
+            ControllerContext = new ControllerContext { HttpContext = httpContext.Object },
+        };
+
+        parentService.Setup(x => x.GetPersonalInfoByUserId(userId)).ReturnsAsync(new ShortUserDto());
+        currentUserService.Setup(c => c.UserId).Returns(userId);
+        currentUserService.Setup(c => c.IsInRole(Role.Parent)).Returns(false);
+
+        // Act
+        var result = await controller.GetPersonalInfo().ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(result.StatusCode, 200);
+    }
+
+    #endregion
 
     #region UpdateParent
 

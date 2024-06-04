@@ -152,8 +152,6 @@ public class ParentService : IParentService
             x => x.UserId == userId,
             $"{nameof(Parent.User)}")).FirstOrDefault();
 
-        await currentUserService.UserHasRights(new ParentRights(info?.Id ?? Guid.Empty));
-
         return mapper.Map<ShortUserDto>(info);
     }
 
