@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -17,6 +18,7 @@ using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
@@ -539,6 +541,52 @@ public class WorkshopControllerTests
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(BadRequest, result.StatusCode);
+    }
+
+    [Test]
+    public async Task UpdateWorkshop_WhenUpdateResultIsFailed_ShouldReturnBadRequestObjectResult()
+    {
+        // Arrange
+        var failedResult = Result<WorkshopBaseDto>.Failed(new OperationError
+        {
+            Code = HttpStatusCode.BadRequest.ToString(),
+            Description = Constants.WorkshopNotFoundErrorMessage,
+        });
+        workshopUpdateDto.ProviderId = provider.Id;
+        providerServiceMoq.Setup(x => x.IsBlocked(provider.Id)).ReturnsAsync(false);
+        providerServiceMoq.Setup(x => x.GetByUserId(userId, It.IsAny<bool>()))
+            .ReturnsAsync(provider);
+        workshopServiceMoq.Setup(x => x.Update(workshopUpdateDto))
+            .ReturnsAsync(failedResult);
+
+        // Act
+        var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as ObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(BadRequest, result.StatusCode);
+        Assert.AreEqual(Constants.WorkshopNotFoundErrorMessage, result.Value);
+    }
+
+    [Test]
+    public async Task UpdateWorkshop_WhenUpdateResultIsFailedAndErrorIsNull_ShouldReturnBadRequestObjectResult()
+    {
+        // Arrange
+        var failedResult = Result<WorkshopBaseDto>.Failed(null);
+        workshopUpdateDto.ProviderId = provider.Id;
+        providerServiceMoq.Setup(x => x.IsBlocked(provider.Id)).ReturnsAsync(false);
+        providerServiceMoq.Setup(x => x.GetByUserId(userId, It.IsAny<bool>()))
+            .ReturnsAsync(provider);
+        workshopServiceMoq.Setup(x => x.Update(workshopUpdateDto))
+            .ReturnsAsync(failedResult);
+
+        // Act
+        var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as ObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(BadRequest, result.StatusCode);
+        Assert.AreEqual(Constants.UnknownErrorDuringUpdateMessage, result.Value);
     }
     #endregion
 
