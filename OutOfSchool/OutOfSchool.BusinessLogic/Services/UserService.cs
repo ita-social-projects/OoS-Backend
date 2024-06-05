@@ -52,7 +52,7 @@ public class UserService : IUserService
     {
         logger.LogInformation("Getting User by Id started. Looking Id = {Id}.", id);
 
-        var user = await repository.GetById(id).ConfigureAwait(false);
+        var user = await repository.GetByFilterNoTracking(u => u.Id == id).FirstOrDefaultAsync().ConfigureAwait(false);
 
         if (user is null)
         {
