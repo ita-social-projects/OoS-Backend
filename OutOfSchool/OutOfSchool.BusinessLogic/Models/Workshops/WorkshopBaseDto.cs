@@ -2,12 +2,11 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using OutOfSchool.BusinessLogic.Util.CustomValidation;
+using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.BusinessLogic.Util.CustomValidation;
-using OutOfSchool.BusinessLogic.Util.JsonTools;
-using OutOfSchool.Common.Extensions;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 

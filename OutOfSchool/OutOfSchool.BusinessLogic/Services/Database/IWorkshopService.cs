@@ -33,9 +33,10 @@ public interface IWorkshopService
     /// Get entity by it's key.
     /// </summary>
     /// <param name="id">Key in the table.</param>
+    /// <param name="asNoTracking">If true, the entity is retrieved without tracking.</param>
     /// <returns>A <see cref="Task{TEntity}"/> representing the result of the asynchronous operation.
     /// The task result contains the entity that was found, or null.</returns>
-    Task<WorkshopDto> GetById(Guid id);
+    Task<WorkshopDto> GetById(Guid id, bool asNoTracking = false);
 
     /// <summary>
     /// Update existing entity in the database.

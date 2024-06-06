@@ -1,11 +1,12 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
-using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Enums;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -73,25 +74,43 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopDto> GetById(Guid id)
+    public async Task<WorkshopDto> GetById(Guid id, bool asNoTracking = false)
     {
-        var workshop = await workshopService.GetById(id).ConfigureAwait(false);
+        var workshop = await workshopService.GetById(id, asNoTracking).ConfigureAwait(false);
 
         return workshop;
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopBaseDto> Update(WorkshopBaseDto dto)
+    public async Task<Result<WorkshopBaseDto>> Update(WorkshopBaseDto dto)
     {
-        var workshop = await workshopService.Update(dto).ConfigureAwait(false);
+        var currentWorkshop = await GetById(dto.Id, true).ConfigureAwait(false);
+        if (currentWorkshop is null)
+        {
+            return Result<WorkshopBaseDto>.Failed(new OperationError
+            {
+                Code = HttpStatusCode.BadRequest.ToString(),
+                Description = Constants.WorkshopNotFoundErrorMessage,
+            });
+        }
+
+        if (!IsAvailableSeatsValidForWorkshop(dto.AvailableSeats, currentWorkshop))
+        {
+            return Result<WorkshopBaseDto>.Failed(new OperationError
+            {
+                Code = HttpStatusCode.BadRequest.ToString(),
+                Description = Constants.InvalidAvailableSeatsForWorkshopErrorMessage,
+            });
+        }
+
+        var updatedWorkshop = await workshopService.Update(dto).ConfigureAwait(false);
 
         await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
                 ElasticsearchSyncEntity.Workshop,
-                workshop.Id,
-                ElasticsearchSyncOperation.Update)
-            .ConfigureAwait(false);
+                updatedWorkshop.Id,
+                ElasticsearchSyncOperation.Update).ConfigureAwait(false);
 
-        return workshop;
+        return Result<WorkshopBaseDto>.Success(updatedWorkshop);
     }
 
     /// <inheritdoc/>
@@ -257,6 +276,17 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
         }
 
         return shortWorkshops;
+    }
+
+    /// <summary>
+    /// Checks if the given available seats value is valid for the specified workshop.
+    /// </summary>
+    /// <param name="availableSeats">The number of available seats to validate.</param>
+    /// <param name="workshop">The workshop for which the available seats value is being validated.</param>
+    /// <returns> A boolean value indicating whether the available seats value is valid for the workshop.</returns>
+    public bool IsAvailableSeatsValidForWorkshop(uint? availableSeats, WorkshopDto workshop)
+    {
+        return availableSeats.GetMaxValueIfNullOrZero() >= workshop.TakenSeats;
     }
 
     private async Task<IEnumerable<string>> GetNotificationsRecipientIds(Guid objectId)

@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
-using OutOfSchool.Services.Enums;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -49,17 +50,36 @@ public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopSer
         return creationResult;
     }
 
-    public new async Task<WorkshopResultDto> Update(WorkshopV2Dto dto)
+    public new async Task<Result<WorkshopResultDto>> Update(WorkshopV2Dto dto)
     {
-        var workshop = await workshopService.UpdateV2(dto).ConfigureAwait(false);
+        var currentWorkshop = await GetById(dto.Id, true).ConfigureAwait(false);
+        if (currentWorkshop is null)
+        {
+            return Result<WorkshopResultDto>.Failed(new OperationError
+            {
+                Code = HttpStatusCode.BadRequest.ToString(),
+                Description = Constants.WorkshopNotFoundErrorMessage,
+            });
+        }
+
+        if (!IsAvailableSeatsValidForWorkshop(dto.AvailableSeats, currentWorkshop))
+        {
+            return Result<WorkshopResultDto>.Failed(new OperationError
+            {
+                Code = HttpStatusCode.BadRequest.ToString(),
+                Description = Constants.InvalidAvailableSeatsForWorkshopErrorMessage,
+            });
+        }
+
+        var updatedWorkshop = await workshopService.UpdateV2(dto).ConfigureAwait(false);
 
         await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
                 ElasticsearchSyncEntity.Workshop,
-                workshop.Workshop.Id,
+                updatedWorkshop.Workshop.Id,
                 ElasticsearchSyncOperation.Update)
             .ConfigureAwait(false);
 
-        return workshop;
+        return Result<WorkshopResultDto>.Success(updatedWorkshop);
     }
 
     public new async Task Delete(Guid id)

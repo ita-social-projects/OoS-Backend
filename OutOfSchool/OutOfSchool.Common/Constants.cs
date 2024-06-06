@@ -48,6 +48,13 @@ public static class Constants
 
     public const string PathToNotificationHub = "/hubs/notification";
 
+    public const string WorkshopNotFoundErrorMessage = "Workshop not found.";
+
+    public const string InvalidAvailableSeatsForWorkshopErrorMessage =
+        "The number of available seats must be equal or greater than the number of taken seats.";
+
+    public const string UnknownErrorDuringUpdateMessage = "Unknown error occurred during update.";
+
     /// <summary>
     /// Longest possible length of provider founder.
     /// </summary>

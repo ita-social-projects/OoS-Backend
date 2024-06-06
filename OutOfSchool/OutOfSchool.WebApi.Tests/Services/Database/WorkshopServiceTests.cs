@@ -186,10 +186,11 @@ public class WorkshopServiceTests
     {
         // Arrange
         var id = new Guid("b94f1989-c4e7-4878-ac86-21c4a402fb43");
-        SetupGetById(WithWorkshop(id));
+        var workshop = WorkshopGenerator.Generate().WithId(id).WithAddress();
+        SetupGetById(workshop);
 
         // Act
-        var result = await workshopService.GetById(id).ConfigureAwait(false);
+        var result = await workshopService.GetById(id, false).ConfigureAwait(false);
 
         // Assert
         result.Should().BeEquivalentTo(ExpectedWorkshopGetByIdSuccess(id));
@@ -200,10 +201,11 @@ public class WorkshopServiceTests
     {
         // Arrange
         var id = new Guid("2a9fcc6d-6c7d-4711-849d-aa8991337185");
-        SetupGetById(WithWorkshop(id));
+        var workshop = WorkshopGenerator.Generate().WithId(id).WithAddress();
+        SetupGetById(workshop);
 
         // Act
-        var result = await workshopService.GetById(It.IsAny<Guid>()).ConfigureAwait(false);
+        var result = await workshopService.GetById(It.IsAny<Guid>(), false).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
@@ -354,8 +356,7 @@ public class WorkshopServiceTests
     public async Task Update_WhenEntityIsValid_ShouldReturnUpdatedEntity([Random(2, 5, 1)] int teachersInWorkshop)
     {
         // Arrange
-        var id = new Guid("ca2cc30c-419c-4b00-a344-b23f0cbf18d8");
-        var changedFirstEntity = WithWorkshop(id);
+        var changedFirstEntity = WorkshopGenerator.Generate().WithApplications().WithAddress();
         var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(changedFirstEntity);
         var provider = ProvidersGenerator.Generate();
         changedFirstEntity.Teachers = teachers;
@@ -368,6 +369,7 @@ public class WorkshopServiceTests
         var result = await workshopService.Update(mapper.Map<WorkshopBaseDto>(changedFirstEntity)).ConfigureAwait(false);
 
         // Assert
+        result.Should().NotBeNull();
         result.Teachers.Should().BeEquivalentTo(expectedTeachers);
         result.AvailableSeats.Should().Be(uint.MaxValue);
     }
@@ -376,8 +378,7 @@ public class WorkshopServiceTests
     public async Task Update_WhenEntityIsValidAvaliableSeatsIsNull_ShouldReturnUpdatedEntity([Random(2, 5, 1)] int teachersInWorkshop)
     {
         // Arrange
-        var id = new Guid("ca2cc30c-419c-4b00-a344-b23f0cbf18d8");
-        var changedFirstEntity = WithWorkshop(id);
+        var changedFirstEntity = WorkshopGenerator.Generate().WithApplications().WithAddress();
         var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(changedFirstEntity);
         var provider = ProvidersGenerator.Generate();
         changedFirstEntity.Teachers = teachers;
@@ -393,20 +394,64 @@ public class WorkshopServiceTests
         var result = await workshopService.Update(changeFirstEntityDto).ConfigureAwait(false);
 
         // Assert
+        result.Should().NotBeNull();
         result.Teachers.Should().BeEquivalentTo(expectedTeachers);
         result.AvailableSeats.Should().Be(uint.MaxValue);
     }
 
     [Test]
-    public void Update_WhenClassIdIsInvalid_ShouldThrowArgumentOutOfRangeException()
+    [TestCase(5U, uint.MaxValue, 5, WorkshopStatus.Closed, WorkshopStatus.Open)]
+    [TestCase(5U, 5U, 5, WorkshopStatus.Open, WorkshopStatus.Closed)]
+    [TestCase(5U, 3U, 5, WorkshopStatus.Open, WorkshopStatus.Closed)]
+    public async Task Update_WhenDtoIsValid_ShouldChangeStatusAndInvokeUpdate(
+        uint currentAvailableSeats,
+        uint newAvailableSeats,
+        int currentTakenSeats,
+        WorkshopStatus currentWorkshopStatus,
+        WorkshopStatus expectedWorkshopStatus)
     {
         // Arrange
-        var id = new Guid("f1b73d56-ce9f-47fc-85fe-94bf72ebd3e4");
-        var changedEntity = WithWorkshop(id);
-        SetupUpdate(changedEntity);
+        var changedFirstEntity = WorkshopGenerator.Generate().WithAddress();
+        changedFirstEntity.Applications = SetupApplications(changedFirstEntity, currentTakenSeats);
+        changedFirstEntity.Teachers = TeachersGenerator.Generate(3).WithWorkshop(changedFirstEntity);
+        changedFirstEntity.DateTimeRanges = [];
+        changedFirstEntity.Provider = ProvidersGenerator.Generate();
+        changedFirstEntity.Status = currentWorkshopStatus;
+        changedFirstEntity.AvailableSeats = currentAvailableSeats;
+
+        SetupUpdate(changedFirstEntity);
+
+        var changeFirstEntityDto = mapper.Map<WorkshopBaseDto>(changedFirstEntity);
+        changeFirstEntityDto.AvailableSeats = newAvailableSeats;
+
+        workshopRepository.Setup(x => x.Update(changedFirstEntity)).ReturnsAsync(changedFirstEntity);
+        var workshopStatusDto = new WorkshopStatusDto()
+        {
+            WorkshopId = changedFirstEntity.Id,
+            Status = expectedWorkshopStatus,
+        };
+        mapperMock.Setup(m => m.Map<WorkshopStatusWithTitleDto>(It.IsAny<WorkshopStatusDto>()))
+            .Returns(mapper.Map<WorkshopStatusWithTitleDto>(workshopStatusDto));
+
+        // Act
+        var result = await workshopService.Update(changeFirstEntityDto).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        workshopRepository.Verify(x => x.Update(changedFirstEntity), Times.Once);
+        changedFirstEntity.Status.Should().Be(expectedWorkshopStatus);
+    }
+
+    [Test]
+    public async Task Update_WhenDtoIsNull_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        WorkshopBaseDto workshopBaseDto = null;
 
         // Act and Assert
-        workshopService.Invoking(w => w.Update(mapper.Map<WorkshopBaseDto>(changedEntity))).Should().ThrowAsync<ArgumentException>();
+        await workshopService
+            .Awaiting(m => m.Update(workshopBaseDto))
+            .Should().ThrowAsync<ArgumentNullException>();
     }
 
     [Test]
@@ -415,8 +460,7 @@ public class WorkshopServiceTests
     public async Task Update_WhenTeachersWereDeletedBefore_ShouldReturnUpdatedEntity(int teachersInWorkshop, bool isDeleted)
     {
         // Arrange
-        var id = new Guid("ca2cc30c-419c-4b00-a344-b23f0cbf18d8");
-        var changedFirstEntity = WithWorkshop(id);
+        var changedFirstEntity = WorkshopGenerator.Generate().WithApplications().WithAddress();
         var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(changedFirstEntity).WithIsDeleted(true);
         teachers.AddRange(TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(changedFirstEntity).WithIsDeleted(isDeleted));
         var provider = ProvidersGenerator.Generate();
@@ -492,11 +536,11 @@ public class WorkshopServiceTests
     public async Task Delete_WhenEntityWithIdExists_ShouldTryToDelete()
     {
         // Arrange
-        var id = Guid.NewGuid();
-        SetupDelete(WithWorkshop(id));
+        var workshop = WorkshopGenerator.Generate();
+        SetupDelete(workshop);
 
         // Act
-        await workshopService.Delete(id).ConfigureAwait(false);
+        await workshopService.Delete(workshop.Id).ConfigureAwait(false);
 
         // Assert
         workshopRepository.Verify(w => w.Delete(It.IsAny<Workshop>()), Times.Once);
@@ -613,76 +657,6 @@ public class WorkshopServiceTests
     {
         return RatingsGenerator.GetAverageRatings(workshopGuids);
     }
-
-    private static Workshop WithWorkshop(Guid id) => new Workshop()
-    {
-        Id = id,
-        Title = "ChangedTitle",
-        Phone = "1111111111",
-        Price = 1000,
-        WithDisabilityOptions = true,
-        ProviderTitle = "ProviderTitle",
-        DisabilityOptionsDesc = "Desc1",
-        Website = "website1",
-        Instagram = "insta1",
-        Facebook = "facebook1",
-        Email = "email1@gmail.com",
-        MaxAge = 10,
-        MinAge = 4,
-        ProviderOwnership = OwnershipType.Private,
-        Status = WorkshopStatus.Open,
-        CoverImageId = "image1",
-        ProviderId = new Guid("65eb933f-6502-4e89-a7cb-65901e51d119"),
-        InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
-        AddressId = 55,
-        Address = new Address
-        {
-            Id = 55,
-            CATOTTGId = 4970,
-            Street = "Street55",
-            BuildingNumber = "BuildingNumber55",
-            Latitude = 10,
-            Longitude = 10,
-        },
-        WorkshopDescriptionItems = new[]
-        {
-            new WorkshopDescriptionItem()
-            {
-                Id = Guid.NewGuid(),
-                SectionName = "Workshop description heading 1",
-                Description = "Workshop description text 1",
-            },
-        },
-        DateTimeRanges = new List<DateTimeRange>()
-        {
-            new DateTimeRange
-            {
-                Id = It.IsAny<long>(),
-                EndTime = It.IsAny<TimeSpan>(),
-                StartTime = It.IsAny<TimeSpan>(),
-                Workdays = default,
-            },
-        },
-        Teachers = new List<Teacher>(),
-        //{
-        //    new Teacher
-        //    {
-        //        Id = Guid.NewGuid(),
-        //        FirstName = "Alex",
-        //        LastName = "Brown",
-        //        MiddleName = "SomeMiddleName",
-        //        Description = "Description",
-        //        DateOfBirth = DateTime.Parse("2000-01-01"),
-        //        WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
-        //    },
-        //},
-    };
-
-    private Workshop WithNullWorkshopEntity()
-    {
-        return null;
-    }
-
     #endregion
 
     #region Setup
@@ -770,7 +744,7 @@ public class WorkshopServiceTests
             .ReturnsAsync(workshop);
         workshopRepository
             .Setup(
-                w => w.GetWithNavigations(workshopId))
+                w => w.GetWithNavigations(workshopId, It.IsAny<bool>()))
             .ReturnsAsync(workshop);
         mapperMock.Setup(m => m.Map<WorkshopDto>(workshop)).Returns(new WorkshopDto() { Id = workshop.Id });
         averageRatingServiceMock.Setup(r => r.GetByEntityIdAsync(workshopId)).ReturnsAsync(new AverageRatingDto() { EntityId = workshop.Id });
@@ -824,7 +798,7 @@ public class WorkshopServiceTests
     private void SetupUpdate(Workshop workshop)
     {
         workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
-        workshopRepository.Setup(w => w.GetWithNavigations(It.IsAny<Guid>())).ReturnsAsync(workshop);
+        workshopRepository.Setup(w => w.GetWithNavigations(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
         workshopRepository.Setup(w => w.UnitOfWork.CompleteAsync()).ReturnsAsync(It.IsAny<int>());
         mapperMock.Setup(m => m.Map<WorkshopBaseDto>(workshop))
             .Returns(mapper.Map<WorkshopBaseDto>(workshop));
@@ -864,6 +838,21 @@ public class WorkshopServiceTests
                 .Select(w => new WorkshopCard() { ProviderId = w.ProviderId, WorkshopId = w.Id, }).ToList());
     }
 
+    private List<Application> SetupApplications(Workshop workshop, int approvedApplications)
+    {
+        var allApplications = approvedApplications + 3;
+        var applications = ApplicationGenerator.Generate(allApplications)
+            .WithWorkshop(workshop)
+            .WithParent(ParentGenerator.Generate())
+            .WithChild(ChildGenerator.Generate());
+        for (int i = 0; i < allApplications; i++)
+        {
+            applications[i].Status = i < approvedApplications
+                ? ApplicationStatus.Approved : ApplicationStatus.Rejected;
+        }
+
+        return applications;
+    }
     #endregion
 
     #region Expected

@@ -8,7 +8,14 @@ namespace OutOfSchool.Services.Repository;
 
 public interface IWorkshopRepository : IEntityRepositorySoftDeleted<Guid, Workshop>
 {
-    Task<Workshop> GetWithNavigations(Guid id);
+    /// <summary>
+    /// Retrieves a workshop entity by its Id, including related navigation properties.
+    /// </summary>
+    /// <param name="id">The unique identifier of the workshop.</param>
+    /// <param name="asNoTracking">If true, the entity is retrieved without tracking changes.</param>
+    /// <returns>A <see cref="Task{Workshop}"/> representing the result of the asynchronous operation.
+    /// The task result contains the workshop entity with its navigation properties loaded, or null if not found.</returns>
+    Task<Workshop> GetWithNavigations(Guid id, bool asNoTracking = false);
 
     Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids);
 

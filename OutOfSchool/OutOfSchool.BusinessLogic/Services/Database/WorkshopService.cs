@@ -2,15 +2,15 @@
 using AutoMapper;
 using H3Lib;
 using H3Lib.Extensions;
-using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models.Images;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -47,7 +47,6 @@ public class WorkshopService : IWorkshopService
     /// <param name="providerAdminRepository">Repository for provider admins.</param>
     /// <param name="averageRatingService">Average rating service.</param>
     /// <param name="providerRepository">Repository for providers.</param>
-
     public WorkshopService(
         IWorkshopRepository workshopRepository,
         IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository,
@@ -202,11 +201,11 @@ public class WorkshopService : IWorkshopService
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopDto> GetById(Guid id)
+    public async Task<WorkshopDto> GetById(Guid id, bool asNoTracking = false)
     {
         logger.LogInformation($"Getting Workshop by Id started. Looking Id = {id}.");
 
-        var workshop = await workshopRepository.GetWithNavigations(id).ConfigureAwait(false);
+        var workshop = await workshopRepository.GetWithNavigations(id, asNoTracking).ConfigureAwait(false);
 
         if (workshop == null)
         {
@@ -346,10 +345,10 @@ public class WorkshopService : IWorkshopService
 
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherDTO>()).ConfigureAwait(false);
 
-            if (dto.AvailableSeats is 0 or null)
-            {
-                dto.AvailableSeats = uint.MaxValue;
-            }
+            dto.AvailableSeats = dto.AvailableSeats.GetMaxValueIfNullOrZero();
+
+            await UpdateWorkshopStatusBySeatsLimitAndAvailability(
+                (uint)dto.AvailableSeats, currentWorkshop).ConfigureAwait(false);
 
             mapper.Map(dto, currentWorkshop);
 
@@ -380,18 +379,7 @@ public class WorkshopService : IWorkshopService
 
         if (currentWorkshop.Status != dto.Status)
         {
-            if (currentWorkshop.AvailableSeats != uint.MaxValue)
-            {
-                currentWorkshop.Status = dto.Status;
-            }
-            else
-            {
-                logger.LogInformation(
-                    $"Unable to update status for workshop(id) {dto.WorkshopId}. Number of seats has not restriction.");
-                throw new ArgumentException(
-                    "Unable to update status for workshop because of number of seats has not restriction.");
-            }
-
+            currentWorkshop.Status = dto.Status;
             try
             {
                 await workshopRepository.Update(currentWorkshop).ConfigureAwait(false);
@@ -433,6 +421,11 @@ public class WorkshopService : IWorkshopService
             dto.Address.Id = currentWorkshop.AddressId;
 
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherDTO>()).ConfigureAwait(false);
+
+            dto.AvailableSeats = dto.AvailableSeats.GetMaxValueIfNullOrZero();
+
+            await UpdateWorkshopStatusBySeatsLimitAndAvailability(
+                (uint)dto.AvailableSeats, currentWorkshop).ConfigureAwait(false);
 
             mapper.Map(dto, currentWorkshop);
 
@@ -877,10 +870,10 @@ public class WorkshopService : IWorkshopService
         var ranges = mapper.Map<List<DateTimeRange>>(dtos);
         foreach (var range in ranges)
         {
-            if (await dateTimeRangeRepository.Any(r => r.Id == range.Id))
+            if (await dateTimeRangeRepository.Any(r => r.Id == range.Id).ConfigureAwait(false))
             {
                 range.WorkshopId = workshopId;
-                await dateTimeRangeRepository.Update(range);
+                await dateTimeRangeRepository.Update(range).ConfigureAwait(false);
             }
         }
     }
@@ -899,4 +892,31 @@ public class WorkshopService : IWorkshopService
     }
 
     private void ValidateOffsetFilter(OffsetFilter offsetFilter) => ModelValidationHelper.ValidateOffsetFilter(offsetFilter);
+
+    private async Task UpdateWorkshopStatusBySeatsLimitAndAvailability(uint newAvailableSeats, Workshop currentWorkshop)
+    {
+        var currentWorkshopTakenSeats = currentWorkshop.Applications.TakenSeats();
+
+        if (newAvailableSeats == uint.MaxValue
+            && currentWorkshop.AvailableSeats == currentWorkshopTakenSeats
+            && currentWorkshop.Status == WorkshopStatus.Closed)
+        {
+            await UpdateStatus(new()
+            {
+                WorkshopId = currentWorkshop.Id,
+                Status = WorkshopStatus.Open,
+            }).ConfigureAwait(false);
+        }
+
+        if (newAvailableSeats < uint.MaxValue
+            && newAvailableSeats <= currentWorkshopTakenSeats
+            && currentWorkshop.Status == WorkshopStatus.Open)
+        {
+            await UpdateStatus(new()
+            {
+                WorkshopId = currentWorkshop.Id,
+                Status = WorkshopStatus.Closed,
+            }).ConfigureAwait(false);
+        }
+    }
 }

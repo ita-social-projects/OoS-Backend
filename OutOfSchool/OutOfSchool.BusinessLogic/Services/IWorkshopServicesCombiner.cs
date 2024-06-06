@@ -1,6 +1,7 @@
-﻿using OutOfSchool.Common.Enums;
+﻿using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -43,16 +44,22 @@ public interface IWorkshopServicesCombiner
     /// Get entity by it's key.
     /// </summary>
     /// <param name="id">Key in the table.</param>
+    /// <param name="asNoTracking">If true, the entity is retrieved without tracking.</param>
     /// <returns>A <see cref="Task{TEntity}"/> representing the result of the asynchronous operation.
     /// The task result contains the entity that was found, or null.</returns>
-    Task<WorkshopDto> GetById(Guid id);
+    Task<WorkshopDto> GetById(Guid id, bool asNoTracking = false);
 
     /// <summary>
     /// Update existing entity in the database.
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopBaseDto"/>.</returns>
-    Task<WorkshopBaseDto> Update(WorkshopBaseDto dto);
+    /// <returns>A <see cref="Task{TResult}"/> containing a <see cref="Result{WorkshopBaseDto}"/>
+    /// that indicates the success or failure of the operation.
+    /// If the operation succeeds, the <see cref="Result{WorkshopBaseDto}.Value"/> property
+    /// contains the updated <see cref="WorkshopBaseDto"/>.
+    /// If the operation fails, the <see cref="Result{WorkshopBaseDto}.OperationResult"/> property
+    /// contains error information.</returns>
+    Task<Result<WorkshopBaseDto>> Update(WorkshopBaseDto dto);
 
     /// <summary>
     /// Update status field for existing entity in the database.

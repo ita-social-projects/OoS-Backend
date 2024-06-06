@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
 using Moq;
@@ -10,6 +12,7 @@ using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
@@ -67,6 +70,113 @@ public class WorkshopServicesCombinerTests
     }
 
     [Test]
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task GetById_WithValidId_ShouldReturnDto(bool asNoTracking)
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var workshopDto = WorkshopDtoGenerator.Generate();
+        workshopDto.Id = id;
+        workshopService.Setup(x => x.GetById(id, asNoTracking)).ReturnsAsync(workshopDto);
+
+        // Act
+        var result = await service.GetById(id, asNoTracking).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(workshopDto, result);
+    }
+
+    [Test]
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task GetById_WithNotExistId_ShouldReturnNull(bool asNoTracking)
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var workshopDto = null as WorkshopDto;
+        workshopService.Setup(x => x.GetById(id, asNoTracking)).ReturnsAsync(workshopDto);
+
+        // Act
+        var result = await service.GetById(id, asNoTracking).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNull(result);
+        workshopService.Verify(x => x.GetById(id, asNoTracking), Times.Once);
+    }
+
+    [Test]
+    public async Task Update_WithValidDto_ShouldReturnSucceededResult()
+    {
+        // Arrange
+        var currentWorkshopDto = WorkshopDtoGenerator.Generate();
+        currentWorkshopDto.TakenSeats = 4;
+        var newWorkshopBaseDto = WorkshopBaseDtoGenerator.Generate();
+        newWorkshopBaseDto.AvailableSeats = 10;
+        workshopService.Setup(x => x.GetById(newWorkshopBaseDto.Id, true))
+            .ReturnsAsync(currentWorkshopDto);
+        workshopService.Setup(x => x.Update(newWorkshopBaseDto)).ReturnsAsync(newWorkshopBaseDto);
+
+        // Act
+        var result = await service.Update(newWorkshopBaseDto).ConfigureAwait(false);
+
+        // Assert
+        workshopService.VerifyAll();
+        Assert.IsNotNull(result);
+        Assert.IsTrue(result.Succeeded);
+        Assert.AreEqual(newWorkshopBaseDto, result.Value);
+    }
+
+    [Test]
+    public async Task Update_WithNotExistWorkshop_ShouldReturnBadRequestResult()
+    {
+        // Arrange
+        var currentWorkshopDto = null as WorkshopDto;
+        var newWorkshopBaseDto = WorkshopBaseDtoGenerator.Generate();
+        workshopService.Setup(x => x.GetById(newWorkshopBaseDto.Id, true))
+            .ReturnsAsync(currentWorkshopDto);
+
+        // Act
+        var result = await service.Update(newWorkshopBaseDto).ConfigureAwait(false);
+        var firstError = result.OperationResult.Errors.FirstOrDefault();
+
+        // Assert
+        workshopService.VerifyAll();
+        Assert.IsNotNull(result);
+        Assert.IsFalse(result.Succeeded);
+        Assert.IsNotNull(result.OperationResult);
+        Assert.IsNotNull(firstError, "Expected an error, but no errors were found.");
+        Assert.AreEqual(HttpStatusCode.BadRequest.ToString(), firstError.Code);
+        Assert.AreEqual(Constants.WorkshopNotFoundErrorMessage, firstError.Description);
+    }
+
+    [Test]
+    public async Task Update_WithInvalidAvailableSeats_ShouldReturnBadRequestResult()
+    {
+        // Arrange
+        var currentWorkshopDto = WorkshopDtoGenerator.Generate();
+        currentWorkshopDto.TakenSeats = 5;
+        var newWorkshopBaseDto = WorkshopBaseDtoGenerator.Generate();
+        newWorkshopBaseDto.AvailableSeats = 3;
+        workshopService.Setup(x => x.GetById(newWorkshopBaseDto.Id, true))
+            .ReturnsAsync(currentWorkshopDto);
+
+        // Act
+        var result = await service.Update(newWorkshopBaseDto).ConfigureAwait(false);
+        var firstError = result.OperationResult.Errors.FirstOrDefault();
+
+        // Assert
+        workshopService.VerifyAll();
+        Assert.IsNotNull(result);
+        Assert.IsFalse(result.Succeeded);
+        Assert.IsNotNull(result.OperationResult);
+        Assert.IsNotNull(firstError, "Expected an error, but no errors were found.");
+        Assert.AreEqual(HttpStatusCode.BadRequest.ToString(), firstError.Code);
+        Assert.AreEqual(Constants.InvalidAvailableSeatsForWorkshopErrorMessage, firstError.Description);
+    }
+
+    [Test]
     public async Task UpdateStatus_WhenDtoIsNull_ThrowsArgumentNullException()
     {
         // Arrange
@@ -115,7 +225,7 @@ public class WorkshopServicesCombinerTests
         var workshopDtoWithTitle = mapper.Map<WorkshopStatusWithTitleDto>(workshopStatusDto);
         workshopDtoWithTitle.Title = workshop.Title;
 
-        workshopService.Setup(x => x.GetById(workshopDto.Id)).ReturnsAsync(workshopDto);
+        workshopService.Setup(x => x.GetById(workshopDto.Id, It.IsAny<bool>())).ReturnsAsync(workshopDto);
         workshopService.Setup(x => x.UpdateStatus(workshopStatusDto)).ReturnsAsync(workshopDtoWithTitle);
 
         favoriteRepository.Setup(x => x.Get(
@@ -194,7 +304,7 @@ public class WorkshopServicesCombinerTests
 
         var workshop = WorkshopGenerator.Generate();
 
-        workshopService.Setup(x => x.GetById(workshop.Id)).ReturnsAsync(mapper.Map<WorkshopDto>(workshop));
+        workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(mapper.Map<WorkshopDto>(workshop));
         favoriteRepository.Setup(x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),

@@ -361,7 +361,15 @@ public class WorkshopController : ControllerBase
             return StatusCode(403, "Forbidden to update workshops, which are not related to you");
         }
 
-        return Ok(await combinedWorkshopService.Update(dto).ConfigureAwait(false));
+        var result = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(result.OperationResult.Errors.FirstOrDefault()?.Description
+                ?? Constants.UnknownErrorDuringUpdateMessage);
+        }
+
+        return Ok(result.Value);
     }
 
     /// <summary>

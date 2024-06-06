@@ -210,7 +210,13 @@ public class WorkshopController : ControllerBase
         {
             var updatingResult = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
 
-            return Ok(CreateUpdateResponse(updatingResult));
+            if (!updatingResult.Succeeded)
+            {
+                return BadRequest(updatingResult.OperationResult.Errors.FirstOrDefault()?.Description
+                    ?? Constants.UnknownErrorDuringUpdateMessage);
+            }
+
+            return Ok(CreateUpdateResponse(updatingResult.Value));
         }
         catch (ArgumentException e)
         {
