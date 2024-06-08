@@ -342,11 +342,58 @@ public class ApplicationControllerTests
             .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app2.Count(), Entities = app2 });
 
         // Act
-        var result = await controller.GetByProviderId(id, filter).ConfigureAwait(false) as NoContentResult;
+        var result = await controller.GetPendingApplicationsByProviderId(id).ConfigureAwait(false) as NoContentResult;
 
         // Assert
         result.Should().NotBeNull();
         result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
+    }
+
+    [Test]
+    public async Task GetPendingApplicationsByProviderId_WhenProvidersNotExist_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var id = Guid.Parse("83caa2e6-1111-1111-9744-8a9d66604666");
+        var filter = new ApplicationFilter();
+
+        httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
+
+        providerService.Setup(s => s.GetById(id)).ReturnsAsync((ProviderDto)null);
+        providerAdminService.Setup(s => s.GetById(id.ToString())).ReturnsAsync((ProviderAdminProviderRelationDto)null);
+
+        applicationService.Setup(s => s.GetAllByProvider(It.IsAny<Guid>(), It.IsAny<ApplicationFilter>()))
+            .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = 0, Entities = new List<ApplicationDto>() });
+        applicationService.Setup(s => s.GetAllByProviderAdmin(It.IsAny<string>(), It.IsAny<ApplicationFilter>(), It.IsAny<Guid>(), It.IsAny<bool>()))
+            .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = 0, Entities = new List<ApplicationDto>() });
+
+        // Act
+        var result = await controller.GetPendingApplicationsByProviderId(id).ConfigureAwait(false) as BadRequestObjectResult;
+
+        // Assert
+        result.Should().NotBeNull();
+        result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        result.Value.Should().Be($"There is no any provider with Id = {id}");
+    }
+
+    [Test]
+    public void GetPendingApplicationsByProviderId_WhenProviderHasNoRights_ShouldThrowUnauthorizedAccess()
+    {
+        // Arrange
+        var id = Guid.Parse("83caa2e6-1111-1111-9744-8a9d66604666");
+        var filter = new ApplicationFilter();
+
+        httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
+
+        providerService.Setup(s => s.GetById(id)).ReturnsAsync(new ProviderDto());
+        providerAdminService.Setup(s => s.GetById(id.ToString())).ReturnsAsync(new ProviderAdminProviderRelationDto());
+
+        applicationService.Setup(s => s.GetAllByProvider(It.IsAny<Guid>(), It.IsAny<ApplicationFilter>()))
+           .ThrowsAsync(new UnauthorizedAccessException());
+        applicationService.Setup(s => s.GetAllByProviderAdmin(It.IsAny<string>(), It.IsAny<ApplicationFilter>(), It.IsAny<Guid>(), It.IsAny<bool>()))
+            .ThrowsAsync(new UnauthorizedAccessException());
+
+        // Act & Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await controller.GetPendingApplicationsByProviderId(id));
     }
 
     [Test]
