@@ -4,6 +4,7 @@ using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -100,7 +101,7 @@ public class ApplicationController : ControllerBase
         {
             var applications = await applicationService.GetAllByParent(id, filter).ConfigureAwait(false);
 
-            if (!applications.Entities.Any())
+            if (CheckApplicationsFor204(applications))
             {
                 return NoContent();
             }
@@ -167,7 +168,67 @@ public class ApplicationController : ControllerBase
 
         var applications = await applicationService.GetAllByProvider(providerId, filter).ConfigureAwait(false);
 
-        if (applications == null || !applications.Entities.Any())
+        if (CheckApplicationsFor204(applications))
+        {
+            return NoContent();
+        }
+
+        return Ok(applications);
+    }
+
+    /// <summary>
+    /// Get collection of applications, that have a pending status.
+    /// </summary>
+    /// <param name="providerId">Provider id.</param>
+    /// <returns>List of applications.</returns>
+    /// <response code="200">Entities were found by given Id.</response>
+    /// <response code="204">No entity with given Id was found.</response>
+    /// <response code="500">If any server error occurs.</response>
+    [HasPermission(Permissions.ApplicationRead)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ApplicationDto>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("/api/v{version:apiVersion}/provider/{providerId}/applications/pending")]
+    public async Task<IActionResult> GetPendingApplicationsByProviderId(Guid providerId)
+    {
+        // Find a provider with given id in admins and standard providers
+        var providerStandard = await providerService.GetById(providerId).ConfigureAwait(false);
+
+        var providerAdminIdStringVersion = providerId.ToString();
+        var providerAdmin = await providerAdminService.GetById(providerAdminIdStringVersion).ConfigureAwait(false);
+
+        // If any provider was not found - return BadRequest
+        if (providerStandard is null && providerAdmin is null)
+        {
+            return BadRequest($"There is no any provider with Id = {providerId}");
+        }
+
+        // Filter for applications, that is set to "Pending"
+        var filter = new ApplicationFilter()
+        {
+            Statuses = new List<ApplicationStatus>()
+            {
+                ApplicationStatus.Pending,
+            },
+        };
+
+        SearchResult<ApplicationDto> applications = null;
+
+        // Get applications from not null provider
+        if (providerStandard is not null)
+        {
+            applications = await applicationService.GetAllByProvider(providerId, filter).ConfigureAwait(false);
+        }
+        else if (providerAdmin is not null)
+        {
+            applications = await applicationService
+                                     .GetAllByProviderAdmin(providerAdminIdStringVersion, filter, providerAdmin.ProviderId, providerAdmin.IsDeputy)
+                                     .ConfigureAwait(false);
+        }
+
+        // If applications is null or empty - return 204
+        if (CheckApplicationsFor204(applications))
         {
             return NoContent();
         }
@@ -202,7 +263,7 @@ public class ApplicationController : ControllerBase
         var applications = await applicationService.GetAllByWorkshop(workshopId, workshop.ProviderId, filter)
             .ConfigureAwait(false);
 
-        if (applications == null || !applications.Entities.Any())
+        if (CheckApplicationsFor204(applications))
         {
             return NoContent();
         }
@@ -239,7 +300,7 @@ public class ApplicationController : ControllerBase
             .GetAllByProviderAdmin(userId, filter, providerAdmin.ProviderId, providerAdmin.IsDeputy)
             .ConfigureAwait(false);
 
-        if (applications == null || !applications.Entities.Any())
+        if (CheckApplicationsFor204(applications))
         {
             return NoContent();
         }
@@ -407,6 +468,24 @@ public class ApplicationController : ControllerBase
     public async Task<IActionResult> AllowedToReview(Guid parentId, Guid workshopId)
     {
         return Ok(await applicationService.AllowedToReview(parentId, workshopId).ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Method, that checks applications of SearchResult for 204 status code.
+    /// </summary>
+    /// <param name="applications">Applications of SearchResult</param>
+    /// <returns>
+    /// True - applications is null or applications is empty.
+    /// False - applications is not null and applications collection has minimum 1 application.
+    /// </returns>
+    private static bool CheckApplicationsFor204(SearchResult<ApplicationDto> applications)
+    {
+        if (applications == null || applications.Entities.Count == 0)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private async Task<bool> IsCurrentUserBlocked()
