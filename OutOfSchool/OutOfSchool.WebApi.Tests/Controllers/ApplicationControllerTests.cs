@@ -82,7 +82,7 @@ public class ApplicationControllerTests
         applications = ApplicationDTOsGenerator.Generate(2).WithWorkshopCard(workshops.First()).WithParent(parent);
     }
 
-    
+
 
     [Test]
     public async Task GetApplicationById_WhenIdIsValid_ShouldReturnOkObjectResult()
@@ -291,7 +291,7 @@ public class ApplicationControllerTests
     {
         // Arrange
         var id = Guid.Parse("f25d1bfc-8ebc-4087-b1c3-8dbb7964222d");
-        var filter = new ApplicationFilter ();
+        var filter = new ApplicationFilter();
 
         var newProvider = new ProviderDto { Id = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666"), UserId = userId };
         var newWorkshop = new WorkshopDto { Id = new Guid("94b81fa7-180f-4965-8aac-908a9f3ecb8d"), ProviderId = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666") };
@@ -317,11 +317,44 @@ public class ApplicationControllerTests
     }
 
     [Test]
+    public async Task GetPendingApplicationsByProviderId_WhenProviderDoesNotHaveAnyApplications_ShouldReturnNoContent()
+    {
+        var id = Guid.Parse("83caa2e6-902a-43b5-9744-8a9d66604666");
+        var filter = new ApplicationFilter();
+
+        var newProviderStandard = new ProviderDto { Id = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666"), UserId = userId };
+        var newProviderAdmin = new ProviderAdminProviderRelationDto { ProviderId = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666"), UserId = userId };
+        var newWorkshop = new WorkshopDto { Id = new Guid("94b81fa7-180f-4965-8aac-908a9f3ecb8d"), ProviderId = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666") };
+
+        httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
+
+        providerService.Setup(s => s.GetByUserId(userId, It.IsAny<bool>())).ReturnsAsync(newProviderStandard);
+        providerAdminService.Setup(s => s.GetById(id.ToString())).ReturnsAsync(newProviderAdmin);
+        workshopService.Setup(s => s.GetById(id, It.IsAny<bool>())).ReturnsAsync(newWorkshop);
+        providerService.Setup(s => s.GetById(id)).ReturnsAsync(newProviderStandard);
+        List<ApplicationDto> app1 = applications.Where(a => a.Workshop.ProviderId == id).ToList();
+        applicationService.Setup(s => s.GetAllByProvider(id, filter))
+            .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app1.Count(), Entities = app1 });
+        applicationService.Setup(s => s.GetAllByProviderAdmin(id.ToString(), filter, newProviderAdmin.ProviderId, newProviderAdmin.IsDeputy))
+            .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app1.Count(), Entities = app1 });
+        List<ApplicationDto> app2 = applications.Where(a => a.WorkshopId == id).ToList();
+        applicationService.Setup(s => s.GetAllByWorkshop(id, new Guid("83caa2e6-902a-43b5-9744-8a9d66604666"), filter))
+            .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app2.Count(), Entities = app2 });
+
+        // Act
+        var result = await controller.GetByProviderId(id, filter).ConfigureAwait(false) as NoContentResult;
+
+        // Assert
+        result.Should().NotBeNull();
+        result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
+    }
+
+    [Test]
     public async Task GetByProviderId_WhenProviderHasNoApplications_ShouldReturnNoContent()
     {
         // Arrange
         var id = Guid.Parse("83caa2e6-902a-43b5-9744-8a9d66604666");
-        var filter = new ApplicationFilter ();
+        var filter = new ApplicationFilter();
 
         var newProvider = new ProviderDto { Id = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666"), UserId = userId };
         var newWorkshop = new WorkshopDto { Id = new Guid("94b81fa7-180f-4965-8aac-908a9f3ecb8d"), ProviderId = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666") };
@@ -412,7 +445,7 @@ public class ApplicationControllerTests
 
         applicationService.Setup(s => s.Create(app))
             .ReturnsAsync(new ModelWithAdditionalData<ApplicationDto, int>
-                {Model = applications.First(), AdditionalData = 0});
+            { Model = applications.First(), AdditionalData = 0 });
 
         // Act
         var result = await controller.Create(app).ConfigureAwait(false) as CreatedAtActionResult;
@@ -511,7 +544,7 @@ public class ApplicationControllerTests
     public void CreateApplication_WhenParentHasNoRights_ShouldThrowUnauthorizedAccess()
     {
         // Arrange
-        var anotherParent = new ParentDTO {Id = new Guid("1f91783d-a68f-41fa-9ded-d879f187a94b"), UserId = userId};
+        var anotherParent = new ParentDTO { Id = new Guid("1f91783d-a68f-41fa-9ded-d879f187a94b"), UserId = userId };
 
         httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
 
@@ -525,7 +558,7 @@ public class ApplicationControllerTests
             ParentId = anotherParent.Id,
         };
 
-        workshopService.Setup(s => s.GetById(applicationCreate.WorkshopId, It.IsAny<bool>())).ReturnsAsync(new WorkshopDto()); 
+        workshopService.Setup(s => s.GetById(applicationCreate.WorkshopId, It.IsAny<bool>())).ReturnsAsync(new WorkshopDto());
 
         blockedProviderParentService.Setup(s => s.IsBlocked(applicationCreate.ParentId, It.IsAny<Guid>())).ReturnsAsync(false);
 
