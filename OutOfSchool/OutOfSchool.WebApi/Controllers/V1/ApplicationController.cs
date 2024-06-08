@@ -233,7 +233,7 @@ public class ApplicationController : ControllerBase
             return NoContent();
         }
 
-        return Ok(applications);
+        return Ok(applications.TotalAmount);
     }
 
     /// <summary>
