@@ -220,7 +220,7 @@ public class ApplicationController : ControllerBase
         {
             applications = await applicationService.GetAllByProvider(providerId, filter).ConfigureAwait(false);
         }
-        else if (providerAdmin is not null)
+        else
         {
             applications = await applicationService
                                      .GetAllByProviderAdmin(providerAdminIdStringVersion, filter, providerAdmin.ProviderId, providerAdmin.IsDeputy)
