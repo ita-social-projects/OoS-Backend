@@ -178,6 +178,8 @@ public class ApplicationController : ControllerBase
     /// <returns>List of applications.</returns>
     /// <response code="200">Entities were found by given Id.</response>
     /// <response code="204">No entity with given Id was found.</response>
+    /// <response code="400">Provider with given id was not found.</response>
+    /// <response code="401">User is unauthorized.</response>
     /// <response code="500">If any server error occurs.</response>
     [HasPermission(Permissions.ApplicationRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ApplicationDto>))]
