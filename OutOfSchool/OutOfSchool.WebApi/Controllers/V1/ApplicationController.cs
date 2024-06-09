@@ -101,7 +101,7 @@ public class ApplicationController : ControllerBase
         {
             var applications = await applicationService.GetAllByParent(id, filter).ConfigureAwait(false);
 
-            if (CheckApplicationsFor204(applications))
+            if (applications.IsNullOrEntitiesEmpty())
             {
                 return NoContent();
             }
@@ -168,7 +168,7 @@ public class ApplicationController : ControllerBase
 
         var applications = await applicationService.GetAllByProvider(providerId, filter).ConfigureAwait(false);
 
-        if (CheckApplicationsFor204(applications))
+        if (applications.IsNullOrEntitiesEmpty())
         {
             return NoContent();
         }
@@ -228,7 +228,7 @@ public class ApplicationController : ControllerBase
         }
 
         // If applications is null or empty - return 204
-        if (CheckApplicationsFor204(applications))
+        if (applications.IsNullOrEntitiesEmpty())
         {
             return NoContent();
         }
@@ -263,7 +263,7 @@ public class ApplicationController : ControllerBase
         var applications = await applicationService.GetAllByWorkshop(workshopId, workshop.ProviderId, filter)
             .ConfigureAwait(false);
 
-        if (CheckApplicationsFor204(applications))
+        if (applications.IsNullOrEntitiesEmpty())
         {
             return NoContent();
         }
@@ -300,7 +300,7 @@ public class ApplicationController : ControllerBase
             .GetAllByProviderAdmin(userId, filter, providerAdmin.ProviderId, providerAdmin.IsDeputy)
             .ConfigureAwait(false);
 
-        if (CheckApplicationsFor204(applications))
+        if (applications.IsNullOrEntitiesEmpty())
         {
             return NoContent();
         }
@@ -468,24 +468,6 @@ public class ApplicationController : ControllerBase
     public async Task<IActionResult> AllowedToReview(Guid parentId, Guid workshopId)
     {
         return Ok(await applicationService.AllowedToReview(parentId, workshopId).ConfigureAwait(false));
-    }
-
-    /// <summary>
-    /// Method, that checks applications of SearchResult for 204 status code.
-    /// </summary>
-    /// <param name="applications">Applications of SearchResult</param>
-    /// <returns>
-    /// True - applications is null or applications is empty.
-    /// False - applications is not null and applications collection has minimum 1 application.
-    /// </returns>
-    private static bool CheckApplicationsFor204(SearchResult<ApplicationDto> applications)
-    {
-        if (applications == null || applications.Entities.Count == 0)
-        {
-            return true;
-        }
-
-        return false;
     }
 
     private async Task<bool> IsCurrentUserBlocked()
