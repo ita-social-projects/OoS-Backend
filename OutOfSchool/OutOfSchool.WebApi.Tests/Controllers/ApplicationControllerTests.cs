@@ -82,8 +82,6 @@ public class ApplicationControllerTests
         applications = ApplicationDTOsGenerator.Generate(2).WithWorkshopCard(workshops.First()).WithParent(parent);
     }
 
-
-
     [Test]
     public async Task GetApplicationById_WhenIdIsValid_ShouldReturnOkObjectResult()
     {
