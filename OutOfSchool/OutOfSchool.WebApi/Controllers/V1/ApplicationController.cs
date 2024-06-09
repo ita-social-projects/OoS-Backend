@@ -168,12 +168,7 @@ public class ApplicationController : ControllerBase
 
         var applications = await applicationService.GetAllByProvider(providerId, filter).ConfigureAwait(false);
 
-        if (applications.IsNullOrEntitiesEmpty())
-        {
-            return NoContent();
-        }
-
-        return Ok(applications);
+        return this.GetResultOfGetOperation(applications);
     }
 
     /// <summary>
@@ -227,13 +222,7 @@ public class ApplicationController : ControllerBase
                                      .ConfigureAwait(false);
         }
 
-        // If applications is null or empty - return 204
-        if (applications.IsNullOrEntitiesEmpty())
-        {
-            return NoContent();
-        }
-
-        return Ok(applications.TotalAmount);
+        return this.GetResultOfGetOperation(applications);
     }
 
     /// <summary>
@@ -263,12 +252,7 @@ public class ApplicationController : ControllerBase
         var applications = await applicationService.GetAllByWorkshop(workshopId, workshop.ProviderId, filter)
             .ConfigureAwait(false);
 
-        if (applications.IsNullOrEntitiesEmpty())
-        {
-            return NoContent();
-        }
-
-        return Ok(applications);
+        return this.GetResultOfGetOperation(applications);
     }
 
     /// <summary>
@@ -300,12 +284,7 @@ public class ApplicationController : ControllerBase
             .GetAllByProviderAdmin(userId, filter, providerAdmin.ProviderId, providerAdmin.IsDeputy)
             .ConfigureAwait(false);
 
-        if (applications.IsNullOrEntitiesEmpty())
-        {
-            return NoContent();
-        }
-
-        return Ok(applications);
+        return this.GetResultOfGetOperation(applications);
     }
 
     /// <summary>
