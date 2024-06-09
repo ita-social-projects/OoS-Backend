@@ -7,6 +7,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using Nest;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Application;
@@ -35,6 +36,8 @@ public class ApplicationControllerTests
     private string userId;
     private Guid providerId;
     private Mock<HttpContext> httpContext;
+    private ApplicationFilter filter;
+    private SearchResult<ApplicationDto> emptySearchResult;
 
 
     private List<ApplicationDto> applications;
@@ -81,6 +84,9 @@ public class ApplicationControllerTests
         provider.UserId = userId;
         provider.Id = providerId;
         applications = ApplicationDTOsGenerator.Generate(2).WithWorkshopCard(workshops.First()).WithParent(parent);
+
+        filter = new ApplicationFilter();
+        emptySearchResult = new SearchResult<ApplicationDto>() { TotalAmount = 0, Entities = new List<ApplicationDto>() };
     }
 
     [Test]
@@ -168,7 +174,6 @@ public class ApplicationControllerTests
         List<ApplicationDto> app = applications.Where(a => a.ParentId == parent.Id).ToList();
         applicationService.Setup(s => s.GetAllByParent(parent.Id, It.IsAny<ApplicationFilter>()))
             .ThrowsAsync(new UnauthorizedAccessException());
-        var filter = new ApplicationFilter();
 
         // Act & Assert
         Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await controller.GetByParentId(parent.Id, filter));
@@ -263,7 +268,6 @@ public class ApplicationControllerTests
     public async Task GetByWorkshopId_WhenIdIsNotValid_ShouldReturnBadRequest()
     {
         // Act
-        var filter = new ApplicationFilter();
 
         var result = await controller.GetByWorkshopId(Guid.Parse("f25d1bfc-8ebc-4087-b1c3-8dbb7964222d"), filter).ConfigureAwait(false) as BadRequestObjectResult;
 
@@ -276,7 +280,6 @@ public class ApplicationControllerTests
     public async Task GetByProviderId_WhenIdIsNotValid_ShouldReturnBadRequest()
     {
         // Act
-        var filter = new ApplicationFilter();
 
         var result = await controller.GetByProviderId(Guid.Parse("83caa2e6-902a-43b5-9744-8a9d66604666"), filter).ConfigureAwait(false) as BadRequestObjectResult;
 
@@ -290,7 +293,6 @@ public class ApplicationControllerTests
     {
         // Arrange
         var id = Guid.Parse("f25d1bfc-8ebc-4087-b1c3-8dbb7964222d");
-        var filter = new ApplicationFilter();
 
         var newProvider = new ProviderDto { Id = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666"), UserId = userId };
         var newWorkshop = new WorkshopDto { Id = new Guid("94b81fa7-180f-4965-8aac-908a9f3ecb8d"), ProviderId = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666") };
@@ -318,73 +320,63 @@ public class ApplicationControllerTests
     [Test]
     public async Task GetPendingApplicationsByProviderId_WhenProviderDoesNotHaveAnyApplications_ShouldReturnNoContent()
     {
-        var filter = new ApplicationFilter();
-
+        // Arrange
         var newProviderStandard = new ProviderDto { Id = providerId, UserId = userId };
-        var newProviderAdmin = new ProviderAdminProviderRelationDto { ProviderId = providerId, UserId = userId };
-        var newWorkshop = new WorkshopDto { Id = Guid.NewGuid(), ProviderId = providerId };
 
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
-        providerService.Setup(s => s.GetByUserId(userId, It.IsAny<bool>())).ReturnsAsync(newProviderStandard);
-        providerAdminService.Setup(s => s.GetById(providerId.ToString())).ReturnsAsync(newProviderAdmin);
-        workshopService.Setup(s => s.GetById(providerId, It.IsAny<bool>())).ReturnsAsync(newWorkshop);
         providerService.Setup(s => s.GetById(providerId)).ReturnsAsync(newProviderStandard);
+
         var app1 = applications.Where(a => a.Workshop.ProviderId == providerId).ToList();
         applicationService.Setup(s => s.GetAllByProvider(providerId, filter))
-            .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app1.Count(), Entities = app1 });
-        applicationService.Setup(s => s.GetAllByProviderAdmin(providerId.ToString(), filter, newProviderAdmin.ProviderId, newProviderAdmin.IsDeputy))
-            .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app1.Count(), Entities = app1 });
-        var app2 = applications.Where(a => a.WorkshopId == providerId).ToList();
-        applicationService.Setup(s => s.GetAllByWorkshop(providerId, providerId, filter))
-            .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app2.Count(), Entities = app2 });
+            .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app1.Count, Entities = app1 });
 
         // Act
-        var result = await controller.GetPendingApplicationsByProviderId(providerId).ConfigureAwait(false) as NoContentResult;
+        var result = await controller.GetPendingApplicationsByProviderId(providerId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
-        result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
+        result.Should()
+              .BeOfType<NoContentResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status204NoContent);
     }
 
     [Test]
     public async Task GetPendingApplicationsByProviderId_WhenProvidersNotExist_ShouldReturnBadRequest()
     {
         // Arrange
-        var filter = new ApplicationFilter();
-
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
         providerService.Setup(s => s.GetById(providerId)).ReturnsAsync((ProviderDto)null);
         providerAdminService.Setup(s => s.GetById(providerId.ToString())).ReturnsAsync((ProviderAdminProviderRelationDto)null);
 
-        applicationService.Setup(s => s.GetAllByProvider(It.IsAny<Guid>(), It.IsAny<ApplicationFilter>()))
-            .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = 0, Entities = new List<ApplicationDto>() });
-        applicationService.Setup(s => s.GetAllByProviderAdmin(It.IsAny<string>(), It.IsAny<ApplicationFilter>(), It.IsAny<Guid>(), It.IsAny<bool>()))
-            .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = 0, Entities = new List<ApplicationDto>() });
+        applicationService.Setup(s => s.GetAllByProvider(providerId, filter))
+            .ReturnsAsync(emptySearchResult);
+        applicationService.Setup(s => s.GetAllByProviderAdmin(providerId.ToString(), filter, providerId, It.IsAny<bool>()))
+            .ReturnsAsync(emptySearchResult);
 
         // Act
         var result = await controller.GetPendingApplicationsByProviderId(providerId).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert
         result.Should().NotBeNull();
-        result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        result.Should()
+             .BeOfType<BadRequestObjectResult>()
+             .Which.StatusCode
+             .Should()
+             .Be(StatusCodes.Status400BadRequest);
         result.Value.Should().Be($"There is no any provider with given id - {providerId}.");
     }
 
     [Test]
     public void GetPendingApplicationsByProviderId_WhenProviderHasNoRights_ShouldThrowUnauthorizedAccess()
     {
-        // Arrange
-        var filter = new ApplicationFilter();
-
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
-        providerService.Setup(s => s.GetById(providerId)).ReturnsAsync(new ProviderDto());
         providerAdminService.Setup(s => s.GetById(providerId.ToString())).ReturnsAsync(new ProviderAdminProviderRelationDto());
 
-        applicationService.Setup(s => s.GetAllByProvider(It.IsAny<Guid>(), It.IsAny<ApplicationFilter>()))
-           .ThrowsAsync(new UnauthorizedAccessException());
         applicationService.Setup(s => s.GetAllByProviderAdmin(It.IsAny<string>(), It.IsAny<ApplicationFilter>(), It.IsAny<Guid>(), It.IsAny<bool>()))
             .ThrowsAsync(new UnauthorizedAccessException());
 
@@ -397,7 +389,6 @@ public class ApplicationControllerTests
     {
         // Arrange
         var id = Guid.Parse("83caa2e6-902a-43b5-9744-8a9d66604666");
-        var filter = new ApplicationFilter();
 
         var newProvider = new ProviderDto { Id = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666"), UserId = userId };
         var newWorkshop = new WorkshopDto { Id = new Guid("94b81fa7-180f-4965-8aac-908a9f3ecb8d"), ProviderId = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666") };
@@ -427,7 +418,6 @@ public class ApplicationControllerTests
     {
         // Arrange
         var id = Guid.Parse("f25d1bfc-8ebc-4087-b1c3-8dbb7964222d");
-        var filter = new ApplicationFilter();
 
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
@@ -444,7 +434,6 @@ public class ApplicationControllerTests
     {
         // Arrange
         var id = Guid.Parse("83caa2e6-902a-43b5-9744-8a9d66604666");
-        var filter = new ApplicationFilter();
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
         providerService.Setup(s => s.GetById(id)).ReturnsAsync(new ProviderDto());
         applicationService.Setup(s => s.GetAllByProvider(id, filter))
@@ -458,7 +447,6 @@ public class ApplicationControllerTests
     public async Task GetByWorkshopId_WhenThereIsNoWorkshopWithId_ShouldReturnBadRequest()
     {
         // Arrange
-        var filter = new ApplicationFilter();
 
         // Act
         var result = await controller.GetByWorkshopId(Guid.Parse("f25d1bfc-8ebc-4087-b1c3-8dbb7964222d"), filter).ConfigureAwait(false) as BadRequestObjectResult;
