@@ -189,17 +189,8 @@ public class ApplicationController : ControllerBase
     [HttpGet("/api/v{version:apiVersion}/provider/{providerId}/applications/pending")]
     public async Task<IActionResult> GetPendingApplicationsByProviderId(Guid providerId)
     {
-        // Find a provider with given id in admins and standard providers
+        // Find a standard provider by given id
         var providerStandard = await providerService.GetById(providerId).ConfigureAwait(false);
-
-        var providerAdminIdStringVersion = providerId.ToString();
-        var providerAdmin = await providerAdminService.GetById(providerAdminIdStringVersion).ConfigureAwait(false);
-
-        // If any provider was not found - return BadRequest
-        if (providerStandard is null && providerAdmin is null)
-        {
-            return BadRequest($"There is no any provider with Id = {providerId}");
-        }
 
         // Filter for applications, that is set to "Pending"
         var filter = new ApplicationFilter()
@@ -210,15 +201,25 @@ public class ApplicationController : ControllerBase
             },
         };
 
-        SearchResult<ApplicationDto> applications = null;
+        SearchResult<ApplicationDto> applications;
 
-        // Get applications from not null provider
+        // if: providerStandard is not null - get an applications and return it
+        // else: find a providerAdmin, get an applications and return it
         if (providerStandard is not null)
         {
             applications = await applicationService.GetAllByProvider(providerId, filter).ConfigureAwait(false);
         }
         else
         {
+            var providerAdminIdStringVersion = providerId.ToString();
+            var providerAdmin = await providerAdminService.GetById(providerAdminIdStringVersion).ConfigureAwait(false);
+
+            // Standard and admin providers were not found by given id
+            if (providerAdmin is null)
+            {
+                return BadRequest($"There is no any provider with given id - {providerId}.");
+            }
+
             applications = await applicationService
                                      .GetAllByProviderAdmin(providerAdminIdStringVersion, filter, providerAdmin.ProviderId, providerAdmin.IsDeputy)
                                      .ConfigureAwait(false);
