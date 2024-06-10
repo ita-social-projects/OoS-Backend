@@ -328,9 +328,9 @@ public class ApplicationControllerTests
 
         providerService.Setup(s => s.GetById(providerId)).ReturnsAsync(newProviderStandard);
 
-        var app1 = applications.Where(a => a.Workshop.ProviderId == providerId).ToList();
+        var providerApplications = applications.Where(a => a.Workshop.ProviderId == providerId).ToList();
         applicationService.Setup(s => s.GetAllByProvider(providerId, filter))
-            .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app1.Count, Entities = app1 });
+            .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = providerApplications.Count, Entities = providerApplications });
 
         // Act
         var result = await controller.GetPendingApplicationsByProviderId(providerId).ConfigureAwait(false);
