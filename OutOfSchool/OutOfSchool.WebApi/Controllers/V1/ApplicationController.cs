@@ -168,7 +168,7 @@ public class ApplicationController : ControllerBase
 
         var applications = await applicationService.GetAllByProvider(providerId, filter).ConfigureAwait(false);
 
-        return this.GetResultOfGetOperation(applications);
+        return this.MapSearchResultToOkOrNoContent(applications);
     }
 
     /// <summary>
@@ -226,7 +226,7 @@ public class ApplicationController : ControllerBase
                 .ConfigureAwait(false);
         }
 
-        return this.GetResultOfGetOperation(applications);
+        return this.MapSearchResultToOkOrNoContent(applications);
     }
 
     /// <summary>
@@ -256,7 +256,7 @@ public class ApplicationController : ControllerBase
         var applications = await applicationService.GetAllByWorkshop(workshopId, workshop.ProviderId, filter)
             .ConfigureAwait(false);
 
-        return this.GetResultOfGetOperation(applications);
+        return this.MapSearchResultToOkOrNoContent(applications);
     }
 
     /// <summary>
@@ -288,7 +288,7 @@ public class ApplicationController : ControllerBase
             .GetAllByProviderAdmin(userId, filter, providerAdmin.ProviderId, providerAdmin.IsDeputy)
             .ConfigureAwait(false);
 
-        return this.GetResultOfGetOperation(applications);
+        return this.MapSearchResultToOkOrNoContent(applications);
     }
 
     /// <summary>
