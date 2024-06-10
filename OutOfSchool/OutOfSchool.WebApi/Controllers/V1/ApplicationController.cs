@@ -190,10 +190,8 @@ public class ApplicationController : ControllerBase
     [HttpGet("/api/v{version:apiVersion}/provider/{providerId}/applications/pending")]
     public async Task<IActionResult> GetPendingApplicationsByProviderId(Guid providerId)
     {
-        // Find a standard provider by given id
         var providerStandard = await providerService.GetById(providerId).ConfigureAwait(false);
 
-        // Filter for applications, that is set to "Pending"
         var filter = new ApplicationFilter()
         {
             Statuses = new List<ApplicationStatus>()
