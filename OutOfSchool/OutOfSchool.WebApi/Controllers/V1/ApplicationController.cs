@@ -222,8 +222,8 @@ public class ApplicationController : ControllerBase
             }
 
             applications = await applicationService
-                                     .GetAllByProviderAdmin(providerAdminIdStringVersion, filter, providerAdmin.ProviderId, providerAdmin.IsDeputy)
-                                     .ConfigureAwait(false);
+                .GetAllByProviderAdmin(providerAdminIdStringVersion, filter, providerAdmin.ProviderId, providerAdmin.IsDeputy)
+                .ConfigureAwait(false);
         }
 
         return this.GetResultOfGetOperation(applications);
