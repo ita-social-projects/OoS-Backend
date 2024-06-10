@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.AuthCommon.Services;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Models.Providers;
@@ -332,7 +331,6 @@ public class ApplicationControllerTests
         // Assert
         providerService.VerifyAll();
         applicationService.VerifyAll();
-
 
         result.Should().NotBeNull();
         result.Should()
