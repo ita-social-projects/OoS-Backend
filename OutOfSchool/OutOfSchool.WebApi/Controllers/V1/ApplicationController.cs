@@ -183,6 +183,7 @@ public class ApplicationController : ControllerBase
     /// <response code="500">If any server error occurs.</response>
     [HasPermission(Permissions.ApplicationRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ApplicationDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
