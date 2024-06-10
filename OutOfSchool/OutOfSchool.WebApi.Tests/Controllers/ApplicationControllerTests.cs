@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.AuthCommon.Services;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Models.Providers;
@@ -322,20 +323,17 @@ public class ApplicationControllerTests
     {
         // Arrange
         var newProviderStandard = new ProviderDto { Id = providerId, UserId = userId };
-        var filter = new ApplicationFilter();
-
-        httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
         providerService.Setup(s => s.GetById(providerId)).ReturnsAsync(newProviderStandard);
-
-        var providerApplications = applications.Where(a => a.Workshop.ProviderId == providerId).ToList();
-        applicationService.Setup(s => s.GetAllByProvider(providerId, filter))
-            .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = providerApplications.Count, Entities = providerApplications });
 
         // Act
         var result = await controller.GetPendingApplicationsByProviderId(providerId).ConfigureAwait(false);
 
         // Assert
+        providerService.VerifyAll();
+        applicationService.VerifyAll();
+
+
         result.Should().NotBeNull();
         result.Should()
               .BeOfType<NoContentResult>()
@@ -351,40 +349,41 @@ public class ApplicationControllerTests
         var filter = new ApplicationFilter();
         var emptySearchResult = new SearchResult<ApplicationDto>() { TotalAmount = 0, Entities = new List<ApplicationDto>() };
 
-        httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
-
         providerService.Setup(s => s.GetById(providerId)).ReturnsAsync((ProviderDto)null);
         providerAdminService.Setup(s => s.GetById(providerId.ToString())).ReturnsAsync((ProviderAdminProviderRelationDto)null);
 
-        applicationService.Setup(s => s.GetAllByProvider(providerId, filter))
-            .ReturnsAsync(emptySearchResult);
-        applicationService.Setup(s => s.GetAllByProviderAdmin(providerId.ToString(), filter, providerId, It.IsAny<bool>()))
-            .ReturnsAsync(emptySearchResult);
-
         // Act
-        var result = await controller.GetPendingApplicationsByProviderId(providerId).ConfigureAwait(false) as BadRequestObjectResult;
+        var result = await controller.GetPendingApplicationsByProviderId(providerId).ConfigureAwait(false);
 
         // Assert
+        providerService.VerifyAll();
+        providerAdminService.VerifyAll();
+
         result.Should().NotBeNull();
         result.Should()
              .BeOfType<BadRequestObjectResult>()
              .Which.StatusCode
              .Should()
              .Be(StatusCodes.Status400BadRequest);
-        result.Value.Should().Be($"There is no any provider with given id - {providerId}.");
+        result.As<BadRequestObjectResult>()
+            .Value
+            .Should()
+            .Be($"There is no any provider with given id - {providerId}.");
     }
 
     [Test]
     public void GetPendingApplicationsByProviderId_WhenProviderHasNoRights_ShouldThrowUnauthorizedAccess()
     {
-        httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
-
+        // Arrange
         providerAdminService.Setup(s => s.GetById(providerId.ToString())).ReturnsAsync(new ProviderAdminProviderRelationDto());
 
         applicationService.Setup(s => s.GetAllByProviderAdmin(It.IsAny<string>(), It.IsAny<ApplicationFilter>(), It.IsAny<Guid>(), It.IsAny<bool>()))
             .ThrowsAsync(new UnauthorizedAccessException());
 
         // Act & Assert
+        providerAdminService.Verify(s => s.GetById(providerId.ToString()), Times.Never);
+        applicationService.Verify(s => s.GetAllByProviderAdmin(It.IsAny<string>(), It.IsAny<ApplicationFilter>(), It.IsAny<Guid>(), It.IsAny<bool>()), Times.Never);
+
         Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await controller.GetPendingApplicationsByProviderId(providerId));
     }
 
