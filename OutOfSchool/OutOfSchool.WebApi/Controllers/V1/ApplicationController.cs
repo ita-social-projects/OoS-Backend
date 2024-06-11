@@ -4,6 +4,7 @@ using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -100,7 +101,7 @@ public class ApplicationController : ControllerBase
         {
             var applications = await applicationService.GetAllByParent(id, filter).ConfigureAwait(false);
 
-            if (!applications.Entities.Any())
+            if (applications.IsNullOrEntitiesEmpty())
             {
                 return NoContent();
             }
@@ -167,12 +168,63 @@ public class ApplicationController : ControllerBase
 
         var applications = await applicationService.GetAllByProvider(providerId, filter).ConfigureAwait(false);
 
-        if (applications == null || !applications.Entities.Any())
+        return this.MapSearchResultToOkOrNoContent(applications);
+    }
+
+    /// <summary>
+    /// Get collection of applications, that have a pending status.
+    /// </summary>
+    /// <param name="providerId">Provider id.</param>
+    /// <returns>List of applications.</returns>
+    /// <response code="200">Entities were found by given Id.</response>
+    /// <response code="204">No entity with given Id was found.</response>
+    /// <response code="400">Provider with given id was not found.</response>
+    /// <response code="401">User is unauthorized.</response>
+    /// <response code="500">If any server error occurs.</response>
+    [HasPermission(Permissions.ApplicationRead)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ApplicationDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("/api/v{version:apiVersion}/provider/{providerId}/applications/pending")]
+    public async Task<IActionResult> GetPendingApplicationsByProviderId(Guid providerId)
+    {
+        var providerStandard = await providerService.GetById(providerId).ConfigureAwait(false);
+
+        var filter = new ApplicationFilter()
         {
-            return NoContent();
+            Statuses = new List<ApplicationStatus>()
+            {
+                ApplicationStatus.Pending,
+            },
+        };
+
+        SearchResult<ApplicationDto> applications;
+
+        // if: providerStandard is not null - get an applications and return it
+        // else: find a providerAdmin, get an applications and return it
+        if (providerStandard is not null)
+        {
+            applications = await applicationService.GetAllByProvider(providerId, filter).ConfigureAwait(false);
+        }
+        else
+        {
+            var providerAdminIdStringVersion = providerId.ToString();
+            var providerAdmin = await providerAdminService.GetById(providerAdminIdStringVersion).ConfigureAwait(false);
+
+            // Standard and admin providers were not found by given id
+            if (providerAdmin is null)
+            {
+                return BadRequest($"There is no any provider with given id - {providerId}.");
+            }
+
+            applications = await applicationService
+                .GetAllByProviderAdmin(providerAdminIdStringVersion, filter, providerAdmin.ProviderId, providerAdmin.IsDeputy)
+                .ConfigureAwait(false);
         }
 
-        return Ok(applications);
+        return this.MapSearchResultToOkOrNoContent(applications);
     }
 
     /// <summary>
@@ -202,12 +254,7 @@ public class ApplicationController : ControllerBase
         var applications = await applicationService.GetAllByWorkshop(workshopId, workshop.ProviderId, filter)
             .ConfigureAwait(false);
 
-        if (applications == null || !applications.Entities.Any())
-        {
-            return NoContent();
-        }
-
-        return Ok(applications);
+        return this.MapSearchResultToOkOrNoContent(applications);
     }
 
     /// <summary>
@@ -239,12 +286,7 @@ public class ApplicationController : ControllerBase
             .GetAllByProviderAdmin(userId, filter, providerAdmin.ProviderId, providerAdmin.IsDeputy)
             .ConfigureAwait(false);
 
-        if (applications == null || !applications.Entities.Any())
-        {
-            return NoContent();
-        }
-
-        return Ok(applications);
+        return this.MapSearchResultToOkOrNoContent(applications);
     }
 
     /// <summary>

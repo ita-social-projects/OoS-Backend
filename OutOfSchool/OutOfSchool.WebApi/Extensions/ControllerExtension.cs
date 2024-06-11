@@ -1,10 +1,23 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.WebApi.Extensions;
 
 public static class ControllerExtension
 {
+    public static IActionResult MapSearchResultToOkOrNoContent<T>(this ControllerBase controller, SearchResult<T> searchResult)
+    {
+        ExtensionValidation(controller);
+
+        if (searchResult.IsNullOrEntitiesEmpty())
+        {
+            return controller.NoContent();
+        }
+
+        return controller.Ok(searchResult);
+    }
+
     public static string GetJwtClaimByName(this ControllerBase controller, string claimName)
     {
         ExtensionValidation(controller);
