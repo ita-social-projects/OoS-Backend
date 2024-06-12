@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -30,6 +31,58 @@ public class ChangeLogControllerTests
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContextMock.Object },
         };
+    }
+
+    [Test]
+    public async Task Provider_WhenSearchResultIsNotNullOrEmpty_ReturnsOkObjectResult()
+    {
+        // Arrange
+        var searchResult = new SearchResult<ProviderChangesLogDto>()
+        {
+            TotalAmount = 1,
+            Entities = new List<ProviderChangesLogDto>()
+            {
+                new ProviderChangesLogDto(),
+            },
+        };
+
+        var request = new ProviderChangesLogRequest();
+
+        changesLogServiceMock.Setup(x => x.GetProviderChangesLogAsync(request)).ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.Provider(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<OkObjectResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status200OK);
+    }
+
+    [Test]
+    public async Task Provider_WhenSearchResultIsNullOrEmpty_ReturnsOkObjectResult()
+    {
+        // Arrange
+        var searchResult = new SearchResult<ProviderChangesLogDto>()
+        { };
+
+        var request = new ProviderChangesLogRequest();
+
+        changesLogServiceMock.Setup(x => x.GetProviderChangesLogAsync(request)).ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.Provider(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<NoContentResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status204NoContent);
     }
 
     #region ParentBlockedByAdmin

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -38,6 +39,57 @@ public class DirectionControllerTests
 
         directions = FakeDirections();
         direction = FakeDirection();
+    }
+
+    [Test]
+    public async Task GetByFilter_WhenSearchResultIsNotNullOrEmpty_ReturnOkObjectResult()
+    {
+        // Arrange
+        var data = new SearchResult<DirectionDto>()
+        {
+            Entities = new List<DirectionDto>() { new DirectionDto() },
+            TotalAmount = 1,
+        };
+
+        var directionFilter = new DirectionFilter();
+
+        service.Setup(x => x.GetByFilter(directionFilter, true)).ReturnsAsync(data);
+
+        // Act
+        var result = await controller.GetByFilter(directionFilter, true);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<OkObjectResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status200OK);
+    }
+
+    [Test]
+    public async Task GetByFilter_WhenSearchResultIsNullOrEmpty_ReturnNoContentObjectResult()
+    {
+        // Arrange
+        var data = new SearchResult<DirectionDto>()
+        {
+
+        };
+
+        var directionFilter = new DirectionFilter();
+
+        service.Setup(x => x.GetByFilter(directionFilter, true)).ReturnsAsync(data);
+
+        // Act
+        var result = await controller.GetByFilter(directionFilter, true);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<NoContentResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status204NoContent);
     }
 
     [Test]
