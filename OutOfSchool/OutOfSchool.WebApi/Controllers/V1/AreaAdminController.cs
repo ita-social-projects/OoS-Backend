@@ -104,12 +104,7 @@ public class AreaAdminController : Controller
     {
         var areaAdmins = await areaAdminService.GetByFilter(filter).ConfigureAwait(false);
 
-        if (areaAdmins.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(areaAdmins);
+        return this.MapSearchResultToOkOrNoContent(areaAdmins);
     }
 
     /// <summary>

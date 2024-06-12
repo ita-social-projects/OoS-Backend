@@ -41,12 +41,7 @@ public class ChangesLogController : ControllerBase
     {
         var changesLog = await changesLogService.GetProviderChangesLogAsync(request).ConfigureAwait(false);
 
-        if (changesLog.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(changesLog);
+        return this.MapSearchResultToOkOrNoContent(changesLog);
     }
 
     /// <summary>
@@ -71,12 +66,7 @@ public class ChangesLogController : ControllerBase
     {
         var changesLog = await changesLogService.GetApplicationChangesLogAsync(request).ConfigureAwait(false);
 
-        if (changesLog.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(changesLog);
+        return this.MapSearchResultToOkOrNoContent(changesLog);
     }
 
     /// <summary>
@@ -101,12 +91,7 @@ public class ChangesLogController : ControllerBase
     {
         var changesLog = await changesLogService.GetProviderAdminChangesLogAsync(request).ConfigureAwait(false);
 
-        if (changesLog.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(changesLog);
+        return this.MapSearchResultToOkOrNoContent(changesLog);
     }
 
     /// <summary>
@@ -131,11 +116,6 @@ public class ChangesLogController : ControllerBase
     {
         var changesLog = await changesLogService.GetParentBlockedByAdminChangesLogAsync(request).ConfigureAwait(false);
 
-        if (changesLog.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(changesLog);
+        return this.MapSearchResultToOkOrNoContent(changesLog);
     }
 }

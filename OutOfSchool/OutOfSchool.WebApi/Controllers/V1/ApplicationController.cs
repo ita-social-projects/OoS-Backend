@@ -101,12 +101,7 @@ public class ApplicationController : ControllerBase
         {
             var applications = await applicationService.GetAllByParent(id, filter).ConfigureAwait(false);
 
-            if (applications.IsNullOrEntitiesEmpty())
-            {
-                return NoContent();
-            }
-
-            return Ok(applications);
+            return this.MapSearchResultToOkOrNoContent(applications);
         }
         catch (ArgumentException ex)
         {

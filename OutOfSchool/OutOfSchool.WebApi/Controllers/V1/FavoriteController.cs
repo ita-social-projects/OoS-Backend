@@ -101,12 +101,7 @@ public class FavoriteController : ControllerBase
 
         var favorites = await service.GetFavoriteWorkshopsByUser(userId, offsetFilter).ConfigureAwait(false);
 
-        if (favorites.TotalAmount == 0)
-        {
-            return NoContent();
-        }
-
-        return Ok(favorites);
+        return this.MapSearchResultToOkOrNoContent(favorites);
     }
 
     /// <summary>

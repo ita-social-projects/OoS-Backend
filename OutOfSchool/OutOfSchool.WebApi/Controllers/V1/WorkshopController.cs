@@ -162,12 +162,7 @@ public class WorkshopController : ControllerBase
         var workshopCards = await combinedWorkshopService.GetByProviderId(id, filter)
             .ConfigureAwait(false);
 
-        if (workshopCards.TotalAmount == 0)
-        {
-            return NoContent();
-        }
-
-        return Ok(workshopCards);
+       return this.MapSearchResultToOkOrNoContent(workshopCards);
     }
 
     /// <summary>
@@ -191,12 +186,7 @@ public class WorkshopController : ControllerBase
 
         var workshopProviderViewCards = await combinedWorkshopService.GetByProviderId(id, filter).ConfigureAwait(false);
 
-        if (workshopProviderViewCards.TotalAmount == 0)
-        {
-            return NoContent();
-        }
-
-        return Ok(workshopProviderViewCards);
+       return this.MapSearchResultToOkOrNoContent(workshopProviderViewCards);
     }
 
     /// <summary>
@@ -226,12 +216,7 @@ public class WorkshopController : ControllerBase
             result = await combinedWorkshopService.GetByFilter(filter).ConfigureAwait(false);
         }
 
-        if (result.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(result);
+        return this.MapSearchResultToOkOrNoContent(result);
     }
 
     /// <summary>
