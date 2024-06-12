@@ -63,7 +63,7 @@ public class ChangeLogControllerTests
     }
 
     [Test]
-    public async Task Provider_WhenSearchResultIsNullOrEmpty_ReturnsOkObjectResult()
+    public async Task Provider_WhenSearchResultIsNullOrEmpty_ReturnsNoContentObjectResult()
     {
         // Arrange
         var searchResult = new SearchResult<ProviderChangesLogDto>()
@@ -75,6 +75,110 @@ public class ChangeLogControllerTests
 
         // Act
         var result = await controller.Provider(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<NoContentResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status204NoContent);
+    }
+
+    [Test]
+    public async Task Application_WhenSearchResultIsNotNullOrEmpty_ReturnsOkObjectResult()
+    {
+        // Arrange
+        var searchResult = new SearchResult<ApplicationChangesLogDto>()
+        {
+            TotalAmount = 1,
+            Entities = new List<ApplicationChangesLogDto>()
+            {
+                new ApplicationChangesLogDto(),
+            },
+        };
+
+        var request = new ApplicationChangesLogRequest();
+
+        changesLogServiceMock.Setup(x => x.GetApplicationChangesLogAsync(request)).ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.Application(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<OkObjectResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status200OK);
+    }
+
+    [Test]
+    public async Task Application_WhenSearchResultIsNullOrEmpty_ReturnsNoContentObjectResult()
+    {
+        // Arrange
+        var searchResult = new SearchResult<ApplicationChangesLogDto>()
+        { };
+
+        var request = new ApplicationChangesLogRequest();
+
+        changesLogServiceMock.Setup(x => x.GetApplicationChangesLogAsync(request)).ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.Application(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<NoContentResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status204NoContent);
+    }
+
+    [Test]
+    public async Task ProviderAdmin_WhenSearchResultIsNotNullOrEmpty_ReturnsOkObjectResult()
+    {
+        // Arrange
+        var searchResult = new SearchResult<ProviderAdminChangesLogDto>()
+        {
+            TotalAmount = 1,
+            Entities = new List<ProviderAdminChangesLogDto>()
+            {
+                new ProviderAdminChangesLogDto(),
+            },
+        };
+
+        var request = new ProviderAdminChangesLogRequest();
+
+        changesLogServiceMock.Setup(x => x.GetProviderAdminChangesLogAsync(request)).ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.ProviderAdmin(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<OkObjectResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status200OK);
+    }
+
+    [Test]
+    public async Task ProviderAdmin_WhenSearchResultIsNullOrEmpty_ReturnsNoContentObjectResult()
+    {
+        // Arrange
+        var searchResult = new SearchResult<ProviderAdminChangesLogDto>()
+        { };
+
+        var request = new ProviderAdminChangesLogRequest();
+
+        changesLogServiceMock.Setup(x => x.GetProviderAdminChangesLogAsync(request)).ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.ProviderAdmin(request);
 
         // Assert
         result.Should().NotBeNull();
