@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -103,6 +104,60 @@ public class WorkshopControllerTests
         };
     }
 
+    #region GetByFilter
+    [Test]
+    public async Task GetByFilter_WhenSearchResultIsNotNullOrEmpty_ReturnsOkObjectResult()
+    {
+        // Arrange
+        var searchResult = new SearchResult<WorkshopCard>()
+        {
+            TotalAmount = 1,
+            Entities = new List<WorkshopCard>()
+            {
+                new WorkshopCard(),
+            },
+        };
+
+        var filter = new WorkshopFilter();
+
+        workshopServiceMoq.Setup(x => x.GetByFilter(filter)).ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.GetByFilter(filter);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<OkObjectResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status200OK);
+    }
+
+    [Test]
+    public async Task GetByFilter_WhenSearchResultIsNullOrEmpty_ReturnsNoContentObjectResult()
+    {
+        // Arrange
+        var searchResult = new SearchResult<WorkshopCard>()
+        { };
+
+        var filter = new WorkshopFilter();
+
+        workshopServiceMoq.Setup(x => x.GetByFilter(filter)).ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.GetByFilter(filter);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<NoContentResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status204NoContent);
+    }
+    #endregion
+
     #region GetWorkshopById
     [Test]
     public async Task GetWorkshopById_WhenIdIsValid_ShouldReturnOkResultObject()
@@ -136,6 +191,62 @@ public class WorkshopControllerTests
     #endregion
 
     #region GetByProviderId
+    [Test]
+    public async Task GetByProviderId_WhenSearchResultIsNotNullOrEmpty_ReturnsOkObjectResult()
+    {
+        // Arrange
+        var searchResult = new SearchResult<WorkshopProviderViewCard>()
+        {
+            TotalAmount = 1,
+            Entities = new List<WorkshopProviderViewCard>()
+            {
+                new WorkshopProviderViewCard(),
+            },
+        };
+
+        var providerId = Guid.NewGuid();
+
+        var filter = new ExcludeIdFilter();
+
+        workshopServiceMoq.Setup(x => x.GetByProviderId(providerId, filter)).ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.GetByProviderId(providerId, filter);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<OkObjectResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status200OK);
+    }
+
+    [Test]
+    public async Task GetByProviderId_WhenSearchResultIsNullOrEmpty_ReturnsNoContentObjectResult()
+    {
+        // Arrange
+        var searchResult = new SearchResult<WorkshopProviderViewCard>()
+        { };
+
+        var providerId = Guid.NewGuid();
+
+        var filter = new ExcludeIdFilter();
+
+        workshopServiceMoq.Setup(x => x.GetByProviderId(providerId, filter)).ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.GetByProviderId(providerId, filter);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<NoContentResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status204NoContent);
+    }
+
     [Test]
     public async Task GetByProviderId_WhenThereAreWorkshops_ShouldReturnOkResultObject()
     {
