@@ -1,5 +1,10 @@
 using System.Text.Json.Serialization;
 using AutoMapper;
+using Elastic.Apm.DiagnosticSource;
+using Elastic.Apm.Elasticsearch;
+using Elastic.Apm.EntityFrameworkCore;
+using Elastic.Apm.Instrumentations.SqlClient;
+using Elastic.Apm.StackExchange.Redis;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HeaderPropagation;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +23,7 @@ using OutOfSchool.EmailSender;
 using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Repository.Files;
+using StackExchange.Redis;
 
 namespace OutOfSchool.WebApi;
 
@@ -108,6 +114,11 @@ public static class Startup
     {
         var services = builder.Services;
         var configuration = builder.Configuration;
+
+        services.AddElasticApmForAspNetCore(
+            new HttpDiagnosticsSubscriber(),
+            new EfCoreDiagnosticsSubscriber(),
+            new ElasticsearchDiagnosticsSubscriber());
 
         services.Configure<AppDefaultsConfig>(configuration.GetSection(AppDefaultsConfig.Name));
         var identityConfig = configuration
@@ -455,12 +466,22 @@ public static class Startup
         var redisConnection = $"{configuration.GetValue<string>("Redis:Server")}:{configuration.GetValue<int>("Redis:Port")},password={configuration.GetValue<string>("Redis:Password")}";
 
         var signalRBuilder = services.AddSignalR();
+        var isAPMEnabled = configuration.GetValue<bool>("ElasticApm:Enabled");
 
         if (isRedisEnabled)
         {
             signalRBuilder.AddStackExchangeRedis(redisConnection, options =>
             {
                 options.Configuration.AbortOnConnectFail = false;
+                if (isAPMEnabled)
+                {
+                    options.ConnectionFactory = async writer =>
+                    {
+                        var connection = await ConnectionMultiplexer.ConnectAsync(options.Configuration, writer);
+                        connection.UseElasticApm();
+                        return connection;
+                    };
+                }
             });
 
             // TODO: Try to rework or remove if chat will stop working correctly
@@ -470,6 +491,15 @@ public static class Startup
         services.AddStackExchangeRedisCache(options =>
         {
             options.Configuration = redisConnection;
+            if (isAPMEnabled)
+            {
+                options.ConnectionMultiplexerFactory = async () =>
+                {
+                    var connection = await ConnectionMultiplexer.ConnectAsync(redisConnection);
+                    connection.UseElasticApm();
+                    return connection;
+                };
+            }
         });
 
         services.AddSingleton<ICacheService, CacheService>();

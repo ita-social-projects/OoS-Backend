@@ -3,7 +3,6 @@
   <PropertyGroup>
     <PackageId>email</PackageId>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
