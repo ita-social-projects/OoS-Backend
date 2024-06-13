@@ -73,7 +73,7 @@ public class AchievementController : ControllerBase
     {
         var achievements = await achievementService.GetByFilter(filter).ConfigureAwait(false);
 
-        return this.MapSearchResultToOkOrNoContent(achievements);
+        return this.OkOrNoContentTotalAmount(achievements);
     }
 
     /// <summary>

@@ -34,16 +34,12 @@ public class ChangeLogControllerTests
     }
 
     [Test]
-    public async Task Provider_WhenSearchResultIsNotNullOrEmpty_ReturnsOkObjectResult()
+    public async Task Provider_WhenSearchResultIsNotNullOrTotalAmountIsZero_ReturnsOkObjectResult()
     {
         // Arrange
         var searchResult = new SearchResult<ProviderChangesLogDto>()
         {
             TotalAmount = 1,
-            Entities = new List<ProviderChangesLogDto>()
-            {
-                new ProviderChangesLogDto(),
-            },
         };
 
         var request = new ProviderChangesLogRequest();
@@ -63,11 +59,13 @@ public class ChangeLogControllerTests
     }
 
     [Test]
-    public async Task Provider_WhenSearchResultIsNullOrEmpty_ReturnsNoContentObjectResult()
+    public async Task Provider_WhenSearchResultIsNullOrTotalAmountIsZero_ReturnsNoContentObjectResult()
     {
         // Arrange
         var searchResult = new SearchResult<ProviderChangesLogDto>()
-        { };
+        {
+            TotalAmount = 0,
+        };
 
         var request = new ProviderChangesLogRequest();
 
@@ -86,16 +84,12 @@ public class ChangeLogControllerTests
     }
 
     [Test]
-    public async Task Application_WhenSearchResultIsNotNullOrEmpty_ReturnsOkObjectResult()
+    public async Task Application_WhenSearchResultIsNotNullOrTotalAmountIsZero_ReturnsOkObjectResult()
     {
         // Arrange
         var searchResult = new SearchResult<ApplicationChangesLogDto>()
         {
             TotalAmount = 1,
-            Entities = new List<ApplicationChangesLogDto>()
-            {
-                new ApplicationChangesLogDto(),
-            },
         };
 
         var request = new ApplicationChangesLogRequest();
@@ -115,11 +109,13 @@ public class ChangeLogControllerTests
     }
 
     [Test]
-    public async Task Application_WhenSearchResultIsNullOrEmpty_ReturnsNoContentObjectResult()
+    public async Task Application_WhenSearchResultIsNullOrTotalAmountIsZero_ReturnsNoContentObjectResult()
     {
         // Arrange
         var searchResult = new SearchResult<ApplicationChangesLogDto>()
-        { };
+        {
+            TotalAmount = 0,
+        };
 
         var request = new ApplicationChangesLogRequest();
 
@@ -138,16 +134,12 @@ public class ChangeLogControllerTests
     }
 
     [Test]
-    public async Task ProviderAdmin_WhenSearchResultIsNotNullOrEmpty_ReturnsOkObjectResult()
+    public async Task ProviderAdmin_WhenSearchResultIsNotNullOrTotalAmountIsZero_ReturnsOkObjectResult()
     {
         // Arrange
         var searchResult = new SearchResult<ProviderAdminChangesLogDto>()
         {
             TotalAmount = 1,
-            Entities = new List<ProviderAdminChangesLogDto>()
-            {
-                new ProviderAdminChangesLogDto(),
-            },
         };
 
         var request = new ProviderAdminChangesLogRequest();
@@ -167,11 +159,13 @@ public class ChangeLogControllerTests
     }
 
     [Test]
-    public async Task ProviderAdmin_WhenSearchResultIsNullOrEmpty_ReturnsNoContentObjectResult()
+    public async Task ProviderAdmin_WhenSearchResultIsNotNullOrTotalAmountIsZero_ReturnsNoContentObjectResult()
     {
         // Arrange
         var searchResult = new SearchResult<ProviderAdminChangesLogDto>()
-        { };
+        {
+            TotalAmount = 0,
+        };
 
         var request = new ProviderAdminChangesLogRequest();
 

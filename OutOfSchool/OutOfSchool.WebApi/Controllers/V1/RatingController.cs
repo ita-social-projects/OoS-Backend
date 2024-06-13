@@ -110,7 +110,7 @@ public class RatingController : ControllerBase
     {
         var ratings = await ratingService.GetAllByEntityId(entityId, filter).ConfigureAwait(false);
 
-        return this.MapSearchResultToOkOrNoContent(ratings);
+        return this.OkOrNoContentTotalAmount(ratings);
     }
 
     /// <summary>

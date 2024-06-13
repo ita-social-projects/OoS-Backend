@@ -74,7 +74,6 @@ public class AdminControllerTests
         httpContext.Setup(c => c.User.FindFirst("sub"))
             .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
 
-
         controller = new AdminController(
             logger.Object,
             sensitiveMinistryAdminService.Object,
@@ -134,7 +133,7 @@ public class AdminControllerTests
         var expected = new SearchResult<MinistryAdminDto>
         {
             TotalAmount = 0,
-            Entities = new List<MinistryAdminDto>() { },
+            Entities = ministryAdminDtos.Select(x => mapper.Map<MinistryAdminDto>(x)).ToList(),
         };
 
         sensitiveMinistryAdminService.Setup(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>()))
@@ -352,7 +351,7 @@ public class AdminControllerTests
         // Arrange
         controller.ControllerContext.HttpContext = fakeHttpContext;
         controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
-        var expected = new SearchResult<ProviderDto> { TotalAmount = 1, Entities = new List<ProviderDto>() { new ProviderDto() } };
+        var expected = new SearchResult<ProviderDto> { TotalAmount = 1, Entities = new List<ProviderDto>() };
         sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
             .ReturnsAsync(expected);
 
@@ -365,13 +364,13 @@ public class AdminControllerTests
     }
 
     [Test]
-    public async Task GetProviderByFilter_ReturnsNoContentObjectResult()
+    public async Task GetProviderByFilter_ReturnsObjectResult()
     {
         // Arrange
         controller.ControllerContext.HttpContext = fakeHttpContext;
         controller.ControllerContext.HttpContext.SetContextUser(Role.Parent);
 
-        var expected = new SearchResult<ProviderDto> { TotalAmount = 0, Entities = new List<ProviderDto>() };
+        var expected = new SearchResult<ProviderDto> { TotalAmount = 1, Entities = new List<ProviderDto>() };
         sensitiveProviderService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
             .ReturnsAsync(expected);
 
@@ -379,7 +378,7 @@ public class AdminControllerTests
         var result = await controller.GetProviderByFilter(new ProviderFilter()).ConfigureAwait(false) as ActionResult;
 
         // Assert
-        Assert.That(result, Is.InstanceOf<NoContentResult>());
+        Assert.That(result, Is.InstanceOf<ObjectResult>());
     }
 
     [Test]
@@ -390,7 +389,7 @@ public class AdminControllerTests
         controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         sensitiveProviderService
             .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
-                new ResponseDto() { Result = new object(), HttpStatusCode = HttpStatusCode.Accepted, IsSuccess = true, Message = "test" });
+                   new ResponseDto() { Result = new object(), HttpStatusCode = HttpStatusCode.Accepted, IsSuccess = true, Message = "test" });
 
         // Act
         var result = await controller.BlockProvider(new ProviderBlockDto { BlockReason = "str", Id = new Guid("4c617c71-c131-4ad6-9eac-bb16288f5322"), IsBlocked = false, BlockPhoneNumber = "-" });
