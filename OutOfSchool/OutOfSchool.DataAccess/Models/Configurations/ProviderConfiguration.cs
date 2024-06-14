@@ -18,18 +18,24 @@ internal class ProviderConfiguration : IEntityTypeConfiguration<Provider>
 
         builder.Property(x => x.FullTitle)
             .IsRequired()
-            .HasMaxLength(60) // Same as in short title. Bug ?
+            .HasMaxLength(Constants.MaxProviderFullTitleLength)
             .IsUnicode();
 
         builder.Property(x => x.ShortTitle)
             .IsRequired()
-            .HasMaxLength(60) // Same as in full title. Bug ?
+            .HasMaxLength(Constants.MaxProviderShortTitleLength)
+            .IsUnicode();
+
+        builder.Property(x => x.FullTitleEn)
+            .HasMaxLength(Constants.MaxProviderFullTitleLength)
+            .IsUnicode();
+
+        builder.Property(x => x.ShortTitleEn)
+            .HasMaxLength(Constants.MaxProviderShortTitleLength)
             .IsUnicode();
 
         builder.Property(x => x.Website)
-            // TODO: use constant from ?? after url validation implementation
-            .HasMaxLength(256)
-            // Note: IDN
+            .HasMaxLength(Constants.MaxUnifiedUrlLength)
             .IsUnicode();
 
         builder.Property(x => x.Email)
@@ -37,12 +43,10 @@ internal class ProviderConfiguration : IEntityTypeConfiguration<Provider>
             .HasMaxLength(256);
 
         builder.Property(x => x.Facebook)
-            // TODO: use constant from ?? after url validation implementation
-            .HasMaxLength(256);
+            .HasMaxLength(Constants.MaxUnifiedUrlLength);
 
         builder.Property(x => x.Instagram)
-            // TODO: use constant from ?? after url validation implementation
-            .HasMaxLength(256);
+            .HasMaxLength(Constants.MaxUnifiedUrlLength);
 
         builder.Property(x => x.Director)
             .HasMaxLength(50)

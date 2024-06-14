@@ -34,15 +34,15 @@ public class WorkshopBaseDto : IValidatableObject
     public string Email { get; set; } = string.Empty;
 
     [DataType(DataType.Url)]
-    [MaxLength(Constants.UnifiedUrlLength)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
     public string Website { get; set; } = string.Empty;
 
     [DataType(DataType.Url)]
-    [MaxLength(Constants.UnifiedUrlLength)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
     public string Facebook { get; set; } = string.Empty;
 
     [DataType(DataType.Url)]
-    [MaxLength(Constants.UnifiedUrlLength)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
     public string Instagram { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Children's min age is required")]

@@ -20,11 +20,11 @@ public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>, ISo
     public bool IsDeleted { get; set; }
 
     [Required(ErrorMessage = "Workshop title is required")]
-    [MinLength(1)]
-    [MaxLength(60)]
+    [MinLength(Constants.MinWorkshopTitleLength)]
+    [MaxLength(Constants.MaxWorkshopTitleLength)]
     public string Title { get; set; } = string.Empty;
 
-    [MaxLength(60)]
+    [MaxLength(Constants.MaxWorkshopShortTitleLength)]
     public string ShortTitle { get; set; } = string.Empty;
 
     [DataType(DataType.PhoneNumber)]
@@ -40,15 +40,15 @@ public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>, ISo
     public string Email { get; set; } = string.Empty;
 
     [DataType(DataType.Url)]
-    [MaxLength(Constants.UnifiedUrlLength)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
     public string Website { get; set; } = string.Empty;
 
     [DataType(DataType.Url)]
-    [MaxLength(Constants.UnifiedUrlLength)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
     public string Facebook { get; set; } = string.Empty;
 
     [DataType(DataType.Url)]
-    [MaxLength(Constants.UnifiedUrlLength)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
     public string Instagram { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Children's min age is required")]

@@ -28,7 +28,7 @@ public class ProviderInfoDto : ProviderInfoBaseDto, IHasRating
     public string ShortTitle { get; set; }
 
     [DataType(DataType.Url)]
-    [MaxLength(Constants.UnifiedUrlLength)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
     public string Website { get; set; } = string.Empty;
 
     [DataType(DataType.EmailAddress)]
@@ -38,11 +38,11 @@ public class ProviderInfoDto : ProviderInfoBaseDto, IHasRating
     public string Email { get; set; } = string.Empty;
 
     [DataType(DataType.Url)]
-    [MaxLength(Constants.UnifiedUrlLength)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
     public string Facebook { get; set; } = string.Empty;
 
     [DataType(DataType.Url)]
-    [MaxLength(Constants.UnifiedUrlLength)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
     public string Instagram { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "EDRPOU/INP code is required")]

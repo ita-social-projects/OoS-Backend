@@ -2,7 +2,10 @@
 
 public static class Constants
 {
-    public const int UnifiedUrlLength = 256;
+    /// <summary>
+    /// Maximum length of unified URL.
+    /// </summary>
+    public const int MaxUnifiedUrlLength = 256;
 
     public const long DefaultCityCodeficatorId = 31737;
 
@@ -119,4 +122,39 @@ public static class Constants
     /// Error message for day of birth validation.
     /// </summary>
     public const string DayOfBirthErrorMessage = "Error! Please check the day of birth is correct";
+
+    /// <summary>
+    /// Minimum length of workshop title.
+    /// </summary>
+    public const int MinWorkshopTitleLength = 1;
+
+    /// <summary>
+    /// Maximum length of workshop title.
+    /// </summary>
+    public const int MaxWorkshopTitleLength = 60;
+
+    /// <summary>
+    /// Maximum length of workshop short title.
+    /// </summary>
+    public const int MaxWorkshopShortTitleLength = 60;
+
+    /// <summary>
+    /// Minimum length of provider full title.
+    /// </summary>
+    public const int MinProviderFullTitleLength = 1;
+
+    /// <summary>
+    /// Maximum length of provider full title.
+    /// </summary>
+    public const int MaxProviderFullTitleLength = 60;
+
+    /// <summary>
+    /// Minimum length of provider short title.
+    /// </summary>
+    public const int MinProviderShortTitleLength = 1;
+
+    /// <summary>
+    /// Maximum length of provider short title.
+    /// </summary>
+    public const int MaxProviderShortTitleLength = 60;
 }
