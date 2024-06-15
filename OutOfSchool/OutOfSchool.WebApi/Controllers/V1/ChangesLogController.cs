@@ -41,7 +41,7 @@ public class ChangesLogController : ControllerBase
     {
         var changesLog = await changesLogService.GetProviderChangesLogAsync(request).ConfigureAwait(false);
 
-        return this.OkOrNoContentTotalAmount(changesLog);
+        return this.SearchResultToOkOrNoContent(changesLog);
     }
 
     /// <summary>
@@ -66,7 +66,7 @@ public class ChangesLogController : ControllerBase
     {
         var changesLog = await changesLogService.GetApplicationChangesLogAsync(request).ConfigureAwait(false);
 
-        return this.OkOrNoContentTotalAmount(changesLog);
+        return this.SearchResultToOkOrNoContent(changesLog);
     }
 
     /// <summary>
@@ -91,7 +91,7 @@ public class ChangesLogController : ControllerBase
     {
         var changesLog = await changesLogService.GetProviderAdminChangesLogAsync(request).ConfigureAwait(false);
 
-        return this.OkOrNoContentTotalAmount(changesLog);
+        return this.SearchResultToOkOrNoContent(changesLog);
     }
 
     /// <summary>
@@ -116,6 +116,6 @@ public class ChangesLogController : ControllerBase
     {
         var changesLog = await changesLogService.GetParentBlockedByAdminChangesLogAsync(request).ConfigureAwait(false);
 
-        return this.OkOrNoContentTotalAmount(changesLog);
+        return this.SearchResultToOkOrNoContent(changesLog);
     }
 }

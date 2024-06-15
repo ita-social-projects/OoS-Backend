@@ -258,7 +258,7 @@ public class ProviderAdminController : Controller
     {
         var relatedAdmins = await providerAdminService.GetFilteredRelatedProviderAdmins(userId, filter).ConfigureAwait(false);
 
-        return this.OkOrNoContentTotalAmount(relatedAdmins);
+        return this.SearchResultToOkOrNoContent(relatedAdmins);
     }
 
     /// <summary>
@@ -301,7 +301,7 @@ public class ProviderAdminController : Controller
 
         var relatedWorkshops = await providerAdminService.GetWorkshopsThatProviderAdminCanManage(userId, userSubrole == Subrole.ProviderDeputy).ConfigureAwait(false);
 
-        return this.OkOrNoContentTotalAmount(relatedWorkshops);
+        return this.SearchResultToOkOrNoContent(relatedWorkshops);
     }
 
     /// <summary>

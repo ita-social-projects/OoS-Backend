@@ -104,7 +104,7 @@ public class AreaAdminController : Controller
     {
         var areaAdmins = await areaAdminService.GetByFilter(filter).ConfigureAwait(false);
 
-        return this.OkOrNoContentTotalAmount(areaAdmins);
+        return this.SearchResultToOkOrNoContent(areaAdmins);
     }
 
     /// <summary>

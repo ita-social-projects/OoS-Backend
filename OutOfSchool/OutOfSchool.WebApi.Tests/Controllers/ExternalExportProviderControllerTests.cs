@@ -39,7 +39,7 @@ public class ExternalExportProviderControllerTests
 
         _ = mockExternalProviderService
             .Setup(x => x.GetProvidersWithWorkshops(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
-            .ReturnsAsync(new SearchResult<ProviderInfoBaseDto> { Entities = mapper.Map<List<ProviderInfoBaseDto>>(fakeProviders) });
+            .ReturnsAsync(new SearchResult<ProviderInfoBaseDto> { TotalAmount = fakeProviders.Count, Entities = mapper.Map<List<ProviderInfoBaseDto>>(fakeProviders) });
 
         // Act
         var actionResult = await controller.GetByFilter(DateTime.UtcNow, new OffsetFilter { Size = 10 });

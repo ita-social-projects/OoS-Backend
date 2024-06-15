@@ -62,7 +62,7 @@ public class AdminController : Controller
     {
         var ministryAdmins = await ministryAdminService.GetByFilter(filter).ConfigureAwait(false);
 
-        return this.OkOrNoContentTotalAmount(ministryAdmins);
+        return this.SearchResultToOkOrNoContent(ministryAdmins);
     }
 
     /// <summary>
@@ -84,7 +84,7 @@ public class AdminController : Controller
     {
         var applications = await applicationService.GetAll(filter).ConfigureAwait(false);
 
-        return this.OkOrNoContentEntities(applications);
+        return this.SearchResultToOkOrNoContent(applications);
     }
 
     /// <summary>
@@ -172,7 +172,7 @@ public class AdminController : Controller
         var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
 
         //TODO clarify frontend about if statement
-        return this.OkOrNoContentTotalAmount(providers);
+        return this.SearchResultToOkOrNoContent(providers);
     }
 
     /// <summary>

@@ -105,7 +105,7 @@ public class RegionAdminController : Controller
     {
         var regionAdmins = await regionAdminService.GetByFilter(filter).ConfigureAwait(false);
 
-        return this.OkOrNoContentTotalAmount(regionAdmins);
+        return this.SearchResultToOkOrNoContent(regionAdmins);
     }
 
     /// <summary>

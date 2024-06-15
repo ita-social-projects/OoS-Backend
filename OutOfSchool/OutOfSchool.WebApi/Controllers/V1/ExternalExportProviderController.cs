@@ -33,7 +33,7 @@ public class ExternalExportProviderController : ControllerBase
         {
             var result = await externalProviderService.GetProvidersWithWorkshops(updatedAfter, offsetFilter);
 
-            return this.OkOrNoContentEntities(result);
+            return this.SearchResultToOkOrNoContent(result);
         }
         catch (Exception ex)
         {

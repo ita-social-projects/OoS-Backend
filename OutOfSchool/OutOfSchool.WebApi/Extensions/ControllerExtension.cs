@@ -6,23 +6,12 @@ namespace OutOfSchool.WebApi.Extensions;
 
 public static class ControllerExtension
 {
-    public static IActionResult OkOrNoContentEntities<T>(this ControllerBase controller, SearchResult<T> searchResult)
+    public static IActionResult SearchResultToOkOrNoContent<T>(this ControllerBase controller, SearchResult<T> searchResult)
     {
         ExtensionValidation(controller);
 
-        if (searchResult.IsNullOrEntitiesEmpty())
-        {
-            return controller.NoContent();
-        }
-
-        return controller.Ok(searchResult);
-    }
-
-    public static IActionResult OkOrNoContentTotalAmount<T>(this ControllerBase controller, SearchResult<T> searchResult)
-    {
-        ExtensionValidation(controller);
-
-        if (searchResult.IsNullOrTotalAmountIsZero())
+        // searchResult.TotalAmount < searchResult.Entities.Count - checking bug variant
+        if (searchResult.IsNullOrEmpty() || searchResult.TotalAmount < searchResult.Entities?.Count)
         {
             return controller.NoContent();
         }

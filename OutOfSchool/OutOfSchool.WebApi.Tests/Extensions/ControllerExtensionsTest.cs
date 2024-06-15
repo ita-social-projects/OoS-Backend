@@ -13,18 +13,18 @@ namespace OutOfSchool.WebApi.Tests.Extensions;
 public class ControllerExtensionsTest
 {
     [Test]
-    public void OkOrNoContentEntitiesExtension_SearchResultIsNotNullAndNotEmpty_ReturnOk()
+    public void SearchResultToOkOrNoContentExtension_SearchResultIsNotNullAndNotEmpty_ReturnOk()
     {
         // Arrange
         var applications = ApplicationDTOsGenerator.Generate(3);
-        var searchResult = new SearchResult<ApplicationDto>() { Entities = applications };
+        var searchResult = new SearchResult<ApplicationDto>() { TotalAmount = applications.Count, Entities = applications };
         var expectedResult = new OkObjectResult(new { });
 
         var mockedController = new Mock<ControllerBase>();
         mockedController.Setup(c => c.Ok(searchResult)).Returns(expectedResult);
 
         // Act
-        var result = mockedController.Object.OkOrNoContentEntities(searchResult);
+        var result = mockedController.Object.SearchResultToOkOrNoContent(searchResult);
 
         // Assert
         mockedController.VerifyAll();
@@ -40,7 +40,7 @@ public class ControllerExtensionsTest
     }
 
     [Test]
-    public void OkOrNoContentEntitiesExtension_SearchResultIsNull_ReturnNoContent()
+    public void SearchResultToOkOrNoContentExtension_SearchResultIsNull_ReturnNoContent()
     {
         // Arrange
         SearchResult<ApplicationDto> searchResult = null;
@@ -50,7 +50,7 @@ public class ControllerExtensionsTest
         mockedController.Setup(c => c.NoContent()).Returns(new NoContentResult());
 
         // Act
-        var result = mockedController.Object.OkOrNoContentEntities(searchResult);
+        var result = mockedController.Object.SearchResultToOkOrNoContent(searchResult);
 
         // Assert
         mockedController.VerifyAll();
@@ -66,21 +66,21 @@ public class ControllerExtensionsTest
     }
 
     [Test]
-    public void OkOrNoContentEntitiesExtension_SearchResultIsNotNullButEmpty_ReturnNoContent()
+    public void SearchResultToOkOrNoContentExtension_SearchResultIsNotNullButEmpty_ReturnNoContent()
     {
         // Arrange
         var applications = new List<ApplicationDto>()
         {
         };
 
-        var searchResult = new SearchResult<ApplicationDto>() { Entities = applications };
+        var searchResult = new SearchResult<ApplicationDto>() { TotalAmount = applications.Count, Entities = applications };
         var expectedResult = new NoContentResult();
 
         var mockedController = new Mock<ControllerBase>();
         mockedController.Setup(c => c.NoContent()).Returns(new NoContentResult());
 
         // Act
-        var result = mockedController.Object.OkOrNoContentEntities(searchResult);
+        var result = mockedController.Object.SearchResultToOkOrNoContent(searchResult);
 
         // Assert
         mockedController.VerifyAll();
@@ -96,7 +96,7 @@ public class ControllerExtensionsTest
     }
 
     [Test]
-    public void OkOrNoContentTotalAmount_SearchResultIsNotNullAndTotalAmountIsNotZero_ReturnOk()
+    public void SearchResultToOkOrNoContent_SearchResultIsNotNullAndTotalAmountIsNotZero_ReturnOk()
     {
         // Arrange
         var searchResult = new SearchResult<ApplicationDto>() { TotalAmount = 1 };
@@ -106,7 +106,7 @@ public class ControllerExtensionsTest
         mockedController.Setup(c => c.Ok(searchResult)).Returns(expectedResult);
 
         // Act
-        var result = mockedController.Object.OkOrNoContentTotalAmount(searchResult);
+        var result = mockedController.Object.SearchResultToOkOrNoContent(searchResult);
 
         // Assert
         mockedController.VerifyAll();
@@ -122,7 +122,7 @@ public class ControllerExtensionsTest
     }
 
     [Test]
-    public void OkOrNoContentTotalAmount_SearchResultIsNull_ReturnNoContent()
+    public void SearchResultToOkOrNoContent_SearchResultIsNull_ReturnNoContent()
     {
         // Arrange
         SearchResult<ApplicationDto> searchResult = null;
@@ -132,7 +132,7 @@ public class ControllerExtensionsTest
         mockedController.Setup(c => c.NoContent()).Returns(new NoContentResult());
 
         // Act
-        var result = mockedController.Object.OkOrNoContentTotalAmount(searchResult);
+        var result = mockedController.Object.SearchResultToOkOrNoContent(searchResult);
 
         // Assert
         mockedController.VerifyAll();
@@ -148,7 +148,7 @@ public class ControllerExtensionsTest
     }
 
     [Test]
-    public void OkOrNoContentTotalAmount_SearchResultIsNotNullButTotalAmountIsZero_ReturnNoContent()
+    public void SearchResultToOkOrNoContent_SearchResultIsNotNullButTotalAmountIsZero_ReturnNoContent()
     {
         // Arrange
         var searchResult = new SearchResult<ApplicationDto>() { TotalAmount = 0 };
@@ -158,7 +158,7 @@ public class ControllerExtensionsTest
         mockedController.Setup(c => c.NoContent()).Returns(new NoContentResult());
 
         // Act
-        var result = mockedController.Object.OkOrNoContentTotalAmount(searchResult);
+        var result = mockedController.Object.SearchResultToOkOrNoContent(searchResult);
 
         // Assert
         mockedController.VerifyAll();

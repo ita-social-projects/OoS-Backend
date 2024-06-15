@@ -62,7 +62,7 @@ public class DirectionController : ControllerBase
     {
         var directions = await service.GetByFilter(filter, isAdmins).ConfigureAwait(false);
 
-        return this.OkOrNoContentTotalAmount(directions);
+        return this.SearchResultToOkOrNoContent(directions);
     }
 
     /// <summary>
