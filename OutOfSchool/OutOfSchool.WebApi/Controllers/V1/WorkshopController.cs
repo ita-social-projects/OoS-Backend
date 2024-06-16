@@ -200,6 +200,35 @@ public class WorkshopController : ControllerBase
     }
 
     /// <summary>
+    /// Gets the competitive selection description of the specified workshop.
+    /// </summary>
+    /// <param name="id">Id of the workshop to get the competitive selection description for.</param>
+    /// <returns>A string description of the competitive selection for the workshop specified by id.</returns>
+    [AllowAnonymous]
+    [HttpGet("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
+    public async Task<IActionResult> GetCompetitiveSelectionDescription(Guid id)
+    {
+        if (id == Guid.Empty)
+        {
+            return BadRequest("Workshop id is empty.");
+        }
+
+        var workshop = await combinedWorkshopService.GetById(id).ConfigureAwait(false);
+
+        if (workshop is null || string.IsNullOrEmpty(workshop.CompetitiveSelectionDescription))
+        {
+            return NoContent();
+        }
+
+        return Ok(workshop.CompetitiveSelectionDescription);
+    }
+
+    /// <summary>
     /// Get workshops that matches filter's parameters.
     /// </summary>
     /// <param name="filter">Entity that represents searching parameters.</param>
