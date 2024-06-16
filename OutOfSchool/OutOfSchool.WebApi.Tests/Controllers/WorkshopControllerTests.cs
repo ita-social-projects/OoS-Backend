@@ -135,6 +135,68 @@ public class WorkshopControllerTests
     }
     #endregion
 
+    #region GetCompetitiveSelectionDescription
+    [Test]
+    public async Task GetCompetitiveSelectionDescription_WhenIdIsValid_ShouldReturnOkResultObject()
+    {
+        // Arrange
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
+
+        // Act
+        var result = await controller.GetCompetitiveSelectionDescription(workshop.Id) as OkObjectResult;
+
+        // Assert
+        workshopServiceMoq.VerifyAll();
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(Ok));
+    }
+
+    [Test]
+    public async Task GetCompetitiveSelectionDescription_WhenThereIsNoWorkshopWithId_ShouldReturnNoContent()
+    {
+        // Arrange
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync((WorkshopDto)null);
+
+        // Act
+        var result = await controller.GetCompetitiveSelectionDescription(workshop.Id) as NoContentResult;
+
+        // Assert
+        workshopServiceMoq.VerifyAll();
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(NoContent));
+    }
+
+    [TestCase(null)]
+    [TestCase("")]
+    public async Task GetCompetitiveSelectionDescription_WhenCompetitiveSelectionDescriptionIsNullOrEmpty_ShouldReturnNoContent(string competitiveSelectionDescription)
+    {
+        // Arrange
+        var workshopWithoutCSD = WorkshopDtoGenerator.Generate();
+        workshopWithoutCSD.CompetitiveSelectionDescription = competitiveSelectionDescription;
+
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshopWithoutCSD);
+
+        // Act
+        var result = await controller.GetCompetitiveSelectionDescription(workshop.Id) as NoContentResult;
+
+        // Assert
+        workshopServiceMoq.VerifyAll();
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(NoContent));
+    }
+
+    [Test]
+    public async Task GetCompetitiveSelectionDescription_EmptyId_ReturnsBadRequest()
+    {
+        // Act
+        var result = await controller.GetCompetitiveSelectionDescription(Guid.Empty) as BadRequestObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(BadRequest));
+    }
+        #endregion
+
     #region GetByProviderId
     [Test]
     public async Task GetByProviderId_WhenThereAreWorkshops_ShouldReturnOkResultObject()
