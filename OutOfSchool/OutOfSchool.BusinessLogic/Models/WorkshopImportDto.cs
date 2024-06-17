@@ -4,7 +4,7 @@ using OutOfSchool.Common.Validators;
 
 namespace OutOfSchool.BusinessLogic.Models;
 
-public class WorkshopImportDto
+public class ProviderImportDto
 {
     public string Address { get; set; }
 

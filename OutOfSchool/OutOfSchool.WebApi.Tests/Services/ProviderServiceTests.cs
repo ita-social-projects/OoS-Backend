@@ -25,6 +25,7 @@ using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.EmailSender.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -54,7 +55,8 @@ public class ProviderServiceTests
     private Mock<IAreaAdminService> areaAdminServiceMock;
     private Mock<IAreaAdminRepository> areaAdminRepositoryMock;
     private Mock<IUserService> userServiceMock;
-    private Mock<ICommunicationService> communicationService;
+    private Mock<ICommunicationService> communicationServiceMock;
+    private Mock<IEmailSenderService> emailSenderServiceMock;
 
     private List<Provider> fakeProviders;
     private User fakeUser;
@@ -88,7 +90,8 @@ public class ProviderServiceTests
         areaAdminServiceMock = new Mock<IAreaAdminService>();
         areaAdminRepositoryMock = new Mock<IAreaAdminRepository>();
         userServiceMock = new Mock<IUserService>();
-        communicationService = new Mock<ICommunicationService>();
+        communicationServiceMock = new Mock<ICommunicationService>();
+        emailSenderServiceMock = new Mock<IEmailSenderService>();
 
         var authorizationServerConfig = Options.Create(new AuthorizationServerConfig { Authority = new Uri("http://test.com") });
 
@@ -118,7 +121,8 @@ public class ProviderServiceTests
             areaAdminRepositoryMock.Object,
             userServiceMock.Object,
             authorizationServerConfig,
-            communicationService.Object);
+            communicationServiceMock.Object,
+            emailSenderServiceMock.Object);
     }
 
     #region Create
@@ -131,7 +135,6 @@ public class ProviderServiceTests
         var dto = ProviderCreateDtoGenerator.Generate();
         dto.License = license;
         dto.Status = ProviderStatus.Approved;
-        dto.UserId = null;
 
         var expected = mapper.Map<ProviderDto>(dto);
         expected.Status = ProviderStatus.Pending;
@@ -726,7 +729,7 @@ public class ProviderServiceTests
         providersRepositoryMock.Setup(r => r.Delete(Capture.In(deleteMethodArguments)));
         userServiceMock.Setup(r => r.Delete(Capture.In(deleteUserArguments)));
         currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(true);
-        communicationService.Setup(x => x.SendRequest<ResponseDto>(It.IsAny<Request>())).ReturnsAsync(new ResponseDto());
+        communicationServiceMock.Setup(x => x.SendRequest<ResponseDto>(It.IsAny<Request>())).ReturnsAsync(new ResponseDto());
 
         // Act
         await providerService.Delete(providerToDeleteDto.Id, It.IsAny<string>()).ConfigureAwait(false);
@@ -775,13 +778,13 @@ public class ProviderServiceTests
         currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(true);
         providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
     .ReturnsAsync(fakeProviders.FirstOrDefault());
-        communicationService.Setup(x => x.SendRequest<ResponseDto>(It.IsAny<Request>())).ReturnsAsync(new ResponseDto());
+        communicationServiceMock.Setup(x => x.SendRequest<ResponseDto>(It.IsAny<Request>())).ReturnsAsync(new ResponseDto());
 
         // Act
         await providerService.Delete(It.IsAny<Guid>(), It.IsAny<string>()).ConfigureAwait(false);
 
         // Assert
-        communicationService.Verify(x => x.SendRequest<ResponseDto>(It.IsAny<Request>()), Times.AtLeastOnce);
+        communicationServiceMock.Verify(x => x.SendRequest<ResponseDto>(It.IsAny<Request>()), Times.AtLeastOnce);
     }
 
     #endregion
@@ -1113,6 +1116,43 @@ public class ProviderServiceTests
     }
 
     #endregion ValidateImportData
+
+    #region ImportProvidersData
+    public async Task ImportProvidersData_WhenDataIsValid_ShouldCreateProviders()
+    {
+        // Arrange
+        var importDtos = new List<ProviderImportDto>()
+        {
+            new()
+            {
+                Address = "Шевченка 2",
+                Email = "some@gmail.com",
+                Identifier = "456789876",
+                LicenseNumber = "не вказано",
+                Ownership = OwnershipType.Private,
+                Phone = "660666066",
+                ProviderName = "Клуб спортивного бального танцю",
+                Settlement = "Луцьк",
+            },
+            new()
+            {
+                Address = "Київська 18/2",
+                Email = "some2@gmail.com",
+                Identifier = "87654321",
+                LicenseNumber = "не вказано",
+                Ownership = OwnershipType.State,
+                Phone = "990999099",
+                ProviderName = "ТОВ Говерла",
+                Settlement = "Київ",
+            },
+        };
+
+        // Act
+        await providerService.ImportProvidersData(importDtos);
+
+        // Assert
+    }
+    #endregion
 
     #region TestDataSets
 

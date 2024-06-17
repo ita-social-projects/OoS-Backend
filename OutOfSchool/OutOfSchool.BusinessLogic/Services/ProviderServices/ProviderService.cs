@@ -499,7 +499,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         return result;
     }
 
-    public async Task ImportProvidersData(List<WorkshopImportDto> importDtos)
+    public async Task ImportProvidersData(List<ProviderImportDto> importDtos)
     {
         foreach (var importDto in importDtos)
         {

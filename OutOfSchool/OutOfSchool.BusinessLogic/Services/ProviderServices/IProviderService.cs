@@ -94,5 +94,5 @@ public interface IProviderService
     /// </summary>
     /// <param name="importDtos">List of workshop data to import.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task ImportProvidersData(List<WorkshopImportDto> importDtos);
+    Task ImportProvidersData(List<ProviderImportDto> importDtos);
 }

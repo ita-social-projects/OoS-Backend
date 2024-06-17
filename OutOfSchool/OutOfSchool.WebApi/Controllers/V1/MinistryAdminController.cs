@@ -304,7 +304,7 @@ public class MinistryAdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
     [HasPermission(Permissions.MinistryAdmins)]
-    public async Task<IActionResult> ImportProvidersData(List<WorkshopImportDto> importDtos)
+    public async Task<IActionResult> ImportProvidersData(List<ProviderImportDto> importDtos)
     {
         if (importDtos is null || importDtos.Count is 0)
         {
