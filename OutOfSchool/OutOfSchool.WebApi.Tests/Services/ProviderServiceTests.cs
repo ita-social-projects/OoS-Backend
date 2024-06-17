@@ -131,6 +131,7 @@ public class ProviderServiceTests
         var dto = ProviderCreateDtoGenerator.Generate();
         dto.License = license;
         dto.Status = ProviderStatus.Approved;
+        dto.UserId = null;
 
         var expected = mapper.Map<ProviderDto>(dto);
         expected.Status = ProviderStatus.Pending;

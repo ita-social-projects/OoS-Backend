@@ -10,6 +10,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers;
 
@@ -20,6 +21,7 @@ public class MinistryAdminControllerTests
 {
     private MinistryAdminController ministryAdminController;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock<IProviderService> providerServiceMock;
     private MinistryAdminDto ministryAdminDto;
     private HttpContext fakeHttpContext;
 
@@ -27,8 +29,9 @@ public class MinistryAdminControllerTests
     public void Setup()
     {
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        providerServiceMock = new Mock<IProviderService>();
         ministryAdminController =
-            new MinistryAdminController(ministryAdminServiceMock.Object, new Mock<ILogger<MinistryAdminController>>().Object);
+            new MinistryAdminController(ministryAdminServiceMock.Object, providerServiceMock.Object, new Mock<ILogger<MinistryAdminController>>().Object);
         ministryAdminDto = AdminGenerator.GenerateMinistryAdminDto();
         fakeHttpContext = GetFakeHttpContext();
         ministryAdminController.ControllerContext.HttpContext = fakeHttpContext;

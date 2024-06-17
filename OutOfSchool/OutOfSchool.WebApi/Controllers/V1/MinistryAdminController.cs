@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 
@@ -16,18 +17,21 @@ namespace OutOfSchool.WebApi.Controllers;
 public class MinistryAdminController : Controller
 {
     private readonly IMinistryAdminService ministryAdminService;
+    private readonly IProviderService providerService;
     private readonly ILogger<MinistryAdminController> logger;
     private string path;
     private string userId;
 
     public MinistryAdminController(
         IMinistryAdminService ministryAdminService,
+        IProviderService providerService,
         ILogger<MinistryAdminController> logger)
     {
         ArgumentNullException.ThrowIfNull(ministryAdminService);
         ArgumentNullException.ThrowIfNull(logger);
 
         this.ministryAdminService = ministryAdminService;
+        this.providerService = providerService;
         this.logger = logger;
     }
 
@@ -293,5 +297,22 @@ public class MinistryAdminController : Controller
 
                 return Ok();
             });
+    }
+
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPost]
+    [HasPermission(Permissions.MinistryAdmins)]
+    public async Task<IActionResult> ImportProvidersData(List<WorkshopImportDto> importDtos)
+    {
+        if (importDtos is null || importDtos.Count is 0)
+        {
+            return BadRequest("Import data is empty.");
+        }
+
+        await providerService.ImportProvidersData(importDtos);
+
+        return Ok();
     }
 }

@@ -8,13 +8,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using OutOfSchool.Common.Enums;
-using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
+using OutOfSchool.EmailSender.Services;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 
@@ -44,6 +46,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     private readonly IUserService userService;
     private readonly AuthorizationServerConfig authorizationServerConfig;
     private readonly ICommunicationService communicationService;
+    private readonly IEmailSenderService emailSenderService;
     private readonly ILogger<ProviderService> logger;
 
     // TODO: It should be removed after models revision.
@@ -77,6 +80,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     /// <param name="userService">Service for manage users.</param>
     /// <param name="authorizationServerConfig">Path to authorization server.</param>
     /// <param name="communicationService">Service for communication.</param>
+    /// /// <param name="communicationService">Service for emails sending.</param>
     public ProviderService(
         IProviderRepository providerRepository,
         IEntityRepositorySoftDeleted<string, User> usersRepository,
@@ -101,7 +105,8 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         IAreaAdminRepository areaAdminRepository,
         IUserService userService,
         IOptions<AuthorizationServerConfig> authorizationServerConfig,
-        ICommunicationService communicationService)
+        ICommunicationService communicationService,
+        IEmailSenderService emailSenderService)
     {
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -126,6 +131,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         this.authorizationServerConfig = authorizationServerConfig.Value ?? throw new ArgumentNullException(nameof(authorizationServerConfig));
         this.communicationService = communicationService ?? throw new ArgumentNullException(nameof(communicationService));
+        this.emailSenderService = emailSenderService ?? throw new ArgumentNullException(nameof(emailSenderService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -491,6 +497,46 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         }
 
         return result;
+    }
+
+    public async Task ImportProvidersData(List<WorkshopImportDto> importDtos)
+    {
+        foreach (var importDto in importDtos)
+        {
+            try
+            {
+                var addressParts = importDto.Address.Split(' ');
+                var providerDto = new ProviderCreateDto()
+                {
+                    Id = default,
+                    Ownership = importDto.Ownership,
+                    FullTitle = importDto.ProviderName,
+                    EdrpouIpn = importDto.Identifier,
+                    Email = importDto.Email,
+                    PhoneNumber = importDto.Phone,
+                    License = importDto.LicenseNumber,
+                    LegalAddress = new AddressDto()
+                    {
+                        Id = default,
+                        Street = string.Join(' ', addressParts.Take(addressParts.Length - 1)),
+                        BuildingNumber = addressParts.Last(),
+                        CodeficatorAddressDto = new AllAddressPartsDto()
+                        {
+                            Settlement = importDto.Settlement,
+                        },
+                    },
+                };
+
+                await this.Create(providerDto);
+
+                // await emailSenderService.SendAsync(// TODO: Add parameters?);
+            }
+            catch (InvalidOperationException)
+            {
+                // This error occurs when we are trying to create Provider with same data
+                continue;
+            }
+        }
     }
 
     private async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)

@@ -3,6 +3,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 
@@ -87,4 +88,11 @@ public interface IProviderService
     /// <param name="providerStatus"></param>
     /// <returns></returns>
     Task UpdateWorkshopsProviderStatus(Guid providerId, ProviderStatus providerStatus);
+
+    /// <summary>
+    /// Creates workshops with given information.
+    /// </summary>
+    /// <param name="importDtos">List of workshop data to import.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    Task ImportProvidersData(List<WorkshopImportDto> importDtos);
 }
