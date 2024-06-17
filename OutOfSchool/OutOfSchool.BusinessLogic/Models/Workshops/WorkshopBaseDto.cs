@@ -110,8 +110,11 @@ public class WorkshopBaseDto : IValidatableObject
     public Guid ProviderId { get; set; }
 
     [Required]
-    [MaxLength(120)]
+    [MaxLength(Constants.MaxProviderFullTitleLength)]
     public string ProviderTitle { get; set; } = string.Empty;
+
+    [MaxLength(Constants.MaxProviderFullTitleLength)]
+    public string ProviderTitleEn { get; set; } = string.Empty;
 
     [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus ProviderLicenseStatus { get; set; } = ProviderLicenseStatus.NotProvided;

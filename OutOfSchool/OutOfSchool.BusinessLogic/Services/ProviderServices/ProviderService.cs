@@ -670,7 +670,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                     checkProvider = await providerRepository.RunInTransaction(async () =>
                     {
                         var workshops = await workshopServiceCombiner
-                            .UpdateProviderTitle(providerUpdateDto.Id, providerUpdateDto.FullTitle)
+                            .UpdateProviderTitle(providerUpdateDto.Id, providerUpdateDto.FullTitle, providerUpdateDto.FullTitleEn)
                             .ConfigureAwait(false);
 
                         mapper.Map(providerUpdateDto, checkProvider);
@@ -848,7 +848,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
     private bool IsNeedInRelatedWorkshopsUpdating(ProviderUpdateDto providerDto, Provider checkProvider)
     {
-        return checkProvider.FullTitle != providerDto.FullTitle;
+        return checkProvider.FullTitle != providerDto.FullTitle || checkProvider.FullTitleEn != providerDto.FullTitleEn;
     }
 
     private async Task UpdateProvider()
@@ -884,7 +884,9 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                     tempPredicate = tempPredicate.Or(
                         x => x.FullTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
                             || x.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
-                            || x.Email.Contains(word, StringComparison.InvariantCultureIgnoreCase));
+                            || x.Email.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                            || x.FullTitleEn.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                            || x.ShortTitleEn.Contains(word, StringComparison.InvariantCultureIgnoreCase));
                 }
                 else
                 {

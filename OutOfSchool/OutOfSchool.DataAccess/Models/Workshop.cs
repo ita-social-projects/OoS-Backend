@@ -79,8 +79,11 @@ public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>, ISo
     public string CoverImageId { get; set; } = string.Empty;
 
     [Required]
-    [MaxLength(120)]
+    [MaxLength(Constants.MaxProviderFullTitleLength)]
     public string ProviderTitle { get; set; } = string.Empty;
+
+    [MaxLength(Constants.MaxProviderFullTitleLength)]
+    public string ProviderTitleEn { get; set; } = string.Empty;
 
     public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;
 

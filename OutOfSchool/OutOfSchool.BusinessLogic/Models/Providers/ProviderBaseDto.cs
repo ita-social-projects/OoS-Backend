@@ -25,6 +25,14 @@ public class ProviderBaseDto : IHasCoverImage, IHasImages
     [MaxLength(Constants.MaxProviderShortTitleLength)]
     public string ShortTitle { get; set; } = string.Empty;
 
+    [DataType(DataType.Text)]
+    [MaxLength(Constants.MaxProviderFullTitleLength)]
+    public string FullTitleEn { get; set; } = string.Empty;
+
+    [DataType(DataType.Text)]
+    [MaxLength(Constants.MaxProviderShortTitleLength)]
+    public string ShortTitleEn { get; set; } = string.Empty;
+
     [DataType(DataType.Url)]
     [MaxLength(Constants.MaxUnifiedUrlLength)]
     public string Website { get; set; } = string.Empty;
