@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -143,12 +144,19 @@ public class WorkshopControllerTests
         workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
 
         // Act
-        var result = await controller.GetCompetitiveSelectionDescription(workshop.Id) as OkObjectResult;
+        var result = await controller.GetCompetitiveSelectionDescription(workshop.Id);
 
         // Assert
         workshopServiceMoq.VerifyAll();
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.StatusCode, Is.EqualTo(Ok));
+
+        result.Should()
+            .NotBeNull();
+
+        result.Should()
+            .BeOfType<OkObjectResult>()
+            .Which.StatusCode
+            .Should()
+            .Be(StatusCodes.Status200OK);
     }
 
     [Test]
@@ -158,12 +166,19 @@ public class WorkshopControllerTests
         workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync((WorkshopDto)null);
 
         // Act
-        var result = await controller.GetCompetitiveSelectionDescription(workshop.Id) as NoContentResult;
+        var result = await controller.GetCompetitiveSelectionDescription(workshop.Id);
 
         // Assert
         workshopServiceMoq.VerifyAll();
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.StatusCode, Is.EqualTo(NoContent));
+
+        result.Should()
+            .NotBeNull();
+
+        result.Should()
+            .BeOfType<NoContentResult>()
+            .Which.StatusCode
+            .Should()
+            .Be(StatusCodes.Status204NoContent);
     }
 
     [TestCase(null)]
@@ -177,23 +192,36 @@ public class WorkshopControllerTests
         workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshopWithoutCSD);
 
         // Act
-        var result = await controller.GetCompetitiveSelectionDescription(workshop.Id) as NoContentResult;
+        var result = await controller.GetCompetitiveSelectionDescription(workshop.Id);
 
         // Assert
         workshopServiceMoq.VerifyAll();
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.StatusCode, Is.EqualTo(NoContent));
+
+        result.Should()
+            .NotBeNull();
+
+        result.Should()
+            .BeOfType<NoContentResult>()
+            .Which.StatusCode
+            .Should()
+            .Be(StatusCodes.Status204NoContent);
     }
 
     [Test]
     public async Task GetCompetitiveSelectionDescription_EmptyId_ReturnsBadRequest()
     {
         // Act
-        var result = await controller.GetCompetitiveSelectionDescription(Guid.Empty) as BadRequestObjectResult;
+        var result = await controller.GetCompetitiveSelectionDescription(Guid.Empty);
 
         // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.StatusCode, Is.EqualTo(BadRequest));
+        result.Should()
+            .NotBeNull();
+
+        result.Should()
+            .BeOfType<BadRequestObjectResult>()
+            .Which.StatusCode
+            .Should()
+            .Be(StatusCodes.Status400BadRequest);
     }
         #endregion
 
