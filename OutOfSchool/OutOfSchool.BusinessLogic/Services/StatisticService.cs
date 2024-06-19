@@ -182,6 +182,12 @@ public class StatisticService : IStatisticService
         var popularWorkshops = workshopsWithApplications
             .OrderByDescending(w => w.Applications)
             .Select(w => w.Workshop)
+            .Include(w => w.Applications).ThenInclude(a => a.Child)
+            .Include(w => w.Applications).ThenInclude(a => a.Parent)
+            .Include(w => w.Provider)
+            .Include(w => w.Address).ThenInclude(ad => ad.CATOTTG)
+            .Include(w => w.InstitutionHierarchy).ThenInclude(i => i.Directions)
+            .Include(w => w.InstitutionHierarchy).ThenInclude(i => i.Institution)
             .Take(limit);
 
         var popularWorkshopsList = await popularWorkshops.ToListAsync().ConfigureAwait(false);
