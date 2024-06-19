@@ -53,13 +53,14 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
         return await dbSet.Where(w => ids.Contains(w.Id)).ToListAsync();
     }
 
-    public async Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle)
+    public async Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle, string providerTitleEn)
     {
         var workshops = db.Workshops.Where(ws => ws.ProviderId == providerId);
-        await workshops.ForEachAsync(ws =>
-        {
-            ws.ProviderTitle = providerTitle;
-        });
+
+        await workshops.ExecuteUpdateAsync(settter => settter
+                .SetProperty(ws => ws.ProviderTitle, providerTitle)
+                .SetProperty(ws => ws.ProviderTitleEn, providerTitleEn))
+            .ConfigureAwait(false);
 
         await db.SaveChangesAsync();
 

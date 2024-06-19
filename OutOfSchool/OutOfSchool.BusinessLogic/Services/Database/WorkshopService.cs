@@ -450,13 +450,13 @@ public class WorkshopService : IWorkshopService
 
     /// <inheritdoc/>
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-    public async Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle)
+    public async Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle, string providerTitleEn)
     {
-        logger.LogInformation($"Partial updating {nameof(Workshop)} with ProviderId = {providerId} was started.");
+        logger.LogInformation("Partial updating of Workshops with ProviderId = {ProviderId} was started.", providerId);
 
         try
         {
-            return await workshopRepository.UpdateProviderTitle(providerId, providerTitle).ConfigureAwait(false);
+            return await workshopRepository.UpdateProviderTitle(providerId, providerTitle, providerTitleEn).ConfigureAwait(false);
         }
         catch (DbUpdateConcurrencyException exception)
         {

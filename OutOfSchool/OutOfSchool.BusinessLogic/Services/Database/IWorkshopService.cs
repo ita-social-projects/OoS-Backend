@@ -128,9 +128,10 @@ public interface IWorkshopService
     /// Update ProviderTitle property in all workshops with specified provider.
     /// </summary>
     /// <param name="providerId">Id of Provider to be searched by.</param>
-    /// <param name="providerTitle">FullTitle of Provider to be changed.</param>
+    /// <param name="providerTitle">Full Title of Provider to be changed.</param>
+    /// <param name="providerTitleEn">Full English Title of Provider to be changed.</param>
     /// <returns>List of Workshops for the specified provider.</returns>
-    Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle);
+    Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle, string providerTitleEn);
 
     /// <summary>
     /// Update IsBloked property in all workshops with specified provider.

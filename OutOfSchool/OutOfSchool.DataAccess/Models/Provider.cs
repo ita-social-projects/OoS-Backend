@@ -19,18 +19,26 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISo
 
     [Required(ErrorMessage = "Full Title is required")]
     [DataType(DataType.Text)]
-    [MaxLength(120)]
-    [MinLength(1)]
-    public string FullTitle { get; set; }
+    [MinLength(Constants.MinProviderFullTitleLength)]
+    [MaxLength(Constants.MaxProviderFullTitleLength)]
+    public string FullTitle { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Short Title is required")]
     [DataType(DataType.Text)]
-    [MaxLength(60)]
-    [MinLength(1)]
-    public string ShortTitle { get; set; }
+    [MinLength(Constants.MinProviderShortTitleLength)]
+    [MaxLength(Constants.MaxProviderShortTitleLength)]
+    public string ShortTitle { get; set; } = string.Empty;
+
+    [DataType(DataType.Text)]
+    [MaxLength(Constants.MaxProviderFullTitleLength)]
+    public string FullTitleEn { get; set; } = string.Empty;
+
+    [DataType(DataType.Text)]
+    [MaxLength(Constants.MaxProviderShortTitleLength)]
+    public string ShortTitleEn { get; set; } = string.Empty;
 
     [DataType(DataType.Url)]
-    [MaxLength(Constants.UnifiedUrlLength)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
     public string Website { get; set; } = string.Empty;
 
     [DataType(DataType.EmailAddress)]
@@ -40,11 +48,11 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISo
     public string Email { get; set; } = string.Empty;
 
     [DataType(DataType.Url)]
-    [MaxLength(Constants.UnifiedUrlLength)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
     public string Facebook { get; set; } = string.Empty;
 
     [DataType(DataType.Url)]
-    [MaxLength(Constants.UnifiedUrlLength)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
     public string Instagram { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "EDRPOU/IPN code is required")]

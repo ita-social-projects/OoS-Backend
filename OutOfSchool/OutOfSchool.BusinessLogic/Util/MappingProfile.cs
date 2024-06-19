@@ -555,6 +555,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ApplicationId, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.ProviderId, opt => opt.MapFrom(src => src.Workshop.ProviderId))
             .ForMember(dest => dest.ProviderTitle, opt => opt.MapFrom(src => src.Workshop.ProviderTitle))
+            .ForMember(dest => dest.ProviderTitleEn, opt => opt.MapFrom(src => src.Workshop.ProviderTitleEn))
             .ForMember(dest => dest.ProviderOwnership, opt => opt.MapFrom(src => src.Workshop.ProviderOwnership))
             .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => src.Workshop.Rating))
             .ForMember(dest => dest.NumberOfRatings, opt => opt.MapFrom(src => src.Workshop.NumberOfRatings))

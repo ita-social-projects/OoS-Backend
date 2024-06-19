@@ -2,6 +2,11 @@
 using AutoMapper;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using OutOfSchool.BusinessLogic.Common.StatusPermissions;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Application;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
@@ -9,12 +14,6 @@ using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.BusinessLogic.Common.StatusPermissions;
-using OutOfSchool.BusinessLogic.Enums;
-using OutOfSchool.BusinessLogic.Models;
-using OutOfSchool.BusinessLogic.Models.Application;
-using OutOfSchool.BusinessLogic.Models.Workshops;
-using System.Linq;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -597,6 +596,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
             tempPredicate = tempPredicate
                 .Or(a => a.Workshop.Title == filter.SearchString)
                 .Or(a => a.Workshop.ProviderTitle.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase))
+                .Or(a => a.Workshop.ProviderTitleEn.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase))
                 .Or(a => a.Child.FirstName.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase)
                          || a.Child.MiddleName.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase)
                          || a.Child.LastName.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase));
