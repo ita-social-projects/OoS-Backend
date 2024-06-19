@@ -206,6 +206,7 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.Any(x => x.ProviderTitle == provider.FullTitle));
         Assert.True(result.Entities.Any(x => x.ProviderCity == provider.LegalAddress.CATOTTG.Name));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));
     }
 
     [Test]
@@ -271,6 +272,7 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.Any(x => x.ProviderTitle == provider.FullTitle));
         Assert.True(result.Entities.Any(x => x.ProviderCity == provider.LegalAddress.CATOTTG.Name));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));
     }
 
     [Test]
@@ -342,6 +344,7 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.Any(x => x.ProviderTitle == provider.FullTitle));
         Assert.True(result.Entities.Any(x => x.ProviderCity == provider.LegalAddress.CATOTTG.Name));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));
     }
 
     [Test]
@@ -398,6 +401,7 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.All(x => x.WorkshopCity == application.Workshop.Address.CATOTTG.Name));
         Assert.True(result.Entities.All(x => x.ProviderTitle == application.Workshop.ProviderTitle));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));
     }
 
     [Test]
@@ -466,6 +470,7 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.All(x => x.WorkshopCity == application.Workshop.Address.CATOTTG.Name));
         Assert.True(result.Entities.All(x => x.ProviderTitle == application.Workshop.ProviderTitle));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));
     }
 
     [Test]
@@ -521,6 +526,7 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.All(x => x.ProviderTitle == provider.FullTitle));
         Assert.True(result.Entities.All(x => x.InstitutionTitle == provider.Institution.Title));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        Assert.True(result.Entities.All(x => x.OperationDate.Kind == DateTimeKind.Utc));
     }
 
     [Test]
@@ -580,6 +586,7 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.All(x => x.ProviderTitle == provider.FullTitle));
         Assert.True(result.Entities.All(x => x.InstitutionTitle == provider.Institution.Title));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        Assert.True(result.Entities.All(x => x.OperationDate.Kind == DateTimeKind.Utc));
     }
 
     [Test]
@@ -644,6 +651,7 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.All(x => x.ProviderTitle == provider.FullTitle));
         Assert.True(result.Entities.All(x => x.InstitutionTitle == provider.Institution.Title));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        Assert.True(result.Entities.All(x => x.OperationDate.Kind == DateTimeKind.Utc));
         currentUserServiceMock.Verify(x => x.IsRegionAdmin(), Times.Once);
     }
 

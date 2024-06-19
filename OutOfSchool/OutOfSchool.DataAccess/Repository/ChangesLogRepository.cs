@@ -160,7 +160,7 @@ public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChanges
             EntityIdLong = entityIdLong,
             OldValue = oldValue.Limit(dbContext.GetPropertyMaxLength<ChangesLog>(nameof(ChangesLog.OldValue)) ?? 0),
             NewValue = newValue.Limit(dbContext.GetPropertyMaxLength<ChangesLog>(nameof(ChangesLog.NewValue)) ?? 0),
-            UpdatedDate = DateTime.Now,
+            UpdatedDate = DateTime.UtcNow,
             UserId = userId,
         };
 }
