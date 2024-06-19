@@ -188,7 +188,8 @@ public class StatisticService : IStatisticService
             .Include(w => w.Address).ThenInclude(ad => ad.CATOTTG)
             .Include(w => w.InstitutionHierarchy).ThenInclude(i => i.Directions)
             .Include(w => w.InstitutionHierarchy).ThenInclude(i => i.Institution)
-            .Take(limit);
+            .Take(limit)
+            .AsNoTracking();
 
         var popularWorkshopsList = await popularWorkshops.ToListAsync().ConfigureAwait(false);
 
