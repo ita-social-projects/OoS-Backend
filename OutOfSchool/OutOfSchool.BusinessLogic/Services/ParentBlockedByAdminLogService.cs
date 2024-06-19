@@ -28,7 +28,7 @@ public class ParentBlockedByAdminLogService : IParentBlockedByAdminLogService
         {
             ParentId = parentId,
             UserId = userId,
-            OperationDate = DateTime.Now,
+            OperationDate = DateTime.UtcNow,
             Reason = reason,
             IsBlocked = isBlocked,
         };
