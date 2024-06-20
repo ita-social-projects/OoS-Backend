@@ -664,7 +664,7 @@ public class ChangesLogServiceTests
         {
             ShowParents = ShowParents.All,
             DateFrom = new DateTime(2023, 1, 1),
-            DateTo = DateTime.Now.AddDays(2),
+            DateTo = DateTime.UtcNow.AddDays(2),
             SearchString = "Test",
         };
  
@@ -688,7 +688,7 @@ public class ChangesLogServiceTests
                 Parent = parent,
                 User = user,
                 UserId = user.Id,
-                OperationDate = DateTime.Now,
+                OperationDate = DateTime.UtcNow,
                 Reason = "Test Reason to unblock",
                 IsBlocked = false,
             },
@@ -728,7 +728,7 @@ public class ChangesLogServiceTests
         {
             ShowParents = (ShowParents)100,
             DateFrom = new DateTime(2023, 1, 1),
-            DateTo = DateTime.Now.AddDays(2),
+            DateTo = DateTime.UtcNow.AddDays(2),
             SearchString = "Test",
         };
 
@@ -770,7 +770,7 @@ public class ChangesLogServiceTests
                 Parent = parent,
                 User = user,
                 UserId = user.Id,
-                OperationDate = DateTime.Now,
+                OperationDate = DateTime.UtcNow,
                 Reason = "Test Reason to unblock",
                 IsBlocked = false,
             },
@@ -810,7 +810,7 @@ public class ChangesLogServiceTests
         {
             ShowParents = ShowParents.All,
             DateFrom = DateTime.MinValue,
-            DateTo = DateTime.Now.AddDays(2),
+            DateTo = DateTime.UtcNow.AddDays(2),
             SearchString = "Test",
         };
 
@@ -834,7 +834,7 @@ public class ChangesLogServiceTests
                 Parent = parent,
                 User = user,
                 UserId = user.Id,
-                OperationDate = DateTime.Now,
+                OperationDate = DateTime.UtcNow,
                 Reason = "Test Reason to unblock",
                 IsBlocked = false,
             },

@@ -26,7 +26,7 @@ public class ProviderAdminChangesLogService : IProviderAdminChangesLogService
             ProviderAdminUserId = entity.UserId,
             ProviderId = entity.ProviderId,
             OperationType = operationType,
-            OperationDate = DateTime.Now,
+            OperationDate = DateTime.UtcNow,
             UserId = userId,
             PropertyName = propertyName,
             OldValue = oldValue,
