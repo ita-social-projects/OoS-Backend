@@ -105,12 +105,7 @@ public class RegionAdminController : Controller
     {
         var regionAdmins = await regionAdminService.GetByFilter(filter).ConfigureAwait(false);
 
-        if (regionAdmins.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(regionAdmins);
+        return this.SearchResultToOkOrNoContent(regionAdmins);
     }
 
     /// <summary>

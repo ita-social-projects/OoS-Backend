@@ -74,7 +74,6 @@ public class AdminControllerTests
         httpContext.Setup(c => c.User.FindFirst("sub"))
             .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
 
-
         controller = new AdminController(
             logger.Object,
             sensitiveMinistryAdminService.Object,
@@ -390,10 +389,10 @@ public class AdminControllerTests
         controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         sensitiveProviderService
             .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
-                new ResponseDto(){Result = new object(), HttpStatusCode = HttpStatusCode.Accepted, IsSuccess = true, Message = "test"});
+                   new ResponseDto() { Result = new object(), HttpStatusCode = HttpStatusCode.Accepted, IsSuccess = true, Message = "test" });
 
         // Act
-        var result = await controller.BlockProvider(new ProviderBlockDto{BlockReason = "str", Id = new Guid("4c617c71-c131-4ad6-9eac-bb16288f5322"), IsBlocked = false, BlockPhoneNumber = "-"});
+        var result = await controller.BlockProvider(new ProviderBlockDto { BlockReason = "str", Id = new Guid("4c617c71-c131-4ad6-9eac-bb16288f5322"), IsBlocked = false, BlockPhoneNumber = "-" });
 
         // Assert
         Assert.That(result, Is.InstanceOf<OkObjectResult>());
@@ -408,7 +407,7 @@ public class AdminControllerTests
 
         sensitiveProviderService
             .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
-                new ResponseDto(){Result = new object(), HttpStatusCode = HttpStatusCode.Forbidden, IsSuccess = false, Message = "test"});
+                new ResponseDto() { Result = new object(), HttpStatusCode = HttpStatusCode.Forbidden, IsSuccess = false, Message = "test" });
 
         // Act
         var result = await controller.BlockProvider(It.IsAny<ProviderBlockDto>());
@@ -426,7 +425,7 @@ public class AdminControllerTests
         controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         sensitiveProviderService
             .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
-                new ResponseDto(){Result = new object(), HttpStatusCode = HttpStatusCode.NotFound, IsSuccess = false, Message = "test"});
+                new ResponseDto() { Result = new object(), HttpStatusCode = HttpStatusCode.NotFound, IsSuccess = false, Message = "test" });
 
         // Act
         var result = await controller.BlockProvider(It.IsAny<ProviderBlockDto>());
@@ -444,7 +443,7 @@ public class AdminControllerTests
         controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         sensitiveProviderService
             .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
-                new ResponseDto(){Result = new object(), HttpStatusCode = HttpStatusCode.Accepted, IsSuccess = false, Message = "test"});
+                new ResponseDto() { Result = new object(), HttpStatusCode = HttpStatusCode.Accepted, IsSuccess = false, Message = "test" });
 
         // Act
         var result = await controller.BlockProvider(It.IsAny<ProviderBlockDto>());
@@ -462,7 +461,7 @@ public class AdminControllerTests
         controller.ControllerContext.HttpContext.SetContextUser(Role.Parent);
         sensitiveProviderService
             .Setup(x => x.Block(It.IsAny<ProviderBlockDto>(), It.IsAny<string>())).ReturnsAsync(
-                new ResponseDto(){Result = new object(), HttpStatusCode = HttpStatusCode.Accepted, IsSuccess = false, Message = "test"});
+                new ResponseDto() { Result = new object(), HttpStatusCode = HttpStatusCode.Accepted, IsSuccess = false, Message = "test" });
 
         // Act
         var result = await controller.BlockProvider(It.IsAny<ProviderBlockDto>());

@@ -101,12 +101,7 @@ public class ApplicationController : ControllerBase
         {
             var applications = await applicationService.GetAllByParent(id, filter).ConfigureAwait(false);
 
-            if (applications.IsNullOrEntitiesEmpty())
-            {
-                return NoContent();
-            }
-
-            return Ok(applications);
+            return this.SearchResultToOkOrNoContent(applications);
         }
         catch (ArgumentException ex)
         {
@@ -168,7 +163,7 @@ public class ApplicationController : ControllerBase
 
         var applications = await applicationService.GetAllByProvider(providerId, filter).ConfigureAwait(false);
 
-        return this.MapSearchResultToOkOrNoContent(applications);
+        return this.SearchResultToOkOrNoContent(applications);
     }
 
     /// <summary>
@@ -224,7 +219,7 @@ public class ApplicationController : ControllerBase
                 .ConfigureAwait(false);
         }
 
-        return this.MapSearchResultToOkOrNoContent(applications);
+        return this.SearchResultToOkOrNoContent(applications);
     }
 
     /// <summary>
@@ -254,7 +249,7 @@ public class ApplicationController : ControllerBase
         var applications = await applicationService.GetAllByWorkshop(workshopId, workshop.ProviderId, filter)
             .ConfigureAwait(false);
 
-        return this.MapSearchResultToOkOrNoContent(applications);
+        return this.SearchResultToOkOrNoContent(applications);
     }
 
     /// <summary>
@@ -286,7 +281,7 @@ public class ApplicationController : ControllerBase
             .GetAllByProviderAdmin(userId, filter, providerAdmin.ProviderId, providerAdmin.IsDeputy)
             .ConfigureAwait(false);
 
-        return this.MapSearchResultToOkOrNoContent(applications);
+        return this.SearchResultToOkOrNoContent(applications);
     }
 
     /// <summary>

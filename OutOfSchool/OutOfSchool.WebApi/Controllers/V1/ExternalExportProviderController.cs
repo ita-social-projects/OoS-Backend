@@ -27,20 +27,13 @@ public class ExternalExportProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Route("export")]
-    public async Task<ActionResult<SearchResult<ProviderInfoBaseDto>>> GetByFilter([FromQuery] DateTime updatedAfter, [FromQuery] OffsetFilter offsetFilter)
+    public async Task<IActionResult> GetByFilter([FromQuery] DateTime updatedAfter, [FromQuery] OffsetFilter offsetFilter)
     {
         try
         {
             var result = await externalProviderService.GetProvidersWithWorkshops(updatedAfter, offsetFilter);
 
-            if (result.Entities.Any())
-            {
-                return Ok(result);
-            }
-            else
-            {
-                return NoContent();
-            }
+            return this.SearchResultToOkOrNoContent(result);
         }
         catch (Exception ex)
         {

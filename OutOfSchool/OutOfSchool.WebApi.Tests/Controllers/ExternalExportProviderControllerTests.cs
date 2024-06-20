@@ -39,14 +39,14 @@ public class ExternalExportProviderControllerTests
 
         _ = mockExternalProviderService
             .Setup(x => x.GetProvidersWithWorkshops(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
-            .ReturnsAsync(new SearchResult<ProviderInfoBaseDto> { Entities = mapper.Map<List<ProviderInfoBaseDto>>(fakeProviders) });
+            .ReturnsAsync(new SearchResult<ProviderInfoBaseDto> { TotalAmount = fakeProviders.Count, Entities = mapper.Map<List<ProviderInfoBaseDto>>(fakeProviders) });
 
         // Act
         var actionResult = await controller.GetByFilter(DateTime.UtcNow, new OffsetFilter { Size = 10 });
 
         // Assert
-        Assert.IsInstanceOf<OkObjectResult>(actionResult.Result);
-        var okObjectResult = (OkObjectResult)actionResult.Result;
+        Assert.IsInstanceOf<OkObjectResult>(actionResult);
+        var okObjectResult = (OkObjectResult)actionResult;
         Assert.IsInstanceOf<SearchResult<ProviderInfoBaseDto>>(okObjectResult.Value);
         var result = (SearchResult<ProviderInfoBaseDto>)okObjectResult.Value;
         Assert.AreEqual(fakeProviders.Count, result.Entities.Count);
@@ -64,7 +64,7 @@ public class ExternalExportProviderControllerTests
         var actionResult = await controller.GetByFilter(DateTime.UtcNow, new OffsetFilter { Size = 10 });
 
         // Assert
-        Assert.IsInstanceOf<NoContentResult>(actionResult.Result);
+        Assert.IsInstanceOf<NoContentResult>(actionResult);
     }
 
     [Test]
@@ -78,8 +78,8 @@ public class ExternalExportProviderControllerTests
         var actionResult = await controller.GetByFilter(DateTime.UtcNow, new OffsetFilter { Size = 10 });
 
         // Assert
-        Assert.IsInstanceOf<ObjectResult>(actionResult.Result);
-        var objectResult = (ObjectResult)actionResult.Result;
+        Assert.IsInstanceOf<ObjectResult>(actionResult);
+        var objectResult = (ObjectResult)actionResult;
         Assert.AreEqual(500, objectResult.StatusCode);
         Assert.AreEqual("An error occurred: Simulated exception", objectResult.Value);
     }

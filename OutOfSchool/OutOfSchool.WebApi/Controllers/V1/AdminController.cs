@@ -62,12 +62,7 @@ public class AdminController : Controller
     {
         var ministryAdmins = await ministryAdminService.GetByFilter(filter).ConfigureAwait(false);
 
-        if (ministryAdmins.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(ministryAdmins);
+        return this.SearchResultToOkOrNoContent(ministryAdmins);
     }
 
     /// <summary>
@@ -89,12 +84,7 @@ public class AdminController : Controller
     {
         var applications = await applicationService.GetAll(filter).ConfigureAwait(false);
 
-        if (!applications.Entities.Any())
-        {
-            return NoContent();
-        }
-
-        return Ok(applications);
+        return this.SearchResultToOkOrNoContent(applications);
     }
 
     /// <summary>
@@ -182,12 +172,7 @@ public class AdminController : Controller
         var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
 
         //TODO clarify frontend about if statement
-        if (providers.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(providers);
+        return this.SearchResultToOkOrNoContent(providers);
     }
 
     /// <summary>

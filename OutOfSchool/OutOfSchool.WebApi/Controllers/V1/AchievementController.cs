@@ -73,12 +73,7 @@ public class AchievementController : ControllerBase
     {
         var achievements = await achievementService.GetByFilter(filter).ConfigureAwait(false);
 
-        if (achievements.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(achievements);
+        return this.SearchResultToOkOrNoContent(achievements);
     }
 
     /// <summary>

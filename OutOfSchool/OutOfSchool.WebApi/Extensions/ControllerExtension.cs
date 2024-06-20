@@ -6,11 +6,12 @@ namespace OutOfSchool.WebApi.Extensions;
 
 public static class ControllerExtension
 {
-    public static IActionResult MapSearchResultToOkOrNoContent<T>(this ControllerBase controller, SearchResult<T> searchResult)
+    public static IActionResult SearchResultToOkOrNoContent<T>(this ControllerBase controller, SearchResult<T> searchResult)
     {
         ExtensionValidation(controller);
 
-        if (searchResult.IsNullOrEntitiesEmpty())
+        // searchResult.TotalAmount < searchResult.Entities.Count - checking bug variant
+        if (searchResult.IsNullOrEmpty() || searchResult.TotalAmount < searchResult.Entities?.Count)
         {
             return controller.NoContent();
         }
