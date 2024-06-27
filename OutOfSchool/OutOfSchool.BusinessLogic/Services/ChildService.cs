@@ -184,8 +184,15 @@ public class ChildService : IChildService
             { x => x.Id, SortDirection.Ascending },
         };
 
-        var children = await childRepository.Get(filter.From, filter.Size, $"{nameof(Child.SocialGroups)}",
-                filterPredicate, sortExpression)
+        var children = await childRepository.Get(
+                filter.From,
+                filter.Size,
+                string.Empty,
+                filterPredicate,
+                sortExpression,
+                true)
+            .Include(c => c.SocialGroups)
+            .Include(c => c.Parent).ThenInclude(p => p.User)
             .ToListAsync()
             .ConfigureAwait(false);
 
