@@ -13,6 +13,7 @@ public static class PermissionsSeeder
         Permissions.ApplicationAddNew,
         Permissions.FavoriteRead, Permissions.FavoriteAddNew, Permissions.FavoriteEdit, Permissions.FavoriteRemove,
         Permissions.ParentRead, Permissions.ParentEdit, Permissions.ParentRemove, Permissions.ParentBlock,
+        Permissions.ChildRemove,
         Permissions.ProviderAddNew, Permissions.ProviderEdit, Permissions.ProviderRead, Permissions.ProviderRemove,
         Permissions.ProviderApprove, Permissions.ProviderBlock,
         Permissions.RatingAddNew, Permissions.RatingEdit, Permissions.RatingRead, Permissions.RatingRemove,
