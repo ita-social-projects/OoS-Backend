@@ -84,7 +84,11 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
     {
         logger.LogInformation("Getting all InstitutionHierarchies started.");
 
-        var institutionHierarchies = await repository.GetAll().ConfigureAwait(false);
+        var institutionHierarchies = await repository.Get(asNoTracking: true)
+            .Include(x => x.Directions)
+            .Include(x => x.Institution)
+            .ToListAsync()
+            .ConfigureAwait(false);
 
         logger.LogInformation(!institutionHierarchies.Any()
             ? "InstitutionHierarchy table is empty."
