@@ -154,9 +154,9 @@ public class ApplicationController : ControllerBase
     [HttpGet("/api/v{version:apiVersion}/providers/{providerId}/applications")]
     public async Task<IActionResult> GetByProviderId(Guid providerId, [FromQuery] ApplicationFilter filter)
     {
-        var provider = await providerService.GetById(providerId).ConfigureAwait(false);
+        var isProviderExists = await providerService.Exists(providerId).ConfigureAwait(false);
 
-        if (provider is null)
+        if (!isProviderExists)
         {
             return BadRequest($"There is no provider with Id = {providerId}");
         }

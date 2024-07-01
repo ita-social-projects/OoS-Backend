@@ -493,6 +493,14 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         return result;
     }
 
+    /// <inheritdoc/>
+    public Task<bool> Exists(Guid id)
+    {
+        logger.LogInformation($"Checking if Provider exists by Id. Looking Id = {id}.");
+
+        return providerRepository.Any(x => x.Id == id);
+    }
+
     private async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
     {
         var recipientIds = new List<string>();
