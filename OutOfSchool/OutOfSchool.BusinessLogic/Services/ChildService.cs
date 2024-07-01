@@ -1,8 +1,8 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.Extensions.Options;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.Services.Enums;
 using DateTime = System.DateTime;
 
 namespace OutOfSchool.BusinessLogic.Services;
@@ -405,9 +405,10 @@ public class ChildService : IChildService
     }
 
     /// <inheritdoc/>
-    public async Task DeleteChildCheckingItsUserIdProperty(Guid id, string userId)
+    public async Task DeleteChildCheckingItsUserIdProperty(Guid id, string userId, string userRole)
     {
         this.ValidateUserId(userId);
+        this.ValidateUserRole(userRole);
 
         logger.LogDebug($"Deleting the child with Id: {id} and {nameof(userId)}: {userId} started.");
 
@@ -417,7 +418,7 @@ public class ChildService : IChildService
                     ?? throw new UnauthorizedAccessException(
                         $"User: {userId} is trying to delete not existing Child (Id = {id}).");
 
-        if (child.Parent.UserId != userId)
+        if (child.Parent.UserId != userId && !userRole.Equals(Role.TechAdmin.ToString(), StringComparison.OrdinalIgnoreCase))
         {
             throw new UnauthorizedAccessException(
                 $"User: {userId} is not authorized to delete not his own child. Child Id = {id}");
@@ -499,6 +500,14 @@ public class ChildService : IChildService
         if (string.IsNullOrWhiteSpace(userId))
         {
             throw new ArgumentException($"The {nameof(userId)} parameter cannot be null, empty or white space.");
+        }
+    }
+
+    private void ValidateUserRole(string userRole)
+    {
+        if (string.IsNullOrWhiteSpace(userRole))
+        {
+            throw new ArgumentException($"The {nameof(userRole)} parameter cannot be null, empty or white space.");
         }
     }
 

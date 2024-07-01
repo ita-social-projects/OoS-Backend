@@ -280,8 +280,9 @@ public class ChildController : ControllerBase
     public async Task<IActionResult> Delete(Guid id)
     {
         string userId = GettingUserProperties.GetUserId(User);
+        var userRole = GettingUserProperties.GetUserRole(User);
 
-        await service.DeleteChildCheckingItsUserIdProperty(id, userId).ConfigureAwait(false);
+        await service.DeleteChildCheckingItsUserIdProperty(id, userId, userRole).ConfigureAwait(false);
 
         return NoContent();
     }

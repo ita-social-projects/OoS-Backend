@@ -124,9 +124,10 @@ public interface IChildService
     /// </summary>
     /// <param name="id">Child's key.</param>
     /// <param name="userId">Key in the User table.</param>
+    /// <param name="userRole">User's role</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     /// <exception cref="ArgumentException">If required child's properties are not set.</exception>
     /// <exception cref="UnauthorizedAccessException">If user is trying to delete not his own child.</exception>
     /// <exception cref="DbUpdateException">If something wrong occurred while saving to the database.</exception>
-    Task DeleteChildCheckingItsUserIdProperty(Guid id, string userId);
+    Task DeleteChildCheckingItsUserIdProperty(Guid id, string userId, string userRole);
 }
