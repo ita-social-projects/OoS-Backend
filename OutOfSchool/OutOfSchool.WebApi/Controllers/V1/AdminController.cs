@@ -27,18 +27,14 @@ public class AdminController : Controller
 
     private readonly ILogger<AdminController> logger;
 
-    private readonly ISensitiveProviderService providerService;
-
     public AdminController(
         ILogger<AdminController> logger,
         IMediator mediator,
-        ISensitiveProviderService providerService,
         IStringLocalizer<SharedResource> localizer)
     {
         this.mediator = mediator;
         this.localizer = localizer;
         this.logger = logger;
-        this.providerService = providerService;
     }
 
     private bool IsTechAdmin() => User.IsInRole(nameof(Role.TechAdmin).ToLower());
