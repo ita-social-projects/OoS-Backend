@@ -14,6 +14,7 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="CsvHelper" />
+        <PackageReference Include="MediatR" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />
         <Protobuf Include="..\OutOfSchool.GRPC\Protos\ProviderAdmin.proto" GrpcServices="Client" />
@@ -77,12 +78,13 @@
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" />
         <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.AspNetCore.HeaderPropagation" />
-        <PackageReference Include="Elastic.Apm.AspNetCore"/>
-        <PackageReference Include="Elastic.Apm.EntityFrameworkCore"/>
-        <PackageReference Include="Elastic.Apm.Elasticsearch"/>
-        <PackageReference Include="Elastic.Apm.StackExchange.Redis"/>
+        <PackageReference Include="Elastic.Apm.AspNetCore" />
+        <PackageReference Include="Elastic.Apm.EntityFrameworkCore" />
+        <PackageReference Include="Elastic.Apm.Elasticsearch" />
+        <PackageReference Include="Elastic.Apm.StackExchange.Redis" />
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\OutOfSchool.Admin\OutOfSchool.Admin.csproj" />
         <ProjectReference Include="..\OutOfSchool.BackgroundJobs\OutOfSchool.BackgroundJobs.csproj" />
         <ProjectReference Include="..\OutOfSchool.BusinessLogic\OutOfSchool.BusinessLogic.csproj" />
         <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />

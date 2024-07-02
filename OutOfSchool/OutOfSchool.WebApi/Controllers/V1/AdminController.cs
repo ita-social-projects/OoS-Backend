@@ -1,8 +1,14 @@
 using System.Net.Mime;
+using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.FeatureManagement.Mvc;
+using OutOfSchool.Admin.MediatR.Applications.Queries;
+using OutOfSchool.Admin.MediatR.Directions.Commands;
+using OutOfSchool.Admin.MediatR.MinistryAdmin.Queries;
+using OutOfSchool.Admin.MediatR.Providers.Commands;
+using OutOfSchool.Admin.MediatR.Providers.Queries;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Models.Providers;
@@ -16,31 +22,23 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class AdminController : Controller
 {
+    private readonly IMediator mediator;
     private readonly IStringLocalizer<SharedResource> localizer;
 
     private readonly ILogger<AdminController> logger;
 
-    private readonly ISensitiveMinistryAdminService ministryAdminService;
-    private readonly ISensitiveDirectionService directionService;
     private readonly ISensitiveProviderService providerService;
-    private readonly ISensitiveApplicationService applicationService;
-
 
     public AdminController(
         ILogger<AdminController> logger,
-        ISensitiveMinistryAdminService ministryAdminService,
-        ISensitiveApplicationService applicationService,
-        ISensitiveDirectionService directionService,
+        IMediator mediator,
         ISensitiveProviderService providerService,
         IStringLocalizer<SharedResource> localizer)
     {
+        this.mediator = mediator;
         this.localizer = localizer;
         this.logger = logger;
-        this.applicationService = applicationService;
-        this.directionService = directionService;
         this.providerService = providerService;
-        this.ministryAdminService =
-            ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
     }
 
     private bool IsTechAdmin() => User.IsInRole(nameof(Role.TechAdmin).ToLower());
@@ -60,9 +58,14 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetByFilterMinistryAdmin([FromQuery] MinistryAdminFilter filter)
     {
-        var ministryAdmins = await ministryAdminService.GetByFilter(filter).ConfigureAwait(false);
+        var result = await mediator.Send(new GetByFilterMinistryAdminsQuery(filter));
 
-        return this.SearchResultToOkOrNoContent(ministryAdmins);
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error.Message);
+        }
+
+        return this.SearchResultToOkOrNoContent(result.Value);
     }
 
     /// <summary>
@@ -82,9 +85,14 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> GetApplications([FromQuery] ApplicationFilter filter)
     {
-        var applications = await applicationService.GetAll(filter).ConfigureAwait(false);
+        var result = await mediator.Send(new GetByFilterAllApplicationsQuery(filter));
 
-        return this.SearchResultToOkOrNoContent(applications);
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error.Message);
+        }
+
+        return this.SearchResultToOkOrNoContent(result.Value);
     }
 
     /// <summary>
@@ -116,7 +124,14 @@ public class AdminController : Controller
             return BadRequest(ModelState);
         }
 
-        return Ok(await directionService.Update(directionDto).ConfigureAwait(false));
+        var result = await mediator.Send(new UpdateDirectionCommand(directionDto));
+
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error.Message);
+        }
+
+        return Ok(result.Value);
     }
 
     /// <summary>
@@ -146,7 +161,7 @@ public class AdminController : Controller
 
         this.ValidateId(id, localizer);
 
-        var result = await directionService.Delete(id).ConfigureAwait(false);
+        var result = await mediator.Send(new DeleteDirectionByIdCommand(id));
         if (!result.Succeeded)
         {
             return BadRequest(result.OperationResult);
@@ -169,10 +184,14 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetProviderByFilter([FromQuery] ProviderFilter filter)
     {
-        var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
+        var result = await mediator.Send(new GetProvidersByFilterQuery(filter));
 
-        //TODO clarify frontend about if statement
-        return this.SearchResultToOkOrNoContent(providers);
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error.Message);
+        }
+
+        return this.SearchResultToOkOrNoContent(result.Value);
     }
 
     /// <summary>
@@ -189,9 +208,16 @@ public class AdminController : Controller
     [HttpPut]
     public async Task<ActionResult> BlockProvider([FromBody] ProviderBlockDto providerBlockDto)
     {
-        var result = await providerService.Block(
-            providerBlockDto,
-            await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false));
+        var token = await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
+
+        var customResult = await mediator.Send(new BlockProviderCommand(providerBlockDto, token));
+
+        if (customResult.IsFailure)
+        {
+            return BadRequest(customResult.Error.Message);
+        }
+
+        var result = customResult.Value;
 
         if (!result.IsSuccess)
         {
@@ -223,8 +249,14 @@ public class AdminController : Controller
     [FeatureGate(nameof(Feature.TechAdminImport))]
     public async Task<ActionResult> ValidateImportData([FromBody] ImportDataValidateRequest data)
     {
-        var result = await providerService.ValidateImportData(data).ConfigureAwait(false);
-        return Ok(result);
+        var result = await mediator.Send(new ValidateImportDataCommand(data));
+
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error.Message);
+        }
+
+        return Ok(result.Value);
     }
 
     /// <summary>
@@ -241,13 +273,13 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> ExportProviders()
     {
-        var providersCsvData = await providerService.GetCsvExportData().ConfigureAwait(false);
+        var result = await mediator.Send(new ExportProvidersQuery());
 
-        if (providersCsvData is null or { Length: 0 })
+        if (result.IsFailure)
         {
             return NoContent();
         }
 
-        return File(providersCsvData, MediaTypeNames.Text.Csv, "providers.csv");
+        return File(result.Value, MediaTypeNames.Text.Csv, "providers.csv");
     }
 }

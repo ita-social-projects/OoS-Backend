@@ -3,7 +3,6 @@ using AutoMapper;
 using Elastic.Apm.DiagnosticSource;
 using Elastic.Apm.Elasticsearch;
 using Elastic.Apm.EntityFrameworkCore;
-using Elastic.Apm.Instrumentations.SqlClient;
 using Elastic.Apm.StackExchange.Redis;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HeaderPropagation;
