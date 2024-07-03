@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.FeatureManagement.Mvc;
+using OutOfSchool.Admin.Helpers.Authorization;
 using OutOfSchool.Admin.MediatR.Applications.Queries;
 using OutOfSchool.Admin.MediatR.Directions.Commands;
 using OutOfSchool.Admin.MediatR.MinistryAdmin.Queries;
@@ -12,7 +13,6 @@ using OutOfSchool.Admin.MediatR.Providers.Queries;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Models.Providers;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
@@ -20,24 +20,14 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
-public class AdminController : Controller
+public class AdminController(
+    ISender sender,
+    ILogger<AdminController> logger,
+    IStringLocalizer<SharedResource> localizer) : Controller
 {
-    private readonly IMediator mediator;
-    private readonly IStringLocalizer<SharedResource> localizer;
-
-    private readonly ILogger<AdminController> logger;
-
-    public AdminController(
-        ILogger<AdminController> logger,
-        IMediator mediator,
-        IStringLocalizer<SharedResource> localizer)
-    {
-        this.mediator = mediator;
-        this.localizer = localizer;
-        this.logger = logger;
-    }
-
-    private bool IsTechAdmin() => User.IsInRole(nameof(Role.TechAdmin).ToLower());
+    private readonly ISender sender = sender;
+    private readonly ILogger<AdminController> logger = logger;
+    private readonly IStringLocalizer<SharedResource> localizer = localizer;
 
     /// <summary>
     /// Get MinistryAdmins that match filter's parameters.
@@ -54,14 +44,9 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetByFilterMinistryAdmin([FromQuery] MinistryAdminFilter filter)
     {
-        var result = await mediator.Send(new GetByFilterMinistryAdminsQuery(filter));
+        var ministryAdmins = await sender.Send(new GetByFilterMinistryAdminsQuery(filter));
 
-        if (result.IsFailure)
-        {
-            return BadRequest(result.Error.Message);
-        }
-
-        return this.SearchResultToOkOrNoContent(result.Value);
+        return this.SearchResultToOkOrNoContent(ministryAdmins);
     }
 
     /// <summary>
@@ -81,14 +66,9 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> GetApplications([FromQuery] ApplicationFilter filter)
     {
-        var result = await mediator.Send(new GetByFilterAllApplicationsQuery(filter));
+        var applications = await sender.Send(new GetByFilterAllApplicationsQuery(filter));
 
-        if (result.IsFailure)
-        {
-            return BadRequest(result.Error.Message);
-        }
-
-        return this.SearchResultToOkOrNoContent(result.Value);
+        return this.SearchResultToOkOrNoContent(applications);
     }
 
     /// <summary>
@@ -109,7 +89,7 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> UpdateDirections(DirectionDto directionDto)
     {
-        if (!IsTechAdmin())
+        if (!AuthorizationHelper.IsTechAdmin(User))
         {
             logger.LogError("You have no rights because you are not an admin");
             return StatusCode(403, "Forbidden to update directions if you don't have TechAdmin role.");
@@ -120,14 +100,9 @@ public class AdminController : Controller
             return BadRequest(ModelState);
         }
 
-        var result = await mediator.Send(new UpdateDirectionCommand(directionDto));
+        var updatedDirection = await sender.Send(new UpdateDirectionCommand(directionDto));
 
-        if (result.IsFailure)
-        {
-            return BadRequest(result.Error.Message);
-        }
-
-        return Ok(result.Value);
+        return Ok(updatedDirection);
     }
 
     /// <summary>
@@ -149,7 +124,7 @@ public class AdminController : Controller
     [FeatureGate(nameof(Feature.ShowForProduction))]
     public async Task<ActionResult> DeleteDirectionById(long id)
     {
-        if (!IsTechAdmin())
+        if (!AuthorizationHelper.IsTechAdmin(User))
         {
             logger.LogError("You have no rights because you are not an admin");
             return StatusCode(403, "Forbidden to delete direction if you don't have TechAdmin role.");
@@ -157,7 +132,7 @@ public class AdminController : Controller
 
         this.ValidateId(id, localizer);
 
-        var result = await mediator.Send(new DeleteDirectionByIdCommand(id));
+        var result = await sender.Send(new DeleteDirectionByIdCommand(id));
         if (!result.Succeeded)
         {
             return BadRequest(result.OperationResult);
@@ -180,14 +155,9 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetProviderByFilter([FromQuery] ProviderFilter filter)
     {
-        var result = await mediator.Send(new GetProvidersByFilterQuery(filter));
+        var providers = await sender.Send(new GetProvidersByFilterQuery(filter));
 
-        if (result.IsFailure)
-        {
-            return BadRequest(result.Error.Message);
-        }
-
-        return this.SearchResultToOkOrNoContent(result.Value);
+        return this.SearchResultToOkOrNoContent(providers);
     }
 
     /// <summary>
@@ -206,14 +176,7 @@ public class AdminController : Controller
     {
         var token = await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
 
-        var customResult = await mediator.Send(new BlockProviderCommand(providerBlockDto, token));
-
-        if (customResult.IsFailure)
-        {
-            return BadRequest(customResult.Error.Message);
-        }
-
-        var result = customResult.Value;
+        var result = await sender.Send(new BlockProviderCommand(providerBlockDto, token));
 
         if (!result.IsSuccess)
         {
@@ -245,14 +208,9 @@ public class AdminController : Controller
     [FeatureGate(nameof(Feature.TechAdminImport))]
     public async Task<ActionResult> ValidateImportData([FromBody] ImportDataValidateRequest data)
     {
-        var result = await mediator.Send(new ValidateImportDataCommand(data));
+        var response = await sender.Send(new ValidateImportDataCommand(data));
 
-        if (result.IsFailure)
-        {
-            return BadRequest(result.Error.Message);
-        }
-
-        return Ok(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -269,13 +227,13 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> ExportProviders()
     {
-        var result = await mediator.Send(new ExportProvidersQuery());
+        var providersCsvData = await sender.Send(new ExportProvidersQuery());
 
-        if (result.IsFailure)
+        if (providersCsvData is null or { Length: 0 })
         {
             return NoContent();
         }
 
-        return File(result.Value, MediaTypeNames.Text.Csv, "providers.csv");
+        return File(providersCsvData, MediaTypeNames.Text.Csv, "providers.csv");
     }
 }

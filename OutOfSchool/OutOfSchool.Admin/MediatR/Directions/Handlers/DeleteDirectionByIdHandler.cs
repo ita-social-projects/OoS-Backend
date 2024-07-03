@@ -5,14 +5,10 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
 
 namespace OutOfSchool.Admin.MediatR.Directions.Handlers;
-public class DeleteDirectionByIdHandler : IRequestHandler<DeleteDirectionByIdCommand, Result<DirectionDto>>
+public class DeleteDirectionByIdHandler(ISensitiveDirectionService directionService) 
+    : IRequestHandler<DeleteDirectionByIdCommand, Result<DirectionDto>>
 {
-    private readonly ISensitiveDirectionService directionService;
-
-    public DeleteDirectionByIdHandler(ISensitiveDirectionService directionService)
-    {
-        this.directionService = directionService;
-    }
+    private readonly ISensitiveDirectionService directionService = directionService;
 
     public async Task<Result<DirectionDto>> Handle(DeleteDirectionByIdCommand request, CancellationToken cancellationToken)
     {
