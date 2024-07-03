@@ -172,7 +172,7 @@ public class AdminController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<ActionResult> BlockProvider([FromBody] ProviderBlockDto providerBlockDto)
+    public async Task<IActionResult> BlockProvider([FromBody] ProviderBlockDto providerBlockDto)
     {
         var token = await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
 
@@ -206,7 +206,7 @@ public class AdminController(
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost("~/api/v{version:apiVersion}/providers/import/validate")]
     [FeatureGate(nameof(Feature.TechAdminImport))]
-    public async Task<ActionResult> ValidateImportData([FromBody] ImportDataValidateRequest data)
+    public async Task<IActionResult> ValidateImportData([FromBody] ImportDataValidateRequest data)
     {
         var response = await sender.Send(new ValidateImportDataCommand(data));
 
