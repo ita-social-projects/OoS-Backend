@@ -87,7 +87,7 @@ public class AdminController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> UpdateDirections(DirectionDto directionDto)
+    public async Task<IActionResult> UpdateDirections(DirectionDto directionDto)
     {
         if (!AuthorizationHelper.IsTechAdmin(User))
         {
@@ -122,7 +122,7 @@ public class AdminController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [FeatureGate(nameof(Feature.ShowForProduction))]
-    public async Task<ActionResult> DeleteDirectionById(long id)
+    public async Task<IActionResult> DeleteDirectionById(long id)
     {
         if (!AuthorizationHelper.IsTechAdmin(User))
         {

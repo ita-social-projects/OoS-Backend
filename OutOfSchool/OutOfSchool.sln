@@ -52,7 +52,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.BusinessLogic",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.BackgroundJobs", "OutOfSchool.BackgroundJobs\OutOfSchool.BackgroundJobs.csproj", "{A139159B-E506-4727-B218-BD4D83827F73}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.Admin", "OutOfSchool.Admin\OutOfSchool.Admin.csproj", "{824FF034-E3F4-4623-9367-03F961AC635E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.Admin", "OutOfSchool.Admin\OutOfSchool.Admin.csproj", "{824FF034-E3F4-4623-9367-03F961AC635E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

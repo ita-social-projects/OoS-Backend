@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using OutOfSchool.Admin.MediatR.MinistryAdmin.Queries;
-using OutOfSchool.Admin.Services.MinistryAdmin;
 using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.Admin.MediatR.MinistryAdmin.Handlers;

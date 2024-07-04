@@ -3,5 +3,5 @@ using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.Admin.MediatR.Directions.Commands;
-public record DeleteDirectionByIdCommand(long Id) 
+public sealed record DeleteDirectionByIdCommand(long Id) 
     : IRequest<Result<DirectionDto>>;

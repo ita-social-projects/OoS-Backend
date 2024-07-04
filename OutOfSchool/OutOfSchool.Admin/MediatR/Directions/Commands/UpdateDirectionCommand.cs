@@ -2,5 +2,5 @@
 using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.Admin.MediatR.Directions.Commands;
-public record UpdateDirectionCommand(DirectionDto DirectionDto) 
+public sealed record UpdateDirectionCommand(DirectionDto DirectionDto) 
     : IRequest<DirectionDto>;

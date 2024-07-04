@@ -15,8 +15,4 @@
     <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\Application\" />
-  </ItemGroup>
-
 </Project>
