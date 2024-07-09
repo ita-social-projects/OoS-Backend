@@ -20,9 +20,14 @@ public class WorkshopBaseCard : IHasRating
     public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;
 
     [Required(ErrorMessage = "Workshop title is required")]
-    [MinLength(1)]
-    [MaxLength(60)]
+    [MinLength(Constants.MinWorkshopTitleLength)]
+    [MaxLength(Constants.MaxWorkshopTitleLength)]
     public string Title { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Workshop short title is required")]
+    [MinLength(Constants.MinWorkshopTitleLength)]
+    [MaxLength(Constants.MaxWorkshopTitleLength)]
+    public string ShortTitle { get; set; } = string.Empty;
 
     [Required]
     public PayRateType PayRate { get; set; }

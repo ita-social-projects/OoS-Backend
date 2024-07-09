@@ -15,11 +15,13 @@ public class WorkshopBaseDto : IValidatableObject
     public Guid Id { get; set; }
 
     [Required(ErrorMessage = "Workshop title is required")]
-    [MinLength(1)]
-    [MaxLength(60)]
+    [MinLength(Constants.MinWorkshopTitleLength)]
+    [MaxLength(Constants.MaxWorkshopTitleLength)]
     public string Title { get; set; } = string.Empty;
 
-    [MaxLength(60)]
+    [Required(ErrorMessage = "Workshop short title is required")]
+    [MinLength(Constants.MinWorkshopShortTitleLength)]
+    [MaxLength(Constants.MaxWorkshopShortTitleLength)]
     public string ShortTitle { get; set; } = string.Empty;
 
     [DataType(DataType.PhoneNumber)]
