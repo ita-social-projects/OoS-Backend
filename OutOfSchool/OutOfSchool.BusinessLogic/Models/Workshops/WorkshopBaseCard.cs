@@ -25,8 +25,8 @@ public class WorkshopBaseCard : IHasRating
     public string Title { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Workshop short title is required")]
-    [MinLength(Constants.MinWorkshopTitleLength)]
-    [MaxLength(Constants.MaxWorkshopTitleLength)]
+    [MinLength(Constants.MinWorkshopShortTitleLength)]
+    [MaxLength(Constants.MaxWorkshopShortTitleLength)]
     public string ShortTitle { get; set; } = string.Empty;
 
     [Required]
