@@ -177,6 +177,7 @@ public class InstitutionHierarchyServiceTests
         var result = await service.GetAll().ConfigureAwait(false);
 
         // Assert
+        repo.VerifyAll();
         Assert.That(expectedEntity.Count(), Is.EqualTo(result.Count()));
     }
 
