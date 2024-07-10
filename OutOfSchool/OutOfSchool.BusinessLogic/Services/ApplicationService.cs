@@ -353,9 +353,18 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeProperties: "Workshop,Child,Parent",
             whereExpression: predicate,
-            orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            orderBy: sortPredicate)
+            .Include(a => a.Workshop).ThenInclude(w => w.Address).ThenInclude(wa => wa.CATOTTG)
+                .ThenInclude(wac => wac.Parent).ThenInclude(wacp => wacp.Parent).ThenInclude(wacpp => wacpp.Parent).ThenInclude(wacppp => wacppp.Parent)
+            .Include(a => a.Workshop).ThenInclude(w => w.InstitutionHierarchy).ThenInclude(wi => wi.Institution)
+            .Include(a => a.Workshop).ThenInclude(w => w.InstitutionHierarchy).ThenInclude(wi => wi.Directions)
+            .Include(a => a.Workshop).ThenInclude(w => w.Applications).ThenInclude(wa => wa.Child)
+            .Include(a => a.Workshop).ThenInclude(w => w.Applications).ThenInclude(wa => wa.Parent)
+            .Include(a => a.Workshop).ThenInclude(w => w.Provider).ThenInclude(p => p.User)
+            .Include(a => a.Child).ThenInclude(c => c.SocialGroups)
+            .Include(a => a.Parent).ThenInclude(p => p.User)
+            .ToListAsync().ConfigureAwait(false);
 
         logger.LogInformation(
             "There are {Count} applications in the Db with Provider Id = {Id}",

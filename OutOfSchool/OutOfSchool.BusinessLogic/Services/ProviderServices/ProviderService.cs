@@ -235,12 +235,27 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     public async Task<ProviderDto> GetById(Guid id)
     {
         logger.LogInformation($"Getting Provider by Id started. Looking Id = {id}.");
-        var provider = await providerRepository.GetById(id).ConfigureAwait(false);
+        var isProviderExists = await Exists(id).ConfigureAwait(false);
 
-        if (provider == null)
+        if (!isProviderExists)
         {
             return null;
         }
+
+        Expression<Func<Provider, bool>> providerFilter = p => p.Id == id;
+        var provider = await providerRepository.Get(
+            whereExpression: providerFilter,
+            asNoTracking: true)
+            .Include(p => p.ActualAddress).ThenInclude(a => a.CATOTTG)
+                .ThenInclude(ac => ac.Parent).ThenInclude(acp => acp.Parent).ThenInclude(acpp => acpp.Parent).ThenInclude(acppp => acppp.Parent)
+            .Include(p => p.LegalAddress).ThenInclude(a => a.CATOTTG)
+                .ThenInclude(ac => ac.Parent).ThenInclude(acp => acp.Parent).ThenInclude(acpp => acpp.Parent).ThenInclude(acppp => acppp.Parent)
+            .Include(p => p.ProviderSectionItems)
+            .Include(p => p.Type)
+            .Include(p => p.Institution)
+            .Include(p => p.Images)
+            .FirstAsync()
+            .ConfigureAwait(false);
 
         logger.LogInformation($"Successfully got a Provider with Id = {id}.");
 
@@ -491,6 +506,14 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         }
 
         return result;
+    }
+
+    /// <inheritdoc/>
+    public Task<bool> Exists(Guid id)
+    {
+        logger.LogInformation($"Checking if Provider exists by Id. Looking Id = {id}.");
+
+        return providerRepository.Any(x => x.Id == id);
     }
 
     private async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)

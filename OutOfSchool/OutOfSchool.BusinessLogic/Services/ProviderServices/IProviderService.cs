@@ -87,4 +87,11 @@ public interface IProviderService
     /// <param name="providerStatus"></param>
     /// <returns></returns>
     Task UpdateWorkshopsProviderStatus(Guid providerId, ProviderStatus providerStatus);
+
+    /// <summary>
+    /// Check if entity is exists by it's key.
+    /// </summary>
+    /// <param name="id">Key in the table.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    Task<bool> Exists(Guid id);
 }

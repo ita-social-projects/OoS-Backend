@@ -226,7 +226,7 @@ public class ApplicationControllerTests
     {
         // Arrange
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
-        providerService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(provider);
+        providerService.Setup(s => s.Exists(provider.Id)).ReturnsAsync(true);
         providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
         List<ApplicationDto> app = applications.ToList();
         applicationService.Setup(s => s.GetAllByProvider(It.IsAny<Guid>(), It.IsAny<ApplicationFilter>()))
@@ -399,7 +399,7 @@ public class ApplicationControllerTests
 
         providerService.Setup(s => s.GetByUserId(userId, It.IsAny<bool>())).ReturnsAsync(newProvider);
         workshopService.Setup(s => s.GetById(id, It.IsAny<bool>())).ReturnsAsync(newWorkshop);
-        providerService.Setup(s => s.GetById(id)).ReturnsAsync(newProvider);
+        providerService.Setup(s => s.Exists(id)).ReturnsAsync(true);
         List<ApplicationDto> app1 = applications.Where(a => a.Workshop.ProviderId == id).ToList();
         applicationService.Setup(s => s.GetAllByProvider(id, filter))
             .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app1.Count(), Entities = app1 });
@@ -439,7 +439,7 @@ public class ApplicationControllerTests
         var id = Guid.Parse("83caa2e6-902a-43b5-9744-8a9d66604666");
         var filter = new ApplicationFilter();
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
-        providerService.Setup(s => s.GetById(id)).ReturnsAsync(new ProviderDto());
+        providerService.Setup(s => s.Exists(id)).ReturnsAsync(true);
         applicationService.Setup(s => s.GetAllByProvider(id, filter))
             .ThrowsAsync(new UnauthorizedAccessException());
 

@@ -421,10 +421,21 @@ public class ProviderServiceTests
     public async Task GetById_WhenIdIsValid_ReturnsEntity()
     {
         // Arrange
-        var existingProvider = fakeProviders.RandomItem();
+        var providersMock = fakeProviders.AsQueryable().BuildMock();
+        var existingProvider = fakeProviders.First();
+
+        providersRepositoryMock.Setup(r => r.Get(
+                0,
+                0,
+                string.Empty,
+                It.IsAny<Expression<Func<Provider, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
+                true))
+        .Returns(providersMock);
 
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>())).ReturnsAsync(existingProvider);
         averageRatingServiceMock.Setup(r => r.GetByEntityIdAsync(It.IsAny<Guid>())).ReturnsAsync(new AverageRatingDto());
+        providersRepositoryMock.Setup(r => r.Any(It.IsAny<Expression<Func<Provider, bool>>>())).ReturnsAsync(true);
 
         // Act
         var actualProviderDto = await providerService.GetById(existingProvider.Id).ConfigureAwait(false);

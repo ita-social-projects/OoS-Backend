@@ -7,6 +7,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
@@ -14,6 +15,7 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
 using OutOfSchool.Redis;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
@@ -137,6 +139,8 @@ public class InstitutionHierarchyServiceTests
             },
         };
 
+        var expectedEntityQueryable = expectedEntity.AsQueryable().BuildMock();
+
         var expectedDto = new List<InstitutionHierarchyDto>()
         {
             new InstitutionHierarchyDto()
@@ -159,14 +163,21 @@ public class InstitutionHierarchyServiceTests
             },
         };
 
-        repo.Setup(r => r.GetAll()).ReturnsAsync(expectedEntity);
-        mapper.Setup(m => m.Map<List<InstitutionHierarchyDto>>(expectedEntity)).Returns(expectedDto);
+        repo.Setup(r => r.Get(
+                0,
+                0,
+                string.Empty,
+                It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, dynamic>>, SortDirection>>(),
+                true)).Returns(expectedEntityQueryable);
+
+        mapper.Setup(m => m.Map<List<InstitutionHierarchyDto>>(It.IsAny<InstitutionHierarchy>())).Returns(expectedDto);
 
         // Act
         var result = await service.GetAll().ConfigureAwait(false);
 
         // Assert
-        repo.Verify(r => r.GetAll(), Times.Once);
+        repo.VerifyAll();
         Assert.That(expectedEntity.Count(), Is.EqualTo(result.Count()));
     }
 
