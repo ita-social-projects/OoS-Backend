@@ -282,7 +282,9 @@ public class ChildController : ControllerBase
         string userId = GettingUserProperties.GetUserId(User);
         var userRole = GettingUserProperties.GetUserRole(User);
 
-        await service.DeleteChildCheckingItsUserIdProperty(id, userId, userRole).ConfigureAwait(false);
+        var isTechAdmin = userRole.Equals(Role.TechAdmin.ToString(), StringComparison.OrdinalIgnoreCase);
+
+        await service.DeleteChildCheckingItsUserIdProperty(id, userId, isTechAdmin).ConfigureAwait(false);
 
         return NoContent();
     }
