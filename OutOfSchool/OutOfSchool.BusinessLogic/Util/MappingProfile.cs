@@ -560,6 +560,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => src.Workshop.Rating))
             .ForMember(dest => dest.NumberOfRatings, opt => opt.MapFrom(src => src.Workshop.NumberOfRatings))
             .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Workshop.Title))
+            .ForMember(dest => dest.ShortTitle, opt => opt.MapFrom(src => src.Workshop.ShortTitle))
             .ForMember(dest => dest.PayRate, opt => opt.MapFrom(src => src.Workshop.PayRate))
             .ForMember(dest => dest.MaxAge, opt => opt.MapFrom(src => src.Workshop.MaxAge))
             .ForMember(dest => dest.MinAge, opt => opt.MapFrom(src => src.Workshop.MinAge))
