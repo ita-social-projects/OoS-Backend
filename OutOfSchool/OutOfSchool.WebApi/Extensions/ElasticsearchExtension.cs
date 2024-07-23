@@ -31,7 +31,8 @@ public static class ElasticsearchExtension
         var settings = new ConnectionSettings(pool)
             .DefaultIndex(config.WorkshopIndexName)
             .BasicAuthentication(config.User, config.Password)
-            .EnableApiVersioningHeader();
+            .EnableApiVersioningHeader()
+            .ServerCertificateValidationCallback((a, b, c, d) => true);
 
         if (config.EnableDebugMode)
         {

@@ -140,8 +140,6 @@ public class ElasticProfile : Profile
                 opt => opt.MapFrom(dtr => string.Join(" ", dtr.Workdays.ToDaysBitMaskEnumerable())));
 
         CreateMap<Workshop, WorkshopES>()
-            .ForMember(dest => dest.Rating, opt => opt.Ignore())
-            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
             .ForMember(
                 dest => dest.DirectionIds,
