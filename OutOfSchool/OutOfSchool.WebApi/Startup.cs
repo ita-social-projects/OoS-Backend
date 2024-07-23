@@ -360,7 +360,16 @@ public static class Startup
         services.AddTransient<IFileInDbRepository, FileInDbRepository>();
         services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
         services.AddTransient<IChangesLogRepository, ChangesLogRepository>();
-        services.AddTransient<IGeocodingService, GeocodingService>();
+        var useFakeGeocoding = configuration.GetValue<bool>("GeoCoding:UseFakeGeocoder");
+        if (useFakeGeocoding)
+        {
+            services.AddTransient<IGeocodingService, FakeGeocodingService>();
+        }
+        else
+        {
+            services.AddTransient<IGeocodingService, GeocodingService>();
+        }
+
         services.AddTransient<IInstitutionHierarchyRepository, InstitutionHierarchyRepository>();
         services.AddTransient<IAchievementTypeService, AchievementTypeService>();
         services.AddTransient<IAchievementRepository, AchievementRepository>();
