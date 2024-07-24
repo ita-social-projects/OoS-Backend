@@ -269,7 +269,7 @@ public class ChildServiceTests
 
         var childList = new List<Child> { child }.BuildMock();
 
-        childRepositoryMock.Setup(m => m.GetByFilterNoTracking(It.IsAny<Expression<Func<Child, bool>>>(), It.IsAny<string>()))
+        childRepositoryMock.Setup(m => m.GetByFilterNoTracking(It.IsAny<Expression<Func<Child, bool>>>(), nameof(Child.Parent)))
             .Returns(childList);
 
         childRepositoryMock.Setup(m => m.Delete(child)).Returns(Task.CompletedTask);
@@ -290,7 +290,7 @@ public class ChildServiceTests
 
         var childList = new List<Child> { child }.BuildMock();
 
-        childRepositoryMock.Setup(m => m.GetByFilterNoTracking(It.IsAny<Expression<Func<Child, bool>>>(), It.IsAny<string>()))
+        childRepositoryMock.Setup(m => m.GetByFilterNoTracking(It.IsAny<Expression<Func<Child, bool>>>(), nameof(Child.Parent)))
             .Returns(childList);
 
         childRepositoryMock.Setup(m => m.Delete(child)).Returns(Task.CompletedTask);
