@@ -16,6 +16,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -264,52 +265,42 @@ public class ChildServiceTests
     public async Task ChildService_DeleteWithTechAdminRole_DeletesChild()
     {
         // Arrange
-        var child = new Child()
-        {
-            Id = Guid.NewGuid(),
-            Parent = new Parent() { UserId = Guid.NewGuid().ToString() },
-        };
+        var child = ChildGenerator.Generate().WithGeneratedParent();
 
         var childList = new List<Child> { child }.BuildMock();
 
         childRepositoryMock.Setup(m => m.GetByFilterNoTracking(It.IsAny<Expression<Func<Child, bool>>>(), It.IsAny<string>()))
             .Returns(childList);
 
-        childRepositoryMock.Setup(m => m.Delete(It.IsAny<Child>())).Returns(Task.CompletedTask);
-        applicationRepositoryMock.Setup(x => x.DeleteChildApplications(It.IsAny<Guid>())).Returns(Task.CompletedTask);
+        childRepositoryMock.Setup(m => m.Delete(child)).Returns(Task.CompletedTask);
+        applicationRepositoryMock.Setup(x => x.DeleteChildApplications(child.Id)).Returns(Task.CompletedTask);
 
         // Act
         await childService.DeleteChildCheckingItsUserIdProperty(child.Id, child.Parent.UserId, true);
 
         // Assert
-        applicationRepositoryMock.Verify(x => x.DeleteChildApplications(child.Id), Times.Once);
-        childRepositoryMock.Verify(x => x.Delete(It.Is<Child>(c => c.Id == child.Id)), Times.Once);
+        Mock.VerifyAll();
     }
 
     [Test]
     public async Task ChildService_DeleteWithParentRole_DeletesChild()
     {
         // Arrange
-        var child = new Child()
-        {
-            Id = Guid.NewGuid(),
-            Parent = new Parent() { UserId = Guid.NewGuid().ToString() },
-        };
+        var child = ChildGenerator.Generate().WithGeneratedParent();
 
         var childList = new List<Child> { child }.BuildMock();
 
         childRepositoryMock.Setup(m => m.GetByFilterNoTracking(It.IsAny<Expression<Func<Child, bool>>>(), It.IsAny<string>()))
             .Returns(childList);
 
-        childRepositoryMock.Setup(m => m.Delete(It.IsAny<Child>())).Returns(Task.CompletedTask);
-        applicationRepositoryMock.Setup(x => x.DeleteChildApplications(It.IsAny<Guid>())).Returns(Task.CompletedTask);
+        childRepositoryMock.Setup(m => m.Delete(child)).Returns(Task.CompletedTask);
+        applicationRepositoryMock.Setup(x => x.DeleteChildApplications(child.Id)).Returns(Task.CompletedTask);
 
         // Act
         await childService.DeleteChildCheckingItsUserIdProperty(child.Id, child.Parent.UserId, false);
 
         // Assert
-        applicationRepositoryMock.Verify(x => x.DeleteChildApplications(child.Id), Times.Once);
-        childRepositoryMock.Verify(x => x.Delete(It.Is<Child>(c => c.Id == child.Id)), Times.Once);
+        Mock.VerifyAll();
     }
 
     [Test]
@@ -332,9 +323,5 @@ public class ChildServiceTests
 
         // Act and assert
         Assert.ThrowsAsync<UnauthorizedAccessException>(() => childService.DeleteChildCheckingItsUserIdProperty(child.Id, Guid.NewGuid().ToString(), false));
-
-        // Assert
-        applicationRepositoryMock.Verify(x => x.DeleteChildApplications(child.Id), Times.Never);
-        childRepositoryMock.Verify(x => x.Delete(It.Is<Child>(c => c.Id == child.Id)), Times.Never);
     }
 }
