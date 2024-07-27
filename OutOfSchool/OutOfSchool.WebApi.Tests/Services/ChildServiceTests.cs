@@ -318,9 +318,6 @@ public class ChildServiceTests
         childRepositoryMock.Setup(m => m.GetByFilterNoTracking(It.IsAny<Expression<Func<Child, bool>>>(), It.IsAny<string>()))
             .Returns(childList);
 
-        childRepositoryMock.Setup(m => m.Delete(It.IsAny<Child>())).Returns(Task.CompletedTask);
-        applicationRepositoryMock.Setup(x => x.DeleteChildApplications(It.IsAny<Guid>())).Returns(Task.CompletedTask);
-
         // Act and assert
         Assert.ThrowsAsync<UnauthorizedAccessException>(() => childService.DeleteChildCheckingItsUserIdProperty(child.Id, Guid.NewGuid().ToString(), false));
     }
