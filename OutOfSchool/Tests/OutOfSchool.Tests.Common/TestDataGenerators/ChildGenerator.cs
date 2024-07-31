@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 using Bogus;
 
+using Nest;
+
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 
@@ -50,6 +52,24 @@ public static class ChildGenerator
         _ = children ?? throw new ArgumentNullException(nameof(children));
 
         children.ForEach(x => x.WithParent(parent));
+
+        return children;
+    }
+
+    public static Child WithGeneratedParent(this Child child)
+    {
+        _ = child ?? throw new ArgumentNullException(nameof(child));
+
+        child.WithParent(ParentGenerator.Generate());
+
+        return child;
+    }
+
+    public static List<Child> WithGeneratedParent(this List<Child> children)
+    {
+        _ = children ?? throw new ArgumentNullException(nameof(children));
+
+        children.ForEach(x => x.WithParent(ParentGenerator.Generate()));
 
         return children;
     }

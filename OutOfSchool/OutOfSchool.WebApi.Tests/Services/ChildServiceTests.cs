@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Config;
@@ -15,6 +16,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -31,7 +33,6 @@ public class ChildServiceTests
     private ChildService childService;
 
     private OffsetFilter offsetFilter = new OffsetFilter();
-
 
     [SetUp]
     public void SetUp()
@@ -260,37 +261,64 @@ public class ChildServiceTests
     //        Assert.ThrowsAsync<ArgumentException>(() => childService.UpdateChildForParetWithSpecifiedUserId(child));
     //    }
 
-    //    [Test]
-    //    public void ChildService_Delete_DeletesChild()
-    //    {
-    //        ChildDto child = new ChildDto { Id = 1, FirstName = "fn1", LastName = "ln1", MiddleName = "mn1", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
-    //        mockRepository.Setup(m => m.Delete(It.IsAny<Child>()));
-    //        mockRepository.Setup(m => m.GetById(It.IsAny<long>())).Returns(Task.FromResult(GetTestChildEntities().First()));
+    [Test]
+    public async Task ChildService_DeleteWithTechAdminRole_DeletesChild()
+    {
+        // Arrange
+        var child = ChildGenerator.Generate().WithGeneratedParent();
 
-    //        IChildService childService = new ChildService(mockRepository.Object, logger.Object, localizer.Object);
+        var childList = new List<Child> { child }.BuildMock();
 
-    //        childService.DeleteChildCheckingItsUserIdProperty(1);
+        childRepositoryMock.Setup(m => m.GetByFilterNoTracking(It.IsAny<Expression<Func<Child, bool>>>(), nameof(Child.Parent)))
+            .Returns(childList);
 
-    //        mockRepository.Verify(x => x.Delete(It.Is<Child>(c => c.Id == child.Id)), Times.Once);
-    //    }
+        childRepositoryMock.Setup(m => m.Delete(child)).Returns(Task.CompletedTask);
+        applicationRepositoryMock.Setup(x => x.DeleteChildApplications(child.Id)).Returns(Task.CompletedTask);
 
-    //    private IEnumerable<ChildDto> GetTestChildDTO()
-    //    {
-    //        return new List<ChildDto>()
-    //        {
-    //            new ChildDto { Id = 1, FirstName = "fn1", LastName = "ln1", MiddleName = "mn1", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 },
-    //            new ChildDto { Id = 2, FirstName = "fn2", LastName = "ln2", MiddleName = "mn2", DateOfBirth = new DateTime(2004, 11, 8), Gender = Gender.Female, ParentId = 2, SocialGroupId = 1 },
-    //            new ChildDto { Id = 3, FirstName = "fn3", LastName = "ln3", MiddleName = "mn3", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 },
-    //        };
-    //    }
+        // Act
+        await childService.DeleteChildCheckingItsUserIdProperty(child.Id, child.Parent.UserId, true);
 
-    //    private IEnumerable<Child> GetTestChildEntities()
-    //    {
-    //        return new List<Child>()
-    //        {
-    //            new Child { Id = 1, FirstName = "fn1", LastName = "ln1", MiddleName = "mn1", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 },
-    //            new Child { Id = 2, FirstName = "fn2", LastName = "ln2", MiddleName = "mn2", DateOfBirth = new DateTime(2004, 11, 8), Gender = Gender.Female, ParentId = 2, SocialGroupId = 1 },
-    //            new Child { Id = 3, FirstName = "fn3", LastName = "ln3", MiddleName = "mn3", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 },
-    //        };
-    //    }
+        // Assert
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public async Task ChildService_DeleteWithParentRole_DeletesChild()
+    {
+        // Arrange
+        var child = ChildGenerator.Generate().WithGeneratedParent();
+
+        var childList = new List<Child> { child }.BuildMock();
+
+        childRepositoryMock.Setup(m => m.GetByFilterNoTracking(It.IsAny<Expression<Func<Child, bool>>>(), nameof(Child.Parent)))
+            .Returns(childList);
+
+        childRepositoryMock.Setup(m => m.Delete(child)).Returns(Task.CompletedTask);
+        applicationRepositoryMock.Setup(x => x.DeleteChildApplications(child.Id)).Returns(Task.CompletedTask);
+
+        // Act
+        await childService.DeleteChildCheckingItsUserIdProperty(child.Id, child.Parent.UserId, false);
+
+        // Assert
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public void ChildService_DeleteWithoutTechAdminPermissionAndInvalidUserId_ShouldNotDeleteChild()
+    {
+        // Arrange
+        var child = new Child()
+        {
+            Id = Guid.NewGuid(),
+            Parent = new Parent() { UserId = Guid.NewGuid().ToString() },
+        };
+
+        var childList = new List<Child> { child }.BuildMock();
+
+        childRepositoryMock.Setup(m => m.GetByFilterNoTracking(It.IsAny<Expression<Func<Child, bool>>>(), It.IsAny<string>()))
+            .Returns(childList);
+
+        // Act and assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(() => childService.DeleteChildCheckingItsUserIdProperty(child.Id, Guid.NewGuid().ToString(), false));
+    }
 }

@@ -221,10 +221,31 @@ public class ChildControllerTests
     }
 
     [Test]
-    public async Task DeleteChild_WhenChildWithIdExists_ShouldReturnNoContentResult()
+    public async Task DeleteChild_WhenChildWithIdExistsAndUserIsParent_ShouldReturnNoContentResult()
     {
         // Arrange
         var childToDelete = children.RandomItem();
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[] { new(IdentityResourceClaimsTypes.Sub, currentUserId), new(IdentityResourceClaimsTypes.Role, Role.TechAdmin.ToString()) }, "sub"));
+
+        controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+
+        // Act
+        var result = await controller.Delete(childToDelete.Id);
+
+        // Assert
+        Assert.IsInstanceOf<NoContentResult>(result);
+    }
+
+    [Test]
+    public async Task DeleteChild_WhenChildWithIdExistsAndUserIsTechAdmin_ShouldReturnNoContentResult()
+    {
+        // Arrange
+        var childToDelete = children.RandomItem();
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[] { new(IdentityResourceClaimsTypes.Sub, currentUserId), new(IdentityResourceClaimsTypes.Role, Role.Parent.ToString()) }, "sub"));
+
+        controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
         // Act
         var result = await controller.Delete(childToDelete.Id);
@@ -236,6 +257,12 @@ public class ChildControllerTests
     [Test]
     public async Task DeleteChild_WhenIdIsNotValid_ShouldReturnNull()
     {
+        // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[] { new(IdentityResourceClaimsTypes.Sub, currentUserId), new(IdentityResourceClaimsTypes.Role, Role.TechAdmin.ToString()) }, "sub"));
+
+        controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+
         // Act
         var result = await controller.Delete(Guid.NewGuid());
 

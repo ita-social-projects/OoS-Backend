@@ -1,8 +1,8 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.Extensions.Options;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.Services.Enums;
 using DateTime = System.DateTime;
 
 namespace OutOfSchool.BusinessLogic.Services;
@@ -405,7 +405,7 @@ public class ChildService : IChildService
     }
 
     /// <inheritdoc/>
-    public async Task DeleteChildCheckingItsUserIdProperty(Guid id, string userId)
+    public async Task DeleteChildCheckingItsUserIdProperty(Guid id, string userId, bool isTechAdmin)
     {
         this.ValidateUserId(userId);
 
@@ -417,7 +417,7 @@ public class ChildService : IChildService
                     ?? throw new UnauthorizedAccessException(
                         $"User: {userId} is trying to delete not existing Child (Id = {id}).");
 
-        if (child.Parent.UserId != userId)
+        if (child.Parent.UserId != userId && !isTechAdmin)
         {
             throw new UnauthorizedAccessException(
                 $"User: {userId} is not authorized to delete not his own child. Child Id = {id}");
