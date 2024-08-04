@@ -29,6 +29,9 @@ public class Address : IKeyedEntity<long>, ISoftDeleted
 
     public virtual CATOTTG CATOTTG { get; set; }
 
+    // Commented out to not to break application. Related US 1525
+    // public string Type { get; set; }
+
     public override bool Equals(object obj)
     {
         if (obj == null)
