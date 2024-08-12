@@ -50,7 +50,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.AuthCommon", "O
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.BusinessLogic", "OutOfSchool.BusinessLogic\OutOfSchool.BusinessLogic.csproj", "{2365AF72-5A4F-4B70-9C00-7E59597E253A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.BackgroundJobs", "OutOfSchool.BackgroundJobs\OutOfSchool.BackgroundJobs.csproj", "{A139159B-E506-4727-B218-BD4D83827F73}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.BackgroundJobs", "OutOfSchool.BackgroundJobs\OutOfSchool.BackgroundJobs.csproj", "{A139159B-E506-4727-B218-BD4D83827F73}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
