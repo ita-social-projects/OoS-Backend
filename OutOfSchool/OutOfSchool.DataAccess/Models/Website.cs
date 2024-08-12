@@ -9,4 +9,6 @@ public class Website : IKeyedEntity<long>
     [DataType(DataType.Url)]
     [MaxLength(Constants.MaxUnifiedUrlLength)]
     public string Url { get; set; }
+
+    public string Type { get; set; }
 }
