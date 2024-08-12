@@ -25,7 +25,6 @@ public class AdminController : Controller
     private readonly ISensitiveProviderService providerService;
     private readonly ISensitiveApplicationService applicationService;
 
-
     public AdminController(
         ILogger<AdminController> logger,
         ISensitiveMinistryAdminService ministryAdminService,
