@@ -95,7 +95,7 @@ public class WorkshopBaseDto : IValidatableObject
     public string InstitutionHierarchy { get; set; }
 
     public List<long> DirectionIds { get; set; }
-
+    
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IEnumerable<string> Keywords { get; set; } = default;
 

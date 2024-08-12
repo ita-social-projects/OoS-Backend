@@ -13,6 +13,8 @@ public class WorkshopDto : WorkshopBaseDto, IHasRating
 
     public string CoverImageId { get; set; } = string.Empty;
 
+    public List<Guid> ImageIds { get; set; }
+
     public int NumberOfRatings { get; set; }
 
     [EnumDataType(typeof(WorkshopStatus), ErrorMessage = Constants.EnumErrorMessage)]
