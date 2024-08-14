@@ -31,7 +31,7 @@ public class ParentBlockedByAdminLogServiceTests
         // Arrange
         var parentId = Guid.NewGuid();
         var userId = Guid.NewGuid().ToString();
-        var operationDate = DateTime.Now;
+        var operationDate = DateTime.UtcNow;
         var reason = "Reason to block parent";
         var isBlocked = true;
 
@@ -63,7 +63,7 @@ public class ParentBlockedByAdminLogServiceTests
         // Arrange
         var parentId = Guid.NewGuid();
         var userId = Guid.NewGuid().ToString();
-        var operationDate = DateTime.Now;
+        var operationDate = DateTime.UtcNow;
         var reason = "Reason to block parent";
         var isBlocked = true;
 
