@@ -1,7 +1,8 @@
 using System.Security.Claims;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.AuthorizationServer.Services;
 

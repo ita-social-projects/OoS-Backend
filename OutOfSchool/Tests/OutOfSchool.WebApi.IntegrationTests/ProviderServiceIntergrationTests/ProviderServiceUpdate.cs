@@ -21,6 +21,8 @@ using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 

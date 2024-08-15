@@ -6,6 +6,7 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 

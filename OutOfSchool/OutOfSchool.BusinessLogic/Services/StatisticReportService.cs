@@ -4,6 +4,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.StatisticReports;
+using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 

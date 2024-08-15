@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Base;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.Services.Repository;
 

@@ -2,6 +2,7 @@
 using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using System.Linq.Expressions;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 

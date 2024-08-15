@@ -2,8 +2,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Base.Api;
 
-namespace OutOfSchool.Services.Repository;
+namespace OutOfSchool.Services.Repository.Api;
 
 public interface IBlockedProviderParentRepository : ISensitiveEntityRepositorySoftDeleted<BlockedProviderParent>
 {

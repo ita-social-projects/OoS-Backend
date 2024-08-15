@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services.SubordinationStructure;
 

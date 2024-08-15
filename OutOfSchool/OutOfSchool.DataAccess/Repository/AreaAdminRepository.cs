@@ -2,6 +2,8 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base;
 
 namespace OutOfSchool.Services.Repository;
 

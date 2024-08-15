@@ -11,6 +11,8 @@ using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -882,7 +884,7 @@ public class WorkshopService : IWorkshopService
     {
         try
         {
-            await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+            await workshopRepository.SaveChangesAsync().ConfigureAwait(false);
         }
         catch (DbUpdateException ex)
         {

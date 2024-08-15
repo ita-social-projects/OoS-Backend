@@ -2,22 +2,22 @@
 
 #nullable disable
 
-namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations;
+
+/// <inheritdoc />
+public partial class AddRequiredWorkshopShortTitle : Migration
 {
     /// <inheritdoc />
-    public partial class AddRequiredWorkshopShortTitle : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.UpdateData(
-                table: "Workshops",
-                keyColumn: "ShortTitle",
-                keyValue: null,
-                column: "ShortTitle",
-                value: "");
+        migrationBuilder.UpdateData(
+            table: "Workshops",
+            keyColumn: "ShortTitle",
+            keyValue: null,
+            column: "ShortTitle",
+            value: "");
 
-            migrationBuilder.AlterColumn<string>(
+        migrationBuilder.AlterColumn<string>(
                 name: "ShortTitle",
                 table: "Workshops",
                 type: "varchar(60)",
@@ -27,14 +27,14 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 oldType: "varchar(60)",
                 oldMaxLength: 60,
                 oldNullable: true)
-                .Annotation("MySql:CharSet", "utf8mb4")
-                .OldAnnotation("MySql:CharSet", "utf8mb4");
-        }
+            .Annotation("MySql:CharSet", "utf8mb4")
+            .OldAnnotation("MySql:CharSet", "utf8mb4");
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AlterColumn<string>(
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.AlterColumn<string>(
                 name: "ShortTitle",
                 table: "Workshops",
                 type: "varchar(60)",
@@ -43,8 +43,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 oldClrType: typeof(string),
                 oldType: "varchar(60)",
                 oldMaxLength: 60)
-                .Annotation("MySql:CharSet", "utf8mb4")
-                .OldAnnotation("MySql:CharSet", "utf8mb4");
-        }
+            .Annotation("MySql:CharSet", "utf8mb4")
+            .OldAnnotation("MySql:CharSet", "utf8mb4");
     }
 }

@@ -18,6 +18,7 @@ using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.WebApi.Tests.Hubs;
 

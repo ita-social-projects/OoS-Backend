@@ -1,4 +1,6 @@
-﻿namespace OutOfSchool.BusinessLogic.Services;
+﻿using OutOfSchool.Services.Repository.Base.Api;
+
+namespace OutOfSchool.BusinessLogic.Services;
 
 /// <summary>
 /// Service for logging parent blocking and unblocking actions performed by administrators.

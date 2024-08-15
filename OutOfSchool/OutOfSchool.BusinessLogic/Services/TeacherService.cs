@@ -3,6 +3,7 @@ using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Teachers;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -149,7 +150,7 @@ public class TeacherService : ITeacherService
     {
         try
         {
-            await teacherRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+            await teacherRepository.SaveChangesAsync().ConfigureAwait(false);
         }
         catch (DbUpdateException ex)
         {

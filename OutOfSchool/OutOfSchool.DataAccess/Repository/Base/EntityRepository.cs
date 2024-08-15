@@ -1,7 +1,8 @@
 using System;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Base.Api;
 
-namespace OutOfSchool.Services.Repository;
+namespace OutOfSchool.Services.Repository.Base;
 
 public class EntityRepository<TKey, TEntity> : EntityRepositoryBase<TKey, TEntity>, IEntityRepository<TKey, TEntity>
     where TEntity : class, IKeyedEntity<TKey>, new()

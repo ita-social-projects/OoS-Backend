@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 using OutOfSchool.Services.Models.ChatWorkshop;
+using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.Services.Repository;
 

@@ -2,6 +2,7 @@
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.ProvidersInfo;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 

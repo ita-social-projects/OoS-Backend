@@ -1,6 +1,7 @@
 ﻿using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 
@@ -58,7 +59,7 @@ public class PrivateProviderService : IPrivateProviderService
 
         // TODO: validate if current user has permission to update the provider status
         provider.LicenseStatus = dto.LicenseStatus;
-        await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+        await providerRepository.SaveChangesAsync().ConfigureAwait(false);
 
         logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.LicenseStatus}");
 

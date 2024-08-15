@@ -1,7 +1,8 @@
 ﻿using System;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Base.Api;
 
-namespace OutOfSchool.Services.Repository;
+namespace OutOfSchool.Services.Repository.Base;
 
 public class SensitiveEntityRepository<T> : EntityRepositoryBase<Guid, T>, ISensitiveEntityRepository<T>
     where T : class, IKeyedEntity<Guid>, new()

@@ -1,4 +1,5 @@
 ﻿using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 

@@ -7,7 +7,7 @@ using OutOfSchool.AuthCommon.Services;
 using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.AuthServer.Tests.Services;
 

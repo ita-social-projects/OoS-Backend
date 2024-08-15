@@ -8,6 +8,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
 

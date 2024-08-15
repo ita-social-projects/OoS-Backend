@@ -1,4 +1,4 @@
-﻿namespace OutOfSchool.Services.Repository;
+﻿namespace OutOfSchool.Services.Repository.Api;
 
 public interface IExistable<in T>
 {
