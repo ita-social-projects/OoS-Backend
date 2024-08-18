@@ -2,13 +2,10 @@
 using OutOfSchool.Common;
 
 namespace OutOfSchool.Services.Models;
-public class Website : IKeyedEntity<long>
-{
-    public long Id { get; set; }
 
+public class Website : ContactEntityBase, IKeyedEntity<long>
+{
     [DataType(DataType.Url)]
     [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Url { get; set; }
-
-    public string Type { get; set; }
+    public string WebsiteUrl { get; set; }
 }

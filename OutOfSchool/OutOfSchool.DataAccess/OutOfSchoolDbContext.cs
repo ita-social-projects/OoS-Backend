@@ -113,6 +113,19 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<ParentBlockedByAdminLog> ParentBlockedByAdminLog { get; set; }
 
+    // Region
+    // Will be uncommented after the ContactInformation implementation begins
+    //public DbSet<Instagram> Instagrams { get; set; }
+
+    //public DbSet<Facebook> Facebooks { get; set; }
+
+    //public DbSet<PhoneNumber> PhoneNumbers { get; set; }
+
+    //public DbSet<Website> Websites { get; set; }
+
+    //public DbSet<ContactEntityBase> ContactEntities { get; set; }
+    // End of region
+
     public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
     public int Complete() => this.SaveChanges();
@@ -160,6 +173,8 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new UserConfiguration());
         builder.ApplyConfiguration(new WorkshopConfiguration());
         builder.ApplyConfiguration(new WorkshopDescriptionItemConfiguration());
+        // Will be uncommented after the ContactInformation implementation begins
+        // builder.ApplyConfiguration(new ContactEntityBaseConfiguration());
 
         builder.Seed();
         builder.UpdateIdentityTables();

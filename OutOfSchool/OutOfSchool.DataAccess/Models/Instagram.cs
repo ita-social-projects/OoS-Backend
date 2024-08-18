@@ -3,13 +3,9 @@ using OutOfSchool.Common;
 
 namespace OutOfSchool.Services.Models;
 
-public class Instagram : IKeyedEntity<long>
+public class Instagram : ContactEntityBase, IKeyedEntity<long>
 {
-    public long Id { get; set; }
-
     [DataType(DataType.Url)]
     [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Url { get; set; } = string.Empty;
-
-    public string Type { get; set; }
+    public string InstagramUrl { get; set; } = string.Empty;
 }
