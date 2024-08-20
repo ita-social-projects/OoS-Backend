@@ -29,12 +29,6 @@ public class Address : IKeyedEntity<long>, ISoftDeleted
 
     public virtual CATOTTG CATOTTG { get; set; }
 
-    // Commented out to not to break the application. Related US 1525
-    // public string UserNote { get; set; }
-
-    // Commented out to not to break the application. Related US 1525
-    // public List<Contact> Contacts { get; set; }
-
     public override bool Equals(object obj)
     {
         if (obj == null)
