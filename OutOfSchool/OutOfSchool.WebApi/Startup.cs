@@ -15,6 +15,8 @@ using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
+using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
+using OutOfSchool.BusinessLogic.Services.Memento;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.BusinessLogic.Services.Strategies.WorkshopStrategies;
@@ -513,6 +515,11 @@ public static class Startup
 
         services.AddSingleton<ICacheService, CacheService>();
         services.AddSingleton<IMultiLayerCacheService, MultiLayerCache>();
+        services.AddSingleton<IRedisCacheService, CacheService>();
+        services.AddSingleton(typeof(IMemento), typeof(Memento));
+        services.AddSingleton(typeof(IMementoService<>), typeof(MementoService<>));
+        services.AddSingleton(typeof(IStorage), typeof(Storage));
+
 
         services.AddHealthChecks()
             .AddDbContextCheck<OutOfSchoolDbContext>(

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace OutOfSchool.Redis;
 
-public class CacheService : ICacheService, IDisposable
+public class CacheService : ICacheService, IRedisCacheService, IDisposable
 {
     private readonly ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim();
     private readonly IDistributedCache cache;
@@ -106,6 +106,61 @@ public class CacheService : ICacheService, IDisposable
                 cacheLock.ExitWriteLock();
             }
         });
+
+    public async Task<string?> GetValueFromRedisCacheAsync(string key)
+    {
+        string? returnValue = null;
+        await ExecuteRedisMethod(() =>
+        {
+            cacheLock.EnterReadLock();
+            try
+            {
+                returnValue = cache.GetString(key);
+            }
+            finally
+            {
+                cacheLock.ExitReadLock();
+            }
+        });
+
+        return returnValue;
+    }
+
+    public async Task SetValueToRedisCacheAsync(string key, string value, TimeSpan? absoluteExpirationRelativeToNowInterval = null, TimeSpan? slidingExpirationInterval = null)
+    {
+        await ExecuteRedisMethod(() =>
+        {
+            cacheLock.EnterWriteLock();
+            try
+            {
+                var options = new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? redisConfig.AbsoluteExpirationRelativeToNowInterval,
+                    SlidingExpiration = slidingExpirationInterval ?? redisConfig.SlidingExpirationInterval,
+                };
+
+                cache.SetString(key, value, options);
+            }
+            finally
+            {
+                cacheLock.ExitWriteLock();
+            }
+        });
+    }
+
+    public async Task RemoveValueFromRedisCacheAsync(string key)
+       => await ExecuteRedisMethod(() =>
+       {
+           cacheLock.EnterWriteLock();
+           try
+           {
+               cache.Remove(key);
+           }
+           finally
+           {
+               cacheLock.ExitWriteLock();
+           }
+       });
 
     public void Dispose()
     {

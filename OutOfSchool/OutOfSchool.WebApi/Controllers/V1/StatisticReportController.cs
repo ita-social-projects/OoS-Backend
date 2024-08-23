@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.StatisticReports;
 
@@ -34,6 +35,8 @@ public class StatisticReportController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetByFilter([FromQuery] StatisticReportFilter filter)
     {
+        var userId = GettingUserProperties.GetUserId(User);
+
         return Ok(await service.GetByFilter(filter).ConfigureAwait(false));
     }
 
