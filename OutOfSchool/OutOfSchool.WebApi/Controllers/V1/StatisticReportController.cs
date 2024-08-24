@@ -35,8 +35,6 @@ public class StatisticReportController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetByFilter([FromQuery] StatisticReportFilter filter)
     {
-        var userId = GettingUserProperties.GetUserId(User);
-
         return Ok(await service.GetByFilter(filter).ConfigureAwait(false));
     }
 
