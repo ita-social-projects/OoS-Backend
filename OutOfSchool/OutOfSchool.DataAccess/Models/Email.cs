@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.Services.Models;
 
-public class Email : ContactEntityBase, IKeyedEntity<long>
+public class Email
 {
     [DataType(DataType.EmailAddress)]
     [MaxLength(256)]

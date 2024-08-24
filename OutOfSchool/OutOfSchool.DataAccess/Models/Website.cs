@@ -3,9 +3,9 @@ using OutOfSchool.Common;
 
 namespace OutOfSchool.Services.Models;
 
-public class Website : ContactEntityBase, IKeyedEntity<long>
+public class Website
 {
     [DataType(DataType.Url)]
     [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string WebsiteUrl { get; set; }
+    public string Url { get; set; }
 }

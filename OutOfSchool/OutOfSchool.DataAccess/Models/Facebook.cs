@@ -3,9 +3,9 @@ using OutOfSchool.Common;
 
 namespace OutOfSchool.Services.Models;
 
-public class Facebook : ContactEntityBase, IKeyedEntity<long>
+public class Facebook
 {
     [DataType(DataType.Url)]
     [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string FacebookUrl { get; set; } = string.Empty;
+    public string Url { get; set; } = string.Empty;
 }
