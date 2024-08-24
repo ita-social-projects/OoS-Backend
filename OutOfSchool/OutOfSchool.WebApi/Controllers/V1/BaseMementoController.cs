@@ -9,16 +9,16 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// </summary>
 public abstract class BaseMementoController<T> : ControllerBase
 {
-    private readonly IRedisCacheService redisCacheService;
+    private readonly ICrudCacheService crudCacheService;
     private readonly IMementoService<T> mementoService;
     private readonly IStorage storage;
 
     public BaseMementoController(
-        IRedisCacheService redisCacheService,
+        ICrudCacheService crudCacheService,
         IMementoService<T> mementoService,
         IStorage storage)
     {
-        this.redisCacheService = redisCacheService ?? throw new ArgumentNullException(nameof(redisCacheService));
+        this.crudCacheService = crudCacheService ?? throw new ArgumentNullException(nameof(crudCacheService));
         this.mementoService = mementoService ?? throw new ArgumentNullException(nameof(mementoService));
         this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
     }

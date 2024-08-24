@@ -13,10 +13,10 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 public class WorkshopMementoController : BaseMementoController<RequiredWorkshopMemento>
 {
     public WorkshopMementoController(
-        IRedisCacheService redisCacheService, 
-        IMementoService<RequiredWorkshopMemento> mementoService, 
+        ICrudCacheService crudCacheService,
+        IMementoService<RequiredWorkshopMemento> mementoService,
         IStorage storage)
-        : base(redisCacheService, mementoService, storage)
+        : base(crudCacheService, mementoService, storage)
     {
     }
 }

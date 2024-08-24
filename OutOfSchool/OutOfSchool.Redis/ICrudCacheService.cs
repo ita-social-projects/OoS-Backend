@@ -2,15 +2,15 @@
 using System.Threading.Tasks;
 
 namespace OutOfSchool.Redis;
-public interface IRedisCacheService
-{
-    Task<string?> GetValueFromRedisCacheAsync(string key);
 
-    Task SetValueToRedisCacheAsync(
+public interface ICrudCacheService
+{
+    Task<string?> GetValueFromCacheAsync(string key);
+
+    Task SetValueToCacheAsync(
         string key,
         string value,
         TimeSpan? absoluteExpirationRelativeToNowInterval = null,
         TimeSpan? slidingExpirationInterval = null);
-
-    Task RemoveValueFromRedisCacheAsync(string key);
+    Task RemoveFromCacheAsync(string key);
 }

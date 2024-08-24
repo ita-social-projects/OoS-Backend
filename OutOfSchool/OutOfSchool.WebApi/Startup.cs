@@ -515,7 +515,7 @@ public static class Startup
 
         services.AddSingleton<ICacheService, CacheService>();
         services.AddSingleton<IMultiLayerCacheService, MultiLayerCache>();
-        services.AddSingleton<IRedisCacheService, CacheService>();
+        services.AddSingleton<ICrudCacheService, CacheService>();
         services.AddSingleton(typeof(IMemento), typeof(Memento));
         services.AddSingleton(typeof(IMementoService<>), typeof(MementoService<>));
         services.AddSingleton(typeof(IStorage), typeof(Storage));
