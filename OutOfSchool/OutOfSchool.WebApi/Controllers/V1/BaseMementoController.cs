@@ -30,7 +30,7 @@ public abstract class BaseMementoController<T> : ControllerBase
         var userId = GettingUserProperties.GetUserId(User);
         var memento = mementoService.CreateMemento(userId, mementoDto);
         await storage.SetMementoValueAsync(memento.State);
-        return Ok(string.Format("{0} is stored", typeof(T).Name));
+        return Ok($"{typeof(T).Name} is stored");
     }
 
     [HttpGet]
@@ -48,6 +48,6 @@ public abstract class BaseMementoController<T> : ControllerBase
     {
         var mementoKey = mementoService.GetMementoKey(GettingUserProperties.GetUserId(User));
         await storage.RemoveMementoAsync(mementoKey);
-        return Ok(string.Format("{0} deletion process is completed", typeof(T).Name));
+        return Ok($"{typeof(T).Name} with key = {mementoKey} has been removed");
     }
 }
