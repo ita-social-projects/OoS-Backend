@@ -23,8 +23,8 @@ public abstract class BaseMementoController<T> : ControllerBase
         this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
     }
 
-    [Authorize]
     [HttpPost]
+    [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
     public async Task<IActionResult> StoreMemento([FromBody] T mementoDto)
     {
         var userId = GettingUserProperties.GetUserId(User);
@@ -34,7 +34,7 @@ public abstract class BaseMementoController<T> : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
     public async Task<IActionResult> RestoreMemento()
     {
         var mementoKey = mementoService.GetMementoKey(GettingUserProperties.GetUserId(User));
@@ -43,7 +43,7 @@ public abstract class BaseMementoController<T> : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
     public async Task<IActionResult> RemoveMemento()
     {
         var mementoKey = mementoService.GetMementoKey(GettingUserProperties.GetUserId(User));
