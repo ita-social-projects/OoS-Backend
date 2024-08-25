@@ -4,15 +4,23 @@ using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
-/// <summary>
-/// Base Controller with operations for storing data in cache.
-/// </summary>
+/// <summary>Base Controller with operations for storing data in cache.</summary>
+/// <typeparam name="T">T is the entity type that should be stored in the cache.</typeparam>
 public abstract class BaseMementoController<T> : ControllerBase
 {
     private readonly ICrudCacheService crudCacheService;
     private readonly IMementoService<T> mementoService;
     private readonly IStorage storage;
 
+    /// <summary>Initializes a new instance of the <see cref="BaseMementoController{T}" /> class.</summary>
+    /// <param name="crudCacheService">The CRUD cache service.</param>
+    /// <param name="mementoService">The memento service.</param>
+    /// <param name="storage">The storage.</param>
+    /// <exception cref="System.ArgumentNullException">crudCacheService
+    /// or
+    /// mementoService
+    /// or
+    /// storage.</exception>
     public BaseMementoController(
         ICrudCacheService crudCacheService,
         IMementoService<T> mementoService,
@@ -23,6 +31,11 @@ public abstract class BaseMementoController<T> : ControllerBase
         this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
     }
 
+    /// <summary>Stores the memento.</summary>
+    /// <param name="mementoDto">The memento dto for type T.</param>
+    /// <returns>
+    /// Information about storing an entity of type T in the cache.
+    /// </returns>
     [HttpPost]
     [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
     public async Task<IActionResult> StoreMemento([FromBody] T mementoDto)
@@ -33,6 +46,10 @@ public abstract class BaseMementoController<T> : ControllerBase
         return Ok($"{typeof(T).Name} is stored");
     }
 
+    /// <summary>Restores the memento.</summary>
+    /// <returns>
+    /// The memento dto for type T.
+    /// </returns>
     [HttpGet]
     [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
     public async Task<IActionResult> RestoreMemento()
@@ -42,6 +59,10 @@ public abstract class BaseMementoController<T> : ControllerBase
         return Ok(mementoService.State);
     }
 
+    /// <summary>Removes the memento.</summary>
+    /// <returns>
+    /// Information about removing an entity of type T from the cache.
+    /// </returns>
     [HttpGet]
     [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
     public async Task<IActionResult> RemoveMemento()
