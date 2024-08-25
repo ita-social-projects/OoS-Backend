@@ -16,11 +16,8 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
 
     private bool isWorking = true;
     private readonly bool isEnabled = false;
-
     private readonly object lockObject = new object();
-
     bool isExists = false;
-
     private bool isDisposed;
 
     public CacheService(
@@ -84,8 +81,13 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
             cacheLock.EnterReadLock();
             try
             {
-                returnValue = cache.GetString(key);
-                isExists = true;
+                var value = cache.GetString(key);
+
+                if (value != null)
+                {
+                    returnValue = cache.GetString(key);
+                    isExists = true;
+                }
             }
             finally
             {

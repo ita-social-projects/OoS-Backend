@@ -12,5 +12,6 @@ public interface ICrudCacheService
         string value,
         TimeSpan? absoluteExpirationRelativeToNowInterval = null,
         TimeSpan? slidingExpirationInterval = null);
+
     Task RemoveFromCacheAsync(string key);
 }

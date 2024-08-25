@@ -13,43 +13,64 @@ public class Storage : IStorage
 
     public async Task SetMementoValueAsync(KeyValuePair<string, string?> keyValue)
     {
-        logger.LogInformation("Setting memento to cache has started");
+        logger.LogInformation($"Setting memento with key = {keyValue.Key} to cache has started");
         if (crudCacheService is not null)
         {
             await crudCacheService.SetValueToCacheAsync(keyValue.Key, keyValue.Value ?? string.Empty);
-            logger.LogInformation("Memento has been stored in cache");
+            logger.LogInformation($"Memento with key = {keyValue.Key} has been stored in cache");
         }
         else
         {
-            logger.LogWarning("Setting memento to cache failed; redisCacheService field is not set.");
+            var errMessage = $"Failed to get memento with key = {keyValue.Key} from cache; crudCacheService field not set.";
+            logger.LogWarning(errMessage);
+            throw new InvalidOperationException(errMessage);
         }
     }
 
     public async Task<KeyValuePair<string, string?>> GetMementoValueAsync(string key)
     {
-        logger.LogInformation("Getting memento from cache has started.");
-        if (crudCacheService is not null)
+        if (crudCacheService is null)
         {
-            var value = await crudCacheService.GetValueFromCacheAsync(key);
-            logger.LogInformation("Memento has been restored from cache.");
-            return new KeyValuePair<string, string?>(key, value);
+            var errMessage = $"Failed to get memento with key = {key} from cache; crudCacheService field not set.";
+            logger.LogWarning(errMessage);
+            throw new InvalidOperationException(errMessage);
         }
 
-        logger.LogWarning("Getting memento from cache failed; redisCacheService field is not set.");
-        return default;
+        logger.LogDebug($"Getting memento with key = {key} from cache has started.");
+        var value = await crudCacheService.GetValueFromCacheAsync(key);
+
+        if (value == null)
+        {
+            logger.LogWarning($"Memento with key = {key} not found in cache.");
+            return new KeyValuePair<string, string?>(key, null);
+        }
+
+        logger.LogDebug($"Memento with key = {key} has been restored from cache.");
+        return new KeyValuePair<string, string?>(key, value);
     }
 
     public async Task RemoveMementoAsync(string key)
     {
-        logger.LogInformation("Removing memento from cache has started.");
-        if (crudCacheService is not null)
+        string errMessage;
+
+        if (crudCacheService is null)
         {
-            await crudCacheService.RemoveFromCacheAsync(key);
-            logger.LogInformation("Memento has been removed from the cache.");
+            errMessage = $"Removing memento with key = {key} from cache failed; crudCacheService field is not set.";
+            logger.LogError(errMessage);
+            throw new InvalidOperationException(errMessage);
         }
-        else
+
+        var valueToRemove = await crudCacheService.GetValueFromCacheAsync(key);
+
+        if (valueToRemove == null)
         {
-            logger.LogWarning("Removing memento from cache failed; redisCacheService field is not set.");
+            errMessage = $"Removing memento with key = {key} from cache failed. Memento with key = {key} was not found in the cache.";
+            logger.LogError(errMessage);
+            throw new InvalidOperationException(errMessage);
         }
+
+        logger.LogDebug($"Removing memento with key = {key} from cache has started.");
+        await crudCacheService.RemoveFromCacheAsync(key);
+        logger.LogDebug($"Memento with key = {key} has been removed from the cache.");
     }
 }
