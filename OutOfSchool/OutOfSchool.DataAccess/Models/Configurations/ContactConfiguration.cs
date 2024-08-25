@@ -1,6 +1,6 @@
-﻿using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Newtonsoft.Json;
 
 namespace OutOfSchool.Services.Models.Configurations;
 
@@ -12,8 +12,8 @@ internal class ContactConfiguration : IEntityTypeConfiguration<Contact>
 
         builder.Property(e => e.OptionalContacts)
                 .HasConversion(
-                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
-                    v => JsonSerializer.Deserialize<OptionalContacts>(v, (JsonSerializerOptions)null))
+                    v => JsonConvert.SerializeObject(v),
+                    v => JsonConvert.DeserializeObject<OptionalContacts>(v))
                 .HasColumnName(nameof(OptionalContacts))
                 .HasColumnType("longtext");
     }

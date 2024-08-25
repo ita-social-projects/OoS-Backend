@@ -7,5 +7,5 @@ public class Instagram
 {
     [DataType(DataType.Url)]
     [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Url { get; set; } = string.Empty;
+    public string Url { get; set; }
 }
