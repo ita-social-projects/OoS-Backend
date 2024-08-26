@@ -27,7 +27,14 @@ public class MementoService<T> : IMementoService<T>
     /// <param name="memento">The memento.</param>
     public void RestoreMemento(KeyValuePair<string, string?> memento)
     {
-        State = JsonConvert.DeserializeObject<T>(memento.Value ?? string.Empty);
+        if (memento.Value is null)
+        {
+            State = default;
+        }
+        else
+        {
+            State = JsonConvert.DeserializeObject<T>(memento.Value);
+        }
     }
 
     /// <summary>Creates the memento.</summary>

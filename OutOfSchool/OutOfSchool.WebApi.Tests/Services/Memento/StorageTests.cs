@@ -10,7 +10,7 @@ using OutOfSchool.Redis;
 namespace OutOfSchool.WebApi.Tests.Services.Memento;
 
 [TestFixture]
-public class StorageTest
+public class StorageTests
 {
     private Mock<ICrudCacheService> crudCacheServiceMock;
     private Mock<ILogger<Storage>> loggerMock;
