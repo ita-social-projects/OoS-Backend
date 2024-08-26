@@ -13,9 +13,8 @@ public class MementoService<T> : IMementoService<T>
 
     /// <summary>Initializes a new instance of the <see cref="MementoService{T}" /> class.</summary>
     /// <param name="memento">The memento.</param>
-    /// <param name="logger">The logger.</param>
-    /// <exception cref="System.ArgumentNullException">Memento.</exception>
-    public MementoService(IMemento memento, ILogger<MementoService<T>> logger)
+    /// <exception cref="ArgumentNullException">Memento.</exception>
+    public MementoService(IMemento memento)
     {
         this.memento = memento ?? throw new ArgumentNullException(nameof(memento));
     }
