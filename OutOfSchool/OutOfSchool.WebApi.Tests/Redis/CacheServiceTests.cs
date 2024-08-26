@@ -18,6 +18,7 @@ public class CacheServiceTests
     private Mock<IDistributedCache> distributedCacheMock;
     private Mock<IOptions<RedisConfig>> redisConfigMock;
     private ICacheService cacheService;
+    private ICrudCacheService crudCacheService;
 
     [SetUp]
     public void SetUp()
@@ -31,6 +32,7 @@ public class CacheServiceTests
             SlidingExpirationInterval = TimeSpan.FromMinutes(1),
         });
         cacheService = new CacheService(distributedCacheMock.Object, redisConfigMock.Object);
+        crudCacheService = new CacheService(distributedCacheMock.Object, redisConfigMock.Object);
     }
 
     [Test]
@@ -67,9 +69,7 @@ public class CacheServiceTests
             {"ExpectedKey", "ExpectedValue"},
         };
         distributedCacheMock.Setup(c => c.Get(It.IsAny<string>()))
-            .Returns((byte[]) null);
-
-
+            .Returns((byte[])null);
 
         // Act
         var result = await cacheService.GetOrAddAsync("Example", () => Task.FromResult(expected));
@@ -87,6 +87,75 @@ public class CacheServiceTests
 
     [Test]
     public async Task RemoveAsync_ShouldCallCacheRemove()
+    {
+        // Arrange & Act
+        await cacheService.RemoveAsync("Example");
+
+        // Assert
+        distributedCacheMock.Verify(
+            c => c.Remove("Example"),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task GetValueFromCacheAsync_WhenDataExistsInCacheAndNotExpired_ShouldReturnData()
+    {
+        // Arrange
+        var expected = new Dictionary<string, string>()
+        {
+            {"ExpectedKey", "ExpectedValue"},
+        };
+        distributedCacheMock.Setup(c => c.Get(It.IsAny<string>()))
+            .Returns(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(expected)));
+
+        // Act
+        var result = await crudCacheService.GetValueFromCacheAsync("ExpectedKey");
+
+        // Assert
+        result.Should().Contain("ExpectedValue");
+        distributedCacheMock.Verify(
+            c => c.Get(It.IsAny<string>()),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task GetValueFromCacheAsync_WhenDataNotExistsOrExpired_ShouldReturnNull()
+    {
+        // Arrange
+        var expected = new Dictionary<string, string>()
+        {
+            {"ExpectedKey", null},
+        };
+        distributedCacheMock.Setup(c => c.Get(It.IsAny<string>()))
+            .Returns(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(expected)));
+
+        // Act
+        var result = await crudCacheService.GetValueFromCacheAsync("ExpectedKey");
+
+        // Assert
+        result.Should().Contain("{\"ExpectedKey\":null}");
+        distributedCacheMock.Verify(
+            c => c.Get(It.IsAny<string>()),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task SetValueToCacheAsync_ShouldCallCacheSetAndSaveNewData()
+    {
+        // Arrange & Act
+        await crudCacheService.SetValueToCacheAsync("ExpectedKey", "ExpectedValue");
+
+        // Assert
+        distributedCacheMock.Verify(
+            c => c.Set(
+                It.IsAny<string>(),
+                It.IsAny<byte[]>(),
+                It.IsAny<DistributedCacheEntryOptions>()),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task RemoveFromCacheAsync_ShouldCallCacheRemove()
     {
         // Arrange & Act
         await cacheService.RemoveAsync("Example");
