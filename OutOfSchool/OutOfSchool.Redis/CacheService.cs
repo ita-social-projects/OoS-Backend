@@ -46,8 +46,12 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
     {
         T returnValue = default;
         isExists = false;
+        var cacheValue = await GetValueFromCacheAsync(key);
 
-        returnValue = JsonConvert.DeserializeObject<T>(await GetValueFromCacheAsync(key));
+        if (cacheValue is not null)
+        {
+            returnValue = JsonConvert.DeserializeObject<T>(await GetValueFromCacheAsync(key));
+        }
 
         if (!isExists)
         {
@@ -81,11 +85,10 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
             cacheLock.EnterReadLock();
             try
             {
-                var value = cache.GetString(key);
+                returnValue = cache.GetString(key);
 
-                if (value != null)
+                if (returnValue != null)
                 {
-                    returnValue = cache.GetString(key);
                     isExists = true;
                 }
             }
@@ -119,9 +122,9 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
             }
         });
     }
-    
+
     public Task RemoveFromCacheAsync(string key) => RemoveAsync(key);
-    
+
     public void Dispose()
     {
         Dispose(true);
