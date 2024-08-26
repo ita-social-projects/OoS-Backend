@@ -92,7 +92,7 @@ public class CacheServiceTests
 
         // Assert
         distributedCacheMock.Verify(
-            c => c.RemoveAsync("Example", It.IsAny<CancellationToken>()),
+            c => c.Remove("Example"),
             Times.Once);
     }
 }
