@@ -20,6 +20,7 @@ using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
@@ -40,6 +41,7 @@ public class AdminControllerTests
     private Mock<ISensitiveApplicationService> sensitiveApplicationService;
     private Mock<ILogger<AdminController>> logger;
     private Mock<IStringLocalizer<SharedResource>> localizer;
+    private Mock<ISensitiveWorkshopsService> workshopServicesCombiner;
 
     private string userId;
     private Guid providerId;
@@ -66,6 +68,7 @@ public class AdminControllerTests
         sensitiveApplicationService = new Mock<ISensitiveApplicationService>();
         logger = new Mock<ILogger<AdminController>>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
+        workshopServicesCombiner = new Mock<ISensitiveWorkshopsService>();
 
         userId = Guid.NewGuid().ToString();
         ministryAdminDtos = AdminGenerator.GenerateMinistryAdminsDtos(10);
@@ -80,6 +83,7 @@ public class AdminControllerTests
             sensitiveApplicationService.Object,
             sensitiveDirectionService.Object,
             sensitiveProviderService.Object,
+            workshopServicesCombiner.Object,
             localizer.Object)
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContext.Object },

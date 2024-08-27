@@ -8,6 +8,7 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
@@ -17,7 +18,7 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for Workshop entity.
 /// </summary>
-public class WorkshopService : IWorkshopService
+public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 {
     private readonly string includingPropertiesForMappingDtoModel =
         $"{nameof(Workshop.Address)},{nameof(Workshop.Teachers)},{nameof(Workshop.DateTimeRanges)},{nameof(Workshop.InstitutionHierarchy)}";
@@ -34,6 +35,10 @@ public class WorkshopService : IWorkshopService
     private readonly IProviderAdminRepository providerAdminRepository;
     private readonly IAverageRatingService averageRatingService;
     private readonly IProviderRepository providerRepository;
+    private readonly ICurrentUserService currentUserService;
+    private readonly IMinistryAdminService ministryAdminService;
+    private readonly IRegionAdminService regionAdminService;
+    private readonly ICodeficatorService codeficatorService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -47,6 +52,10 @@ public class WorkshopService : IWorkshopService
     /// <param name="providerAdminRepository">Repository for provider admins.</param>
     /// <param name="averageRatingService">Average rating service.</param>
     /// <param name="providerRepository">Repository for providers.</param>
+    /// <param name="currentUserService">Service that checks the roles and rights current user.</param>
+    /// <param name="ministryAdminService"> Service for ministry admin.</param>
+    /// <param name="regionAdminService">Service for region admin.</param>
+    /// <param name="codeficatorService">Srvice for CATOTTG.</param>
     public WorkshopService(
         IWorkshopRepository workshopRepository,
         IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository,
@@ -57,7 +66,11 @@ public class WorkshopService : IWorkshopService
         IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService,
         IProviderAdminRepository providerAdminRepository,
         IAverageRatingService averageRatingService,
-        IProviderRepository providerRepository)
+        IProviderRepository providerRepository,
+        ICurrentUserService currentUserService,
+        IMinistryAdminService ministryAdminService,
+        IRegionAdminService regionAdminService,
+        ICodeficatorService codeficatorService)
     {
         this.workshopRepository = workshopRepository;
         this.dateTimeRangeRepository = dateTimeRangeRepository;
@@ -69,6 +82,10 @@ public class WorkshopService : IWorkshopService
         this.providerAdminRepository = providerAdminRepository;
         this.averageRatingService = averageRatingService;
         this.providerRepository = providerRepository;
+        this.currentUserService = currentUserService;
+        this.ministryAdminService = ministryAdminService;
+        this.regionAdminService = regionAdminService;
+        this.codeficatorService = codeficatorService;
     }
 
     /// <inheritdoc/>
@@ -629,6 +646,117 @@ public class WorkshopService : IWorkshopService
         };
 
         return result;
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="ArgumentException">If the admin is not found in the database.</exception>
+    public async Task<SearchResult<WorkshopDto>> FetchByFilterForAdmins(WorkshopFilterAdministration filter = null)
+    {
+        logger.LogInformation("Started retrieving Workshops by filter for admins.");
+        filter = filter ?? new WorkshopFilterAdministration();
+
+        var predicate = await PredicateBuildForAdminds(filter);
+
+        var workshops = await workshopRepository.Get(
+                skip: filter.From,
+                take: filter.Size,
+                includeProperties: includingPropertiesForMappingDtoModel,
+                whereExpression: predicate)
+            .ToListAsync();
+
+        var workshopsDTO = mapper.Map<List<WorkshopDto>>(workshops);
+        var workshopsCount = workshops.Count;
+
+        logger.LogInformation("Retrieved {WorkshopsCount} matching recods by filter for admins.", workshopsCount);
+
+        var result = new SearchResult<WorkshopDto>()
+        {
+            TotalAmount = workshopsCount,
+            Entities = workshopsDTO,
+        };
+
+        return result;
+    }
+
+    private async Task<Expression<Func<Workshop, bool>>> PredicateBuildForAdminds(WorkshopFilterAdministration filter)
+    {
+        var predicate = PredicateBuilder.True<Workshop>();
+
+        // TODO: add condition for united territorial community admin
+        if (currentUserService.IsMinistryAdmin())
+        {
+           await ApplyFilterForMinistryAdmin(filter);
+        }
+        else if (currentUserService.IsRegionAdmin())
+        {
+            var tempPredicate = await ApplyFilterForRegionAdmin(filter);
+            predicate = predicate.And(tempPredicate);
+        }
+
+        if (!string.IsNullOrEmpty(filter.SearchString))
+        {
+            var tempPredicate = PredicateBuilder.False<Workshop>();
+
+            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                tempPredicate = tempPredicate.Or(x => EF.Functions.Like(x.Keywords, $"%{word}%"));
+            }
+
+            predicate = predicate.And(tempPredicate);
+        }
+
+        if (filter.InstitutionId != Guid.Empty)
+        {
+            predicate = predicate.And(x => x.InstitutionHierarchy.InstitutionId == filter.InstitutionId);
+        }
+
+        if (filter.CATOTTGId > 0)
+        {
+            var subSettlementsIds = await codeficatorService
+            .GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId).ConfigureAwait(false);
+
+            predicate = predicate.And(x => subSettlementsIds.Contains(x.Address.CATOTTGId));
+        }
+
+        return predicate;
+    }
+
+    private async Task ApplyFilterForMinistryAdmin(WorkshopFilterAdministration filter)
+    {
+        var userId = currentUserService.UserId;
+        var ministryAdmin = await ministryAdminService
+            .GetByUserId(userId)
+            .ConfigureAwait(false);
+
+        filter.InstitutionId = ministryAdmin.InstitutionId;
+    }
+
+    private async Task<Expression<Func<Workshop, bool>>> ApplyFilterForRegionAdmin(WorkshopFilterAdministration filter)
+    {
+        var userId = currentUserService.UserId;
+        var regionAdmin = await regionAdminService
+                .GetByUserId(userId).ConfigureAwait(false);
+ 
+        if (regionAdmin == null)
+        {
+            logger.LogError("Region admin with the specified ID: {Id} not found", userId);
+            throw new ArgumentException($"Region admin with the specified ID: {userId} not found");
+        }
+
+        filter.InstitutionId = regionAdmin.InstitutionId;
+
+        var subSettlementsIds = await codeficatorService
+            .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId)
+            .ConfigureAwait(false);
+
+        var tempPredicate = PredicateBuilder.False<Workshop>();
+
+        foreach (var item in subSettlementsIds)
+        {
+            tempPredicate = tempPredicate.Or(x => x.Provider.LegalAddress.CATOTTGId == item);
+        }
+
+        return tempPredicate;
     }
 
     public async Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids)

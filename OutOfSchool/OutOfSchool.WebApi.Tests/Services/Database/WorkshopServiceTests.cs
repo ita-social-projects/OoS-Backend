@@ -41,6 +41,10 @@ public class WorkshopServiceTests
     private Mock<IProviderAdminRepository> providerAdminRepository;
     private Mock<IAverageRatingService> averageRatingServiceMock;
     private Mock<IProviderRepository> providerRepositoryMock;
+    private Mock<ICurrentUserService> currentUserServiceMock;
+    private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock<IRegionAdminService> regionAdminServiceMock;
+    private Mock<ICodeficatorService> codeficatorServiceMock;
 
     [SetUp]
     public void SetUp()
@@ -56,6 +60,10 @@ public class WorkshopServiceTests
         providerAdminRepository = new Mock<IProviderAdminRepository>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
         providerRepositoryMock = new Mock<IProviderRepository>();
+        currentUserServiceMock = new Mock<ICurrentUserService>();
+        ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        regionAdminServiceMock = new Mock<IRegionAdminService>();
+        codeficatorServiceMock = new Mock<ICodeficatorService>();
 
         workshopService =
             new WorkshopService(
@@ -68,7 +76,11 @@ public class WorkshopServiceTests
                 workshopImagesMediator.Object,
                 providerAdminRepository.Object,
                 averageRatingServiceMock.Object,
-                providerRepositoryMock.Object);
+                providerRepositoryMock.Object,
+                currentUserServiceMock.Object,
+                ministryAdminServiceMock.Object,
+                regionAdminServiceMock.Object,
+                codeficatorServiceMock.Object);
     }
 
     #region Create
@@ -575,6 +587,11 @@ public class WorkshopServiceTests
         // Assert
         result.Should().BeEquivalentTo(ExpectedSearchResultGetByFilter(WithWorkshopsList()));
     }
+
+    #endregion
+
+    #region FetchByFilterForAdmins
+    
 
     #endregion
 

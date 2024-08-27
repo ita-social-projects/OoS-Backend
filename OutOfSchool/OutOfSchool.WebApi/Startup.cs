@@ -18,6 +18,7 @@ using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.BusinessLogic.Services.Strategies.WorkshopStrategies;
+using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.EmailSender;
 using OutOfSchool.EmailSender.Services;
@@ -288,6 +289,7 @@ public static class Startup
         services.AddTransient<IUserService, UserService>();
         services.AddTransient<IValidationService, ValidationService>();
         services.AddTransient<IWorkshopService, WorkshopService>();
+        services.AddTransient<ISensitiveWorkshopsService, WorkshopService>();
         services.AddTransient<IWorkshopServicesCombiner, WorkshopServicesCombiner>();
         services.AddTransient<IChangesLogService, ChangesLogService>();
         services.AddTransient<IValueProjector, ValueProjector>();

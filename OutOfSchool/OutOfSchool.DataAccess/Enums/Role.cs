@@ -8,4 +8,5 @@ public enum Role
     MinistryAdmin,
     RegionAdmin,
     AreaAdmin,
+    Moderator,
 }
