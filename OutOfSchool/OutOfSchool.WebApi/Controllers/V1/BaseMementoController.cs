@@ -8,12 +8,10 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// <typeparam name="T">T is the entity type that should be stored in the cache.</typeparam>
 public abstract class BaseMementoController<T> : ControllerBase
 {
-    private readonly ICrudCacheService crudCacheService;
     private readonly IMementoService<T> mementoService;
     private readonly IStorage storage;
 
     /// <summary>Initializes a new instance of the <see cref="BaseMementoController{T}" /> class.</summary>
-    /// <param name="crudCacheService">The CRUD cache service.</param>
     /// <param name="mementoService">The memento service.</param>
     /// <param name="storage">The storage.</param>
     /// <exception cref="System.ArgumentNullException">crudCacheService
@@ -21,12 +19,10 @@ public abstract class BaseMementoController<T> : ControllerBase
     /// mementoService
     /// or
     /// storage.</exception>
-    public BaseMementoController(
-        ICrudCacheService crudCacheService,
+    protected BaseMementoController(
         IMementoService<T> mementoService,
         IStorage storage)
     {
-        this.crudCacheService = crudCacheService ?? throw new ArgumentNullException(nameof(crudCacheService));
         this.mementoService = mementoService ?? throw new ArgumentNullException(nameof(mementoService));
         this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
     }
@@ -40,6 +36,11 @@ public abstract class BaseMementoController<T> : ControllerBase
     [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
     public async Task<IActionResult> StoreMemento([FromBody] T mementoDto)
     {
+        if (!ModelState.IsValid)
+        {
+            return this.BadRequest(ModelState);
+        }
+
         var userId = GettingUserProperties.GetUserId(User);
         var memento = mementoService.CreateMemento(userId, mementoDto);
         await storage.SetMementoValueAsync(memento.State);

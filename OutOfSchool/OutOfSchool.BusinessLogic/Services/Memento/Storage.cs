@@ -1,4 +1,6 @@
-﻿namespace OutOfSchool.BusinessLogic.Services.Memento;
+﻿using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
+
+namespace OutOfSchool.BusinessLogic.Services.Memento;
 
 /// <summary>
 /// Implements the IStorage interface to get, set, and remove memento in the cache.
@@ -23,9 +25,11 @@ public class Storage : IStorage
     /// <returns>Representing the asynchronous operation.</returns>
     public async Task SetMementoValueAsync(KeyValuePair<string, string?> keyValue)
     {
-        logger.LogInformation($"Setting memento with key = {keyValue.Key} to cache has started");
+        string logMsg = $"Setting memento with key = {keyValue.Key} to cache has started";
+        logger.LogInformation(logMsg);
         await crudCacheService.SetValueToCacheAsync(keyValue.Key, keyValue.Value ?? string.Empty);
-        logger.LogInformation($"Memento with key = {keyValue.Key} has been stored in cache");
+        logMsg = $"Memento with key = {keyValue.Key} has been stored in cache";
+        logger.LogInformation(logMsg);
     }
 
     /// <summary>Gets the memento value asynchronous.</summary>
@@ -35,16 +39,19 @@ public class Storage : IStorage
     /// </returns>
     public async Task<KeyValuePair<string, string?>> GetMementoValueAsync(string key)
     {
-        logger.LogDebug($"Getting memento with key = {key} from cache has started.");
+        string logMsg = $"Getting memento with key = {key} from cache has started.";
+        logger.LogDebug(logMsg);
         var value = await crudCacheService.GetValueFromCacheAsync(key);
 
         if (value == null)
         {
-            logger.LogWarning($"Memento with key = {key} not found in cache.");
+            logMsg = $"Memento with key = {key} not found in cache.";
+            logger.LogWarning(logMsg);
             return new KeyValuePair<string, string?>(key, null);
         }
 
-        logger.LogDebug($"Memento with key = {key} has been restored from cache.");
+        logMsg = $"Memento with key = {key} has been restored from cache.";
+        logger.LogDebug(logMsg);
         return new KeyValuePair<string, string?>(key, value);
     }
 
@@ -65,8 +72,10 @@ public class Storage : IStorage
             throw new InvalidOperationException(errMessage);
         }
 
-        logger.LogDebug($"Removing memento with key = {key} from cache has started.");
+        string logMsg = $"Removing memento with key = {key} from cache has started.";
+        logger.LogDebug(logMsg);
         await crudCacheService.RemoveFromCacheAsync(key);
-        logger.LogDebug($"Memento with key = {key} has been removed from the cache.");
+        logMsg = $"Memento with key = {key} has been removed from the cache.";
+        logger.LogDebug(logMsg);
     }
 }

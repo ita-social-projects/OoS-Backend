@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Services.Memento;
+using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
 using OutOfSchool.Redis;
 
 namespace OutOfSchool.WebApi.Tests.Services.Memento;

@@ -1,4 +1,6 @@
-﻿public interface IStorage
+﻿namespace OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
+
+public interface IStorage
 {
     Task SetMementoValueAsync(KeyValuePair<string, string?> keyValue);
 

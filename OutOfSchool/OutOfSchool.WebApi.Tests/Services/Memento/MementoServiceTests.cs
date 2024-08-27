@@ -25,7 +25,7 @@ public class MementoServiceTests
     public void RestoreMemento_WhenMementoExistsInCache_ShouldSetAppropriatedEntityToState()
     {
         // Arrange
-        var expectedValue = new RequiredWorkshopMemento()
+        var workshopMemento = new RequiredWorkshopMemento()
         {
             Title = "title",
             Email = "myemail@gmail.com",
@@ -38,16 +38,16 @@ public class MementoServiceTests
             "{\"Title\":\"title\",\"Email\":\"myemail@gmail.com\",\"Phone\":\"+380670000000\"}"));
 
         // Assert
-        Assert.AreEqual(expectedValue.Title, mementoService.State.Title);
-        Assert.AreEqual(expectedValue.Email, mementoService.State.Email);
-        Assert.AreEqual(expectedValue.Phone, mementoService.State.Phone);
+        Assert.AreEqual(workshopMemento.Title, mementoService.State.Title);
+        Assert.AreEqual(workshopMemento.Email, mementoService.State.Email);
+        Assert.AreEqual(workshopMemento.Phone, mementoService.State.Phone);
     }
 
     [Test]
     public void RestoreMemento_WhenMementoIsAbsentInCache_ShouldSetDefaultEntityToStateValue()
     {
         // Arrange
-        var expectedValue = default(RequiredWorkshopMemento);
+        var workshopMemento = default(RequiredWorkshopMemento);
 
         // Act
         mementoService.RestoreMemento(new KeyValuePair<string, string?>(
@@ -55,7 +55,7 @@ public class MementoServiceTests
             null));
 
         // Assert
-        Assert.AreEqual(expectedValue, null);
+        Assert.AreEqual(null, workshopMemento);
     }
 
     [Test]

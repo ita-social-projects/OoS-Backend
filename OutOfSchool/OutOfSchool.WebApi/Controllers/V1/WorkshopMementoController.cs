@@ -11,14 +11,12 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 public class WorkshopMementoController : BaseMementoController<RequiredWorkshopMemento>
 {
     /// <summary>Initializes a new instance of the <see cref="WorkshopMementoController" /> class.</summary>
-    /// <param name="crudCacheService">The CRUD cache service.</param>
     /// <param name="mementoService">The memento service.</param>
     /// <param name="storage">The storage.</param>
     public WorkshopMementoController(
-        ICrudCacheService crudCacheService,
         IMementoService<RequiredWorkshopMemento> mementoService,
         IStorage storage)
-        : base(crudCacheService, mementoService, storage)
+        : base(mementoService, storage)
     {
     }
 }
