@@ -6,25 +6,21 @@ namespace OutOfSchool.BusinessLogic.Services.Memento.Models;
 
 public class RequiredWorkshopMemento
 {
-    [Required(ErrorMessage = "Workshop title is required")]
     [MinLength(Constants.MinWorkshopTitleLength)]
     [MaxLength(Constants.MaxWorkshopTitleLength)]
     public string Title { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Workshop short title is required")]
     [MinLength(Constants.MinWorkshopShortTitleLength)]
     [MaxLength(Constants.MaxWorkshopShortTitleLength)]
     public string ShortTitle { get; set; } = string.Empty;
 
     [DataType(DataType.PhoneNumber)]
-    [Required(ErrorMessage = "Phone number is required")]
     [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
     [MaxLength(Constants.MaxPhoneNumberLengthWithPlusSign)]
     public string Phone { get; set; } = string.Empty;
 
     [DataType(DataType.EmailAddress)]
-    [Required(ErrorMessage = "Email is required")]
     [MaxLength(256)]
     public string Email { get; set; } = string.Empty;
 
