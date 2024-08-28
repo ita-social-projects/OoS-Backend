@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Configurations;
 using OutOfSchool.Services.Models.Configurations.Images;
 using OutOfSchool.Services.Models.Images;
@@ -113,6 +114,20 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<ParentBlockedByAdminLog> ParentBlockedByAdminLog { get; set; }
 
+    public DbSet<CompetitiveEvent> CompetitiveEvents { get; set; }
+
+    public DbSet<CompetitiveEventAccountingType> CompetitiveEventAccountingTypes { get; set; }
+
+    public DbSet<CompetitiveEventCoverage> CompetitiveEventCoverages { get; set; }
+
+    public DbSet<CompetitiveEventDescriptionItem> CompetitiveEventDescriptionItems { get; set; }
+
+    public DbSet<CompetitiveEventRegistrationDeadline> CompetitiveEventRegistrationDeadlines { get; set; }
+
+    public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
+
+    public int Complete() => this.SaveChanges();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -132,6 +147,11 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new ChatRoomWorkshopConfiguration());
         builder.ApplyConfiguration(new ChildConfiguration());
         builder.ApplyConfiguration(new CodeficatorConfiguration());
+        builder.ApplyConfiguration(new CompetitiveEventConfiguration());
+        builder.ApplyConfiguration(new CompetitiveEventAccountingTypeConfiguration());
+        builder.ApplyConfiguration(new CompetitiveEventCoverageConfiguration());
+        builder.ApplyConfiguration(new CompetitiveEventDescriptionItemConfiguration());
+        builder.ApplyConfiguration(new CompetitiveEventRegistrationDeadlineConfiguration());
         builder.ApplyConfiguration(new DateTimeRangeConfiguration());
         builder.ApplyConfiguration(new DirectionConfiguration());
         builder.ApplyConfiguration(new EntityImagesConfiguration<Provider>());

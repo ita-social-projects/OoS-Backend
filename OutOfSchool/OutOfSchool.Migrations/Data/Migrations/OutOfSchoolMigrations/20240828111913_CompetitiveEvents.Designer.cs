@@ -2,17 +2,20 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
 #nullable disable
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240828111913_CompetitiveEvents")]
+    partial class CompetitiveEvents
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1543,7 +1546,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 1L,
                             Description = "techadmin permissions",
-                            PackedPermissions = "ZGVmAwIBBAoLDQweIB8hKCkrLBc0MzI1Nzg+PTw/SEdJRlBRW11cXnJwcW9ufHp7eXh9kI6PjYyRVGc=",
+                            PackedPermissions = "ZGVmAwIBBAoLDQweIB8hKCkrLBc0MzI1Nzg+PTw/SEdJRlBRW11ccnBxb258ent5eH2Qjo+NjJFUZw==",
                             RoleName = "TechAdmin"
                         },
                         new
@@ -1571,29 +1574,22 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 5L,
                             Description = "ministry admin permissions",
-                            PackedPermissions = "ZWYDAgEECjI1NzgoLBRQUUZUblteenh5e32OjI2PkWc=",
+                            PackedPermissions = "ZWYDAgEECjI1NzgoLBRQUUZUblt6eHl7fY6MjY+RZw==",
                             RoleName = "MinistryAdmin"
                         },
                         new
                         {
                             Id = 6L,
                             Description = "region admin permissions",
-                            PackedPermissions = "ZWYDAgEECjI1NzgoFFBRRlR4eY6MjY+RW15n",
+                            PackedPermissions = "ZWYDAgEECjI1NzgoFFBRRlR4eY6MjY+RW2c=",
                             RoleName = "RegionAdmin"
                         },
                         new
                         {
                             Id = 7L,
                             Description = "area admin permissions",
-                            PackedPermissions = "ZWYDAgEECjI1NzgoFFBRRlSMjVteZw==",
+                            PackedPermissions = "ZWYDAgEECjI1NzgoFFBRRlSMjVtn",
                             RoleName = "AreaAdmin"
-                        },
-                        new
-                        {
-                            Id = 8L,
-                            Description = "moderator permissions",
-                            PackedPermissions = "MjdaXlQ=",
-                            RoleName = "Moderator"
                         });
                 });
 
