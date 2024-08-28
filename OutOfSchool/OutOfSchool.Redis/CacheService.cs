@@ -17,7 +17,6 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
     private bool isWorking = true;
     private readonly bool isEnabled = false;
     private readonly object lockObject = new object();
-    bool isExists = false;
     private bool isDisposed;
 
     public CacheService(
@@ -45,15 +44,13 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
         TimeSpan? slidingExpirationInterval = null)
     {
         T returnValue = default;
-        isExists = false;
         var cacheValue = await GetValueFromCacheAsync(key);
 
         if (cacheValue is not null)
         {
-            returnValue = JsonConvert.DeserializeObject<T>(await GetValueFromCacheAsync(key));
+            returnValue = JsonConvert.DeserializeObject<T>(cacheValue);
         }
-
-        if (!isExists)
+        else
         {
             returnValue = await newValueFactory();
             var value = JsonConvert.SerializeObject(returnValue);
@@ -86,11 +83,6 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
             try
             {
                 returnValue = cache.GetString(key);
-
-                if (returnValue != null)
-                {
-                    isExists = true;
-                }
             }
             finally
             {
