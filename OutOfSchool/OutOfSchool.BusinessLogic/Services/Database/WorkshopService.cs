@@ -649,7 +649,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     }
 
     /// <inheritdoc/>
-    /// <exception cref="ArgumentException">If the admin is not found in the database.</exception>
+    /// <exception cref="InvalidOperationException">If the region admin is not found in the database.</exception>
     public async Task<SearchResult<WorkshopDto>> FetchByFilterForAdmins(WorkshopFilterAdministration filter = null)
     {
         logger.LogInformation("Started retrieving Workshops by filter for admins.");
@@ -742,8 +742,9 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         if (regionAdmin == null)
         {
-            logger.LogError("Region admin with the specified ID: {Id} not found", userId);
-            throw new ArgumentException($"Region admin with the specified ID: {userId} not found");
+            var errorMsg = $"Region admin with the specified ID: {userId} not found";
+            logger.LogError(errorMsg);
+            throw new InvalidOperationException(errorMsg);
         }
 
         filter.InstitutionId = regionAdmin.InstitutionId;

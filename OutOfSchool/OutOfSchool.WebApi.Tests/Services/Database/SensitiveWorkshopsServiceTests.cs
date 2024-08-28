@@ -110,7 +110,7 @@ public class SensitiveWorkshopsServiceTests
         Func<Task<SearchResult<WorkshopDto>>> act = () => sensitiveWorkshopService.FetchByFilterForAdmins();
 
         // Act
-        act.Should().ThrowAsync<ArgumentException>()
+        act.Should().ThrowAsync<InvalidOperationException>()
         .WithMessage($"Region admin with the specified ID: {userId} not found");
     }
 
