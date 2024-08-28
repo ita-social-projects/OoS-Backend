@@ -44,17 +44,32 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
         TimeSpan? slidingExpirationInterval = null)
     {
         T returnValue = default;
-        var cacheValue = await GetValueFromCacheAsync(key);
+        bool isExists = false;
 
-        if (cacheValue is not null)
+        await ExecuteRedisMethod(async () =>
         {
-            returnValue = JsonConvert.DeserializeObject<T>(cacheValue);
-        }
-        else
+            //cacheLock.EnterReadLock();
+            try
+            {
+                var returnValue = await GetValueAsync<T>(key);
+
+                if (returnValue is not null)
+                {
+                    isExists = true;
+                    //return;
+                }
+            }
+            finally
+            {
+                //cacheLock.ExitReadLock();
+            }
+        });
+
+
+        if (!isExists)
         {
             returnValue = await newValueFactory();
-            var value = JsonConvert.SerializeObject(returnValue);
-            await SetValueToCacheAsync(key, value, absoluteExpirationRelativeToNowInterval, slidingExpirationInterval);
+            await SetValueAsync(key, returnValue, absoluteExpirationRelativeToNowInterval, slidingExpirationInterval);
         }
 
         return returnValue;
@@ -73,6 +88,52 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
                 cacheLock.ExitWriteLock();
             }
         });
+
+
+    public async Task<T> GetValueAsync<T>(string key)
+    {
+        T returnValue = default;
+
+        await ExecuteRedisMethod(() =>
+        {
+            cacheLock.EnterReadLock();
+            try
+            {
+                var value = cache.GetString(key);
+
+                if (value != null)
+                {
+                    returnValue = JsonConvert.DeserializeObject<T>(value);
+                }
+            }
+            finally
+            {
+                cacheLock.ExitReadLock();
+            }
+        });
+        return returnValue;
+    }
+
+    public async Task SetValueAsync<T>(string key, T value, TimeSpan? absoluteExpirationRelativeToNowInterval = null, TimeSpan? slidingExpirationInterval = null)
+    {
+        await this.ExecuteRedisMethod(() =>
+        {
+            cacheLock.EnterWriteLock();
+            try
+            {
+                var options = new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? redisConfig.AbsoluteExpirationRelativeToNowInterval,
+                    SlidingExpiration = slidingExpirationInterval ?? redisConfig.SlidingExpirationInterval,
+                };
+                cache.SetString(key, JsonConvert.SerializeObject(value), options);
+            }
+            finally
+            {
+                cacheLock.ExitWriteLock();
+            }
+        });
+    }
 
     public async Task<string?> GetValueFromCacheAsync(string key)
     {
