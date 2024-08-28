@@ -46,30 +46,40 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
         T returnValue = default;
         bool isExists = false;
 
-        await ExecuteRedisMethod(async () =>
+        await ExecuteRedisMethod(() =>
         {
-            //cacheLock.EnterReadLock();
+            cacheLock.EnterReadLock();
             try
             {
-                var returnValue = await GetValueAsync<T>(key);
+                var value = GetValue<T>(key);
 
-                if (returnValue is not null)
+                if (value != null)
                 {
                     isExists = true;
-                    //return;
+                    return;
                 }
             }
             finally
             {
-                //cacheLock.ExitReadLock();
+                cacheLock.ExitReadLock();
             }
         });
-
 
         if (!isExists)
         {
             returnValue = await newValueFactory();
-            await SetValueAsync(key, returnValue, absoluteExpirationRelativeToNowInterval, slidingExpirationInterval);
+            await ExecuteRedisMethod(() =>
+            {
+                cacheLock.EnterWriteLock();
+                try
+                {
+                    SetValue(key, returnValue, absoluteExpirationRelativeToNowInterval, slidingExpirationInterval);
+                }
+                finally
+                {
+                    cacheLock.ExitWriteLock();
+                }
+            });
         }
 
         return returnValue;
@@ -89,7 +99,6 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
             }
         });
 
-
     public async Task<T> GetValueAsync<T>(string key)
     {
         T returnValue = default;
@@ -99,12 +108,7 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
             cacheLock.EnterReadLock();
             try
             {
-                var value = cache.GetString(key);
-
-                if (value != null)
-                {
-                    returnValue = JsonConvert.DeserializeObject<T>(value);
-                }
+                returnValue = GetValue<T>(key);
             }
             finally
             {
@@ -118,21 +122,30 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
     {
         await this.ExecuteRedisMethod(() =>
         {
-            cacheLock.EnterWriteLock();
-            try
-            {
-                var options = new DistributedCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? redisConfig.AbsoluteExpirationRelativeToNowInterval,
-                    SlidingExpiration = slidingExpirationInterval ?? redisConfig.SlidingExpirationInterval,
-                };
-                cache.SetString(key, JsonConvert.SerializeObject(value), options);
-            }
-            finally
-            {
-                cacheLock.ExitWriteLock();
-            }
+            SetValue(key, value, absoluteExpirationRelativeToNowInterval, slidingExpirationInterval);
         });
+    }
+
+    private T GetValue<T>(string key)
+    {
+        T returnValue = default;
+        string value = cache.GetString(key);
+
+        if (value != null)
+        {
+            returnValue = JsonConvert.DeserializeObject<T>(value);
+        }
+        return returnValue;
+    }
+
+    private void SetValue<T>(string key, T value, TimeSpan? absoluteExpirationRelativeToNowInterval = null, TimeSpan? slidingExpirationInterval = null)
+    {
+        var options = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? redisConfig.AbsoluteExpirationRelativeToNowInterval,
+            SlidingExpiration = slidingExpirationInterval ?? redisConfig.SlidingExpirationInterval,
+        };
+        cache.SetString(key, JsonConvert.SerializeObject(value), options);
     }
 
     public async Task<string?> GetValueFromCacheAsync(string key)
