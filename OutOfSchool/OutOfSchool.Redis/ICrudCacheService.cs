@@ -5,13 +5,13 @@ namespace OutOfSchool.Redis;
 
 public interface ICrudCacheService
 {
-    Task<string?> GetValueFromCacheAsync(string key);
+    Task<string> GetValueAsync(string key);
 
-    Task SetValueToCacheAsync(
+    public Task SetValueAsync<T>(
         string key,
-        string value,
+        T value,
         TimeSpan? absoluteExpirationRelativeToNowInterval = null,
         TimeSpan? slidingExpirationInterval = null);
 
-    Task RemoveFromCacheAsync(string key);
+    Task RemoveAsync(string key);
 }

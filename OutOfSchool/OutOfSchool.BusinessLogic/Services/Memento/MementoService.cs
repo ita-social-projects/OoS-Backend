@@ -9,52 +9,72 @@ namespace OutOfSchool.BusinessLogic.Services.Memento;
 /// <typeparam name="T">T is the entity type that should be stored in the cache.</typeparam>
 public class MementoService<T> : IMementoService<T>
 {
-    private readonly IMemento memento;
+    private readonly ICrudCacheService crudCacheService;
+    private readonly ILogger<MementoService<T>> logger;
 
     /// <summary>Initializes a new instance of the <see cref="MementoService{T}" /> class.</summary>
-    /// <param name="memento">The memento.</param>
-    /// <exception cref="ArgumentNullException">Memento.</exception>
-    public MementoService(IMemento memento)
+    /// <param name="crudCacheService">The CRUD cache service.</param>
+    /// <param name="logger">The logger.</param>
+    public MementoService(
+        ICrudCacheService crudCacheService,
+        ILogger<MementoService<T>> logger)
     {
-        this.memento = memento ?? throw new ArgumentNullException(nameof(memento));
+        this.crudCacheService = crudCacheService;
+        this.logger = logger;
     }
 
-    /// <summary>Gets or sets the State of the memento.</summary>
-    /// <value>The state of the memento.</value>
-    public T? State { get; set; }
-
     /// <summary>Restores the memento.</summary>
-    /// <param name="memento">The memento.</param>
-    public void RestoreMemento(KeyValuePair<string, string?> memento)
+    /// <param name="key">The key.</param>
+    /// <returns> Representing the asynchronous operation with result of T type.</returns>
+    public async Task<T> RestoreMemento(string key)
     {
-        if (memento.Value is null)
+        var memento = await crudCacheService.GetValueAsync(GetMementoKey(key));
+
+        if (memento is null)
         {
-            State = default;
+            return default;
         }
         else
         {
-            State = JsonConvert.DeserializeObject<T>(memento.Value);
+            return JsonConvert.DeserializeObject<T>(memento);
         }
     }
 
-    /// <summary>Creates the memento.</summary>
+    /// <summary>Creates the memento in the cache.</summary>
     /// <param name="key">The key.</param>
     /// <param name="value">The value.</param>
     /// <returns>
-    /// A memento of the type IMemento.
+    /// Representing the asynchronous operation - creating memento in the cache.
     /// </returns>
-    public IMemento CreateMemento(string key, T value)
+    public async Task CreateMemento(string key, T value)
     {
-        memento.State = new KeyValuePair<string, string?>(GetMementoKey(key), JsonConvert.SerializeObject(value));
-        return memento;
+        await crudCacheService.SetValueAsync(GetMementoKey(key), value);
     }
 
-    /// <summary>Gets the memento key.</summary>
+    /// <summary>Asynchronously removes a memento from the cache.</summary>
     /// <param name="key">The key.</param>
-    /// <returns>
-    /// Memento key of string type.
-    /// </returns>
-    public string GetMementoKey(string key)
+    /// <returns>Representation of an asynchronous operation - removing memento from the cache.</returns>
+    public async Task RemoveMementoAsync(string key)
+    {
+        string logMessage;
+        string mementoKey = GetMementoKey(key);
+        var valueToRemove = await crudCacheService.GetValueAsync(mementoKey);
+
+        if (valueToRemove == null)
+        {
+            logMessage = $"Memento with key = {mementoKey} was not found in the cache.";
+            logger.LogInformation(logMessage);
+            return;
+        }
+
+        string logMsg = $"Removing memento with key = {mementoKey} from cache has started.";
+        logger.LogInformation(logMsg);
+        await crudCacheService.RemoveAsync(mementoKey);
+        logMsg = $"Memento with key = {mementoKey} has been removed from the cache.";
+        logger.LogInformation(logMsg);
+    }
+
+    private static string GetMementoKey(string key)
     {
         return string.Format("{0}_{1}", key, typeof(T).Name);
     }

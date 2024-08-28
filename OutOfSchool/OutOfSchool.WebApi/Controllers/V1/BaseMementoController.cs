@@ -9,67 +9,45 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 public abstract class BaseMementoController<T> : ControllerBase
 {
     private readonly IMementoService<T> mementoService;
-    private readonly IStorage storage;
 
     /// <summary>Initializes a new instance of the <see cref="BaseMementoController{T}" /> class.</summary>
     /// <param name="mementoService">The memento service.</param>
-    /// <param name="storage">The storage.</param>
-    /// <exception cref="System.ArgumentNullException">crudCacheService
-    /// or
-    /// mementoService
-    /// or
-    /// storage.</exception>
-    protected BaseMementoController(
-        IMementoService<T> mementoService,
-        IStorage storage)
+    protected BaseMementoController(IMementoService<T> mementoService)
     {
-        this.mementoService = mementoService ?? throw new ArgumentNullException(nameof(mementoService));
-        this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
+        this.mementoService = mementoService;
     }
 
     /// <summary>Stores the memento.</summary>
     /// <param name="mementoDto">The memento dto for type T.</param>
     /// <returns>
-    /// Information about storing an entity of type T in the cache.
+    /// Information about the stored entity of type T in the cache.
     /// </returns>
     [HttpPost]
     [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
     public async Task<IActionResult> StoreMemento([FromBody] T mementoDto)
     {
-        if (!ModelState.IsValid)
-        {
-            return this.BadRequest(ModelState);
-        }
-
-        var userId = GettingUserProperties.GetUserId(User);
-        var memento = mementoService.CreateMemento(userId, mementoDto);
-        await storage.SetMementoValueAsync(memento.State);
+        await mementoService.CreateMemento(GettingUserProperties.GetUserId(User), mementoDto);
         return Ok($"{typeof(T).Name} is stored");
     }
 
     /// <summary>Restores the memento.</summary>
-    /// <returns>
-    /// The memento dto for type T.
-    /// </returns>
+    /// <returns> The memento dto of type T.</returns>
     [HttpGet]
     [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
     public async Task<IActionResult> RestoreMemento()
     {
-        var mementoKey = mementoService.GetMementoKey(GettingUserProperties.GetUserId(User));
-        mementoService.RestoreMemento(await storage.GetMementoValueAsync(mementoKey));
-        return Ok(mementoService.State);
+        var memento = await mementoService.RestoreMemento(GettingUserProperties.GetUserId(User));
+        return Ok(memento);
     }
 
-    /// <summary>Removes the memento.</summary>
-    /// <returns>
-    /// Information about removing an entity of type T from the cache.
-    /// </returns>
+    /// <summary>Removes the memento fron the cache.</summary>
+    /// <returns> Information about removing an entity of type T from the cache.</returns>
     [HttpGet]
     [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
     public async Task<IActionResult> RemoveMemento()
     {
-        var mementoKey = mementoService.GetMementoKey(GettingUserProperties.GetUserId(User));
-        await storage.RemoveMementoAsync(mementoKey);
-        return Ok($"{typeof(T).Name} with key = {mementoKey} has been removed");
+        var userId = GettingUserProperties.GetUserId(User);
+        await mementoService.RemoveMementoAsync(userId);
+        return Ok($"{typeof(T).Name} for User with Id = {userId} has been removed");
     }
 }

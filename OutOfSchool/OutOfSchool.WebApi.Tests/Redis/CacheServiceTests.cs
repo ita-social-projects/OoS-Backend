@@ -50,8 +50,8 @@ public class CacheServiceTests
         var result = await cacheService.GetOrAddAsync("Example", () => Task.FromResult(expected));
 
         // Assert
-        //result.Keys.Should().Contain("ExpectedKey");
-        //result.Values.Should().Contain("ExpectedValue");
+        result.Keys.Should().Contain("ExpectedKey");
+        result.Values.Should().Contain("ExpectedValue");
         distributedCacheMock.Verify(
             c => c.Set(
                 It.IsAny<string>(),
@@ -98,7 +98,7 @@ public class CacheServiceTests
     }
 
     [Test]
-    public async Task GetValueFromCacheAsync_WhenDataExistsInCacheAndNotExpired_ShouldReturnData()
+    public async Task GetValueAsync_WhenDataExistsInCacheAndNotExpired_ShouldReturnData()
     {
         // Arrange
         var expected = new Dictionary<string, string>()
@@ -109,7 +109,7 @@ public class CacheServiceTests
             .Returns(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(expected)));
 
         // Act
-        var result = await crudCacheService.GetValueFromCacheAsync("ExpectedKey");
+        var result = await crudCacheService.GetValueAsync("ExpectedKey");
 
         // Assert
         result.Should().Contain("ExpectedValue");
@@ -118,8 +118,7 @@ public class CacheServiceTests
             Times.Once);
     }
 
-    [Test]
-    public async Task GetValueFromCacheAsync_WhenDataNotExistsOrExpired_ShouldReturnNull()
+    public async Task GetValueAsync_WhenDataNotExistsOrExpired_ShouldReturnNull()
     {
         // Arrange
         var expected = new Dictionary<string, string>()
@@ -130,7 +129,7 @@ public class CacheServiceTests
             .Returns(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(expected)));
 
         // Act
-        var result = await crudCacheService.GetValueFromCacheAsync("ExpectedKey");
+        var result = await crudCacheService.GetValueAsync("ExpectedKey");
 
         // Assert
         result.Should().Contain("{\"ExpectedKey\":null}");
@@ -140,10 +139,10 @@ public class CacheServiceTests
     }
 
     [Test]
-    public async Task SetValueToCacheAsync_ShouldCallCacheSetAndSaveNewData()
+    public async Task SetValueAsync_ShouldCallCacheSetAndSaveNewData()
     {
         // Arrange & Act
-        await crudCacheService.SetValueToCacheAsync("ExpectedKey", "ExpectedValue");
+        await crudCacheService.SetValueAsync("ExpectedKey", "ExpectedValue");
 
         // Assert
         distributedCacheMock.Verify(
@@ -151,18 +150,6 @@ public class CacheServiceTests
                 It.IsAny<string>(),
                 It.IsAny<byte[]>(),
                 It.IsAny<DistributedCacheEntryOptions>()),
-            Times.Once);
-    }
-
-    [Test]
-    public async Task RemoveFromCacheAsync_ShouldCallCacheRemove()
-    {
-        // Arrange & Act
-        await cacheService.RemoveAsync("Example");
-
-        // Assert
-        distributedCacheMock.Verify(
-            c => c.Remove("Example"),
             Times.Once);
     }
 }

@@ -12,11 +12,9 @@ public class WorkshopMementoController : BaseMementoController<RequiredWorkshopM
 {
     /// <summary>Initializes a new instance of the <see cref="WorkshopMementoController" /> class.</summary>
     /// <param name="mementoService">The memento service.</param>
-    /// <param name="storage">The storage.</param>
     public WorkshopMementoController(
-        IMementoService<RequiredWorkshopMemento> mementoService,
-        IStorage storage)
-        : base(mementoService, storage)
+        IMementoService<RequiredWorkshopMemento> mementoService)
+        : base(mementoService)
     {
     }
 }
