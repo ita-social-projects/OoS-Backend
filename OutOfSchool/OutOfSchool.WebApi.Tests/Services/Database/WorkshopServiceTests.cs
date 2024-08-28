@@ -590,11 +590,6 @@ public class WorkshopServiceTests
 
     #endregion
 
-    #region FetchByFilterForAdmins
-    
-
-    #endregion
-
     #region With
     private static IEnumerable<Workshop> WithWorkshopsList()
     {

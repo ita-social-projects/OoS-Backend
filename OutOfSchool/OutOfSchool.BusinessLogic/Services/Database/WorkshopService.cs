@@ -662,7 +662,9 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
                 take: filter.Size,
                 includeProperties: includingPropertiesForMappingDtoModel,
                 whereExpression: predicate)
-            .ToListAsync();
+            .AsNoTracking()
+            .ToListAsync()
+            .ConfigureAwait(false);
 
         var workshopsDTO = mapper.Map<List<WorkshopDto>>(workshops);
         var workshopsCount = workshops.Count;
@@ -735,8 +737,9 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     {
         var userId = currentUserService.UserId;
         var regionAdmin = await regionAdminService
-                .GetByUserId(userId).ConfigureAwait(false);
- 
+                .GetByUserId(userId)
+                .ConfigureAwait(false);
+
         if (regionAdmin == null)
         {
             logger.LogError("Region admin with the specified ID: {Id} not found", userId);
@@ -753,7 +756,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         foreach (var item in subSettlementsIds)
         {
-            tempPredicate = tempPredicate.Or(x => x.Provider.LegalAddress.CATOTTGId == item);
+            tempPredicate = tempPredicate.Or(x => x.Address.CATOTTGId == item);
         }
 
         return tempPredicate;
