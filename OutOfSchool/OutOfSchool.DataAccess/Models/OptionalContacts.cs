@@ -7,11 +7,7 @@ namespace OutOfSchool.Services.Models;
 /// </summary>
 public class OptionalContacts
 {
-    public List<Facebook> Facebooks { get; set; }
-
-    public List<Instagram> Instagrams { get; set; }
+    public List<SocialNetworkContact> SocialNetworkContacts { get; set; }
 
     public List<Email> Emails { get; set; }
-
-    public List<Website> Websites { get; set; }
 }
