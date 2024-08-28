@@ -26,7 +26,7 @@ public class MementoServiceTests
     }
 
     [Test]
-    public async Task RestoreMemento_WhenMementoExistsInCache_ShouldRestoreAppropriatedEntity()
+    public async Task RestoreAsync_WhenMementoExistsInCache_ShouldRestoreAppropriatedEntity()
     {
         // Arrange
         var workshopMemento = new RequiredWorkshopMemento()
@@ -44,7 +44,7 @@ public class MementoServiceTests
             .Returns(() => Task.FromResult(expected["ExpectedKey"]));
 
         // Act
-        var result = await mementoService.RestoreMemento("ExpectedKey");
+        var result = await mementoService.RestoreAsync("ExpectedKey");
 
         // Assert
         crudCacheServiceMock.Verify(
@@ -56,13 +56,13 @@ public class MementoServiceTests
     }
 
     [Test]
-    public async Task RestoreMemento_WhenMementoIsAbsentInCache_ShouldRestoreDefaultEntity()
+    public async Task RestoreAsync_WhenMementoIsAbsentInCache_ShouldRestoreDefaultEntity()
     {
         // Arrange
         var expectedMemento = default(RequiredWorkshopMemento);
 
         // Arrange & Act
-        var result = await mementoService.RestoreMemento("ExpectedKey");
+        var result = await mementoService.RestoreAsync("ExpectedKey");
 
         // Assert
         crudCacheServiceMock.Verify(
@@ -72,7 +72,7 @@ public class MementoServiceTests
     }
 
     [Test]
-    public void CreateMemento_ShouldReturnCreatedMemento()
+    public void CreateAsync_ShouldReturnCreatedMemento()
     {
         // Arrange
         var workshopMemento = new RequiredWorkshopMemento()
@@ -89,7 +89,7 @@ public class MementoServiceTests
             null));
 
         // Act
-        var result = mementoService.CreateMemento("ExpectedKey", workshopMemento);
+        var result = mementoService.CreateAsync("ExpectedKey", workshopMemento);
 
         // Assert
         crudCacheServiceMock.Verify(
@@ -102,7 +102,7 @@ public class MementoServiceTests
     }
 
     [Test]
-    public async Task RemoveMementoAsync_WhenDataExistsInCache_ShouldCallRemoveAsyncOnce()
+    public async Task RemoveAsync_WhenDataExistsInCache_ShouldCallRemoveAsyncOnce()
     {
         // Arrange
         var expected = new Dictionary<string, string>()
@@ -113,7 +113,7 @@ public class MementoServiceTests
             .Returns(() => Task.FromResult(expected["ExpectedKey"]));
 
         // Act
-        await mementoService.RemoveMementoAsync("ExpectedKey");
+        await mementoService.RemoveAsync("ExpectedKey");
 
         // Assert
         crudCacheServiceMock.Verify(
@@ -125,7 +125,7 @@ public class MementoServiceTests
     }
 
     [Test]
-    public async Task RemoveMementoAsync_WhenDataIsAbsentInCache_ShouldCallRemoveAsyncNever()
+    public async Task RemoveAsync_WhenDataIsAbsentInCache_ShouldCallRemoveAsyncNever()
     {
         // Arrange
         var expected = new Dictionary<string, string>()
@@ -136,7 +136,7 @@ public class MementoServiceTests
             .Returns(() => Task.FromResult(expected["ExpectedKey"]));
 
         // Act
-        await mementoService.RemoveMementoAsync("ExpectedKey");
+        await mementoService.RemoveAsync("ExpectedKey");
 
         // Assert
         crudCacheServiceMock.Verify(

@@ -26,7 +26,12 @@ public abstract class BaseMementoController<T> : ControllerBase
     [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
     public async Task<IActionResult> StoreMemento([FromBody] T mementoDto)
     {
-        await mementoService.CreateMemento(GettingUserProperties.GetUserId(User), mementoDto);
+        if (!ModelState.IsValid)
+        {
+            return this.BadRequest(ModelState);
+        }
+
+        await mementoService.CreateAsync(GettingUserProperties.GetUserId(User), mementoDto);
         return Ok($"{typeof(T).Name} is stored");
     }
 
@@ -36,7 +41,7 @@ public abstract class BaseMementoController<T> : ControllerBase
     [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
     public async Task<IActionResult> RestoreMemento()
     {
-        var memento = await mementoService.RestoreMemento(GettingUserProperties.GetUserId(User));
+        var memento = await mementoService.RestoreAsync(GettingUserProperties.GetUserId(User));
         return Ok(memento);
     }
 
@@ -47,7 +52,7 @@ public abstract class BaseMementoController<T> : ControllerBase
     public async Task<IActionResult> RemoveMemento()
     {
         var userId = GettingUserProperties.GetUserId(User);
-        await mementoService.RemoveMementoAsync(userId);
+        await mementoService.RemoveAsync(userId);
         return Ok($"{typeof(T).Name} for User with Id = {userId} has been removed");
     }
 }

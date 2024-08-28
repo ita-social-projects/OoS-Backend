@@ -33,10 +33,44 @@ public class WorkshopMementoControllerTests
     }
 
     [Test]
+    public async Task StoreMemento_WhenModelIsValid_ReturnsOkObjectResult()
+    {
+        // Arrange
+        mementoService.Setup(ms => ms.CreateAsync(It.IsAny<string>(), memento));
+
+        // Act
+        var result = await controller.StoreMemento(memento);
+
+        // Assert
+        result.Should()
+              .BeOfType<OkObjectResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status200OK);
+        result.Should()
+              .BeOfType<OkObjectResult>()
+              .Which.Value.Should().NotBe(default(RequiredWorkshopMemento));
+    }
+
+    [Test]
+    public async Task StoreMemento_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        controller.ModelState.AddModelError("StoreMemento", "Invalid model state.");
+
+        // Act
+        var result = await controller.StoreMemento(memento);
+
+        // Assert
+        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+        Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
     public async Task RestoreMemento_WhenMementoExistsInCache_ReturnsMementoAtActionResult()
     {
         // Arrange
-        mementoService.Setup(rm => rm.RestoreMemento(It.IsAny<string>())).ReturnsAsync(memento);
+        mementoService.Setup(rm => rm.RestoreAsync(It.IsAny<string>())).ReturnsAsync(memento);
 
         // Act
         var result = await controller.RestoreMemento();
@@ -56,7 +90,7 @@ public class WorkshopMementoControllerTests
     public async Task RestoreMemento_WhenMementoIsAbsentInCache_ReturnsDefaultMementoAtActionResult()
     {
         // Arrange
-        mementoService.Setup(ms => ms.RestoreMemento(It.IsAny<string>())).ReturnsAsync(default(RequiredWorkshopMemento));
+        mementoService.Setup(ms => ms.RestoreAsync(It.IsAny<string>())).ReturnsAsync(default(RequiredWorkshopMemento));
 
         // Act
         var result = await controller.RestoreMemento();

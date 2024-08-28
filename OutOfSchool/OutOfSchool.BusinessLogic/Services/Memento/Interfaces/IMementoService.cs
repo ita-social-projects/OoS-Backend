@@ -1,9 +1,9 @@
 ﻿namespace OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
 public interface IMementoService<T>
 {
-    Task<T> RestoreMemento(string key);
+    Task<T> RestoreAsync(string key);
 
-    Task CreateMemento(string key, T value);
+    Task CreateAsync(string key, T value);
 
-    Task RemoveMementoAsync(string key);
+    Task RemoveAsync(string key);
 }

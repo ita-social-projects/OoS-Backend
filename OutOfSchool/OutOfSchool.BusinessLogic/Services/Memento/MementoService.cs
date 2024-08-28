@@ -26,7 +26,7 @@ public class MementoService<T> : IMementoService<T>
     /// <summary>Restores the memento.</summary>
     /// <param name="key">The key.</param>
     /// <returns> Representing the asynchronous operation with result of T type.</returns>
-    public async Task<T> RestoreMemento(string key)
+    public async Task<T> RestoreAsync(string key)
     {
         var memento = await crudCacheService.GetValueAsync(GetMementoKey(key));
 
@@ -46,7 +46,7 @@ public class MementoService<T> : IMementoService<T>
     /// <returns>
     /// Representing the asynchronous operation - creating memento in the cache.
     /// </returns>
-    public async Task CreateMemento(string key, T value)
+    public async Task CreateAsync(string key, T value)
     {
         await crudCacheService.SetValueAsync(GetMementoKey(key), value);
     }
@@ -54,7 +54,7 @@ public class MementoService<T> : IMementoService<T>
     /// <summary>Asynchronously removes a memento from the cache.</summary>
     /// <param name="key">The key.</param>
     /// <returns>Representation of an asynchronous operation - removing memento from the cache.</returns>
-    public async Task RemoveMementoAsync(string key)
+    public async Task RemoveAsync(string key)
     {
         string logMessage;
         string mementoKey = GetMementoKey(key);
