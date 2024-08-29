@@ -87,6 +87,7 @@ public class CompetitiveEventController : ControllerBase
     //[HasPermission(Permissions.CompetitiveEventRemove)]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpDelete("{id}")]
