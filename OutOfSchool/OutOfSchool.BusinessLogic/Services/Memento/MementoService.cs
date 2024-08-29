@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Google.Protobuf.WellKnownTypes;
 using Newtonsoft.Json;
 using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
 
@@ -29,7 +30,7 @@ public class MementoService<T> : IMementoService<T>
     /// <returns> Representing the asynchronous operation with result of T type.</returns>
     public async Task<T> RestoreAsync([NotNull] string key)
     {
-        var mementoKey = key is not null ? GetMementoKey(key) : throw new ArgumentNullException(nameof(MementoService<T>));
+        var mementoKey = key is not null ? GetMementoKey(key) : throw new ArgumentNullException(nameof(key));
         var memento = await crudCacheService.GetValueAsync(mementoKey);
 
         if (memento is null)
@@ -48,8 +49,8 @@ public class MementoService<T> : IMementoService<T>
     /// </returns>
     public async Task CreateAsync([NotNull] string key, [NotNull] T value)
     {
-        var mementoValue = value ?? throw new ArgumentNullException(nameof(T));
-        var mementoKey = key is not null ? GetMementoKey(key) : throw new ArgumentNullException(nameof(MementoService<T>));
+        var mementoKey = key is not null ? GetMementoKey(key) : throw new ArgumentNullException(nameof(key));
+        var mementoValue = value ?? throw new ArgumentNullException(nameof(value));
         await crudCacheService.SetValueAsync(mementoKey, mementoValue);
     }
 
@@ -58,7 +59,7 @@ public class MementoService<T> : IMementoService<T>
     /// <returns>Representation of an asynchronous operation - removing memento from the cache.</returns>
     public async Task RemoveAsync([NotNull] string key)
     {
-        var mementoKey = key is not null ? GetMementoKey(key) : throw new ArgumentNullException(nameof(MementoService<T>));
+        var mementoKey = key is not null ? GetMementoKey(key) : throw new ArgumentNullException(nameof(key));
         var valueToRemove = await crudCacheService.GetValueAsync(mementoKey);
 
         if (valueToRemove == null)
