@@ -8,10 +8,6 @@ internal class CompetitiveEventAccountingTypeConfiguration : IEntityTypeConfigur
 {
     public void Configure(EntityTypeBuilder<CompetitiveEventAccountingType> builder)
     {
-        builder.HasKey(x => x.Id);
-
-        builder.HasIndex(x => x.IsDeleted);
-
-        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
+        builder.ConfigureKeyedSoftDeleted<int, CompetitiveEventAccountingType>();
     }
 }

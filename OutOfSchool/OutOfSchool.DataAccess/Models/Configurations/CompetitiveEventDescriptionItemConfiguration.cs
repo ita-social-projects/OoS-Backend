@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 
@@ -8,8 +9,6 @@ internal class CompetitiveEventDescriptionItemConfiguration : IEntityTypeConfigu
 {
     public void Configure(EntityTypeBuilder<CompetitiveEventDescriptionItem> builder)
     {
-        builder.HasIndex(x => x.IsDeleted);
-
-        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
+        builder.ConfigureKeyedSoftDeleted<Guid,  CompetitiveEventDescriptionItem>();
     }
 }

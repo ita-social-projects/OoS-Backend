@@ -8,10 +8,6 @@ internal class CompetitiveEventRegistrationDeadlineConfiguration : IEntityTypeCo
 {
     public void Configure(EntityTypeBuilder<CompetitiveEventRegistrationDeadline> builder)
     {
-        builder.HasKey(x => x.Id);
-
-        builder.HasIndex(x => x.IsDeleted);
-
-        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
+        builder.ConfigureKeyedSoftDeleted<int, CompetitiveEventRegistrationDeadline>();
     }
 }

@@ -8,10 +8,6 @@ internal class CompetitiveEventCoverageConfiguration : IEntityTypeConfiguration<
 {
     public void Configure(EntityTypeBuilder<CompetitiveEventCoverage> builder)
     {
-        builder.HasKey(x => x.Id);
-
-        builder.HasIndex(x => x.IsDeleted);
-
-        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
+        builder.ConfigureKeyedSoftDeleted<int, CompetitiveEventCoverage>();
     }
 }
