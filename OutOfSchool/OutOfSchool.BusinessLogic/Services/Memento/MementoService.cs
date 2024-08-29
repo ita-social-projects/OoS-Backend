@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Google.Protobuf.WellKnownTypes;
 using Newtonsoft.Json;
 using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
 
