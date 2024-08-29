@@ -30,7 +30,7 @@ public class CompetitiveEventService : ICompetitiveEventService
     /// <inheritdoc/>
     public async Task<CompetitiveEventDto> GetById(Guid id)
     {
-        logger.LogInformation($"Getting CompetitiveEvent by Id started. Looking Id = {id}.");
+        logger.LogTrace($"Getting CompetitiveEvent by Id started. Looking Id = {id}.");
 
         var competitiveEvent = await competitiveEventRepository.GetById(id).ConfigureAwait(false);
 
@@ -41,7 +41,7 @@ public class CompetitiveEventService : ICompetitiveEventService
                 localizer["The id cannot be greater than number of table entities."]);
         }
 
-        logger.LogInformation($"Successfully got a CompetitiveEvent with Id = {id}.");
+        logger.LogTrace($"Successfully got a CompetitiveEvent with Id = {id}.");
 
         return mapper.Map<CompetitiveEventDto>(competitiveEvent);
     }
@@ -49,13 +49,13 @@ public class CompetitiveEventService : ICompetitiveEventService
     /// <inheritdoc/>
     public async Task<CompetitiveEventDto> Create(CompetitiveEventDto dto)
     {
-        logger.LogInformation("CompetitiveEvent creating was started.");
+        logger.LogTrace("CompetitiveEvent creating was started.");
 
         var competitiveEvent = mapper.Map<CompetitiveEvent>(dto);
 
         var newCompetitiveEvent = await competitiveEventRepository.Create(competitiveEvent).ConfigureAwait(false);
 
-        logger.LogInformation($"CompetitiveEvent with Id = {newCompetitiveEvent?.Id} created successfully.");
+        logger.LogTrace($"CompetitiveEvent with Id = {newCompetitiveEvent?.Id} created successfully.");
 
         return mapper.Map<CompetitiveEventDto>(newCompetitiveEvent);
     }
@@ -63,7 +63,7 @@ public class CompetitiveEventService : ICompetitiveEventService
     /// <inheritdoc/>
     public async Task<CompetitiveEventDto> Update(CompetitiveEventDto dto)
     {
-        logger.LogInformation($"Updating CompetitiveEvent with Id = {dto?.Id} started.");
+        logger.LogTrace($"Updating CompetitiveEvent with Id = {dto?.Id} started.");
 
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -79,7 +79,7 @@ public class CompetitiveEventService : ICompetitiveEventService
         mapper.Map(dto, competitiveEvent);
         competitiveEvent = await competitiveEventRepository.Update(competitiveEvent).ConfigureAwait(false);
 
-        logger.LogInformation($"CompetitiveEvent with Id = {competitiveEvent?.Id} updated succesfully.");
+        logger.LogTrace($"CompetitiveEvent with Id = {competitiveEvent?.Id} updated succesfully.");
 
         return mapper.Map<CompetitiveEventDto>(competitiveEvent);
     }
@@ -87,7 +87,7 @@ public class CompetitiveEventService : ICompetitiveEventService
     /// <inheritdoc/>
     public async Task Delete(Guid id)
     {
-        logger.LogInformation($"Deleting CompetitiveEvent with Id = {id} started.");
+        logger.LogTrace($"Deleting CompetitiveEvent with Id = {id} started.");
 
         var favorite = await competitiveEventRepository.GetById(id).ConfigureAwait(false);
 
@@ -100,6 +100,6 @@ public class CompetitiveEventService : ICompetitiveEventService
 
         await competitiveEventRepository.Delete(favorite).ConfigureAwait(false);
 
-        logger.LogInformation($"CompetitiveEvent with Id = {id} succesfully deleted.");
+        logger.LogTrace($"CompetitiveEvent with Id = {id} succesfully deleted.");
     }
 }
