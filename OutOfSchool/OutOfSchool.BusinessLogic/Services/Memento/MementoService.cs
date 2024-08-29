@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using Newtonsoft.Json;
 using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
 
 namespace OutOfSchool.BusinessLogic.Services.Memento;
@@ -26,18 +27,17 @@ public class MementoService<T> : IMementoService<T>
     /// <summary>Restores the memento.</summary>
     /// <param name="key">The key.</param>
     /// <returns> Representing the asynchronous operation with result of T type.</returns>
-    public async Task<T> RestoreAsync(string key)
+    public async Task<T> RestoreAsync([NotNull] string key)
     {
-        var memento = await crudCacheService.GetValueAsync(GetMementoKey(key));
+        var mementoKey = key is not null ? GetMementoKey(key) : throw new ArgumentNullException(nameof(MementoService<T>));
+        var memento = await crudCacheService.GetValueAsync(mementoKey);
 
         if (memento is null)
         {
             return default;
         }
-        else
-        {
-            return JsonConvert.DeserializeObject<T>(memento);
-        }
+
+        return JsonConvert.DeserializeObject<T>(memento);
     }
 
     /// <summary>Creates the memento in the cache.</summary>
@@ -46,36 +46,34 @@ public class MementoService<T> : IMementoService<T>
     /// <returns>
     /// Representing the asynchronous operation - creating memento in the cache.
     /// </returns>
-    public async Task CreateAsync(string key, T value)
+    public async Task CreateAsync([NotNull] string key, [NotNull] T value)
     {
-        await crudCacheService.SetValueAsync(GetMementoKey(key), value);
+        var mementoValue = value ?? throw new ArgumentNullException(nameof(T));
+        var mementoKey = key is not null ? GetMementoKey(key) : throw new ArgumentNullException(nameof(MementoService<T>));
+        await crudCacheService.SetValueAsync(mementoKey, mementoValue);
     }
 
     /// <summary>Asynchronously removes a memento from the cache.</summary>
     /// <param name="key">The key.</param>
     /// <returns>Representation of an asynchronous operation - removing memento from the cache.</returns>
-    public async Task RemoveAsync(string key)
+    public async Task RemoveAsync([NotNull] string key)
     {
-        string logMessage;
-        string mementoKey = GetMementoKey(key);
+        var mementoKey = key is not null ? GetMementoKey(key) : throw new ArgumentNullException(nameof(MementoService<T>));
         var valueToRemove = await crudCacheService.GetValueAsync(mementoKey);
 
         if (valueToRemove == null)
         {
-            logMessage = $"Memento with key = {mementoKey} was not found in the cache.";
-            logger.LogInformation(logMessage);
+            logger.LogInformation($"Memento with key = {mementoKey} was not found in the cache.");
             return;
         }
 
-        string logMsg = $"Removing memento with key = {mementoKey} from cache has started.";
-        logger.LogInformation(logMsg);
+        logger.LogInformation($"Removing memento with key = {mementoKey} from cache has started.");
         await crudCacheService.RemoveAsync(mementoKey);
-        logMsg = $"Memento with key = {mementoKey} has been removed from the cache.";
-        logger.LogInformation(logMsg);
+        logger.LogInformation($"Memento with key = {mementoKey} has been removed from the cache.");
     }
 
     private static string GetMementoKey(string key)
     {
-        return string.Format("{0}_{1}", key, typeof(T).Name);
+        return $"{key}_{typeof(T).Name}";
     }
 }

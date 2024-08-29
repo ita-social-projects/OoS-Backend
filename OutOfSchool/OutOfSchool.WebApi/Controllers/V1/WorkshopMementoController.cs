@@ -8,13 +8,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
-public class WorkshopMementoController : BaseMementoController<RequiredWorkshopMemento>
+public class WorkshopMementoController(IMementoService<RequiredWorkshopMemento> mementoService)
+    : BaseMementoController<RequiredWorkshopMemento>(mementoService)
 {
-    /// <summary>Initializes a new instance of the <see cref="WorkshopMementoController" /> class.</summary>
-    /// <param name="mementoService">The memento service.</param>
-    public WorkshopMementoController(
-        IMementoService<RequiredWorkshopMemento> mementoService)
-        : base(mementoService)
-    {
-    }
 }

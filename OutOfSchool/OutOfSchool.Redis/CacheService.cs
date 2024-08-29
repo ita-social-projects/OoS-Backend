@@ -15,9 +15,11 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
     private readonly RedisConfig redisConfig;
 
     private bool isWorking = true;
+
     private readonly bool isEnabled = false;
-    private readonly object lockObject = new object();
     private bool isDisposed;
+
+    private readonly object lockObject = new object();
 
     public CacheService(
         IDistributedCache cache,
