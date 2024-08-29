@@ -11,7 +11,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20240828111913_CompetitiveEvents")]
+    [Migration("20240829224338_CompetitiveEvents")]
     partial class CompetitiveEvents
     {
         /// <inheritdoc />
@@ -1046,14 +1046,14 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                             Id = 3,
                             IsDeleted = false,
                             Title = "Районний",
-                            TitleEn = "Regional"
+                            TitleEn = "Raional"
                         },
                         new
                         {
                             Id = 4,
                             IsDeleted = false,
                             Title = "Обласний",
-                            TitleEn = "Provincial"
+                            TitleEn = "Regional"
                         },
                         new
                         {

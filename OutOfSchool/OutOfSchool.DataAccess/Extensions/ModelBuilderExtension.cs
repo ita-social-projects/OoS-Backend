@@ -294,13 +294,13 @@ public static class ModelBuilderExtension
             {
                 Id = 3,
                 Title = "Районний",
-                TitleEn = "Regional",
+                TitleEn = "Raional",
             },
             new CompetitiveEventCoverage
             {
                 Id = 4,
                 Title = "Обласний",
-                TitleEn = "Provincial",
+                TitleEn = "Regional",
             },
             new CompetitiveEventCoverage
             {

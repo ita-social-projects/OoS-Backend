@@ -1043,14 +1043,14 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                             Id = 3,
                             IsDeleted = false,
                             Title = "Районний",
-                            TitleEn = "Regional"
+                            TitleEn = "Raional"
                         },
                         new
                         {
                             Id = 4,
                             IsDeleted = false,
                             Title = "Обласний",
-                            TitleEn = "Provincial"
+                            TitleEn = "Regional"
                         },
                         new
                         {
