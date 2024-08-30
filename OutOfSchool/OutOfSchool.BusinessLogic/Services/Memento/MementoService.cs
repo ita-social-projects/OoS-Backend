@@ -30,7 +30,7 @@ public class MementoService<T> : IMementoService<T>
     public async Task<T> RestoreAsync([NotNull] string key)
     {
         var mementoKey = key is not null ? GetMementoKey(key) : throw new ArgumentNullException(nameof(key));
-        var memento = await crudCacheService.GetValueAsync(mementoKey);
+        var memento = await crudCacheService.GetValueAsync(mementoKey).ConfigureAwait(false);
 
         if (memento is null)
         {
@@ -50,7 +50,7 @@ public class MementoService<T> : IMementoService<T>
     {
         var mementoKey = key is not null ? GetMementoKey(key) : throw new ArgumentNullException(nameof(key));
         var mementoValue = value ?? throw new ArgumentNullException(nameof(value));
-        await crudCacheService.SetValueAsync(mementoKey, mementoValue);
+        await crudCacheService.SetValueAsync(mementoKey, mementoValue).ConfigureAwait(false);
     }
 
     /// <summary>Asynchronously removes a memento from the cache.</summary>
@@ -68,7 +68,7 @@ public class MementoService<T> : IMementoService<T>
         }
 
         logger.LogInformation($"Removing memento with key = {mementoKey} from cache has started.");
-        await crudCacheService.RemoveAsync(mementoKey);
+        await crudCacheService.RemoveAsync(mementoKey).ConfigureAwait(false);
         logger.LogInformation($"Memento with key = {mementoKey} has been removed from the cache.");
     }
 

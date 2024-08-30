@@ -31,7 +31,7 @@ public abstract class BaseMementoController<T> : ControllerBase
             return this.BadRequest(ModelState);
         }
 
-        await mementoService.CreateAsync(GettingUserProperties.GetUserId(User), mementoDto);
+        await mementoService.CreateAsync(GettingUserProperties.GetUserId(User), mementoDto).ConfigureAwait(false);
         return Ok($"{typeof(T).Name} is stored");
     }
 
@@ -41,7 +41,7 @@ public abstract class BaseMementoController<T> : ControllerBase
     [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
     public async Task<IActionResult> RestoreMemento()
     {
-        var memento = await mementoService.RestoreAsync(GettingUserProperties.GetUserId(User));
+        var memento = await mementoService.RestoreAsync(GettingUserProperties.GetUserId(User)).ConfigureAwait(false);
         return Ok(memento);
     }
 
@@ -52,7 +52,7 @@ public abstract class BaseMementoController<T> : ControllerBase
     public async Task<IActionResult> RemoveMemento()
     {
         var userId = GettingUserProperties.GetUserId(User);
-        await mementoService.RemoveAsync(userId);
+        await mementoService.RemoveAsync(userId).ConfigureAwait(false);
         return Ok($"{typeof(T).Name} for User with Id = {userId} has been removed");
     }
 }
