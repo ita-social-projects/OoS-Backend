@@ -85,17 +85,20 @@ public class CompetitiveEventService : ICompetitiveEventService
     {
         logger.LogTrace($"Deleting CompetitiveEvent with Id = {id} started.");
 
-        var favorite = await competitiveEventRepository.GetById(id).ConfigureAwait(false);
+        var entity = new CompetitiveEvent() { Id = id };
 
-        if (favorite == null)
+        try
         {
+            await competitiveEventRepository.Delete(entity).ConfigureAwait(false);
+
+            logger.LogTrace($"CompetitiveEvent with Id = {id} succesfully deleted.");
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            logger.LogError("Deleting failed. CompetitiveEvent with Id = {Id} doesn't exist in the system", id);
             throw new ArgumentOutOfRangeException(
                 nameof(id),
                 localizer[$"CompetitiveEvent with Id = {id} doesn't exist in the system"]);
         }
-
-        await competitiveEventRepository.Delete(favorite).ConfigureAwait(false);
-
-        logger.LogTrace($"CompetitiveEvent with Id = {id} succesfully deleted.");
     }
 }
