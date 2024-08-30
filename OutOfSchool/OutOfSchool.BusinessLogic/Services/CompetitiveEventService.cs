@@ -32,14 +32,10 @@ public class CompetitiveEventService : ICompetitiveEventService
     {
         logger.LogTrace($"Getting CompetitiveEvent by Id started. Looking Id = {id}.");
 
-        var competitiveEvent = await competitiveEventRepository.GetById(id).ConfigureAwait(false);
-
-        if (competitiveEvent == null)
-        {
-            throw new ArgumentOutOfRangeException(
+        var competitiveEvent = (await competitiveEventRepository.GetById(id).ConfigureAwait(false))
+            ?? throw new ArgumentOutOfRangeException(
                 nameof(id),
-                localizer["The id cannot be greater than number of table entities."]);
-        }
+                localizer[$"CompetitiveEvent with Id = {id} doesn't exist in the system."]);
 
         logger.LogTrace($"Successfully got a CompetitiveEvent with Id = {id}.");
 
