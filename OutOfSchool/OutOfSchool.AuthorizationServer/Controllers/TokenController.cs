@@ -275,7 +275,7 @@ public class TokenController : Controller
 
     [ActionName(nameof(Logout))]
     [HttpPost("~/connect/logout")]
-    [ValidateAntiForgeryToken]
+    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> DoLogout()
     {
         // logger.LogDebug($"{path} started. User(id): {userId}.");
