@@ -16,16 +16,16 @@ namespace OutOfSchool.WebApi.Tests.Controllers;
 public class WorkshopMementoControllerTests
 {
     private WorkshopMementoController controller;
-    private Mock<IMementoService<RequiredWorkshopMemento>> mementoService;
+    private Mock<IMementoService<IncomplitedWorkshopDto>> mementoService;
     private ClaimsPrincipal user;
 
-    private IEnumerable<RequiredWorkshopMemento> mementos;
-    private RequiredWorkshopMemento memento;
+    private IEnumerable<IncomplitedWorkshopDto> mementos;
+    private IncomplitedWorkshopDto memento;
 
     [SetUp]
     public void Setup()
     {
-        mementoService = new Mock<IMementoService<RequiredWorkshopMemento>>();
+        mementoService = new Mock<IMementoService<IncomplitedWorkshopDto>>();
         controller = new WorkshopMementoController(mementoService.Object);
         user = new ClaimsPrincipal(new ClaimsIdentity());
         controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
@@ -49,7 +49,7 @@ public class WorkshopMementoControllerTests
               .Be(StatusCodes.Status200OK);
         result.Should()
               .BeOfType<OkObjectResult>()
-              .Which.Value.Should().NotBe(default(RequiredWorkshopMemento));
+              .Which.Value.Should().NotBe(default(IncomplitedWorkshopDto));
     }
 
     [Test]
@@ -90,7 +90,7 @@ public class WorkshopMementoControllerTests
     public async Task RestoreMemento_WhenMementoIsAbsentInCache_ReturnsDefaultMementoAtActionResult()
     {
         // Arrange
-        mementoService.Setup(ms => ms.RestoreAsync(It.IsAny<string>())).ReturnsAsync(default(RequiredWorkshopMemento));
+        mementoService.Setup(ms => ms.RestoreAsync(It.IsAny<string>())).ReturnsAsync(default(IncomplitedWorkshopDto));
 
         // Act
         var result = await controller.RestoreMemento();
@@ -106,9 +106,9 @@ public class WorkshopMementoControllerTests
               .Which.Value.Should().Be(default(string));
     }
 
-    private RequiredWorkshopMemento FakeMemento()
+    private IncomplitedWorkshopDto FakeMemento()
     {
-        return new RequiredWorkshopMemento()
+        return new IncomplitedWorkshopDto()
         {
             Title = "title1",
             Email = "myemail1@gmail.com",

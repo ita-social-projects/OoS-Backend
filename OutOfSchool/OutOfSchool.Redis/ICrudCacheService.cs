@@ -7,7 +7,7 @@ public interface ICrudCacheService
 {
     Task<string> GetValueAsync(string key);
 
-    public Task SetValueAsync<T>(
+    public Task UpsertValueAsync<T>(
         string key,
         T value,
         TimeSpan? absoluteExpirationRelativeToNowInterval = null,

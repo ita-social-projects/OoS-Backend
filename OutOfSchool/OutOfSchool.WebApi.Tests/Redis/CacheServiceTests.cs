@@ -142,7 +142,7 @@ public class CacheServiceTests
     public async Task SetValueAsync_ShouldCallCacheSetAndSaveNewData()
     {
         // Arrange & Act
-        await crudCacheService.SetValueAsync("ExpectedKey", "ExpectedValue");
+        await crudCacheService.UpsertValueAsync("ExpectedKey", "ExpectedValue");
 
         // Assert
         distributedCacheMock.Verify(

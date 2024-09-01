@@ -128,7 +128,7 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
         return returnValue;
     }
 
-    public async Task SetValueAsync<T>(
+    public async Task UpsertValueAsync<T>(
         string key,
         T value,
         TimeSpan? absoluteExpirationRelativeToNowInterval = null,

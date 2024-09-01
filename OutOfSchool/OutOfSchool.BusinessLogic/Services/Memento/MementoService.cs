@@ -50,7 +50,7 @@ public class MementoService<T> : IMementoService<T>
     {
         var mementoKey = key is not null ? GetMementoKey(key) : throw new ArgumentNullException(nameof(key));
         var mementoValue = value ?? throw new ArgumentNullException(nameof(value));
-        await crudCacheService.SetValueAsync(mementoKey, mementoValue).ConfigureAwait(false);
+        await crudCacheService.UpsertValueAsync(mementoKey, mementoValue).ConfigureAwait(false);
     }
 
     /// <summary>Asynchronously removes a memento from the cache.</summary>

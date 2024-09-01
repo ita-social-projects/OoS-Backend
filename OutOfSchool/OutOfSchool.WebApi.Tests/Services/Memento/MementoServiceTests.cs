@@ -14,22 +14,22 @@ namespace OutOfSchool.WebApi.Tests.Services.Memento;
 public class MementoServiceTests
 {
     private Mock<ICrudCacheService> crudCacheServiceMock;
-    private Mock<ILogger<MementoService<RequiredWorkshopMemento>>> loggerMock;
-    private IMementoService<RequiredWorkshopMemento> mementoService;
+    private Mock<ILogger<MementoService<IncomplitedWorkshopDto>>> loggerMock;
+    private IMementoService<IncomplitedWorkshopDto> mementoService;
 
     [SetUp]
     public void SetUp()
     {
-        loggerMock = new Mock<ILogger<MementoService<RequiredWorkshopMemento>>>();
+        loggerMock = new Mock<ILogger<MementoService<IncomplitedWorkshopDto>>>();
         crudCacheServiceMock = new Mock<ICrudCacheService>();
-        mementoService = new MementoService<RequiredWorkshopMemento>(crudCacheServiceMock.Object, loggerMock.Object);
+        mementoService = new MementoService<IncomplitedWorkshopDto>(crudCacheServiceMock.Object, loggerMock.Object);
     }
 
     [Test]
     public async Task RestoreAsync_WhenMementoExistsInCache_ShouldRestoreAppropriatedEntity()
     {
         // Arrange
-        var workshopMemento = new RequiredWorkshopMemento()
+        var workshopMemento = new IncomplitedWorkshopDto()
         {
             Title = "title",
             Email = "myemail@gmail.com",
@@ -59,7 +59,7 @@ public class MementoServiceTests
     public async Task RestoreAsync_WhenMementoIsAbsentInCache_ShouldRestoreDefaultEntity()
     {
         // Arrange
-        var expectedMemento = default(RequiredWorkshopMemento);
+        var expectedMemento = default(IncomplitedWorkshopDto);
 
         // Arrange & Act
         var result = await mementoService.RestoreAsync("ExpectedKey");
@@ -75,16 +75,16 @@ public class MementoServiceTests
     public void CreateAsync_ShouldReturnCreatedMemento()
     {
         // Arrange
-        var workshopMemento = new RequiredWorkshopMemento()
+        var workshopMemento = new IncomplitedWorkshopDto()
         {
             Title = "title",
             Email = "myemail@gmail.com",
             Phone = "+380670000000",
         };
 
-        crudCacheServiceMock.Setup(c => c.SetValueAsync(
+        crudCacheServiceMock.Setup(c => c.UpsertValueAsync(
             It.IsAny<string>(),
-            It.IsAny<RequiredWorkshopMemento>(),
+            It.IsAny<IncomplitedWorkshopDto>(),
             null,
             null));
 
@@ -93,9 +93,9 @@ public class MementoServiceTests
 
         // Assert
         crudCacheServiceMock.Verify(
-            c => c.SetValueAsync(
+            c => c.UpsertValueAsync(
             It.IsAny<string>(),
-            It.IsAny<RequiredWorkshopMemento>(),
+            It.IsAny<IncomplitedWorkshopDto>(),
             null,
             null),
             Times.Once);
