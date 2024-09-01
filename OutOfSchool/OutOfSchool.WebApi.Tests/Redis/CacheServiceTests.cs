@@ -86,7 +86,7 @@ public class CacheServiceTests
     }
 
     [Test]
-    public async Task RemoveAsync_ShouldCallCacheRemove()
+    public async Task RemoveAsync_ShouldCallCacheRemoveOnce()
     {
         // Arrange & Act
         await cacheService.RemoveAsync("Example");
@@ -139,7 +139,7 @@ public class CacheServiceTests
     }
 
     [Test]
-    public async Task SetValueAsync_ShouldCallCacheSetAndSaveNewData()
+    public async Task UpsertValueAsync_ShouldCallCacheSetOnce()
     {
         // Arrange & Act
         await crudCacheService.UpsertValueAsync("ExpectedKey", "ExpectedValue");

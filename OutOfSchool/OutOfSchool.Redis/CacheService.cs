@@ -40,10 +40,10 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
     }
 
     public async Task<T> GetOrAddAsync<T>(
-        string key,
-        Func<Task<T>> newValueFactory,
-        TimeSpan? absoluteExpirationRelativeToNowInterval = null,
-        TimeSpan? slidingExpirationInterval = null)
+    string key,
+    Func<Task<T>> newValueFactory,
+    TimeSpan? absoluteExpirationRelativeToNowInterval = null,
+    TimeSpan? slidingExpirationInterval = null)
     {
         T returnValue = default;
         bool isExists = false;
@@ -128,9 +128,9 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
         return returnValue;
     }
 
-    public async Task UpsertValueAsync<T>(
+    public async Task UpsertValueAsync(
         string key,
-        T value,
+        string value,
         TimeSpan? absoluteExpirationRelativeToNowInterval = null,
         TimeSpan? slidingExpirationInterval = null)
     {
@@ -145,7 +145,7 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
                     SlidingExpiration = slidingExpirationInterval ?? redisConfig.SlidingExpirationInterval,
                 };
 
-                cache.SetString(key, JsonConvert.SerializeObject(value), options);
+                cache.SetString(key,value, options);
             }
             finally
             {

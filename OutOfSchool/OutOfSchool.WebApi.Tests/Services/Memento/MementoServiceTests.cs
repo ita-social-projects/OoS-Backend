@@ -61,7 +61,7 @@ public class MementoServiceTests
         // Arrange
         var expectedMemento = default(IncomplitedWorkshopDto);
 
-        // Arrange & Act
+        // Act
         var result = await mementoService.RestoreAsync("ExpectedKey");
 
         // Assert
@@ -72,7 +72,7 @@ public class MementoServiceTests
     }
 
     [Test]
-    public void CreateAsync_ShouldReturnCreatedMemento()
+    public void CreateAsync_ShouldCallUpsertValueAsyncOnce()
     {
         // Arrange
         var workshopMemento = new IncomplitedWorkshopDto()
@@ -84,7 +84,7 @@ public class MementoServiceTests
 
         crudCacheServiceMock.Setup(c => c.UpsertValueAsync(
             It.IsAny<string>(),
-            It.IsAny<IncomplitedWorkshopDto>(),
+            It.IsAny<string>(),
             null,
             null));
 
@@ -95,7 +95,7 @@ public class MementoServiceTests
         crudCacheServiceMock.Verify(
             c => c.UpsertValueAsync(
             It.IsAny<string>(),
-            It.IsAny<IncomplitedWorkshopDto>(),
+            It.IsAny<string>(),
             null,
             null),
             Times.Once);
