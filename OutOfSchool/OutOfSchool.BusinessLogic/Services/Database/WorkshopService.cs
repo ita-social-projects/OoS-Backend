@@ -661,8 +661,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: includingPropertiesForMappingDtoModel,
-                whereExpression: predicate)
-            .AsNoTracking()
+                whereExpression: predicate,
+                asNoTracking: true)
             .ToListAsync()
             .ConfigureAwait(false);
 

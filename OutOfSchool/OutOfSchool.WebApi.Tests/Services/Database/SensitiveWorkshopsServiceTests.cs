@@ -26,6 +26,9 @@ namespace OutOfSchool.WebApi.Tests.Services.Database;
 [TestFixture]
 public class SensitiveWorkshopsServiceTests
 {
+    private readonly string includingPropertiesForMappingDtoModel = $"{nameof(Workshop.Address)},{nameof(Workshop.Teachers)}," +
+        $"{nameof(Workshop.DateTimeRanges)},{nameof(Workshop.InstitutionHierarchy)}";
+
     private ISensitiveWorkshopsService sensitiveWorkshopService;
     private Mock<IWorkshopRepository> workshopRepository;
     private Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>> dateTimeRangeRepository;
@@ -41,6 +44,7 @@ public class SensitiveWorkshopsServiceTests
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
+    private string userId;
 
     [SetUp]
     public void SetUp()
@@ -76,19 +80,21 @@ public class SensitiveWorkshopsServiceTests
                 ministryAdminServiceMock.Object,
                 regionAdminServiceMock.Object,
                 codeficatorServiceMock.Object);
+
+        userId = Guid.NewGuid().ToString();
     }
 
     #region FetchByFilterForAdmins
 
     [Test]
-    public async Task FetchByFilterForAdmins_WhenFilterIsNullRoleRegionAdmin_ShouldBuildPredicateAndReturnEntities()
+    public async Task FetchByFilterForAdmins_RoleRegionAdmin_ShouldBuildPredicateAndReturnEntities()
     {
         // Arrange
-        var userId = Guid.NewGuid().ToString();
         var institutionId = Guid.NewGuid();
         var parentCATOTTGId = 1;
-        var admin = new RegionAdminDto() { Id = userId, InstitutionId = institutionId, CATOTTGId = 1 };
-        var resultExcpected = SetupFetchByFilterForAdmins(userId, true, false, parentCATOTTGId, admin);
+        WorkshopFilterAdministration filter = new WorkshopFilterAdministration();
+        var admin = new RegionAdminDto() { Id = userId, InstitutionId = institutionId, CATOTTGId = parentCATOTTGId };
+        var resultExcpected = SetupFetchByFilterForAdmins(userId, true, false, parentCATOTTGId, filter, admin);
 
         // Act
         var result = await sensitiveWorkshopService.FetchByFilterForAdmins().ConfigureAwait(false);
@@ -101,16 +107,15 @@ public class SensitiveWorkshopsServiceTests
     public void FetchByFilterForAdmins_WhenFilterIsNullRegionAdminIsNull_ShouldReturnException()
     {
         // Arrange
-        var userId = Guid.NewGuid().ToString();
         var parentCATOTTGId = 1;
         RegionAdminDto admin = null;
-        SetupFetchByFilterForAdmins(userId,  true, false, parentCATOTTGId, admin);
+        SetupFetchByFilterForAdmins(userId,  true, false, parentCATOTTGId, null, admin);
 
         // Assert
-        Func<Task<SearchResult<WorkshopDto>>> act = () => sensitiveWorkshopService.FetchByFilterForAdmins();
+        Func<Task<SearchResult<WorkshopDto>>> result = () => sensitiveWorkshopService.FetchByFilterForAdmins();
 
         // Act
-        act.Should().ThrowAsync<InvalidOperationException>()
+        result.Should().ThrowAsync<InvalidOperationException>()
         .WithMessage($"Region admin with the specified ID: {userId} not found");
     }
 
@@ -118,10 +123,9 @@ public class SensitiveWorkshopsServiceTests
     public async Task FetchByFilterForAdmins_WhenFilterByCATOTTGId_ShouldReturnEntities()
     {
         // Arrange
-        var userId = Guid.NewGuid().ToString();
-        var parentCATOTTGId = 1;
-        var resultExcpected = SetupFetchByFilterForAdmins(userId, false, false, parentCATOTTGId);
-        WorkshopFilterAdministration filter = new WorkshopFilterAdministration() { CATOTTGId = 1 };
+        var parentCATOTTGId = 10;
+        WorkshopFilterAdministration filter = new WorkshopFilterAdministration() { From = 3, Size = 10, CATOTTGId = 1 };
+        var resultExcpected = SetupFetchByFilterForAdmins(userId, false, false, parentCATOTTGId, filter);
 
         // Act
         var result = await sensitiveWorkshopService.FetchByFilterForAdmins(filter).ConfigureAwait(false);
@@ -131,15 +135,14 @@ public class SensitiveWorkshopsServiceTests
     }
 
     [Test]
-    public async Task FetchByFilterForAdmins_WhenRoleMinistryAdminFilterByCATOTTGId_ShouldReturnEntities()
+    public async Task FetchByFilterForAdmins_WhenRoleMinistryAdmin_ShouldReturnEntities()
     {
         // Arrange
-        var userId = Guid.NewGuid().ToString();
         var institutionId = Guid.NewGuid();
         var parentCATOTTGId = 1;
         var admin = new MinistryAdminDto() { Id = userId, InstitutionId = institutionId };
-        var resultExcpected = SetupFetchByFilterForAdmins(userId, false, true, parentCATOTTGId, null, admin);
-        WorkshopFilterAdministration filter = new WorkshopFilterAdministration() { CATOTTGId = 1 };
+        WorkshopFilterAdministration filter = new WorkshopFilterAdministration() { Size = 8, CATOTTGId = 1, From = 2, SearchString = "key word" };
+        var resultExcpected = SetupFetchByFilterForAdmins(userId, false, true, parentCATOTTGId, filter, null, admin);
 
         // Act
         var result = await sensitiveWorkshopService.FetchByFilterForAdmins(filter).ConfigureAwait(false);
@@ -153,16 +156,16 @@ public class SensitiveWorkshopsServiceTests
     #region With
 
     private SearchResult<WorkshopDto> SetupFetchByFilterForAdmins(
-        string userId, bool isRegionAdmin, bool isMinistryAdmin, long parentCATOTTGId, RegionAdminDto adminRegion = null, MinistryAdminDto adminMinistry = null)
+        string userId, bool isRegionAdmin, bool isMinistryAdmin, long parentCATOTTGId, WorkshopFilterAdministration filter, RegionAdminDto adminRegion = null, MinistryAdminDto adminMinistry = null)
     {
         var workshops = WithListOfWorkshops().ToList();
         var workshopsDto = WithListOfWorkshopsDto().ToList();
-        IEnumerable<long> subSettlementsIds = new List<long>() { parentCATOTTGId };
+        IEnumerable<long> subSettlementsIds = new List<long>() { 1, 2, 3 };
         SetUpCurrentUserService(userId, isRegionAdmin, isMinistryAdmin);
         SetupRegionAdminService(userId, adminRegion);
         SetupMinistryAdminService(userId, adminMinistry);
         SetUpCodeficatorService(subSettlementsIds, parentCATOTTGId);
-        SetUpWorkshopsRepository(workshops);
+        SetUpWorkshopsRepository(workshops, filter);
         SetUpMapper(workshopsDto, workshops);
         var resultExcpected = new SearchResult<WorkshopDto> { TotalAmount = workshopsDto.Count, Entities = workshopsDto };
         return resultExcpected;
@@ -202,17 +205,17 @@ public class SensitiveWorkshopsServiceTests
         codeficatorServiceMock.Setup(c => c.GetAllChildrenIdsByParentIdAsync(parentId)).ReturnsAsync(subSettlementsIds);
     }
 
-    private void SetUpWorkshopsRepository(List<Workshop> workshopsReturned)
+    private void SetUpWorkshopsRepository(List<Workshop> workshopsReturned, WorkshopFilterAdministration filter = null)
     {
         workshopRepository.Setup(
                 w => w.Get(
-                    It.IsAny<int>(),
-                    It.IsAny<int>(),
-                    It.IsAny<string>(),
+                    It.Is<int>(x => x == filter.From),
+                    It.Is<int>(x => x == filter.Size),
+                    It.Is<string>(x => x.Equals(includingPropertiesForMappingDtoModel)),
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
-                    It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
-                    false))
-            .Returns(workshopsReturned.AsTestAsyncEnumerableQuery);
+                    It.Is<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(x => x == null),
+                    It.Is<bool>(x => x.Equals(true))))
+            .Returns(workshopsReturned.AsTestAsyncEnumerableQuery());
     }
 
     private void SetUpMapper(IEnumerable<WorkshopDto> returnedDto, IEnumerable<Workshop> workshops)
