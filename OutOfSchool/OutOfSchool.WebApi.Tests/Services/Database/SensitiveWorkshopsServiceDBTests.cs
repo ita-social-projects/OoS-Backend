@@ -51,7 +51,7 @@ public class SensitiveWorkshopsServiceDBTests
     public void SetUp()
     {
         dbContextOptions = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
-            .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .UseLazyLoadingProxies()
             .Options;
 
@@ -118,19 +118,29 @@ public class SensitiveWorkshopsServiceDBTests
     }
 
     [Test]
-    public async Task FetchByFilterForAdmins_RoleRegionAdminByFilter_ShouldBuildPredicateAndReturnMatchEntities()
+    public async Task FetchByFilterForAdmins_ByFilterCriteria_ShouldBuildPredicateAndReturnMatchEntities()
     {
         // Arrange
         var workshopDto = await MapWorkshopsToDtos();
-        SetUpServices(new List<long> { 1, 2 }, 1);
-        var filter = new WorkshopFilterAdministration() { SearchString = "keyWord" };
-        var expectedEntities = new List<WorkshopDto> { workshopDto[0], workshopDto[1] };
+        var filter = new WorkshopFilterAdministration()
+        {
+            InstitutionId = institutionId,
+            SearchString = "keyWord",
+            Size = 100,
+        };
+        var expectedEntities = new List<WorkshopDto> {workshopDto[0] };
+
+        var expectedResult = new SearchResult<WorkshopDto>()
+        {
+            TotalAmount = expectedEntities.Count,
+            Entities = expectedEntities,
+        };
 
         // Act
         var result = await sensitiveWorkshopService.FetchByFilterForAdmins(filter).ConfigureAwait(false);
 
         // Assert
-        result.Entities.Should().BeEquivalentTo(expectedEntities);
+        result.Should().BeEquivalentTo(expectedResult);
     }
 
     private void Seed()
@@ -144,41 +154,47 @@ public class SensitiveWorkshopsServiceDBTests
         var workshops = new List<Workshop>();
 
         var institutionHierarch = InstitutionHierarchyGenerator.Generate();
+        var adress = AddressGenerator.Generate();
         var workshop = WorkshopGenerator.Generate()
-            .WithAddress()
-            .WithInstitutionHierarchy(institutionHierarch);
+            .WithAddress(adress)
+            .WithInstitutionHierarchy(institutionHierarch)
+            .WithTeachers();
 
+        workshop.InstitutionHierarchy.InstitutionId = institutionId;
         workshop.Address.CATOTTGId = 1;
         workshop.Keywords = "keyWord";
-        workshop.InstitutionHierarchy.InstitutionId = institutionId;
         workshops.Add(workshop);
 
         institutionHierarch = InstitutionHierarchyGenerator.Generate();
+        adress = AddressGenerator.Generate();
         workshop = WorkshopGenerator.Generate()
-             .WithAddress()
-             .WithInstitutionHierarchy(institutionHierarch);
-
-        workshop.Address.CATOTTGId = 2;
-        workshop.Keywords = "keyWord";
-        workshop.InstitutionHierarchy.InstitutionId = institutionId;
-
-        workshop.Address.CATOTTGId = 2;
-        workshop.Keywords = "keyWord";
+             .WithAddress(adress)
+             .WithInstitutionHierarchy(institutionHierarch)
+             .WithTeachers();
         workshops.Add(workshop);
 
         institutionHierarch = InstitutionHierarchyGenerator.Generate();
+        adress = AddressGenerator.Generate();
         workshop = WorkshopGenerator.Generate()
-            .WithAddress()
-            .WithInstitutionHierarchy(institutionHierarch);
-
-        workshop.Address.CATOTTGId = 3;
-        workshop.Keywords = "keyWord";
+             .WithAddress(adress)
+             .WithInstitutionHierarchy(institutionHierarch)
+             .WithTeachers();
         workshops.Add(workshop);
 
         institutionHierarch = InstitutionHierarchyGenerator.Generate();
+        adress = AddressGenerator.Generate();
         workshop = WorkshopGenerator.Generate()
-             .WithAddress()
-             .WithInstitutionHierarchy(institutionHierarch);
+            .WithAddress(adress)
+            .WithInstitutionHierarchy(institutionHierarch)
+            .WithTeachers();
+        workshops.Add(workshop);
+
+        institutionHierarch = InstitutionHierarchyGenerator.Generate();
+        adress = AddressGenerator.Generate();
+        workshop = WorkshopGenerator.Generate()
+             .WithAddress(adress)
+             .WithInstitutionHierarchy(institutionHierarch)
+             .WithTeachers();
         workshops.Add(workshop);
 
         await dbContext.AddRangeAsync(workshops);
@@ -191,19 +207,5 @@ public class SensitiveWorkshopsServiceDBTests
     {
         var workshops = await SeedWorkshops();
         return mapper.Map<List<WorkshopDto>>(workshops);
-    }
-
-    private void SetUpServices(IEnumerable<long> subSettlementsIds, long parentId)
-    {
-        var userId = Guid.NewGuid().ToString();
-        var regionAdmin = new RegionAdminDto()
-        {
-            CATOTTGId = parentId,
-            InstitutionId = institutionId,
-        };
-        currentUserServiceMock.Setup(x => x.UserId).Returns(userId);
-        currentUserServiceMock.Setup(x => x.IsRegionAdmin()).Returns(true);
-        regionAdminServiceMock.Setup(a => a.GetByUserId(userId)).ReturnsAsync(regionAdmin);
-        codeficatorServiceMock.Setup(c => c.GetAllChildrenIdsByParentIdAsync(parentId)).ReturnsAsync(subSettlementsIds);
     }
 }
