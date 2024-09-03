@@ -8,7 +8,6 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models.Workshops.IncompletedWorkshops;
 using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
-using OutOfSchool.BusinessLogic.Services.Memento.Models;
 using OutOfSchool.WebApi.Controllers.V1;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
@@ -50,7 +49,7 @@ public class WorkshopMementoControllerTests
               .Be(StatusCodes.Status200OK);
         result.Should()
               .BeOfType<OkObjectResult>()
-              .Which.Value.Should().NotBe(default(IncompletedWorkshopDto));
+              .Which.Value.Should().NotBe(default(WorkshopWithRequiredPropertiesDto));
     }
 
     [Test]

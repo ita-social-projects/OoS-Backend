@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models.Workshops.IncompletedWorkshops;
 using OutOfSchool.BusinessLogic.Services.Memento;
 using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
-using OutOfSchool.BusinessLogic.Services.Memento.Models;
 using OutOfSchool.Redis;
 
 namespace OutOfSchool.WebApi.Tests.Services.Memento;
@@ -14,22 +14,22 @@ namespace OutOfSchool.WebApi.Tests.Services.Memento;
 public class MementoServiceTests
 {
     private Mock<ICrudCacheService> crudCacheServiceMock;
-    private Mock<ILogger<MementoService<IncompletedWorkshopDto>>> loggerMock;
-    private IMementoService<IncompletedWorkshopDto> mementoService;
+    private Mock<ILogger<MementoService<WorkshopWithRequiredPropertiesDto>>> loggerMock;
+    private IMementoService<WorkshopWithRequiredPropertiesDto> mementoService;
 
     [SetUp]
     public void SetUp()
     {
-        loggerMock = new Mock<ILogger<MementoService<IncompletedWorkshopDto>>>();
+        loggerMock = new Mock<ILogger<MementoService<WorkshopWithRequiredPropertiesDto>>>();
         crudCacheServiceMock = new Mock<ICrudCacheService>();
-        mementoService = new MementoService<IncompletedWorkshopDto>(crudCacheServiceMock.Object, loggerMock.Object);
+        mementoService = new MementoService<WorkshopWithRequiredPropertiesDto>(crudCacheServiceMock.Object, loggerMock.Object);
     }
 
     [Test]
     public async Task RestoreAsync_WhenMementoExistsInCache_ShouldRestoreAppropriatedEntity()
     {
         // Arrange
-        var workshopMemento = new IncompletedWorkshopDto()
+        var workshopMemento = new WorkshopWithRequiredPropertiesDto()
         {
             Title = "title",
             Email = "myemail@gmail.com",
@@ -59,7 +59,7 @@ public class MementoServiceTests
     public async Task RestoreAsync_WhenMementoIsAbsentInCache_ShouldRestoreDefaultEntity()
     {
         // Arrange
-        var expectedMemento = default(IncompletedWorkshopDto);
+        var expectedMemento = default(WorkshopWithRequiredPropertiesDto);
 
         // Act
         var result = await mementoService.RestoreAsync("ExpectedKey");
@@ -75,7 +75,7 @@ public class MementoServiceTests
     public void CreateAsync_ShouldCallUpsertValueAsyncOnce()
     {
         // Arrange
-        var workshopMemento = new IncompletedWorkshopDto()
+        var workshopMemento = new WorkshopWithRequiredPropertiesDto()
         {
             Title = "title",
             Email = "myemail@gmail.com",
