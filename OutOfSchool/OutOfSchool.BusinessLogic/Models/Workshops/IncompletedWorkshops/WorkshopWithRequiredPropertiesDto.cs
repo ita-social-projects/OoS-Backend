@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Validators;
-using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops.IncompletedWorkshops;
 
@@ -85,30 +84,4 @@ public class WorkshopWithRequiredPropertiesDto
 
     [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus ProviderLicenseStatus { get; set; } = ProviderLicenseStatus.NotProvided;
-
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-    {
-        // TODO: Validate DateTimeRanges are not empty when frontend is ready
-        foreach (var dateTimeRange in DateTimeRanges)
-        {
-            if (dateTimeRange.StartTime > dateTimeRange.EndTime)
-            {
-                yield return new ValidationResult(
-                    "End date can't be earlier that start date");
-            }
-
-            if (dateTimeRange.Workdays.IsNullOrEmpty() || dateTimeRange.Workdays.Any(workday => workday == DaysBitMask.None))
-            {
-                yield return new ValidationResult(
-                    "Workdays are required");
-            }
-
-            var daysHs = new HashSet<DaysBitMask>();
-            if (!dateTimeRange.Workdays.All(daysHs.Add))
-            {
-                yield return new ValidationResult(
-                    "Workdays contain duplications");
-            }
-        }
-    }
 }
