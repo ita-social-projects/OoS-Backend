@@ -14,22 +14,22 @@ namespace OutOfSchool.WebApi.Tests.Services.Memento;
 public class MementoServiceTests
 {
     private Mock<ICrudCacheService> crudCacheServiceMock;
-    private Mock<ILogger<MementoService<IncomplitedWorkshopDto>>> loggerMock;
-    private IMementoService<IncomplitedWorkshopDto> mementoService;
+    private Mock<ILogger<MementoService<IncompletedWorkshopDto>>> loggerMock;
+    private IMementoService<IncompletedWorkshopDto> mementoService;
 
     [SetUp]
     public void SetUp()
     {
-        loggerMock = new Mock<ILogger<MementoService<IncomplitedWorkshopDto>>>();
+        loggerMock = new Mock<ILogger<MementoService<IncompletedWorkshopDto>>>();
         crudCacheServiceMock = new Mock<ICrudCacheService>();
-        mementoService = new MementoService<IncomplitedWorkshopDto>(crudCacheServiceMock.Object, loggerMock.Object);
+        mementoService = new MementoService<IncompletedWorkshopDto>(crudCacheServiceMock.Object, loggerMock.Object);
     }
 
     [Test]
     public async Task RestoreAsync_WhenMementoExistsInCache_ShouldRestoreAppropriatedEntity()
     {
         // Arrange
-        var workshopMemento = new IncomplitedWorkshopDto()
+        var workshopMemento = new IncompletedWorkshopDto()
         {
             Title = "title",
             Email = "myemail@gmail.com",
@@ -59,7 +59,7 @@ public class MementoServiceTests
     public async Task RestoreAsync_WhenMementoIsAbsentInCache_ShouldRestoreDefaultEntity()
     {
         // Arrange
-        var expectedMemento = default(IncomplitedWorkshopDto);
+        var expectedMemento = default(IncompletedWorkshopDto);
 
         // Act
         var result = await mementoService.RestoreAsync("ExpectedKey");
@@ -75,7 +75,7 @@ public class MementoServiceTests
     public void CreateAsync_ShouldCallUpsertValueAsyncOnce()
     {
         // Arrange
-        var workshopMemento = new IncomplitedWorkshopDto()
+        var workshopMemento = new IncompletedWorkshopDto()
         {
             Title = "title",
             Email = "myemail@gmail.com",

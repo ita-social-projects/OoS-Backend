@@ -8,7 +8,7 @@ using OutOfSchool.Common.Validators;
 
 namespace OutOfSchool.BusinessLogic.Services.Memento.Models;
 
-public class IncomplitedWorkshopDto
+public class IncompletedWorkshopDto
 {
     [Required(ErrorMessage = "Workshop title is required")]
     [MinLength(Constants.MinWorkshopTitleLength)]

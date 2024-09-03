@@ -8,7 +8,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
-public class WorkshopMementoController(IMementoService<IncomplitedWorkshopDto> mementoService)
-    : BaseMementoController<IncomplitedWorkshopDto>(mementoService)
+public class WorkshopMementoController(IMementoService<IncompletedWorkshopDto> mementoService)
+    : BaseMementoController<IncompletedWorkshopDto>(mementoService)
 {
 }
