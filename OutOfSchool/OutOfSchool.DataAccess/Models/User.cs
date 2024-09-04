@@ -23,6 +23,8 @@ public class User : IdentityUser, IKeyedEntity<string>, ISoftDeleted
     [MaxLength(50)]
     public string Role { get; set; }
 
+    public bool IsRegistered { get; set; }
+
     // If the flag is true, that user can no longer do anything to website.
     public bool IsBlocked { get; set; } = false;
 }
