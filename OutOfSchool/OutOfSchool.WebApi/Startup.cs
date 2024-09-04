@@ -10,13 +10,15 @@ using Microsoft.AspNetCore.HeaderPropagation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
-using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
 using OutOfSchool.BusinessLogic.Services.Memento;
+using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
+using OutOfSchool.BusinessLogic.Services.Memento.JSONConverter;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.BusinessLogic.Services.Strategies.WorkshopStrategies;
@@ -100,10 +102,10 @@ public static class Startup
         app.UseHeaderPropagation();
 
         app.MapHealthChecks("/healthz/ready", new HealthCheckOptions
-            {
-                Predicate = healthCheck => healthCheck.Tags.Contains("readiness"),
-                AllowCachingResponses = false,
-            })
+        {
+            Predicate = healthCheck => healthCheck.Tags.Contains("readiness"),
+            AllowCachingResponses = false,
+        })
             .RequireHost($"*:{app.Configuration.GetValue<int>("ApplicationPorts:HealthPort")}")
             .WithMetadata(new AllowAnonymousAttribute());
 
@@ -182,8 +184,12 @@ public static class Startup
                         NoStore = false,
                         Duration = cacheProfilesConfig.PublicDurationInSeconds,
                     });
+                options.FormatterMappings.SetMediaTypeMappingForFormat("json", MediaTypeHeaderValue.Parse("application/json"));
             })
-            .AddNewtonsoftJson()
+            .AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.Converters.Add(new WorkshopConverter());
+            })
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
@@ -542,6 +548,5 @@ public static class Startup
 
         // Hosts options
         services.Configure<HostsConfig>(configuration.GetSection(HostsConfig.Name));
-
     }
 }

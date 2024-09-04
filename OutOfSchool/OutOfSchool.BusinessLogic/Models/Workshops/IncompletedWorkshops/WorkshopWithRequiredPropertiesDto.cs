@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
@@ -7,6 +8,11 @@ using OutOfSchool.Common.Validators;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops.IncompletedWorkshops;
 
+[JsonDerivedType(typeof(WorkshopWithRequiredPropertiesDto), typeDiscriminator: "base")]
+[JsonDerivedType(typeof(WorkshopWithDescriptionDto), typeDiscriminator: "withDescription")]
+[JsonDerivedType(typeof(WorkshopWithContactsDto), typeDiscriminator: "withContacts")]
+[JsonDerivedType(typeof(WorkshopWithTeachersDto), typeDiscriminator: "withTeachers")]
+[JsonDerivedType(typeof(WorkshopBaseDto), typeDiscriminator: "withId")]
 public class WorkshopWithRequiredPropertiesDto
 {
     [Required(ErrorMessage = "Workshop title is required")]

@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Newtonsoft.Json;
+using System.Text.Json;
 using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
 
 namespace OutOfSchool.BusinessLogic.Services.Memento;
@@ -30,6 +30,7 @@ public class MementoService<T> : IMementoService<T>
     public async Task<T> RestoreAsync([NotNull] string key)
     {
         var mementoKey = key is not null ? GetMementoKey(key) : throw new ArgumentNullException(nameof(key));
+
         var memento = await crudCacheService.GetValueAsync(mementoKey).ConfigureAwait(false);
 
         if (memento is null)
@@ -37,7 +38,7 @@ public class MementoService<T> : IMementoService<T>
             return default;
         }
 
-        return JsonConvert.DeserializeObject<T>(memento);
+        return JsonSerializer.Deserialize<T>(memento);
     }
 
     /// <summary>Creates the memento in the cache.</summary>
@@ -50,7 +51,8 @@ public class MementoService<T> : IMementoService<T>
     {
         var mementoKey = key is not null ? GetMementoKey(key) : throw new ArgumentNullException(nameof(key));
         var mementoValue = value ?? throw new ArgumentNullException(nameof(value));
-        await crudCacheService.UpsertValueAsync(mementoKey, JsonConvert.SerializeObject(mementoValue)).ConfigureAwait(false);
+
+        await crudCacheService.UpsertValueAsync(mementoKey, JsonSerializer.Serialize(mementoValue)).ConfigureAwait(false);
     }
 
     /// <summary>Asynchronously removes a memento from the cache.</summary>
@@ -59,6 +61,7 @@ public class MementoService<T> : IMementoService<T>
     public async Task RemoveAsync([NotNull] string key)
     {
         var mementoKey = key is not null ? GetMementoKey(key) : throw new ArgumentNullException(nameof(key));
+
         var valueToRemove = await crudCacheService.GetValueAsync(mementoKey);
 
         if (valueToRemove == null)
