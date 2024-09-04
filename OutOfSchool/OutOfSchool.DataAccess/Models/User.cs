@@ -13,6 +13,12 @@ public class User : IdentityUser, IKeyedEntity<string>, ISoftDeleted
     [MaxLength(60)]
     public string LastName { get; set; }
 
+    [DataType(DataType.DateTime)]
+    public DateTimeOffset CreatingTime { get; set; }
+
+    [DataType(DataType.DateTime)]
+    public DateTimeOffset LastLogin { get; set; }
+
     [MaxLength(60)]
     public string MiddleName { get; set; }
 
@@ -27,4 +33,10 @@ public class User : IdentityUser, IKeyedEntity<string>, ISoftDeleted
 
     // If the flag is true, that user can no longer do anything to website.
     public bool IsBlocked { get; set; } = false;
+
+    // for permissions managing at login and check if user is original provider or its admin
+    public bool IsDerived { get; set; } = false;
+
+    // If it's true then user must change his password before the logging into the system
+    public bool MustChangePassword { get; set; }
 }
