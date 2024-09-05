@@ -73,7 +73,6 @@ public class MementoService<T> : IMementoService<T>
 
         logger.LogInformation($"Removing memento with key = {mementoKey} from cache has started.");
         await crudCacheService.RemoveAsync(mementoKey).ConfigureAwait(false);
-        logger.LogInformation($"Memento with key = {mementoKey} has been removed from the cache.");
     }
 
     private static string GetMementoKey(string key)
