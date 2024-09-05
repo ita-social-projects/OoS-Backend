@@ -6,13 +6,13 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 
 /// <summary>Base Controller with operations for storing data in cache.</summary>
 /// <typeparam name="T">T is the entity type that should be stored in the cache.</typeparam>
-public abstract class BaseMementoController<T> : ControllerBase
+public abstract class MementoController<T> : ControllerBase
 {
     private readonly IMementoService<T> mementoService;
 
-    /// <summary>Initializes a new instance of the <see cref="BaseMementoController{T}" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="MementoController{T}" /> class.</summary>
     /// <param name="mementoService">The memento service.</param>
-    protected BaseMementoController(IMementoService<T> mementoService)
+    protected MementoController(IMementoService<T> mementoService)
     {
         this.mementoService = mementoService;
     }
