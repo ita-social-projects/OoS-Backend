@@ -118,6 +118,8 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
 
     public virtual List<DateTimeRange> DateTimeRanges { get; set; }
 
+    public virtual List<Tag> Tags { get; set; }
+
     // These properties are only for navigation EF Core.
     public virtual ICollection<ChatRoomWorkshop> ChatRooms { get; set; }
 
