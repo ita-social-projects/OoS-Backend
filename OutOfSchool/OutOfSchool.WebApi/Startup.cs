@@ -521,7 +521,7 @@ public static class Startup
 
         services.AddSingleton<ICacheService, CacheService>();
         services.AddSingleton<IMultiLayerCacheService, MultiLayerCache>();
-        services.AddSingleton<ICrudCacheService, CacheService>();
+        services.AddSingleton<IReadWriteCacheService, CacheService>();
         services.AddSingleton(typeof(IMementoService<>), typeof(MementoService<>));
 
         services.AddHealthChecks()

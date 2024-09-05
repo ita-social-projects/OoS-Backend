@@ -3,11 +3,11 @@ using System.Threading.Tasks;
 
 namespace OutOfSchool.Redis;
 
-public interface ICrudCacheService
+public interface IReadWriteCacheService
 {
-    Task<string> GetValueAsync(string key);
+    Task<string> ReadAsync(string key);
 
-    public Task UpsertValueAsync(
+    public Task WriteAsync(
         string key,
         string value,
         TimeSpan? absoluteExpirationRelativeToNowInterval = null,

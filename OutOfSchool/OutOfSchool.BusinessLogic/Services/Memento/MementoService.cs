@@ -10,17 +10,17 @@ namespace OutOfSchool.BusinessLogic.Services.Memento;
 /// <typeparam name="T">T is the entity type that should be stored in the cache.</typeparam>
 public class MementoService<T> : IMementoService<T>
 {
-    private readonly ICrudCacheService crudCacheService;
+    private readonly IReadWriteCacheService readWriteCacheService;
     private readonly ILogger<MementoService<T>> logger;
 
     /// <summary>Initializes a new instance of the <see cref="MementoService{T}" /> class.</summary>
     /// <param name="crudCacheService">The CRUD cache service.</param>
     /// <param name="logger">The logger.</param>
     public MementoService(
-        ICrudCacheService crudCacheService,
+        IReadWriteCacheService crudCacheService,
         ILogger<MementoService<T>> logger)
     {
-        this.crudCacheService = crudCacheService;
+        this.readWriteCacheService = crudCacheService;
         this.logger = logger;
     }
 
@@ -31,7 +31,7 @@ public class MementoService<T> : IMementoService<T>
     {
         ArgumentException.ThrowIfNullOrEmpty(key, nameof(key));
 
-        var memento = await crudCacheService.GetValueAsync(GetMementoKey(key)).ConfigureAwait(false);
+        var memento = await readWriteCacheService.ReadAsync(GetMementoKey(key)).ConfigureAwait(false);
 
         if (memento is null)
         {
@@ -52,7 +52,7 @@ public class MementoService<T> : IMementoService<T>
         ArgumentException.ThrowIfNullOrEmpty(key, nameof(key));
         ArgumentNullException.ThrowIfNull(value);
 
-        await crudCacheService.UpsertValueAsync(GetMementoKey(key), JsonSerializer.Serialize(value)).ConfigureAwait(false);
+        await readWriteCacheService.WriteAsync(GetMementoKey(key), JsonSerializer.Serialize(value)).ConfigureAwait(false);
     }
 
     /// <summary>Asynchronously removes a memento from the cache.</summary>
@@ -63,7 +63,7 @@ public class MementoService<T> : IMementoService<T>
         ArgumentException.ThrowIfNullOrEmpty(key, nameof(key));
 
         var mementoKey = GetMementoKey(key);
-        var valueToRemove = await crudCacheService.GetValueAsync(mementoKey);
+        var valueToRemove = await readWriteCacheService.ReadAsync(mementoKey);
 
         if (valueToRemove == null)
         {
@@ -72,7 +72,7 @@ public class MementoService<T> : IMementoService<T>
         }
 
         logger.LogInformation($"Removing memento with key = {mementoKey} from cache has started.");
-        await crudCacheService.RemoveAsync(mementoKey).ConfigureAwait(false);
+        await readWriteCacheService.RemoveAsync(mementoKey).ConfigureAwait(false);
     }
 
     private static string GetMementoKey(string key)

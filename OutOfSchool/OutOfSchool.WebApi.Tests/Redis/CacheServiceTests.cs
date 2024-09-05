@@ -18,7 +18,7 @@ public class CacheServiceTests
     private Mock<IDistributedCache> distributedCacheMock;
     private Mock<IOptions<RedisConfig>> redisConfigMock;
     private ICacheService cacheService;
-    private ICrudCacheService crudCacheService;
+    private IReadWriteCacheService readWriteCacheService;
 
     [SetUp]
     public void SetUp()
@@ -32,7 +32,7 @@ public class CacheServiceTests
             SlidingExpirationInterval = TimeSpan.FromMinutes(1),
         });
         cacheService = new CacheService(distributedCacheMock.Object, redisConfigMock.Object);
-        crudCacheService = new CacheService(distributedCacheMock.Object, redisConfigMock.Object);
+        readWriteCacheService = new CacheService(distributedCacheMock.Object, redisConfigMock.Object);
     }
 
     [Test]
@@ -98,7 +98,7 @@ public class CacheServiceTests
     }
 
     [Test]
-    public async Task GetValueAsync_WhenDataExistsInCacheAndNotExpired_ShouldReturnData()
+    public async Task ReadAsync_WhenDataExistsInCacheAndNotExpired_ShouldReturnData()
     {
         // Arrange
         var expected = new Dictionary<string, string>()
@@ -109,7 +109,7 @@ public class CacheServiceTests
             .Returns(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(expected)));
 
         // Act
-        var result = await crudCacheService.GetValueAsync("ExpectedKey");
+        var result = await readWriteCacheService.ReadAsync("ExpectedKey");
 
         // Assert
         result.Should().Contain("ExpectedValue");
@@ -118,7 +118,7 @@ public class CacheServiceTests
             Times.Once);
     }
 
-    public async Task GetValueAsync_WhenDataNotExistsOrExpired_ShouldReturnNull()
+    public async Task ReadAsync_WhenDataNotExistsOrExpired_ShouldReturnNull()
     {
         // Arrange
         var expected = new Dictionary<string, string>()
@@ -129,7 +129,7 @@ public class CacheServiceTests
             .Returns(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(expected)));
 
         // Act
-        var result = await crudCacheService.GetValueAsync("ExpectedKey");
+        var result = await readWriteCacheService.ReadAsync("ExpectedKey");
 
         // Assert
         result.Should().Contain("{\"ExpectedKey\":null}");
@@ -139,10 +139,10 @@ public class CacheServiceTests
     }
 
     [Test]
-    public async Task UpsertValueAsync_ShouldCallCacheSetOnce()
+    public async Task WriteAsync_ShouldCallCacheSetOnce()
     {
         // Arrange & Act
-        await crudCacheService.UpsertValueAsync("ExpectedKey", "ExpectedValue");
+        await readWriteCacheService.WriteAsync("ExpectedKey", "ExpectedValue");
 
         // Assert
         distributedCacheMock.Verify(

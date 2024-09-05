@@ -8,18 +8,18 @@ using System.Threading.Tasks;
 
 namespace OutOfSchool.Redis;
 
-public class CacheService : ICacheService, ICrudCacheService, IDisposable
+public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
 {
     private readonly ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim();
     private readonly IDistributedCache cache;
     private readonly RedisConfig redisConfig;
 
     private bool isWorking = true;
-
     private readonly bool isEnabled = false;
-    private bool isDisposed;
 
     private readonly object lockObject = new object();
+
+    private bool isDisposed;
 
     public CacheService(
         IDistributedCache cache,
@@ -40,10 +40,10 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
     }
 
     public async Task<T> GetOrAddAsync<T>(
-    string key,
-    Func<Task<T>> newValueFactory,
-    TimeSpan? absoluteExpirationRelativeToNowInterval = null,
-    TimeSpan? slidingExpirationInterval = null)
+        string key,
+        Func<Task<T>> newValueFactory,
+        TimeSpan? absoluteExpirationRelativeToNowInterval = null,
+        TimeSpan? slidingExpirationInterval = null)
     {
         T returnValue = default;
         bool isExists = false;
@@ -95,7 +95,7 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
     }
 
     public Task RemoveAsync(string key)
-        => this.ExecuteRedisMethod(() =>
+        => ExecuteRedisMethod(async () =>
         {
             cacheLock.EnterWriteLock();
             try
@@ -108,7 +108,8 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
             }
         });
 
-    public async Task<string> GetValueAsync(string key)
+
+    public async Task<string> ReadAsync(string key)
     {
         string returnValue = string.Empty;
 
@@ -128,11 +129,7 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
         return returnValue;
     }
 
-    public async Task UpsertValueAsync(
-        string key,
-        string value,
-        TimeSpan? absoluteExpirationRelativeToNowInterval = null,
-        TimeSpan? slidingExpirationInterval = null)
+    public async Task WriteAsync(string key, string value, TimeSpan? absoluteExpirationRelativeToNowInterval = null, TimeSpan? slidingExpirationInterval = null)
     {
         await ExecuteRedisMethod(() =>
         {
@@ -145,7 +142,7 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
                     SlidingExpiration = slidingExpirationInterval ?? redisConfig.SlidingExpirationInterval,
                 };
 
-                cache.SetString(key,value, options);
+                cache.SetString(key, value, options);
             }
             finally
             {
@@ -153,6 +150,7 @@ public class CacheService : ICacheService, ICrudCacheService, IDisposable
             }
         });
     }
+
 
     public void Dispose()
     {

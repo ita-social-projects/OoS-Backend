@@ -13,7 +13,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Memento;
 [TestFixture]
 public class MementoServiceTests
 {
-    private Mock<ICrudCacheService> crudCacheServiceMock;
+    private Mock<IReadWriteCacheService> readWriteCacheServiceMock;
     private Mock<ILogger<MementoService<WorkshopWithRequiredPropertiesDto>>> loggerMock;
     private IMementoService<WorkshopWithRequiredPropertiesDto> mementoService;
 
@@ -21,8 +21,8 @@ public class MementoServiceTests
     public void SetUp()
     {
         loggerMock = new Mock<ILogger<MementoService<WorkshopWithRequiredPropertiesDto>>>();
-        crudCacheServiceMock = new Mock<ICrudCacheService>();
-        mementoService = new MementoService<WorkshopWithRequiredPropertiesDto>(crudCacheServiceMock.Object, loggerMock.Object);
+        readWriteCacheServiceMock = new Mock<IReadWriteCacheService>();
+        mementoService = new MementoService<WorkshopWithRequiredPropertiesDto>(readWriteCacheServiceMock.Object, loggerMock.Object);
     }
 
     [Test]
@@ -40,15 +40,15 @@ public class MementoServiceTests
                 {"ExpectedKey", "{\"Title\":\"title\",\"Email\":\"myemail@gmail.com\",\"Phone\":\"+380670000000\"}"},
             };
 
-        crudCacheServiceMock.Setup(c => c.GetValueAsync(It.IsAny<string>()))
+        readWriteCacheServiceMock.Setup(c => c.ReadAsync(It.IsAny<string>()))
             .Returns(() => Task.FromResult(expected["ExpectedKey"]));
 
         // Act
         var result = await mementoService.RestoreAsync("ExpectedKey");
 
         // Assert
-        crudCacheServiceMock.Verify(
-            c => c.GetValueAsync(It.IsAny<string>()),
+        readWriteCacheServiceMock.Verify(
+            c => c.ReadAsync(It.IsAny<string>()),
             Times.Once);
         Assert.AreEqual(workshopMemento.Title, result.Title);
         Assert.AreEqual(workshopMemento.Email, result.Email);
@@ -65,14 +65,14 @@ public class MementoServiceTests
         var result = await mementoService.RestoreAsync("ExpectedKey");
 
         // Assert
-        crudCacheServiceMock.Verify(
-            c => c.GetValueAsync(It.IsAny<string>()),
+        readWriteCacheServiceMock.Verify(
+            c => c.ReadAsync(It.IsAny<string>()),
             Times.Once);
         Assert.AreEqual(expectedMemento, result);
     }
 
     [Test]
-    public void CreateAsync_ShouldCallUpsertValueAsyncOnce()
+    public void CreateAsync_ShouldCallWriteAsyncOnce()
     {
         // Arrange
         var workshopMemento = new WorkshopWithRequiredPropertiesDto()
@@ -82,7 +82,7 @@ public class MementoServiceTests
             Phone = "+380670000000",
         };
 
-        crudCacheServiceMock.Setup(c => c.UpsertValueAsync(
+        readWriteCacheServiceMock.Setup(c => c.WriteAsync(
             It.IsAny<string>(),
             It.IsAny<string>(),
             null,
@@ -92,8 +92,8 @@ public class MementoServiceTests
         var result = mementoService.CreateAsync("ExpectedKey", workshopMemento);
 
         // Assert
-        crudCacheServiceMock.Verify(
-            c => c.UpsertValueAsync(
+        readWriteCacheServiceMock.Verify(
+            c => c.WriteAsync(
             It.IsAny<string>(),
             It.IsAny<string>(),
             null,
@@ -109,17 +109,17 @@ public class MementoServiceTests
                 {
                     {"ExpectedKey", "ExpectedValue"},
                 };
-        crudCacheServiceMock.Setup(c => c.GetValueAsync(It.IsAny<string>()))
+        readWriteCacheServiceMock.Setup(c => c.ReadAsync(It.IsAny<string>()))
             .Returns(() => Task.FromResult(expected["ExpectedKey"]));
 
         // Act
         await mementoService.RemoveAsync("ExpectedKey");
 
         // Assert
-        crudCacheServiceMock.Verify(
-            c => c.GetValueAsync(It.IsAny<string>()),
+        readWriteCacheServiceMock.Verify(
+            c => c.ReadAsync(It.IsAny<string>()),
             Times.Once);
-        crudCacheServiceMock.Verify(
+        readWriteCacheServiceMock.Verify(
             c => c.RemoveAsync(It.IsAny<string>()),
             Times.Once);
     }
@@ -132,17 +132,17 @@ public class MementoServiceTests
                 {
                     {"ExpectedKey", null},
                 };
-        crudCacheServiceMock.Setup(c => c.GetValueAsync(It.IsAny<string>()))
+        readWriteCacheServiceMock.Setup(c => c.ReadAsync(It.IsAny<string>()))
             .Returns(() => Task.FromResult(expected["ExpectedKey"]));
 
         // Act
         await mementoService.RemoveAsync("ExpectedKey");
 
         // Assert
-        crudCacheServiceMock.Verify(
-            c => c.GetValueAsync(It.IsAny<string>()),
+        readWriteCacheServiceMock.Verify(
+            c => c.ReadAsync(It.IsAny<string>()),
             Times.Once);
-        crudCacheServiceMock.Verify(
+        readWriteCacheServiceMock.Verify(
             c => c.RemoveAsync(It.IsAny<string>()),
             Times.Never);
     }
