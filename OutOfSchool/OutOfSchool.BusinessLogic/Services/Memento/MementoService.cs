@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Newtonsoft.Json.Linq;
 using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
 
 namespace OutOfSchool.BusinessLogic.Services.Memento;
@@ -61,8 +60,9 @@ public class MementoService<T> : IMementoService<T>
     /// <returns>Representation of an asynchronous operation - removing memento from the cache.</returns>
     public async Task RemoveAsync([NotNull] string key)
     {
-        var mementoKey = key is not null ? GetMementoKey(key) : throw new ArgumentNullException(nameof(key));
+        ArgumentException.ThrowIfNullOrEmpty(key, nameof(key));
 
+        var mementoKey = GetMementoKey(key);
         var valueToRemove = await crudCacheService.GetValueAsync(mementoKey);
 
         if (valueToRemove == null)
