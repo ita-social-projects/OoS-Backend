@@ -29,7 +29,7 @@ public class MementoService<T> : IMementoService<T>
     /// <returns> Representing the asynchronous operation with result of T type.</returns>
     public async Task<T> RestoreAsync([NotNull] string key)
     {
-        ArgumentException.ThrowIfNullOrEmpty(key, nameof(key));
+        ArgumentException.ThrowIfNullOrEmpty(key);
 
         var memento = await readWriteCacheService.ReadAsync(GetMementoKey(key)).ConfigureAwait(false);
 
@@ -49,8 +49,8 @@ public class MementoService<T> : IMementoService<T>
     /// </returns>
     public async Task CreateAsync([NotNull] string key, [NotNull] T value)
     {
-        ArgumentException.ThrowIfNullOrEmpty(key, nameof(key));
-        ArgumentNullException.ThrowIfNull(value, nameof(value));
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentNullException.ThrowIfNull(value);
 
         await readWriteCacheService.WriteAsync(GetMementoKey(key), JsonSerializer.Serialize(value)).ConfigureAwait(false);
     }
@@ -60,7 +60,7 @@ public class MementoService<T> : IMementoService<T>
     /// <returns>Representation of an asynchronous operation - removing memento from the cache.</returns>
     public async Task RemoveAsync([NotNull] string key)
     {
-        ArgumentException.ThrowIfNullOrEmpty(key, nameof(key));
+        ArgumentException.ThrowIfNullOrEmpty(key);
 
         var mementoKey = GetMementoKey(key);
         var valueToRemove = await readWriteCacheService.ReadAsync(mementoKey);

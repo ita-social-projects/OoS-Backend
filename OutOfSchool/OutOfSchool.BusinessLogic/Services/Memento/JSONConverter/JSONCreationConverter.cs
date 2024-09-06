@@ -20,8 +20,8 @@ public abstract class JsonCreationConverter<T> : JsonConverter
 
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
     {
-        ArgumentNullException.ThrowIfNull(reader, nameof(reader));
-        ArgumentNullException.ThrowIfNull(serializer, nameof(serializer));
+        ArgumentNullException.ThrowIfNull(reader);
+        ArgumentNullException.ThrowIfNull(serializer);
 
         if (reader.TokenType == JsonToken.Null)
         {
