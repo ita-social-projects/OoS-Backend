@@ -1550,21 +1550,21 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 2L,
                             Description = "provider permissions",
-                            PackedPermissions = "ZQMCAQQKCzQzMjU2SEdJRlBRW11cVA==",
+                            PackedPermissions = "ZQMCAQQKCzQzMjU2SEdJRlBRW11cVJaYl5k=",
                             RoleName = "Provider"
                         },
                         new
                         {
                             Id = 3L,
                             Description = "parent permissions",
-                            PackedPermissions = "ZQMKCwwUFhUXHiAfISgpKz49PFBRVA==",
+                            PackedPermissions = "ZQMKCwwUFhUXHiAfISgpKz49PFBRVJY=",
                             RoleName = "Parent"
                         },
                         new
                         {
                             Id = 4L,
                             Description = "provider admin permissions",
-                            PackedPermissions = "ZQMCAQQKCzI2SEdJRlBRW1xU",
+                            PackedPermissions = "ZQMCAQQKCzI2SEdJRlBRW1xUlg==",
                             RoleName = "ProviderAdmin"
                         },
                         new

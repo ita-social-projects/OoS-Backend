@@ -11,7 +11,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20240829224338_CompetitiveEvents")]
+    [Migration("20240906165547_CompetitiveEvents")]
     partial class CompetitiveEvents
     {
         /// <inheritdoc />
@@ -1546,49 +1546,49 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 1L,
                             Description = "techadmin permissions",
-                            PackedPermissions = "ZGVmAwIBBAoLDQweIB8hKCkrLBc0MzI1Nzg+PTw/SEdJRlBRW11ccnBxb258ent5eH2Qjo+NjJFUZw==",
+                            PackedPermissions = "ZGVmAwIBBAoLDQweIB8hKCkrLBc0MzI1Nzg+PTw/SEdJRlBRW11ccnBxb258ent5eH2Qjo+NjJFUZ5Y=",
                             RoleName = "TechAdmin"
                         },
                         new
                         {
                             Id = 2L,
                             Description = "provider permissions",
-                            PackedPermissions = "ZQMCAQQKCzQzMjU2SEdJRlBRW11cVA==",
+                            PackedPermissions = "ZQMCAQQKCzQzMjU2SEdJRlBRW11cVJaYl5k=",
                             RoleName = "Provider"
                         },
                         new
                         {
                             Id = 3L,
                             Description = "parent permissions",
-                            PackedPermissions = "ZQMKCwwUFhUXHiAfISgpKz49PFBRVA==",
+                            PackedPermissions = "ZQMKCwwUFhUXHiAfISgpKz49PFBRVJY=",
                             RoleName = "Parent"
                         },
                         new
                         {
                             Id = 4L,
                             Description = "provider admin permissions",
-                            PackedPermissions = "ZQMCAQQKCzI2SEdJRlBRW1xU",
+                            PackedPermissions = "ZQMCAQQKCzI2SEdJRlBRW1xUlg==",
                             RoleName = "ProviderAdmin"
                         },
                         new
                         {
                             Id = 5L,
                             Description = "ministry admin permissions",
-                            PackedPermissions = "ZWYDAgEECjI1NzgoLBRQUUZUblt6eHl7fY6MjY+RZw==",
+                            PackedPermissions = "ZWYDAgEECjI1NzgoLBRQUUZUblt6eHl7fY6MjY+RZ5Y=",
                             RoleName = "MinistryAdmin"
                         },
                         new
                         {
                             Id = 6L,
                             Description = "region admin permissions",
-                            PackedPermissions = "ZWYDAgEECjI1NzgoFFBRRlR4eY6MjY+RW2c=",
+                            PackedPermissions = "ZWYDAgEECjI1NzgoFFBRRlR4eY6MjY+RW2eW",
                             RoleName = "RegionAdmin"
                         },
                         new
                         {
                             Id = 7L,
                             Description = "area admin permissions",
-                            PackedPermissions = "ZWYDAgEECjI1NzgoFFBRRlSMjVtn",
+                            PackedPermissions = "ZWYDAgEECjI1NzgoFFBRRlSMjVtnlg==",
                             RoleName = "AreaAdmin"
                         });
                 });

@@ -29,7 +29,7 @@ public class CompetitiveEventController : ControllerBase
     /// </summary>
     /// <param name="id">CompetitiveEvent id.</param>
     /// <returns>CompetitiveEvent.</returns>
-    //[HasPermission(Permissions.CompetitiveEventRead)]
+    [HasPermission(Permissions.CompetitiveEventRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompetitiveEventDto))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet("{id}")]
@@ -43,7 +43,7 @@ public class CompetitiveEventController : ControllerBase
     /// </summary>
     /// <param name="dto">CompetitiveEvent entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    //[HasPermission(Permissions.CompetitiveEventAddNew)]
+    [HasPermission(Permissions.CompetitiveEventAddNew)]
     [Authorize]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -66,7 +66,7 @@ public class CompetitiveEventController : ControllerBase
     /// </summary>
     /// <param name="dto">CompetitiveEvent to update.</param>
     /// <returns>Favorite.</returns>
-    //[HasPermission(Permissions.CompetitiveEventEdit)]
+    [HasPermission(Permissions.CompetitiveEventEdit)]
     [Authorize]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -84,7 +84,7 @@ public class CompetitiveEventController : ControllerBase
     /// </summary>
     /// <param name="id">CompetitiveEvent id.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    //[HasPermission(Permissions.CompetitiveEventRemove)]
+    [HasPermission(Permissions.CompetitiveEventRemove)]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
