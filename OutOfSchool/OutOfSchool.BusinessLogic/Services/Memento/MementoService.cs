@@ -50,7 +50,7 @@ public class MementoService<T> : IMementoService<T>
     public async Task CreateAsync([NotNull] string key, [NotNull] T value)
     {
         ArgumentException.ThrowIfNullOrEmpty(key, nameof(key));
-        ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(value, nameof(value));
 
         await readWriteCacheService.WriteAsync(GetMementoKey(key), JsonSerializer.Serialize(value)).ConfigureAwait(false);
     }

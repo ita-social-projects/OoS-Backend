@@ -7,7 +7,8 @@ public class WorkshopConverter : JsonCreationConverter<WorkshopWithRequiredPrope
 {
     protected override WorkshopWithRequiredPropertiesDto Create(Type objectType, JObject jObject)
     {
-        ArgumentNullException.ThrowIfNull(jObject);
+        ArgumentNullException.ThrowIfNull(objectType, nameof(objectType));
+        ArgumentNullException.ThrowIfNull(jObject, nameof(jObject));
 
         if (jObject["teachers"] != null)
         {
