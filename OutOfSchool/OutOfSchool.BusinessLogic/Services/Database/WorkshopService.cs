@@ -649,7 +649,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     }
 
     /// <inheritdoc/>
-    /// <exception cref="InvalidOperationException">If the region admin is not found in the database.</exception>
     public async Task<SearchResult<WorkshopDto>> FetchByFilterForAdmins(WorkshopFilterAdministration filter = null)
     {
         logger.LogInformation("Started retrieving Workshops by filter for admins.");
