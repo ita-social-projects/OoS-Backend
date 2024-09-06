@@ -653,7 +653,12 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     public async Task<SearchResult<WorkshopDto>> FetchByFilterForAdmins(WorkshopFilterAdministration filter = null)
     {
         logger.LogInformation("Started retrieving Workshops by filter for admins.");
-        filter = filter ?? new WorkshopFilterAdministration();
+
+        if (filter == null)
+        {
+            logger.LogDebug("Method {MethodName} started with null filter. Applying default {Filter}", nameof(FetchByFilterForAdmins), nameof(WorkshopFilterAdministration));
+            filter = new WorkshopFilterAdministration();
+        }
 
         var predicate = await PredicateBuildForAdminds(filter);
 
@@ -666,10 +671,10 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             .ToListAsync()
             .ConfigureAwait(false);
 
-        var workshopsDTO = mapper.Map<List<WorkshopDto>>(workshops);
         var workshopsCount = workshops.Count;
-
         logger.LogInformation("Retrieved {WorkshopsCount} matching recods by filter for admins.", workshopsCount);
+
+        var workshopsDTO = mapper.Map<List<WorkshopDto>>(workshops);
 
         var result = new SearchResult<WorkshopDto>()
         {
@@ -687,21 +692,27 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         // TODO: add condition for united territorial community admin
         if (currentUserService.IsMinistryAdmin())
         {
-           await ApplyFilterForMinistryAdmin(filter);
+            await ApplyFilterForMinistryAdmin(filter).
+                ConfigureAwait(false);
         }
         else if (currentUserService.IsRegionAdmin())
         {
-            var tempPredicate = await ApplyFilterForRegionAdmin(filter);
+            var tempPredicate = await ApplyFilterForRegionAdmin(filter).
+                ConfigureAwait(false);
+
             predicate = predicate.And(tempPredicate);
         }
 
         if (!string.IsNullOrEmpty(filter.SearchString))
         {
             var tempPredicate = PredicateBuilder.False<Workshop>();
+            var keyWords = filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries);
 
-            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            logger.LogDebug("Received key words from search string: {Words}", keyWords);
+
+            foreach (var word in keyWords)
             {
-                tempPredicate = tempPredicate.Or(x => EF.Functions.Like(x.Keywords, $"%{word}%"));
+                tempPredicate = tempPredicate.Or(x => x.Keywords.Contains(word));
             }
 
             predicate = predicate.And(tempPredicate);
@@ -715,7 +726,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         if (filter.CATOTTGId > 0)
         {
             var subSettlementsIds = await codeficatorService
-            .GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId).ConfigureAwait(false);
+                .GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId)
+                .ConfigureAwait(false);
 
             predicate = predicate.And(x => subSettlementsIds.Contains(x.Address.CATOTTGId));
         }
