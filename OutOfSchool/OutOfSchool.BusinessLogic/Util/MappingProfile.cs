@@ -641,6 +641,8 @@ public class MappingProfile : Profile
 
         CreateMap<CompetitiveEvent, CompetitiveEventDto>().ReverseMap();
 
+        CreateMap<CompetitiveEventAccountingType, CompetitiveEventAccountingTypeDto>().ReverseMap();
+
         CreateMap<CompetitiveEventCoverage, CompetitiveEventCoverageDto>().ReverseMap();
 
         CreateMap<CompetitiveEventDescriptionItem, CompetitiveEventDescriptionItemDto>().ReverseMap();
