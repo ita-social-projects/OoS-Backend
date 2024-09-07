@@ -639,6 +639,8 @@ public class MappingProfile : Profile
         CreateMap<WorkshopFilter, WorkshopFilterWithSettlements>()
             .ForMember(dest => dest.SettlementsIds, opt => opt.Ignore());
 
+        CreateMap<CompetitiveEvent, CompetitiveEventDto>().ReverseMap();
+
         CreateMap<CompetitiveEventCoverage, CompetitiveEventCoverageDto>().ReverseMap();
 
         CreateMap<CompetitiveEventDescriptionItem, CompetitiveEventDescriptionItemDto>().ReverseMap();
