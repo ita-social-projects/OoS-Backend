@@ -37,6 +37,7 @@ public class WorkshopMementoControllerTests
     {
         // Arrange
         mementoService.Setup(ms => ms.CreateAsync(It.IsAny<string>(), memento));
+        var resulValue = "WorkshopWithRequiredPropertiesDto is stored";
 
         // Act
         var result = await controller.StoreMemento(memento);
@@ -49,7 +50,7 @@ public class WorkshopMementoControllerTests
               .Be(StatusCodes.Status200OK);
         result.Should()
               .BeOfType<OkObjectResult>()
-              .Which.Value.Should().NotBe(default(WorkshopWithRequiredPropertiesDto));
+              .Which.Value.Should().Be(resulValue);
     }
 
     [Test]
@@ -57,6 +58,7 @@ public class WorkshopMementoControllerTests
     {
         // Arrange
         controller.ModelState.AddModelError("StoreMemento", "Invalid model state.");
+        var resulValue = "{[\"StoreMemento\"] = {\"Invalid model state.\"}}";
 
         // Act
         var result = await controller.StoreMemento(memento);
@@ -64,6 +66,9 @@ public class WorkshopMementoControllerTests
         // Assert
         Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
         Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+        result.Should()
+              .BeOfType<BadRequestObjectResult>()
+              .Which.Value.Equals(resulValue);
     }
 
     [Test]
@@ -83,7 +88,7 @@ public class WorkshopMementoControllerTests
               .Be(StatusCodes.Status200OK);
         result.Should()
               .BeOfType<OkObjectResult>()
-              .Which.Value.Should().NotBe(default(string));
+              .Which.Value.Should().Be(memento);
     }
 
     [Test]
@@ -103,7 +108,7 @@ public class WorkshopMementoControllerTests
               .Be(StatusCodes.Status200OK);
         result.Should()
               .BeOfType<OkObjectResult>()
-              .Which.Value.Should().Be(default(string));
+              .Which.Value.Should().Be(default(WorkshopWithRequiredPropertiesDto));
     }
 
     private WorkshopWithRequiredPropertiesDto FakeMemento()

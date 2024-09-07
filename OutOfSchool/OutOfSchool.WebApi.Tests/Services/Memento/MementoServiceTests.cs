@@ -1,8 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Models.Workshops.IncompletedWorkshops;
 using OutOfSchool.BusinessLogic.Services.Memento;
 using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
@@ -50,6 +55,49 @@ public class MementoServiceTests
         readWriteCacheServiceMock.Verify(
             c => c.ReadAsync(It.IsAny<string>()),
             Times.Once);
+        result.Should().BeOfType<WorkshopWithRequiredPropertiesDto>();
+        Assert.AreEqual(workshopMemento.Title, result.Title);
+        Assert.AreEqual(workshopMemento.Email, result.Email);
+        Assert.AreEqual(workshopMemento.Phone, result.Phone);
+    }
+
+    [Test]
+    public async Task RestoreAsync_WhenMementoIsWorkshopWithDescriptionDtoAndExistsInCache_ShouldRestoreAppropriatedEntity()
+    {
+        // Arrange
+        var workshopMemento = new WorkshopWithDescriptionDto()
+        {
+            Title = "title",
+            Email = "myemail@gmail.com",
+            Phone = "+380670000000",
+            WorkshopDescriptionItems = new List<WorkshopDescriptionItemDto>()
+            {
+                new WorkshopDescriptionItemDto
+                {
+                    Id = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
+                    SectionName = "string",
+                    Description = "string",
+                    WorkshopId = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
+                },
+            },
+        };
+
+        var expected = new Dictionary<string, string>()
+            {
+                {"ExpectedKey", JsonSerializer.Serialize(workshopMemento) },
+            };
+
+        readWriteCacheServiceMock.Setup(c => c.ReadAsync(It.IsAny<string>()))
+                .Returns(() => Task.FromResult(expected["ExpectedKey"]));
+
+        // Act
+        var result = await mementoService.RestoreAsync("ExpectedKey");
+
+        // Assert
+        readWriteCacheServiceMock.Verify(
+        c => c.ReadAsync(It.IsAny<string>()),
+        Times.Once);
+
         Assert.AreEqual(workshopMemento.Title, result.Title);
         Assert.AreEqual(workshopMemento.Email, result.Email);
         Assert.AreEqual(workshopMemento.Phone, result.Phone);
@@ -60,6 +108,12 @@ public class MementoServiceTests
     {
         // Arrange
         var expectedMemento = default(WorkshopWithRequiredPropertiesDto);
+        var expected = new Dictionary<string, string>()
+            {
+                {"ExpectedKey", null},
+            };
+        readWriteCacheServiceMock.Setup(c => c.ReadAsync(It.IsAny<string>()))
+            .Returns(() => Task.FromResult(expected["ExpectedKey"]));
 
         // Act
         var result = await mementoService.RestoreAsync("ExpectedKey");
