@@ -45,22 +45,24 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
         TimeSpan? absoluteExpirationRelativeToNowInterval = null,
         TimeSpan? slidingExpirationInterval = null)
     {
-        T returnValue = default;
+        T returnValue;
 
         var value = await ReadAsync(key);
 
         if (!string.IsNullOrEmpty(value))
         {
-            returnValue = JsonConvert.DeserializeObject<T>(await ReadAsync(key));
+            return JsonConvert.DeserializeObject<T>(value);
         }
-        else
+
+        returnValue = await newValueFactory() ?? default;
+
+        if (returnValue is not null)
         {
-            returnValue = await newValueFactory();
             await WriteAsync(
-                key,
-                JsonConvert.SerializeObject(returnValue),
-                absoluteExpirationRelativeToNowInterval,
-                slidingExpirationInterval);
+                            key,
+                            JsonConvert.SerializeObject(returnValue),
+                            absoluteExpirationRelativeToNowInterval,
+                            slidingExpirationInterval);
         }
 
         return returnValue;
