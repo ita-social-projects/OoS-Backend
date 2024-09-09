@@ -5,6 +5,7 @@ using OutOfSchool.AuthCommon.Services;
 using OutOfSchool.AuthCommon.Util;
 using OutOfSchool.AuthCommon.Validators;
 using OutOfSchool.Common.Models;
+using OutOfSchool.RazorTemplatesData.Config;
 
 namespace OutOfSchool.AuthCommon.Extensions;
 
@@ -29,7 +30,8 @@ public static class AuthCommonServiceExtensions
         services.AddEmailSenderService(
             isDevelopment,
             mailConfig.SendGridKey,
-            builder => builder.Bind(config.GetSection(EmailOptions.SectionName)));
+            builder => builder.Bind(config.GetSection(EmailOptions.SectionName)))
+            .AddEmailRendererConfiguration(new EmailContentConfig(config.GetSection("Identity")["Authority"]));
 
         services.Configure<ChangesLogConfig>(config.GetSection(ChangesLogConfig.Name));
         services.Configure<HostsConfig>(config.GetSection(HostsConfig.Name));

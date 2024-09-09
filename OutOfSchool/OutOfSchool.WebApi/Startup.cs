@@ -21,6 +21,7 @@ using OutOfSchool.BusinessLogic.Services.Strategies.WorkshopStrategies;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.EmailSender;
 using OutOfSchool.EmailSender.Services;
+using OutOfSchool.RazorTemplatesData.Config;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Repository.Files;
 using StackExchange.Redis;
@@ -534,7 +535,8 @@ public static class Startup
         services.AddEmailSenderService(
             builder.Environment.IsDevelopment(),
             mailConfig.SendGridKey,
-            builder => builder.Bind(configuration.GetSection(EmailOptions.SectionName)));
+            builder => builder.Bind(configuration.GetSection(EmailOptions.SectionName)))
+            .AddEmailRendererConfiguration(new EmailContentConfig(configuration.GetSection("Hosts")["BackendUrl"]));
 
         // Hosts options
         services.Configure<HostsConfig>(configuration.GetSection(HostsConfig.Name));

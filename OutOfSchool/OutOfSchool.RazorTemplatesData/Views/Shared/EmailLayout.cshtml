@@ -1,9 +1,8 @@
-﻿@using Microsoft.Extensions.Configuration
-@inject IConfiguration configuration
+﻿@using OutOfSchool.RazorTemplatesData.Config
+@inject EmailContentConfig configuration
 
 @{
-    var host = configuration.GetSection("Hosts")["BackendUrl"];
-    var pathToContent = string.Concat(host, "/_content/email");
+    var pathToContent = configuration.EmailContentUrl;
 }  
 
 <!DOCTYPE html>
