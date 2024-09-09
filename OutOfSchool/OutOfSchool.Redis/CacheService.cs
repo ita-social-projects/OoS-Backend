@@ -95,7 +95,7 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
     }
 
     public Task RemoveAsync(string key)
-        => ExecuteRedisMethod(async () =>
+        => ExecuteRedisMethod(() =>
         {
             cacheLock.EnterWriteLock();
             try
