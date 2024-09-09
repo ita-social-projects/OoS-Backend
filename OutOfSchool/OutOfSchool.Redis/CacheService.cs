@@ -46,49 +46,21 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
         TimeSpan? slidingExpirationInterval = null)
     {
         T returnValue = default;
-        bool isExists = false;
 
-        await ExecuteRedisMethod(() =>
+        var value = await ReadAsync(key);
+
+        if (!string.IsNullOrEmpty(value))
         {
-            cacheLock.EnterReadLock();
-            try
-            {
-                var value = cache.GetString(key);
-
-                if (value != null)
-                {
-                    returnValue = JsonConvert.DeserializeObject<T>(value);
-                    isExists = true;
-                    return;
-                }
-            }
-            finally
-            {
-                cacheLock.ExitReadLock();
-            }
-        });
-
-        if (!isExists)
+            returnValue = JsonConvert.DeserializeObject<T>(await ReadAsync(key));
+        }
+        else
         {
             returnValue = await newValueFactory();
-            await ExecuteRedisMethod(() =>
-            {
-                cacheLock.EnterWriteLock();
-                try
-                {
-                    var options = new DistributedCacheEntryOptions
-                    {
-                        AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? redisConfig.AbsoluteExpirationRelativeToNowInterval,
-                        SlidingExpiration = slidingExpirationInterval ?? redisConfig.SlidingExpirationInterval,
-                    };
-
-                    cache.SetString(key, JsonConvert.SerializeObject(returnValue), options);
-                }
-                finally
-                {
-                    cacheLock.ExitWriteLock();
-                }
-            });
+            await WriteAsync(
+                key,
+                JsonConvert.SerializeObject(returnValue),
+                absoluteExpirationRelativeToNowInterval,
+                slidingExpirationInterval);
         }
 
         return returnValue;
