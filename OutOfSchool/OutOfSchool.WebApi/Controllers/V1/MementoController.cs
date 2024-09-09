@@ -49,7 +49,7 @@ public abstract class MementoController<T> : ControllerBase
 
     /// <summary>Removes the memento fron the cache.</summary>
     /// <returns> Information about removing an entity of type T from the cache.</returns>
-    [HttpGet]
+    [HttpDelete]
     [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
     public async Task<IActionResult> RemoveMemento()
     {
