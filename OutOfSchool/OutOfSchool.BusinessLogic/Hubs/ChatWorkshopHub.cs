@@ -256,7 +256,7 @@ public class ChatWorkshopHub : Hub
 
         bool isParentBlocked = await blockedProviderParentService.IsBlocked(parentId, workshop.ProviderId);
 
-        if (isParentBlocked)
+        if (isParentBlocked || workshop.IsBlocked)
         {
             return false;
         }
