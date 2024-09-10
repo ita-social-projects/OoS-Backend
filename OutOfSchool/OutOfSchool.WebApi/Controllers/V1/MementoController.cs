@@ -8,11 +8,11 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// <typeparam name="T">T is the entity type that should be stored in the cache.</typeparam>
 public abstract class MementoController<T> : ControllerBase
 {
-    private readonly IMementoService<T> mementoService;
+    private readonly IDraftStorageService<T> mementoService;
 
     /// <summary>Initializes a new instance of the <see cref="MementoController{T}" /> class.</summary>
     /// <param name="mementoService">The memento service.</param>
-    protected MementoController(IMementoService<T> mementoService)
+    protected MementoController(IDraftStorageService<T> mementoService)
     {
         this.mementoService = mementoService;
     }

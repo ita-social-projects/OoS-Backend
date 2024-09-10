@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -14,29 +15,29 @@ using OutOfSchool.Redis;
 namespace OutOfSchool.WebApi.Tests.Services.Memento;
 
 [TestFixture]
-public class MementoServiceTests
+public class DraftStorageServiceTests
 {
     private readonly string jsonStringForWorkshopWithDescriptionDto = "{\"$type\":\"withDescription\",\"WorkshopDescriptionItems\":[{\"Id\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\"SectionName\":\"string\",\"Description\":\"string\",\"WorkshopId\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\"}],\"WithDisabilityOptions\":false,\"DisabilityOptionsDesc\":\"\",\"InstitutionId\":null,\"Institution\":null,\"InstitutionHierarchyId\":null,\"InstitutionHierarchy\":null,\"DirectionIds\":null,\"Keywords\":null,\"Title\":\"string\",\"ShortTitle\":\"string\",\"Phone\":\"\\u002B340976894523\",\"Email\":\"user@example.com\",\"Website\":\"string\",\"Facebook\":\"string\",\"Instagram\":\"string\",\"MinAge\":12,\"MaxAge\":20,\"DateTimeRanges\":[{\"Id\":0,\"StartTime\":\"12:00:00\",\"EndTime\":\"14:00:00\",\"Workdays\":[4]}],\"FormOfLearning\":10,\"Price\":100000,\"PayRate\":\"None\",\"AvailableSeats\":10,\"CompetitiveSelection\":true,\"CompetitiveSelectionDescription\":\"string\",\"ProviderId\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\"ProviderTitle\":\"string\",\"ProviderTitleEn\":\"string\",\"ProviderLicenseStatus\":0}";
     private readonly string jsonStringForWorkshopWithContactsDto = "{\"$type\":\"withContacts\",\"AddressId\":0,\"Address\":{\"Id\":0,\"Street\":\"string111\"},\"WorkshopDescriptionItems\":[{\"Id\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\"SectionName\":\"string\",\"Description\":\"string\",\"WorkshopId\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\"}],\"WithDisabilityOptions\":false,\"DisabilityOptionsDesc\":\"\",\"InstitutionId\":null,\"Institution\":null,\"InstitutionHierarchyId\":null,\"InstitutionHierarchy\":null,\"DirectionIds\":null,\"Keywords\":null,\"Title\":\"string\",\"ShortTitle\":\"string\",\"Phone\":\"\\u002B340976894523\",\"Email\":\"user@example.com\",\"Website\":\"string\",\"Facebook\":\"string\",\"Instagram\":\"string\",\"MinAge\":12,\"MaxAge\":20,\"DateTimeRanges\":[{\"Id\":0,\"StartTime\":\"12:00:00\",\"EndTime\":\"14:00:00\",\"Workdays\":[4]}],\"FormOfLearning\":10,\"Price\":100000,\"PayRate\":\"None\",\"AvailableSeats\":10,\"CompetitiveSelection\":true,\"CompetitiveSelectionDescription\":\"string\",\"ProviderId\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\"ProviderTitle\":\"string\",\"ProviderTitleEn\":\"string\",\"ProviderLicenseStatus\":0}";
     private readonly string jsonStringForWorkshopWithTeachersDto = "{\"$type\":\"withTeachers\",\"Teachers\":[],\"AddressId\":0,\"Address\":{\"Id\":0,\"Street\":\"string111\"},\"WorkshopDescriptionItems\":[{\"Id\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\"SectionName\":\"string\",\"Description\":\"string\",\"WorkshopId\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\"}],\"WithDisabilityOptions\":false,\"DisabilityOptionsDesc\":\"\",\"InstitutionId\":null,\"Institution\":null,\"InstitutionHierarchyId\":null,\"InstitutionHierarchy\":null,\"DirectionIds\":null,\"Keywords\":null,\"Title\":\"string\",\"ShortTitle\":\"string\",\"Phone\":\"\\u002B340976894523\",\"Email\":\"user@example.com\",\"Website\":\"string\",\"Facebook\":\"string\",\"Instagram\":\"string\",\"MinAge\":12,\"MaxAge\":20,\"DateTimeRanges\":[{\"Id\":0,\"StartTime\":\"12:00:00\",\"EndTime\":\"14:00:00\",\"Workdays\":[4]}],\"FormOfLearning\":10,\"Price\":100000,\"PayRate\":\"None\",\"AvailableSeats\":10,\"CompetitiveSelection\":true,\"CompetitiveSelectionDescription\":\"string\",\"ProviderId\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\"ProviderTitle\":\"string\",\"ProviderTitleEn\":\"string\",\"ProviderLicenseStatus\":0}";
 
     private Mock<IReadWriteCacheService> readWriteCacheServiceMock;
-    private Mock<ILogger<MementoService<WorkshopWithRequiredPropertiesDto>>> loggerMock;
-    private IMementoService<WorkshopWithRequiredPropertiesDto> mementoService;
+    private Mock<ILogger<DraftStorageService<WorkshopWithRequiredPropertiesDto>>> loggerMock;
+    private IDraftStorageService<WorkshopWithRequiredPropertiesDto> draftStorageService;
 
     [SetUp]
     public void SetUp()
     {
-        loggerMock = new Mock<ILogger<MementoService<WorkshopWithRequiredPropertiesDto>>>();
+        loggerMock = new Mock<ILogger<DraftStorageService<WorkshopWithRequiredPropertiesDto>>>();
         readWriteCacheServiceMock = new Mock<IReadWriteCacheService>();
-        mementoService = new MementoService<WorkshopWithRequiredPropertiesDto>(readWriteCacheServiceMock.Object, loggerMock.Object);
+        draftStorageService = new DraftStorageService<WorkshopWithRequiredPropertiesDto>(readWriteCacheServiceMock.Object, loggerMock.Object);
     }
 
     [Test]
-    public async Task RestoreAsync_WhenMementoExistsInCache_ShouldRestoreAppropriatedEntity()
+    public async Task RestoreAsync_WhenDraftExistsInCache_ShouldRestoreAppropriatedEntity()
     {
         // Arrange
-        var workshopMemento = new WorkshopWithRequiredPropertiesDto()
+        var workshopDraft = new WorkshopWithRequiredPropertiesDto()
         {
             Title = "title",
             Email = "myemail@gmail.com",
@@ -51,22 +52,22 @@ public class MementoServiceTests
             .Returns(() => Task.FromResult(expected["ExpectedKey"]));
 
         // Act
-        var result = await mementoService.RestoreAsync("ExpectedKey");
+        var result = await draftStorageService.RestoreAsync("ExpectedKey");
 
         // Assert
         readWriteCacheServiceMock.Verify(
             c => c.ReadAsync(It.IsAny<string>()),
             Times.Once);
         result.Should().BeOfType<WorkshopWithRequiredPropertiesDto>();
-        Assert.AreEqual(workshopMemento.Title, result.Title);
-        Assert.AreEqual(workshopMemento.Email, result.Email);
-        Assert.AreEqual(workshopMemento.Phone, result.Phone);
+        Assert.AreEqual(workshopDraft.Title, result.Title);
+        Assert.AreEqual(workshopDraft.Email, result.Email);
+        Assert.AreEqual(workshopDraft.Phone, result.Phone);
     }
 
     [Test]
-    public async Task RestoreAsync_WhenMementoIsWorkshopWithDescriptionDtoAndExistsInCache_ShouldRestoreAppropriatedEntity()
+    public async Task RestoreAsync_WhenDraftIsWorkshopWithDescriptionDtoAndExistsInCache_ShouldRestoreAppropriatedEntity()
     {
-        var workshopMemento = FakeMemento(jsonStringForWorkshopWithDescriptionDto);
+        var workshopDraft = FakeDraft(jsonStringForWorkshopWithDescriptionDto);
 
         var expected = new Dictionary<string, string>()
             {
@@ -77,25 +78,25 @@ public class MementoServiceTests
                 .Returns(() => Task.FromResult(expected["ExpectedKey"]));
 
         // Act
-        var result = await mementoService.RestoreAsync("ExpectedKey");
+        var result = await draftStorageService.RestoreAsync("ExpectedKey");
 
         // Assert
         readWriteCacheServiceMock.Verify(
         c => c.ReadAsync(It.IsAny<string>()),
         Times.Once);
 
-        Assert.AreEqual(workshopMemento.Title, result.Title);
-        Assert.AreEqual(workshopMemento.Email, result.Email);
-        Assert.AreEqual(workshopMemento.Phone, result.Phone);
+        Assert.AreEqual(workshopDraft.Title, result.Title);
+        Assert.AreEqual(workshopDraft.Email, result.Email);
+        Assert.AreEqual(workshopDraft.Phone, result.Phone);
         Assert.AreEqual(
-            (workshopMemento as WorkshopWithDescriptionDto).WorkshopDescriptionItems.First().Id,
+            (workshopDraft as WorkshopWithDescriptionDto).WorkshopDescriptionItems.First().Id,
             (result as WorkshopWithDescriptionDto).WorkshopDescriptionItems.First().Id);
     }
 
     [Test]
-    public async Task RestoreAsync_WhenMementoIsWorkshopWithContactsDtoAndExistsInCache_ShouldRestoreAppropriatedEntity()
+    public async Task RestoreAsync_WhenDraftIsWorkshopWithContactsDtoAndExistsInCache_ShouldRestoreAppropriatedEntity()
     {
-        var workshopMemento = FakeMemento(jsonStringForWorkshopWithContactsDto);
+        var workshopDraft = FakeDraft(jsonStringForWorkshopWithContactsDto);
 
         var expected = new Dictionary<string, string>()
             {
@@ -106,31 +107,31 @@ public class MementoServiceTests
                 .Returns(() => Task.FromResult(expected["ExpectedKey"]));
 
         // Act
-        var result = await mementoService.RestoreAsync("ExpectedKey");
+        var result = await draftStorageService.RestoreAsync("ExpectedKey");
 
         // Assert
         readWriteCacheServiceMock.Verify(
         c => c.ReadAsync(It.IsAny<string>()),
         Times.Once);
 
-        Assert.AreEqual(workshopMemento.Title, result.Title);
-        Assert.AreEqual(workshopMemento.Email, result.Email);
-        Assert.AreEqual(workshopMemento.Phone, result.Phone);
+        Assert.AreEqual(workshopDraft.Title, result.Title);
+        Assert.AreEqual(workshopDraft.Email, result.Email);
+        Assert.AreEqual(workshopDraft.Phone, result.Phone);
         Assert.AreEqual(
-            (workshopMemento as WorkshopWithContactsDto).WorkshopDescriptionItems.First().Id,
+            (workshopDraft as WorkshopWithContactsDto).WorkshopDescriptionItems.First().Id,
             (result as WorkshopWithContactsDto).WorkshopDescriptionItems.First().Id);
         Assert.AreEqual(
-            (workshopMemento as WorkshopWithContactsDto).Address.Street,
+            (workshopDraft as WorkshopWithContactsDto).Address.Street,
             (result as WorkshopWithContactsDto).Address.Street);
         Assert.AreEqual(
-            (workshopMemento as WorkshopWithContactsDto).AddressId,
+            (workshopDraft as WorkshopWithContactsDto).AddressId,
             (result as WorkshopWithContactsDto).AddressId);
     }
 
     [Test]
-    public async Task RestoreAsync_WhenMementoIsWorkshopWithTeachersDtoAndExistsInCache_ShouldRestoreAppropriatedEntity()
+    public async Task RestoreAsync_WhenDraftIsWorkshopWithTeachersDtoAndExistsInCache_ShouldRestoreAppropriatedEntity()
     {
-        var workshopMemento = FakeMemento(jsonStringForWorkshopWithTeachersDto);
+        var workshopDraft = FakeDraft(jsonStringForWorkshopWithTeachersDto);
 
         var expected = new Dictionary<string, string>()
             {
@@ -141,35 +142,35 @@ public class MementoServiceTests
                 .Returns(() => Task.FromResult(expected["ExpectedKey"]));
 
         // Act
-        var result = await mementoService.RestoreAsync("ExpectedKey");
+        var result = await draftStorageService.RestoreAsync("ExpectedKey");
 
         // Assert
         readWriteCacheServiceMock.Verify(
         c => c.ReadAsync(It.IsAny<string>()),
         Times.Once);
 
-        Assert.AreEqual(workshopMemento.Title, result.Title);
-        Assert.AreEqual(workshopMemento.Email, result.Email);
-        Assert.AreEqual(workshopMemento.Phone, result.Phone);
+        Assert.AreEqual(workshopDraft.Title, result.Title);
+        Assert.AreEqual(workshopDraft.Email, result.Email);
+        Assert.AreEqual(workshopDraft.Phone, result.Phone);
         Assert.AreEqual(
-            (workshopMemento as WorkshopWithTeachersDto).WorkshopDescriptionItems.First().Id,
+            (workshopDraft as WorkshopWithTeachersDto).WorkshopDescriptionItems.First().Id,
             (result as WorkshopWithTeachersDto).WorkshopDescriptionItems.First().Id);
         Assert.AreEqual(
-            (workshopMemento as WorkshopWithTeachersDto).Address.Street,
+            (workshopDraft as WorkshopWithTeachersDto).Address.Street,
             (result as WorkshopWithTeachersDto).Address.Street);
         Assert.AreEqual(
-            (workshopMemento as WorkshopWithTeachersDto).AddressId,
+            (workshopDraft as WorkshopWithTeachersDto).AddressId,
             (result as WorkshopWithTeachersDto).AddressId);
         Assert.AreEqual(
-            (workshopMemento as WorkshopWithTeachersDto).Teachers,
+            (workshopDraft as WorkshopWithTeachersDto).Teachers,
             (result as WorkshopWithTeachersDto).Teachers);
     }
 
     [Test]
-    public async Task RestoreAsync_WhenMementoIsAbsentInCache_ShouldRestoreDefaultEntity()
+    public async Task RestoreAsync_WhenDraftIsAbsentInCache_ShouldRestoreDefaultEntity()
     {
         // Arrange
-        var expectedMemento = default(WorkshopWithRequiredPropertiesDto);
+        var expectedDraft = default(WorkshopWithRequiredPropertiesDto);
         var expected = new Dictionary<string, string>()
             {
                 {"ExpectedKey", null},
@@ -178,20 +179,20 @@ public class MementoServiceTests
             .Returns(() => Task.FromResult(expected["ExpectedKey"]));
 
         // Act
-        var result = await mementoService.RestoreAsync("ExpectedKey");
+        var result = await draftStorageService.RestoreAsync("ExpectedKey");
 
         // Assert
         readWriteCacheServiceMock.Verify(
             c => c.ReadAsync(It.IsAny<string>()),
             Times.Once);
-        Assert.AreEqual(expectedMemento, result);
+        Assert.AreEqual(expectedDraft, result);
     }
 
     [Test]
     public void CreateAsync_ShouldCallWriteAsyncOnce()
     {
         // Arrange
-        var workshopMemento = new WorkshopWithRequiredPropertiesDto()
+        var workshopDraft = new WorkshopWithRequiredPropertiesDto()
         {
             Title = "title",
             Email = "myemail@gmail.com",
@@ -205,7 +206,7 @@ public class MementoServiceTests
             null));
 
         // Act
-        var result = mementoService.CreateAsync("ExpectedKey", workshopMemento);
+        var result = draftStorageService.CreateAsync("ExpectedKey", workshopDraft);
 
         // Assert
         readWriteCacheServiceMock.Verify(
@@ -229,7 +230,7 @@ public class MementoServiceTests
             .Returns(() => Task.FromResult(expected["ExpectedKey"]));
 
         // Act
-        await mementoService.RemoveAsync("ExpectedKey");
+        await draftStorageService.RemoveAsync("ExpectedKey");
 
         // Assert
         readWriteCacheServiceMock.Verify(
@@ -241,7 +242,7 @@ public class MementoServiceTests
     }
 
     [Test]
-    public async Task RemoveAsync_WhenDataIsAbsentInCache_ShouldCallRemoveAsyncNever()
+    public void RemoveAsync_WhenDataIsAbsentInCache_ShouldCallRemoveAsyncNever()
     {
         // Arrange
         var expected = new Dictionary<string, string>()
@@ -251,10 +252,9 @@ public class MementoServiceTests
         readWriteCacheServiceMock.Setup(c => c.ReadAsync(It.IsAny<string>()))
             .Returns(() => Task.FromResult(expected["ExpectedKey"]));
 
-        // Act
-        await mementoService.RemoveAsync("ExpectedKey");
-
-        // Assert
+        // Act && Assert
+        Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await draftStorageService.RemoveAsync("ExpectedKey").ConfigureAwait(false));
         readWriteCacheServiceMock.Verify(
             c => c.ReadAsync(It.IsAny<string>()),
             Times.Once);
@@ -263,7 +263,7 @@ public class MementoServiceTests
             Times.Never);
     }
 
-    private WorkshopWithRequiredPropertiesDto FakeMemento(string jsonString)
+    private WorkshopWithRequiredPropertiesDto FakeDraft(string jsonString)
     {
         return JsonSerializer.Deserialize<WorkshopWithRequiredPropertiesDto>(jsonString);
     }

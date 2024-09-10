@@ -522,7 +522,7 @@ public static class Startup
         services.AddSingleton<ICacheService, CacheService>();
         services.AddSingleton<IMultiLayerCacheService, MultiLayerCache>();
         services.AddSingleton<IReadWriteCacheService, CacheService>();
-        services.AddSingleton(typeof(IMementoService<>), typeof(MementoService<>));
+        services.AddSingleton(typeof(IDraftStorageService<>), typeof(DraftStorageService<>));
 
         services.AddHealthChecks()
             .AddDbContextCheck<OutOfSchoolDbContext>(

@@ -1,5 +1,6 @@
 ﻿namespace OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
-public interface IMementoService<T>
+
+public interface IDraftStorageService<T>
 {
     Task<T> RestoreAsync(string key);
 

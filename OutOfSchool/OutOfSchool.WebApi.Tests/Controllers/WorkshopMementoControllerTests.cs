@@ -16,7 +16,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers;
 public class WorkshopMementoControllerTests
 {
     private WorkshopMementoController controller;
-    private Mock<IMementoService<WorkshopWithRequiredPropertiesDto>> mementoService;
+    private Mock<IDraftStorageService<WorkshopWithRequiredPropertiesDto>> mementoService;
     private ClaimsPrincipal user;
 
     private IEnumerable<WorkshopWithRequiredPropertiesDto> mementos;
@@ -25,7 +25,7 @@ public class WorkshopMementoControllerTests
     [SetUp]
     public void Setup()
     {
-        mementoService = new Mock<IMementoService<WorkshopWithRequiredPropertiesDto>>();
+        mementoService = new Mock<IDraftStorageService<WorkshopWithRequiredPropertiesDto>>();
         controller = new WorkshopMementoController(mementoService.Object);
         user = new ClaimsPrincipal(new ClaimsIdentity());
         controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
