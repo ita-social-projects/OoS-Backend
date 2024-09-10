@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -13,34 +12,32 @@ using OutOfSchool.WebApi.Controllers.V1;
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
 [TestFixture]
-public class WorkshopMementoControllerTests
+public class WorkshopDraftStorageControllerTests
 {
-    private WorkshopMementoController controller;
-    private Mock<IDraftStorageService<WorkshopWithRequiredPropertiesDto>> mementoService;
+    private Mock<IDraftStorageService<WorkshopWithRequiredPropertiesDto>> draftStorageService;
+    private WorkshopDraftStorageController controller;
     private ClaimsPrincipal user;
-
-    private IEnumerable<WorkshopWithRequiredPropertiesDto> mementos;
-    private WorkshopWithRequiredPropertiesDto memento;
+    private WorkshopWithRequiredPropertiesDto draft;
 
     [SetUp]
     public void Setup()
     {
-        mementoService = new Mock<IDraftStorageService<WorkshopWithRequiredPropertiesDto>>();
-        controller = new WorkshopMementoController(mementoService.Object);
+        draftStorageService = new Mock<IDraftStorageService<WorkshopWithRequiredPropertiesDto>>();
+        controller = new WorkshopDraftStorageController(draftStorageService.Object);
         user = new ClaimsPrincipal(new ClaimsIdentity());
+        draft = FakeDraft();
         controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
-        memento = FakeMemento();
     }
 
     [Test]
-    public async Task StoreMemento_WhenModelIsValid_ReturnsOkObjectResult()
+    public async Task StoreDraft_WhenModelIsValid_ReturnsOkObjectResult()
     {
         // Arrange
-        mementoService.Setup(ms => ms.CreateAsync(It.IsAny<string>(), memento));
+        draftStorageService.Setup(ms => ms.CreateAsync(It.IsAny<string>(), draft));
         var resulValue = "WorkshopWithRequiredPropertiesDto is stored";
 
         // Act
-        var result = await controller.StoreMemento(memento);
+        var result = await controller.StoreDraft(draft);
 
         // Assert
         result.Should()
@@ -54,14 +51,14 @@ public class WorkshopMementoControllerTests
     }
 
     [Test]
-    public async Task StoreMemento_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
+    public async Task StoreDraft_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
     {
         // Arrange
         controller.ModelState.AddModelError("StoreMemento", "Invalid model state.");
         var resulValue = "{[\"StoreMemento\"] = {\"Invalid model state.\"}}";
 
         // Act
-        var result = await controller.StoreMemento(memento);
+        var result = await controller.StoreDraft(draft);
 
         // Assert
         Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
@@ -72,13 +69,13 @@ public class WorkshopMementoControllerTests
     }
 
     [Test]
-    public async Task RestoreMemento_WhenMementoExistsInCache_ReturnsMementoAtActionResult()
+    public async Task RestoreDraft_WhenDraftExistsInCache_ReturnsMementoAtActionResult()
     {
         // Arrange
-        mementoService.Setup(rm => rm.RestoreAsync(It.IsAny<string>())).ReturnsAsync(memento);
+        draftStorageService.Setup(rm => rm.RestoreAsync(It.IsAny<string>())).ReturnsAsync(draft);
 
         // Act
-        var result = await controller.RestoreMemento();
+        var result = await controller.RestoreDraft();
 
         // Assert
         result.Should()
@@ -88,17 +85,17 @@ public class WorkshopMementoControllerTests
               .Be(StatusCodes.Status200OK);
         result.Should()
               .BeOfType<OkObjectResult>()
-              .Which.Value.Should().Be(memento);
+              .Which.Value.Should().Be(draft);
     }
 
     [Test]
-    public async Task RestoreMemento_WhenMementoIsAbsentInCache_ReturnsDefaultMementoAtActionResult()
+    public async Task RestoreDraft_WhenMementoIsAbsentInCache_ReturnsDefaultMementoAtActionResult()
     {
         // Arrange
-        mementoService.Setup(ms => ms.RestoreAsync(It.IsAny<string>())).ReturnsAsync(default(WorkshopWithRequiredPropertiesDto));
+        draftStorageService.Setup(ms => ms.RestoreAsync(It.IsAny<string>())).ReturnsAsync(default(WorkshopWithRequiredPropertiesDto));
 
         // Act
-        var result = await controller.RestoreMemento();
+        var result = await controller.RestoreDraft();
 
         // Assert
         result.Should()
@@ -111,7 +108,7 @@ public class WorkshopMementoControllerTests
               .Which.Value.Should().Be(default(WorkshopWithRequiredPropertiesDto));
     }
 
-    private WorkshopWithRequiredPropertiesDto FakeMemento()
+    private WorkshopWithRequiredPropertiesDto FakeDraft()
     {
         return new WorkshopWithRequiredPropertiesDto()
         {

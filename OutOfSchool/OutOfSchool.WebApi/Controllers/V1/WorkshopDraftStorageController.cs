@@ -4,11 +4,11 @@ using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
-/// <summary>Controller with CRUD operations for WorkshopWithRequiredPropertiesDto entity.</summary>
+/// <summary>Controller with operations for storing the Teacher draft in cache.</summary>
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
-public class WorkshopMementoController(IDraftStorageService<WorkshopWithRequiredPropertiesDto> mementoService)
-    : MementoController<WorkshopWithRequiredPropertiesDto>(mementoService)
+public class WorkshopDraftStorageController(IDraftStorageService<WorkshopWithRequiredPropertiesDto> mementoService)
+    : DraftStorageController<WorkshopWithRequiredPropertiesDto>(mementoService)
 {
 }
