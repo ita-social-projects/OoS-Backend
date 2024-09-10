@@ -54,7 +54,6 @@ public class SocialGroupService : ISocialGroupService
         }).ToList();
     }
 
-
     /// <inheritdoc/>
     public async Task<SocialGroupDto> GetById(long id, LocalizationType localization = LocalizationType.Ua)
     {
