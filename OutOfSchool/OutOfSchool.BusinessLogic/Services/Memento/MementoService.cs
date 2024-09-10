@@ -67,11 +67,11 @@ public class MementoService<T> : IMementoService<T>
 
         if (valueToRemove == null)
         {
-            logger.LogInformation($"Memento with key = {mementoKey} was not found in the cache.");
+            logger.LogInformation("Memento with key = {MementoKey} was not found in the cache.", mementoKey);
             return;
         }
 
-        logger.LogInformation($"Removing memento with key = {mementoKey} from cache has started.");
+        logger.LogInformation("Removing memento with key = {MementoKey} from cache has started.", mementoKey);
         await readWriteCacheService.RemoveAsync(mementoKey).ConfigureAwait(false);
     }
 

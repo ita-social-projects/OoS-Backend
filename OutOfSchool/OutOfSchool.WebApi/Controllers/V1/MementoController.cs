@@ -47,7 +47,7 @@ public abstract class MementoController<T> : ControllerBase
         return Ok(memento);
     }
 
-    /// <summary>Removes the memento fron the cache.</summary>
+    /// <summary>Removes the memento from the cache.</summary>
     /// <returns> Information about removing an entity of type T from the cache.</returns>
     [HttpDelete]
     [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
