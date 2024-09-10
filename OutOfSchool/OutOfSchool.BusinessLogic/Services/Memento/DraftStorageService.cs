@@ -69,11 +69,11 @@ public class DraftStorageService<T> : IDraftStorageService<T>
 
         if (valueToRemove == null)
         {
-            logger.LogError("The {EntityType} draft with key = {DraftKey} was not found in the cache.", typeof(T), draftKey);
+            logger.LogError("The {EntityType} draft with key = {DraftKey} was not found in the cache.", typeof(T).Name, draftKey);
             throw new InvalidOperationException($"The {typeof(T).Name} draft with key = {draftKey} was not found in the cache.");
         }
 
-        logger.LogInformation("Start removing the {EntityType} draft with key = {DraftKey} from cache.", typeof(T), draftKey);
+        logger.LogInformation("Start removing the {EntityType} draft with key = {DraftKey} from cache.", typeof(T).Name, draftKey);
         await readWriteCacheService.RemoveAsync(draftKey).ConfigureAwait(false);
     }
 
