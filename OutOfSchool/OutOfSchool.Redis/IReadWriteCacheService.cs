@@ -7,7 +7,7 @@ public interface IReadWriteCacheService
 {
     Task<string> ReadAsync(string key);
 
-    public Task WriteAsync(
+    Task WriteAsync(
         string key,
         string value,
         TimeSpan? absoluteExpirationRelativeToNowInterval = null,

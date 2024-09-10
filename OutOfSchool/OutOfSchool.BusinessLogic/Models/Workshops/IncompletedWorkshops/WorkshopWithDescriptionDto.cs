@@ -4,6 +4,7 @@ using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops.IncompletedWorkshops;
+
 public class WorkshopWithDescriptionDto : WorkshopWithRequiredPropertiesDto
 {
     [ModelBinder(BinderType = typeof(JsonModelBinder))]

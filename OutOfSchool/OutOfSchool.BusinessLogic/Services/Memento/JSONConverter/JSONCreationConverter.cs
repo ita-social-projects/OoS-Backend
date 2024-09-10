@@ -5,18 +5,9 @@ namespace OutOfSchool.BusinessLogic.Services.Memento.JSONConverter;
 
 public abstract class JsonCreationConverter<T> : JsonConverter
 {
-    public override bool CanWrite
-    {
-        get
-        {
-            return false;
-        }
-    }
+    public override bool CanWrite => false;
 
-    public override bool CanConvert(Type objectType)
-    {
-        return typeof(T).IsAssignableFrom(objectType);
-    }
+    public override bool CanConvert(Type objectType) => typeof(T).IsAssignableFrom(objectType);
 
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
     {
