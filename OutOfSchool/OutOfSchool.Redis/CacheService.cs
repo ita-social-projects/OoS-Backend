@@ -26,6 +26,9 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
         IOptions<RedisConfig> redisConfig
     )
     {
+        ArgumentNullException.ThrowIfNull(cache);
+        ArgumentNullException.ThrowIfNull(redisConfig.Value);
+
         this.cache = cache;
 
         try
@@ -47,12 +50,16 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
     {
         T returnValue;
 
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
         var value = await ReadAsync(key);
 
         if (!string.IsNullOrEmpty(value))
         {
             return JsonConvert.DeserializeObject<T>(value);
         }
+
+        ArgumentNullException.ThrowIfNull(newValueFactory);
 
         returnValue = await newValueFactory() ?? default;
 
@@ -69,22 +76,27 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
     }
 
     public Task RemoveAsync(string key)
-        => ExecuteRedisMethod(() =>
-        {
-            cacheLock.EnterWriteLock();
-            try
-            {
-                cache.Remove(key);
-            }
-            finally
-            {
-                cacheLock.ExitWriteLock();
-            }
-        });
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
 
+        return ExecuteRedisMethod(() =>
+            {
+                cacheLock.EnterWriteLock();
+                try
+                {
+                    cache.Remove(key);
+                }
+                finally
+                {
+                    cacheLock.ExitWriteLock();
+                }
+            });
+    }
 
     public async Task<string> ReadAsync(string key)
     {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
         string returnValue = string.Empty;
 
         await ExecuteRedisMethod(() =>
@@ -105,6 +117,9 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
 
     public async Task WriteAsync(string key, string value, TimeSpan? absoluteExpirationRelativeToNowInterval = null, TimeSpan? slidingExpirationInterval = null)
     {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentException.ThrowIfNullOrEmpty(value);
+
         await ExecuteRedisMethod(() =>
         {
             cacheLock.EnterWriteLock();
@@ -124,7 +139,6 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
             }
         });
     }
-
 
     public void Dispose()
     {

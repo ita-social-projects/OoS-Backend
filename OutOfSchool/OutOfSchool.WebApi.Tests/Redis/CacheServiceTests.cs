@@ -118,6 +118,7 @@ public class CacheServiceTests
             Times.Once);
     }
 
+    [Test]
     public async Task ReadAsync_WhenDataNotExistsOrExpired_ShouldReturnNull()
     {
         // Arrange
