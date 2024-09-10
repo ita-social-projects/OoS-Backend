@@ -12,7 +12,7 @@ using OutOfSchool.BusinessLogic.Services.Memento;
 using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
 using OutOfSchool.Redis;
 
-namespace OutOfSchool.WebApi.Tests.Services.Memento;
+namespace OutOfSchool.WebApi.Tests.Services.DraftStorage;
 
 [TestFixture]
 public class DraftStorageServiceTests
