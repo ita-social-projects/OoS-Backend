@@ -242,7 +242,7 @@ public class DraftStorageServiceTests
     }
 
     [Test]
-    public void RemoveAsync_WhenDataIsAbsentInCache_ShouldCallRemoveAsyncNever()
+    public async Task RemoveAsync_WhenDataIsAbsentInCache_ShouldCallRemoveAsyncNever()
     {
         // Arrange
         var expected = new Dictionary<string, string>()
@@ -252,9 +252,10 @@ public class DraftStorageServiceTests
         readWriteCacheServiceMock.Setup(c => c.ReadAsync(It.IsAny<string>()))
             .Returns(() => Task.FromResult(expected["ExpectedKey"]));
 
-        // Act && Assert
-        Assert.ThrowsAsync<InvalidOperationException>(
-            async () => await draftStorageService.RemoveAsync("ExpectedKey").ConfigureAwait(false));
+        // Act
+        await draftStorageService.RemoveAsync("ExpectedKey").ConfigureAwait(false);
+
+        // Assert
         readWriteCacheServiceMock.Verify(
             c => c.ReadAsync(It.IsAny<string>()),
             Times.Once);
