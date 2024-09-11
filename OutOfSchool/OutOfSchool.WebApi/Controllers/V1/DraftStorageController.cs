@@ -56,6 +56,6 @@ public abstract class DraftStorageController<T> : ControllerBase
         var userId = GettingUserProperties.GetUserId(User);
         await draftStorageService.RemoveAsync(userId).ConfigureAwait(false);
 
-        return Ok($"{typeof(T).Name} for User with Id = {userId} has been removed");
+        return NoContent();
     }
 }

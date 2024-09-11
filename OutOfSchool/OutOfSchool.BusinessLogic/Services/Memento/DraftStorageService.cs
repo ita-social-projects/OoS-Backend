@@ -28,7 +28,7 @@ public class DraftStorageService<T> : IDraftStorageService<T>
     /// <summary>Restores the entity draft of T type entity.</summary>
     /// <param name="key">The key.</param>
     /// <returns> Representing the asynchronous operation with result of T type.</returns>
-    public async Task<T?> RestoreAsync([NotNull] string key)
+    public async Task<T> RestoreAsync([NotNull] string key)
     {
         ArgumentException.ThrowIfNullOrEmpty(key);
 
@@ -69,8 +69,8 @@ public class DraftStorageService<T> : IDraftStorageService<T>
 
         if (valueToRemove == null)
         {
-            logger.LogError("The {EntityType} draft with key = {DraftKey} was not found in the cache.", typeof(T).Name, draftKey);
-            throw new InvalidOperationException($"The {typeof(T).Name} draft with key = {draftKey} was not found in the cache.");
+            logger.LogInformation("The {EntityType} draft with key = {DraftKey} was not found in the cache.", typeof(T).Name, draftKey);
+            return;
         }
 
         logger.LogInformation("Start removing the {EntityType} draft with key = {DraftKey} from cache.", typeof(T).Name, draftKey);
