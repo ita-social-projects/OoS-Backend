@@ -31,34 +31,17 @@ public class SensitiveWorkshopsServiceTests
 
     private ISensitiveWorkshopsService sensitiveWorkshopService;
     private Mock<IWorkshopRepository> workshopRepository;
-    private Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>> dateTimeRangeRepository;
-    private Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>> roomRepository;
-    private Mock<ITeacherService> teacherService;
-    private Mock<ILogger<WorkshopService>> logger;
     private Mock<IMapper> mapperMock;
-    private Mock<IImageDependentEntityImagesInteractionService<Workshop>> workshopImagesMediator;
-    private Mock<IProviderAdminRepository> providerAdminRepository;
-    private Mock<IAverageRatingService> averageRatingServiceMock;
-    private Mock<IProviderRepository> providerRepositoryMock;
-    private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
-    private string userId;
+    private Mock<ICurrentUserService> currentUserServiceMock;
 
     [SetUp]
     public void SetUp()
     {
         workshopRepository = new Mock<IWorkshopRepository>();
-        dateTimeRangeRepository = new Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>>();
-        roomRepository = new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>();
-        teacherService = new Mock<ITeacherService>();
-        logger = new Mock<ILogger<WorkshopService>>();
         mapperMock = new Mock<IMapper>();
-        workshopImagesMediator = new Mock<IImageDependentEntityImagesInteractionService<Workshop>>();
-        providerAdminRepository = new Mock<IProviderAdminRepository>();
-        averageRatingServiceMock = new Mock<IAverageRatingService>();
-        providerRepositoryMock = new Mock<IProviderRepository>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
@@ -67,21 +50,19 @@ public class SensitiveWorkshopsServiceTests
         sensitiveWorkshopService =
             new WorkshopService(
                 workshopRepository.Object,
-                dateTimeRangeRepository.Object,
-                roomRepository.Object,
-                teacherService.Object,
-                logger.Object,
+                new Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>>().Object,
+                new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>().Object,
+                new Mock<ITeacherService>().Object,
+                new Mock<ILogger<WorkshopService>>().Object,
                 mapperMock.Object,
-                workshopImagesMediator.Object,
-                providerAdminRepository.Object,
-                averageRatingServiceMock.Object,
-                providerRepositoryMock.Object,
+                new Mock<IImageDependentEntityImagesInteractionService<Workshop>>().Object,
+                new Mock<IProviderAdminRepository>().Object,
+                new Mock<IAverageRatingService>().Object,
+                new Mock<IProviderRepository>().Object,
                 currentUserServiceMock.Object,
                 ministryAdminServiceMock.Object,
                 regionAdminServiceMock.Object,
                 codeficatorServiceMock.Object);
-
-        userId = Guid.NewGuid().ToString();
     }
 
     #region FetchByFilterForAdmins
@@ -91,47 +72,70 @@ public class SensitiveWorkshopsServiceTests
     {
         // Arrange
         var institutionId = Guid.NewGuid();
-        var parentCATOTTGId = 1;
-        WorkshopFilterAdministration filter = new WorkshopFilterAdministration();
-        var admin = new RegionAdminDto() { Id = userId, InstitutionId = institutionId, CATOTTGId = parentCATOTTGId };
-        var resultExcpected = SetupFetchByFilterForAdmins(userId, true, false, parentCATOTTGId, filter, admin);
+        var userId = Guid.Parse("67a6c5b2-73b9-4c5d-b541-e59fb4a43ef6").ToString();
+        var parentCATOTTGid = 11;
+        var subSettlementsIds = new List<long>() { parentCATOTTGid, 12, 13 };
+        var filter = new WorkshopFilterAdministration();
+        var admin = new RegionAdminDto() { Id = userId, InstitutionId = institutionId, CATOTTGId = parentCATOTTGid };
+        var resultExpected = SetupFetchByFilterForAdmins(userId, true, false, parentCATOTTGid, filter, subSettlementsIds, admin);
 
         // Act
-        var result = await sensitiveWorkshopService.FetchByFilterForAdmins().ConfigureAwait(false);
+        var result = await sensitiveWorkshopService.FetchByFilterForAdmins()
+            .ConfigureAwait(false);
 
         // Assert
-        resultExcpected.Should().BeEquivalentTo(result);
+        resultExpected.Should()
+            .BeEquivalentTo(result);
+
+        codeficatorServiceMock.Verify(
+            s => s.GetAllChildrenIdsByParentIdAsync(It.Is<long>(s => s == parentCATOTTGid)), Times.Once);
+
+        regionAdminServiceMock.Verify(
+            r => r.GetByUserId(It.Is<string>(id => id == userId)));
     }
 
     [Test]
     public void FetchByFilterForAdmins_WhenFilterIsNullRegionAdminIsNull_ShouldReturnException()
     {
         // Arrange
-        var parentCATOTTGId = 1;
+        var codeficatorId = 10;
+        var userId = Guid.Parse("f9d79c19-17f0-4cbe-8a2f-6e299983bdc7").ToString();
+        var subSettlementsIds = new List<long>() { codeficatorId };
         RegionAdminDto admin = null;
-        SetupFetchByFilterForAdmins(userId,  true, false, parentCATOTTGId, null, admin);
+        SetupFetchByFilterForAdmins(userId,  true, false, codeficatorId, null, subSettlementsIds, admin);
 
         // Assert
         Func<Task<SearchResult<WorkshopDto>>> result = () => sensitiveWorkshopService.FetchByFilterForAdmins();
 
         // Act
-        result.Should().ThrowAsync<InvalidOperationException>()
-        .WithMessage($"Region admin with the specified ID: {userId} not found");
+        result.Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage($"Region admin with the specified ID: {userId} not found");
     }
 
     [Test]
-    public async Task FetchByFilterForAdmins_WhenFilterByCATOTTGId_ShouldReturnEntities()
+    public async Task FetchByFilterForAdmins_ByFilterСriteria_ShouldReturnEntities()
     {
         // Arrange
-        var parentCATOTTGId = 10;
-        WorkshopFilterAdministration filter = new WorkshopFilterAdministration() { From = 3, Size = 10, CATOTTGId = 1 };
-        var resultExcpected = SetupFetchByFilterForAdmins(userId, false, false, parentCATOTTGId, filter);
+        var codeficatorId = 10;
+        var subSettlementsIds = new List<long>() { codeficatorId };
+        var userId = Guid.Parse("d112e6b9-8cb3-4b62-9d7e-2dff7588f83f").ToString();
+        var filter = new WorkshopFilterAdministration()
+        {
+            From = 2,
+            Size = 2,
+            CATOTTGId = codeficatorId,
+            SearchString = "   ",
+        };
+        var resultExpected = SetupFetchByFilterForAdmins(userId, false, false, codeficatorId, filter, subSettlementsIds);
 
         // Act
-        var result = await sensitiveWorkshopService.FetchByFilterForAdmins(filter).ConfigureAwait(false);
+        var result = await sensitiveWorkshopService.FetchByFilterForAdmins(filter)
+            .ConfigureAwait(false);
 
         // Assert
-        resultExcpected.Should().BeEquivalentTo(result);
+        resultExpected.Should()
+            .BeEquivalentTo(result);
     }
 
     [Test]
@@ -139,16 +143,31 @@ public class SensitiveWorkshopsServiceTests
     {
         // Arrange
         var institutionId = Guid.NewGuid();
-        var parentCATOTTGId = 1;
+        var parentCATOTTGId = 11;
+        var userId = Guid.Parse("2c8a3a36-53c8-4a2d-9a73-b223b611d469").ToString();
+        var subSettlementsIds = new List<long>() { parentCATOTTGId, 40, 30};
         var admin = new MinistryAdminDto() { Id = userId, InstitutionId = institutionId };
-        WorkshopFilterAdministration filter = new WorkshopFilterAdministration() { Size = 8, CATOTTGId = 1, From = 2, SearchString = "key word" };
-        var resultExcpected = SetupFetchByFilterForAdmins(userId, false, true, parentCATOTTGId, filter, null, admin);
+        var filterWorkshop = new WorkshopFilterAdministration()
+        {
+            Size = 8,
+            CATOTTGId = 30,
+            SearchString = null,
+        };
+        var resultExpected = SetupFetchByFilterForAdmins(userId, false, true, parentCATOTTGId, filterWorkshop, subSettlementsIds, null, admin);
 
         // Act
-        var result = await sensitiveWorkshopService.FetchByFilterForAdmins(filter).ConfigureAwait(false);
+        var result = await sensitiveWorkshopService.FetchByFilterForAdmins(filterWorkshop)
+            .ConfigureAwait(false);
 
         // Assert
-        resultExcpected.Should().BeEquivalentTo(result);
+        resultExpected.Should()
+            .BeEquivalentTo(result);
+
+        ministryAdminServiceMock.Verify(m =>
+        m.GetByUserId(It.Is<string>(id => id == userId)));
+
+        codeficatorServiceMock.Verify(
+            s => s.GetAllChildrenIdsByParentIdAsync(It.Is<long>(s => s == filterWorkshop.CATOTTGId)), Times.Once);
     }
 
     #endregion
@@ -156,31 +175,31 @@ public class SensitiveWorkshopsServiceTests
     #region With
 
     private SearchResult<WorkshopDto> SetupFetchByFilterForAdmins(
-        string userId, bool isRegionAdmin, bool isMinistryAdmin, long parentCATOTTGId, WorkshopFilterAdministration filter, RegionAdminDto adminRegion = null, MinistryAdminDto adminMinistry = null)
+        string userId,
+        bool isRegionAdmin,
+        bool isMinistryAdmin,
+        long parentCATOTTGId,
+        WorkshopFilterAdministration filter,
+        IEnumerable<long> subSettlementsIds,
+        RegionAdminDto adminRegion = null,
+        MinistryAdminDto adminMinistry = null)
     {
-        var workshops = WithListOfWorkshops().ToList();
-        var workshopsDto = WithListOfWorkshopsDto().ToList();
-        IEnumerable<long> subSettlementsIds = new List<long>() { 1, 2, 3 };
+        var workshops = WorkshopGenerator.Generate(5).ToList();
+        var workshopsDto = WorkshopDtoGenerator.Generate(5).ToList();
+
         SetUpCurrentUserService(userId, isRegionAdmin, isMinistryAdmin);
-        SetupRegionAdminService(userId, adminRegion);
-        SetupMinistryAdminService(userId, adminMinistry);
-        SetUpCodeficatorService(subSettlementsIds, parentCATOTTGId);
+        regionAdminServiceMock.Setup(a => a.GetByUserId(userId)).ReturnsAsync(adminRegion);
+        ministryAdminServiceMock.Setup(a => a.GetByUserId(userId)).ReturnsAsync(adminMinistry);
+        codeficatorServiceMock.Setup(c => c.GetAllChildrenIdsByParentIdAsync(parentCATOTTGId)).ReturnsAsync(subSettlementsIds);
         SetUpWorkshopsRepository(workshops, filter);
-        SetUpMapper(workshopsDto, workshops);
-        var resultExcpected = new SearchResult<WorkshopDto> { TotalAmount = workshopsDto.Count, Entities = workshopsDto };
-        return resultExcpected;
-    }
+        mapperMock.Setup(m => m.Map<IEnumerable<WorkshopDto>>(workshops)).Returns(workshopsDto);
 
-    private IEnumerable<Workshop> WithListOfWorkshops()
-    {
-        var workshops = WorkshopGenerator.Generate(5);
-        return workshops;
-    }
-
-    private IEnumerable<WorkshopDto> WithListOfWorkshopsDto()
-    {
-        var workshops = WorkshopDtoGenerator.Generate(5);
-        return workshops;
+        var resultExpected = new SearchResult<WorkshopDto>()
+        {
+            TotalAmount = workshopsDto.Count,
+            Entities = workshopsDto,
+        };
+        return resultExpected;
     }
 
     private void SetUpCurrentUserService(string userId, bool isRegionAdmin = false, bool isMinistryAdmin = false)
@@ -188,21 +207,6 @@ public class SensitiveWorkshopsServiceTests
         currentUserServiceMock.Setup(u => u.IsRegionAdmin()).Returns(isRegionAdmin);
         currentUserServiceMock.Setup(u => u.IsMinistryAdmin()).Returns(isMinistryAdmin);
         currentUserServiceMock.Setup(u => u.UserId).Returns(userId);
-    }
-
-    private void SetupRegionAdminService(string userId, RegionAdminDto admin)
-    {
-        regionAdminServiceMock.Setup(a => a.GetByUserId(userId)).ReturnsAsync(admin);
-    }
-
-    private void SetupMinistryAdminService(string userId, MinistryAdminDto ministryAdmin)
-    {
-        ministryAdminServiceMock.Setup(a => a.GetByUserId(userId)).ReturnsAsync(ministryAdmin);
-    }
-
-    private void SetUpCodeficatorService(IEnumerable<long> subSettlementsIds, long parentId)
-    {
-        codeficatorServiceMock.Setup(c => c.GetAllChildrenIdsByParentIdAsync(parentId)).ReturnsAsync(subSettlementsIds);
     }
 
     private void SetUpWorkshopsRepository(List<Workshop> workshopsReturned, WorkshopFilterAdministration filter = null)
@@ -216,11 +220,6 @@ public class SensitiveWorkshopsServiceTests
                     It.Is<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(x => x == null),
                     It.Is<bool>(x => x.Equals(true))))
             .Returns(workshopsReturned.AsTestAsyncEnumerableQuery());
-    }
-
-    private void SetUpMapper(IEnumerable<WorkshopDto> returnedDto, IEnumerable<Workshop> workshops)
-    {
-        mapperMock.Setup(m => m.Map<IEnumerable<WorkshopDto>>(workshops)).Returns(returnedDto);
     }
 
     #endregion

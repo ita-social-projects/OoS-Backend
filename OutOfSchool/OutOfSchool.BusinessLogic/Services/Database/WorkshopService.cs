@@ -702,19 +702,28 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             predicate = predicate.And(tempPredicate);
         }
 
-        if (!string.IsNullOrEmpty(filter.SearchString))
+        if (!string.IsNullOrWhiteSpace(filter.SearchString))
         {
-            var tempPredicate = PredicateBuilder.False<Workshop>();
-            var keyWords = filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries);
+            // Split the search string by commas and spaces, remove any empty entries, and trim whitespace from each element.
+            var searchTerms = filter.SearchString.Split(new char[] {' ', ','}, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-            logger.LogDebug("Received key words from search string: {Words}", keyWords);
+            logger.LogDebug("Received terms from search string: {Words}", searchTerms);
 
-            foreach (var word in keyWords)
+            if (searchTerms.Any())
             {
-                tempPredicate = tempPredicate.Or(x => x.Keywords.Contains(word));
-            }
+                var tempPredicate = PredicateBuilder.False<Workshop>();
+                foreach (var word in searchTerms)
+                {
+                    tempPredicate = tempPredicate.Or(
+                        x => x.Title.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
+                        x.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
+                        x.ProviderTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
+                        x.ProviderTitleEn.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
+                        x.Email.Contains(word, StringComparison.InvariantCultureIgnoreCase));
+                }
 
-            predicate = predicate.And(tempPredicate);
+                predicate = predicate.And(tempPredicate);
+            }
         }
 
         if (filter.InstitutionId != Guid.Empty)
