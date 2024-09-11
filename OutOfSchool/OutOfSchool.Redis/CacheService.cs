@@ -48,8 +48,6 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
         TimeSpan? absoluteExpirationRelativeToNowInterval = null,
         TimeSpan? slidingExpirationInterval = null)
     {
-        T returnValue;
-
         ArgumentException.ThrowIfNullOrEmpty(key);
 
         var value = await ReadAsync(key);
@@ -61,7 +59,7 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
 
         ArgumentNullException.ThrowIfNull(newValueFactory);
 
-        returnValue = await newValueFactory() ?? default;
+        T returnValue = await newValueFactory() ?? default;
 
         if (returnValue is not null)
         {
