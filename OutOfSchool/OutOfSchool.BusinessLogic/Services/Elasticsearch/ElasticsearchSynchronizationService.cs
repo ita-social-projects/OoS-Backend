@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
+using Elastic.Clients.Elasticsearch;
 using Microsoft.Extensions.Options;
-using Nest;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
 
@@ -142,7 +142,7 @@ public class ElasticsearchSynchronizationService : IElasticsearchSynchronization
             {
                 var result = await esProvider.DeleteRangeOfEntitiesByIdsAsync(ids).ConfigureAwait(false);
 
-                if (result == Result.Error)
+                if (result != Result.Deleted)
                 {
                     logger.LogError("Error happened while trying to delete indexes in Elasticsearch");
                     return false;
@@ -164,7 +164,7 @@ public class ElasticsearchSynchronizationService : IElasticsearchSynchronization
             {
                 var result = await esProvider.IndexAll(sourse).ConfigureAwait(false);
 
-                if (result == Result.Error)
+                if (result != Result.Updated)
                 {
                     logger.LogError($"Error happened while trying to update indexes in Elasticsearch.");
                     return false;

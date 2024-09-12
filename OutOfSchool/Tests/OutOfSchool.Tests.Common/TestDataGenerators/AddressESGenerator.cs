@@ -1,5 +1,5 @@
 ﻿using Bogus;
-using Nest;
+using Elastic.Clients.Elasticsearch;
 using OutOfSchool.ElasticsearchData.Models;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
@@ -17,7 +17,12 @@ public class AddressESGenerator
             .RuleFor(x => x.CodeficatorAddressES, f => CodeficatorAddressESGenerator.Generate())
             .RuleFor(x => x.Street, f => f.Address.StreetName())
             .RuleFor(x => x.BuildingNumber, f => f.Address.BuildingNumber())
-            .RuleFor(x => x.Point, f => GeoLocation.TryCreate(f.Address.Latitude(), f.Address.Longitude()));
+            .RuleFor(x => x.Point, f => GeoLocation.LatitudeLongitude(
+                new LatLonGeoLocation()
+                {
+                    Lat = f.Address.Latitude(),
+                    Lon = f.Address.Longitude() 
+                }));
 
         // Increment initial value of IndexFaker to have first created entity with Id=1
         // and prevent System.InvalidOperationException when it is added to the DbContext

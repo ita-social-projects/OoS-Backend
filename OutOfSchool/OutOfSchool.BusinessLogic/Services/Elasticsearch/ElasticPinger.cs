@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Options;
-using Nest;
+﻿using Elastic.Clients.Elasticsearch;
+using Microsoft.Extensions.Options;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -7,12 +7,12 @@ public class ElasticPinger : IElasticsearchHealthService, IHostedService, IDispo
 {
     private readonly ILogger<ElasticPinger> logger;
     private Timer timer;
-    private ElasticClient elasticClient;
+    private ElasticsearchClient elasticClient;
     private ElasticConfig elasticConfig;
 
     public ElasticPinger(
         ILogger<ElasticPinger> logger,
-        ElasticClient client,
+        ElasticsearchClient client,
         IOptions<ElasticConfig> elasticOptions)
     {
         this.logger = logger;
@@ -26,7 +26,19 @@ public class ElasticPinger : IElasticsearchHealthService, IHostedService, IDispo
     {
         logger.LogInformation("Service started pinging");
         timer = new Timer(
-            cb => IsHealthy = elasticClient.Ping().IsValid,
+            async (cb) =>
+            {
+                try
+                {
+                    IsHealthy =
+                    (await elasticClient.PingAsync().ConfigureAwait(false)).IsValidResponse;
+                }
+                catch (Exception ex)
+                {
+                    IsHealthy = false;
+                    logger.LogWarning($"Error while pinging Elasticsearch: {ex.Message}");
+                }
+            },
             null,
             TimeSpan.Zero,
             TimeSpan.FromSeconds(elasticConfig.PingIntervalSeconds));

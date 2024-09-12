@@ -4,7 +4,8 @@ using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Nest;
+using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.Core.Bulk;
 using OutOfSchool.ElasticsearchData.Models;
 
 namespace OutOfSchool.ElasticsearchData;
@@ -22,17 +23,17 @@ public class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchProvider<TE
     /// Initializes a new instance of the <see cref="ElasticsearchProvider{TEntity, TSearch}"/> class.
     /// </summary>
     /// <param name="elasticClient">The configured instance of Elasticsearch client.</param>
-    public ElasticsearchProvider(ElasticClient elasticClient)
+    public ElasticsearchProvider(ElasticsearchClient elasticClient)
     {
         this.ElasticClient = elasticClient;
     }
 
-    protected ElasticClient ElasticClient { get; private set; }
+    protected ElasticsearchClient ElasticClient { get; private set; }
 
     /// <inheritdoc/>
     public virtual async Task<Result> IndexEntityAsync(TEntity entity)
     {
-        var resp = await ElasticClient.IndexDocumentAsync(entity);
+        var resp = await ElasticClient.IndexAsync(entity);
 
         return resp.Result;
     }
@@ -40,7 +41,7 @@ public class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchProvider<TE
     /// <inheritdoc/>
     public virtual async Task<Result> UpdateEntityAsync(TEntity entity)
     {
-        var resp = await ElasticClient.UpdateAsync<TEntity>(entity, u => u.Doc(entity).Upsert(entity));
+        var resp = await ElasticClient.UpdateAsync<TEntity, TEntity>(entity, entity, u => u.Doc(entity).Upsert(entity));
 
         return resp.Result;
     }
@@ -48,7 +49,7 @@ public class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchProvider<TE
     /// <inheritdoc/>
     public virtual async Task<Result> DeleteEntityAsync(TEntity entity)
     {
-        var resp = await ElasticClient.DeleteAsync<TEntity>(entity);
+        var resp = await ElasticClient.DeleteAsync<TEntity>(new DeleteRequestDescriptor<TEntity>(entity));
 
         return resp.Result;
     }
@@ -66,7 +67,9 @@ public class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchProvider<TE
     /// <inheritdoc/>
     public virtual async Task<Result> ReIndexAll(IEnumerable<TEntity> source)
     {
-        await ElasticClient.DeleteByQueryAsync<TEntity>(q => q.MatchAll());
+        var descriptor = new DeleteByQueryRequestDescriptor<TEntity>(Indices.All)
+            .Query(q => q.MatchAll(m => m.Boost(1)));
+        await ElasticClient.DeleteByQueryAsync<TEntity>(descriptor).ConfigureAwait(false);
 
         var bulkAllObservable = ElasticClient.BulkAll<TEntity>(source, b => b
             .MaxDegreeOfParallelism(4)
@@ -77,7 +80,7 @@ public class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchProvider<TE
 
         var waitHandle = new ManualResetEvent(false);
         ExceptionDispatchInfo exceptionDispatchInfo = null;
-        Result result = Result.Error;
+        Result result = Result.NoOp;
 
         var observer = new BulkAllObserver(
             onError: exception =>
@@ -112,7 +115,7 @@ public class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchProvider<TE
 
         var waitHandle = new ManualResetEvent(false);
         ExceptionDispatchInfo exceptionDispatchInfo = null;
-        Result result = Result.Error;
+        Result result = Result.NoOp;
 
         var observer = new BulkAllObserver(
             onError: exception =>
@@ -140,16 +143,9 @@ public class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchProvider<TE
     {
         var resp = await ElasticClient.SearchAsync<TEntity>(
             s => s.Query(
-                q => q.MatchAll()));
+                q => q.MatchAll(m => m.Boost(1))));
 
         return new SearchResultES<TEntity>() { TotalAmount = (int)resp.Total, Entities = resp.Documents };
-    }
-
-    public async Task<bool> PingServerAsync()
-    {
-        var resp = await ElasticClient.PingAsync();
-
-        return resp.IsValid;
     }
 
     /// <inheritdoc/>
@@ -157,8 +153,8 @@ public class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchProvider<TE
     {
         // It's important to convert id to string because in other case it recognises as object type
         // and thows exception
-        var request = new UpdateDescriptor<TEntity, object>(new Id(entityId.ToString()))
-            .Doc(partial);
+        var request = new UpdateRequestDescriptor<TEntity, object>(new Id(entityId.ToString()))
+             .Doc(partial);
         var result = await ElasticClient.UpdateAsync(request);
 
         return result.Result;

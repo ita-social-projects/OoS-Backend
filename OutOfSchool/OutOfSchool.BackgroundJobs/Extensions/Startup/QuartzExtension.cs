@@ -18,11 +18,11 @@ public static class QuartzExtension
     /// <param name="configureJobs">Expose Quartz Configurator to Configure Jobs.</param>
     /// <returns><see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
-    public static async Task<IServiceCollection> AddDefaultQuartz(
+    public static IServiceCollection AddDefaultQuartz(
         this IServiceCollection services,
         IConfiguration configuration,
         string quartzConnectionString = "QuartzConnection",
-        Action<IServiceCollectionQuartzConfigurator> configureJobs = null)
+        Action<IServiceCollectionQuartzConfigurator>? configureJobs = null)
     {
         _ = services ?? throw new ArgumentNullException(nameof(services));
 

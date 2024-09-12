@@ -1,9 +1,9 @@
-using Nest;
-using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Enums;
+using Elastic.Clients.Elasticsearch;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
 using Profile = AutoMapper.Profile;
 
 namespace OutOfSchool.BusinessLogic.Util.Mapping;
@@ -49,7 +49,11 @@ public class ElasticProfile : Profile
             .ForMember(
                 dest => dest.Point,
                 opt =>
-                    opt.MapFrom(a => new GeoLocation(a.Latitude, a.Longitude)))
+                    opt.MapFrom(a => GeoLocation.LatitudeLongitude(new LatLonGeoLocation()
+                    {
+                        Lat = a.Latitude,
+                        Lon = a.Longitude,
+                    })))
             .ForMember(
                 dest => dest.CodeficatorAddressES,
                 opt => opt.MapFrom(c => c.CodeficatorAddressDto))
@@ -90,11 +94,11 @@ public class ElasticProfile : Profile
             .ForMember(
                 dest => dest.Latitude,
                 opt =>
-                    opt.MapFrom(src => src.Point.Latitude))
+                    opt.MapFrom(src => src.Point.GetLatitude()))
             .ForMember(
                 dest => dest.Longitude,
                 opt =>
-                    opt.MapFrom(src => src.Point.Longitude))
+                    opt.MapFrom(src => src.Point.GetLongitude()))
             .ForMember(
                 dest => dest.CodeficatorAddressDto,
                 opt => opt.MapFrom(src => src.CodeficatorAddressES));
@@ -102,9 +106,11 @@ public class ElasticProfile : Profile
         CreateMap<Address, AddressES>()
             .ForMember(
                 dest => dest.Point,
-                opt => opt.MapFrom(gl => new Nest.GeoLocation(
-                    gl.Latitude == 0d ? gl.CATOTTG.Latitude : gl.Latitude,
-                    gl.Longitude == 0d ? gl.CATOTTG.Longitude : gl.Longitude)))
+                opt => opt.MapFrom(gl => GeoLocation.LatitudeLongitude(new LatLonGeoLocation()
+                {
+                    Lat = gl.Latitude == 0d ? gl.CATOTTG.Latitude : gl.Latitude,
+                    Lon = gl.Longitude == 0d ? gl.CATOTTG.Longitude : gl.Longitude,
+                })))
             .ForMember(
                 dest => dest.City,
                 opt => opt.MapFrom(c => c.CATOTTG.Name))
