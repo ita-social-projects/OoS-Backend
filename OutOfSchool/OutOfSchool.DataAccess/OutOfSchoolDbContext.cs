@@ -112,6 +112,8 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<QuartzJob> QuartzJobs { get; set; }
 
+    public DbSet<Tag> Tags { get; set; }
+
     public DbSet<ParentBlockedByAdminLog> ParentBlockedByAdminLog { get; set; }
 
     public DbSet<CompetitiveEvent> CompetitiveEvents { get; set; }
@@ -172,6 +174,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new RatingConfiguration());
         builder.ApplyConfiguration(new RegionAdminConfiguration());
         builder.ApplyConfiguration(new SocialGroupConfiguration());
+        builder.ApplyConfiguration(new TagConfiguration());
         builder.ApplyConfiguration(new TeacherConfiguration());
         builder.ApplyConfiguration(new UserConfiguration());
         builder.ApplyConfiguration(new WorkshopConfiguration());
