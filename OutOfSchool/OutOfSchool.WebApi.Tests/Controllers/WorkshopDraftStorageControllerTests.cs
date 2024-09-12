@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models.Workshops.IncompletedWorkshops;
-using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
+using OutOfSchool.BusinessLogic.Services.DraftStorage.Interfaces;
 using OutOfSchool.WebApi.Controllers.V1;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;

@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
+using OutOfSchool.BusinessLogic.Services.DraftStorage.Interfaces;
 
-namespace OutOfSchool.BusinessLogic.Services.Memento;
+namespace OutOfSchool.BusinessLogic.Services.DraftStorage;
 
 /// <summary>
 /// Implements the IDraftStorageService{T} interface to store an entity draft of type T in a cache.

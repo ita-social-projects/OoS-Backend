@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.Workshops.IncompletedWorkshops;
-using OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
+using OutOfSchool.BusinessLogic.Services.DraftStorage.Interfaces;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 

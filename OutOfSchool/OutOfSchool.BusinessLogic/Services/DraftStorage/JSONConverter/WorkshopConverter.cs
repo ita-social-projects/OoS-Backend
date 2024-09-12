@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using OutOfSchool.BusinessLogic.Models.Workshops.IncompletedWorkshops;
 
-namespace OutOfSchool.BusinessLogic.Services.Memento.JSONConverter;
+namespace OutOfSchool.BusinessLogic.Services.DraftStorage.JSONConverter;
 
 public class WorkshopConverter : JsonCreationConverter<WorkshopWithRequiredPropertiesDto>
 {

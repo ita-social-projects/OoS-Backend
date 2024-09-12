@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace OutOfSchool.BusinessLogic.Services.Memento.JSONConverter;
+namespace OutOfSchool.BusinessLogic.Services.DraftStorage.JSONConverter;
 
 public abstract class JsonCreationConverter<T> : JsonConverter
 {

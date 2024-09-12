@@ -1,4 +1,4 @@
-﻿namespace OutOfSchool.BusinessLogic.Services.Memento.Interfaces;
+﻿namespace OutOfSchool.BusinessLogic.Services.DraftStorage.Interfaces;
 
 public interface IDraftStorageService<T>
 {
