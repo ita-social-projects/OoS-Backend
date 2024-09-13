@@ -34,9 +34,6 @@ public class User : IdentityUser, IKeyedEntity<string>, ISoftDeleted
     // If the flag is true, that user can no longer do anything to website.
     public bool IsBlocked { get; set; } = false;
 
-    // for permissions managing at login and check if user is original provider or its admin
+    // for permissions managing at login and check if user is original provider or its admin, temporary field, needs to be removed then
     public bool IsDerived { get; set; } = false;
-
-    // If it's true then user must change his password before the logging into the system
-    public bool MustChangePassword { get; set; }
 }
