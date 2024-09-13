@@ -92,7 +92,7 @@ public class SocialGroupController : ControllerBase
     /// <summary>
     /// Update info about a Social Group in the database.
     /// </summary>
-    /// /// <param name="dto">Social Group to update.</param>
+    /// <param name="dto">Social Group to update.</param>
     /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <returns>Social Group.</returns>
     [HasPermission(Permissions.SystemManagement)]
