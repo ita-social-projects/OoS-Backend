@@ -16,6 +16,7 @@ using OutOfSchool.BusinessLogic.Models.ProvidersInfo;
 using OutOfSchool.BusinessLogic.Models.SocialGroup;
 using OutOfSchool.BusinessLogic.Models.StatisticReports;
 using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
+using OutOfSchool.BusinessLogic.Models.Tag;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Util.CustomComparers;
 using OutOfSchool.Common.Enums;
@@ -120,6 +121,9 @@ public class MappingProfile : Profile
 
         CreateMap<Address, AddressInfoDto>()
              .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
+
+        CreateMap<Tag, TagDto>().ReverseMap();
+        CreateMap<Tag, TagCreate>().ReverseMap();
 
         CreateSoftDeletedMap<AddressDto, Address>()
             .ForMember(dest => dest.CATOTTG, opt => opt.Ignore())
