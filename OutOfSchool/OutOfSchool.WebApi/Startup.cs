@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.HeaderPropagation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
@@ -18,7 +17,6 @@ using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
 using OutOfSchool.BusinessLogic.Services.DraftStorage;
 using OutOfSchool.BusinessLogic.Services.DraftStorage.Interfaces;
-using OutOfSchool.BusinessLogic.Services.DraftStorage.JSONConverter;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.BusinessLogic.Services.Strategies.WorkshopStrategies;
@@ -184,12 +182,8 @@ public static class Startup
                         NoStore = false,
                         Duration = cacheProfilesConfig.PublicDurationInSeconds,
                     });
-                options.FormatterMappings.SetMediaTypeMappingForFormat("json", MediaTypeHeaderValue.Parse("application/json"));
             })
-            .AddNewtonsoftJson(options =>
-            {
-                options.SerializerSettings.Converters.Add(new WorkshopConverter());
-            })
+            .AddNewtonsoftJson()
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 

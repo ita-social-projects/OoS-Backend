@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.BusinessLogic.Models.Workshops.IncompletedWorkshops;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.DraftStorage.Interfaces;
 using OutOfSchool.WebApi.Controllers.V1;
 
@@ -14,15 +14,15 @@ namespace OutOfSchool.WebApi.Tests.Controllers;
 [TestFixture]
 public class WorkshopDraftStorageControllerTests
 {
-    private Mock<IDraftStorageService<WorkshopWithRequiredPropertiesDto>> draftStorageService;
+    private Mock<IDraftStorageService<WorkshopBaseDto>> draftStorageService;
     private WorkshopDraftStorageController controller;
     private ClaimsPrincipal user;
-    private WorkshopWithRequiredPropertiesDto draft;
+    private WorkshopBaseDto draft;
 
     [SetUp]
     public void Setup()
     {
-        draftStorageService = new Mock<IDraftStorageService<WorkshopWithRequiredPropertiesDto>>();
+        draftStorageService = new Mock<IDraftStorageService<WorkshopBaseDto>>();
         controller = new WorkshopDraftStorageController(draftStorageService.Object);
         user = new ClaimsPrincipal(new ClaimsIdentity());
         draft = FakeDraft();
@@ -34,7 +34,7 @@ public class WorkshopDraftStorageControllerTests
     {
         // Arrange
         draftStorageService.Setup(ms => ms.CreateAsync(It.IsAny<string>(), draft));
-        var resulValue = "WorkshopWithRequiredPropertiesDto is stored";
+        var resulValue = "WorkshopBaseDto is stored";
 
         // Act
         var result = await controller.StoreDraft(draft);
@@ -92,7 +92,7 @@ public class WorkshopDraftStorageControllerTests
     public async Task RestoreDraft_WhenMementoIsAbsentInCache_ReturnsDefaultMementoAtActionResult()
     {
         // Arrange
-        draftStorageService.Setup(ms => ms.RestoreAsync(It.IsAny<string>())).ReturnsAsync(default(WorkshopWithRequiredPropertiesDto));
+        draftStorageService.Setup(ms => ms.RestoreAsync(It.IsAny<string>())).ReturnsAsync(default(WorkshopBaseDto));
 
         // Act
         var result = await controller.RestoreDraft();
@@ -105,12 +105,12 @@ public class WorkshopDraftStorageControllerTests
               .Be(StatusCodes.Status200OK);
         result.Should()
               .BeOfType<OkObjectResult>()
-              .Which.Value.Should().Be(default(WorkshopWithRequiredPropertiesDto));
+              .Which.Value.Should().Be(default(WorkshopBaseDto));
     }
 
-    private WorkshopWithRequiredPropertiesDto FakeDraft()
+    private WorkshopBaseDto FakeDraft()
     {
-        return new WorkshopWithRequiredPropertiesDto()
+        return new WorkshopBaseDto()
         {
             Title = "title1",
             Email = "myemail1@gmail.com",

@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.BusinessLogic.Models.Workshops.IncompletedWorkshops;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.DraftStorage.Interfaces;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
@@ -8,7 +8,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
-public class WorkshopDraftStorageController(IDraftStorageService<WorkshopWithRequiredPropertiesDto> mementoService)
-    : DraftStorageController<WorkshopWithRequiredPropertiesDto>(mementoService)
+public class WorkshopDraftStorageController(IDraftStorageService<WorkshopBaseDto> mementoService)
+    : DraftStorageController<WorkshopBaseDto>(mementoService)
 {
 }

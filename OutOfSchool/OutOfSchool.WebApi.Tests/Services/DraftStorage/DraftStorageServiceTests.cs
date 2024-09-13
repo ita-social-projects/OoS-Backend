@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.BusinessLogic.Models.Workshops.IncompletedWorkshops;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.DraftStorage;
 using OutOfSchool.BusinessLogic.Services.DraftStorage.Interfaces;
 using OutOfSchool.Redis;
@@ -16,27 +14,23 @@ namespace OutOfSchool.WebApi.Tests.Services.DraftStorage;
 [TestFixture]
 public class DraftStorageServiceTests
 {
-    private readonly string jsonStringForWorkshopWithDescriptionDto = "{\"$type\":\"withDescription\",\"WorkshopDescriptionItems\":[{\"Id\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\"SectionName\":\"string\",\"Description\":\"string\",\"WorkshopId\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\"}],\"WithDisabilityOptions\":false,\"DisabilityOptionsDesc\":\"\",\"InstitutionId\":null,\"Institution\":null,\"InstitutionHierarchyId\":null,\"InstitutionHierarchy\":null,\"DirectionIds\":null,\"Keywords\":null,\"Title\":\"string\",\"ShortTitle\":\"string\",\"Phone\":\"\\u002B340976894523\",\"Email\":\"user@example.com\",\"Website\":\"string\",\"Facebook\":\"string\",\"Instagram\":\"string\",\"MinAge\":12,\"MaxAge\":20,\"DateTimeRanges\":[{\"Id\":0,\"StartTime\":\"12:00:00\",\"EndTime\":\"14:00:00\",\"Workdays\":[4]}],\"FormOfLearning\":10,\"Price\":100000,\"PayRate\":\"None\",\"AvailableSeats\":10,\"CompetitiveSelection\":true,\"CompetitiveSelectionDescription\":\"string\",\"ProviderId\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\"ProviderTitle\":\"string\",\"ProviderTitleEn\":\"string\",\"ProviderLicenseStatus\":0}";
-    private readonly string jsonStringForWorkshopWithContactsDto = "{\"$type\":\"withContacts\",\"AddressId\":0,\"Address\":{\"Id\":0,\"Street\":\"string111\"},\"WorkshopDescriptionItems\":[{\"Id\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\"SectionName\":\"string\",\"Description\":\"string\",\"WorkshopId\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\"}],\"WithDisabilityOptions\":false,\"DisabilityOptionsDesc\":\"\",\"InstitutionId\":null,\"Institution\":null,\"InstitutionHierarchyId\":null,\"InstitutionHierarchy\":null,\"DirectionIds\":null,\"Keywords\":null,\"Title\":\"string\",\"ShortTitle\":\"string\",\"Phone\":\"\\u002B340976894523\",\"Email\":\"user@example.com\",\"Website\":\"string\",\"Facebook\":\"string\",\"Instagram\":\"string\",\"MinAge\":12,\"MaxAge\":20,\"DateTimeRanges\":[{\"Id\":0,\"StartTime\":\"12:00:00\",\"EndTime\":\"14:00:00\",\"Workdays\":[4]}],\"FormOfLearning\":10,\"Price\":100000,\"PayRate\":\"None\",\"AvailableSeats\":10,\"CompetitiveSelection\":true,\"CompetitiveSelectionDescription\":\"string\",\"ProviderId\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\"ProviderTitle\":\"string\",\"ProviderTitleEn\":\"string\",\"ProviderLicenseStatus\":0}";
-    private readonly string jsonStringForWorkshopWithTeachersDto = "{\"$type\":\"withTeachers\",\"Teachers\":[],\"AddressId\":0,\"Address\":{\"Id\":0,\"Street\":\"string111\"},\"WorkshopDescriptionItems\":[{\"Id\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\"SectionName\":\"string\",\"Description\":\"string\",\"WorkshopId\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\"}],\"WithDisabilityOptions\":false,\"DisabilityOptionsDesc\":\"\",\"InstitutionId\":null,\"Institution\":null,\"InstitutionHierarchyId\":null,\"InstitutionHierarchy\":null,\"DirectionIds\":null,\"Keywords\":null,\"Title\":\"string\",\"ShortTitle\":\"string\",\"Phone\":\"\\u002B340976894523\",\"Email\":\"user@example.com\",\"Website\":\"string\",\"Facebook\":\"string\",\"Instagram\":\"string\",\"MinAge\":12,\"MaxAge\":20,\"DateTimeRanges\":[{\"Id\":0,\"StartTime\":\"12:00:00\",\"EndTime\":\"14:00:00\",\"Workdays\":[4]}],\"FormOfLearning\":10,\"Price\":100000,\"PayRate\":\"None\",\"AvailableSeats\":10,\"CompetitiveSelection\":true,\"CompetitiveSelectionDescription\":\"string\",\"ProviderId\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\"ProviderTitle\":\"string\",\"ProviderTitleEn\":\"string\",\"ProviderLicenseStatus\":0}";
-
     private Mock<IReadWriteCacheService> readWriteCacheServiceMock;
-    private Mock<ILogger<DraftStorageService<WorkshopWithRequiredPropertiesDto>>> loggerMock;
-    private IDraftStorageService<WorkshopWithRequiredPropertiesDto> draftStorageService;
+    private Mock<ILogger<DraftStorageService<WorkshopBaseDto>>> loggerMock;
+    private IDraftStorageService<WorkshopBaseDto> draftStorageService;
 
     [SetUp]
     public void SetUp()
     {
-        loggerMock = new Mock<ILogger<DraftStorageService<WorkshopWithRequiredPropertiesDto>>>();
+        loggerMock = new Mock<ILogger<DraftStorageService<WorkshopBaseDto>>>();
         readWriteCacheServiceMock = new Mock<IReadWriteCacheService>();
-        draftStorageService = new DraftStorageService<WorkshopWithRequiredPropertiesDto>(readWriteCacheServiceMock.Object, loggerMock.Object);
+        draftStorageService = new DraftStorageService<WorkshopBaseDto>(readWriteCacheServiceMock.Object, loggerMock.Object);
     }
 
     [Test]
     public async Task RestoreAsync_WhenDraftExistsInCache_ShouldRestoreAppropriatedEntity()
     {
         // Arrange
-        var workshopDraft = new WorkshopWithRequiredPropertiesDto()
+        var workshopDraft = new WorkshopBaseDto()
         {
             Title = "title",
             Email = "myemail@gmail.com",
@@ -57,119 +51,17 @@ public class DraftStorageServiceTests
         readWriteCacheServiceMock.Verify(
             c => c.ReadAsync(It.IsAny<string>()),
             Times.Once);
-        result.Should().BeOfType<WorkshopWithRequiredPropertiesDto>();
+        result.Should().BeOfType<WorkshopBaseDto>();
         Assert.AreEqual(workshopDraft.Title, result.Title);
         Assert.AreEqual(workshopDraft.Email, result.Email);
         Assert.AreEqual(workshopDraft.Phone, result.Phone);
-    }
-
-    [Test]
-    public async Task RestoreAsync_WhenDraftIsWorkshopWithDescriptionDtoAndExistsInCache_ShouldRestoreAppropriatedEntity()
-    {
-        var workshopDraft = FakeDraft(jsonStringForWorkshopWithDescriptionDto);
-
-        var expected = new Dictionary<string, string>()
-            {
-                {"ExpectedKey", jsonStringForWorkshopWithDescriptionDto },
-            };
-
-        readWriteCacheServiceMock.Setup(c => c.ReadAsync(It.IsAny<string>()))
-                .Returns(() => Task.FromResult(expected["ExpectedKey"]));
-
-        // Act
-        var result = await draftStorageService.RestoreAsync("ExpectedKey");
-
-        // Assert
-        readWriteCacheServiceMock.Verify(
-        c => c.ReadAsync(It.IsAny<string>()),
-        Times.Once);
-
-        Assert.AreEqual(workshopDraft.Title, result.Title);
-        Assert.AreEqual(workshopDraft.Email, result.Email);
-        Assert.AreEqual(workshopDraft.Phone, result.Phone);
-        Assert.AreEqual(
-            (workshopDraft as WorkshopWithDescriptionDto).WorkshopDescriptionItems.First().Id,
-            (result as WorkshopWithDescriptionDto).WorkshopDescriptionItems.First().Id);
-    }
-
-    [Test]
-    public async Task RestoreAsync_WhenDraftIsWorkshopWithContactsDtoAndExistsInCache_ShouldRestoreAppropriatedEntity()
-    {
-        var workshopDraft = FakeDraft(jsonStringForWorkshopWithContactsDto);
-
-        var expected = new Dictionary<string, string>()
-            {
-                {"ExpectedKey", jsonStringForWorkshopWithContactsDto },
-            };
-
-        readWriteCacheServiceMock.Setup(c => c.ReadAsync(It.IsAny<string>()))
-                .Returns(() => Task.FromResult(expected["ExpectedKey"]));
-
-        // Act
-        var result = await draftStorageService.RestoreAsync("ExpectedKey");
-
-        // Assert
-        readWriteCacheServiceMock.Verify(
-        c => c.ReadAsync(It.IsAny<string>()),
-        Times.Once);
-
-        Assert.AreEqual(workshopDraft.Title, result.Title);
-        Assert.AreEqual(workshopDraft.Email, result.Email);
-        Assert.AreEqual(workshopDraft.Phone, result.Phone);
-        Assert.AreEqual(
-            (workshopDraft as WorkshopWithContactsDto).WorkshopDescriptionItems.First().Id,
-            (result as WorkshopWithContactsDto).WorkshopDescriptionItems.First().Id);
-        Assert.AreEqual(
-            (workshopDraft as WorkshopWithContactsDto).Address.Street,
-            (result as WorkshopWithContactsDto).Address.Street);
-        Assert.AreEqual(
-            (workshopDraft as WorkshopWithContactsDto).AddressId,
-            (result as WorkshopWithContactsDto).AddressId);
-    }
-
-    [Test]
-    public async Task RestoreAsync_WhenDraftIsWorkshopWithTeachersDtoAndExistsInCache_ShouldRestoreAppropriatedEntity()
-    {
-        var workshopDraft = FakeDraft(jsonStringForWorkshopWithTeachersDto);
-
-        var expected = new Dictionary<string, string>()
-            {
-                {"ExpectedKey", jsonStringForWorkshopWithTeachersDto },
-            };
-
-        readWriteCacheServiceMock.Setup(c => c.ReadAsync(It.IsAny<string>()))
-                .Returns(() => Task.FromResult(expected["ExpectedKey"]));
-
-        // Act
-        var result = await draftStorageService.RestoreAsync("ExpectedKey");
-
-        // Assert
-        readWriteCacheServiceMock.Verify(
-        c => c.ReadAsync(It.IsAny<string>()),
-        Times.Once);
-
-        Assert.AreEqual(workshopDraft.Title, result.Title);
-        Assert.AreEqual(workshopDraft.Email, result.Email);
-        Assert.AreEqual(workshopDraft.Phone, result.Phone);
-        Assert.AreEqual(
-            (workshopDraft as WorkshopWithTeachersDto).WorkshopDescriptionItems.First().Id,
-            (result as WorkshopWithTeachersDto).WorkshopDescriptionItems.First().Id);
-        Assert.AreEqual(
-            (workshopDraft as WorkshopWithTeachersDto).Address.Street,
-            (result as WorkshopWithTeachersDto).Address.Street);
-        Assert.AreEqual(
-            (workshopDraft as WorkshopWithTeachersDto).AddressId,
-            (result as WorkshopWithTeachersDto).AddressId);
-        Assert.AreEqual(
-            (workshopDraft as WorkshopWithTeachersDto).Teachers,
-            (result as WorkshopWithTeachersDto).Teachers);
     }
 
     [Test]
     public async Task RestoreAsync_WhenDraftIsAbsentInCache_ShouldRestoreDefaultEntity()
     {
         // Arrange
-        var expectedDraft = default(WorkshopWithRequiredPropertiesDto);
+        var expectedDraft = default(WorkshopBaseDto);
         var expected = new Dictionary<string, string>()
             {
                 {"ExpectedKey", null},
@@ -191,7 +83,7 @@ public class DraftStorageServiceTests
     public void CreateAsync_ShouldCallWriteAsyncOnce()
     {
         // Arrange
-        var workshopDraft = new WorkshopWithRequiredPropertiesDto()
+        var workshopDraft = new WorkshopBaseDto()
         {
             Title = "title",
             Email = "myemail@gmail.com",
@@ -261,10 +153,5 @@ public class DraftStorageServiceTests
         readWriteCacheServiceMock.Verify(
             c => c.RemoveAsync(It.IsAny<string>()),
             Times.Never);
-    }
-
-    private WorkshopWithRequiredPropertiesDto FakeDraft(string jsonString)
-    {
-        return JsonSerializer.Deserialize<WorkshopWithRequiredPropertiesDto>(jsonString);
     }
 }
