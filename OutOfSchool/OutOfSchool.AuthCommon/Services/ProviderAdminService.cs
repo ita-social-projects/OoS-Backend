@@ -376,19 +376,14 @@ public class ProviderAdminService : IProviderAdminService
                     return CreateResponseDto(HttpStatusCode.InternalServerError);
                 }
 
-                var oldPropertiesValues = GetTrackedUserProperties(user);
-
-                foreach (var oldProperty in oldPropertiesValues)
-                {
-                    await providerAdminChangesLogService.SaveChangesLogAsync(
+                await providerAdminChangesLogService.SaveChangesLogAsync(
                         providerAdmin,
                         userId,
                         OperationType.Delete,
-                        oldProperty.Key,
-                        oldProperty.Value,
+                        string.Empty,
+                        string.Empty,
                         string.Empty)
                     .ConfigureAwait(false);
-                }
 
                 await transaction.CommitAsync();
 
