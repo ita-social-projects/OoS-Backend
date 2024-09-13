@@ -18,7 +18,6 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
     private readonly bool isEnabled = false;
 
     private readonly object lockObject = new object();
-
     private bool isDisposed;
 
     public CacheService(
