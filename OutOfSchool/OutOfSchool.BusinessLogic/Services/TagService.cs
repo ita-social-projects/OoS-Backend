@@ -37,11 +37,11 @@ public class TagService : ITagService
     /// <inheritdoc/>
     public async Task<IEnumerable<TagDto>> GetAll(LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogInformation($"Getting all Tags, {localization} localization, started.");
+        logger.LogDebug($"Getting all Tags, {localization} localization, started.");
 
         var tags = await repository.GetAll().ConfigureAwait(false);
 
-        logger.LogInformation(!tags.Any()
+        logger.LogDebug(!tags.Any()
             ? "SocialGroup table is empty."
             : $"All {tags.Count()} records were successfully received from the Tag table");
 
@@ -56,7 +56,7 @@ public class TagService : ITagService
     /// <inheritdoc/>
     public async Task<TagDto> GetById(long id, LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogInformation($"Getting Tag by Id, {localization} localization, started. Looking Id = {id}.");
+        logger.LogDebug($"Getting Tag by Id, {localization} localization, started. Looking Id = {id}.");
 
         var tag = await repository.GetById(id).ConfigureAwait(false);
 
@@ -67,7 +67,7 @@ public class TagService : ITagService
                 localizer["The id cannot be greater than number of table entities."]);
         }
 
-        logger.LogInformation($"Successfully got a SocialGroup with Id = {id} and {localization} localization.");
+        logger.LogDebug($"Successfully got a SocialGroup with Id = {id} and {localization} localization.");
 
         return new TagDto()
         {
@@ -79,13 +79,13 @@ public class TagService : ITagService
     /// <inheritdoc/>
     public async Task<TagCreate> Create(TagCreate dto)
     {
-        logger.LogInformation("Tag creating was started.");
+        logger.LogDebug("Tag creating was started.");
 
         var tag = mapper.Map<Tag>(dto);
 
         var newTag = await repository.Create(tag).ConfigureAwait(false);
 
-        logger.LogInformation($"Tag with Id = {newTag?.Id} created successfully.");
+        logger.LogDebug($"Tag with Id = {newTag?.Id} created successfully.");
 
         return mapper.Map<TagCreate>(newTag);
     }
@@ -93,7 +93,7 @@ public class TagService : ITagService
     /// <inheritdoc/>
     public async Task<TagDto> Update(TagDto dto, LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogInformation($"Updating Tag with Id = {dto?.Id}, {localization} localization, started.");
+        logger.LogDebug($"Updating Tag with Id = {dto?.Id}, {localization} localization, started.");
 
         var tagLocalized = await repository.GetById(dto.Id).ConfigureAwait(false);
 
@@ -115,7 +115,7 @@ public class TagService : ITagService
 
         var tag = await repository.Update(tagLocalized).ConfigureAwait(false);
 
-        logger.LogInformation($"SocialGroup with Id = {tag?.Id} updated succesfully.");
+        logger.LogDebug($"SocialGroup with Id = {tag?.Id} updated succesfully.");
 
         return new TagDto()
         {
@@ -127,7 +127,7 @@ public class TagService : ITagService
     /// <inheritdoc/>
     public async Task Delete(long id)
     {
-        logger.LogInformation($"Deleting Tag with Id = {id} started.");
+        logger.LogDebug($"Deleting Tag with Id = {id} started.");
 
         var tag = await repository.GetById(id).ConfigureAwait(false);
 
@@ -140,6 +140,6 @@ public class TagService : ITagService
 
         await repository.Delete(tag).ConfigureAwait(false);
 
-        logger.LogInformation($"Tag with Id = {id} succesfully deleted.");
+        logger.LogDebug($"Tag with Id = {id} succesfully deleted.");
     }
 }
