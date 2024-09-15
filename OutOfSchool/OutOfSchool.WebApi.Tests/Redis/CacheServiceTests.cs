@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Bogus;
 using FluentAssertions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
@@ -15,6 +16,10 @@ namespace OutOfSchool.WebApi.Tests.Redis;
 [TestFixture]
 public class CacheServiceTests
 {
+    private const int RANDOMSTRINGSIZE = 50;
+
+    private string expectedValue;
+    private string expectedKey;
     private Mock<IDistributedCache> distributedCacheMock;
     private Mock<IOptions<RedisConfig>> redisConfigMock;
     private ICacheService cacheService;
@@ -23,6 +28,8 @@ public class CacheServiceTests
     [SetUp]
     public void SetUp()
     {
+        expectedValue = new Faker().Random.Chars(count: RANDOMSTRINGSIZE).ToString();
+        expectedKey = new Faker().Random.Chars(count: RANDOMSTRINGSIZE).ToString();
         distributedCacheMock = new Mock<IDistributedCache>();
         redisConfigMock = new Mock<IOptions<RedisConfig>>();
         redisConfigMock.Setup(c => c.Value).Returns(new RedisConfig
@@ -89,68 +96,64 @@ public class CacheServiceTests
     public async Task RemoveAsync_ShouldCallCacheRemoveOnce()
     {
         // Arrange & Act
-        await cacheService.RemoveAsync("Example");
+        await cacheService.RemoveAsync(expectedValue);
 
         // Assert
+        distributedCacheMock.VerifyAll();
         distributedCacheMock.Verify(
-            c => c.Remove("Example"),
-            Times.Once);
+            c => c.Remove(expectedValue),
+            Times.Once); // called only once
     }
 
     [Test]
     public async Task ReadAsync_WhenDataExistsInCacheAndNotExpired_ShouldReturnData()
     {
         // Arrange
-        var expected = new Dictionary<string, string>()
-        {
-            {"ExpectedKey", "ExpectedValue"},
-        };
-        distributedCacheMock.Setup(c => c.Get(It.IsAny<string>()))
-            .Returns(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(expected)));
+        distributedCacheMock.Setup(c => c.Get(expectedKey))
+            .Returns(Encoding.UTF8.GetBytes(expectedValue));
 
         // Act
-        var result = await readWriteCacheService.ReadAsync("ExpectedKey");
+        var result = await readWriteCacheService.ReadAsync(expectedKey);
 
         // Assert
-        result.Should().Contain("ExpectedValue");
+        result.Should().Be(expectedValue);
+        distributedCacheMock.VerifyAll();
         distributedCacheMock.Verify(
-            c => c.Get(It.IsAny<string>()),
-            Times.Once);
+            c => c.Get(expectedKey),
+            Times.Once); // called only once
     }
 
     [Test]
     public async Task ReadAsync_WhenDataNotExistsOrExpired_ShouldReturnNull()
     {
         // Arrange
-        var expected = new Dictionary<string, string>()
-        {
-            {"ExpectedKey", null},
-        };
-        distributedCacheMock.Setup(c => c.Get(It.IsAny<string>()))
-            .Returns(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(expected)));
+        distributedCacheMock.Setup(c => c.Get(expectedKey))
+            .Returns(Encoding.UTF8.GetBytes(string.Empty));
 
         // Act
-        var result = await readWriteCacheService.ReadAsync("ExpectedKey");
+        var result = await readWriteCacheService.ReadAsync(expectedKey);
 
         // Assert
-        result.Should().Contain("{\"ExpectedKey\":null}");
+        result.Should().Be(string.Empty);
+        distributedCacheMock.VerifyAll();
         distributedCacheMock.Verify(
-            c => c.Get(It.IsAny<string>()),
-            Times.Once);
+            c => c.Get(expectedKey),
+            Times.Once); // called only once
     }
 
     [Test]
     public async Task WriteAsync_ShouldCallCacheSetOnce()
     {
         // Arrange & Act
-        await readWriteCacheService.WriteAsync("ExpectedKey", "ExpectedValue");
+        await readWriteCacheService.WriteAsync(expectedKey, expectedValue);
 
         // Assert
+        distributedCacheMock.VerifyAll();
         distributedCacheMock.Verify(
             c => c.Set(
-                It.IsAny<string>(),
-                It.IsAny<byte[]>(),
+                expectedKey,
+                Encoding.UTF8.GetBytes(expectedValue),
                 It.IsAny<DistributedCacheEntryOptions>()),
-            Times.Once);
+            Times.Once); // called only once
     }
 }
