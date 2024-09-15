@@ -34,7 +34,7 @@ public class DraftStorageService<T> : IDraftStorageService<T>
 
         var draftValue = await readWriteCacheService.ReadAsync(GetKey(key)).ConfigureAwait(false);
 
-        if (draftValue is null)
+        if (draftValue.IsNullOrEmpty())
         {
             logger.LogInformation("The {EntityType} draft for User with key = {Key} was not found in the cache.", typeof(T).Name, key);
             return default;
@@ -67,7 +67,7 @@ public class DraftStorageService<T> : IDraftStorageService<T>
         var draftKey = GetKey(key);
         var valueToRemove = await readWriteCacheService.ReadAsync(draftKey);
 
-        if (valueToRemove == null)
+        if (valueToRemove.IsNullOrEmpty())
         {
             logger.LogInformation("The {EntityType} draft with key = {DraftKey} was not found in the cache.", typeof(T).Name, draftKey);
             return;

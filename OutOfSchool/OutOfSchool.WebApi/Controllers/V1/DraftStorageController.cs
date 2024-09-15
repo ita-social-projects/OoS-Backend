@@ -42,9 +42,9 @@ public abstract class DraftStorageController<T> : ControllerBase
     [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
     public async Task<IActionResult> RestoreDraft()
     {
-        var memento = await draftStorageService.RestoreAsync(GettingUserProperties.GetUserId(User)).ConfigureAwait(false);
+        var draft = await draftStorageService.RestoreAsync(GettingUserProperties.GetUserId(User)).ConfigureAwait(false);
 
-        return Ok(memento);
+        return Ok(draft);
     }
 
     /// <summary>Removes the entity draft from the cache.</summary>

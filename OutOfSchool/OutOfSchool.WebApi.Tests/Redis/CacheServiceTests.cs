@@ -28,8 +28,8 @@ public class CacheServiceTests
     [SetUp]
     public void SetUp()
     {
-        expectedValue = new Faker().Random.Chars(count: RANDOMSTRINGSIZE).ToString();
-        expectedKey = new Faker().Random.Chars(count: RANDOMSTRINGSIZE).ToString();
+        expectedValue = new string(new Faker().Random.Chars(min: (char)0, max: (char)127, count: RANDOMSTRINGSIZE));
+        expectedKey = new string(new Faker().Random.Chars(min: (char)0, max: (char)127, count: RANDOMSTRINGSIZE));
         distributedCacheMock = new Mock<IDistributedCache>();
         redisConfigMock = new Mock<IOptions<RedisConfig>>();
         redisConfigMock.Setup(c => c.Value).Returns(new RedisConfig
