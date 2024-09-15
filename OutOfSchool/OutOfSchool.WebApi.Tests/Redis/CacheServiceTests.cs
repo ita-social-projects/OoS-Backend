@@ -95,14 +95,15 @@ public class CacheServiceTests
     [Test]
     public async Task RemoveAsync_ShouldCallCacheRemoveOnce()
     {
-        // Arrange & Act
-        await cacheService.RemoveAsync(expectedValue);
+        // Arrange
+        distributedCacheMock.Setup(c => c.Remove(expectedKey))
+            .Verifiable(Times.Once);
+
+        // Act
+        await cacheService.RemoveAsync(expectedKey);
 
         // Assert
         distributedCacheMock.VerifyAll();
-        distributedCacheMock.Verify(
-            c => c.Remove(expectedValue),
-            Times.Once); // called only once
     }
 
     [Test]
@@ -110,7 +111,8 @@ public class CacheServiceTests
     {
         // Arrange
         distributedCacheMock.Setup(c => c.Get(expectedKey))
-            .Returns(Encoding.UTF8.GetBytes(expectedValue));
+            .Returns(Encoding.UTF8.GetBytes(expectedValue))
+            .Verifiable(Times.Once);
 
         // Act
         var result = await readWriteCacheService.ReadAsync(expectedKey);
@@ -118,9 +120,6 @@ public class CacheServiceTests
         // Assert
         result.Should().Be(expectedValue);
         distributedCacheMock.VerifyAll();
-        distributedCacheMock.Verify(
-            c => c.Get(expectedKey),
-            Times.Once); // called only once
     }
 
     [Test]
@@ -128,7 +127,8 @@ public class CacheServiceTests
     {
         // Arrange
         distributedCacheMock.Setup(c => c.Get(expectedKey))
-            .Returns(Encoding.UTF8.GetBytes(string.Empty));
+            .Returns(Encoding.UTF8.GetBytes(string.Empty))
+            .Verifiable(Times.Once);
 
         // Act
         var result = await readWriteCacheService.ReadAsync(expectedKey);
@@ -136,24 +136,19 @@ public class CacheServiceTests
         // Assert
         result.Should().Be(string.Empty);
         distributedCacheMock.VerifyAll();
-        distributedCacheMock.Verify(
-            c => c.Get(expectedKey),
-            Times.Once); // called only once
     }
 
     [Test]
     public async Task WriteAsync_ShouldCallCacheSetOnce()
     {
-        // Arrange & Act
+        // Arrange
+        distributedCacheMock.Setup(c => c.Set(expectedKey, Encoding.UTF8.GetBytes(expectedValue), It.IsAny<DistributedCacheEntryOptions>()))
+            .Verifiable(Times.Once);
+
+        // Act
         await readWriteCacheService.WriteAsync(expectedKey, expectedValue);
 
         // Assert
         distributedCacheMock.VerifyAll();
-        distributedCacheMock.Verify(
-            c => c.Set(
-                expectedKey,
-                Encoding.UTF8.GetBytes(expectedValue),
-                It.IsAny<DistributedCacheEntryOptions>()),
-            Times.Once); // called only once
     }
 }
