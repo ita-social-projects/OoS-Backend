@@ -122,6 +122,13 @@ public static class ModelBuilderExtension
                 RoleName = Role.AreaAdmin.ToString(),
                 PackedPermissions = PermissionsSeeder.SeedPermissions(Role.AreaAdmin.ToString()),
                 Description = "area admin permissions",
+            },
+            new PermissionsForRole
+            {
+                 Id = 8,
+                 RoleName = Role.Moderator.ToString(),
+                 PackedPermissions = PermissionsSeeder.SeedPermissions(Role.Moderator.ToString()),
+                 Description = "moderator permissions",
             }
         );
 

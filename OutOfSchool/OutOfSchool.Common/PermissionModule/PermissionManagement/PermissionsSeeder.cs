@@ -19,7 +19,7 @@ public static class PermissionsSeeder
         Permissions.RatingAddNew, Permissions.RatingEdit, Permissions.RatingRead, Permissions.RatingRemove,
         Permissions.TeacherAddNew, Permissions.TeacherEdit, Permissions.TeacherRemove, Permissions.TeacherRead,
         Permissions.UserRead, Permissions.UserEdit,
-        Permissions.WorkshopEdit, Permissions.WorkshopRemove, Permissions.WorkshopAddNew,
+        Permissions.WorkshopEdit, Permissions.WorkshopRemove, Permissions.WorkshopAddNew, Permissions.WorkshopApprove,
         Permissions.MinistryAdmins, Permissions.MinistryAdminAddNew, Permissions.MinistryAdminRemove,
         Permissions.MinistryAdminEdit, Permissions.MinistryAdminRead,
         Permissions.RegionAdmins, Permissions.RegionAdminAddNew, Permissions.RegionAdminRemove,
@@ -68,7 +68,7 @@ public static class PermissionsSeeder
         Permissions.TeacherRead,
         Permissions.PersonalInfo,
         Permissions.MinistryAdminRead,
-        Permissions.WorkshopEdit,
+        Permissions.WorkshopEdit, Permissions.WorkshopApprove,
         Permissions.RegionAdminAddNew, Permissions.RegionAdminRead, Permissions.RegionAdminEdit,
         Permissions.RegionAdminRemove, Permissions.RegionAdminBlock,
         Permissions.AreaAdminAddNew, Permissions.AreaAdminRead, Permissions.AreaAdminEdit,
@@ -103,7 +103,7 @@ public static class PermissionsSeeder
         Permissions.RegionAdminRead, Permissions.RegionAdminEdit,
         Permissions.AreaAdminAddNew, Permissions.AreaAdminRead, Permissions.AreaAdminEdit,
         Permissions.AreaAdminRemove, Permissions.AreaAdminBlock,
-        Permissions.WorkshopEdit,
+        Permissions.WorkshopEdit, Permissions.WorkshopApprove,
         Permissions.AdminDataRead,
     };
 
@@ -119,8 +119,15 @@ public static class PermissionsSeeder
         Permissions.TeacherRead,
         Permissions.PersonalInfo,
         Permissions.AreaAdminRead, Permissions.AreaAdminEdit,
-        Permissions.WorkshopEdit,
+        Permissions.WorkshopEdit, Permissions.WorkshopApprove,
         Permissions.AdminDataRead,
+    };
+
+    private static readonly IEnumerable<Permissions> SeedModeratorPermissions = new List<Permissions>
+    {
+        Permissions.ProviderRead, Permissions.ProviderApprove,
+        Permissions.WorkshopRead, Permissions.WorkshopApprove,
+        Permissions.PersonalInfo,
     };
 
     public static string SeedPermissions(string role)
@@ -147,6 +154,9 @@ public static class PermissionsSeeder
 
             case "areaadmin":
                 return SeedAreaAdminPermissions.PackPermissionsIntoString();
+
+            case "moderator":
+                return SeedModeratorPermissions.PackPermissionsIntoString();
             default:
                 break;
         }

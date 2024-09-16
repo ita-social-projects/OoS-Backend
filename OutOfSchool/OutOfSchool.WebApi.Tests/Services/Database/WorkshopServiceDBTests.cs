@@ -39,6 +39,10 @@ public class WorkshopServiceDBTests
     private Mock<IProviderAdminRepository> providerAdminRepository;
     private Mock<IAverageRatingService> averageRatingServiceMock;
     private Mock<IProviderRepository> providerRepositoryMock;
+    private Mock<ICurrentUserService> currentUserServiceMock;
+    private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock<IRegionAdminService> regionAdminServiceMock;
+    private Mock<ICodeficatorService> codeficatorServiceMock;
 
     [SetUp]
     public async Task SetUp()
@@ -61,6 +65,10 @@ public class WorkshopServiceDBTests
         providerAdminRepository = new Mock<IProviderAdminRepository>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
         providerRepositoryMock = new Mock<IProviderRepository>();
+        currentUserServiceMock = new Mock<ICurrentUserService>();
+        ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        regionAdminServiceMock = new Mock<IRegionAdminService>();
+        codeficatorServiceMock = new Mock<ICodeficatorService>();
 
         workshopService =
             new WorkshopService(
@@ -73,7 +81,11 @@ public class WorkshopServiceDBTests
                 workshopImagesMediator.Object,
                 providerAdminRepository.Object,
                 averageRatingServiceMock.Object,
-                providerRepositoryMock.Object);
+                providerRepositoryMock.Object,
+                currentUserServiceMock.Object,
+                ministryAdminServiceMock.Object,
+                regionAdminServiceMock.Object,
+                codeficatorServiceMock.Object);
 
         Seed();
     }

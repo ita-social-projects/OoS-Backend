@@ -124,6 +124,8 @@ public enum Permissions : short
     WorkshopAddNew = 92,
     [Display(GroupName = "Workshop", Name = "Remove", Description = "Can remove Workshop data")]
     WorkshopRemove = 93,
+    [Display(GroupName = "Workshop", Name = "Workshop Approve", Description = "Can approve Workshop")]
+    WorkshopApprove = 94,
     #endregion
 
     #region System Management and admin permissions #11

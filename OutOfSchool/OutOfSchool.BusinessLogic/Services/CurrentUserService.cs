@@ -59,6 +59,7 @@ public class CurrentUserService : ICurrentUserService
         Role.MinistryAdmin => user?.IsInRole("ministryadmin") ?? false,
         Role.RegionAdmin => user?.IsInRole("regionadmin") ?? false,
         Role.AreaAdmin => user?.IsInRole("areaadmin") ?? false,
+        Role.Moderator => user?.IsInRole("moderator") ?? false,
         _ => throw new NotImplementedException("Role not handled"),
     };
 
@@ -75,6 +76,8 @@ public class CurrentUserService : ICurrentUserService
     public bool IsRegionAdmin() => IsInRole(Role.RegionAdmin);
 
     public bool IsAreaAdmin() => IsInRole(Role.AreaAdmin);
+
+    public bool IsModerator() => IsInRole(Role.Moderator);
 
     public async Task UserHasRights(params IUserRights[] userTypes)
     {

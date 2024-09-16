@@ -20,6 +20,7 @@ using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
@@ -40,6 +41,7 @@ public class AdminControllerTests
     private Mock<ISensitiveApplicationService> sensitiveApplicationService;
     private Mock<ILogger<AdminController>> logger;
     private Mock<IStringLocalizer<SharedResource>> localizer;
+    private Mock<ISensitiveWorkshopsService> sensitiveWorkshopServices;
 
     private string userId;
     private Guid providerId;
@@ -52,6 +54,7 @@ public class AdminControllerTests
     private WorkshopV2Dto workshopDto;
     private List<MinistryAdminDto> ministryAdminDtos;
     private DirectionDto direction;
+    private List<WorkshopDto> listWorkshopDto;
     private IMapper mapper;
     private HttpContext fakeHttpContext;
     private string userRole;
@@ -66,6 +69,7 @@ public class AdminControllerTests
         sensitiveApplicationService = new Mock<ISensitiveApplicationService>();
         logger = new Mock<ILogger<AdminController>>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
+        sensitiveWorkshopServices = new Mock<ISensitiveWorkshopsService>();
 
         userId = Guid.NewGuid().ToString();
         ministryAdminDtos = AdminGenerator.GenerateMinistryAdminsDtos(10);
@@ -80,6 +84,7 @@ public class AdminControllerTests
             sensitiveApplicationService.Object,
             sensitiveDirectionService.Object,
             sensitiveProviderService.Object,
+            sensitiveWorkshopServices.Object,
             localizer.Object)
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContext.Object },
@@ -95,6 +100,7 @@ public class AdminControllerTests
         provider.UserId = userId;
         provider.Id = providerId;
         applications = ApplicationDTOsGenerator.Generate(2).WithWorkshopCard(workshopCards.First()).WithParent(parent);
+        listWorkshopDto = WorkshopDtoGenerator.Generate(5);
 
         fakeHttpContext = GetFakeHttpContext();
         controller.ControllerContext.HttpContext = fakeHttpContext;
@@ -588,5 +594,51 @@ public class AdminControllerTests
         // Assert
         Assert.IsNotNull(result);
         Assert.IsInstanceOf<FileContentResult>(result);
+    }
+
+    [Test]
+    public async Task GetWorkshopsByFilter_ReturnsOkResultObject_WithExpectedCollectionDtos()
+    {
+        // Arrange
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
+        var filter = new WorkshopFilterAdministration();
+        var expected = new SearchResult<WorkshopDto>
+        {
+            TotalAmount = 5,
+            Entities = listWorkshopDto.ToList(),
+        };
+
+        sensitiveWorkshopServices.Setup(x => x.FetchByFilterForAdmins(filter)).ReturnsAsync(expected);
+
+        // Act
+        var result = await controller.GetWorkshopsByFilter(filter).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        sensitiveWorkshopServices.Verify(x => x.FetchByFilterForAdmins(filter), Times.Once);
+        result.AssertResponseOkResultAndValidateValue(expected);
+    }
+
+    [Test]
+    public async Task GetWorkshopsByFilter_WhenServiceReturnEmptyCollectionOfEntities_ShouldReturnsNoContentResult()
+    {
+        // Arrange
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.Moderator);
+        var filter = new WorkshopFilterAdministration();
+        var expected = new SearchResult<WorkshopDto>
+        {
+            TotalAmount = 0,
+            Entities = new List<WorkshopDto>(),
+        };
+
+        sensitiveWorkshopServices.Setup(x => x.FetchByFilterForAdmins(filter)).ReturnsAsync(expected);
+
+        // Act
+        var result = await controller.GetWorkshopsByFilter(filter).ConfigureAwait(false);
+
+        // Assert
+        sensitiveWorkshopServices.Verify(x => x.FetchByFilterForAdmins(filter), Times.Once);
+        Assert.That(result, Is.InstanceOf<NoContentResult>());
     }
 }

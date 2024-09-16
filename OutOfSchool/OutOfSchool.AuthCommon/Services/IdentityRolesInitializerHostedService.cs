@@ -30,6 +30,7 @@ public class IdentityRolesInitializerHostedService : IHostedService
         "ministryadmin",
         "regionadmin",
         "areaadmin",
+        "moderator"
     ];
 
     public async Task StartAsync(CancellationToken cancellationToken)
