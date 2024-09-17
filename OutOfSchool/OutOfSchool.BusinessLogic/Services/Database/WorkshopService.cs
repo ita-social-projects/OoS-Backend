@@ -8,6 +8,7 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
@@ -41,6 +42,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private readonly IMinistryAdminService ministryAdminService;
     private readonly IRegionAdminService regionAdminService;
     private readonly ICodeficatorService codeficatorService;
+    private readonly ISearchStringService searchStringService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -72,7 +74,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService,
-        ICodeficatorService codeficatorService)
+        ICodeficatorService codeficatorService,
+        ISearchStringService searchStringService)
     {
         this.workshopRepository = workshopRepository;
         this.dateTimeRangeRepository = dateTimeRangeRepository;
@@ -88,6 +91,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         this.ministryAdminService = ministryAdminService;
         this.regionAdminService = regionAdminService;
         this.codeficatorService = codeficatorService;
+        this.searchStringService = searchStringService;
     }
 
     /// <inheritdoc/>
@@ -776,7 +780,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         if (!string.IsNullOrWhiteSpace(filter.SearchString))
         {
             // Split the search string by commas and spaces, remove any empty entries, and trim whitespace from each element.
-            var searchTerms = filter.SearchString.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var searchTerms = filter.SearchString.Split(new char[] {' ', ','}, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
             logger.LogDebug("Received terms from search string: {Words}", searchTerms);
 

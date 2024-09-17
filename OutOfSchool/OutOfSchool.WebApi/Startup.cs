@@ -12,9 +12,11 @@ using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
+using OutOfSchool.BusinessLogic.Config.SearchStringConfig;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.BusinessLogic.Services.Strategies.WorkshopStrategies;
 using OutOfSchool.BusinessLogic.Services.Workshops;
@@ -394,6 +396,10 @@ public static class Startup
         services.AddTransient<ICompetitiveEventService, CompetitiveEventService>();
 
         services.AddTransient<IApiErrorService, ApiErrorService>();
+
+        // Search string options
+        services.Configure<SearchStringSettings>(configuration.GetSection(nameof(SearchStringSettings)));
+        services.AddSingleton<ISearchStringService, SearchStringService>();
 
         // Register the Permission policy handlers
         services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
