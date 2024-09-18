@@ -7,7 +7,7 @@
     <QuartzVersion>3.5.0</QuartzVersion>
     <RedisVersion>6.0.21</RedisVersion>
     <AutoMapVersion>12.0.1</AutoMapVersion>
-    <ElasticApmVersion>1.27.1</ElasticApmVersion>
+    <ElasticApmVersion>1.28.6</ElasticApmVersion>
     <VersioningVersion>8.1.0</VersioningVersion>
   </PropertyGroup>
   <ItemGroup>
@@ -43,7 +43,7 @@
     <PackageVersion Include="MySql.Data" Version="8.3.0" />
     <PackageVersion Include="Google.Protobuf" Version="3.25.2" />
     <!--Elasticsearch-->
-    <PackageVersion Include="Elastic.Clients.Elasticsearch" Version="8.15.1" />
+    <PackageVersion Include="Elastic.Clients.Elasticsearch" Version="8.15.6" />
     <!--Redis-->
     <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="$(RedisVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="$(RedisVersion)" />

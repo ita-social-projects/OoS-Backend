@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -22,11 +21,11 @@ public class QuartzExtensionTests
         var servicesRegistering = null as IServiceCollection;
 
         // Act & Assert
-        Assert.ThrowsAsync<ArgumentNullException>(async () => await servicesRegistering.AddDefaultQuartz(It.IsAny<IConfiguration>()));
+        Assert.Throws<ArgumentNullException>(() => servicesRegistering.AddDefaultQuartz(It.IsAny<IConfiguration>()));
     }
 
     [Test]
-    public async Task AddDefaultQuartz_WhenConfigurationIsOk_ShouldRegisterQuartz()
+    public void AddDefaultQuartz_WhenConfigurationIsOk_ShouldRegisterQuartz()
     {
         // Arrange
         var servicesRegistering = new ServiceCollection();
@@ -43,7 +42,7 @@ public class QuartzExtensionTests
             .Build();
 
         // Act
-        await servicesRegistering.AddDefaultQuartz(configuration);
+        servicesRegistering.AddDefaultQuartz(configuration);
 
         // Assert
         Assert.IsTrue(servicesRegistering.Any(x => x.ServiceType == typeof(ISchedulerFactory)));
