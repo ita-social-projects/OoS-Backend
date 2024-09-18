@@ -83,18 +83,20 @@ public class SensitiveWorkshopsServiceDBTests
     }
 
     [Test]
-    public async Task FetchByFilterForAdmins_FilterIsNull_ShouldBuildPredicateAndReturnDefaultAmountOfEntities()
+    public async Task FetchByFilterForAdmins_FilterIsNull_ShouldReturnDefaultAmountEntities()
     {
         // Arrange
+        var workshopDtos = await MapWorkshopsToDtos();
         var filter = new WorkshopFilterAdministration();
-        var workshopDtos = (await MapWorkshopsToDtos())
-            .Take(filter.Size)
-            .ToList();
+        var entities = workshopDtos.
+            Skip(filter.From).
+            Take(filter.Size).
+            ToList();
 
         var expectedResult = new SearchResult<WorkshopDto>()
         {
             TotalAmount = workshopDtos.Count,
-            Entities = workshopDtos,
+            Entities = entities,
         };
 
         // Act

@@ -670,7 +670,10 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             .ToListAsync()
             .ConfigureAwait(false);
 
-        var workshopsCount = workshops.Count;
+        var workshopsCount = await workshopRepository
+            .Count(predicate)
+            .ConfigureAwait(false);
+
         logger.LogInformation("Retrieved {WorkshopsCount} matching recods by filter for admins.", workshopsCount);
 
         var workshopsDTO = mapper.Map<List<WorkshopDto>>(workshops);
