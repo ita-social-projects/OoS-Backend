@@ -694,15 +694,15 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         // TODO: add condition for united territorial community admin
         if (currentUserService.IsMinistryAdmin())
         {
-            await ApplyFilterForMinistryAdmin(filter).
-                ConfigureAwait(false);
+            var predicateForMinAdmin = await PredicateForRoleMinistryAdmin()
+                .ConfigureAwait(false);
+            predicate = predicate.And(predicateForMinAdmin);
         }
         else if (currentUserService.IsRegionAdmin())
         {
-            var tempPredicate = await ApplyFilterForRegionAdmin(filter).
-                ConfigureAwait(false);
-
-            predicate = predicate.And(tempPredicate);
+            var predicateForRegionAdmin = await PredicateForRoleRegionAdmin()
+                .ConfigureAwait(false);
+            predicate = predicate.And(predicateForRegionAdmin);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.SearchString))
@@ -746,17 +746,20 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         return predicate;
     }
 
-    private async Task ApplyFilterForMinistryAdmin(WorkshopFilterAdministration filter)
+    private async Task<Expression<Func<Workshop, bool>>> PredicateForRoleMinistryAdmin()
     {
+        var predicate = PredicateBuilder.True<Workshop>();
         var userId = currentUserService.UserId;
         var ministryAdmin = await ministryAdminService
             .GetByUserId(userId)
             .ConfigureAwait(false);
 
-        filter.InstitutionId = ministryAdmin.InstitutionId;
+        predicate = predicate.And(x => x.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
+
+        return predicate;
     }
 
-    private async Task<Expression<Func<Workshop, bool>>> ApplyFilterForRegionAdmin(WorkshopFilterAdministration filter)
+    private async Task<Expression<Func<Workshop, bool>>> PredicateForRoleRegionAdmin()
     {
         var userId = currentUserService.UserId;
         var regionAdmin = await regionAdminService
@@ -770,20 +773,19 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             throw new InvalidOperationException(errorMsg);
         }
 
-        filter.InstitutionId = regionAdmin.InstitutionId;
+        var predicate = PredicateBuilder.True<Workshop>();
+        var institutionId = regionAdmin.InstitutionId;
+        var catottgId = regionAdmin.CATOTTGId;
+
+        predicate = predicate.And(x => x.InstitutionHierarchy.InstitutionId == institutionId);
 
         var subSettlementsIds = await codeficatorService
-            .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId)
+            .GetAllChildrenIdsByParentIdAsync(catottgId)
             .ConfigureAwait(false);
 
-        var tempPredicate = PredicateBuilder.False<Workshop>();
+        predicate = predicate.And(x => subSettlementsIds.Contains(x.Address.CATOTTGId));
 
-        foreach (var item in subSettlementsIds)
-        {
-            tempPredicate = tempPredicate.Or(x => x.Address.CATOTTGId == item);
-        }
-
-        return tempPredicate;
+        return predicate;
     }
 
     public async Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids)
