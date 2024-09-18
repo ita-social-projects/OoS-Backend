@@ -42,15 +42,11 @@ public class TagService : ITagService
         var tags = await repository.GetAll().ConfigureAwait(false);
 
         logger.LogDebug(!tags.Any()
-            ? "SocialGroup table is empty."
+            ? "Tag table is empty."
             : $"All {tags.Count()} records were successfully received from the Tag table");
 
-        return tags.Select(x =>
-        new TagDto()
-        {
-            Id = x.Id,
-            Name = localization == LocalizationType.En ? x.NameEn : x.Name,
-        }).ToList();
+        return mapper.Map<List<TagDto>>(tags, opt =>
+        opt.Items["Localization"] = localization);
     }
 
     /// <inheritdoc/>
@@ -69,11 +65,8 @@ public class TagService : ITagService
 
         logger.LogDebug($"Successfully got a SocialGroup with Id = {id} and {localization} localization.");
 
-        return new TagDto()
-        {
-            Id = tag.Id,
-            Name = localization == LocalizationType.En ? tag.NameEn : tag.Name,
-        };
+        return mapper.Map<TagDto>(tag, opt =>
+        opt.Items["Localization"] = localization);
     }
 
     /// <inheritdoc/>
