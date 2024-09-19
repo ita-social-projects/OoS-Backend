@@ -131,6 +131,14 @@ public class MappingProfile : Profile
 
         CreateMap<Tag, TagCreate>().ReverseMap();
 
+        CreateMap<SocialGroup, SocialGroupDto>()
+            .ForMember(dest => dest.Name, opt => opt.MapFrom((src, dest, destMembet, context) =>
+            context.Items.ContainsKey("Localization") &&
+            context.Items["Localization"] is LocalizationType loc &&
+            loc == LocalizationType.En ? src.NameEn : src.Name));
+
+        CreateMap<SocialGroup, SocialGroupCreate>().ReverseMap();
+
         CreateSoftDeletedMap<AddressDto, Address>()
             .ForMember(dest => dest.CATOTTG, opt => opt.Ignore())
             .ForMember(dest => dest.GeoHash, opt => opt.Ignore());
@@ -307,10 +315,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.AmountOfPendingApplications, opt => opt.MapFrom(src => src.Applications.AmountOfPendingApplications()))
             .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats()))
             .ForMember(dest => dest.UnreadMessages, opt => opt.Ignore());
-
-        CreateMap<SocialGroup, SocialGroupDto>().ReverseMap();
-
-        CreateMap<SocialGroup, SocialGroupCreate>().ReverseMap();
 
         CreateMap<Child, ChildDto>()
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty))
