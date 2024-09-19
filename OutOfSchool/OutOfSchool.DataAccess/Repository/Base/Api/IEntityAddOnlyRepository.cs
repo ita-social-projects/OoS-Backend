@@ -2,18 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 
-namespace OutOfSchool.Services.Repository;
+namespace OutOfSchool.Services.Repository.Base.Api;
+
 public interface IEntityAddOnlyRepository<TKey, TEntity>
     where TEntity : class, IKeyedEntity<TKey>, new()
     where TKey : IEquatable<TKey>
 {
-    IUnitOfWork UnitOfWork { get; }
-
     /// <summary>
     /// Add new element.
     /// </summary>
@@ -134,4 +134,10 @@ public interface IEntityAddOnlyRepository<TKey, TEntity>
         Expression<Func<TEntity, bool>> whereExpression = null,
         Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null,
         bool asNoTracking = false);
+
+    Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess = true,
+        CancellationToken cancellationToken = default);
+
+    int SaveChanges(bool acceptAllChangesOnSuccess = true);
 }

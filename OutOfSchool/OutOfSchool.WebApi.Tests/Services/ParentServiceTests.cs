@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Bogus;
@@ -16,6 +17,8 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -151,14 +154,14 @@ public class ParentServiceTests
             .ReturnsAsync(new Parent());
 
         parentRepositoryMock
-            .Setup(r => r.UnitOfWork.CompleteAsync())
+            .Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
         // Act
         await parentService.Create(new ParentCreateDto()).ConfigureAwait(false);
 
         // Assert
-        parentRepositoryMock.Verify(r => r.UnitOfWork.CompleteAsync(), Times.Once);
+        parentRepositoryMock.Verify(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Once);
 
         Assert.True(user.IsRegistered);
     }
@@ -181,14 +184,14 @@ public class ParentServiceTests
             .ReturnsAsync(new Parent());
 
         parentRepositoryMock
-            .Setup(r => r.UnitOfWork.CompleteAsync())
+            .Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
         // Act
         await parentService.Create(new ParentCreateDto() { PhoneNumber = expectedPhoneNumber }).ConfigureAwait(false);
 
         // Assert
-        parentRepositoryMock.Verify(r => r.UnitOfWork.CompleteAsync(), Times.Once);
+        parentRepositoryMock.Verify(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Once);
 
         Assert.AreEqual(expectedPhoneNumber, user.PhoneNumber);
     }
@@ -211,14 +214,14 @@ public class ParentServiceTests
             .ReturnsAsync(parent);
 
         parentRepositoryMock
-            .Setup(r => r.UnitOfWork.CompleteAsync())
+            .Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
         // Act
         var result = await parentService.Create(new ParentCreateDto()).ConfigureAwait(false);
 
         // Assert
-        parentRepositoryMock.Verify(r => r.UnitOfWork.CompleteAsync(), Times.Once);
+        parentRepositoryMock.Verify(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Once);
 
         Assert.AreEqual(parent.Id, result.Id);
         Assert.AreEqual(parent.UserId, result.UserId);
@@ -254,7 +257,7 @@ public class ParentServiceTests
             .Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(parent);
         parentRepositoryMock
-            .Setup(x => x.UnitOfWork.CompleteAsync())
+            .Setup(x => x.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(resultOfSavingToDb);
         parentBlockedByAdminLogServiceMock
             .Setup(x => x.SaveChangesLogAsync(

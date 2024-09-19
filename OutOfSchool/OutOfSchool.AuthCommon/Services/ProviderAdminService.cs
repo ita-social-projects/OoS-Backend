@@ -10,6 +10,7 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.AuthCommon.Services;
 

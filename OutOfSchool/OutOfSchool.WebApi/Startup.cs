@@ -20,9 +20,14 @@ using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.BusinessLogic.Services.Strategies.WorkshopStrategies;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Common.Models;
 using OutOfSchool.EmailSender;
 using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Services;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Api.Files;
+using OutOfSchool.Services.Repository.Base;
+using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Services.Repository.Files;
 using StackExchange.Redis;
 

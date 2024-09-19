@@ -5,6 +5,7 @@ using H3Lib.Extensions;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
+using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 

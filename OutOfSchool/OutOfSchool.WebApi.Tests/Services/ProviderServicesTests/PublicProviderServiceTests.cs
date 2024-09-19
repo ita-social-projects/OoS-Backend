@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -9,6 +10,7 @@ using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services.ProviderServicesTests;
@@ -58,7 +60,7 @@ public class PublicProviderServiceTests
 
         providersRepositoryMock.Setup(r => r.GetById(dto.ProviderId))
             .ReturnsAsync(provider);
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(It.IsAny<int>());
 
         // Act

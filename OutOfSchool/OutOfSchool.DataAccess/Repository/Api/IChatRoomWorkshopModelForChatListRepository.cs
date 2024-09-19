@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
 using OutOfSchool.Services.Models.ChatWorkshop;
 
-namespace OutOfSchool.Services.Repository;
+namespace OutOfSchool.Services.Repository.Api;
 
 public interface IChatRoomWorkshopModelForChatListRepository
 {

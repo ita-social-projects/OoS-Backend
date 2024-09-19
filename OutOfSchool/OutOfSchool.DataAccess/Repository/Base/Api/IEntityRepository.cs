@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
 
-namespace OutOfSchool.Services.Repository;
+namespace OutOfSchool.Services.Repository.Base.Api;
 
 public interface IEntityRepositoryBase<TKey, TEntity> : IEntityAddOnlyRepository<TKey, TEntity>
     where TEntity : class, IKeyedEntity<TKey>, new()

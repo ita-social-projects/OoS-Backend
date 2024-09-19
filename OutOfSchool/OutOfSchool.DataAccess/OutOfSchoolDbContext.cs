@@ -12,7 +12,7 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services;
 
-public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtectionKeyContext, IUnitOfWork
+public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtectionKeyContext
 {
     public OutOfSchoolDbContext(DbContextOptions<OutOfSchoolDbContext> options)
         : base(options)
@@ -112,10 +112,6 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
     public DbSet<QuartzJob> QuartzJobs { get; set; }
 
     public DbSet<ParentBlockedByAdminLog> ParentBlockedByAdminLog { get; set; }
-
-    public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
-
-    public int Complete() => this.SaveChanges();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

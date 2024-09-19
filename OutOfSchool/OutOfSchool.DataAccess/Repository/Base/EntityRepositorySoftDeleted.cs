@@ -7,8 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Base.Api;
 
-namespace OutOfSchool.Services.Repository;
+namespace OutOfSchool.Services.Repository.Base;
 
 public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<TKey, TEntity>, IEntityRepositorySoftDeleted<TKey, TEntity>
     where TEntity : class, IKeyedEntity<TKey>, ISoftDeleted, new()
@@ -42,7 +43,7 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
         Expression<Func<TEntity, bool>> whereExpression,
         string includeProperties = "")
     {
-        whereExpression = GetWhereExpression(whereExpression);
+        whereExpression = this.GetWhereExpression(whereExpression);
         return await base.GetByFilter(whereExpression, includeProperties).ConfigureAwait(false);
     }
 
@@ -51,7 +52,7 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
         Expression<Func<TEntity, bool>> whereExpression,
         string includeProperties = "")
     {
-        whereExpression = GetWhereExpression(whereExpression);
+        whereExpression = this.GetWhereExpression(whereExpression);
         return base.GetByFilterNoTracking(whereExpression, includeProperties);
     }
 
@@ -65,12 +66,12 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
     /// <inheritdoc/>
     public override Task<int> Count(Expression<Func<TEntity, bool>> whereExpression = null)
     {
-        return base.Count(GetWhereExpression(whereExpression));
+        return base.Count(this.GetWhereExpression(whereExpression));
     }
 
     public override Task<bool> Any(Expression<Func<TEntity, bool>> whereExpression = null)
     {
-        return base.Any(GetWhereExpression(whereExpression));
+        return base.Any(this.GetWhereExpression(whereExpression));
     }
 
     public override IQueryable<TEntity> Get(
@@ -81,7 +82,7 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
         Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null,
         bool asNoTracking = false)
     {
-        return base.Get(skip, take, includeProperties, GetWhereExpression(whereExpression), orderBy, asNoTracking);
+        return base.Get(skip, take, includeProperties, this.GetWhereExpression(whereExpression), orderBy, asNoTracking);
     }
 
     private Expression<Func<TEntity, bool>> GetWhereExpression(Expression<Func<TEntity, bool>> whereExpression)

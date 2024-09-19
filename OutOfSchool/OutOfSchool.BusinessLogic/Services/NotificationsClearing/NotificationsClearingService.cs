@@ -1,4 +1,6 @@
-﻿namespace OutOfSchool.BusinessLogic.Services.NotificationsClearing;
+﻿using OutOfSchool.Services.Repository.Api;
+
+namespace OutOfSchool.BusinessLogic.Services.NotificationsClearing;
 
 public class NotificationsClearingService : INotificationsClearingService
 {

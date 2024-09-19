@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using CsvHelper;
@@ -33,6 +34,8 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -697,7 +700,7 @@ public class ProviderServiceTests
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Provider>>>()))
             .Returns((Func<Task<Provider>> f) => f.Invoke());
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
         notificationService.Setup(s => s.Create(
                 NotificationType.Provider,
@@ -735,7 +738,7 @@ public class ProviderServiceTests
 
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
         // Act
@@ -768,7 +771,7 @@ public class ProviderServiceTests
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Provider>>>()))
             .Returns((Func<Task<Provider>> f) => f.Invoke());
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
         notificationService.Setup(s => s.Create(
                 NotificationType.Provider,
@@ -808,7 +811,7 @@ public class ProviderServiceTests
 
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
         notificationService.Setup(s => s.Create(
                 NotificationType.Provider,
@@ -851,7 +854,7 @@ public class ProviderServiceTests
 
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
         notificationService.Setup(s => s.Create(
                 NotificationType.Provider,
@@ -889,7 +892,7 @@ public class ProviderServiceTests
 
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
         // Act
@@ -930,7 +933,7 @@ public class ProviderServiceTests
 
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
         // Act
@@ -1082,7 +1085,7 @@ public class ProviderServiceTests
 
         providersRepositoryMock.Setup(r => r.GetById(provider.Id))
             .ReturnsAsync(provider);
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(It.IsAny<int>());
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<ProviderBlockDto>>>()))
             .ReturnsAsync(providerBlockDto);
@@ -1135,7 +1138,7 @@ public class ProviderServiceTests
 
         providersRepositoryMock.Setup(r => r.GetById(provider.Id))
             .ReturnsAsync(provider);
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(It.IsAny<int>());
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<ProviderBlockDto>>>()))
             .ReturnsAsync(providerBlockDto);
@@ -1191,7 +1194,7 @@ public class ProviderServiceTests
 
         providersRepositoryMock.Setup(r => r.GetById(provider.Id))
             .ReturnsAsync(provider);
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(It.IsAny<int>());
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<ProviderBlockDto>>>()))
             .ReturnsAsync(providerBlockDto);
@@ -1249,7 +1252,7 @@ public class ProviderServiceTests
 
         providersRepositoryMock.Setup(r => r.GetById(provider.Id))
             .ReturnsAsync(provider);
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(It.IsAny<int>());
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<ProviderBlockDto>>>()))
             .ReturnsAsync(providerBlockDto);

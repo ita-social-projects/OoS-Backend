@@ -15,6 +15,8 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 
@@ -401,7 +403,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
         await providerRepository.RunInTransaction(async () =>
         {
-            await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+            await providerRepository.SaveChangesAsync().ConfigureAwait(false);
 
             var workshops = await workshopServiceCombiner
                                .BlockByProvider(provider)
@@ -878,7 +880,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     {
         try
         {
-            await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+            await providerRepository.SaveChangesAsync().ConfigureAwait(false);
         }
         catch (DbUpdateException ex)
         {

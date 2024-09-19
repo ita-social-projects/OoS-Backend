@@ -5,6 +5,7 @@ using NUnit.Framework;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Tests;
 
 namespace OutOfSchool.WebApi.Tests;

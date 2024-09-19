@@ -3,6 +3,8 @@ using AutoMapper;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
 using DateTime = System.DateTime;
 
 namespace OutOfSchool.BusinessLogic.Services;
@@ -539,7 +541,7 @@ public class ChildService : IChildService
     {
         try
         {
-            await childRepository.UnitOfWork.CompleteAsync();
+            await childRepository.SaveChangesAsync();
         }
         catch (DbUpdateException ex)
         {

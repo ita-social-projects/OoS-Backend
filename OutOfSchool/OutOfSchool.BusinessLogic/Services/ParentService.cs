@@ -4,6 +4,8 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Parent;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -90,7 +92,7 @@ public class ParentService : IParentService
 
         var parent = await repositoryParent.Create(newParent).ConfigureAwait(false);
 
-        await repositoryParent.UnitOfWork.CompleteAsync();
+        await repositoryParent.SaveChangesAsync();
 
         logger.LogInformation("Successfully created Parent with Id = {Id} for UserId = {UserId}", parent.Id, userId);
 
@@ -181,7 +183,7 @@ public class ParentService : IParentService
         }
 
         parent.User.IsBlocked = parentBlockUnblock.IsBlocked;
-        await repositoryParent.UnitOfWork.CompleteAsync();
+        await repositoryParent.SaveChangesAsync();
         await parentBlockedByAdminLogService.SaveChangesLogAsync(
             parent.Id,
             currentUserService.UserId,
@@ -225,7 +227,7 @@ public class ParentService : IParentService
                 child.DateOfBirth = dto.DateOfBirth;
             }
 
-            await repositoryParent.UnitOfWork.CompleteAsync();
+            await repositoryParent.SaveChangesAsync();
 
             return mapper.Map<ShortUserDto>(parent);
         }

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OutOfSchool.BusinessLogic.Models.Notifications;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 

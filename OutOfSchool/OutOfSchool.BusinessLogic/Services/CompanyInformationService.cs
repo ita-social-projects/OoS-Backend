@@ -2,6 +2,7 @@
 using AutoMapper;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -96,7 +97,7 @@ public class CompanyInformationService : ICompanyInformationService
             companyInformation.Title = companyInformationDto.Title;
         }
 
-        await companyInformationRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+        await companyInformationRepository.SaveChangesAsync().ConfigureAwait(false);
 
         return mapper.Map<CompanyInformationDto>(companyInformation);
     }

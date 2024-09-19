@@ -1,4 +1,5 @@
 ﻿using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.AuthCommon.Services;
 

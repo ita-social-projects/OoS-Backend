@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Hubs;
 

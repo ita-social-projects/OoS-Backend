@@ -3,6 +3,7 @@ using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models.BlockedProviderParent;
+using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 

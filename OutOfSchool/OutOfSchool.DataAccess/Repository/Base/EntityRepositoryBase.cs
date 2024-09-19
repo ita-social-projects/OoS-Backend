@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Base.Api;
 
-namespace OutOfSchool.Services.Repository;
+namespace OutOfSchool.Services.Repository.Base;
 
 /// <summary>
 /// Repository for accessing the database.
@@ -33,8 +34,6 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         this.dbContext = dbContext;
         dbSet = this.dbContext.Set<TEntity>();
     }
-
-    public IUnitOfWork UnitOfWork => dbContext;
 
     /// <inheritdoc/>
     // TODO: Investigate why sometimes can add entities with their own ids, given with the entity instead of EF Core generate it
@@ -163,7 +162,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        var entity = await GetById(dto.Id).ConfigureAwait(false);
+        var entity = await this.GetById(dto.Id).ConfigureAwait(false);
 
         if (entity is null)
         {
@@ -171,7 +170,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
             throw new DbUpdateConcurrencyException($"Updating failed. {name} with Id = {dto.Id} doesn't exist in the system.");
         }
 
-        return await Update(map(dto, entity)).ConfigureAwait(false);
+        return await this.Update(map(dto, entity)).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -234,5 +233,17 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         query = query.IncludeProperties(includeProperties);
 
         return query.If(asNoTracking, q => q.AsNoTracking());
+    }
+
+    public Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess = true,
+        CancellationToken cancellationToken = default)
+    {
+        return dbContext.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    public int SaveChanges(bool acceptAllChangesOnSuccess = true)
+    {
+        return dbContext.SaveChanges();
     }
 }

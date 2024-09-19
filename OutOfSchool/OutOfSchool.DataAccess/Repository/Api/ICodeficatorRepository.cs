@@ -4,8 +4,9 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Base.Api;
 
-namespace OutOfSchool.Services.Repository;
+namespace OutOfSchool.Services.Repository.Api;
 
 public interface ICodeficatorRepository : IEntityRepositorySoftDeleted<long, CATOTTG>
 {

@@ -1,5 +1,6 @@
 ﻿using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
