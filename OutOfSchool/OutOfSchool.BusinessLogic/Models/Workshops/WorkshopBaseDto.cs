@@ -95,7 +95,7 @@ public class WorkshopBaseDto : IValidatableObject
     public string InstitutionHierarchy { get; set; }
 
     public List<long> DirectionIds { get; set; }
-    
+
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IEnumerable<string> Keywords { get; set; } = default;
 
@@ -120,6 +120,10 @@ public class WorkshopBaseDto : IValidatableObject
 
     [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus ProviderLicenseStatus { get; set; } = ProviderLicenseStatus.NotProvided;
+
+    public DateOnly ActiveFrom { get; set; }
+
+    public DateOnly ActiveTo { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

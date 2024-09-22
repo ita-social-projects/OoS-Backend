@@ -1,9 +1,28 @@
 using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OutOfSchool.Services.Models;
 
-public abstract class BusinessEntity<TKey> : IKeyedEntity<TKey>
+public abstract class BusinessEntity : IKeyedEntity<Guid>, ISoftDeleted
 {
+    protected string _createdBy;
+
+    protected string _modifiedBy;
+
+    protected string _deletedBy;
+
+    protected DateTime _createdAt;
+
+    protected DateTime? _updatedAt;
+
+    protected DateTime? _deleteDate;
+
+    protected bool _isSystemProtected = false;
+
+    public Guid Id { get; set; }
+
     public string Document { get; set; }
 
     public string File { get; set; }
@@ -12,19 +31,30 @@ public abstract class BusinessEntity<TKey> : IKeyedEntity<TKey>
 
     public DateOnly ActiveTo { get; set; }
 
-    public User DeletedBy { get; set; }
+    public bool IsBlocked { get; set; } = false;
 
-    public DateTime DeleteDate { get; set; }
+    public bool IsSystemProtected => _isSystemProtected;
 
-    public DateTime DateOfCreationInTheSystem { get; set; }
+    [Column(TypeName = "char")]
+    [MaxLength(36)]
+    public string CreatedBy => _createdBy;
 
-    public bool IsBlocked { get; set; }
+    [Column(TypeName = "char")]
+    [MaxLength(36)]
+    public string ModifiedBy => _modifiedBy;
 
-    public User ModifiedBy { get; set; }
+    [Column(TypeName = "char")]
+    [MaxLength(36)]
+    public string DeletedBy => _deletedBy;
 
-    public User CreatedBy { get; set; }
+    [DataType(DataType.DateTime)]
+    public DateTime CreatedAt => _createdAt;
 
-    public bool IsSystemProtected { get; set; }
+    [DataType(DataType.DateTime)]
+    public DateTime? UpdatedAt => _updatedAt;
 
-    public TKey Id { get; set; }
+    [DataType(DataType.DateTime)]
+    public DateTime? DeleteDate => _deleteDate;
+
+    public bool IsDeleted { get; set; }
 }

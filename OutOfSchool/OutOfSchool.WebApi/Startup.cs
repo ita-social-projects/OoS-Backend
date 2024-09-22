@@ -244,7 +244,7 @@ public static class Startup
             });
 
         services
-            .AddDbContext<OutOfSchoolDbContext>(options => options
+            .AddDbContext<OutOfSchoolDbContext>((sp, options) => options
                 .UseLazyLoadingProxies()
                 .UseMySql(
                     connectionString,
@@ -252,7 +252,9 @@ public static class Startup
                     mySqlOptions =>
                         mySqlOptions
                             .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
-                            .EnableStringComparisonTranslations()))
+                            .EnableStringComparisonTranslations())
+                .AddInterceptors(
+                    new BusinessEntityInterceptor(sp)))
                 .AddCustomDataProtection("WebApi");
 
         services.AddAutoMapper(typeof(CommonProfile), typeof(MappingProfile), typeof(ElasticProfile));
@@ -381,7 +383,9 @@ public static class Startup
         services.AddTransient<IAchievementRepository, AchievementRepository>();
         services.AddTransient<IAchievementService, AchievementService>();
         services.AddTransient(s => s.GetService<IHttpContextAccessor>()?.HttpContext?.User);
-        services.AddTransient<ICurrentUserService, CurrentUserService>();
+        services.AddTransient<CurrentUserService>();
+        services.AddTransient<ICurrentUserService>(provider => provider.GetRequiredService<CurrentUserService>());
+        services.AddTransient<ICurrentUser>(provider => provider.GetRequiredService<CurrentUserService>());
 
         services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
 
