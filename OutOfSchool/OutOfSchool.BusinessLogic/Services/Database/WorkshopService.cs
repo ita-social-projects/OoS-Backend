@@ -92,7 +92,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentNullException">If <see cref="WorkshopBaseDto"/> is null.</exception>
-    public async Task<WorkshopBaseDto> Create(WorkshopBaseDto dto)
+    public async Task<WorkshopCreate> Create(WorkshopCreate dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
@@ -120,7 +120,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         logger.LogInformation($"Workshop with Id = {newWorkshop?.Id} created successfully.");
 
-        return mapper.Map<WorkshopBaseDto>(newWorkshop);
+        return mapper.Map<WorkshopCreate>(newWorkshop);
     }
 
     /// <inheritdoc/>
@@ -348,7 +348,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <inheritdoc/>
     /// <exception cref="ArgumentNullException">If <see cref="WorkshopBaseDto"/> is null.</exception>
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-    public async Task<WorkshopBaseDto> Update(WorkshopBaseDto dto)
+    public async Task<WorkshopCreate> Update(WorkshopCreate dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation($"Updating Workshop with Id = {dto?.Id} started.");
@@ -379,7 +379,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var updatedWorkshop = await workshopRepository
             .RunInTransaction(UpdateWorkshopLocally).ConfigureAwait(false);
 
-        return mapper.Map<WorkshopBaseDto>(updatedWorkshop);
+        return mapper.Map<WorkshopCreate>(updatedWorkshop);
     }
 
     /// <inheritdoc/>

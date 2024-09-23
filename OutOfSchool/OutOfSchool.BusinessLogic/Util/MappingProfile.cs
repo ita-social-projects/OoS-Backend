@@ -112,6 +112,9 @@ public class MappingProfile : Profile
         CreateMap<WorkshopV2Dto, Workshop>()
             .IncludeBase<WorkshopDto, Workshop>();
 
+        CreateMap<Workshop, WorkshopCreate>()
+            .IncludeBase<Workshop, WorkshopBaseDto>();
+
         CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>().ReverseMap();
 
         CreateMap<WorkshopStatusDto, WorkshopStatusWithTitleDto>()
