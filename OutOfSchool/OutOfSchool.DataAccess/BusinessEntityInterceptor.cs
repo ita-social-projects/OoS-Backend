@@ -7,22 +7,26 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.DependencyInjection;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services;
 
-public class BusinessEntityInterceptor(in IServiceProvider provider) : SaveChangesInterceptor
+public class BusinessEntityInterceptor : SaveChangesInterceptor
 {
-    private readonly IServiceProvider serviceProvider = provider;
+    private readonly ICurrentUser? currentUser;
 
+
+    public BusinessEntityInterceptor(ICurrentUser? currentUser)
+    {
+        this.currentUser = currentUser;
+    }
 
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {
         if (eventData.Context is not null)
         {
-            UpdateBusinessEntities(eventData.Context, serviceProvider);
+            UpdateBusinessEntities(eventData.Context, currentUser);
         }
 
         return base.SavingChanges(eventData, result);
@@ -35,7 +39,7 @@ public class BusinessEntityInterceptor(in IServiceProvider provider) : SaveChang
     {
         if (eventData.Context is not null)
         {
-            UpdateBusinessEntities(eventData.Context, serviceProvider);
+            UpdateBusinessEntities(eventData.Context, currentUser);
         }
 
         return base.SavingChangesAsync(eventData, result, cancellationToken);
@@ -43,10 +47,9 @@ public class BusinessEntityInterceptor(in IServiceProvider provider) : SaveChang
 
     private static void UpdateBusinessEntities(
         DbContext context,
-        IServiceProvider provider)
+        ICurrentUser? currentUser)
     {
-        var currentUser = provider.GetRequiredService<ICurrentUser>();
-        var userId = currentUser.UserId;
+        var userId = currentUser?.UserId ?? string.Empty;
 
         var businessEntries = context.ChangeTracker.Entries()
             .Where(entity => entity.GetType().IsSubclassOf(typeof(BusinessEntity)));

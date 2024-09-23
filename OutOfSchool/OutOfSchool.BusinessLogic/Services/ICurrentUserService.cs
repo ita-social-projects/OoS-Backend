@@ -9,18 +9,6 @@ namespace OutOfSchool.BusinessLogic.Services;
 public interface ICurrentUserService : ICurrentUser
 {
     /// <summary>
-    /// Gets current logged in UserRole or empty string in other case.
-    /// </summary>
-    /// <returns>A <see cref="string"/> id of current logged in user.</returns>
-    public string UserRole { get; }
-
-    /// <summary>
-    /// Gets current logged in UserSubRole or empty string in other case.
-    /// </summary>
-    /// <returns>A <see cref="string"/> id of current logged in user.</returns>
-    public string UserSubRole { get; }
-
-    /// <summary>
     /// Check if user's role is the same as provided.
     /// </summary>
     /// <param name="role">A <see cref="Role"/> to check.</param>

@@ -243,6 +243,7 @@ public static class Startup
                 GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
             });
 
+        services.AddTransient<BusinessEntityInterceptor>();
         services
             .AddDbContext<OutOfSchoolDbContext>((sp, options) => options
                 .UseLazyLoadingProxies()
@@ -254,7 +255,7 @@ public static class Startup
                             .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
                             .EnableStringComparisonTranslations())
                 .AddInterceptors(
-                    new BusinessEntityInterceptor(sp)))
+                    sp.GetRequiredService<BusinessEntityInterceptor>()))
                 .AddCustomDataProtection("WebApi");
 
         services.AddAutoMapper(typeof(CommonProfile), typeof(MappingProfile), typeof(ElasticProfile));
@@ -383,9 +384,8 @@ public static class Startup
         services.AddTransient<IAchievementRepository, AchievementRepository>();
         services.AddTransient<IAchievementService, AchievementService>();
         services.AddTransient(s => s.GetService<IHttpContextAccessor>()?.HttpContext?.User);
-        services.AddTransient<CurrentUserService>();
-        services.AddTransient<ICurrentUserService>(provider => provider.GetRequiredService<CurrentUserService>());
-        services.AddTransient<ICurrentUser>(provider => provider.GetRequiredService<CurrentUserService>());
+        services.AddTransient<ICurrentUser, CurrentUserAccessor>();
+        services.AddTransient<ICurrentUserService, CurrentUserService>();
 
         services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
 
