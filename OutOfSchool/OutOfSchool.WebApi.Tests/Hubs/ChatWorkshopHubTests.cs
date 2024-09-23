@@ -308,8 +308,8 @@ public class ChatWorkshopHubTests
         providerAdminRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<ProviderAdmin, bool>>>(), It.IsAny<string>())).ReturnsAsync(validProviderAdmins);
 
         workshopRepositoryMock
-            .Setup(x => x.GetById(validWorkshopId))
-            .ReturnsAsync(new Workshop() { ProviderId = Guid.NewGuid(), IsBlocked = true });
+            .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
+            .ReturnsAsync([new() { ProviderId = Guid.NewGuid(), IsBlocked = true }]);
 
         blockedProviderParentServiceMock
         .Setup(x => x.IsBlocked(validParentId, It.IsAny<Guid>()))
