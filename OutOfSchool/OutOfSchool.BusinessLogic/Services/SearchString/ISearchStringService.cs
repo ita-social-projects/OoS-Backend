@@ -1,9 +1,7 @@
 ﻿namespace OutOfSchool.BusinessLogic.Services.SearchString;
 
 /// <summary>
-/// Responsible for handling various operations related to string processing.
-/// It uses dynamic configuration settings through IOptionsMonitor, allowing real-time updates to key parameters
-/// without requiring a service restart.
+/// Responsible for handling various operations related to search string processing.
 /// </summary>
 public interface ISearchStringService
 {

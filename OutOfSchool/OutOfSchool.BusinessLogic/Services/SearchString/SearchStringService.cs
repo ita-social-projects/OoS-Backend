@@ -1,44 +1,25 @@
 ﻿using Microsoft.Extensions.Options;
-using OutOfSchool.BusinessLogic.Config.SearchStringConfig;
+using OutOfSchool.BusinessLogic.Config.SearchString;
 
 namespace OutOfSchool.BusinessLogic.Services.SearchString;
 public class SearchStringService : ISearchStringService
 {
     private readonly ILogger<SearchStringService> logger;
-    private string[] separators;
+    private readonly IOptions<SearchStringSettings> options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SearchStringService"/> class.
     /// </summary>
     /// <param name="logger">Logger.</param>
-    /// <param name="optionsMonitor">
-    /// An instance of IOptionsMonitor that provides access to configuration options and supports change notifications.
-    /// It allows the method to retrieve the current value of configuration settings and react to updates in real time.
+    /// <param name="options">
+    /// An instance of IOptions that provides access to configuration options.
     /// </param>
     public SearchStringService(
-        IOptionsMonitor<SearchStringSettings> optionsMonitor,
+        IOptions<SearchStringSettings> options,
         ILogger<SearchStringService> logger)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-        if (optionsMonitor == null || optionsMonitor.CurrentValue == null)
-        {
-            logger.LogError(
-                "{SettingsType} or its CurrentValue is null. Using default separators.",
-                nameof(IOptionsMonitor<SearchStringSettings>));
-
-            separators = [" "];
-        }
-
-        // Initialize the separators with the current configuration.
-        separators = optionsMonitor.CurrentValue.Separators;
-
-        // Subscribe to the configuration change event and update separators when the settings change.
-        optionsMonitor.OnChange(settings =>
-        {
-            logger.LogDebug("Configuration SearchStringSettings changed: Separators updated.");
-            separators = optionsMonitor.CurrentValue.Separators;
-        });
+        this.options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
     /// <inheritdoc/>
@@ -51,9 +32,25 @@ public class SearchStringService : ISearchStringService
         }
 
         logger.LogDebug("Processing input string: {Input}.", input);
+        string[] separators;
+        string defaultSeparator = "  ";
+
+        if (options.Value == null ||
+            options.Value.Separators == null ||
+            options.Value.Separators.Length == 0)
+        {
+            logger.LogError(
+            "Configuration issue with {Settings}: either options are not provided. Using default separators.",
+            nameof(SearchStringSettings));
+            separators = new string[] { defaultSeparator };
+        }
+        else
+        {
+            separators = options.Value.Separators;
+        }
 
         var words = input.Split(separators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        logger.LogDebug("Split input into {Length} words.", words.Length);
+        logger.LogDebug("Split input string into {Length} words.", words.Length);
 
         return words;
     }

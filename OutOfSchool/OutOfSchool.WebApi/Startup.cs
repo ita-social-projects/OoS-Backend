@@ -12,7 +12,7 @@ using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
-using OutOfSchool.BusinessLogic.Config.SearchStringConfig;
+using OutOfSchool.BusinessLogic.Config.SearchString;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
@@ -399,7 +399,7 @@ public static class Startup
 
         // Search string options
         services.Configure<SearchStringSettings>(configuration.GetSection(nameof(SearchStringSettings)));
-        services.AddSingleton<ISearchStringService, SearchStringService>();
+        services.AddScoped<ISearchStringService, SearchStringService>();
 
         // Register the Permission policy handlers
         services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();

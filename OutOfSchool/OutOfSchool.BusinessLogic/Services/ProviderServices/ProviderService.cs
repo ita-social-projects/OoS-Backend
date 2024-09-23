@@ -902,7 +902,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         {
             var tempPredicate = PredicateBuilder.False<Provider>();
 
-            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            foreach (var word in filter.SearchString.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 if (word.Any(c => char.IsLetter(c)))
                 {
