@@ -10,6 +10,8 @@ namespace OutOfSchool.BusinessLogic.Util.Mapping;
 
 public class ElasticProfile : Profile
 {
+    private const double Epsilon = 0.1d;
+
     public ElasticProfile()
     {
         CreateMap<WorkshopBaseDto, WorkshopES>()
@@ -108,8 +110,8 @@ public class ElasticProfile : Profile
                 dest => dest.Point,
                 opt => opt.MapFrom(gl => GeoLocation.LatitudeLongitude(new LatLonGeoLocation()
                 {
-                    Lat = gl.Latitude == 0d ? gl.CATOTTG.Latitude : gl.Latitude,
-                    Lon = gl.Longitude == 0d ? gl.CATOTTG.Longitude : gl.Longitude,
+                    Lat = Math.Abs(gl.Latitude - 0d) < Epsilon ? gl.CATOTTG.Latitude : gl.Latitude,
+                    Lon = Math.Abs(gl.Longitude - 0d) < Epsilon ? gl.CATOTTG.Longitude : gl.Longitude,
                 })))
             .ForMember(
                 dest => dest.City,
