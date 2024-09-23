@@ -806,343 +806,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("CompanyInformationItems");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("AdditionalDescription")
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
-                    b.Property<bool>("AreThereBenefits")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<Guid>("BuildingHoldingId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<long>("CategoryId")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid>("ChiefJudgeId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<Guid>("ChildParticipantId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<bool>("CompetitiveSelection")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
-                    b.Property<string>("DescriptionOfOptionsForPeopleWithDisabilities")
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
-                    b.Property<string>("DescriptionOfTheEnrollmentProcedure")
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<int>("MaximumAge")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MinimumAge")
-                        .HasColumnType("int");
-
-                    b.Property<uint>("NumberOfOccupiedSeats")
-                        .HasColumnType("int unsigned");
-
-                    b.Property<uint>("NumberOfRatings")
-                        .HasColumnType("int unsigned");
-
-                    b.Property<uint>("NumberOfSeats")
-                        .HasColumnType("int unsigned");
-
-                    b.Property<bool>("OptionsForPeopleWithDisabilities")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<Guid>("OrganizerOfTheEventId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<Guid>("ParentId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<int>("PlannedFormatOfClasses")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PreferentialTermsOfParticipation")
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
-                    b.Property<int>("Price")
-                        .HasColumnType("int");
-
-                    b.Property<uint>("Rating")
-                        .HasColumnType("int unsigned");
-
-                    b.Property<DateTimeOffset>("RegistrationEndTime")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTimeOffset>("RegistrationStartTime")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTimeOffset>("ScheduledEndTime")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTimeOffset>("ScheduledStartTime")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("ShortTitle")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<int>("State")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Subcategory")
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar(250)");
-
-                    b.Property<string>("Title")
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar(250)");
-
-                    b.Property<Guid>("VenueId")
-                        .HasColumnType("binary(16)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("IsDeleted");
-
-                    b.HasIndex("OrganizerOfTheEventId");
-
-                    b.HasIndex("ParentId");
-
-                    b.ToTable("CompetitiveEvents");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEventAccountingType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<Guid?>("CompetitiveEventId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Title")
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar(250)");
-
-                    b.Property<string>("TitleEn")
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar(250)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompetitiveEventId");
-
-                    b.HasIndex("IsDeleted");
-
-                    b.ToTable("CompetitiveEventAccountingTypes");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            IsDeleted = false,
-                            Title = "Освітній проєкт",
-                            TitleEn = "Educational project"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            IsDeleted = false,
-                            Title = "Конкурс (не має етапів)",
-                            TitleEn = "Competition"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            IsDeleted = false,
-                            Title = "Основний конкурс (має мати підпорядковані конкурси-етапи)",
-                            TitleEn = "Main competition"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            IsDeleted = false,
-                            Title = "Етап конкурсу (має мати батьківський основний конкурс)",
-                            TitleEn = "Contest stage"
-                        });
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEventCoverage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<Guid?>("CompetitiveEventId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Title")
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar(250)");
-
-                    b.Property<string>("TitleEn")
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar(250)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompetitiveEventId");
-
-                    b.HasIndex("IsDeleted");
-
-                    b.ToTable("CompetitiveEventCoverages");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            IsDeleted = false,
-                            Title = "Локальний (Шкільний)",
-                            TitleEn = "Local (School)"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            IsDeleted = false,
-                            Title = "Міський",
-                            TitleEn = "City"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            IsDeleted = false,
-                            Title = "Районний",
-                            TitleEn = "Raional"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            IsDeleted = false,
-                            Title = "Обласний",
-                            TitleEn = "Regional"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            IsDeleted = false,
-                            Title = "Всеукраїнський",
-                            TitleEn = "All-Ukrainian"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            IsDeleted = false,
-                            Title = "Міжнародний",
-                            TitleEn = "International"
-                        });
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEventDescriptionItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
-
-                    b.Property<Guid>("CompetitiveEventId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("SectionName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompetitiveEventId");
-
-                    b.HasIndex("IsDeleted");
-
-                    b.ToTable("CompetitiveEventDescriptionItems");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEventRegistrationDeadline", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Title")
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar(250)");
-
-                    b.Property<string>("TitleEn")
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar(250)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted");
-
-                    b.ToTable("CompetitiveEventRegistrationDeadlines");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            IsDeleted = false,
-                            Title = "Постійно (протягом року)",
-                            TitleEn = "Constantly (during the year)"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            IsDeleted = false,
-                            Title = "Певний місяць або місяці року",
-                            TitleEn = "A certain month or months of the year"
-                        });
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.DateTimeRange", b =>
                 {
                     b.Property<long>("Id")
@@ -1550,21 +1213,21 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 2L,
                             Description = "provider permissions",
-                            PackedPermissions = "ZQMCAQQKCzQzMjU2SEdJRlBRW11cVJaYl5k=",
+                            PackedPermissions = "ZQMCAQQKCzQzMjU2SEdJRlBRW11cVA==",
                             RoleName = "Provider"
                         },
                         new
                         {
                             Id = 3L,
                             Description = "parent permissions",
-                            PackedPermissions = "ZQMKCwwUFhUXHiAfISgpKz49PFBRVJY=",
+                            PackedPermissions = "ZQMKCwwUFhUXHiAfISgpKz49PFBRVA==",
                             RoleName = "Parent"
                         },
                         new
                         {
                             Id = 4L,
                             Description = "provider admin permissions",
-                            PackedPermissions = "ZQMCAQQKCzI2SEdJRlBRW1xUlg==",
+                            PackedPermissions = "ZQMCAQQKCzI2SEdJRlBRW1xU",
                             RoleName = "ProviderAdmin"
                         },
                         new
@@ -1614,9 +1277,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<string>("BlockReason")
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
-
-                    b.Property<Guid?>("CompetitiveEventId")
-                        .HasColumnType("binary(16)");
 
                     b.Property<string>("CoverImageId")
                         .HasColumnType("longtext");
@@ -1742,8 +1402,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ActualAddressId")
                         .IsUnique();
-
-                    b.HasIndex("CompetitiveEventId");
 
                     b.HasIndex("EdrpouIpn");
 
@@ -2955,58 +2613,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("CompanyInformation");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.Direction", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.Provider", "OrganizerOfTheEvent")
-                        .WithMany()
-                        .HasForeignKey("OrganizerOfTheEventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", "Parent")
-                        .WithMany()
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-
-                    b.Navigation("OrganizerOfTheEvent");
-
-                    b.Navigation("Parent");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEventAccountingType", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", null)
-                        .WithMany("AccountingTypeOfEvent")
-                        .HasForeignKey("CompetitiveEventId");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEventCoverage", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", null)
-                        .WithMany("Coverage")
-                        .HasForeignKey("CompetitiveEventId");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEventDescriptionItem", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", "CompetitiveEvent")
-                        .WithMany("CompetitiveEventDescriptionItems")
-                        .HasForeignKey("CompetitiveEventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CompetitiveEvent");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.DateTimeRange", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Workshop", null)
@@ -3112,10 +2718,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .WithOne()
                         .HasForeignKey("OutOfSchool.Services.Models.Provider", "ActualAddressId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", null)
-                        .WithMany("ParticipantsOfTheEvent")
-                        .HasForeignKey("CompetitiveEventId");
 
                     b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.Institution", "Institution")
                         .WithMany("RelatedProviders")
@@ -3346,17 +2948,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformation", b =>
                 {
                     b.Navigation("CompanyInformationItems");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", b =>
-                {
-                    b.Navigation("AccountingTypeOfEvent");
-
-                    b.Navigation("CompetitiveEventDescriptionItems");
-
-                    b.Navigation("Coverage");
-
-                    b.Navigation("ParticipantsOfTheEvent");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionStatus", b =>
