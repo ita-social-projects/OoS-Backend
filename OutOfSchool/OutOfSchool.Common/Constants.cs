@@ -7,6 +7,8 @@ public static class Constants
     /// </summary>
     public const int MaxUnifiedUrlLength = 256;
 
+    public const int MaxEmailAddressLength = 256;
+
     public const long DefaultCityCodeficatorId = 31737;
 
     public const string DefaultAuthScheme = "bearer_or_cookie";
