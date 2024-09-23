@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.Services.Models.CompetitiveEvents;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
