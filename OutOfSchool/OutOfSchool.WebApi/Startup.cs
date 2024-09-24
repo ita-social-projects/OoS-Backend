@@ -3,7 +3,6 @@ using AutoMapper;
 using Elastic.Apm.DiagnosticSource;
 using Elastic.Apm.Elasticsearch;
 using Elastic.Apm.EntityFrameworkCore;
-using Elastic.Apm.Instrumentations.SqlClient;
 using Elastic.Apm.StackExchange.Redis;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HeaderPropagation;
@@ -253,8 +252,7 @@ public static class Startup
                     mySqlOptions =>
                         mySqlOptions
                             .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
-                            .EnableStringComparisonTranslations()
-                    ))
+                            .EnableStringComparisonTranslations()))
                 .AddCustomDataProtection("WebApi");
 
         services.AddAutoMapper(typeof(CommonProfile), typeof(MappingProfile), typeof(ElasticProfile));
@@ -355,7 +353,8 @@ public static class Startup
         services.AddTransient<IParentRepository, ParentRepository>();
         services.AddTransient<IProviderRepository, ProviderRepository>();
         services.AddTransient<IWorkshopRepository, WorkshopRepository>();
-        //services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
+
+        // services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
         var featuresConfig = configuration.GetSection(FeatureManagementConfig.Name).Get<FeatureManagementConfig>();
         var isImagesEnabled = featuresConfig.Images;
         var turnOnFakeStorage = configuration.GetValue<bool>("Images:TurnOnFakeImagesStorage") || !isImagesEnabled;
@@ -387,6 +386,8 @@ public static class Startup
         services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
 
         services.Configure<ChangesLogConfig>(configuration.GetSection(ChangesLogConfig.Name));
+
+        services.AddTransient<ICompetitiveEventService, CompetitiveEventService>();
 
         services.AddTransient<IApiErrorService, ApiErrorService>();
 
@@ -545,6 +546,5 @@ public static class Startup
 
         // Hosts options
         services.Configure<HostsConfig>(configuration.GetSection(HostsConfig.Name));
-
     }
 }

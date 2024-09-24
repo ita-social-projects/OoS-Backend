@@ -8,6 +8,7 @@ using OutOfSchool.BusinessLogic.Models.BlockedProviderParent;
 using OutOfSchool.BusinessLogic.Models.Changes;
 using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.Geocoding;
 using OutOfSchool.BusinessLogic.Models.Notifications;
 using OutOfSchool.BusinessLogic.Models.Providers;
@@ -19,6 +20,7 @@ using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Util.CustomComparers;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.BusinessLogic.Util;
@@ -636,6 +638,16 @@ public class MappingProfile : Profile
 
         CreateMap<WorkshopFilter, WorkshopFilterWithSettlements>()
             .ForMember(dest => dest.SettlementsIds, opt => opt.Ignore());
+
+        CreateMap<CompetitiveEvent, CompetitiveEventDto>().ReverseMap();
+
+        CreateMap<CompetitiveEventAccountingType, CompetitiveEventAccountingTypeDto>().ReverseMap();
+
+        CreateMap<CompetitiveEventCoverage, CompetitiveEventCoverageDto>().ReverseMap();
+
+        CreateMap<CompetitiveEventDescriptionItem, CompetitiveEventDescriptionItemDto>().ReverseMap();
+
+        CreateMap<CompetitiveEventRegistrationDeadline, CompetitiveEventRegistrationDeadlineDto>().ReverseMap();
     }
 
     public IMappingExpression<TSource, TDestination> CreateSoftDeletedMap<TSource, TDestination>()

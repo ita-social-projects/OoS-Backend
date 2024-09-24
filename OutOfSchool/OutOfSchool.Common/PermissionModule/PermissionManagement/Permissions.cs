@@ -184,4 +184,15 @@ public enum Permissions : short
     [Display(GroupName = "AreaAdmin", Name = "Block", Description = "Can block area admin")]
     AreaAdminBlock = 145,
     #endregion
+
+    #region CompetitiveEvent control permissions #15
+    [Display(GroupName = "CompetitiveEvent", Name = "Read", Description = "Can read CompetitiveEvent")]
+    CompetitiveEventRead = 150,
+    [Display(GroupName = "CompetitiveEvent", Name = "Edit", Description = "Can edit CompetitiveEvent item")]
+    CompetitiveEventEdit = 151,
+    [Display(GroupName = "CompetitiveEvent", Name = "Add new", Description = "Can add a new CompetitiveEvent item")]
+    CompetitiveEventAddNew = 152,
+    [Display(GroupName = "CompetitiveEvent", Name = "Remove", Description = "Can remove CompetitiveEvent data")]
+    CompetitiveEventRemove = 153,
+    #endregion
 }

@@ -28,6 +28,7 @@ public static class PermissionsSeeder
         Permissions.AreaAdminEdit, Permissions.AreaAdminRead, Permissions.AreaAdminBlock,
         Permissions.PersonalInfo,
         Permissions.AdminDataRead,
+        Permissions.CompetitiveEventRead,
     };
 
     private static readonly IEnumerable<Permissions> SeedProviderPermissions = new List<Permissions>
@@ -41,6 +42,7 @@ public static class PermissionsSeeder
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.WorkshopEdit, Permissions.WorkshopRemove, Permissions.WorkshopAddNew,
         Permissions.PersonalInfo,
+        Permissions.CompetitiveEventRead, Permissions.CompetitiveEventAddNew, Permissions.CompetitiveEventEdit, Permissions.CompetitiveEventRemove,
     };
 
     private static readonly IEnumerable<Permissions> SeedProviderAdminPermissions = new List<Permissions>
@@ -54,6 +56,7 @@ public static class PermissionsSeeder
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.WorkshopEdit, Permissions.WorkshopAddNew,
         Permissions.PersonalInfo,
+        Permissions.CompetitiveEventRead,
     };
 
     private static readonly IEnumerable<Permissions> SeedMinistryAdminPermissions = new List<Permissions>
@@ -74,6 +77,7 @@ public static class PermissionsSeeder
         Permissions.AreaAdminAddNew, Permissions.AreaAdminRead, Permissions.AreaAdminEdit,
         Permissions.AreaAdminRemove, Permissions.AreaAdminBlock,
         Permissions.AdminDataRead,
+        Permissions.CompetitiveEventRead,
     };
 
     private static readonly IEnumerable<Permissions> SeedParentPermissions = new List<Permissions>
@@ -87,6 +91,7 @@ public static class PermissionsSeeder
         Permissions.RatingAddNew, Permissions.RatingEdit, Permissions.RatingRead,
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.PersonalInfo,
+        Permissions.CompetitiveEventRead,
     };
 
     private static readonly IEnumerable<Permissions> SeedRegionAdminPermissions = new List<Permissions>
@@ -105,6 +110,7 @@ public static class PermissionsSeeder
         Permissions.AreaAdminRemove, Permissions.AreaAdminBlock,
         Permissions.WorkshopEdit, Permissions.WorkshopApprove,
         Permissions.AdminDataRead,
+        Permissions.CompetitiveEventRead,
     };
 
     private static readonly IEnumerable<Permissions> SeedAreaAdminPermissions = new List<Permissions>
@@ -121,6 +127,7 @@ public static class PermissionsSeeder
         Permissions.AreaAdminRead, Permissions.AreaAdminEdit,
         Permissions.WorkshopEdit, Permissions.WorkshopApprove,
         Permissions.AdminDataRead,
+        Permissions.CompetitiveEventRead,
     };
 
     private static readonly IEnumerable<Permissions> SeedModeratorPermissions = new List<Permissions>
