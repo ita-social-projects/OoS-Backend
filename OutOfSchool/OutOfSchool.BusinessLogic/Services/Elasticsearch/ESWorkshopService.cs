@@ -161,6 +161,7 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
     {
         if (entity is null)
         {
+            logger.LogError("WorkshopES entity {Entity} is null or uninitialized.", entity);
             throw new ArgumentNullException($"{entity} is not set to an instance.");
         }
     }

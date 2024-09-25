@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Bogus;
 using OutOfSchool.ElasticsearchData.Models;
 
@@ -21,4 +22,6 @@ public class WorkshopESGenerator
         .RuleFor(x => x.Address, f => AddressESGenerator.Generate());
         
     public static WorkshopES Generate() => Faker.Generate();
+
+    public static List<WorkshopES> Generate(int count) => Faker.Generate(count);
 }
