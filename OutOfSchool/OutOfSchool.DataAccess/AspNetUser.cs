@@ -4,10 +4,8 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services;
 
-public class AspNetUser : BusinessEntity<User>
+public class AspNetUser : BusinessEntity
 {
-    public Guid Id { get; set; }
-
     public bool IsRegistered { get; set; }
 
     [DataType(DataType.DateTime)]

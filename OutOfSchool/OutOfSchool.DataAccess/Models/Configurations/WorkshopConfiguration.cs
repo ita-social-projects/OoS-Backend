@@ -1,19 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OutOfSchool.Common;
+using OutOfSchool.Services.Models.Configurations.Base;
 
 namespace OutOfSchool.Services.Models.Configurations;
 
-internal class WorkshopConfiguration : IEntityTypeConfiguration<Workshop>
+internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
 {
-    public void Configure(EntityTypeBuilder<Workshop> builder)
+    public override void Configure(EntityTypeBuilder<Workshop> builder)
     {
-        builder.HasKey(x => x.Id);
-
-        builder.HasIndex(x => x.IsDeleted);
-
-        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
-
         builder.HasMany(x => x.ProviderAdmins)
             .WithMany(x => x.ManagedWorkshops);
 
@@ -25,9 +21,6 @@ internal class WorkshopConfiguration : IEntityTypeConfiguration<Workshop>
             .WithOne(x => x.Workshop)
             .HasForeignKey(x => x.WorkshopId);
 
-        builder.Property(x => x.UpdatedAt)
-            .ValueGeneratedOnAddOrUpdate();
-
         builder.Property(x => x.Title)
             .IsRequired()
             .HasMaxLength(Constants.MaxWorkshopTitleLength);
@@ -35,5 +28,7 @@ internal class WorkshopConfiguration : IEntityTypeConfiguration<Workshop>
         builder.Property(x => x.ShortTitle)
             .IsRequired()
             .HasMaxLength(Constants.MaxWorkshopShortTitleLength);
+
+        base.Configure(builder);
     }
 }

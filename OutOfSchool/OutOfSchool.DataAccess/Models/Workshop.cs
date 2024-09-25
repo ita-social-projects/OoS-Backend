@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Newtonsoft.Json;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Validators;
@@ -13,12 +11,8 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models;
 
-public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>, ISoftDeleted, IHasEntityImages<Workshop>
+public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEntityImages<Workshop>
 {
-    public Guid Id { get; set; }
-
-    public bool IsDeleted { get; set; }
-
     [Required(ErrorMessage = "Workshop title is required")]
     [MinLength(Constants.MinWorkshopTitleLength)]
     [MaxLength(Constants.MaxWorkshopTitleLength)]
@@ -130,7 +124,4 @@ public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>, ISo
     public virtual List<Image<Workshop>> Images { get; set; }
 
     public bool IsBlocked { get; set; } = false;
-
-    [DataType(DataType.DateTime)]
-    public DateTime UpdatedAt { get; set; }
 }

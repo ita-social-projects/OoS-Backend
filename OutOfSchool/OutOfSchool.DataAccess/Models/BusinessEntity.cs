@@ -1,9 +1,27 @@
 using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OutOfSchool.Services.Models;
 
-public abstract class BusinessEntity<TKey> : IKeyedEntity<TKey>
+public abstract class BusinessEntity : IKeyedEntity<Guid>, ISoftDeleted
 {
+    protected string _createdBy;
+
+    protected string _modifiedBy;
+
+    protected string _deletedBy;
+
+    protected DateTime _createdAt;
+
+    protected DateTime? _updatedAt;
+
+    protected DateTime? _deleteDate;
+
+    protected bool _isSystemProtected = false;
+
+    public Guid Id { get; set; }
+
     public string Document { get; set; }
 
     public string File { get; set; }
@@ -12,19 +30,58 @@ public abstract class BusinessEntity<TKey> : IKeyedEntity<TKey>
 
     public DateOnly ActiveTo { get; set; }
 
-    public User DeletedBy { get; set; }
+    public bool IsBlocked { get; set; } = false;
 
-    public DateTime DeleteDate { get; set; }
+    public bool IsSystemProtected
+    {
+        get { return _isSystemProtected; }
+        private set { _isSystemProtected = value; }
+    }
 
-    public DateTime DateOfCreationInTheSystem { get; set; }
+    [Column(TypeName = "char")]
+    [MaxLength(36)]
+    public string CreatedBy
+    {
+        get { return _createdBy; }
+        private set { _createdBy = value; }
+    }
 
-    public bool IsBlocked { get; set; }
+    [Column(TypeName = "char")]
+    [MaxLength(36)]
+    public string ModifiedBy
+    {
+        get { return _modifiedBy; }
+        private set { _modifiedBy = value; }
+    }
 
-    public User ModifiedBy { get; set; }
+    [Column(TypeName = "char")]
+    [MaxLength(36)]
+    public string DeletedBy
+    {
+        get { return _deletedBy; }
+        private set { _deletedBy = value; }
+    }
 
-    public User CreatedBy { get; set; }
+    [DataType(DataType.DateTime)]
+    public DateTime CreatedAt
+    {
+        get { return _createdAt; }
+        private set { _createdAt = value; }
+    }
 
-    public bool IsSystemProtected { get; set; }
+    [DataType(DataType.DateTime)]
+    public DateTime? UpdatedAt
+    {
+        get { return _updatedAt; }
+        private set { _updatedAt = value; }
+    }
 
-    public TKey Id { get; set; }
+    [DataType(DataType.DateTime)]
+    public DateTime? DeleteDate
+    {
+        get { return _deleteDate; }
+        private set { _deleteDate = value; }
+    }
+
+    public bool IsDeleted { get; set; }
 }

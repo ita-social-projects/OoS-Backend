@@ -79,7 +79,15 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Status, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore())
-            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+            .ForMember(dest => dest.Document, opt => opt.Ignore())
+            .ForMember(dest => dest.File, opt => opt.Ignore())
+            .ForMember(dest => dest.IsSystemProtected, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.DeleteDate, opt => opt.Ignore());
 
         CreateMap<Workshop, WorkshopDto>()
             .IncludeBase<Workshop, WorkshopBaseDto>()

@@ -1,13 +1,11 @@
 #nullable enable
 
-using System.Security.Claims;
 using AutoMapper;
 using Microsoft.Extensions.Options;
-using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 
@@ -15,7 +13,7 @@ namespace OutOfSchool.BusinessLogic.Services;
 
 public class CurrentUserService : ICurrentUserService
 {
-    private readonly ClaimsPrincipal? user;
+    private readonly ICurrentUser currentUser;
     private readonly IParentRepository parentRepository;
     private readonly IEntityRepositorySoftDeleted<Guid, Child> childRepository;
     private readonly IProviderRepository providerRepository;
@@ -26,7 +24,7 @@ public class CurrentUserService : ICurrentUserService
     private readonly IMapper mapper;
 
     public CurrentUserService(
-        ClaimsPrincipal? user,
+        ICurrentUser currentUser,
         IProviderRepository providerRepository,
         IProviderAdminRepository providerAdminRepository,
         IParentRepository parentRepository,
@@ -36,7 +34,7 @@ public class CurrentUserService : ICurrentUserService
         IOptions<AppDefaultsConfig> options,
         IMapper mapper)
     {
-        this.user = user;
+        this.currentUser = currentUser;
         this.providerRepository = providerRepository;
         this.providerAdminRepository = providerAdminRepository;
         this.parentRepository = parentRepository;
@@ -47,21 +45,28 @@ public class CurrentUserService : ICurrentUserService
         this.mapper = mapper;
     }
 
-    public string UserId => user?.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? string.Empty;
+    public string UserId => currentUser.UserId;
 
-    public string UserRole => GettingUserProperties.GetUserRole(user);
+    public string UserRole => currentUser.UserRole;
 
-    public string UserSubRole => GettingUserProperties.GetUserSubrole(user);
+    public string UserSubRole => currentUser.UserSubRole;
+
+    public bool IsInRole(string role) => currentUser.IsInRole(role);
+
+    public bool IsAuthenticated => currentUser.IsAuthenticated;
+
+    public bool HasClaim(string type, Func<string, bool>? valueComparer = null) =>
+        currentUser.HasClaim(type, valueComparer);
 
     public bool IsInRole(Role role) => role switch
     {
-        Role.Provider => user?.IsInRole("provider") ?? false,
-        Role.Parent => user?.IsInRole("parent") ?? false,
-        Role.TechAdmin => user?.IsInRole("techadmin") ?? false,
-        Role.MinistryAdmin => user?.IsInRole("ministryadmin") ?? false,
-        Role.RegionAdmin => user?.IsInRole("regionadmin") ?? false,
-        Role.AreaAdmin => user?.IsInRole("areaadmin") ?? false,
-        Role.Moderator => user?.IsInRole("moderator") ?? false,
+        Role.Provider => IsInRole("provider"),
+        Role.Parent => IsInRole("parent"),
+        Role.TechAdmin => IsInRole("techadmin"),
+        Role.MinistryAdmin => IsInRole("ministryadmin"),
+        Role.RegionAdmin => IsInRole("regionadmin"),
+        Role.AreaAdmin => IsInRole("areaadmin"),
+        Role.Moderator => IsInRole("moderator"),
         _ => throw new NotImplementedException("Role not handled"),
     };
 
@@ -69,7 +74,8 @@ public class CurrentUserService : ICurrentUserService
         IsInRole(Role.Provider) &&
         (IsInSubRole(Subrole.ProviderDeputy) || IsInSubRole(Subrole.ProviderAdmin));
 
-    public bool IsAdmin() => IsInRole(Role.TechAdmin) || IsInRole(Role.MinistryAdmin) || IsInRole(Role.RegionAdmin) || IsInRole(Role.AreaAdmin);
+    public bool IsAdmin() => IsInRole(Role.TechAdmin) || IsInRole(Role.MinistryAdmin) || IsInRole(Role.RegionAdmin) ||
+                             IsInRole(Role.AreaAdmin);
 
     public bool IsTechAdmin() => IsInRole(Role.TechAdmin);
 
@@ -84,7 +90,7 @@ public class CurrentUserService : ICurrentUserService
     public async Task UserHasRights(params IUserRights[] userTypes)
     {
         var userHasRights = false;
-        if (user?.Identity?.IsAuthenticated ?? false)
+        if (IsAuthenticated)
         {
             var parent = userTypes.OfType<ParentRights>().FirstOrDefault();
             var provider = userTypes.OfType<ProviderRights>().FirstOrDefault();
@@ -137,7 +143,8 @@ public class CurrentUserService : ICurrentUserService
         {
             ParentRights parent => ParentHasRights(parent.parentId, parent.childId),
             ProviderAdminRights providerAdmin => ProviderAdminHasRights(providerAdmin.providerAdminId),
-            ProviderAdminWorkshopRights providerAdminWorkshop => ProviderAdminHasWorkshopRights(providerAdminWorkshop.providerId, providerAdminWorkshop.workshopId),
+            ProviderAdminWorkshopRights providerAdminWorkshop => ProviderAdminHasWorkshopRights(
+                providerAdminWorkshop.providerId, providerAdminWorkshop.workshopId),
             ProviderRights provider => ProviderHasRights(provider.providerId),
             ProviderDeputyRights providerDeputy => ProviderDeputyHasRights(providerDeputy.providerId),
             null => Task.FromResult(false),
@@ -327,12 +334,5 @@ public class CurrentUserService : ICurrentUserService
     }
 
     private bool IsInSubRole(Subrole subRole) =>
-        user?.Identities
-            .Any(identity =>
-                identity.HasClaim(claim =>
-                    string.Equals(
-                        claim.Type,
-                        IdentityResourceClaimsTypes.Subrole,
-                        StringComparison.OrdinalIgnoreCase) &&
-                    claim.Value.ToEnum(Subrole.None).Equals(subRole))) ?? false;
+        HasClaim(IdentityResourceClaimsTypes.Subrole, s => s.ToEnum(Subrole.None).Equals(subRole));
 }
