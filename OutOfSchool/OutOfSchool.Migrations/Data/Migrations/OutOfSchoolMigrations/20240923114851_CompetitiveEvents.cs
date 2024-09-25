@@ -6,21 +6,21 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations;
+
+/// <inheritdoc />
+public partial class CompetitiveEvents : Migration
 {
     /// <inheritdoc />
-    public partial class CompetitiveEvents : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<Guid>(
-                name: "CompetitiveEventId",
-                table: "Providers",
-                type: "binary(16)",
-                nullable: true);
+        migrationBuilder.AddColumn<Guid>(
+            name: "CompetitiveEventId",
+            table: "Providers",
+            type: "binary(16)",
+            nullable: true);
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CompetitiveEventRegistrationDeadlines",
                 columns: table => new
                 {
@@ -36,9 +36,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_CompetitiveEventRegistrationDeadlines", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CompetitiveEvents",
                 columns: table => new
                 {
@@ -106,9 +106,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CompetitiveEventAccountingTypes",
                 columns: table => new
                 {
@@ -130,9 +130,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalTable: "CompetitiveEvents",
                         principalColumn: "Id");
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CompetitiveEventCoverages",
                 columns: table => new
                 {
@@ -154,9 +154,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalTable: "CompetitiveEvents",
                         principalColumn: "Id");
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CompetitiveEventDescriptionItems",
                 columns: table => new
                 {
@@ -178,236 +178,235 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.InsertData(
-                table: "CompetitiveEventAccountingTypes",
-                columns: new[] { "Id", "CompetitiveEventId", "Title", "TitleEn" },
-                values: new object[,]
-                {
-                    { 1, null, "Освітній проєкт", "Educational project" },
-                    { 2, null, "Конкурс (не має етапів)", "Competition" },
-                    { 3, null, "Основний конкурс (має мати підпорядковані конкурси-етапи)", "Main competition" },
-                    { 4, null, "Етап конкурсу (має мати батьківський основний конкурс)", "Contest stage" }
-                });
+        migrationBuilder.InsertData(
+            table: "CompetitiveEventAccountingTypes",
+            columns: new[] { "Id", "CompetitiveEventId", "Title", "TitleEn" },
+            values: new object[,]
+            {
+                { 1, null, "Освітній проєкт", "Educational project" },
+                { 2, null, "Конкурс (не має етапів)", "Competition" },
+                { 3, null, "Основний конкурс (має мати підпорядковані конкурси-етапи)", "Main competition" },
+                { 4, null, "Етап конкурсу (має мати батьківський основний конкурс)", "Contest stage" }
+            });
 
-            migrationBuilder.InsertData(
-                table: "CompetitiveEventCoverages",
-                columns: new[] { "Id", "CompetitiveEventId", "Title", "TitleEn" },
-                values: new object[,]
-                {
-                    { 1, null, "Локальний (Шкільний)", "Local (School)" },
-                    { 2, null, "Міський", "City" },
-                    { 3, null, "Районний", "Raional" },
-                    { 4, null, "Обласний", "Regional" },
-                    { 5, null, "Всеукраїнський", "All-Ukrainian" },
-                    { 6, null, "Міжнародний", "International" }
-                });
+        migrationBuilder.InsertData(
+            table: "CompetitiveEventCoverages",
+            columns: new[] { "Id", "CompetitiveEventId", "Title", "TitleEn" },
+            values: new object[,]
+            {
+                { 1, null, "Локальний (Шкільний)", "Local (School)" },
+                { 2, null, "Міський", "City" },
+                { 3, null, "Районний", "Raional" },
+                { 4, null, "Обласний", "Regional" },
+                { 5, null, "Всеукраїнський", "All-Ukrainian" },
+                { 6, null, "Міжнародний", "International" }
+            });
 
-            migrationBuilder.InsertData(
-                table: "CompetitiveEventRegistrationDeadlines",
-                columns: new[] { "Id", "Title", "TitleEn" },
-                values: new object[,]
-                {
-                    { 1, "Постійно (протягом року)", "Constantly (during the year)" },
-                    { 2, "Певний місяць або місяці року", "A certain month or months of the year" }
-                });
+        migrationBuilder.InsertData(
+            table: "CompetitiveEventRegistrationDeadlines",
+            columns: new[] { "Id", "Title", "TitleEn" },
+            values: new object[,]
+            {
+                { 1, "Постійно (протягом року)", "Constantly (during the year)" },
+                { 2, "Певний місяць або місяці року", "A certain month or months of the year" }
+            });
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 1L,
-                column: "PackedPermissions",
-                value: "ZGVmAwIBBAoLDQweIB8hKCkrLBc0MzI1Nzg+PTw/SEdJRlBRW11cXnJwcW9ufHp7eXh9kI6PjYyRVGeW");
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 1L,
+            column: "PackedPermissions",
+            value: "ZGVmAwIBBAoLDQweIB8hKCkrLBc0MzI1Nzg+PTw/SEdJRlBRW11cXnJwcW9ufHp7eXh9kI6PjYyRVGeW");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 2L,
-                column: "PackedPermissions",
-                value: "ZQMCAQQKCzQzMjU2SEdJRlBRW11cVJaYl5k=");
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 2L,
+            column: "PackedPermissions",
+            value: "ZQMCAQQKCzQzMjU2SEdJRlBRW11cVJaYl5k=");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 3L,
-                column: "PackedPermissions",
-                value: "ZQMKCwwUFhUXHiAfISgpKz49PFBRVJY=");
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 3L,
+            column: "PackedPermissions",
+            value: "ZQMKCwwUFhUXHiAfISgpKz49PFBRVJY=");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 4L,
-                column: "PackedPermissions",
-                value: "ZQMCAQQKCzI2SEdJRlBRW1xUlg==");
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 4L,
+            column: "PackedPermissions",
+            value: "ZQMCAQQKCzI2SEdJRlBRW1xUlg==");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 5L,
-                column: "PackedPermissions",
-                value: "ZWYDAgEECjI1NzgoLBRQUUZUblteenh5e32OjI2PkWeW");
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 5L,
+            column: "PackedPermissions",
+            value: "ZWYDAgEECjI1NzgoLBRQUUZUblteenh5e32OjI2PkWeW");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 6L,
-                column: "PackedPermissions",
-                value: "ZWYDAgEECjI1NzgoFFBRRlR4eY6MjY+RW15nlg==");
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 6L,
+            column: "PackedPermissions",
+            value: "ZWYDAgEECjI1NzgoFFBRRlR4eY6MjY+RW15nlg==");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 7L,
-                column: "PackedPermissions",
-                value: "ZWYDAgEECjI1NzgoFFBRRlSMjVteZ5Y=");
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 7L,
+            column: "PackedPermissions",
+            value: "ZWYDAgEECjI1NzgoFFBRRlSMjVteZ5Y=");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_CompetitiveEventId",
-                table: "Providers",
-                column: "CompetitiveEventId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_CompetitiveEventId",
+            table: "Providers",
+            column: "CompetitiveEventId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEventAccountingTypes_CompetitiveEventId",
-                table: "CompetitiveEventAccountingTypes",
-                column: "CompetitiveEventId");
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEventAccountingTypes_CompetitiveEventId",
+            table: "CompetitiveEventAccountingTypes",
+            column: "CompetitiveEventId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEventAccountingTypes_IsDeleted",
-                table: "CompetitiveEventAccountingTypes",
-                column: "IsDeleted");
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEventAccountingTypes_IsDeleted",
+            table: "CompetitiveEventAccountingTypes",
+            column: "IsDeleted");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEventCoverages_CompetitiveEventId",
-                table: "CompetitiveEventCoverages",
-                column: "CompetitiveEventId");
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEventCoverages_CompetitiveEventId",
+            table: "CompetitiveEventCoverages",
+            column: "CompetitiveEventId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEventCoverages_IsDeleted",
-                table: "CompetitiveEventCoverages",
-                column: "IsDeleted");
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEventCoverages_IsDeleted",
+            table: "CompetitiveEventCoverages",
+            column: "IsDeleted");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEventDescriptionItems_CompetitiveEventId",
-                table: "CompetitiveEventDescriptionItems",
-                column: "CompetitiveEventId");
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEventDescriptionItems_CompetitiveEventId",
+            table: "CompetitiveEventDescriptionItems",
+            column: "CompetitiveEventId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEventDescriptionItems_IsDeleted",
-                table: "CompetitiveEventDescriptionItems",
-                column: "IsDeleted");
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEventDescriptionItems_IsDeleted",
+            table: "CompetitiveEventDescriptionItems",
+            column: "IsDeleted");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEventRegistrationDeadlines_IsDeleted",
-                table: "CompetitiveEventRegistrationDeadlines",
-                column: "IsDeleted");
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEventRegistrationDeadlines_IsDeleted",
+            table: "CompetitiveEventRegistrationDeadlines",
+            column: "IsDeleted");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEvents_CategoryId",
-                table: "CompetitiveEvents",
-                column: "CategoryId");
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEvents_CategoryId",
+            table: "CompetitiveEvents",
+            column: "CategoryId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEvents_IsDeleted",
-                table: "CompetitiveEvents",
-                column: "IsDeleted");
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEvents_IsDeleted",
+            table: "CompetitiveEvents",
+            column: "IsDeleted");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEvents_OrganizerOfTheEventId",
-                table: "CompetitiveEvents",
-                column: "OrganizerOfTheEventId");
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEvents_OrganizerOfTheEventId",
+            table: "CompetitiveEvents",
+            column: "OrganizerOfTheEventId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEvents_ParentId",
-                table: "CompetitiveEvents",
-                column: "ParentId");
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEvents_ParentId",
+            table: "CompetitiveEvents",
+            column: "ParentId");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Providers_CompetitiveEvents_CompetitiveEventId",
-                table: "Providers",
-                column: "CompetitiveEventId",
-                principalTable: "CompetitiveEvents",
-                principalColumn: "Id");
-        }
+        migrationBuilder.AddForeignKey(
+            name: "FK_Providers_CompetitiveEvents_CompetitiveEventId",
+            table: "Providers",
+            column: "CompetitiveEventId",
+            principalTable: "CompetitiveEvents",
+            principalColumn: "Id");
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Providers_CompetitiveEvents_CompetitiveEventId",
-                table: "Providers");
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropForeignKey(
+            name: "FK_Providers_CompetitiveEvents_CompetitiveEventId",
+            table: "Providers");
 
-            migrationBuilder.DropTable(
-                name: "CompetitiveEventAccountingTypes");
+        migrationBuilder.DropTable(
+            name: "CompetitiveEventAccountingTypes");
 
-            migrationBuilder.DropTable(
-                name: "CompetitiveEventCoverages");
+        migrationBuilder.DropTable(
+            name: "CompetitiveEventCoverages");
 
-            migrationBuilder.DropTable(
-                name: "CompetitiveEventDescriptionItems");
+        migrationBuilder.DropTable(
+            name: "CompetitiveEventDescriptionItems");
 
-            migrationBuilder.DropTable(
-                name: "CompetitiveEventRegistrationDeadlines");
+        migrationBuilder.DropTable(
+            name: "CompetitiveEventRegistrationDeadlines");
 
-            migrationBuilder.DropTable(
-                name: "CompetitiveEvents");
+        migrationBuilder.DropTable(
+            name: "CompetitiveEvents");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Providers_CompetitiveEventId",
-                table: "Providers");
+        migrationBuilder.DropIndex(
+            name: "IX_Providers_CompetitiveEventId",
+            table: "Providers");
 
-            migrationBuilder.DropColumn(
-                name: "CompetitiveEventId",
-                table: "Providers");
+        migrationBuilder.DropColumn(
+            name: "CompetitiveEventId",
+            table: "Providers");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 1L,
-                column: "PackedPermissions",
-                value: "ZGVmAwIBBAoLDQweIB8hKCkrLBc0MzI1Nzg+PTw/SEdJRlBRW11cXnJwcW9ufHp7eXh9kI6PjYyRVGc=");
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 1L,
+            column: "PackedPermissions",
+            value: "ZGVmAwIBBAoLDQweIB8hKCkrLBc0MzI1Nzg+PTw/SEdJRlBRW11cXnJwcW9ufHp7eXh9kI6PjYyRVGc=");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 2L,
-                column: "PackedPermissions",
-                value: "ZQMCAQQKCzQzMjU2SEdJRlBRW11cVA==");
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 2L,
+            column: "PackedPermissions",
+            value: "ZQMCAQQKCzQzMjU2SEdJRlBRW11cVA==");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 3L,
-                column: "PackedPermissions",
-                value: "ZQMKCwwUFhUXHiAfISgpKz49PFBRVA==");
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 3L,
+            column: "PackedPermissions",
+            value: "ZQMKCwwUFhUXHiAfISgpKz49PFBRVA==");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 4L,
-                column: "PackedPermissions",
-                value: "ZQMCAQQKCzI2SEdJRlBRW1xU");
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 4L,
+            column: "PackedPermissions",
+            value: "ZQMCAQQKCzI2SEdJRlBRW1xU");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 5L,
-                column: "PackedPermissions",
-                value: "ZWYDAgEECjI1NzgoLBRQUUZUblteenh5e32OjI2PkWc=");
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 5L,
+            column: "PackedPermissions",
+            value: "ZWYDAgEECjI1NzgoLBRQUUZUblteenh5e32OjI2PkWc=");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 6L,
-                column: "PackedPermissions",
-                value: "ZWYDAgEECjI1NzgoFFBRRlR4eY6MjY+RW15n");
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 6L,
+            column: "PackedPermissions",
+            value: "ZWYDAgEECjI1NzgoFFBRRlR4eY6MjY+RW15n");
 
-            migrationBuilder.UpdateData(
-                table: "PermissionsForRoles",
-                keyColumn: "Id",
-                keyValue: 7L,
-                column: "PackedPermissions",
-                value: "ZWYDAgEECjI1NzgoFFBRRlSMjVteZw==");
-        }
+        migrationBuilder.UpdateData(
+            table: "PermissionsForRoles",
+            keyColumn: "Id",
+            keyValue: 7L,
+            column: "PackedPermissions",
+            value: "ZWYDAgEECjI1NzgoFFBRRlSMjVteZw==");
     }
 }
