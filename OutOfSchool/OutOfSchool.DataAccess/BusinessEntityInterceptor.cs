@@ -52,7 +52,7 @@ public class BusinessEntityInterceptor : SaveChangesInterceptor
         var userId = currentUser?.UserId ?? string.Empty;
 
         var businessEntries = context.ChangeTracker.Entries()
-            .Where(entity => entity.GetType().IsSubclassOf(typeof(BusinessEntity)));
+            .Where(entry => entry.Entity is BusinessEntity);
 
         foreach (var entry in businessEntries)
         {

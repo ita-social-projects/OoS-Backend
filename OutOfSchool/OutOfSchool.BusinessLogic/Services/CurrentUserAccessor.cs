@@ -15,17 +15,17 @@ public class CurrentUserAccessor : ICurrentUser
         this.user = user;
     }
 
-    public string UserId => user?.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? string.Empty;
+    public string UserId => GettingUserProperties.GetUserId(user) ?? string.Empty;
 
-    public string UserRole => GettingUserProperties.GetUserRole(user);
+    public string UserRole => GettingUserProperties.GetUserRole(user) ?? string.Empty;
 
-    public string UserSubRole => GettingUserProperties.GetUserSubrole(user);
+    public string UserSubRole => GettingUserProperties.GetUserSubrole(user) ?? string.Empty;
 
     public bool IsInRole(string role) => user?.IsInRole(role) ?? false;
 
     public bool IsAuthenticated => user?.Identity?.IsAuthenticated ?? false;
 
-    public bool HasClaim(string type, Func<string, bool>? valueComparer) =>
+    public bool HasClaim(string type, Func<string, bool>? valueComparer = null) =>
         user?.Identities
             .Any(identity =>
                 identity.HasClaim(claim =>

@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -33,28 +32,56 @@ public abstract class BusinessEntity : IKeyedEntity<Guid>, ISoftDeleted
 
     public bool IsBlocked { get; set; } = false;
 
-    public bool IsSystemProtected => _isSystemProtected;
+    public bool IsSystemProtected
+    {
+        get { return _isSystemProtected; }
+        private set { _isSystemProtected = value; }
+    }
 
     [Column(TypeName = "char")]
     [MaxLength(36)]
-    public string CreatedBy => _createdBy;
+    public string CreatedBy
+    {
+        get { return _createdBy; }
+        private set { _createdBy = value; }
+    }
 
     [Column(TypeName = "char")]
     [MaxLength(36)]
-    public string ModifiedBy => _modifiedBy;
+    public string ModifiedBy
+    {
+        get { return _modifiedBy; }
+        private set { _modifiedBy = value; }
+    }
 
     [Column(TypeName = "char")]
     [MaxLength(36)]
-    public string DeletedBy => _deletedBy;
+    public string DeletedBy
+    {
+        get { return _deletedBy; }
+        private set { _deletedBy = value; }
+    }
 
     [DataType(DataType.DateTime)]
-    public DateTime CreatedAt => _createdAt;
+    public DateTime CreatedAt
+    {
+        get { return _createdAt; }
+        private set { _createdAt = value; }
+    }
 
     [DataType(DataType.DateTime)]
-    public DateTime? UpdatedAt => _updatedAt;
+    public DateTime? UpdatedAt
+    {
+        get { return _updatedAt; }
+        private set { _updatedAt = value; }
+    }
 
     [DataType(DataType.DateTime)]
-    public DateTime? DeleteDate => _deleteDate;
+    public DateTime? DeleteDate
+    {
+        get { return _deleteDate; }
+        private set { _deleteDate = value; }
+    }
 
     public bool IsDeleted { get; set; }
 }
