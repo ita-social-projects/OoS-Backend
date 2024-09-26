@@ -145,8 +145,6 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
     /// <inheritdoc/>
     public async Task<bool> PartialUpdate(Guid id, IPartial<WorkshopES> partialWorkshop)
     {
-        ArgumentNullException.ThrowIfNull(id);
-
         var responce = await esProvider.PartialUpdateEntityAsync(id, partialWorkshop).ConfigureAwait(false);
 
         if (responce == Result.Updated)

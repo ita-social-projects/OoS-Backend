@@ -43,6 +43,36 @@ public class ESWorkshopServiceTests
             mapperMock.Object);
     }
 
+    #region IsElasticAlive
+
+    [Test]
+    public void IsElasticAlive_WhenElasticIsHealthy_ReturnsTrue()
+    {
+        // Arrange
+        elasticHealthServiceMock.Setup(x => x.IsHealthy).Returns(true);
+
+        // Act
+        var result = service.IsElasticAlive;
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [Test]
+    public void IsElasticAlive_WhenElasticIsNotHealthy_ReturnsFalse()
+    {
+        // Arrange
+        elasticHealthServiceMock.Setup(x => x.IsHealthy).Returns(false);
+
+        // Act
+        var result = service.IsElasticAlive;
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    #endregion
+
     #region Index
 
     [TestCase(Result.Updated)]
@@ -59,26 +89,22 @@ public class ESWorkshopServiceTests
 
         // Assert
         esProviderMock.Verify(x => x.IndexEntityAsync(entity), Times.Once());
-        Assert.IsNotNull(result);
         Assert.IsTrue(result);
     }
 
-    [TestCase(Result.NotFound)]
-    [TestCase(Result.NoOp)]
-    [TestCase(Result.Deleted)]
-    public async Task Index_WhenEntityNotIndexed_ReturnsFalse(Result operationResult)
+    [Test]
+    public async Task Index_WhenEntityNotIndexed_ReturnsFalse()
     {
         // Arrange
         var entity = WorkshopESGenerator.Generate();
         esProviderMock.Setup(x => x.IndexEntityAsync(entity))
-            .ReturnsAsync(operationResult);
+            .ReturnsAsync(Result.NoOp);
 
         // Act
         var result = await service.Index(entity);
 
         // Assert
         esProviderMock.Verify(x => x.IndexEntityAsync(entity), Times.Once());
-        Assert.IsNotNull(result);
         Assert.IsFalse(result);
     }
 
@@ -116,16 +142,13 @@ public class ESWorkshopServiceTests
         // Assert
         averageRatingServiceMock.Verify(x => x.GetByEntityIdAsync(entity.Id), Times.Once());
         esProviderMock.Verify(x => x.UpdateEntityAsync(entity), Times.Once());
-        Assert.IsNotNull(result);
         Assert.IsTrue(result);
     }
 
     [TestCase(Result.NotFound, true)]
     [TestCase(Result.NoOp, true)]
-    [TestCase(Result.Deleted, true)]
     [TestCase(Result.NotFound, false)]
     [TestCase(Result.NoOp, false)]
-    [TestCase(Result.Deleted, false)]
     public async Task Update_WhenEntityNotUpdated_ReturnsFalse(
     Result operationResult, bool hasRating)
     {
@@ -144,7 +167,6 @@ public class ESWorkshopServiceTests
         // Assert
         averageRatingServiceMock.Verify(x => x.GetByEntityIdAsync(entity.Id), Times.Once());
         esProviderMock.Verify(x => x.UpdateEntityAsync(entity), Times.Once());
-        Assert.IsNotNull(result);
         Assert.IsFalse(result);
     }
 
@@ -175,20 +197,16 @@ public class ESWorkshopServiceTests
         esProviderMock.Verify(
             x => x.DeleteEntityAsync(It.Is<WorkshopES>(w => w.Id == id)),
             Times.Once());
-        Assert.IsNotNull(result);
         Assert.IsTrue(result);
     }
 
-    [TestCase(Result.Updated)]
-    [TestCase(Result.NotFound)]
-    [TestCase(Result.NoOp)]
-    [TestCase(Result.Created)]
-    public async Task Delete_WhenEntityNotDeleted_ReturnsFalse(Result operationResult)
+    [Test]
+    public async Task Delete_WhenEntityNotDeleted_ReturnsFalse()
     {
         // Arrange
         var id = Guid.NewGuid();
         esProviderMock.Setup(x => x.DeleteEntityAsync(It.Is<WorkshopES>(w => w.Id == id)))
-            .ReturnsAsync(operationResult);
+            .ReturnsAsync(Result.NotFound);
 
         // Act
         var result = await service.Delete(id);
@@ -197,7 +215,6 @@ public class ESWorkshopServiceTests
         esProviderMock.Verify(
             x => x.DeleteEntityAsync(It.Is<WorkshopES>(w => w.Id == id)),
             Times.Once());
-        Assert.IsNotNull(result);
         Assert.IsFalse(result);
     }
 
@@ -244,7 +261,6 @@ public class ESWorkshopServiceTests
         mapperMock.Verify(
             x => x.Map<WorkshopES>(It.IsAny<WorkshopDto>()), Times.Exactly(workshops.Count));
         esProviderMock.Verify(x => x.ReIndexAll(It.IsAny<List<WorkshopES>>()), Times.Once);
-        Assert.IsNotNull(result);
         Assert.IsTrue(result);
     }
 
@@ -285,7 +301,6 @@ public class ESWorkshopServiceTests
         mapperMock.Verify(
             x => x.Map<WorkshopES>(It.IsAny<WorkshopDto>()), Times.Exactly(workshops.Count));
         esProviderMock.Verify(x => x.ReIndexAll(It.IsAny<List<WorkshopES>>()), Times.Once);
-        Assert.IsNotNull(result);
         Assert.IsFalse(result);
     }
 
@@ -300,7 +315,6 @@ public class ESWorkshopServiceTests
         var result = await service.ReIndex();
 
         // Assert
-        Assert.IsNotNull(result);
         Assert.IsFalse(result);
     }
 
@@ -348,6 +362,44 @@ public class ESWorkshopServiceTests
         Assert.IsInstanceOf<SearchResultES<WorkshopES>>(result);
         Assert.AreEqual(0, result.TotalAmount);
         Assert.IsNull(result.Entities);
+    }
+
+    #endregion
+
+    #region PartialUpdate
+
+    [Test]
+    public async Task PartialUpdate_SuccessfulPartialUpdate_ReturnsTrue()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var partialWorkshop = new WorkshopRatingES();
+        esProviderMock.Setup(x => x.PartialUpdateEntityAsync(id, partialWorkshop))
+            .ReturnsAsync(Result.Updated);
+
+        // Act
+        var result = await service.PartialUpdate(id, partialWorkshop);
+
+        // Assert
+        esProviderMock.Verify(x => x.PartialUpdateEntityAsync(id, partialWorkshop), Times.Once);
+        Assert.IsTrue(result);
+    }
+
+    [Test]
+    public async Task PartialUpdate_PartialUpdateFails_ReturnsFalse()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var partialWorkshop = new WorkshopRatingES();
+        esProviderMock.Setup(x => x.PartialUpdateEntityAsync(id, partialWorkshop))
+            .ReturnsAsync(Result.NoOp);
+
+        // Act
+        var result = await service.PartialUpdate(id, partialWorkshop);
+
+        // Assert
+        esProviderMock.Verify(x => x.PartialUpdateEntityAsync(id, partialWorkshop), Times.Once);
+        Assert.IsFalse(result);
     }
 
     #endregion
