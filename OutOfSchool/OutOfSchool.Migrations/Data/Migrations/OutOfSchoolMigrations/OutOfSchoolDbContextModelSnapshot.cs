@@ -2331,6 +2331,27 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("InstitutionHierarchies");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.Tag", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Tags");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Teacher", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2707,6 +2728,21 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("ProviderAdminsUserId");
 
                     b.ToTable("ProviderAdminWorkshop");
+                });
+
+            modelBuilder.Entity("TagWorkshop", b =>
+                {
+                    b.Property<long>("TagsId")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("WorkshopsId")
+                        .HasColumnType("binary(16)");
+
+                    b.HasKey("TagsId", "WorkshopsId");
+
+                    b.HasIndex("WorkshopsId");
+
+                    b.ToTable("TagWorkshop");
                 });
 
             modelBuilder.Entity("AchievementChild", b =>
@@ -3363,6 +3399,21 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasOne("OutOfSchool.Services.Models.ProviderAdmin", null)
                         .WithMany()
                         .HasForeignKey("ProviderAdminsUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TagWorkshop", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Tag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.Workshop", null)
+                        .WithMany()
+                        .HasForeignKey("WorkshopsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
