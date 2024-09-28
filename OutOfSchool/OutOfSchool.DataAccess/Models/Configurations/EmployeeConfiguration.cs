@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace OutOfSchool.Services.Models.Configurations;
 
-internal class ProviderAdminConfiguration : IEntityTypeConfiguration<ProviderAdmin>
+internal class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
 {
-    public void Configure(EntityTypeBuilder<ProviderAdmin> builder)
+    public void Configure(EntityTypeBuilder<Employee> builder)
     {
         builder.HasKey(x => x.UserId);
 
@@ -16,10 +16,7 @@ internal class ProviderAdminConfiguration : IEntityTypeConfiguration<ProviderAdm
         builder.Property(x => x.ProviderId)
             .IsRequired();
 
-        builder.Property(x => x.IsDeputy)
-            .IsRequired();
-
         builder.HasMany(x => x.ManagedWorkshops)
-            .WithMany(x => x.ProviderAdmins);
+            .WithMany(x => x.Employees);
     }
 }

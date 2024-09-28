@@ -4,21 +4,19 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models;
 
-public class ProviderAdminChangesLog : IKeyedEntity<long>
+public class EmployeeChangesLog : IKeyedEntity<long>
 {
     public long Id { get; set; }
 
     [Required]
-    public string ProviderAdminUserId { get; set; }
+    public string EmployeeUserId { get; set; }
 
-    public virtual User ProviderAdminUser { get; set; }
+    public virtual User EmployeeUser { get; set; }
 
     [Required]
     public Guid ProviderId { get; set; }
 
     public virtual Provider Provider { get; set; }
-
-    public bool IsDeputy { get; set; }
 
     [Required]
     public OperationType OperationType { get; set; }

@@ -24,7 +24,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<Provider> Providers { get; set; }
 
-    public DbSet<ProviderAdmin> ProviderAdmins { get; set; }
+    public DbSet<Employee> Employees { get; set; }
 
     public DbSet<ChatRoomWorkshop> ChatRoomWorkshops { get; set; }
 
@@ -84,7 +84,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<ChangesLog> ChangesLog { get; set; }
 
-    public DbSet<ProviderAdminChangesLog> ProviderAdminChangesLog { get; set; }
+    public DbSet<EmployeeChangesLog> EmployeeChangesLog { get; set; }
 
     public DbSet<CATOTTG> CATOTTGs { get; set; }
 
@@ -165,7 +165,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new NotificationConfiguration());
         builder.ApplyConfiguration(new OperationWithObjectConfiguration());
         builder.ApplyConfiguration(new ParentConfiguration());
-        builder.ApplyConfiguration(new ProviderAdminConfiguration());
+        builder.ApplyConfiguration(new EmployeeConfiguration());
         builder.ApplyConfiguration(new ProviderConfiguration());
         builder.ApplyConfiguration(new ProviderSectionItemConfiguration());
         builder.ApplyConfiguration(new QuartzJobConfiguration());

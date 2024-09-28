@@ -9,28 +9,28 @@ using OutOfSchool.Services.Repository.Base;
 
 namespace OutOfSchool.Services.Repository;
 
-public class ProviderAdminRepository : EntityRepositorySoftDeleted<(string, Guid), ProviderAdmin>, IProviderAdminRepository
+public class EmployeeRepository : EntityRepositorySoftDeleted<(string, Guid), Employee>, IEmployeeRepository
 {
     private readonly OutOfSchoolDbContext db;
 
-    public ProviderAdminRepository(OutOfSchoolDbContext dbContext)
+    public EmployeeRepository(OutOfSchoolDbContext dbContext)
         : base(dbContext)
     {
         db = dbContext;
     }
 
-    public async Task<ProviderAdmin?> GetByIdAsync(string userId, Guid providerId)
+    public async Task<Employee?> GetByIdAsync(string userId, Guid providerId)
     {
-        return await db.ProviderAdmins
+        return await db.Employees
             .Where(pa => pa.ProviderId == providerId && !pa.IsDeleted)
             .SingleOrDefaultAsync(pa => pa.UserId == userId);
     }
 
-    public async Task<bool> IsExistProviderAdminDeputyWithUserIdAsync(Guid providerId, string userId)
+    public async Task<bool> IsExistEmployeeWithUserIdAsync(Guid providerId, string userId)
     {
-        var providerAdmin = await GetByIdAsync(userId, providerId);
+        var employee = await GetByIdAsync(userId, providerId);
 
-        return providerAdmin != null && providerAdmin.IsDeputy;
+        return employee != null;
     }
 
     public async Task<bool> IsExistProviderWithUserIdAsync(string userId)
@@ -49,18 +49,18 @@ public class ProviderAdminRepository : EntityRepositorySoftDeleted<(string, Guid
         return provider;
     }
 
-    public async Task AddRelatedWorkshopForAssistant(string userId, Guid workshopId)
+    public async Task AddRelatedWorkshopForEmployee(string userId, Guid workshopId)
     {
-        var providerAdmin = await db.ProviderAdmins.SingleOrDefaultAsync(p => p.UserId == userId);
+        var employee = await db.Employees.SingleOrDefaultAsync(p => p.UserId == userId);
         var workshopToUpdate = await db.Workshops.SingleOrDefaultAsync(w => w.Id == workshopId);
-        workshopToUpdate.ProviderAdmins = new List<ProviderAdmin> { providerAdmin };
+        workshopToUpdate.Employees = new List<Employee> { employee };
         db.Update(workshopToUpdate);
         await db.SaveChangesAsync();
     }
 
-    public async Task<int> GetNumberProviderAdminsAsync(Guid providerId)
+    public async Task<int> GetNumberEmployeesAsync(Guid providerId)
     {
-        return await db.ProviderAdmins
+        return await db.Employees
             .CountAsync(pa => pa.ProviderId == providerId && !pa.IsDeleted);
     }
 }

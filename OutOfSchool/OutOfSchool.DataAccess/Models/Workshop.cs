@@ -110,7 +110,7 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
 
     public virtual Address Address { get; set; }
 
-    public virtual List<ProviderAdmin> ProviderAdmins { get; set; }
+    public virtual List<Employee> Employees { get; set; }
 
     public virtual List<Teacher> Teachers { get; set; }
 
