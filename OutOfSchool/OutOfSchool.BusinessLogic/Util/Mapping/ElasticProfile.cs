@@ -1,3 +1,4 @@
+using AutoMapper;
 using Nest;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;

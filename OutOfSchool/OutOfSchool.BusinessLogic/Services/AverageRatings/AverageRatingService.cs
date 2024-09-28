@@ -45,6 +45,7 @@ public class AverageRatingService : IAverageRatingService
         logger.LogInformation("Getting the average rating by workshop's or provider's id started.");
 
         var rating = (await averageRatingRepository.GetByFilter(r => r.EntityId == entityId).ConfigureAwait(false)).SingleOrDefault();
+        rating.Rate = (float)Math.Round(rating.Rate);
 
         logger.LogInformation("Getting the average rating by workshop's or provider's id finished.");
 
