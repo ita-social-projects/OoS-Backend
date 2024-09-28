@@ -9,4 +9,5 @@ public enum Role
     RegionAdmin,
     AreaAdmin,
     Moderator,
+    Employee,
 }

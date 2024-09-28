@@ -8,7 +8,7 @@ internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
 {
     public override void Configure(EntityTypeBuilder<Workshop> builder)
     {
-        builder.HasMany(x => x.ProviderAdmins)
+        builder.HasMany(x => x.Employees)
             .WithMany(x => x.ManagedWorkshops);
 
         builder.HasMany(x => x.WorkshopDescriptionItems)

@@ -203,7 +203,7 @@ public static class ModelBuilderExtension
                 Id = 4,
                 RoleName = nameof(Role.Provider) + Constants.AdminKeyword,
                 PackedPermissions = PermissionsSeeder.SeedPermissions(nameof(Role.Provider) + Constants.AdminKeyword),
-                Description = "provider admin permissions",
+                Description = "employee permissions",
             },
             new PermissionsForRole
             {

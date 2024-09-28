@@ -138,7 +138,7 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISo
 
     public virtual Institution Institution { get; set; }
 
-    public virtual ICollection<ProviderAdmin> ProviderAdmins { get; set; }
+    public virtual ICollection<Employee> Employees { get; set; }
 
     [Required]
     public InstitutionType InstitutionType { get; set; }
