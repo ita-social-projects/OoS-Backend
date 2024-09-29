@@ -29,17 +29,17 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
     }
 
     /// <inheritdoc/>
-    public async Task<Either<ErrorResponse, CreateProviderAdminDto>> CreateProviderAdminAsync(
+    public async Task<Either<ErrorResponse, CreateEmployeeDto>> CreateProviderAdminAsync(
         string userId,
-        CreateProviderAdminDto providerAdminDto,
+        CreateEmployeeDto employeeDto,
         string token)
     {
         var request = new Request()
         {
             HttpMethodType = HttpMethodType.Post,
-            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.CreateProviderAdmin),
+            Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.CreateEmployee),
             Token = token,
-            Data = providerAdminDto,
+            Data = employeeDto,
         };
 
         Logger.LogDebug(
@@ -60,7 +60,7 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonSerializerHelper.Deserialize<CreateProviderAdminDto>(result.Result.ToString())
+                ? JsonSerializerHelper.Deserialize<CreateEmployeeDto>(result.Result.ToString())
                 : null);
     }
 }

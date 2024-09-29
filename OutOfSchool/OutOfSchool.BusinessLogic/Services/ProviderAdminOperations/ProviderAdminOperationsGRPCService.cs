@@ -31,12 +31,12 @@ public class ProviderAdminOperationsGRPCService : IProviderAdminOperationsServic
     }
 
     /// <inheritdoc/>
-    public async Task<Either<ErrorResponse, CreateProviderAdminDto>> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto, string token)
+    public async Task<Either<ErrorResponse, CreateEmployeeDto>> CreateProviderAdminAsync(string userId, CreateEmployeeDto employeeDto, string token)
     {
         using var channel = gRPCCommonService.CreateAuthenticatedChannel(token);
         var client = new GRPCProviderAdmin.GRPCProviderAdminClient(channel);
 
-        var createProviderAdminRequest = mapper.Map<CreateProviderAdminRequest>(providerAdminDto);
+        var createProviderAdminRequest = mapper.Map<CreateProviderAdminRequest>(employeeDto);
 
         string requestId = Guid.NewGuid().ToString();
         createProviderAdminRequest.RequestId = requestId;
@@ -50,7 +50,7 @@ public class ProviderAdminOperationsGRPCService : IProviderAdminOperationsServic
 
             if (reply.IsSuccess)
             {
-                return mapper.Map<CreateProviderAdminDto>(reply);
+                return mapper.Map<CreateEmployeeDto>(reply);
             }
             else
             {

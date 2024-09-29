@@ -51,7 +51,7 @@ public class WorkshopControllerTests
     private WorkshopController controller;
     private Mock<IWorkshopServicesCombiner> workshopServiceMoq;
     private Mock<IProviderService> providerServiceMoq;
-    private Mock<IProviderAdminService> providerAdminService;
+    private Mock<IEmployeeService> providerAdminService;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<IUserService> userServiceMoq;
     private Mock<ILogger<WorkshopController>> loggerMoq;
@@ -96,8 +96,9 @@ public class WorkshopControllerTests
     {
         workshopServiceMoq = new Mock<IWorkshopServicesCombiner>();
         providerServiceMoq = new Mock<IProviderService>();
-        providerAdminService = new Mock<IProviderAdminService>();
+        providerAdminService = new Mock<IEmployeeService>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
+        providerAdminService = new Mock<IEmployeeService>();
         userServiceMoq = new Mock<IUserService>();
         loggerMoq = new Mock<ILogger<WorkshopController>>();
 

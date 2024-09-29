@@ -43,11 +43,11 @@ public class ProviderServiceV2Tests
     private ProviderServiceV2 providerService;
 
     private Mock<IProviderRepository> providersRepositoryMock;
-    private Mock<IProviderAdminRepository> providerAdminRepositoryMock;
+    private Mock<IEmployeeRepository> providerAdminRepositoryMock;
     private Mock<IEntityRepositorySoftDeleted<string, User>> usersRepositoryMock;
     private IMapper mapper;
     private Mock<INotificationService> notificationService;
-    private Mock<IProviderAdminService> providerAdminService;
+    private Mock<IEmployeeService> providerAdminService;
     private Mock<IInstitutionAdminRepository> institutionAdminRepositoryMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
@@ -73,7 +73,7 @@ public class ProviderServiceV2Tests
         providersRepositoryMock = ProviderTestsHelper.CreateProvidersRepositoryMock(fakeProviders);
 
         // TODO: configure mock and writer tests for provider admins
-        providerAdminRepositoryMock = new Mock<IProviderAdminRepository>();
+        providerAdminRepositoryMock = new Mock<IEmployeeRepository>();
         usersRepositoryMock = ProviderTestsHelper.CreateUsersRepositoryMock(fakeUser);
         var addressRepo = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
@@ -81,7 +81,7 @@ public class ProviderServiceV2Tests
         var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
         var changesLogService = new Mock<IChangesLogService>();
         notificationService = new Mock<INotificationService>(MockBehavior.Strict);
-        providerAdminService = new Mock<IProviderAdminService>();
+        providerAdminService = new Mock<IEmployeeService>();
         institutionAdminRepositoryMock = new Mock<IInstitutionAdminRepository>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();

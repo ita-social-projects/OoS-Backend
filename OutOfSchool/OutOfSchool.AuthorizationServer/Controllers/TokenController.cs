@@ -440,13 +440,6 @@ public class TokenController : Controller
                 yield return OpenIddictConstants.Destinations.IdentityToken;
 
                 yield break;
-
-            case IdentityResourceClaimsTypes.Subrole:
-                yield return OpenIddictConstants.Destinations.AccessToken;
-                yield return OpenIddictConstants.Destinations.IdentityToken;
-
-                yield break;
-
             // Never include the security stamp in the access and identity tokens, as it's a secret value.
             case "AspNet.Identity.SecurityStamp": yield break;
 

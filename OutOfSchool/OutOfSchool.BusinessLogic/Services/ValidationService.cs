@@ -8,18 +8,18 @@ public class ValidationService : IValidationService
     private readonly IProviderRepository providerRepository;
     private readonly IParentRepository parentRepository;
     private readonly IWorkshopRepository workshopRepository;
-    private readonly IProviderAdminRepository providerAdminRepository;
+    private readonly IEmployeeRepository employeeRepository;
 
     public ValidationService(
         IProviderRepository providerRepository,
         IParentRepository parentRepository,
         IWorkshopRepository workshopRepository,
-        IProviderAdminRepository providerAdminRepository)
+        IEmployeeRepository employeeRepository)
     {
         this.providerRepository = providerRepository;
         this.parentRepository = parentRepository;
         this.workshopRepository = workshopRepository;
-        this.providerAdminRepository = providerAdminRepository;
+        this.employeeRepository = employeeRepository;
     }
 
     /// <inheritdoc/>>
@@ -32,7 +32,7 @@ public class ValidationService : IValidationService
     }
 
     /// <inheritdoc/>>
-    public async Task<bool> UserIsWorkshopOwnerAsync(string userId, Guid workshopId, Subrole userSubrole = Subrole.None)
+    public async Task<bool> UserIsWorkshopOwnerAsync(string userId, Guid workshopId)
     {
         var workshops = await workshopRepository.GetByFilter(item => item.Id == workshopId, nameof(Workshop.Provider)).ConfigureAwait(false);
         var workshop = workshops.SingleOrDefault();
@@ -42,24 +42,10 @@ public class ValidationService : IValidationService
             return false;
         }
 
-        if (userSubrole == Subrole.ProviderDeputy)
-        {
-            var providersDeputies = await providerAdminRepository.GetByFilter(p => p.ProviderId == workshop.ProviderId
-                && p.IsDeputy
-                && p.UserId == userId).ConfigureAwait(false);
-            return providersDeputies.Any();
-        }
+        var providersAdmins = await employeeRepository.GetByFilter(p => p.ManagedWorkshops.Any(w => w.Id == workshopId)
+                                                                        && p.UserId == userId).ConfigureAwait(false);
 
-        if (userSubrole == Subrole.ProviderAdmin)
-        {
-            var providersAdmins = await providerAdminRepository.GetByFilter(p => p.ManagedWorkshops.Any(w => w.Id == workshopId)
-                && !p.IsDeputy
-                && p.UserId == userId).ConfigureAwait(false);
-
-            return providersAdmins.Any();
-        }
-
-        return userId.Equals(workshop.Provider.UserId, StringComparison.Ordinal);
+        return providersAdmins.Any();
     }
 
     /// <inheritdoc/>>
@@ -91,7 +77,7 @@ public class ValidationService : IValidationService
             }
             else
             {
-                var providersDeputies = await providerAdminRepository.GetByFilter(a => a.UserId == userId && a.IsDeputy).ConfigureAwait(false);
+                var providersDeputies = await employeeRepository.GetByFilter(a => a.UserId == userId).ConfigureAwait(false);
                 if (providersDeputies.Any())
                 {
                     return providersDeputies.Single().ProviderId;

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Common.Models;
 
-public class UpdateProviderAdminDto : AdminBaseDto
+public class UpdateEmployeeDto : AdminBaseDto
 {
     [Required(ErrorMessage = "Id is required")]
     public string Id { get; set; }

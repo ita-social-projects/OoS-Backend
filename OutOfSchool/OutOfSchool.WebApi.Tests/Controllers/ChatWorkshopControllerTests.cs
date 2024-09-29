@@ -29,7 +29,7 @@ public class ChatWorkshopControllerTests
     private Mock<IValidationService> validationServiceMoq;
     private Mock<IStringLocalizer<SharedResource>> localizerMoq;
     private Mock<ILogger<ChatWorkshopController>> loggerMoq;
-    private Mock<IProviderAdminService> providerAdminServiceMoq;
+    private Mock<IEmployeeService> providerAdminServiceMoq;
     private Mock<IApplicationService> applicationServiceMoq;
 
     private string userId;
@@ -55,7 +55,7 @@ public class ChatWorkshopControllerTests
         validationServiceMoq = new Mock<IValidationService>();
         localizerMoq = new Mock<IStringLocalizer<SharedResource>>();
         loggerMoq = new Mock<ILogger<ChatWorkshopController>>();
-        providerAdminServiceMoq = new Mock<IProviderAdminService>();
+        providerAdminServiceMoq = new Mock<IEmployeeService>();
         applicationServiceMoq = new Mock<IApplicationService>();
 
         userId = "someUserId";
@@ -153,7 +153,7 @@ public class ChatWorkshopControllerTests
         };
 
         providerAdminServiceMoq.Setup(
-            x => x.GetRelatedWorkshopIdsForProviderAdmins(
+            x => x.GetRelatedWorkshopIdsForEmployees(
                 It.IsAny<string>()))
             .ReturnsAsync(workShopIds);
 
@@ -187,7 +187,7 @@ public class ChatWorkshopControllerTests
             .Returns(new Claim(ClaimTypes.Role, "ProviderAdmin"));
 
         providerAdminServiceMoq.Setup(
-            x => x.GetRelatedWorkshopIdsForProviderAdmins(
+            x => x.GetRelatedWorkshopIdsForEmployees(
                 It.IsAny<string>()))
             .ReturnsAsync(new List<Guid>());
 

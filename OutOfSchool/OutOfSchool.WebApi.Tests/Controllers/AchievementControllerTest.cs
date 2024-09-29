@@ -22,7 +22,7 @@ internal class AchievementControllerTest
     private AchievementController controller;
     private Mock<IAchievementService> achievementService;
     private Mock<IProviderService> providerService;
-    private Mock<IProviderAdminService> providerAdminService;
+    private Mock<IEmployeeService> providerAdminService;
     private Mock<IWorkshopService> workshopService;
 
     [SetUp]
@@ -30,7 +30,7 @@ internal class AchievementControllerTest
     {
         achievementService = new Mock<IAchievementService>();
         providerService = new Mock<IProviderService>();
-        providerAdminService = new Mock<IProviderAdminService>();
+        providerAdminService = new Mock<IEmployeeService>();
         workshopService = new Mock<IWorkshopService>();
 
         controller = new AchievementController(achievementService.Object, providerService.Object, providerAdminService.Object, workshopService.Object);
@@ -91,7 +91,7 @@ internal class AchievementControllerTest
         providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(false);
 
         controller.ControllerContext.HttpContext = new DefaultHttpContext();
-        controller.ControllerContext.HttpContext.SetContextUser(Role.Parent, Subrole.None);
+        controller.ControllerContext.HttpContext.SetContextUser(Role.Parent);
 
         // Act
         var result = await controller.Create(dto).ConfigureAwait(false) as ObjectResult;
@@ -114,10 +114,10 @@ internal class AchievementControllerTest
         providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(false);
 
         controller.ControllerContext.HttpContext = new DefaultHttpContext();
-        controller.ControllerContext.HttpContext.SetContextUser(Role.Provider, Subrole.ProviderAdmin, userId);
+        controller.ControllerContext.HttpContext.SetContextUser(Role.Provider, userId);
 
         workshopService.Setup(s => s.GetWorkshopProviderOwnerIdAsync(dto.WorkshopId)).ReturnsAsync(providerId);
-        providerAdminService.Setup(s => s.CheckUserIsRelatedProviderAdmin(userId, providerId, dto.WorkshopId)).ReturnsAsync(true);
+        providerAdminService.Setup(s => s.CheckUserIsRelatedEmployee(userId, providerId, dto.WorkshopId)).ReturnsAsync(true);
         achievementService.Setup(s => s.Create(dto)).ReturnsAsync(new AchievementDto());
 
         // Act
@@ -141,10 +141,10 @@ internal class AchievementControllerTest
         providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(false);
 
         controller.ControllerContext.HttpContext = new DefaultHttpContext();
-        controller.ControllerContext.HttpContext.SetContextUser(Role.Provider, Subrole.ProviderDeputy, userId);
+        controller.ControllerContext.HttpContext.SetContextUser(Role.Provider, userId);
 
         workshopService.Setup(s => s.GetWorkshopProviderOwnerIdAsync(dto.WorkshopId)).ReturnsAsync(providerId);
-        providerAdminService.Setup(s => s.CheckUserIsRelatedProviderAdmin(userId, providerId, dto.WorkshopId)).ReturnsAsync(true);
+        providerAdminService.Setup(s => s.CheckUserIsRelatedEmployee(userId, providerId, dto.WorkshopId)).ReturnsAsync(true);
         achievementService.Setup(s => s.Create(dto)).ReturnsAsync(new AchievementDto());
         providerService.Setup(s => s.GetByUserId(userId, true)).ReturnsAsync(new ProviderDto() { Id = providerId });
 

@@ -39,7 +39,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private readonly ILogger<WorkshopService> logger;
     private readonly IMapper mapper;
     private readonly IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService;
-    private readonly IProviderAdminRepository providerAdminRepository;
+    private readonly IEmployeeRepository employeeRepository;
     private readonly IAverageRatingService averageRatingService;
     private readonly IProviderRepository providerRepository;
     private readonly ICurrentUserService currentUserService;
@@ -60,7 +60,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Automapper DI service.</param>
     /// <param name="workshopImagesService">Workshop images mediator.</param>
-    /// <param name="providerAdminRepository">Repository for provider admins.</param>
+    /// <param name="employeeRepository">Repository for employees.</param>
     /// <param name="averageRatingService">Average rating service.</param>
     /// <param name="providerRepository">Repository for providers.</param>
     /// <param name="currentUserService">Service that checks the roles and rights current user.</param>
@@ -79,7 +79,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         ILogger<WorkshopService> logger,
         IMapper mapper,
         IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService,
-        IProviderAdminRepository providerAdminRepository,
+        IEmployeeRepository employeeRepository,
         IAverageRatingService averageRatingService,
         IProviderRepository providerRepository,
         ICurrentUserService currentUserService,
@@ -97,7 +97,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         this.logger = logger;
         this.mapper = mapper;
         this.workshopImagesService = workshopImagesService;
-        this.providerAdminRepository = providerAdminRepository;
+        this.employeeRepository = employeeRepository;
         this.averageRatingService = averageRatingService;
         this.providerRepository = providerRepository;
         this.currentUserService = currentUserService;
@@ -258,27 +258,17 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     }
 
     /// <inheritdoc/>
-    public async Task<List<ShortEntityDto>> GetWorkshopListByProviderAdminId(string providerAdminId)
+    public async Task<List<ShortEntityDto>> GetWorkshopListByEmployeeId(string employeeId)
     {
         logger.LogDebug(
-            "Getting Workshop (Id, Title) by organization started. Looking ProviderAdminId = {ProviderAdminId}",
-            providerAdminId);
+            "Getting Workshop (Id, Title) by organization started. Looking EmployeeId = {employeeId}",
+            employeeId);
 
-        var providerAdmin = (await providerAdminRepository.GetByFilter(pa => pa.UserId == providerAdminId)).FirstOrDefault();
-        if (providerAdmin.IsDeputy)
-        {
-            return (await workshopRepository
-                    .GetByFilter(w => providerAdmin.Provider.Workshops.Contains(w)))
-                .Select(workshop => mapper.Map<ShortEntityDto>(workshop))
-                .OrderBy(workshop => workshop.Title)
-                .ToList();
-        }
-
-        return (await providerAdminRepository
-                .GetByFilter(pa => pa.UserId == providerAdminId))
-            .SelectMany(pa => pa.ManagedWorkshops, (pa, workshops) => new { workshops })
-            .Select(x => mapper.Map<ShortEntityDto>(x.workshops))
-            .OrderBy(w => w.Title)
+        var employee = (await employeeRepository.GetByFilter(pa => pa.UserId == employeeId)).FirstOrDefault();
+        return (await workshopRepository
+                .GetByFilter(w => employee.Provider.Workshops.Contains(w)))
+            .Select(workshop => mapper.Map<ShortEntityDto>(workshop))
+            .OrderBy(workshop => workshop.Title)
             .ToList();
     }
 

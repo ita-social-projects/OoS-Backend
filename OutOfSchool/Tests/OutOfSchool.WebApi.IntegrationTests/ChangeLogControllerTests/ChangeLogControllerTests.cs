@@ -45,7 +45,7 @@ public class ChangeLogControllerTests
             new Mock<IChangesLogRepository>().Object,
             new Mock<IProviderRepository>().Object,
             new Mock<IApplicationRepository>().Object,
-            new Mock<IEntityRepository<long, ProviderAdminChangesLog>>().Object,
+            new Mock<IEntityRepository<long, EmployeeChangesLog>>().Object,
             parentBlockedByAdminLogRepository,
             new Mock<ILogger<ChangesLogService>>().Object,
             mapper,

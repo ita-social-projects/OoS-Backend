@@ -34,7 +34,7 @@ public class ProviderAdminServiceDBTest
 {
     private Mock<IHttpClientFactory> httpClientFactory;
     private Mock<IOptions<AuthorizationServerConfig>> identityServerConfig;
-    private Mock<IOptions<ProviderAdminConfig>> providerAdminConfig;
+    private Mock<IOptions<EmployeeConfig>> providerAdminConfig;
     private Mock<IOptions<CommunicationConfig>> communicationConfig;
     private IEntityRepositorySoftDeleted<string, User> userRepository;
     private IMapper mapper;
@@ -43,11 +43,11 @@ public class ProviderAdminServiceDBTest
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IApiErrorService> apiErrorService;
 
-    private ProviderAdminService providerAdminService;
+    private EmployeeService employeeService;
 
     private Provider provider;
     private User providerUser;
-    private ProviderAdmin providerAdmin;
+    private Employee employee;
 
     private DbContextOptions<OutOfSchoolDbContext> dbContextOptions;
     private OutOfSchoolDbContext dbContext;
@@ -62,7 +62,7 @@ public class ProviderAdminServiceDBTest
             .Options;
 
         dbContext = new OutOfSchoolDbContext(dbContextOptions);
-        var providerAdminRepository = new ProviderAdminRepository(dbContext);
+        var providerAdminRepository = new EmployeeRepository(dbContext);
 
         httpClientFactory = new Mock<IHttpClientFactory>();
         httpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>()))
@@ -73,11 +73,11 @@ public class ProviderAdminServiceDBTest
             });
         identityServerConfig = new Mock<IOptions<AuthorizationServerConfig>>();
         communicationConfig = new Mock<IOptions<CommunicationConfig>>();
-        providerAdminConfig = new Mock<IOptions<ProviderAdminConfig>>();
+        providerAdminConfig = new Mock<IOptions<EmployeeConfig>>();
         providerAdminConfig.Setup(x => x.Value)
-            .Returns(new ProviderAdminConfig()
+            .Returns(new EmployeeConfig()
             {
-                MaxNumberAdmins = 1,
+                MaxNumberEmployees = 1,
             });
         communicationConfig.Setup(x => x.Value)
             .Returns(new CommunicationConfig()
@@ -89,14 +89,14 @@ public class ProviderAdminServiceDBTest
 
         userRepository = new EntityRepositorySoftDeleted<string, User>(dbContext);
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
-        var logger = new Mock<ILogger<ProviderAdminService>>();
+        var logger = new Mock<ILogger<EmployeeService>>();
         providerAdminOperationsService = new Mock<IProviderAdminOperationsService>();
         workshopService = new Mock<IWorkshopService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         apiErrorService = new Mock<IApiErrorService>();
         var searchStringServiceMock = new Mock<ISearchStringService>();
 
-        providerAdminService = new ProviderAdminService(
+        employeeService = new EmployeeService(
             httpClientFactory.Object,
             identityServerConfig.Object,
             providerAdminConfig.Object,
@@ -126,14 +126,14 @@ public class ProviderAdminServiceDBTest
         var filter = new ProviderAdminSearchFilter();
 
         // Act
-        var result = await providerAdminService.GetFilteredRelatedProviderAdmins(providerUser.Id, filter).ConfigureAwait(false);
-        var providerAdmins = dbContext.ProviderAdmins.Where(x => x.ProviderId == provider.Id).ToList();
-        List<ProviderAdminDto> dtos = new();
+        var result = await employeeService.GetFilteredRelatedProviderAdmins(providerUser.Id, filter).ConfigureAwait(false);
+        var providerAdmins = dbContext.Employees.Where(x => x.ProviderId == provider.Id).ToList();
+        List<EmployeeDto> dtos = new();
 
         foreach (var pa in providerAdmins)
         {
             var user = dbContext.Users.Where(u => u.Id == pa.UserId).Single();
-            var dto = mapper.Map<ProviderAdminDto>(user);
+            var dto = mapper.Map<EmployeeDto>(user);
             dto.AccountStatus = AccountStatusExtensions.Convert(user);
 
             dtos.Add(dto);
@@ -145,8 +145,8 @@ public class ProviderAdminServiceDBTest
         TestHelper.AssertTwoCollectionsEqualByValues(dtos, result.Entities);
     }
 
-    private IProviderAdminRepository GetProviderAdminRepository(OutOfSchoolDbContext dbContext)
-        => new ProviderAdminRepository(dbContext);
+    private IEmployeeRepository GetProviderAdminRepository(OutOfSchoolDbContext dbContext)
+        => new EmployeeRepository(dbContext);
 
     private OutOfSchoolDbContext GetContext() => new OutOfSchoolDbContext(dbContextOptions);
 
@@ -168,11 +168,11 @@ public class ProviderAdminServiceDBTest
         user.IsBlocked = true;
         dbContext.Add(user);
 
-        providerAdmin = ProviderAdminsGenerator.Generate();
-        providerAdmin.UserId = user.Id;
-        providerAdmin.ProviderId = provider.Id;
+        employee = ProviderAdminsGenerator.Generate();
+        employee.UserId = user.Id;
+        employee.ProviderId = provider.Id;
 
-        dbContext.Add(providerAdmin);
+        dbContext.Add(employee);
 
         // 2
         user = UserGenerator.Generate();
@@ -181,11 +181,11 @@ public class ProviderAdminServiceDBTest
         user.LastLogin = DateTimeOffset.Now;
         dbContext.Add(user);
 
-        providerAdmin = ProviderAdminsGenerator.Generate();
-        providerAdmin.UserId = user.Id;
-        providerAdmin.ProviderId = provider.Id;
+        employee = ProviderAdminsGenerator.Generate();
+        employee.UserId = user.Id;
+        employee.ProviderId = provider.Id;
 
-        dbContext.Add(providerAdmin);
+        dbContext.Add(employee);
 
         // 3
         user = UserGenerator.Generate();
@@ -193,11 +193,11 @@ public class ProviderAdminServiceDBTest
         user.LastLogin = DateTimeOffset.MinValue;
         dbContext.Add(user);
 
-        providerAdmin = ProviderAdminsGenerator.Generate();
-        providerAdmin.UserId = user.Id;
-        providerAdmin.ProviderId = provider.Id;
+        employee = ProviderAdminsGenerator.Generate();
+        employee.UserId = user.Id;
+        employee.ProviderId = provider.Id;
 
-        dbContext.Add(providerAdmin);
+        dbContext.Add(employee);
 
         // 4
         user = UserGenerator.Generate();
@@ -206,11 +206,11 @@ public class ProviderAdminServiceDBTest
         user.LastLogin = DateTimeOffset.Now;
         dbContext.Add(user);
 
-        providerAdmin = ProviderAdminsGenerator.Generate();
-        providerAdmin.UserId = user.Id;
-        providerAdmin.ProviderId = provider.Id;
+        employee = ProviderAdminsGenerator.Generate();
+        employee.UserId = user.Id;
+        employee.ProviderId = provider.Id;
 
-        dbContext.Add(providerAdmin);
+        dbContext.Add(employee);
 
         await dbContext.SaveChangesAsync();
     }

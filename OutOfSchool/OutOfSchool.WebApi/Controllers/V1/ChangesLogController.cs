@@ -81,15 +81,15 @@ public class ChangesLogController : ControllerBase
     /// <response code="500">If any server error occures. For example: Id was less than one.</response>
     [HasPermission(Permissions.LogDataRead)]
     [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderAdminChangesLogDto>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<EmployeeChangesLogDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> ProviderAdmin([FromQuery] ProviderAdminChangesLogRequest request)
+    public async Task<IActionResult> ProviderAdmin([FromQuery] EmployeeChangesLogRequest request)
     {
-        var changesLog = await changesLogService.GetProviderAdminChangesLogAsync(request).ConfigureAwait(false);
+        var changesLog = await changesLogService.GetEmployeeChangesLogAsync(request).ConfigureAwait(false);
 
         return this.SearchResultToOkOrNoContent(changesLog);
     }

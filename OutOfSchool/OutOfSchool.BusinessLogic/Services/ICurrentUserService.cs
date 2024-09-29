@@ -21,7 +21,7 @@ public interface ICurrentUserService : ICurrentUser
     /// </summary>
     /// <returns>A <see cref="bool"/> with value true if user has both role <see cref="Role.Provider"/>
     /// and subrole in not <see cref="Subrole.None"/>, false otherwise.</returns>
-    public bool IsDeputyOrProviderAdmin();
+    public bool IsEmployeeOrProvider();
 
     /// <summary>
     /// Check if user is an admin.

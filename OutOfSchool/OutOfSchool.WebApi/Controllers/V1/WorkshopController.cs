@@ -20,7 +20,7 @@ public class WorkshopController : ControllerBase
 {
     private readonly IWorkshopServicesCombiner combinedWorkshopService;
     private readonly IProviderService providerService;
-    private readonly IProviderAdminService providerAdminService;
+    private readonly IEmployeeService employeeService;
     private readonly IUserService userService;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly ILogger<WorkshopController> logger;
@@ -31,7 +31,7 @@ public class WorkshopController : ControllerBase
     /// </summary>
     /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
     /// <param name="providerService">Service for Provider model.</param>
-    /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
+    /// <param name="employeeService">Service for ProviderAdmin model.</param>
     /// <param name="userService">Service for operations with users.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
@@ -39,7 +39,7 @@ public class WorkshopController : ControllerBase
     public WorkshopController(
         IWorkshopServicesCombiner combinedWorkshopService,
         IProviderService providerService,
-        IProviderAdminService providerAdminService,
+        IEmployeeService employeeService,
         IUserService userService,
         IStringLocalizer<SharedResource> localizer,
         ILogger<WorkshopController> logger,
@@ -47,8 +47,8 @@ public class WorkshopController : ControllerBase
     {
         this.localizer = localizer;
         this.combinedWorkshopService = combinedWorkshopService;
+        this.employeeService = employeeService;
         this.providerService = providerService;
-        this.providerAdminService = providerAdminService;
         this.userService = userService;
         this.logger = logger;
         this.options = options.Value;
@@ -302,13 +302,14 @@ public class WorkshopController : ControllerBase
         {
             var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
 
+
             // here we will get "false" if workshop was created by assistant provider admin
             // because user is not currently associated with new workshop
             // so we can update information to allow assistant manage created workshop
             if (!await IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false))
             {
                 var userId = User.FindFirst("sub")?.Value;
-                await providerAdminService.GiveAssistantAccessToWorkshop(userId, workshop.Id).ConfigureAwait(false);
+                await employeeService.GiveAssistantAccessToWorkshop(userId, workshop.Id).ConfigureAwait(false);
             }
 
             return CreatedAtAction(
@@ -535,8 +536,8 @@ public class WorkshopController : ControllerBase
             }
             else
             {
-                var isUserRelatedAdmin = await providerAdminService
-                    .CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId)
+                var isUserRelatedAdmin = await employeeService
+                    .CheckUserIsRelatedEmployee(userId, providerId, workshopId)
                     .ConfigureAwait(false);
 
                 if (!isUserRelatedAdmin)

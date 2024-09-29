@@ -10,16 +10,16 @@ public class ProfileService : IProfileService
 {
     private readonly UserManager<User> userManager;
     private readonly IEntityRepository<long, PermissionsForRole> permissionsForRolesRepository;
-    private readonly IProviderAdminRepository providerAdminRepository;
+    private readonly IEmployeeRepository employeeRepository;
 
     public ProfileService(
         UserManager<User> userManager,
         IEntityRepository<long, PermissionsForRole> permissionsForRolesRepository,
-        IProviderAdminRepository providerAdminRepository)
+        IEmployeeRepository employeeRepository)
     {
         this.userManager = userManager;
         this.permissionsForRolesRepository = permissionsForRolesRepository;
-        this.providerAdminRepository = providerAdminRepository;
+        this.employeeRepository = employeeRepository;
     }
 
     public async Task GetProfileDataAsync(ClaimsPrincipal principal)
@@ -45,11 +45,8 @@ public class ProfileService : IProfileService
         {
             var userFromLogin = await userManager.FindByNameAsync(nameClaim.Value);
 
-            var subrole = await GetSubroleByUserName(userFromLogin);
-
             additionalClaims[IdentityResourceClaimsTypes.Permissions] =
                 await GetPermissionsForUser(userFromLogin, roleClaim.Value);
-            additionalClaims[IdentityResourceClaimsTypes.Subrole] = subrole.ToString();
         }
 
         return additionalClaims;
@@ -70,28 +67,5 @@ public class ProfileService : IProfileService
 
         // action when no permissions for user's role existes in DB
         return permissionsForUser ?? new List<Permissions>() { Permissions.NotSet }.PackPermissionsIntoString();
-    }
-
-    // Get subrole for user
-    private async Task<Subrole> GetSubroleByUserName(User userFromLogin)
-    {
-        if (userFromLogin.Role == nameof(Role.Provider).ToLower() && userFromLogin.IsDerived)
-        {
-            var userDeputyOrAdmin = await providerAdminRepository
-                .GetByFilter(p => p.UserId == userFromLogin.Id)
-                .ConfigureAwait(false);
-
-            if (userDeputyOrAdmin.Any(u => u.IsDeputy))
-            {
-                return Subrole.ProviderDeputy;
-            }
-
-            if (userDeputyOrAdmin.Any(u => !u.IsDeputy))
-            {
-                return Subrole.ProviderAdmin;
-            }
-        }
-
-        return Subrole.None;
     }
 }

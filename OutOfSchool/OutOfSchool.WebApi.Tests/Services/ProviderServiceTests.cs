@@ -43,11 +43,11 @@ public class ProviderServiceTests
     private ProviderService providerService;
 
     private Mock<IProviderRepository> providersRepositoryMock;
-    private Mock<IProviderAdminRepository> providerAdminRepositoryMock;
+    private Mock<IEmployeeRepository> providerAdminRepositoryMock;
     private Mock<IEntityRepositorySoftDeleted<string, User>> usersRepositoryMock;
     private IMapper mapper;
     private Mock<INotificationService> notificationService;
-    private Mock<IProviderAdminService> providerAdminService;
+    private Mock<IEmployeeService> providerAdminService;
     private Mock<IInstitutionAdminRepository> institutionAdminRepositoryMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
@@ -72,7 +72,7 @@ public class ProviderServiceTests
         providersRepositoryMock = CreateProvidersRepositoryMock(fakeProviders);
 
         // TODO: configure mock and writer tests for provider admins
-        providerAdminRepositoryMock = new Mock<IProviderAdminRepository>();
+        providerAdminRepositoryMock = new Mock<IEmployeeRepository>();
         usersRepositoryMock = CreateUsersRepositoryMock(fakeUser);
         var addressRepo = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
@@ -81,7 +81,7 @@ public class ProviderServiceTests
         var providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
         var changesLogService = new Mock<IChangesLogService>();
         notificationService = new Mock<INotificationService>(MockBehavior.Strict);
-        providerAdminService = new Mock<IProviderAdminService>();
+        providerAdminService = new Mock<IEmployeeService>();
         institutionAdminRepositoryMock = new Mock<IInstitutionAdminRepository>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();

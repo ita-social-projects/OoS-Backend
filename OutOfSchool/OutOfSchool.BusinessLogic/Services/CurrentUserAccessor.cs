@@ -19,8 +19,6 @@ public class CurrentUserAccessor : ICurrentUser
 
     public string UserRole => GettingUserProperties.GetUserRole(user) ?? string.Empty;
 
-    public string UserSubRole => GettingUserProperties.GetUserSubrole(user) ?? string.Empty;
-
     public bool IsInRole(string role) => user?.IsInRole(role) ?? false;
 
     public bool IsAuthenticated => user?.Identity?.IsAuthenticated ?? false;

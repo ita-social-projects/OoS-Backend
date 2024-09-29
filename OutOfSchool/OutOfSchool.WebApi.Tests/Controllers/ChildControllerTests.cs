@@ -29,7 +29,7 @@ public class ChildControllerTests
     private ChildController controller;
     private Mock<IChildService> service;
     private Mock<IProviderService> providerService;
-    private Mock<IProviderAdminService> providerAdminService;
+    private Mock<IEmployeeService> providerAdminService;
     private Mock<IWorkshopServicesCombiner> workshopService;
     private List<ChildDto> children;
     private ChildDto child;
@@ -44,7 +44,7 @@ public class ChildControllerTests
     {
         service = new Mock<IChildService>();
         providerService = new Mock<IProviderService>();
-        providerAdminService = new Mock<IProviderAdminService>();
+        providerAdminService = new Mock<IEmployeeService>();
         workshopService = new Mock<IWorkshopServicesCombiner>();
 
         controller = new ChildController(service.Object, providerService.Object, providerAdminService.Object, workshopService.Object);
@@ -359,7 +359,6 @@ public class ChildControllerTests
             new Claim[]
             {
                 new Claim(ClaimTypes.Role, nameof(Role.Provider).ToLower()),
-                new Claim("subrole", nameof(Subrole.None).ToLower()),
                 new Claim("sub", currentUserId),
             }));
 

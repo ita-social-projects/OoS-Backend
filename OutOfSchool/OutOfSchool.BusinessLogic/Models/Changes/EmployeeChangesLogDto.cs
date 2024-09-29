@@ -2,15 +2,13 @@
 
 namespace OutOfSchool.BusinessLogic.Models.Changes;
 
-public class ProviderAdminChangesLogDto
+public class EmployeeChangesLogDto
 {
-    public string ProviderAdminId { get; set; }
+    public string EmployeeId { get; set; }
 
-    public string ProviderAdminFullName { get; set; }
+    public string EmployeeFullName { get; set; }
 
     public string ProviderTitle { get; set; }
-
-    public bool IsDeputy { get; set; }
 
     public string WorkshopCity { get; set; }
 

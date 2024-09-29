@@ -55,7 +55,7 @@ public class ApplicationSensitiveServiceTests
             mapper.Object,
             new Mock<IOptions<ApplicationsConstraintsConfig>>().Object,
             new Mock<INotificationService>().Object,
-            new Mock<IProviderAdminService>().Object,
+            new Mock<IEmployeeService>().Object,
             new Mock<IChangesLogService>().Object,
             new Mock<IWorkshopServicesCombiner>().Object,
             currentUserServiceMock.Object,

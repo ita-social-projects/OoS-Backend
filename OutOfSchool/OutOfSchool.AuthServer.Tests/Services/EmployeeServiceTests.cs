@@ -25,10 +25,10 @@ using System.Threading.Tasks;
 
 namespace OutOfSchool.AuthServer.Tests.Services;
 
-public class ProviderAdminServiceTests
+public class EmployeeServiceTests
 {
     private Mock<IMapper> fakeMapper;
-    private ProviderAdminRepository providerAdminRepository;
+    private EmployeeRepository employeeRepository;
     private OutOfSchoolDbContext context;
     private Mock<UserManager<User>> fakeUserManager;
     private Mock<IOptions<GrpcConfig>> fakeGrpcConfig;
@@ -58,7 +58,7 @@ public class ProviderAdminServiceTests
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
 
-        providerAdminRepository = new ProviderAdminRepository(context);
+        employeeRepository = new EmployeeRepository(context);
 
         fakeGrpcConfig = new Mock<IOptions<GrpcConfig>>();
         fakeGrpcConfig.Setup(x => x.Value).Returns(new GrpcConfig());
@@ -85,15 +85,15 @@ public class ProviderAdminServiceTests
 
         fakeUrlHelper = new Mock<IUrlHelper>();
 
-        providerAdminService = new ProviderAdminService(
+        providerAdminService = new EmployeeService(
             fakeMapper.Object,
-            providerAdminRepository,
-            new Mock<ILogger<ProviderAdminService>>().Object,
+            employeeRepository,
+            new Mock<ILogger<EmployeeService>>().Object,
             new Mock<IEmailSenderService>().Object,
             fakeUserManager.Object,
             context,
             new Mock<IRazorViewToStringRenderer>().Object,
-            new Mock<IProviderAdminChangesLogService>().Object,
+            new Mock<IEmployeeChangesLogService>().Object,
             fakeGrpcConfig.Object,
             fakeExternalUrisConfig.Object,
             fakeChangesLogConfig.Object,
@@ -125,12 +125,12 @@ public class ProviderAdminServiceTests
             .ReturnsAsync(IdentityResult.Success);
         fakeUserManager.Setup(x => x.AddToRoleAsync(user, userRole))
             .ReturnsAsync(IdentityResult.Success);
-        fakeMapper.Setup(x => x.Map<ProviderAdmin>(createProviderAdminDto))
+        fakeMapper.Setup(x => x.Map<Employee>(createProviderAdminDto))
             .Returns(providerAdmin);
 
         // Act
         var result = await providerAdminService
-            .CreateProviderAdminAsync(createProviderAdminDto, url, userId);
+            .CreateEmployeeAsync(createProviderAdminDto, url, userId);
 
         // Assert
         Assert.IsNotNull(result);
@@ -157,7 +157,7 @@ public class ProviderAdminServiceTests
 
         // Act
         var result = await providerAdminService
-            .CreateProviderAdminAsync(createProviderAdminDto, url, userId);
+            .CreateEmployeeAsync(createProviderAdminDto, url, userId);
 
         // Assert
         Assert.IsNotNull(result);
@@ -172,15 +172,15 @@ public class ProviderAdminServiceTests
         mockHostsConfig.Setup(x => x.Value).Returns((HostsConfig)null);
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new ProviderAdminService(
+        Assert.Throws<ArgumentNullException>(() => new EmployeeService(
             fakeMapper.Object,
-            providerAdminRepository,
-            new Mock<ILogger<ProviderAdminService>>().Object,
+            employeeRepository,
+            new Mock<ILogger<EmployeeService>>().Object,
             new Mock<IEmailSenderService>().Object,
             fakeUserManager.Object,
             context,
             new Mock<IRazorViewToStringRenderer>().Object,
-            new Mock<IProviderAdminChangesLogService>().Object,
+            new Mock<IEmployeeChangesLogService>().Object,
             fakeGrpcConfig.Object,
             fakeExternalUrisConfig.Object,
             fakeChangesLogConfig.Object,

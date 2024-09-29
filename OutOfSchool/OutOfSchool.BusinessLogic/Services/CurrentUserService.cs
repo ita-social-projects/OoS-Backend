@@ -17,7 +17,7 @@ public class CurrentUserService : ICurrentUserService
     private readonly IParentRepository parentRepository;
     private readonly IEntityRepositorySoftDeleted<Guid, Child> childRepository;
     private readonly IProviderRepository providerRepository;
-    private readonly IProviderAdminRepository providerAdminRepository;
+    private readonly IEmployeeRepository employeeRepository;
     private readonly ILogger<CurrentUserService> logger;
     private readonly ICacheService cache;
     private readonly AppDefaultsConfig options;
@@ -26,7 +26,7 @@ public class CurrentUserService : ICurrentUserService
     public CurrentUserService(
         ICurrentUser currentUser,
         IProviderRepository providerRepository,
-        IProviderAdminRepository providerAdminRepository,
+        IEmployeeRepository employeeRepository,
         IParentRepository parentRepository,
         IEntityRepositorySoftDeleted<Guid, Child> childRepository,
         ILogger<CurrentUserService> logger,
@@ -36,7 +36,7 @@ public class CurrentUserService : ICurrentUserService
     {
         this.currentUser = currentUser;
         this.providerRepository = providerRepository;
-        this.providerAdminRepository = providerAdminRepository;
+        this.employeeRepository = employeeRepository;
         this.parentRepository = parentRepository;
         this.childRepository = childRepository;
         this.logger = logger;
@@ -48,8 +48,6 @@ public class CurrentUserService : ICurrentUserService
     public string UserId => currentUser.UserId;
 
     public string UserRole => currentUser.UserRole;
-
-    public string UserSubRole => currentUser.UserSubRole;
 
     public bool IsInRole(string role) => currentUser.IsInRole(role);
 
@@ -67,12 +65,14 @@ public class CurrentUserService : ICurrentUserService
         Role.RegionAdmin => IsInRole("regionadmin"),
         Role.AreaAdmin => IsInRole("areaadmin"),
         Role.Moderator => IsInRole("moderator"),
+        Role.Employee => IsInRole("employee"),
         _ => throw new NotImplementedException("Role not handled"),
     };
 
-    public bool IsDeputyOrProviderAdmin() =>
-        IsInRole(Role.Provider) &&
-        (IsInSubRole(Subrole.ProviderDeputy) || IsInSubRole(Subrole.ProviderAdmin));
+    public bool IsEmployeeOrProvider() => IsInRole(Role.Provider) || IsInRole(Role.Employee);
+
+    public bool isProvider() => IsInRole(Role.Provider);
+    public bool isEmployee() => IsInRole(Role.Employee);
 
     public bool IsAdmin() => IsInRole(Role.TechAdmin) || IsInRole(Role.MinistryAdmin) || IsInRole(Role.RegionAdmin) ||
                              IsInRole(Role.AreaAdmin);
@@ -143,10 +143,10 @@ public class CurrentUserService : ICurrentUserService
         {
             ParentRights parent => ParentHasRights(parent.parentId, parent.childId),
             ProviderAdminRights providerAdmin => ProviderAdminHasRights(providerAdmin.providerAdminId),
-            ProviderAdminWorkshopRights providerAdminWorkshop => ProviderAdminHasWorkshopRights(
+            ProviderAdminWorkshopRights providerAdminWorkshop => this.EmployeeHasWorkshopRights(
                 providerAdminWorkshop.providerId, providerAdminWorkshop.workshopId),
             ProviderRights provider => ProviderHasRights(provider.providerId),
-            ProviderDeputyRights providerDeputy => ProviderDeputyHasRights(providerDeputy.providerId),
+            ProviderDeputyRights providerDeputy => this.EmployeeHasRights(providerDeputy.providerId),
             null => Task.FromResult(false),
             _ => throw new NotImplementedException("Unknown user rights type"),
         };
@@ -202,7 +202,7 @@ public class CurrentUserService : ICurrentUserService
 
     private async Task<bool> ProviderHasRights(Guid providerId)
     {
-        if (!IsInRole(Role.Provider) || IsDeputyOrProviderAdmin())
+        if (!IsInRole(Role.Provider) || this.IsEmployeeOrProvider())
         {
             return false;
         }
@@ -234,7 +234,7 @@ public class CurrentUserService : ICurrentUserService
 
     private async Task<bool> ProviderAdminHasRights(string providerAdminId)
     {
-        if (!IsDeputyOrProviderAdmin() || UserId != providerAdminId)
+        if (!this.IsEmployeeOrProvider() || UserId != providerAdminId)
         {
             return false;
         }
@@ -243,9 +243,9 @@ public class CurrentUserService : ICurrentUserService
             $"Rights_{UserId}",
             async () =>
             {
-                var providerAdmins = await providerAdminRepository
+                var providerAdmins = await employeeRepository
                     .GetByFilter(p => p.UserId == UserId);
-                return providerAdmins?.Select(mapper.Map<ProviderAdminProviderRelationDto>).FirstOrDefault();
+                return providerAdmins?.Select(mapper.Map<EmployeeProviderRelationDto>).FirstOrDefault();
             },
             TimeSpan.FromMinutes(5.0));
 
@@ -264,9 +264,9 @@ public class CurrentUserService : ICurrentUserService
         return result;
     }
 
-    private async Task<bool> ProviderDeputyHasRights(Guid providerId)
+    private async Task<bool> EmployeeHasRights(Guid providerId)
     {
-        if (!IsInSubRole(Subrole.ProviderDeputy))
+        if (!this.isEmployee())
         {
             return false;
         }
@@ -275,18 +275,18 @@ public class CurrentUserService : ICurrentUserService
             $"Rights_{UserId}",
             async () =>
             {
-                var providerAdmins = await providerAdminRepository
+                var employees = await employeeRepository
                     .GetByFilter(p => p.UserId == UserId);
-                return providerAdmins?.Select(mapper.Map<ProviderAdminProviderRelationDto>).FirstOrDefault();
+                return employees?.Select(mapper.Map<EmployeeProviderRelationDto>).FirstOrDefault();
             },
             TimeSpan.FromMinutes(5.0));
 
-        var result = providerDeputy?.ProviderId == providerId && providerDeputy.IsDeputy;
+        var result = providerDeputy?.ProviderId == providerId;
 
         if (!result && options.AccessLogEnabled)
         {
             logger.LogWarning(
-                "Unauthorized access: User ({UserId}) tried to access ProviderDeputy ({providerId}) data",
+                "Unauthorized access: User ({UserId}) tried to access Employee ({providerId}) data",
                 UserId,
                 providerId);
         }
@@ -294,34 +294,34 @@ public class CurrentUserService : ICurrentUserService
         return result;
     }
 
-    private async Task<bool> ProviderAdminHasWorkshopRights(Guid providerId, Guid workshopId)
+    private async Task<bool> EmployeeHasWorkshopRights(Guid providerId, Guid workshopId)
     {
-        if (!IsDeputyOrProviderAdmin())
+        if (!this.isEmployee())
         {
             return false;
         }
 
-        var isUserRelatedAdmin = await cache.GetOrAddAsync(
+        var isUserRelatedEmployee = await cache.GetOrAddAsync(
             $"Rights_{UserId}_{providerId}_{workshopId}",
             async () =>
             {
-                var providerAdmin = await providerAdminRepository.GetByIdAsync(UserId, providerId);
+                var employee = await employeeRepository.GetByIdAsync(UserId, providerId);
 
-                if (providerAdmin is null)
+                if (employee is null)
                 {
                     return false;
                 }
 
-                if (!providerAdmin.IsDeputy && workshopId != Guid.Empty)
+                if (workshopId != Guid.Empty)
                 {
-                    return providerAdmin.ManagedWorkshops.Any(w => w.Id == workshopId);
+                    return employee.ManagedWorkshops.Any(w => w.Id == workshopId);
                 }
 
                 return true;
             },
             TimeSpan.FromMinutes(5.0));
 
-        if (!isUserRelatedAdmin && options.AccessLogEnabled)
+        if (!isUserRelatedEmployee && options.AccessLogEnabled)
         {
             logger.LogWarning(
                 "Unauthorized access: User ({UserId}) tried to access Provider ({ProviderId}) and Workshop ({WorkshopId}) data",
@@ -330,9 +330,6 @@ public class CurrentUserService : ICurrentUserService
                 workshopId);
         }
 
-        return isUserRelatedAdmin;
+        return isUserRelatedEmployee;
     }
-
-    private bool IsInSubRole(Subrole subRole) =>
-        HasClaim(IdentityResourceClaimsTypes.Subrole, s => s.ToEnum(Subrole.None).Equals(subRole));
 }

@@ -25,7 +25,7 @@ public class ChatWorkshopController : ControllerBase
     private readonly IValidationService validationService;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly ILogger<ChatWorkshopController> logger;
-    private readonly IProviderAdminService providerAdminService;
+    private readonly IEmployeeService employeeService;
     private readonly IApplicationService applicationService;
 
     /// <summary>
@@ -36,7 +36,7 @@ public class ChatWorkshopController : ControllerBase
     /// <param name="validationService">Service for validation parameters.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="logger">Logger.</param>
-    /// <param name="providerAdminService">Service for Provider's admins.</param>
+    /// <param name="employeeService">Service for Provider's admins.</param>
     /// <param name="applicationService">Service for Applications.</param>
     public ChatWorkshopController(
         IChatMessageWorkshopService messageService,
@@ -44,7 +44,7 @@ public class ChatWorkshopController : ControllerBase
         IValidationService validationService,
         IStringLocalizer<SharedResource> localizer,
         ILogger<ChatWorkshopController> logger,
-        IProviderAdminService providerAdminService,
+        IEmployeeService employeeService,
         IApplicationService applicationService)
     {
         this.messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
@@ -52,7 +52,7 @@ public class ChatWorkshopController : ControllerBase
         this.validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.providerAdminService = providerAdminService ?? throw new ArgumentNullException(nameof(providerAdminService));
+        this.employeeService = employeeService ?? throw new ArgumentNullException(nameof(employeeService));
         this.applicationService = applicationService ?? throw new ArgumentNullException(nameof(applicationService));
     }
 
@@ -346,9 +346,7 @@ public class ChatWorkshopController : ControllerBase
             return await validationService.UserIsParentOwnerAsync(userId, application.ParentId);
         }
 
-        var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
-
-        return await validationService.UserIsWorkshopOwnerAsync(userId, application.WorkshopId, userSubrole);
+        return await validationService.UserIsWorkshopOwnerAsync(userId, application.WorkshopId);
     }
 
     private async Task<bool> IsParentAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
@@ -368,9 +366,8 @@ public class ChatWorkshopController : ControllerBase
     private async Task<bool> IsProviderAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
     {
         var userId = GettingUserProperties.GetUserId(HttpContext);
-        var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
 
-        var result = await validationService.UserIsWorkshopOwnerAsync(userId, chatRoom.WorkshopId, userSubrole).ConfigureAwait(false);
+        var result = await validationService.UserIsWorkshopOwnerAsync(userId, chatRoom.WorkshopId).ConfigureAwait(false);
 
         if (!result)
         {
@@ -534,11 +531,10 @@ public class ChatWorkshopController : ControllerBase
         {
             var userId = GettingUserProperties.GetUserId(HttpContext);
             var userRole = GettingUserProperties.GetUserRole(HttpContext);
-            var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
 
-            if (userSubrole == Subrole.ProviderAdmin)
+            if (userRole is Role.Employee)
             {
-                var workshopIds = await providerAdminService.GetRelatedWorkshopIdsForProviderAdmins(userId).ConfigureAwait(false);
+                var workshopIds = await employeeService.GetRelatedWorkshopIdsForEmployees(userId).ConfigureAwait(false);
                 filter.WorkshopIds = workshopIds;
                 var chatRooms = await roomService.GetChatRoomByFilter(filter, default).ConfigureAwait(false);
 

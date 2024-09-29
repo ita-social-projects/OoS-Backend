@@ -9,18 +9,18 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<CreateProviderAdminDto, User>()
+        CreateMap<CreateEmployeeDto, User>()
             .Apply(MapEmailAndPhone);
 
-        CreateMap<CreateProviderAdminDto, ProviderAdmin>()
+        CreateMap<CreateEmployeeDto, Employee>()
             .ForMember(dest => dest.ManagedWorkshops, opt => opt.Ignore());
 
-        CreateMap<CreateProviderAdminDto, CreateProviderAdminReply>()
+        CreateMap<CreateEmployeeDto, CreateProviderAdminReply>()
             .ForMember(c => c.CreatingTime, m => m.MapFrom(c => Timestamp.FromDateTimeOffset(c.CreatingTime)))
             .ForMember(c => c.ProviderId, m => m.MapFrom(c => c.ProviderId.ToString()))
             .ForMember(c => c.ManagedWorkshopIds, m => m.MapFrom(src => src.ManagedWorkshopIds.Select(id => id.ToString()).ToList()));
 
-        CreateMap<CreateProviderAdminRequest, CreateProviderAdminDto>()
+        CreateMap<CreateProviderAdminRequest, CreateEmployeeDto>()
             .ForMember(c => c.CreatingTime, m => m.MapFrom(c => c.CreatingTime.ToDateTimeOffset()))
             .ForMember(c => c.ProviderId, m => m.MapFrom(c => Guid.Parse(c.ProviderId)))
             .ForMember(c => c.ManagedWorkshopIds, opt => opt.MapFrom(src => src.ManagedWorkshopIds.Select(Guid.Parse).ToList()));

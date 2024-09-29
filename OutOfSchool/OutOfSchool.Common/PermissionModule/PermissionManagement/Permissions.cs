@@ -72,8 +72,8 @@ public enum Permissions : short
     ProviderAddNew = 52,
     [Display(GroupName = "Provider", Name = "Remove", Description = "Can remove Provider data")]
     ProviderRemove = 53,
-    [Display(GroupName = "Provider", Name = "Provider Admins", Description = "Can create and manage provider admins")]
-    ProviderAdmins = 54,
+    [Display(GroupName = "Provider", Name = "Employees", Description = "Can create and manage employees")]
+    Employees = 54,
     [Display(GroupName = "Provider", Name = "Provider Approve", Description = "Can approve Provider and License")]
     ProviderApprove = 55,
     [Display(GroupName = "Provider", Name = "Block", Description = "Can block Provider")]

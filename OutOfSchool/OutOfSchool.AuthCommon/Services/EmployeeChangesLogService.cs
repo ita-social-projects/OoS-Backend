@@ -3,17 +3,17 @@ using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.AuthCommon.Services;
 
-public class ProviderAdminChangesLogService : IProviderAdminChangesLogService
+public class EmployeeChangesLogService : IEmployeeChangesLogService
 {
-    private readonly IEntityAddOnlyRepository<long, ProviderAdminChangesLog> providerAdminChangesLogRepository;
+    private readonly IEntityAddOnlyRepository<long, EmployeeChangesLog> employeeChangesLogRepository;
 
-    public ProviderAdminChangesLogService(IEntityAddOnlyRepository<long, ProviderAdminChangesLog> providerAdminChangesLogRepository)
+    public EmployeeChangesLogService(IEntityAddOnlyRepository<long, EmployeeChangesLog> employeeChangesLogRepository)
     {
-        this.providerAdminChangesLogRepository = providerAdminChangesLogRepository;
+        this.employeeChangesLogRepository = employeeChangesLogRepository;
     }
 
     public async Task<int> SaveChangesLogAsync(
-        ProviderAdmin entity,
+        Employee entity,
         string userId,
         OperationType operationType,
         string propertyName,
@@ -22,9 +22,9 @@ public class ProviderAdminChangesLogService : IProviderAdminChangesLogService
     {
         _ = entity ?? throw new ArgumentNullException(nameof(entity));
 
-        var logRecord = new ProviderAdminChangesLog
+        var logRecord = new EmployeeChangesLog
         {
-            ProviderAdminUserId = entity.UserId,
+            EmployeeUserId = entity.UserId,
             ProviderId = entity.ProviderId,
             OperationType = operationType,
             OperationDate = DateTime.UtcNow,
@@ -32,10 +32,9 @@ public class ProviderAdminChangesLogService : IProviderAdminChangesLogService
             PropertyName = propertyName,
             OldValue = oldValue,
             NewValue = newValue,
-            IsDeputy = entity.IsDeputy,
         };
 
-        var result = await providerAdminChangesLogRepository.Create(logRecord);
+        var result = await employeeChangesLogRepository.Create(logRecord);
 
         return result == null ? 0 : 1;
     }

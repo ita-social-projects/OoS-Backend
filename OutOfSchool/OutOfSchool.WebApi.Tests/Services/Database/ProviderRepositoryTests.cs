@@ -50,7 +50,7 @@ public class ProviderRepositoryTests
         var expectedProvidersCount = initialProvidersCount - 1;
         var expectedWorkshopsCount = context.Workshops.Count(x => !x.IsDeleted) - provider.Workshops.Count;
         var expectedAddressesCount = context.Addresses.Count() - 2; // 2 = Legal + Actual
-        var expectedProviderAdminsCount = context.ProviderAdmins.Count() - provider.ProviderAdmins.Count;
+        var expectedProviderAdminsCount = context.Employees.Count() - provider.Employees.Count;
 
         // Act
         await providerRepository.Delete(provider);
@@ -59,7 +59,7 @@ public class ProviderRepositoryTests
             .Where(x => x.ProviderId == provider.Id)
             .Select(x => context.Entry(x))
             .ToList();
-        var providerAdmins = context.ProviderAdmins
+        var providerAdmins = context.Employees
             .IgnoreQueryFilters()
             .Where(x => x.ProviderId == provider.Id)
             .Select(x => context.Entry(x))
@@ -70,11 +70,11 @@ public class ProviderRepositoryTests
         Assert.AreEqual(expectedProvidersCount, context.Providers.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedAddressesCount, context.Addresses.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedWorkshopsCount, context.Workshops.Count(x => !x.IsDeleted));
-        Assert.AreEqual(expectedProviderAdminsCount, context.ProviderAdmins.Count(x => !x.IsDeleted));
+        Assert.AreEqual(expectedProviderAdminsCount, context.Employees.Count(x => !x.IsDeleted));
         Assert.False(context.Workshops.Any(x => !x.IsDeleted && x.ProviderId == provider.Id));
         Assert.True(context.Workshops.IgnoreQueryFilters().Any(x => x.ProviderId == provider.Id));
-        Assert.False(context.ProviderAdmins.Any(x => !x.IsDeleted && x.ProviderId == provider.Id));
-        Assert.True(context.ProviderAdmins.IgnoreQueryFilters().Any(x => x.ProviderId == provider.Id));
+        Assert.False(context.Employees.Any(x => !x.IsDeleted && x.ProviderId == provider.Id));
+        Assert.True(context.Employees.IgnoreQueryFilters().Any(x => x.ProviderId == provider.Id));
         Assert.AreEqual(EntityState.Unchanged, context.Entry(provider).State);
         Assert.AreEqual(true, context.Entry(provider).CurrentValues["IsDeleted"]);
         Assert.True(workshops.All(x => (bool)x.CurrentValues["IsDeleted"] == true));
@@ -159,14 +159,13 @@ public class ProviderRepositoryTests
     {
         providers.ForEach(p =>
         {
-            p.ProviderAdmins = new List<ProviderAdmin>
+            p.Employees = new List<Employee>
             {
-                { new ProviderAdmin { Id = (Guid.NewGuid().ToString(), p.Id), IsDeputy = true, } },
+                { new Employee { Id = (Guid.NewGuid().ToString(), p.Id)} },
                 {
-                    new ProviderAdmin
+                    new Employee
                     {
                         Id = (Guid.NewGuid().ToString(), p.Id),
-                        IsDeputy = false,
                         ManagedWorkshops = p.Workshops.ToList(),
                     }
                 },

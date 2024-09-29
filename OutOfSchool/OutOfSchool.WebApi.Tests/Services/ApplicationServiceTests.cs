@@ -40,7 +40,7 @@ public class ApplicationServiceTests
     private Mock<ILogger<ApplicationService>> logger;
     private Mock<IMapper> mapper;
     private Mock<INotificationService> notificationService;
-    private Mock<IProviderAdminService> providerAdminService;
+    private Mock<IEmployeeService> providerAdminService;
     private Mock<IChangesLogService> changesLogService;
     private Mock<IWorkshopServicesCombiner> workshopServiceCombinerMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
@@ -61,7 +61,7 @@ public class ApplicationServiceTests
         applicationRepositoryMock = new Mock<IApplicationRepository>();
         workshopRepositoryMock = new Mock<IWorkshopRepository>();
         notificationService = new Mock<INotificationService>();
-        providerAdminService = new Mock<IProviderAdminService>();
+        providerAdminService = new Mock<IEmployeeService>();
         changesLogService = new Mock<IChangesLogService>();
         workshopServiceCombinerMock = new Mock<IWorkshopServicesCombiner>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
@@ -395,11 +395,10 @@ public class ApplicationServiceTests
         // Arrange
         var existingApplications = WithApplicationsList();
         var mappedDtos = existingApplications.Select(a => new ApplicationDto() { Id = a.Id }).ToList();
-        var providerAdmin = new ProviderAdminProviderRelationDto()
+        var providerAdmin = new EmployeeProviderRelationDto()
         {
             UserId = Guid.NewGuid().ToString(),
             ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-            IsDeputy = false,
         };
         providerAdminService.Setup(x => x.GetById(It.IsAny<string>())).ReturnsAsync(providerAdmin);
         currentUserServiceMock.Setup(x => x.IsAdmin()).Returns(false);
@@ -433,7 +432,7 @@ public class ApplicationServiceTests
         mapper.Setup(x => x.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
 
         // Act
-        var result = await service.GetAllByProviderAdmin(providerAdmin.UserId, applicationFilter)
+        var result = await service.GetAllByEmployee(providerAdmin.UserId, applicationFilter)
             .ConfigureAwait(false);
 
         // Assert
@@ -488,7 +487,7 @@ public class ApplicationServiceTests
     public async Task GetCountByParentId_WhenIdIsValid_ShouldReturnCount()
     {
         // Arrange
-        currentUserServiceMock.Setup(c => c.IsDeputyOrProviderAdmin()).Returns(true);
+        currentUserServiceMock.Setup(c => c.IsEmployeeOrProvider()).Returns(true);
         var existingApplications = WithApplicationsList();
         var parentId = existingApplications.First().ParentId;
         var expectedCount = existingApplications.Count(x => x.ParentId == parentId);
@@ -507,7 +506,7 @@ public class ApplicationServiceTests
     public async Task GetCountByParentId_WhenIdIsNotValid_ShouldReturnZero()
     {
         // Arrange
-        currentUserServiceMock.Setup(c => c.IsDeputyOrProviderAdmin()).Returns(true);
+        currentUserServiceMock.Setup(c => c.IsEmployeeOrProvider()).Returns(true);
 
         // Act
         var result = await service.GetCountByParentId(Guid.NewGuid()).ConfigureAwait(false);
@@ -607,7 +606,6 @@ public class ApplicationServiceTests
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
 
         currentUserServiceMock.Setup(c => c.UserRole).Returns(userRole);
-        currentUserServiceMock.Setup(c => c.UserSubRole).Returns(string.Empty);
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MinValue);
 
         var recipientsIds = new List<string>();
@@ -691,7 +689,6 @@ public class ApplicationServiceTests
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
 
         currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
-        currentUserServiceMock.Setup(c => c.UserSubRole).Returns(string.Empty);
 
         // Act
         var response = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
@@ -775,7 +772,6 @@ public class ApplicationServiceTests
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
 
         currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
-        currentUserServiceMock.Setup(c => c.UserSubRole).Returns(string.Empty);
 
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
 
@@ -838,7 +834,6 @@ public class ApplicationServiceTests
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
 
         currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
-        currentUserServiceMock.Setup(c => c.UserSubRole).Returns(string.Empty);
 
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MinValue);
 
@@ -901,7 +896,6 @@ public class ApplicationServiceTests
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MinValue);
 
         currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
-        currentUserServiceMock.Setup(c => c.UserSubRole).Returns(string.Empty);
 
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
 
@@ -977,7 +971,6 @@ public class ApplicationServiceTests
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
 
         currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
-        currentUserServiceMock.Setup(c => c.UserSubRole).Returns(string.Empty);
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MinValue);
 
         // Act
@@ -1042,7 +1035,6 @@ public class ApplicationServiceTests
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
 
         currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
-        currentUserServiceMock.Setup(c => c.UserSubRole).Returns(string.Empty);
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MinValue);
 
         // Act

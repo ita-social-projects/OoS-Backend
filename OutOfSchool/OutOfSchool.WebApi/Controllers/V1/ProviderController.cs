@@ -66,14 +66,14 @@ public class ProviderController : ControllerBase
     {
         // TODO: localize messages from the conrollers.
         var userId = GettingUserProperties.GetUserId(User);
-        var isDeputyOrAdmin = !string.IsNullOrEmpty(GettingUserProperties.GetUserSubrole(User)) &&
-                              GettingUserProperties.GetUserSubrole(User) != "None";
+        var isEmployee = !string.IsNullOrEmpty(GettingUserProperties.GetUserRole(User)) &&
+                              GettingUserProperties.GetUserRole(User) == "Employee";
         if (userId == null)
         {
             BadRequest("Invalid user information.");
         }
 
-        var provider = await providerService.GetByUserId(userId, isDeputyOrAdmin).ConfigureAwait(false);
+        var provider = await providerService.GetByUserId(userId, isEmployee).ConfigureAwait(false);
         if (provider == null)
         {
             return NoContent();

@@ -58,13 +58,13 @@ public class ProviderServiceUpdate
         var logger = new Mock<ILogger<ProviderService>>();
         var addressRepository = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
         var providerRepository = new ProviderRepository(GetContext());
-        var providerAdminRepository = new Mock<IProviderAdminRepository>();
+        var providerAdminRepository = new Mock<IEmployeeRepository>();
         var userRepository = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
         var providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
         var changesLogService = new Mock<IChangesLogService>();
         var notificationService = new Mock<INotificationService>();
-        var providerAdminService = new Mock<IProviderAdminService>();
+        var providerAdminService = new Mock<IEmployeeService>();
         var institutionAdminRepository = new Mock<IInstitutionAdminRepository>();
         var currentUserServiceMock = new Mock<ICurrentUserService>();
         var ministryAdminServiceMock = new Mock<IMinistryAdminService>();

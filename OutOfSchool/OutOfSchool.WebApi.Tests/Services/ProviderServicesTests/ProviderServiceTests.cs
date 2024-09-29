@@ -49,11 +49,11 @@ public class ProviderServiceTests
     private ProviderService providerService;
 
     private Mock<IProviderRepository> providersRepositoryMock;
-    private Mock<IProviderAdminRepository> providerAdminRepositoryMock;
+    private Mock<IEmployeeRepository> providerAdminRepositoryMock;
     private Mock<IEntityRepositorySoftDeleted<string, User>> usersRepositoryMock;
     private IMapper mapper;
     private Mock<INotificationService> notificationService;
-    private Mock<IProviderAdminService> providerAdminService;
+    private Mock<IEmployeeService> providerAdminService;
     private Mock<IInstitutionAdminRepository> institutionAdminRepositoryMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
@@ -80,7 +80,7 @@ public class ProviderServiceTests
         providersRepositoryMock = ProviderTestsHelper.CreateProvidersRepositoryMock(fakeProviders);
 
         // TODO: configure mock and writer tests for provider admins
-        providerAdminRepositoryMock = new Mock<IProviderAdminRepository>();
+        providerAdminRepositoryMock = new Mock<IEmployeeRepository>();
         usersRepositoryMock = ProviderTestsHelper.CreateUsersRepositoryMock(fakeUser);
         var addressRepo = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
@@ -88,7 +88,7 @@ public class ProviderServiceTests
         var providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
         var changesLogService = new Mock<IChangesLogService>();
         notificationService = new Mock<INotificationService>();
-        providerAdminService = new Mock<IProviderAdminService>();
+        providerAdminService = new Mock<IEmployeeService>();
         institutionAdminRepositoryMock = new Mock<IInstitutionAdminRepository>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
@@ -559,7 +559,7 @@ public class ProviderServiceTests
         var existingProvider = fakeProviders.RandomItem();
         var existingProviderAdmin = fakeProviders.RandomItem();
         providersRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Provider, bool>>>(), It.IsAny<string>())).ReturnsAsync(new List<Provider> { existingProvider });
-        providerAdminRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<ProviderAdmin, bool>>>(), It.IsAny<string>())).ReturnsAsync(new List<ProviderAdmin> { new ProviderAdmin { Provider = existingProviderAdmin } });
+        providerAdminRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Employee, bool>>>(), It.IsAny<string>())).ReturnsAsync(new List<Employee> { new Employee { Provider = existingProviderAdmin } });
 
         // Act
         var actualProviderDto = await providerService.GetByUserId(existingProviderAdmin.UserId, true).ConfigureAwait(false);
