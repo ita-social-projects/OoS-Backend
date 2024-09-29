@@ -70,7 +70,7 @@ public class MappingProfile : Profile
             }))
             .ForMember(dest => dest.Teachers, opt => opt.Ignore())
             .ForMember(dest => dest.Provider, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
+            .ForMember(dest => dest.Employees, opt => opt.Ignore())
             .ForMember(dest => dest.Applications, opt => opt.Ignore())
             .ForMember(dest => dest.ChatRooms, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore())
@@ -162,7 +162,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore());
+            .ForMember(dest => dest.Employees, opt => opt.Ignore());
 
         CreateSoftDeletedMap<ProviderUpdateDto, Provider>()
             .Apply(IgnoreCommonProviderBaseDto2Provider)
@@ -171,7 +171,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.User, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
+            .ForMember(dest => dest.Employees, opt => opt.Ignore())
             .ForMember(dest => dest.BlockPhoneNumber, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.BlockReason, opt => opt.Ignore())
@@ -200,7 +200,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.User, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
+            .ForMember(dest => dest.Employees, opt => opt.Ignore())
             .ForMember(dest => dest.BlockPhoneNumber, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.BlockReason, opt => opt.Ignore())
@@ -370,13 +370,12 @@ public class MappingProfile : Profile
 #warning The next mapping is here to test UI Admin features. Will be removed or refactored
         CreateMap<ShortUserDto, AdminDto>();
 
-        CreateMap<User, ProviderAdminDto>()
-            .ForMember(dest => dest.IsDeputy, opt => opt.Ignore())
+        CreateMap<User, EmployeeDto>()
             .ForMember(dest => dest.AccountStatus, m => m.Ignore())
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber));
 
-        CreateMap<User, FullProviderAdminDto>()
-            .IncludeBase<User, ProviderAdminDto>()
+        CreateMap<User, FullEmployeeDto>()
+            .IncludeBase<User, EmployeeDto>()
             .ForMember(dest => dest.WorkshopTitles, opt => opt.Ignore())
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
@@ -386,13 +385,13 @@ public class MappingProfile : Profile
         CreateMap<Direction, DirectionDto>()
             .ForMember(dest => dest.WorkshopsCount, opt => opt.Ignore());
 
-        CreateMap<CreateProviderAdminDto, CreateProviderAdminRequest>()
+        CreateMap<CreateEmployeeDto, CreateProviderAdminRequest>()
             .ForMember(dest => dest.RequestId, opt => opt.Ignore())
             .ForMember(c => c.CreatingTime, m => m.MapFrom(c => Timestamp.FromDateTimeOffset(c.CreatingTime)))
             .ForMember(c => c.ProviderId, m => m.MapFrom(c => c.ProviderId.ToString()))
             .ForMember(c => c.ManagedWorkshopIds, m => m.MapFrom(src => src.ManagedWorkshopIds.Select(id => id.ToString()).ToList()));
 
-        CreateMap<CreateProviderAdminReply, CreateProviderAdminDto>()
+        CreateMap<CreateProviderAdminReply, CreateEmployeeDto>()
             .ForMember(c => c.CreatingTime, m => m.MapFrom(c => c.CreatingTime.ToDateTimeOffset()))
             .ForMember(c => c.ProviderId, m => m.MapFrom(c => Guid.Parse(c.ProviderId)))
             .ForMember(c => c.ManagedWorkshopIds, opt => opt.MapFrom(src => src.ManagedWorkshopIds.Select(Guid.Parse).ToList()));
@@ -546,7 +545,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.AchievementType, opt => opt.Ignore())
             .ForMember(dest => dest.Teachers, opt => opt.Ignore());
 
-        CreateMap<ProviderAdmin, ProviderAdminProviderRelationDto>();
+        CreateMap<Employee, EmployeeProviderRelationDto>();
 
         CreateMap<ChatMessageWorkshop, ChatMessageWorkshopDto>().ReverseMap();
         CreateMap<ChatRoomWorkshop, ChatRoomWorkshopDto>();

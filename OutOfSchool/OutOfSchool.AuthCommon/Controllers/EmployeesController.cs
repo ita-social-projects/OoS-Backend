@@ -7,15 +7,15 @@ namespace OutOfSchool.AuthCommon.Controllers;
 [ApiController]
 [Route("[controller]/[action]")]
 [Authorize]
-public class ProviderAdminController : Controller
+public class EmployeesController : Controller
 {
-    private readonly ILogger<ProviderAdminController> logger;
+    private readonly ILogger<EmployeesController> logger;
     private readonly IProviderAdminService providerAdminService;
 
     private string userId;
 
-    public ProviderAdminController(
-        ILogger<ProviderAdminController> logger,
+    public EmployeesController(
+        ILogger<EmployeesController> logger,
         IProviderAdminService providerAdminService)
     {
         this.logger = logger;
@@ -28,25 +28,25 @@ public class ProviderAdminController : Controller
     }
 
     [HttpPost]
-    [HasPermission(Permissions.ProviderAdmins)]
-    public async Task<ResponseDto> Create(CreateProviderAdminDto providerAdminDto)
+    [HasPermission(Permissions.Employees)]
+    public async Task<ResponseDto> Create(CreateEmployeeDto employeeDto)
     {
         logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
         return await providerAdminService
-            .CreateProviderAdminAsync(providerAdminDto, Url, userId);
+            .CreateEmployeeAsync(employeeDto, Url, userId);
     }
 
     [HttpPut("{providerAdminId}")]
     [HasPermission(Permissions.ProviderRemove)]
-    public async Task<ResponseDto> Update(string providerAdminId, UpdateProviderAdminDto providerAdminUpdateDto)
+    public async Task<ResponseDto> Update(string providerAdminId, UpdateEmployeeDto employeeUpdateDto)
     {
         logger.LogDebug(
             "Operation initiated by User(id): {UserId}",
             userId);
 
         return await providerAdminService
-            .UpdateProviderAdminAsync(providerAdminUpdateDto, userId);
+            .UpdateEmployeeAsync(employeeUpdateDto, userId);
     }
 
     [HttpDelete("{providerAdminId}")]
@@ -61,7 +61,7 @@ public class ProviderAdminController : Controller
         logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
         return await providerAdminService
-            .DeleteProviderAdminAsync(providerAdminId, userId);
+            .DeleteEmployeeAsync(providerAdminId, userId);
     }
 
     [HttpPut("{providerAdminId}/{isBlocked}")]
@@ -71,7 +71,7 @@ public class ProviderAdminController : Controller
         logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
         return await providerAdminService
-            .BlockProviderAdminAsync(providerAdminId, userId, isBlocked);
+            .BlockEmployeeAsync(providerAdminId, userId, isBlocked);
     }
 
     [HttpPut("{providerId}/{isBlocked}")]
@@ -81,7 +81,7 @@ public class ProviderAdminController : Controller
         logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
         return await providerAdminService
-            .BlockProviderAdminsAndDeputiesByProviderAsync(providerId, userId, isBlocked);
+            .BlockEmployeesByProviderAsync(providerId, userId, isBlocked);
     }
 
     [HttpPut("{providerAdminId}")]
@@ -91,6 +91,6 @@ public class ProviderAdminController : Controller
         logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
         return await providerAdminService
-            .ReinviteProviderAdminAsync(providerAdminId, userId, Url);
+            .ReinviteEmployeeAsync(providerAdminId, userId, Url);
     }
 }

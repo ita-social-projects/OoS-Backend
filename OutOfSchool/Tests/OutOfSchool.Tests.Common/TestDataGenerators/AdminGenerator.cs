@@ -54,8 +54,8 @@ public static class AdminGenerator
         .RuleFor(x => x.InstitutionId, _ => Guid.NewGuid())
         .RuleFor(x => x.CATOTTGId, f => f.Random.Long());
 
-    private static readonly Faker<CreateProviderAdminDto> FakerCreateProviderAdminDto
-        = new Faker<CreateProviderAdminDto>()
+    private static readonly Faker<CreateEmployeeDto> FakerCreateProviderAdminDto
+        = new Faker<CreateEmployeeDto>()
         .RuleFor(x => x.FirstName, f => f.Name.FirstName())
         .RuleFor(x => x.LastName, f => f.Name.LastName())
         .RuleFor(x => x.Email, f => f.Internet.Email())
@@ -68,7 +68,7 @@ public static class AdminGenerator
     public static AreaAdmin GenerateAreaAdmin() => FakerAreaAdmin.Generate();
     public static AreaAdminDto GenerateAreaAdminDto() => FakerAreaAdminDto.Generate();
     public static AreaAdminBaseDto GenerateAreaAdminBaseDto() => FakerAreaAdminBaseDto.Generate();
-    public static CreateProviderAdminDto GenerateCreateProviderAdminDto() => FakerCreateProviderAdminDto.Generate();
+    public static CreateEmployeeDto GenerateCreateProviderAdminDto() => FakerCreateProviderAdminDto.Generate();
     public static List<MinistryAdminDto> GenerateMinistryAdminsDtos(int count) => Faker.Generate(count);
     public static List<InstitutionAdmin> GenerateInstitutionAdmins(int count) => FakerInstitutionAdmin.Generate(count);
     public static List<RegionAdmin> GenerateRegionAdmins(int count) => FakerRegionAdmin.Generate(count);

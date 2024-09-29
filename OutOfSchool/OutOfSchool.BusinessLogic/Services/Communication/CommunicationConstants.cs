@@ -2,17 +2,17 @@
 
 public static class CommunicationConstants
 {
-    public const string CreateProviderAdmin = "provideradmin/create";
+    public const string CreateEmployee = "employee/create";
 
-    public const string UpdateProviderAdmin = "provideradmin/update/";
+    public const string UpdateEmployee = "employee/update/";
 
-    public const string DeleteProviderAdmin = "provideradmin/delete/";
+    public const string DeleteEmployee = "employee/delete/";
 
-    public const string BlockProviderAdmin = "provideradmin/block/";
+    public const string BlockEmployee = "employee/block/";
 
-    public const string BlockProviderAdminByProvider = "provideradmin/blockbyprovider/";
+    public const string BlockEmployeeByProvider = "employee/blockbyprovider/";
 
-    public const string ReinviteProviderAdmin = "provideradmin/reinvite/";
+    public const string ReinviteEmployee = "employee/reinvite/";
 
     public const string CreateMinistryAdmin = "ministryadmin/create";
 

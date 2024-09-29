@@ -14,30 +14,30 @@ using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.AuthCommon.Services;
 
-public class ProviderAdminService : IProviderAdminService
+public class EmployeeService : IProviderAdminService
 {
     private readonly IEmailSenderService emailSender;
     private readonly IMapper mapper;
-    private readonly ILogger<ProviderAdminService> logger;
-    private readonly IProviderAdminRepository providerAdminRepository;
+    private readonly ILogger<EmployeeService> logger;
+    private readonly IEmployeeRepository employeeRepository;
     private readonly GrpcConfig grpcConfig;
     private readonly AngularClientScopeExternalUrisConfig externalUrisConfig;
 
     private readonly UserManager<User> userManager;
     private readonly OutOfSchoolDbContext context;
     private readonly IRazorViewToStringRenderer renderer;
-    private readonly IProviderAdminChangesLogService providerAdminChangesLogService;
+    private readonly IEmployeeChangesLogService employeeChangesLogService;
     private readonly string[] trackedProperties;
 
-    public ProviderAdminService(
+    public EmployeeService(
         IMapper mapper,
-        IProviderAdminRepository providerAdminRepository,
-        ILogger<ProviderAdminService> logger,
+        IEmployeeRepository employeeRepository,
+        ILogger<EmployeeService> logger,
         IEmailSenderService emailSender,
         UserManager<User> userManager,
         OutOfSchoolDbContext context,
         IRazorViewToStringRenderer renderer,
-        IProviderAdminChangesLogService providerAdminChangesLogService,
+        IEmployeeChangesLogService employeeChangesLogService,
         IOptions<GrpcConfig> grpcConfig,
         IOptions<AngularClientScopeExternalUrisConfig> externalUrisConfig,
         IOptions<ChangesLogConfig> changesLogConfig,
@@ -46,11 +46,11 @@ public class ProviderAdminService : IProviderAdminService
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         this.context = context ?? throw new ArgumentNullException(nameof(context));
-        this.providerAdminRepository = providerAdminRepository ?? throw new ArgumentNullException(nameof(providerAdminRepository));
+        this.employeeRepository = employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
         this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
-        this.providerAdminChangesLogService = providerAdminChangesLogService ?? throw new ArgumentNullException(nameof(providerAdminChangesLogService));
+        this.employeeChangesLogService = employeeChangesLogService ?? throw new ArgumentNullException(nameof(employeeChangesLogService));
         this.grpcConfig = grpcConfig?.Value ?? throw new ArgumentNullException(nameof(grpcConfig));
         this.externalUrisConfig =
             externalUrisConfig?.Value ?? throw new ArgumentNullException(nameof(externalUrisConfig));
@@ -62,27 +62,27 @@ public class ProviderAdminService : IProviderAdminService
         _ = hostsConfig?.Value ?? throw new ArgumentNullException(nameof(hostsConfig));
     }
 
-    public async Task<ResponseDto> CreateProviderAdminAsync(
-        CreateProviderAdminDto providerAdminDto,
+    public async Task<ResponseDto> CreateEmployeeAsync(
+        CreateEmployeeDto employeeDto,
         IUrlHelper url,
         string userId)
     {
-        var user = mapper.Map<User>(providerAdminDto);
+        var user = mapper.Map<User>(employeeDto);
 
         var password = PasswordGenerator
             .GenerateRandomPassword();
 
         var executionStrategy = context.Database.CreateExecutionStrategy();
-        return await executionStrategy.Execute(providerAdminDto, CreateProviderAdminOperation).ConfigureAwait(false);
+        return await executionStrategy.Execute(employeeDto, CreateEmployeeOperation).ConfigureAwait(false);
 
-        async Task<ResponseDto> CreateProviderAdminOperation(CreateProviderAdminDto createDto)
+        async Task<ResponseDto> CreateEmployeeOperation(CreateEmployeeDto createDto)
         {
             if (await context.Users.AnyAsync(x => x.Email == createDto.Email).ConfigureAwait(false))
             {
-                logger.LogError("Cant create provider admin with duplicate email: {Email}", createDto.Email);
+                logger.LogError("Cant create employee with duplicate email: {Email}", createDto.Email);
                 return CreateResponseDto(
                     HttpStatusCode.BadRequest,
-                    $"Cant create provider admin with duplicate email: {createDto.Email}");
+                    $"Cant create employee with duplicate email: {createDto.Email}");
             }
 
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
@@ -91,7 +91,7 @@ public class ProviderAdminService : IProviderAdminService
                 user.IsDerived = true;
                 user.IsRegistered = true;
                 user.IsBlocked = false;
-                user.Role = nameof(Role.Provider).ToLower();
+                user.Role = nameof(Role.Employee).ToLower();
 
                 var result = await userManager.CreateAsync(user, password);
 
@@ -101,7 +101,7 @@ public class ProviderAdminService : IProviderAdminService
                     var errorMessages = result.ErrorMessages();
 
                     logger.LogError(
-                        "Error happened while creation ProviderAdmin. User(id): {UserId}. {Errors}",
+                        "Error happened while creation Employee. User(id): {UserId}. {Errors}",
                         userId,
                         errorMessages);
 
@@ -127,29 +127,24 @@ public class ProviderAdminService : IProviderAdminService
 
                 createDto.UserId = user.Id;
 
-                var providerAdmin = mapper.Map<ProviderAdmin>(createDto);
-                providerAdmin.ManagedWorkshops = !providerAdmin.IsDeputy
-                    ? context.Workshops.Where(w => createDto.ManagedWorkshopIds.Contains(w.Id))
-                        .ToList()
-                    :
-
-                    // we create empty list, because deputy are not connected with each workshop, but to all related to provider
-                    new List<Workshop>();
-                if (!providerAdmin.IsDeputy && !providerAdmin.ManagedWorkshops.Any())
+                var employee = mapper.Map<Employee>(createDto);
+                employee.ManagedWorkshops =
+                    context.Workshops.Where(w => createDto.ManagedWorkshopIds.Contains(w.Id)).ToList();
+                if (!employee.ManagedWorkshops.Any())
                 {
                     await transaction.RollbackAsync();
-                    logger.LogError($"Cant create assistant provider admin without related workshops");
+                    logger.LogError($"Cant create employee without related workshops");
                     return CreateResponseDto(
                         HttpStatusCode.BadRequest,
-                        "You have to specify related workshops to be able to create workshop admin");
+                        "You have to specify related workshops to be able to create workshop employee");
                 }
 
-                var newProviderAdmin = await providerAdminRepository.Create(providerAdmin).ConfigureAwait(false);
+                var newEmployee = await employeeRepository.Create(employee).ConfigureAwait(false);
 
-                if (newProviderAdmin is not null)
+                if (newEmployee is not null)
                 {
-                    await providerAdminChangesLogService.SaveChangesLogAsync(
-                        providerAdmin,
+                    await employeeChangesLogService.SaveChangesLogAsync(
+                        employee,
                         userId,
                         OperationType.Create,
                         string.Empty,
@@ -159,7 +154,7 @@ public class ProviderAdminService : IProviderAdminService
                 }
 
                 logger.LogInformation(
-                    "ProviderAdmin(id):{Id} was successfully created by User(id): {UserId}",
+                    "Employee(id):{Id} was successfully created by User(id): {UserId}",
                     createDto.UserId,
                     userId);
 
@@ -183,44 +178,44 @@ public class ProviderAdminService : IProviderAdminService
         }
     }
 
-    public async Task<ResponseDto> UpdateProviderAdminAsync(
-        UpdateProviderAdminDto providerAdminUpdateDto,
+    public async Task<ResponseDto> UpdateEmployeeAsync(
+        UpdateEmployeeDto employeeUpdateDto,
         string userId)
     {
-        _ = providerAdminUpdateDto ?? throw new ArgumentNullException(nameof(providerAdminUpdateDto));
+        _ = employeeUpdateDto ?? throw new ArgumentNullException(nameof(employeeUpdateDto));
 
-        if (await context.Users.AnyAsync(x => x.Email == providerAdminUpdateDto.Email
-            && x.Id != providerAdminUpdateDto.Id).ConfigureAwait(false))
+        if (await context.Users.AnyAsync(x => x.Email == employeeUpdateDto.Email
+            && x.Id != employeeUpdateDto.Id).ConfigureAwait(false))
         {
-            logger.LogError("Cant update provider admin with duplicate email: {Email}", providerAdminUpdateDto.Email);
+            logger.LogError("Cant update employee with duplicate email: {Email}", employeeUpdateDto.Email);
             return CreateResponseDto(
                 HttpStatusCode.BadRequest,
-                $"Cant update provider admin with duplicate email: {providerAdminUpdateDto.Email}");
+                $"Cant update employee with duplicate email: {employeeUpdateDto.Email}");
         }
 
-        var providerAdmin = this.GetProviderAdmin(providerAdminUpdateDto.Id);
+        var employee = this.GetEmployee(employeeUpdateDto.Id);
 
-        if (providerAdmin is null)
+        if (employee is null)
         {
             logger.LogError(
-                "ProviderAdmin(id) {Id} not found. User(id): {UserId}",
-                providerAdminUpdateDto.Id,
+                "Employee(id) {Id} not found. User(id): {UserId}",
+                employeeUpdateDto.Id,
                 userId);
             return CreateResponseDto(HttpStatusCode.NotFound);
         }
 
-        if (!providerAdmin.IsDeputy && !providerAdminUpdateDto.ManagedWorkshopIds.Any())
+        if (!employeeUpdateDto.ManagedWorkshopIds.Any())
         {
-            logger.LogError("Cant update assistant provider admin without related workshops");
+            logger.LogError("Cant update employee without related workshops");
             return CreateResponseDto(HttpStatusCode.BadRequest);
         }
 
-        var user = await userManager.FindByIdAsync(providerAdminUpdateDto.Id);
+        var user = await userManager.FindByIdAsync(employeeUpdateDto.Id);
 
         var executionStrategy = context.Database.CreateExecutionStrategy();
-        return await executionStrategy.Execute(providerAdminUpdateDto, UpdateProviderAdminOperation).ConfigureAwait(false);
+        return await executionStrategy.Execute(employeeUpdateDto, UpdateEmployeeOperation).ConfigureAwait(false);
 
-        async Task<ResponseDto> UpdateProviderAdminOperation(UpdateProviderAdminDto updateDto)
+        async Task<ResponseDto> UpdateEmployeeOperation(UpdateEmployeeDto updateDto)
         {
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
             try
@@ -242,7 +237,7 @@ public class ProviderAdminService : IProviderAdminService
                     await transaction.RollbackAsync().ConfigureAwait(false);
 
                     logger.LogError(
-                        "Error happened while updating ProviderAdmin. User(id): {UserId}. {Errors}",
+                        "Error happened while updating Employee. User(id): {UserId}. {Errors}",
                         userId,
                         updateResult.ErrorMessages());
 
@@ -256,27 +251,26 @@ public class ProviderAdminService : IProviderAdminService
                     await transaction.RollbackAsync().ConfigureAwait(false);
 
                     logger.LogError(
-                        "Error happened while updating security stamp. ProviderAdmin. User(id): {UserId}. {Errors}",
+                        "Error happened while updating security stamp. Employee. User(id): {UserId}. {Errors}",
                         userId,
                         updateSecurityStamp.ErrorMessages());
                     return CreateResponseDto(HttpStatusCode.InternalServerError);
                 }
 
-                var oldWorkshopsIds = providerAdmin.ManagedWorkshops.Select(x => x.Id).ToList();
+                var oldWorkshopsIds = employee.ManagedWorkshops.Select(x => x.Id).ToList();
 
-                providerAdmin.ManagedWorkshops = !providerAdmin.IsDeputy
-                    ? context.Workshops.Where(w => updateDto.ManagedWorkshopIds.Contains(w.Id)).ToList()
-                    : new List<Workshop>();
+                employee.ManagedWorkshops =
+                    context.Workshops.Where(w => updateDto.ManagedWorkshopIds.Contains(w.Id)).ToList();
 
-                await providerAdminRepository.Update(providerAdmin).ConfigureAwait(false);
-                var newWorkshopsIds = providerAdmin.ManagedWorkshops.Select(x => x.Id).ToList();
+                await employeeRepository.Update(employee).ConfigureAwait(false);
+                var newWorkshopsIds = employee.ManagedWorkshops.Select(x => x.Id).ToList();
                 var addedWorkshopsIds = newWorkshopsIds.Except(oldWorkshopsIds).ToList();
                 var removedWorkshopsIds = oldWorkshopsIds.Except(newWorkshopsIds).ToList();
 
                 foreach (var addedId in addedWorkshopsIds)
                 {
-                    await providerAdminChangesLogService.SaveChangesLogAsync(
-                        providerAdmin,
+                    await employeeChangesLogService.SaveChangesLogAsync(
+                        employee,
                         userId,
                         OperationType.Update,
                         "WorkshopId",
@@ -287,8 +281,8 @@ public class ProviderAdminService : IProviderAdminService
 
                 foreach (var removedId in removedWorkshopsIds)
                 {
-                    await providerAdminChangesLogService.SaveChangesLogAsync(
-                        providerAdmin,
+                    await employeeChangesLogService.SaveChangesLogAsync(
+                        employee,
                         userId,
                         OperationType.Update,
                         "WorkshopId",
@@ -302,8 +296,8 @@ public class ProviderAdminService : IProviderAdminService
                     oldPropertiesValues.TryGetValue(newProperty.Key, out var oldValue);
                     if (newProperty.Value != oldValue)
                     {
-                        await providerAdminChangesLogService.SaveChangesLogAsync(
-                            providerAdmin,
+                        await employeeChangesLogService.SaveChangesLogAsync(
+                            employee,
                             userId,
                             OperationType.Update,
                             newProperty.Key,
@@ -316,7 +310,7 @@ public class ProviderAdminService : IProviderAdminService
                 await transaction.CommitAsync().ConfigureAwait(false);
 
                 logger.LogInformation(
-                    "ProviderAdmin(id):{Id} was successfully updated by User(id): {UserId}",
+                    "Employee(id):{Id} was successfully updated by User(id): {UserId}",
                     updateDto.Id,
                     userId);
 
@@ -328,7 +322,7 @@ public class ProviderAdminService : IProviderAdminService
 
                 logger.LogError(
                     ex,
-                    "Error happened while updating ProviderAdmin. User(id): {UserId}",
+                    "Error happened while updating Employee. User(id): {UserId}",
                     userId);
 
                 return CreateResponseDto(HttpStatusCode.InternalServerError);
@@ -336,33 +330,33 @@ public class ProviderAdminService : IProviderAdminService
         }
     }
 
-    public async Task<ResponseDto> DeleteProviderAdminAsync(
-        string providerAdminId,
+    public async Task<ResponseDto> DeleteEmployeeAsync(
+        string employeeId,
         string userId)
     {
-        var providerAdmin = this.GetProviderAdmin(providerAdminId);
+        var employee = this.GetEmployee(employeeId);
 
-        if (providerAdmin is null)
+        if (employee is null)
         {
             logger.LogError(
-                "ProviderAdmin(id) {ProviderAdminId} not found. User(id): {UserId}",
-                providerAdminId,
+                "Employee(id) {employeeId} not found. User(id): {UserId}",
+                employeeId,
                 userId);
 
             return CreateResponseDto(HttpStatusCode.NotFound);
         }
 
         var executionStrategy = context.Database.CreateExecutionStrategy();
-        return await executionStrategy.Execute(DeleteProviderAdminOperation).ConfigureAwait(false);
+        return await executionStrategy.Execute(DeleteEmployeeOperation).ConfigureAwait(false);
 
-        async Task<ResponseDto> DeleteProviderAdminOperation()
+        async Task<ResponseDto> DeleteEmployeeOperation()
         {
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
             try
             {
-                context.ProviderAdmins.Remove(providerAdmin);
+                context.Employees.Remove(employee);
 
-                var user = await userManager.FindByIdAsync(providerAdminId);
+                var user = await userManager.FindByIdAsync(employeeId);
                 var result = await userManager.DeleteAsync(user);
 
                 if (!result.Succeeded)
@@ -370,15 +364,15 @@ public class ProviderAdminService : IProviderAdminService
                     await transaction.RollbackAsync();
 
                     logger.LogError(
-                        "Error happened while deleting ProviderAdmin. User(id): {UserId}. {Errors}",
+                        "Error happened while deleting Employee. User(id): {UserId}. {Errors}",
                         userId,
                         result.ErrorMessages());
 
                     return CreateResponseDto(HttpStatusCode.InternalServerError);
                 }
 
-                await providerAdminChangesLogService.SaveChangesLogAsync(
-                        providerAdmin,
+                await employeeChangesLogService.SaveChangesLogAsync(
+                        employee,
                         userId,
                         OperationType.Delete,
                         string.Empty,
@@ -389,8 +383,8 @@ public class ProviderAdminService : IProviderAdminService
                 await transaction.CommitAsync();
 
                 logger.LogInformation(
-                    "ProviderAdmin(id):{ProviderAdminId} was successfully deleted by User(id): {UserId}",
-                    providerAdminId,
+                    "Employee(id):{employeeId} was successfully deleted by User(id): {UserId}",
+                    employeeId,
                     userId);
 
                 return CreateResponseDto(HttpStatusCode.OK);
@@ -401,7 +395,7 @@ public class ProviderAdminService : IProviderAdminService
 
                 logger.LogError(
                     ex,
-                    "Error happened while deleting ProviderAdmin. User(id): {UserId}",
+                    "Error happened while deleting Employee. User(id): {UserId}",
                     userId);
 
                 return CreateResponseDto(HttpStatusCode.InternalServerError);
@@ -409,31 +403,31 @@ public class ProviderAdminService : IProviderAdminService
         }
     }
 
-    public async Task<ResponseDto> BlockProviderAdminAsync(
-        string providerAdminId,
+    public async Task<ResponseDto> BlockEmployeeAsync(
+        string employeeId,
         string userId,
         bool isBlocked)
     {
-        var providerAdmin = this.GetProviderAdmin(providerAdminId);
+        var employee = this.GetEmployee(employeeId);
 
-        if (providerAdmin is null)
+        if (employee is null)
         {
             logger.LogError(
-                "ProviderAdmin(id) {ProviderAdminId} not found. User(id): {UserId}",
-                providerAdminId,
+                "Employee(id) {employeeId} not found. User(id): {UserId}",
+                employeeId,
                 userId);
 
             return CreateResponseDto(HttpStatusCode.NotFound);
         }
 
-        var user = await userManager.FindByIdAsync(providerAdminId);
+        var user = await userManager.FindByIdAsync(employeeId);
 
         var oldUserIsBlockedValue = user.IsBlocked;
 
         var executionStrategy = context.Database.CreateExecutionStrategy();
-        return await executionStrategy.Execute(BlockProviderAdminOperation).ConfigureAwait(false);
+        return await executionStrategy.Execute(BlockEmployeeOperation).ConfigureAwait(false);
 
-        async Task<ResponseDto> BlockProviderAdminOperation()
+        async Task<ResponseDto> BlockEmployeeOperation()
         {
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
             try
@@ -447,7 +441,7 @@ public class ProviderAdminService : IProviderAdminService
                     await transaction.RollbackAsync().ConfigureAwait(false);
 
                     logger.LogError(
-                        "Error happened while blocking ProviderAdmin. User(id): {UserId}. {Errors}",
+                        "Error happened while blocking Employee. User(id): {UserId}. {Errors}",
                         userId,
                         updateResult.ErrorMessages());
 
@@ -461,15 +455,15 @@ public class ProviderAdminService : IProviderAdminService
                     await transaction.RollbackAsync().ConfigureAwait(false);
 
                     logger.LogError(
-                        "Error happened while updating security stamp. ProviderAdmin. User(id): {UserId}. {Errors}",
+                        "Error happened while updating security stamp. Employee. User(id): {UserId}. {Errors}",
                         userId,
                         updateSecurityStamp.ErrorMessages());
 
                     return CreateResponseDto(HttpStatusCode.InternalServerError);
                 }
 
-                await providerAdminChangesLogService.SaveChangesLogAsync(
-                    providerAdmin,
+                await employeeChangesLogService.SaveChangesLogAsync(
+                    employee,
                     userId,
                     OperationType.Block,
                     "IsBlocked",
@@ -480,8 +474,8 @@ public class ProviderAdminService : IProviderAdminService
                 await transaction.CommitAsync().ConfigureAwait(false);
 
                 logger.LogInformation(
-                    "ProviderAdmin(id):{ProviderAdminId} was successfully blocked by User(id): {UserId}",
-                    providerAdminId,
+                    "Employee(id):{employeeId} was successfully blocked by User(id): {UserId}",
+                    employeeId,
                     userId);
 
                 return CreateResponseDto(HttpStatusCode.OK);
@@ -492,7 +486,7 @@ public class ProviderAdminService : IProviderAdminService
 
                 logger.LogError(
                     ex,
-                    "Error happened while blocking ProviderAdmin. User(id): {UserId}",
+                    "Error happened while blocking Employee. User(id): {UserId}",
                     userId);
 
                 return CreateResponseDto(HttpStatusCode.InternalServerError);
@@ -500,36 +494,36 @@ public class ProviderAdminService : IProviderAdminService
         }
     }
 
-    public async Task<ResponseDto> BlockProviderAdminsAndDeputiesByProviderAsync(
+    public async Task<ResponseDto> BlockEmployeesByProviderAsync(
         Guid providerId,
         string userId,
         bool isBlocked)
     {
         var mainResponse = new ResponseDto() { IsSuccess = true, HttpStatusCode = HttpStatusCode.OK, Message = string.Empty };
 
-        var providerAdmins = await providerAdminRepository
+        var employees = await employeeRepository
             .GetByFilter(x => x.ProviderId == providerId && x.BlockingType != BlockingType.Manually)
             .ConfigureAwait(false);
 
-        foreach (var providerAdminUserId in providerAdmins.Select(providerAdmin => providerAdmin.UserId))
+        foreach (var employeeUserId in employees.Select(employee => employee.UserId))
         {
-            var response = await BlockProviderAdminAsync(providerAdminUserId, userId, isBlocked);
+            var response = await this.BlockEmployeeAsync(employeeUserId, userId, isBlocked);
 
             if (response.IsSuccess)
             {
                 logger.LogInformation(
-                    "ProviderAdmin(id):{ProviderAdminId} was successfully blocked by User(id): {UserId}",
-                    providerAdminUserId,
+                    "Employee(id):{employeeUserId} was successfully blocked by User(id): {UserId}",
+                    employeeUserId,
                     userId);
             }
             else
             {
                 mainResponse.IsSuccess = false;
-                mainResponse.Message = string.Concat(mainResponse.Message, providerAdminUserId, " ", response.HttpStatusCode.ToString(), " ");
+                mainResponse.Message = string.Concat(mainResponse.Message, employeeUserId, " ", response.HttpStatusCode.ToString(), " ");
 
                 logger.LogInformation(
-                    "ProviderAdmin(id):{ProviderAdminId} wasn't blocked by User(id): {UserId}. Reason {ResponseHttpStatusCode}",
-                    providerAdminUserId,
+                    "Employee(id):{employeeUserId} wasn't blocked by User(id): {UserId}. Reason {ResponseHttpStatusCode}",
+                    employeeUserId,
                     userId,
                     response.HttpStatusCode);
             }
@@ -538,8 +532,8 @@ public class ProviderAdminService : IProviderAdminService
         return mainResponse;
     }
 
-    public async Task<ResponseDto> ReinviteProviderAdminAsync(
-        string providerAdminId,
+    public async Task<ResponseDto> ReinviteEmployeeAsync(
+        string employeeId,
         string userId,
         IUrlHelper url)
     {
@@ -549,18 +543,18 @@ public class ProviderAdminService : IProviderAdminService
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
             try
             {
-                var providerAdmin = this.GetProviderAdmin(providerAdminId);
+                var employee = this.GetEmployee(employeeId);
 
-                if (providerAdmin is null)
+                if (employee is null)
                 {
                     logger.LogError(
-                        "ProviderAdmin(id) {ProviderAdminId} not found.  User(id): {UserId}",
-                        providerAdminId,
+                        "Employee(id) {employeeId} not found.  User(id): {UserId}",
+                        employeeId,
                         userId);
                     return CreateResponseDto(HttpStatusCode.NotFound);
                 }
 
-                var user = await userManager.FindByIdAsync(providerAdminId);
+                var user = await userManager.FindByIdAsync(employeeId);
                 var password = PasswordGenerator.GenerateRandomPassword();
                 await userManager.RemovePasswordAsync(user);
                 var result = await userManager.AddPasswordAsync(user, password);
@@ -570,7 +564,7 @@ public class ProviderAdminService : IProviderAdminService
                     await transaction.RollbackAsync();
 
                     logger.LogError(
-                        "Error happened while updating ProviderAdmin. User(id): {UserId}. {Errors}",
+                        "Error happened while updating Employee. User(id): {UserId}. {Errors}",
                         userId,
                         result.ErrorMessages());
 
@@ -579,8 +573,8 @@ public class ProviderAdminService : IProviderAdminService
 
                 await this.SendInvitationEmail(user, url, password);
 
-                await providerAdminChangesLogService.SaveChangesLogAsync(
-                    providerAdmin,
+                await employeeChangesLogService.SaveChangesLogAsync(
+                    employee,
                     userId,
                     OperationType.Reinvite,
                     string.Empty,
@@ -591,8 +585,8 @@ public class ProviderAdminService : IProviderAdminService
                 await transaction.CommitAsync();
 
                 logger.LogInformation(
-                    "ProviderAdmin(id):{ProviderAdminId} was successfully updated by User(id): {UserId}",
-                    providerAdminId,
+                    "Employee(id):{employeeId} was successfully updated by User(id): {UserId}",
+                    employeeId,
                     userId);
 
                 return CreateResponseDto(HttpStatusCode.OK);
@@ -603,7 +597,7 @@ public class ProviderAdminService : IProviderAdminService
 
                 logger.LogError(
                     ex,
-                    "Error happened while updating ProviderAdmin. User(id): {UserId}",
+                    "Error happened while updating Employee. User(id): {UserId}",
                     userId);
 
                 return CreateResponseDto(HttpStatusCode.InternalServerError);
@@ -614,7 +608,7 @@ public class ProviderAdminService : IProviderAdminService
 
     private Dictionary<string, string?> GetTrackedUserProperties(User user)
     {
-        if (user == null || !trackedProperties.Any())
+        if (user is null || !trackedProperties.Any())
         {
             return new Dictionary<string, string?> { };
         }
@@ -654,8 +648,8 @@ public class ProviderAdminService : IProviderAdminService
         await emailSender.SendAsync(user.Email, subject, content);
     }
 
-    private ProviderAdmin GetProviderAdmin(string providerAdminId)
-        => context.ProviderAdmins.Include(x => x.ManagedWorkshops).SingleOrDefault(pa => pa.UserId == providerAdminId);
+    private Employee GetEmployee(string employeeId)
+        => context.Employees.Include(x => x.ManagedWorkshops).SingleOrDefault(pa => pa.UserId == employeeId);
 
     private ResponseDto CreateResponseDto(HttpStatusCode statusCode, string? message = null, object? result = null)
     {

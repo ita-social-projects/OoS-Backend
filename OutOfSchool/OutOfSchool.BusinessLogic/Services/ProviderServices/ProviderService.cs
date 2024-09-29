@@ -26,14 +26,14 @@ namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 public class ProviderService : IProviderService, ISensitiveProviderService
 {
     private readonly IProviderRepository providerRepository;
-    private readonly IProviderAdminRepository providerAdminRepository;
+    private readonly IEmployeeRepository employeeRepository;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
     private readonly IEntityRepositorySoftDeleted<long, Address> addressRepository;
     private readonly IWorkshopServicesCombiner workshopServiceCombiner;
     private readonly IChangesLogService changesLogService;
     private readonly INotificationService notificationService;
-    private readonly IProviderAdminService providerAdminService;
+    private readonly IEmployeeService employeeService;
     private readonly IInstitutionAdminRepository institutionAdminRepository;
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
@@ -62,11 +62,11 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     /// <param name="mapper">Mapper.</param>
     /// <param name="addressRepository">AddressRepository.</param>
     /// <param name="workshopServiceCombiner">WorkshopServiceCombiner.</param>
-    /// <param name="providerAdminRepository">Provider admin repository.</param>
+    /// <param name="employeeRepository">Employee repository.</param>
     /// <param name="providerImagesService">Images service.</param>
     /// <param name="changesLogService">ChangesLogService.</param>
     /// <param name="notificationService">Notification service.</param>
-    /// <param name="providerAdminService">Service for getting provider admins and deputies.</param>
+    /// <param name="employeeService">Service for getting provider admins and deputies.</param>
     /// <param name="institutionAdminRepository">Repository for getting ministry admins.</param>
     /// <param name="currentUserService">Service for manage current user.</param>
     /// <param name="ministryAdminService">Service for manage ministry admin.</param>
@@ -87,11 +87,11 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         IMapper mapper,
         IEntityRepositorySoftDeleted<long, Address> addressRepository,
         IWorkshopServicesCombiner workshopServiceCombiner,
-        IProviderAdminRepository providerAdminRepository,
+        IEmployeeRepository employeeRepository,
         IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
         IChangesLogService changesLogService,
         INotificationService notificationService,
-        IProviderAdminService providerAdminService,
+        IEmployeeService employeeService,
         IInstitutionAdminRepository institutionAdminRepository,
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,
@@ -111,12 +111,12 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
         this.usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
         this.workshopServiceCombiner = workshopServiceCombiner ?? throw new ArgumentNullException(nameof(workshopServiceCombiner));
-        this.providerAdminRepository = providerAdminRepository ?? throw new ArgumentNullException(nameof(providerAdminRepository));
+        this.employeeRepository = employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository));
         ProviderImagesService = providerImagesService ?? throw new ArgumentNullException(nameof(providerImagesService));
         this.changesLogService = changesLogService ?? throw new ArgumentNullException(nameof(changesLogService));
         this.notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         this.institutionAdminRepository = institutionAdminRepository;
-        this.providerAdminService = providerAdminService ?? throw new ArgumentNullException(nameof(providerAdminService));
+        this.employeeService = employeeService ?? throw new ArgumentNullException(nameof(employeeService));
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
         this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
@@ -295,7 +295,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
         if (isDeputyOrAdmin)
         {
-            var providerAdmins = await providerAdminRepository.GetByFilter(p => p.UserId == id).ConfigureAwait(false);
+            var providerAdmins = await employeeRepository.GetByFilter(p => p.UserId == id).ConfigureAwait(false);
             var providerAdmin = providerAdmins.FirstOrDefault();
             if (providerAdmin != null)
             {
@@ -425,8 +425,8 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         logger.LogInformation("Block/Unblock the particular provider admins and deputy providers belonging to the Provider starts.");
 
         // TODO: It's need to consider how we might use the result of the blocking provider admins and deputies who belong to the provider.
-        _ = await providerAdminService
-            .BlockProviderAdminsAndDeputiesByProviderAsync(provider.Id, currentUserService.UserId, token, providerBlockDto.IsBlocked);
+        _ = await employeeService
+            .BlockEmployeeByProviderAsync(provider.Id, currentUserService.UserId, token, providerBlockDto.IsBlocked);
 
         logger.LogInformation("Block/Unblock the particular provider admins and deputy providers belonging to the Provider finished.");
 
@@ -552,7 +552,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                          || status == ProviderStatus.Approved)
                 {
                     recipientIds.Add(provider.UserId);
-                    recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(provider.Id).ConfigureAwait(false));
+                    recipientIds.AddRange(await employeeService.GetEmployeesIds(provider.Id).ConfigureAwait(false));
                 }
             }
 
@@ -569,7 +569,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                 else if (licenseStatus == ProviderLicenseStatus.Approved)
                 {
                     recipientIds.Add(provider.UserId);
-                    recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(provider.Id).ConfigureAwait(false));
+                    recipientIds.AddRange(await employeeService.GetEmployeesIds(provider.Id).ConfigureAwait(false));
                 }
             }
         }

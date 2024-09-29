@@ -32,7 +32,7 @@ public class ChangesLogServiceTests
     private Mock<IChangesLogRepository> changesLogRepository;
     private Mock<IProviderRepository> providerRepository;
     private Mock<IApplicationRepository> applicationRepository;
-    private Mock<IEntityRepository<long, ProviderAdminChangesLog>> providerAdminChangesLogRepository;
+    private Mock<IEntityRepository<long, EmployeeChangesLog>> providerAdminChangesLogRepository;
     private Mock<IEntityAddOnlyRepository<long, ParentBlockedByAdminLog>> parentBlockedByAdminLogRepository;
     private Mock<IValueProjector> valueProjector;
     private Mock<ICurrentUserService> currentUserServiceMock;
@@ -76,7 +76,7 @@ public class ChangesLogServiceTests
         changesLogRepository = new Mock<IChangesLogRepository>(MockBehavior.Strict);
         providerRepository = new Mock<IProviderRepository>(MockBehavior.Strict);
         applicationRepository = new Mock<IApplicationRepository>(MockBehavior.Strict);
-        providerAdminChangesLogRepository = new Mock<IEntityRepository<long, ProviderAdminChangesLog>>(MockBehavior.Strict);
+        providerAdminChangesLogRepository = new Mock<IEntityRepository<long, EmployeeChangesLog>>(MockBehavior.Strict);
         parentBlockedByAdminLogRepository = new Mock<IEntityAddOnlyRepository<long, ParentBlockedByAdminLog>>();
         valueProjector = new Mock<IValueProjector>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
@@ -476,29 +476,23 @@ public class ChangesLogServiceTests
     }
 
     [Test]
-    [TestCase(ProviderAdminType.All, "")]
-    [TestCase(ProviderAdminType.Assistants, "")]
-    [TestCase(ProviderAdminType.Deputies, "")]
-    [TestCase(ProviderAdminType.All, "test")]
-    public async Task GetProviderAdminChangesLog_WhenCalled_ReturnsSearchResult(ProviderAdminType providerAdminType, string searchString)
+    public async Task GetProviderAdminChangesLog_WhenCalled_ReturnsSearchResult(string searchString)
     {
         // Arange
         var changesLogService = GetChangesLogService();
-        var request = new ProviderAdminChangesLogRequest();
-        request.AdminType = providerAdminType;
+        var request = new EmployeeChangesLogRequest();
         request.SearchString = searchString;
 
         var entitiesCount = 5;
         var totalAmount = 10;
         var changesMock = Enumerable.Range(1, entitiesCount)
-            .Select(x => new ProviderAdminChangesLog
+            .Select(x => new EmployeeChangesLog
             {
                 Id = x,
                 ProviderId = provider.Id,
-                ProviderAdminUser = UserGenerator.Generate(),
+                EmployeeUser = UserGenerator.Generate(),
                 User = user,
                 Provider = provider,
-                IsDeputy = true,
             })
             .AsQueryable()
             .BuildMock();
@@ -507,20 +501,20 @@ public class ChangesLogServiceTests
             .Returns(new ShortUserDto { Id = user.Id });
 
         providerAdminChangesLogRepository
-            .Setup(repo => repo.Count(It.IsAny<Expression<Func<ProviderAdminChangesLog, bool>>>()))
+            .Setup(repo => repo.Count(It.IsAny<Expression<Func<EmployeeChangesLog, bool>>>()))
             .Returns(Task.FromResult(totalAmount));
         providerAdminChangesLogRepository
             .Setup(repo => repo.Get(
                 request.From,
                 request.Size,
                 string.Empty,
-                It.IsAny<Expression<Func<ProviderAdminChangesLog, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<ProviderAdminChangesLog, object>>, SortDirection>>(),
+                It.IsAny<Expression<Func<EmployeeChangesLog, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<EmployeeChangesLog, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
             .Returns(changesMock);
 
         // Act
-        var result = await changesLogService.GetProviderAdminChangesLogAsync(request);
+        var result = await changesLogService.GetEmployeeChangesLogAsync(request);
 
         // Assert
         Assert.AreEqual(totalAmount, result.TotalAmount);
@@ -537,7 +531,7 @@ public class ChangesLogServiceTests
         // Arange
         var institutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4");
         var changesLogService = GetChangesLogService();
-        var request = new ProviderAdminChangesLogRequest();
+        var request = new EmployeeChangesLogRequest();
         provider = provider.WithInstitutionId(institutionId);
 
         currentUserServiceMock.Setup(x => x.IsMinistryAdmin()).Returns(true);
@@ -551,14 +545,13 @@ public class ChangesLogServiceTests
         var entitiesCount = 5;
         var totalAmount = 5;
         var providerAdminChangesLogs = Enumerable.Range(1, entitiesCount)
-            .Select(x => new ProviderAdminChangesLog
+            .Select(x => new EmployeeChangesLog
             {
                 Id = x,
                 ProviderId = provider.Id,
-                ProviderAdminUser = UserGenerator.Generate(),
+                EmployeeUser = UserGenerator.Generate(),
                 User = user,
                 Provider = provider,
-                IsDeputy = true,
             })
             .AsQueryable()
             .BuildMock();
@@ -567,20 +560,20 @@ public class ChangesLogServiceTests
             .Returns(new ShortUserDto { Id = user.Id });
 
         providerAdminChangesLogRepository
-            .Setup(repo => repo.Count(It.IsAny<Expression<Func<ProviderAdminChangesLog, bool>>>()))
+            .Setup(repo => repo.Count(It.IsAny<Expression<Func<EmployeeChangesLog, bool>>>()))
             .Returns(Task.FromResult(totalAmount));
         providerAdminChangesLogRepository
             .Setup(repo => repo.Get(
                 request.From,
                 request.Size,
                 string.Empty,
-                It.IsAny<Expression<Func<ProviderAdminChangesLog, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<ProviderAdminChangesLog, object>>, SortDirection>>(),
+                It.IsAny<Expression<Func<EmployeeChangesLog, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<EmployeeChangesLog, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
             .Returns(providerAdminChangesLogs);
 
         // Act
-        var result = await changesLogService.GetProviderAdminChangesLogAsync(request);
+        var result = await changesLogService.GetEmployeeChangesLogAsync(request);
 
         // Assert
         Assert.AreEqual(totalAmount, result.TotalAmount);
@@ -599,7 +592,7 @@ public class ChangesLogServiceTests
         long catottgId = 31737;
         var subCatottgIds = new List<long> { 31738, 31739, 31740 };
         var changesLogService = GetChangesLogService();
-        var request = new ProviderAdminChangesLogRequest();
+        var request = new EmployeeChangesLogRequest();
         provider = provider.WithInstitutionId(institutionId);
 
         currentUserServiceMock.Setup(x => x.IsAreaAdmin()).Returns(true);
@@ -617,20 +610,19 @@ public class ChangesLogServiceTests
         var totalAmount = 3;
         var entitiesCount = 3;
         var providerAdminChangesLogs = Enumerable.Range(1, entitiesCount)
-            .Select(x => new ProviderAdminChangesLog
+            .Select(x => new EmployeeChangesLog
             {
                 Id = x,
                 ProviderId = provider.Id,
-                ProviderAdminUser = UserGenerator.Generate(),
+                EmployeeUser = UserGenerator.Generate(),
                 User = user,
                 Provider = provider,
-                IsDeputy = true,
             })
             .AsQueryable()
             .BuildMock();
 
         providerAdminChangesLogRepository
-            .Setup(repo => repo.Count(It.IsAny<Expression<Func<ProviderAdminChangesLog, bool>>>()))
+            .Setup(repo => repo.Count(It.IsAny<Expression<Func<EmployeeChangesLog, bool>>>()))
             .Returns(Task.FromResult(totalAmount));
         mapper.Setup(m => m.Map<ShortUserDto>(user))
             .Returns(new ShortUserDto { Id = user.Id });
@@ -639,13 +631,13 @@ public class ChangesLogServiceTests
                 request.From,
                 request.Size,
                 string.Empty,
-                It.IsAny<Expression<Func<ProviderAdminChangesLog, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<ProviderAdminChangesLog, object>>, SortDirection>>(),
+                It.IsAny<Expression<Func<EmployeeChangesLog, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<EmployeeChangesLog, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
             .Returns(providerAdminChangesLogs);
 
         // Act
-        var result = await changesLogService.GetProviderAdminChangesLogAsync(request);
+        var result = await changesLogService.GetEmployeeChangesLogAsync(request);
 
         // Assert
         Assert.AreEqual(totalAmount, result.TotalAmount);

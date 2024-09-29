@@ -20,9 +20,9 @@ public class ApplicationStatusPermissionsTest
         _applicationStatusPermissions.InitDefaultPermissions();
 
         // Act
-        var resultCompleted = _applicationStatusPermissions.CanChangeStatus(role, subrole, ApplicationStatus.Completed, ApplicationStatus.Approved);
-        var resultRejected = _applicationStatusPermissions.CanChangeStatus(role, subrole, ApplicationStatus.Rejected, ApplicationStatus.Approved);
-        var resultLeft = _applicationStatusPermissions.CanChangeStatus(role, subrole, ApplicationStatus.Left, ApplicationStatus.Approved);
+        var resultCompleted = _applicationStatusPermissions.CanChangeStatus(role, ApplicationStatus.Completed, ApplicationStatus.Approved);
+        var resultRejected = _applicationStatusPermissions.CanChangeStatus(role, ApplicationStatus.Rejected, ApplicationStatus.Approved);
+        var resultLeft = _applicationStatusPermissions.CanChangeStatus(role, ApplicationStatus.Left, ApplicationStatus.Approved);
 
         // Assert
         Assert.AreEqual(false, resultCompleted);
@@ -39,7 +39,7 @@ public class ApplicationStatusPermissionsTest
         _applicationStatusPermissions.InitDefaultPermissions();
 
         // Act
-        var result = _applicationStatusPermissions.CanChangeStatus(role, subrole, ApplicationStatus.Pending, ApplicationStatus.AcceptedForSelection);
+        var result = _applicationStatusPermissions.CanChangeStatus(role, ApplicationStatus.Pending, ApplicationStatus.AcceptedForSelection);
 
         // Assert
         Assert.AreEqual(false, result);
@@ -53,12 +53,12 @@ public class ApplicationStatusPermissionsTest
         _applicationStatusPermissions.InitDefaultPermissions();
 
         // Act
-        var toAcceptedForSelectionResult = _applicationStatusPermissions.CanChangeStatus("provider", subrole, ApplicationStatus.Pending, ApplicationStatus.AcceptedForSelection);
-        var toApprovedResult = _applicationStatusPermissions.CanChangeStatus("provider", subrole, ApplicationStatus.Pending, ApplicationStatus.Approved);
-        var toStudyingForYearsResult = _applicationStatusPermissions.CanChangeStatus("provider", subrole, ApplicationStatus.Pending, ApplicationStatus.StudyingForYears);
-        var toCompletedResult = _applicationStatusPermissions.CanChangeStatus("provider", subrole, ApplicationStatus.Pending, ApplicationStatus.Completed);
-        var toRejectedResult = _applicationStatusPermissions.CanChangeStatus("provider", subrole, ApplicationStatus.Pending, ApplicationStatus.Rejected);
-        var toLeftResult = _applicationStatusPermissions.CanChangeStatus("provider", subrole, ApplicationStatus.Pending, ApplicationStatus.Left);
+        var toAcceptedForSelectionResult = _applicationStatusPermissions.CanChangeStatus("provider", ApplicationStatus.Pending, ApplicationStatus.AcceptedForSelection);
+        var toApprovedResult = _applicationStatusPermissions.CanChangeStatus("provider", ApplicationStatus.Pending, ApplicationStatus.Approved);
+        var toStudyingForYearsResult = _applicationStatusPermissions.CanChangeStatus("provider", ApplicationStatus.Pending, ApplicationStatus.StudyingForYears);
+        var toCompletedResult = _applicationStatusPermissions.CanChangeStatus("provider", ApplicationStatus.Pending, ApplicationStatus.Completed);
+        var toRejectedResult = _applicationStatusPermissions.CanChangeStatus("provider", ApplicationStatus.Pending, ApplicationStatus.Rejected);
+        var toLeftResult = _applicationStatusPermissions.CanChangeStatus("provider", ApplicationStatus.Pending, ApplicationStatus.Left);
 
         // Assert
         Assert.AreEqual(false, toAcceptedForSelectionResult);
@@ -77,12 +77,12 @@ public class ApplicationStatusPermissionsTest
         var from = ApplicationStatus.Pending;
 
         // Act
-        var toAcceptedForSelectionResult = _applicationStatusPermissions.CanChangeStatus("provider", subrole, from, ApplicationStatus.AcceptedForSelection);
-        var toApprovedResult = _applicationStatusPermissions.CanChangeStatus("provider", subrole, from, ApplicationStatus.Approved);
-        var toStudyingForYearsResult = _applicationStatusPermissions.CanChangeStatus("provider", subrole, from, ApplicationStatus.StudyingForYears);
-        var toCompletedResult = _applicationStatusPermissions.CanChangeStatus("provider", subrole, from, ApplicationStatus.Completed);
-        var toRejectedResult = _applicationStatusPermissions.CanChangeStatus("provider", subrole, from, ApplicationStatus.Rejected);
-        var toLeftResult = _applicationStatusPermissions.CanChangeStatus("provider", subrole, from, ApplicationStatus.Left);
+        var toAcceptedForSelectionResult = _applicationStatusPermissions.CanChangeStatus("provider", from, ApplicationStatus.AcceptedForSelection);
+        var toApprovedResult = _applicationStatusPermissions.CanChangeStatus("provider", from, ApplicationStatus.Approved);
+        var toStudyingForYearsResult = _applicationStatusPermissions.CanChangeStatus("provider", from, ApplicationStatus.StudyingForYears);
+        var toCompletedResult = _applicationStatusPermissions.CanChangeStatus("provider", from, ApplicationStatus.Completed);
+        var toRejectedResult = _applicationStatusPermissions.CanChangeStatus("provider", from, ApplicationStatus.Rejected);
+        var toLeftResult = _applicationStatusPermissions.CanChangeStatus("provider", from, ApplicationStatus.Left);
 
         // Assert
         Assert.AreEqual(true, toAcceptedForSelectionResult);
@@ -101,12 +101,12 @@ public class ApplicationStatusPermissionsTest
         var from = ApplicationStatus.AcceptedForSelection;
 
         // Act
-        var toPendingResult = _applicationStatusPermissions.CanChangeStatus("provider", subrole, from, ApplicationStatus.Pending);
-        var toApprovedResult = _applicationStatusPermissions.CanChangeStatus("provider", subrole, from, ApplicationStatus.Approved);
-        var toStudyingForYearsResult = _applicationStatusPermissions.CanChangeStatus("provider", subrole, from, ApplicationStatus.StudyingForYears);
-        var toCompletedResult = _applicationStatusPermissions.CanChangeStatus("provider", subrole, from, ApplicationStatus.Completed);
-        var toRejectedResult = _applicationStatusPermissions.CanChangeStatus("provider", subrole, from, ApplicationStatus.Rejected);
-        var toLeftResult = _applicationStatusPermissions.CanChangeStatus("provider", subrole, from, ApplicationStatus.Left);
+        var toPendingResult = _applicationStatusPermissions.CanChangeStatus("provider", from, ApplicationStatus.Pending);
+        var toApprovedResult = _applicationStatusPermissions.CanChangeStatus("provider", from, ApplicationStatus.Approved);
+        var toStudyingForYearsResult = _applicationStatusPermissions.CanChangeStatus("provider", from, ApplicationStatus.StudyingForYears);
+        var toCompletedResult = _applicationStatusPermissions.CanChangeStatus("provider", from, ApplicationStatus.Completed);
+        var toRejectedResult = _applicationStatusPermissions.CanChangeStatus("provider", from, ApplicationStatus.Rejected);
+        var toLeftResult = _applicationStatusPermissions.CanChangeStatus("provider", from, ApplicationStatus.Left);
 
         // Assert
         Assert.AreEqual(false, toPendingResult);

@@ -22,43 +22,43 @@ using OutOfSchool.WebApi.Controllers;
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
 [TestFixture]
-public class ProviderAdminControllerTests
+public class EmployeesControllerTests
 {
     private string userId;
 
-    private Mock<IProviderAdminService> providerAdminService;
+    private Mock<IEmployeeService> providerAdminService;
     private Mock<IUserService> userService;
     private Mock<IProviderService> providerService;
-    private Mock<ILogger<ProviderAdminController>> logger;
+    private Mock<ILogger<EmployeesController>> logger;
 
-    private ProviderAdminController providerAdminController;
+    private EmployeesController employeesController;
 
     [SetUp]
     public void Setup()
     {
         userId = Guid.NewGuid().ToString();
 
-        providerAdminService = new Mock<IProviderAdminService>();
+        providerAdminService = new Mock<IEmployeeService>();
         userService = new Mock<IUserService>();
         providerService = new Mock<IProviderService>();
-        logger = new Mock<ILogger<ProviderAdminController>>();
+        logger = new Mock<ILogger<EmployeesController>>();
 
-        providerAdminController = new ProviderAdminController(providerAdminService.Object, userService.Object, providerService.Object, logger.Object);
+        employeesController = new EmployeesController(providerAdminService.Object, userService.Object, providerService.Object, logger.Object);
 
-        providerAdminController.ControllerContext.HttpContext = GetFakeHttpContext();
+        employeesController.ControllerContext.HttpContext = GetFakeHttpContext();
     }
 
     [Test]
     public async Task CreateAdminProvider_WhenModelIsValid_ReturnsCreated()
     {
         // Arrange
-        var providerAdminDto = new CreateProviderAdminDto();
+        var providerAdminDto = new CreateEmployeeDto();
 
-        providerAdminService.Setup(x => x.CreateProviderAdminAsync(It.IsAny<string>(), It.IsAny<CreateProviderAdminDto>(), It.IsAny<string>()))
+        providerAdminService.Setup(x => x.CreateEmployeeAsync(It.IsAny<string>(), It.IsAny<CreateEmployeeDto>(), It.IsAny<string>()))
             .ReturnsAsync(providerAdminDto);
 
         // Act
-        var result = await providerAdminController.Create(providerAdminDto);
+        var result = await employeesController.Create(providerAdminDto);
 
         // Assert
         Assert.IsInstanceOf<CreatedResult>(result);
@@ -70,10 +70,10 @@ public class ProviderAdminControllerTests
     public async Task CreateAdminProvider_ProviderAdminIsNull_ReturnsBadRequest()
     {
         // Arrange
-        CreateProviderAdminDto providerAdmin = null;
+        CreateEmployeeDto employee = null;
 
         // Act
-        var result = await providerAdminController.Create(providerAdmin);
+        var result = await employeesController.Create(employee);
 
         // Assert
         Assert.IsInstanceOf<BadRequestObjectResult>(result);
@@ -83,12 +83,12 @@ public class ProviderAdminControllerTests
     public async Task GetFilteredProviderAdmins_WhenSearchResultIsNotNullOrEmpty_ReturnsOkObjectResult()
     {
         // Arrange
-        var searchResult = new SearchResult<ProviderAdminDto>()
+        var searchResult = new SearchResult<EmployeeDto>()
         {
             TotalAmount = 1,
-            Entities = new List<ProviderAdminDto>()
+            Entities = new List<EmployeeDto>()
             {
-                new ProviderAdminDto(),
+                new EmployeeDto(),
             },
         };
 
@@ -97,7 +97,7 @@ public class ProviderAdminControllerTests
         providerAdminService.Setup(x => x.GetFilteredRelatedProviderAdmins(It.IsAny<string>(), filter)).ReturnsAsync(searchResult);
 
         // Act
-        var result = await providerAdminController.GetFilteredProviderAdminsAsync(filter);
+        var result = await employeesController.GetFilteredProviderAdminsAsync(filter);
 
         // Assert
         result.Should().NotBeNull();
@@ -112,7 +112,7 @@ public class ProviderAdminControllerTests
     public async Task GetFilteredProviderAdmins_WhenSearchResultIsNullOrEmpty_ReturnsNoContentObjectResult()
     {
         // Arrange
-        var searchResult = new SearchResult<ProviderAdminDto>()
+        var searchResult = new SearchResult<EmployeeDto>()
         { };
 
         var filter = new ProviderAdminSearchFilter();
@@ -120,7 +120,7 @@ public class ProviderAdminControllerTests
         providerAdminService.Setup(x => x.GetFilteredRelatedProviderAdmins(userId, filter)).ReturnsAsync(searchResult);
 
         // Act
-        var result = await providerAdminController.GetFilteredProviderAdminsAsync(filter);
+        var result = await employeesController.GetFilteredProviderAdminsAsync(filter);
 
         // Assert
         result.Should().NotBeNull();
@@ -144,10 +144,10 @@ public class ProviderAdminControllerTests
             },
         };
 
-        providerAdminService.Setup(x => x.GetWorkshopsThatProviderAdminCanManage(It.IsAny<string>(), true)).ReturnsAsync(searchResult);
+        providerAdminService.Setup(x => x.GetWorkshopsThatEmployeeCanManage(It.IsAny<string>())).ReturnsAsync(searchResult);
 
         // Act
-        var result = await providerAdminController.ManagedWorkshops();
+        var result = await employeesController.ManagedWorkshops();
 
         // Assert
         result.Should().NotBeNull();
@@ -165,10 +165,10 @@ public class ProviderAdminControllerTests
         var searchResult = new SearchResult<WorkshopProviderViewCard>()
         { };
 
-        providerAdminService.Setup(x => x.GetWorkshopsThatProviderAdminCanManage(userId, true)).ReturnsAsync(searchResult);
+        providerAdminService.Setup(x => x.GetWorkshopsThatEmployeeCanManage(userId)).ReturnsAsync(searchResult);
 
         // Act
-        var result = await providerAdminController.ManagedWorkshops();
+        var result = await employeesController.ManagedWorkshops();
 
         // Assert
         result.Should().NotBeNull();
@@ -208,7 +208,6 @@ public class ProviderAdminControllerTests
                         new Claim[]
                         {
                             new Claim(IdentityResourceClaimsTypes.Sub, userId),
-                            new Claim("subrole", Subrole.ProviderDeputy.ToString()),
                             new Claim(IdentityResourceClaimsTypes.Role, Role.Provider.ToString()),
                         },
                         IdentityResourceClaimsTypes.Sub));

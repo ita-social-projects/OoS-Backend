@@ -52,8 +52,8 @@ public static class AuthCommonServiceExtensions
         services.AddTransient(typeof(IEntityRepositorySoftDeleted<,>), typeof(EntityRepositorySoftDeleted<,>));
 
         services.AddTransient<IParentRepository, ParentRepository>();
-        services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
-        services.AddTransient<IProviderAdminService, ProviderAdminService>();
+        services.AddTransient<IEmployeeRepository, EmployeeRepository>();
+        services.AddTransient<IProviderAdminService, EmployeeService>();
         services.AddTransient<IUserManagerAdditionalService, UserManagerAdditionalService>();
         services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
         services.AddTransient<IRegionAdminRepository, RegionAdminRepository>();
@@ -65,7 +65,7 @@ public static class AuthCommonServiceExtensions
         services.AddTransient<ICommonMinistryAdminService<AreaAdminBaseDto>,
             CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, IAreaAdminRepository>>();
 
-        services.AddTransient<IProviderAdminChangesLogService, ProviderAdminChangesLogService>();
+        services.AddTransient<IEmployeeChangesLogService, EmployeeChangesLogService>();
 
         // Register the Permission policy handlers
         services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();

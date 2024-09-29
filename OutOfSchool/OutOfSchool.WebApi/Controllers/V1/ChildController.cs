@@ -17,7 +17,7 @@ public class ChildController : ControllerBase
 {
     private readonly IChildService service;
     private readonly IProviderService providerService;
-    private readonly IProviderAdminService providerAdminService;
+    private readonly IEmployeeService employeeService;
     private readonly IWorkshopServicesCombiner combinedWorkshopService;
 
     /// <summary>
@@ -25,17 +25,17 @@ public class ChildController : ControllerBase
     /// </summary>
     /// <param name="service">Service for Child model.</param>
     /// <param name="providerService">Service for Provider model.</param>
-    /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
+    /// <param name="employeeService">Service for ProviderAdmin model.</param>
     /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
     public ChildController(
         IChildService service,
         IProviderService providerService,
-        IProviderAdminService providerAdminService,
+        IEmployeeService employeeService,
         IWorkshopServicesCombiner combinedWorkshopService)
     {
         this.service = service ?? throw new ArgumentNullException(nameof(service));
         this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
-        this.providerAdminService = providerAdminService ?? throw new ArgumentNullException(nameof(providerAdminService));
+        this.employeeService = employeeService ?? throw new ArgumentNullException(nameof(employeeService));
         this.combinedWorkshopService = combinedWorkshopService ?? throw new ArgumentNullException(nameof(combinedWorkshopService));
     }
 
@@ -172,20 +172,20 @@ public class ChildController : ControllerBase
 
     private async Task<bool> IsUserProvidersOwnerOrAdmin(Guid workshopId)
     {
+        var isProvider = User.IsInRole(nameof(Role.Provider).ToLower());
+        var isEmployee = User.IsInRole(nameof(Role.Employee).ToLower());
         if (User.IsInRole(nameof(Role.Provider).ToLower()))
         {
             Guid workshopProviderId = await providerService.GetProviderIdForWorkshopById(workshopId);
             var userId = GettingUserProperties.GetUserId(User);
-            var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
 
-            if (userSubrole == Subrole.ProviderAdmin)
+            if (isEmployee)
             {
-                return await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, workshopProviderId, workshopId).ConfigureAwait(false);
+                return await employeeService.CheckUserIsRelatedEmployee(userId, workshopProviderId, workshopId).ConfigureAwait(false);
             }
             else
             {
-                bool isDeputy = userSubrole == Subrole.ProviderDeputy;
-                var provider = await providerService.GetByUserId(userId, isDeputy).ConfigureAwait(false);
+                var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
                 return workshopProviderId == provider?.Id;
             }
         }

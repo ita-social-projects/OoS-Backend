@@ -43,7 +43,7 @@ public class BlockedProviderParentController : ControllerBase
     /// <response code="400">BlockedProviderParentBlockDto was incorrect. Block exists with current ProviderId and ParentId.</response>
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="500">If any server error occures.</response>
-    [HasPermission(Permissions.ProviderAdmins)]
+    [HasPermission(Permissions.Employees)]
     [HttpPost]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(BlockedProviderParentDto))]
@@ -91,7 +91,7 @@ public class BlockedProviderParentController : ControllerBase
     /// <response code="400">BlockedProviderParentUnblockDto was incorrect. Block does not exist with current ProviderId and ParentId.</response>
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="500">If any server error occures.</response>
-    [HasPermission(Permissions.ProviderAdmins)]
+    [HasPermission(Permissions.Employees)]
     [HttpPost]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BlockedProviderParentDto))]

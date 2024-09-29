@@ -12,17 +12,17 @@ using OutOfSchool.Services.Repository.Base.Api;
 namespace OutOfSchool.AuthServer.Tests.Services;
 
 [TestFixture]
-public class ProviderAdminChangesLogServiceTests
+public class EmployeeChangesLogServiceTests
 {
-    private IProviderAdminChangesLogService providerAdminChangesLogService;
-    private Mock<IEntityAddOnlyRepository<long, ProviderAdminChangesLog>> providerAdminChangesLogRepositoryMock;
+    private IEmployeeChangesLogService employeeChangesLogService;
+    private Mock<IEntityAddOnlyRepository<long, EmployeeChangesLog>> providerAdminChangesLogRepositoryMock;
 
     [SetUp]
     public void SetUp()
     {
-        providerAdminChangesLogRepositoryMock = new Mock<IEntityAddOnlyRepository<long, ProviderAdminChangesLog>>();
-        providerAdminChangesLogService =
-            new ProviderAdminChangesLogService(providerAdminChangesLogRepositoryMock.Object);
+        providerAdminChangesLogRepositoryMock = new Mock<IEntityAddOnlyRepository<long, EmployeeChangesLog>>();
+        employeeChangesLogService =
+            new EmployeeChangesLogService(providerAdminChangesLogRepositoryMock.Object);
     }
 
     #region SaveChangesLogAsync
@@ -30,14 +30,14 @@ public class ProviderAdminChangesLogServiceTests
     public async Task SaveChangesLogAsync_WhenEntityValid_ShouldSaveLogItem()
     {
         // Arrange
-        var providerAdmin = new ProviderAdmin()
+        var providerAdmin = new Employee()
         {
             UserId = Guid.NewGuid().ToString(),
             ProviderId = Guid.NewGuid(),
         };
-        var expectedResult = new ProviderAdminChangesLog()
+        var expectedResult = new EmployeeChangesLog()
         {
-            ProviderAdminUserId = providerAdmin.UserId,
+            EmployeeUserId = providerAdmin.UserId,
             ProviderId = providerAdmin.ProviderId,
         };
         var userId = Guid.NewGuid().ToString();
@@ -46,11 +46,11 @@ public class ProviderAdminChangesLogServiceTests
         var oldValue = string.Empty;
         var newValue = "John";
 
-        providerAdminChangesLogRepositoryMock.Setup(m => m.Create(It.IsAny<ProviderAdminChangesLog>()))
+        providerAdminChangesLogRepositoryMock.Setup(m => m.Create(It.IsAny<EmployeeChangesLog>()))
             .ReturnsAsync(expectedResult);
 
         // Act
-        var result = await providerAdminChangesLogService.SaveChangesLogAsync(
+        var result = await employeeChangesLogService.SaveChangesLogAsync(
             providerAdmin,
             userId,
             operationType,
@@ -66,7 +66,7 @@ public class ProviderAdminChangesLogServiceTests
     public async Task SaveChangesLogAsync_WhenEntityIsNull_ShouldThrowArgumentNullException()
     {
         // Arrange
-        ProviderAdmin providerAdmin = null;
+        Employee employee = null;
         var userId = Guid.NewGuid().ToString();
         var operationType = OperationType.Create;
         var propertyName = "FirstName";
@@ -74,8 +74,8 @@ public class ProviderAdminChangesLogServiceTests
         var newValue = "John";
         
         // Act
-        Func<Task> action = async () => await providerAdminChangesLogService.SaveChangesLogAsync(
-            providerAdmin,
+        Func<Task> action = async () => await employeeChangesLogService.SaveChangesLogAsync(
+            employee,
             userId,
             operationType,
             propertyName,

@@ -60,7 +60,7 @@ public class ProviderAdminOperationsRESTServiceTests
     public async Task CreateProviderAdminAsync_WhenModelValid_ShouldReturnCreatedEntity()
     {
         // Arrange
-        var providerAdminDto = new CreateProviderAdminDto();
+        var providerAdminDto = new CreateEmployeeDto();
 
         providerAdminOperationsRESTService.Setup(x => x.SendRequest<ResponseDto>(It.IsAny<Request>()))
             .ReturnsAsync(new ResponseDto()
@@ -79,7 +79,7 @@ public class ProviderAdminOperationsRESTServiceTests
     public async Task CreateProviderAdminAsync_WhenModelInValid_ShouldReturnBadRequest()
     {
         // Arrange
-        var providerAdminDto = new CreateProviderAdminDto();
+        var providerAdminDto = new CreateEmployeeDto();
 
         providerAdminOperationsRESTService.Setup(x => x.SendRequest<ResponseDto>(It.IsAny<Request>()))
             .ReturnsAsync(new ResponseDto()

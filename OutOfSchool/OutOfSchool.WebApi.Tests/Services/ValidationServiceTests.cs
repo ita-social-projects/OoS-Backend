@@ -18,7 +18,7 @@ public class ValidationServiceTests
     private Mock<IProviderRepository> providerRepositoryMock;
     private Mock<IParentRepository> parentRepositoryMock;
     private Mock<IWorkshopRepository> workshopRepositoryMock;
-    private Mock<IProviderAdminRepository> providerAdminRepositoryMock;
+    private Mock<IEmployeeRepository> providerAdminRepositoryMock;
 
     private IValidationService validationService;
 
@@ -28,7 +28,7 @@ public class ValidationServiceTests
         providerRepositoryMock = new Mock<IProviderRepository>();
         parentRepositoryMock = new Mock<IParentRepository>();
         workshopRepositoryMock = new Mock<IWorkshopRepository>();
-        providerAdminRepositoryMock = new Mock<IProviderAdminRepository>();
+        providerAdminRepositoryMock = new Mock<IEmployeeRepository>();
 
         validationService = new ValidationService(
             providerRepositoryMock.Object,
@@ -113,7 +113,7 @@ public class ValidationServiceTests
             .ReturnsAsync(new List<Workshop>() { workshopWithProviderWithValidUserId });
 
         // Act
-        var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, workshopWithProviderWithValidUserId.Id, Subrole.None).ConfigureAwait(false);
+        var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, workshopWithProviderWithValidUserId.Id).ConfigureAwait(false);
 
         // Assert
         Assert.IsTrue(result);
@@ -137,7 +137,7 @@ public class ValidationServiceTests
             .ReturnsAsync(new List<Workshop>() { workshopWithProviderWithAnotherUserId });
 
         // Act
-        var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, workshopWithProviderWithAnotherUserId.Id, Subrole.None).ConfigureAwait(false);
+        var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, workshopWithProviderWithAnotherUserId.Id).ConfigureAwait(false);
 
         // Assert
         Assert.IsFalse(result);
@@ -152,7 +152,7 @@ public class ValidationServiceTests
             .ReturnsAsync(new List<Workshop>());
 
         // Act
-        var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, Guid.NewGuid(), Subrole.None).ConfigureAwait(false);
+        var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         Assert.IsFalse(result);

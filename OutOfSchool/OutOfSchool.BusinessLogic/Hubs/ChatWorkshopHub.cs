@@ -26,7 +26,7 @@ public class ChatWorkshopHub : Hub
     private readonly IWorkshopRepository workshopRepository;
     private readonly IParentRepository parentRepository;
     private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IProviderAdminRepository providerAdminRepository;
+    private readonly IEmployeeRepository employeeRepository;
     private readonly IBlockedProviderParentService blockedProviderParentService;
 
     /// <summary>
@@ -39,7 +39,7 @@ public class ChatWorkshopHub : Hub
     /// <param name="workshopRepository">Repository for workshop entities.</param>
     /// <param name="parentRepository">Repository for parent entities.</param>
     /// <param name="localizer">Localizer.</param>
-    /// <param name="providerAdminRepository">ProviderAdminRepository.</param>
+    /// <param name="employeeRepository">EmployeeRepository.</param>
     public ChatWorkshopHub(
         ILogger<ChatWorkshopHub> logger,
         IChatMessageWorkshopService chatMessageService,
@@ -48,7 +48,7 @@ public class ChatWorkshopHub : Hub
         IWorkshopRepository workshopRepository,
         IParentRepository parentRepository,
         IStringLocalizer<SharedResource> localizer,
-        IProviderAdminRepository providerAdminRepository,
+        IEmployeeRepository employeeRepository,
         IBlockedProviderParentService blockedProviderParentService)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -58,7 +58,7 @@ public class ChatWorkshopHub : Hub
         this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
         this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
         this.localizer = localizer;
-        this.providerAdminRepository = providerAdminRepository;
+        this.employeeRepository = employeeRepository;
         this.blockedProviderParentService = blockedProviderParentService;
     }
 
@@ -69,12 +69,8 @@ public class ChatWorkshopHub : Hub
 
         var userRoleName = GettingUserProperties.GetUserRole(Context.User);
         LogErrorThrowExceptionIfPropertyIsNull(userRoleName, nameof(userRoleName));
-
-        var userSubroleName = GettingUserProperties.GetUserSubrole(Context.User);
-        LogErrorThrowExceptionIfPropertyIsNull(userSubroleName, nameof(userSubroleName));
-
+        
         Role userRole = (Role)Enum.Parse(typeof(Role), userRoleName, true);
-        Subrole userSubrole = (Subrole)Enum.Parse(typeof(Subrole), userSubroleName, true);
 
         logger.LogDebug($"New Hub-connection established. {nameof(userId)}: {userId}, {nameof(userRoleName)}: {userRoleName}");
 
@@ -90,10 +86,10 @@ public class ChatWorkshopHub : Hub
         }
         else
         {
-            if (userSubrole == Subrole.ProviderAdmin)
+            if (userRole is Role.Employee)
             {
-                var providersAdmins = await providerAdminRepository.GetByFilter(p => p.UserId == userId && !p.IsDeputy).ConfigureAwait(false);
-                var workshopsIds = providersAdmins.SelectMany(admin => admin.ManagedWorkshops, (admin, workshops) => new { workshops }).Select(x => x.workshops.Id);
+                var employees = await employeeRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false);
+                var workshopsIds = employees.SelectMany(admin => admin.ManagedWorkshops, (admin, workshops) => new { workshops }).Select(x => x.workshops.Id);
                 usersRoomIds = await roomService.GetChatRoomIdsByWorkshopIdsAsync(workshopsIds).ConfigureAwait(false);
             }
             else
@@ -171,14 +167,14 @@ public class ChatWorkshopHub : Hub
             await AddConnectionsToGroupAsync(workshop.Provider.UserId, createdMessageDto.ChatRoomId.ToString()).ConfigureAwait(false);
 
             // Add Provider's deputy connections to the Group.
-            var providersDeputies = await providerAdminRepository.GetByFilter(p => p.ProviderId == workshop.ProviderId && p.IsDeputy).ConfigureAwait(false);
+            var providersDeputies = await employeeRepository.GetByFilter(p => p.ProviderId == workshop.ProviderId).ConfigureAwait(false);
             foreach (var providersDeputy in providersDeputies)
             {
                 await AddConnectionsToGroupAsync(providersDeputy.UserId, createdMessageDto.ChatRoomId.ToString()).ConfigureAwait(false);
             }
 
             // Add Provider's admin connections to the Group.
-            var providersAdmins = await providerAdminRepository.GetByFilter(p => p.ManagedWorkshops.Any(w => w.Id == workshop.Id) && !p.IsDeputy).ConfigureAwait(false);
+            var providersAdmins = await employeeRepository.GetByFilter(p => p.ManagedWorkshops.Any(w => w.Id == workshop.Id)).ConfigureAwait(false);
             foreach (var providersAdmin in providersAdmins)
             {
                 await AddConnectionsToGroupAsync(providersAdmin.UserId, createdMessageDto.ChatRoomId.ToString()).ConfigureAwait(false);
@@ -253,6 +249,8 @@ public class ChatWorkshopHub : Hub
 
         bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
 
+        bool userRoleIsEmployee = userRole.Equals(Role.Employee.ToString(), StringComparison.OrdinalIgnoreCase);
+
         var workshop = await workshopRepository.GetById(workshopId);
 
         bool isParentBlocked = await blockedProviderParentService.IsBlocked(parentId, workshop.ProviderId);
@@ -262,13 +260,12 @@ public class ChatWorkshopHub : Hub
             return false;
         }
 
-        if (userRoleIsProvider)
+        if (userRoleIsProvider || userRoleIsEmployee)
         {
-            var userSubroleName = GettingUserProperties.GetUserSubrole(Context.User);
-            LogErrorThrowExceptionIfPropertyIsNull(userSubroleName, nameof(userSubroleName));
-            Subrole userSubrole = (Subrole)Enum.Parse(typeof(Subrole), userSubroleName, true);
+            var userRoleName = GettingUserProperties.GetUserRole(Context.User);
+            LogErrorThrowExceptionIfPropertyIsNull(userRoleName, nameof(userRoleName));
 
-            return await validationService.UserIsWorkshopOwnerAsync(userId, workshopId, userSubrole);
+            return await validationService.UserIsWorkshopOwnerAsync(userId, workshopId);
         }
 
         return await validationService.UserIsParentOwnerAsync(userId, parentId);

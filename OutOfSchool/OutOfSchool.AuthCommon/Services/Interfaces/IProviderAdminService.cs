@@ -5,31 +5,31 @@ namespace OutOfSchool.AuthCommon.Services.Interfaces;
 
 public interface IProviderAdminService
 {
-    Task<ResponseDto> CreateProviderAdminAsync(
-        CreateProviderAdminDto providerAdminDto,
+    Task<ResponseDto> CreateEmployeeAsync(
+        CreateEmployeeDto employeeDto,
         IUrlHelper url,
         string userId);
 
-    Task<ResponseDto> UpdateProviderAdminAsync(
-        UpdateProviderAdminDto providerAdminUpdateDto,
+    Task<ResponseDto> UpdateEmployeeAsync(
+        UpdateEmployeeDto employeeUpdateDto,
         string userId);
 
-    Task<ResponseDto> DeleteProviderAdminAsync(
-        string providerAdminId,
+    Task<ResponseDto> DeleteEmployeeAsync(
+        string employeeId,
         string userId);
 
-    Task<ResponseDto> BlockProviderAdminAsync(
-        string providerAdminId,
+    Task<ResponseDto> BlockEmployeeAsync(
+        string employeeId,
         string userId,
         bool isBlocked);
 
-    Task<ResponseDto> BlockProviderAdminsAndDeputiesByProviderAsync(
+    Task<ResponseDto> BlockEmployeesByProviderAsync(
         Guid providerId,
         string userId,
         bool isBlocked);
 
-    Task<ResponseDto> ReinviteProviderAdminAsync(
-        string providerAdminId,
+    Task<ResponseDto> ReinviteEmployeeAsync(
+        string employeeId,
         string userId,
         IUrlHelper url);
 }

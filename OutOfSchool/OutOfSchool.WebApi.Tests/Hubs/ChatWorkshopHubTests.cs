@@ -33,7 +33,7 @@ public class ChatWorkshopHubTests
     private Mock<IValidationService> validationServiceMock;
     private Mock<IWorkshopRepository> workshopRepositoryMock;
     private Mock<IParentRepository> parentRepositoryMock;
-    private Mock<IProviderAdminRepository> providerAdminRepositoryMock;
+    private Mock<IEmployeeRepository> providerAdminRepositoryMock;
     private Mock<IBlockedProviderParentService> blockedProviderParentServiceMock;
 
     private ChatWorkshopHub chatHub;
@@ -60,7 +60,7 @@ public class ChatWorkshopHubTests
         hubCallerContextMock = new Mock<HubCallerContext>();
         groupsMock = new Mock<IGroupManager>();
         localizerMock = new Mock<IStringLocalizer<SharedResource>>();
-        providerAdminRepositoryMock = new Mock<IProviderAdminRepository>();
+        providerAdminRepositoryMock = new Mock<IEmployeeRepository>();
 
         chatHub = new ChatWorkshopHub(
             loggerMock.Object,
@@ -80,8 +80,6 @@ public class ChatWorkshopHubTests
 
         hubCallerContextMock.Setup(x => x.User.FindFirst(IdentityResourceClaimsTypes.Sub))
             .Returns(new Claim(IdentityResourceClaimsTypes.Sub, UserId));
-        hubCallerContextMock.Setup(x => x.User.FindFirst(IdentityResourceClaimsTypes.Subrole))
-            .Returns(new Claim(IdentityResourceClaimsTypes.Subrole, "None"));
     }
 
     // TODO: use fakers
@@ -197,7 +195,7 @@ public class ChatWorkshopHubTests
         var validChatRoomId = Guid.NewGuid();
         var validNewMessage = $"{{'workshopId':'{validWorkshopId}', 'parentId':'{validParentId}', 'chatRoomId':'{validChatRoomId}', 'text':'hi', 'senderRoleIsProvider':true}}";
 
-        validationServiceMock.Setup(x => x.UserIsWorkshopOwnerAsync(UserId, validWorkshopId, Subrole.None)).ReturnsAsync(true);
+        validationServiceMock.Setup(x => x.UserIsWorkshopOwnerAsync(UserId, validWorkshopId)).ReturnsAsync(true);
 
         roomServiceMock.Setup(x => x.GetByIdAsync(validChatRoomId)).ReturnsAsync(new ChatRoomWorkshopDto());
 
@@ -225,8 +223,8 @@ public class ChatWorkshopHubTests
 
         clientsMock.Setup(clients => clients.Group(It.IsAny<string>())).Returns(clientProxyMock.Object);
 
-        var validProviderAdmins = new List<ProviderAdmin>();
-        providerAdminRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<ProviderAdmin, bool>>>(), It.IsAny<string>())).ReturnsAsync(validProviderAdmins);
+        var validProviderAdmins = new List<Employee>();
+        providerAdminRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Employee, bool>>>(), It.IsAny<string>())).ReturnsAsync(validProviderAdmins);
 
         workshopRepositoryMock
             .Setup(x => x.GetById(validWorkshopId))

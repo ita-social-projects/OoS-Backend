@@ -42,25 +42,6 @@ public static class GettingUserProperties
         return user?.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role);
     }
 
-    public static Subrole GetUserSubrole(HttpContext httpContext)
-    {
-        var userSubroleName = GetUserSubrole(httpContext?.User);
-
-        if (userSubroleName is null)
-        {
-            ThrowAuthenticationException(nameof(IdentityResourceClaimsTypes.Subrole));
-        }
-
-        Subrole userSubrole = (Subrole)Enum.Parse(typeof(Subrole), userSubroleName, true);
-
-        return userSubrole;
-    }
-
-    public static string GetUserSubrole(ClaimsPrincipal user)
-    {
-        return user?.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Subrole);
-    }
-
     private static void ThrowAuthenticationException(string claimType)
         => throw new AuthenticationException($"Can not get user's claim {claimType} from Context.");
 }

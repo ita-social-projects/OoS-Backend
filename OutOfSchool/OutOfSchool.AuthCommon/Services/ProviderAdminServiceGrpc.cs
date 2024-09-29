@@ -21,13 +21,13 @@ public class ProviderAdminServiceGrpc : GRPCProviderAdmin.GRPCProviderAdminBase
 
     public override async Task<CreateProviderAdminReply> CreateProviderAdmin(CreateProviderAdminRequest request, ServerCallContext context)
     {
-        var createProviderAdminDto = mapper.Map<CreateProviderAdminDto>(request);
+        var createProviderAdminDto = mapper.Map<CreateEmployeeDto>(request);
 
         var userId = context.GetHttpContext().User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
-        var result = await providerAdminService.CreateProviderAdminAsync(createProviderAdminDto, null, userId);
+        var result = await providerAdminService.CreateEmployeeAsync(createProviderAdminDto, null, userId);
         CreateProviderAdminReply createProviderAdminReply;
 
-        if (result.IsSuccess && result.Result is CreateProviderAdminDto resultCreateProviderAdminDto)
+        if (result.IsSuccess && result.Result is CreateEmployeeDto resultCreateProviderAdminDto)
         {
             createProviderAdminReply = mapper.Map<CreateProviderAdminReply>(resultCreateProviderAdminDto);
             createProviderAdminReply.IsSuccess = true;

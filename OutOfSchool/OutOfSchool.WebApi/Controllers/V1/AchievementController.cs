@@ -18,7 +18,7 @@ public class AchievementController : ControllerBase
 {
     private readonly IAchievementService achievementService;
     private readonly IProviderService providerService;
-    private readonly IProviderAdminService providerAdminService;
+    private readonly IEmployeeService employeeService;
     private readonly IWorkshopService workshopService;
 
     /// <summary>
@@ -26,17 +26,17 @@ public class AchievementController : ControllerBase
     /// </summary>
     /// <param name="service">Service for Achievement entity.</param>
     /// <param name="providerService">Service for Provider model.</param>
-    /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
+    /// <param name="employeeService">Service for ProviderAdmin model.</param>
     /// <param name="workshopService">Service for Workshop model.</param>
 
     public AchievementController(
         IAchievementService service,
         IProviderService providerService,
-        IProviderAdminService providerAdminService,
+        IEmployeeService employeeService,
         IWorkshopService workshopService)
     {
         this.achievementService = service;
-        this.providerAdminService = providerAdminService;
+        this.employeeService = employeeService;
         this.providerService = providerService;
         this.workshopService = workshopService;
     }
@@ -244,23 +244,22 @@ public class AchievementController : ControllerBase
 
     private async Task<bool> IsUserProvidersOwnerOrAdmin(Guid workshopId)
     {
-        if (!User.IsInRole(nameof(Role.Provider).ToLower()))
+        if (!User.IsInRole(nameof(Role.Provider).ToLower()) 
+            && !User.IsInRole(nameof(Role.Employee).ToLower()))
         {
             return false;
         }
 
         var userId = GettingUserProperties.GetUserId(User);
         var providerId = await workshopService.GetWorkshopProviderOwnerIdAsync(workshopId).ConfigureAwait(false);
-        var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
 
-        if (userSubrole == Subrole.ProviderAdmin)
+        if (User.IsInRole(nameof(Role.Employee).ToLower()))
         {
-            return await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId).ConfigureAwait(false);
+            return await employeeService.CheckUserIsRelatedEmployee(userId, providerId, workshopId).ConfigureAwait(false);
         }
         else
         {
-            bool isDeputy = userSubrole == Subrole.ProviderDeputy;
-            var provider = await providerService.GetByUserId(userId, isDeputy).ConfigureAwait(false);
+            var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
             return providerId == provider?.Id;
         }
     }

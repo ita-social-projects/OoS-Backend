@@ -26,16 +26,16 @@ using OutOfSchool.Tests.Common;
 namespace OutOfSchool.WebApi.Tests.Services;
 
 [TestFixture]
-public class ProviderAdminServiceTest
+public class EmployeeServiceTest
 {
     private readonly string userId = "1";
     private readonly string email = "email@gmail.com";
 
     private Mock<IHttpClientFactory> httpClientFactory;
     private Mock<IOptions<AuthorizationServerConfig>> identityServerConfig;
-    private Mock<IOptions<ProviderAdminConfig>> providerAdminConfig;
+    private Mock<IOptions<EmployeeConfig>> providerAdminConfig;
     private Mock<IOptions<CommunicationConfig>> communicationConfig;
-    private Mock<IProviderAdminRepository> providerAdminRepository;
+    private Mock<IEmployeeRepository> providerAdminRepository;
     private Mock<IEntityRepositorySoftDeleted<string, OutOfSchool.Services.Models.User>> userRepositoryMock;
     private IMapper mapper;
     private Mock<IProviderAdminOperationsService> providerAdminOperationsService;
@@ -43,7 +43,7 @@ public class ProviderAdminServiceTest
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IEntityRepositorySoftDeleted<string, User>> apiErrorServiceUserRepositoryMock;
 
-    private ProviderAdminService providerAdminService;
+    private EmployeeService employeeService;
     private ApiErrorResponse badRequestApiErrorResponse;
     private ErrorResponse userDosntHavePermissionErrorResponse;
     private ErrorResponse emailAlreadyTakenErrorResponse;
@@ -57,7 +57,7 @@ public class ProviderAdminServiceTest
             HttpStatusCode = HttpStatusCode.Forbidden,
             ApiErrorResponse = new ApiErrorResponse(new List<ApiError>()
                 {
-                    ApiErrorsTypes.ProviderAdmin.UserDontHavePermissionToCreate(userId),
+                    ApiErrorsTypes.Employee.UserDontHavePermissionToCreate(userId),
                 }),
         };
         badRequestApiErrorResponse = new ApiErrorResponse();
@@ -74,11 +74,11 @@ public class ProviderAdminServiceTest
             });
         identityServerConfig = new Mock<IOptions<AuthorizationServerConfig>>();
         communicationConfig = new Mock<IOptions<CommunicationConfig>>();
-        providerAdminConfig = new Mock<IOptions<ProviderAdminConfig>>();
+        providerAdminConfig = new Mock<IOptions<EmployeeConfig>>();
         providerAdminConfig.Setup(x => x.Value)
-            .Returns(new ProviderAdminConfig()
+            .Returns(new EmployeeConfig()
             {
-                MaxNumberAdmins = 1,
+                MaxNumberEmployees = 1,
             });
         communicationConfig.Setup(x => x.Value)
             .Returns(new CommunicationConfig()
@@ -87,10 +87,10 @@ public class ProviderAdminServiceTest
                 TimeoutInSeconds = 2,
                 MaxNumberOfRetries = 7,
             });
-        providerAdminRepository = new Mock<IProviderAdminRepository>();
+        providerAdminRepository = new Mock<IEmployeeRepository>();
         userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, OutOfSchool.Services.Models.User>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
-        var logger = new Mock<ILogger<ProviderAdminService>>();
+        var logger = new Mock<ILogger<EmployeeService>>();
         providerAdminOperationsService = new Mock<IProviderAdminOperationsService>();
         workshopService = new Mock<IWorkshopService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
@@ -98,7 +98,7 @@ public class ProviderAdminServiceTest
         var apiErrorServiceLogger = new Mock<ILogger<ApiErrorService>>();
         apiErrorService = new ApiErrorService(apiErrorServiceUserRepositoryMock.Object, apiErrorServiceLogger.Object);
 
-        providerAdminService = new ProviderAdminService(
+        employeeService = new EmployeeService(
             httpClientFactory.Object,
             identityServerConfig.Object,
             providerAdminConfig.Object,
@@ -122,7 +122,7 @@ public class ProviderAdminServiceTest
             .ApiErrors[0];
 
         // Act
-        var response = await providerAdminService.CreateProviderAdminAsync(userId, new CreateProviderAdminDto(), It.IsAny<string>()).ConfigureAwait(false);
+        var response = await employeeService.CreateEmployeeAsync(userId, new CreateEmployeeDto(), It.IsAny<string>()).ConfigureAwait(false);
 
         ErrorResponse errorResponse = default;
         response.Match<ErrorResponse>(
@@ -148,17 +148,17 @@ public class ProviderAdminServiceTest
         apiErrorServiceUserRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<string>()))
             .ReturnsAsync(new List<User> { new User() });
 
-        providerAdminRepository.Setup(r => r.IsExistProviderAdminDeputyWithUserIdAsync(It.IsAny<Guid>(), It.IsAny<string>()))
+        providerAdminRepository.Setup(r => r.IsExistEmployeeWithUserIdAsync(It.IsAny<Guid>(), It.IsAny<string>()))
                                    .ReturnsAsync(true);
 
         providerAdminRepository.Setup(r => r.IsExistProviderWithUserIdAsync(It.IsAny<string>()))
                                    .ReturnsAsync(true);
 
-        var createProviderAdminDto = new CreateProviderAdminDto();
+        var createProviderAdminDto = new CreateEmployeeDto();
         createProviderAdminDto.Email = email;
 
         // Act
-        var response = await providerAdminService.CreateProviderAdminAsync(userId, createProviderAdminDto, It.IsAny<string>()).ConfigureAwait(false);
+        var response = await employeeService.CreateEmployeeAsync(userId, createProviderAdminDto, It.IsAny<string>()).ConfigureAwait(false);
 
         ErrorResponse errorResponse = default;
         response.Match<ErrorResponse>(

@@ -18,7 +18,7 @@ public class TeacherController : ControllerBase // check permissions for worksho
     private readonly ITeacherService teacherService;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IProviderService providerService;
-    private readonly IProviderAdminService providerAdminService;
+    private readonly IEmployeeService employeeService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TeacherController"/> class.
@@ -26,14 +26,14 @@ public class TeacherController : ControllerBase // check permissions for worksho
     /// <param name="teacherService">Service for Teacher model.</param>
     /// <param name="localizer">Localizer.</param
     /// <param name="providerService">Service for Provider.</param>
-    /// <param name="providerAdminService">Service For ProviderAdmin.</param>
+    /// <param name="employeeService">Service For ProviderAdmin.</param>
     public TeacherController(
         ITeacherService teacherService,
         IStringLocalizer<SharedResource> localizer,
-        IProviderAdminService providerAdminService,
+        IEmployeeService employeeService,
         IProviderService providerService)
     {
-        this.providerAdminService = providerAdminService;
+        this.employeeService = employeeService;
         this.providerService = providerService;
         this.localizer = localizer;
         this.teacherService = teacherService;
@@ -184,7 +184,7 @@ public class TeacherController : ControllerBase // check permissions for worksho
             {
                 try
                 {
-                    var isUserRelatedAdmin = await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId).ConfigureAwait(false);
+                    var isUserRelatedAdmin = await employeeService.CheckUserIsRelatedEmployee(userId, providerId, workshopId).ConfigureAwait(false);
                     if (!isUserRelatedAdmin)
                     {
                         return false;

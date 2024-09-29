@@ -2,10 +2,8 @@
 
 namespace OutOfSchool.BusinessLogic.Models.Changes;
 
-public class ProviderAdminChangesLogRequest : SearchStringFilter
+public class EmployeeChangesLogRequest : SearchStringFilter
 {
-    public ProviderAdminType AdminType { get; set; }
-
     public OperationType? OperationType { get; set; }
 
     public DateTime? DateFrom { get; set; }

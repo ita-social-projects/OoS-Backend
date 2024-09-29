@@ -28,7 +28,7 @@ public class ApplicationControllerTests
     private Mock<IApplicationService> applicationService;
     private Mock<IWorkshopService> workshopService;
     private Mock<IProviderService> providerService;
-    private Mock<IProviderAdminService> providerAdminService;
+    private Mock<IEmployeeService> providerAdminService;
     private Mock<IUserService> userService;
     private Mock<IBlockedProviderParentService> blockedProviderParentService;
 
@@ -50,7 +50,7 @@ public class ApplicationControllerTests
         applicationService = new Mock<IApplicationService>();
         workshopService = new Mock<IWorkshopService>();
         providerService = new Mock<IProviderService>();
-        providerAdminService = new Mock<IProviderAdminService>();
+        providerAdminService = new Mock<IEmployeeService>();
         userService = new Mock<IUserService>();
         blockedProviderParentService = new Mock<IBlockedProviderParentService>();
 
@@ -348,7 +348,7 @@ public class ApplicationControllerTests
         var emptySearchResult = new SearchResult<ApplicationDto>() { TotalAmount = 0, Entities = new List<ApplicationDto>() };
 
         providerService.Setup(s => s.GetById(providerId)).ReturnsAsync((ProviderDto)null);
-        providerAdminService.Setup(s => s.GetById(providerId.ToString())).ReturnsAsync((ProviderAdminProviderRelationDto)null);
+        providerAdminService.Setup(s => s.GetById(providerId.ToString())).ReturnsAsync((EmployeeProviderRelationDto)null);
 
         // Act
         var result = await controller.GetPendingApplicationsByProviderId(providerId).ConfigureAwait(false);
@@ -373,14 +373,14 @@ public class ApplicationControllerTests
     public void GetPendingApplicationsByProviderId_WhenProviderHasNoRights_ShouldThrowUnauthorizedAccess()
     {
         // Arrange
-        providerAdminService.Setup(s => s.GetById(providerId.ToString())).ReturnsAsync(new ProviderAdminProviderRelationDto());
+        providerAdminService.Setup(s => s.GetById(providerId.ToString())).ReturnsAsync(new EmployeeProviderRelationDto());
 
-        applicationService.Setup(s => s.GetAllByProviderAdmin(It.IsAny<string>(), It.IsAny<ApplicationFilter>(), It.IsAny<Guid>(), It.IsAny<bool>()))
+        applicationService.Setup(s => s.GetAllByEmployee(It.IsAny<string>(), It.IsAny<ApplicationFilter>(), It.IsAny<Guid>(), It.IsAny<bool>()))
             .ThrowsAsync(new UnauthorizedAccessException());
 
         // Act & Assert
         providerAdminService.Verify(s => s.GetById(providerId.ToString()), Times.Never);
-        applicationService.Verify(s => s.GetAllByProviderAdmin(It.IsAny<string>(), It.IsAny<ApplicationFilter>(), It.IsAny<Guid>(), It.IsAny<bool>()), Times.Never);
+        applicationService.Verify(s => s.GetAllByEmployee(It.IsAny<string>(), It.IsAny<ApplicationFilter>(), It.IsAny<Guid>(), It.IsAny<bool>()), Times.Never);
 
         Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await controller.GetPendingApplicationsByProviderId(providerId));
     }

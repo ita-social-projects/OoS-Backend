@@ -21,12 +21,6 @@ public interface ICurrentUser
     /// <returns>A <see cref="string"/> id of current logged in user.</returns>
     public string UserRole { get; }
 
-    /// <summary>
-    /// Gets current logged in UserSubRole or empty string in other case.
-    /// </summary>
-    /// <returns>A <see cref="string"/> id of current logged in user.</returns>
-    public string UserSubRole { get; }
-
     /// <summary>Determines whether the current user belongs to the specified role.</summary>
     /// <param name="role">The name of the role for which to check membership.</param>
     /// <returns>

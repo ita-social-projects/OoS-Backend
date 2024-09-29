@@ -57,7 +57,7 @@ public class ProviderAdminServiceGrpcTests
         var response = MockResponse(true, providerId);
 
         providerAdminServiceMock.Setup(
-                p => p.CreateProviderAdminAsync(It.IsAny<CreateProviderAdminDto>(), null, userId))
+                p => p.CreateEmployeeAsync(It.IsAny<CreateEmployeeDto>(), null, userId))
             .ReturnsAsync(response);
 
         // Act
@@ -79,7 +79,7 @@ public class ProviderAdminServiceGrpcTests
         var response = MockResponse(false, providerId);
 
         providerAdminServiceMock.Setup(
-                p => p.CreateProviderAdminAsync(It.IsAny<CreateProviderAdminDto>(), null, userId))
+                p => p.CreateEmployeeAsync(It.IsAny<CreateEmployeeDto>(), null, userId))
             .ReturnsAsync(response);
 
         // Act
@@ -113,13 +113,12 @@ public class ProviderAdminServiceGrpcTests
         return new ResponseDto()
         {
             IsSuccess = isSuccess,
-            Result = new CreateProviderAdminDto()
+            Result = new CreateEmployeeDto()
             {
                 FirstName = "Example",
                 MiddleName = "Example",
                 LastName = "Example",
                 Email = "test@test.com",
-                IsDeputy = true,
                 PhoneNumber = "+380671234567",
                 ProviderId = providerId,
                 UserId = Guid.NewGuid().ToString(),

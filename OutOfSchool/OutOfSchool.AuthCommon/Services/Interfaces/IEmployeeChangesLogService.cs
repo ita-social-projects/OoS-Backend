@@ -2,12 +2,12 @@
 
 namespace OutOfSchool.AuthCommon.Services.Interfaces;
 
-public interface IProviderAdminChangesLogService
+public interface IEmployeeChangesLogService
 {
     /// <summary>
-    /// Create changes log for the given <see cref="ProviderAdmin"/> entity.
+    /// Create changes log for the given <see cref="Employee"/> entity.
     /// </summary>
-    /// <param name="entity">Modified <see cref="ProviderAdmin"/> entity.</param>
+    /// <param name="entity">Modified <see cref="Employee"/> entity.</param>
     /// <param name="userId">ID of user that performs the change.</param>
     /// <param name="operationType">Type of the change operation.</param>
     /// <param name="propertyName">Name of the property that is changing.</param>
@@ -15,7 +15,7 @@ public interface IProviderAdminChangesLogService
     /// <param name="newValue">New value of the property that is changing.</param>
     /// <returns>Number of the added log records.</returns>
     Task<int> SaveChangesLogAsync(
-        ProviderAdmin entity,
+        Employee entity,
         string userId,
         OperationType operationType,
         string propertyName,

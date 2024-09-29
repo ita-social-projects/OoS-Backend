@@ -14,23 +14,23 @@ namespace OutOfSchool.WebApi.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
-[HasPermission(Permissions.ProviderAdmins)]
-public class ProviderAdminController : Controller
+[HasPermission(Permissions.Employees)]
+public class EmployeesController : Controller
 {
-    private readonly IProviderAdminService providerAdminService;
+    private readonly IEmployeeService employeeService;
     private readonly IUserService userService;
     private readonly IProviderService providerService;
-    private readonly ILogger<ProviderAdminController> logger;
+    private readonly ILogger<EmployeesController> logger;
     private string path;
     private string userId;
 
-    public ProviderAdminController(
-        IProviderAdminService providerAdminService,
+    public EmployeesController(
+        IEmployeeService employeeService,
         IUserService userService,
         IProviderService providerService,
-        ILogger<ProviderAdminController> logger)
+        ILogger<EmployeesController> logger)
     {
-        this.providerAdminService = providerAdminService;
+        this.employeeService = employeeService;
         this.userService = userService;
         this.providerService = providerService;
         this.logger = logger;
@@ -43,35 +43,35 @@ public class ProviderAdminController : Controller
     }
 
     /// <summary>
-    /// Method for creating new ProviderAdmin.
+    /// Method for creating new Employee.
     /// </summary>
-    /// <param name="providerAdmin">Entity to add.</param>
+    /// <param name="employee">Entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CreateProviderAdminDto))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CreateEmployeeDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<ActionResult> Create([FromBody] CreateProviderAdminDto providerAdmin)
+    public async Task<ActionResult> Create([FromBody] CreateEmployeeDto employee)
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
 
-        if (providerAdmin == null)
+        if (employee == null)
         {
-            return BadRequest("ProviderAdmin is null.");
+            return BadRequest("Employee is null.");
         }
 
-        if (await IsProviderBlocked(providerAdmin.ProviderId).ConfigureAwait(false))
+        if (await IsProviderBlocked(employee.ProviderId).ConfigureAwait(false))
         {
-            return StatusCode(403, "Forbidden to create the provider admin at the blocked provider");
+            return StatusCode(403, "Forbidden to create the employee at the blocked provider");
         }
 
         if (await IsCurrentUserBlocked())
         {
-            return StatusCode(403, "Forbidden to create the provider admin by the blocked provider.");
+            return StatusCode(403, "Forbidden to create the employee by the blocked provider.");
         }
 
         if (!ModelState.IsValid)
@@ -81,9 +81,9 @@ public class ProviderAdminController : Controller
             return StatusCode(StatusCodes.Status422UnprocessableEntity);
         }
 
-        var response = await providerAdminService.CreateProviderAdminAsync(
+        var response = await employeeService.CreateEmployeeAsync(
                 userId,
-                providerAdmin,
+                employee,
                 await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
             .ConfigureAwait(false);
 
@@ -91,39 +91,39 @@ public class ProviderAdminController : Controller
             error => StatusCode((int)error.HttpStatusCode, new { error.Message, error.ApiErrorResponse }),
             result =>
             {
-                logger.LogInformation("Successfully created ProviderAdmin(id): {result.UserId} by User(id): {UserId}", result.UserId, userId);
+                logger.LogInformation("Successfully created Employee(id): {result.UserId} by User(id): {UserId}", result.UserId, userId);
                 return Created(string.Empty, result);
             });
     }
 
     /// <summary>
-    /// Update info about the ProviderAdmin.
+    /// Update info about the Employee.
     /// </summary>
-    /// <param name="providerId">Provider's id for which operation perform.</param>
-    /// <param name="providerAdminModel">Entity to update.</param>
-    /// <returns>Updated ProviderAdmin.</returns>
+    /// <param name="providerId">Employee's id for which operation perform.</param>
+    /// <param name="employeeModel">Entity to update.</param>
+    /// <returns>Updated Employee.</returns>
     [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderAdminDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EmployeeDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(Guid providerId, [FromBody] UpdateProviderAdminDto providerAdminModel)
+    public async Task<IActionResult> Update(Guid providerId, [FromBody] UpdateEmployeeDto employeeModel)
     {
-        if (providerAdminModel == null)
+        if (employeeModel == null)
         {
-            return BadRequest("ProviderAdmin is null.");
+            return BadRequest("Employee is null.");
         }
 
         if (await IsProviderBlocked(providerId).ConfigureAwait(false))
         {
-            return StatusCode(403, "Forbidden to update the provider admin at the blocked provider");
+            return StatusCode(403, "Forbidden to update the Employee at the blocked provider");
         }
 
         if (await IsCurrentUserBlocked())
         {
-            return StatusCode(403, "Forbidden to update the provider admin by the blocked provider.");
+            return StatusCode(403, "Forbidden to update the Employee by the blocked provider.");
         }
 
         if (!ModelState.IsValid)
@@ -133,8 +133,8 @@ public class ProviderAdminController : Controller
 
         try
         {
-            var response = await providerAdminService.UpdateProviderAdminAsync(
-                providerAdminModel,
+            var response = await employeeService.UpdateEmployeeAsync(
+                employeeModel,
                 userId,
                 providerId,
                 await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
@@ -144,7 +144,7 @@ public class ProviderAdminController : Controller
                 error => StatusCode((int)error.HttpStatusCode),
                 _ =>
                 {
-                    logger.LogInformation($"Can't change ProviderAdmin with such parameters.\n" +
+                    logger.LogInformation($"Can't change Employee with such parameters.\n" +
                         "Please check that information are valid.");
 
                     return Ok();
@@ -157,9 +157,9 @@ public class ProviderAdminController : Controller
     }
 
     /// <summary>
-    /// Method for deleting ProviderAdmin.
+    /// Method for deleting Employee.
     /// </summary>
-    /// <param name="providerAdminId">Entity's id to delete.</param>
+    /// <param name="employeeId">Entity's id to delete.</param>
     /// <param name="providerId">Provider's id for which operation perform.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -169,22 +169,22 @@ public class ProviderAdminController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpDelete]
-    public async Task<ActionResult> Delete(string providerAdminId, Guid providerId)
+    public async Task<ActionResult> Delete(string employeeId, Guid providerId)
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
 
         if (await IsProviderBlocked(providerId).ConfigureAwait(false))
         {
-            return StatusCode(403, "Forbidden to delete the provider admin at the blocked provider");
+            return StatusCode(403, "Forbidden to delete the Employee at the blocked provider");
         }
 
         if (await IsCurrentUserBlocked())
         {
-            return StatusCode(403, "Forbidden to delete the provider admin by the blocked provider.");
+            return StatusCode(403, "Forbidden to delete the Employee by the blocked provider.");
         }
 
-        var response = await providerAdminService.DeleteProviderAdminAsync(
-                providerAdminId,
+        var response = await employeeService.DeleteEmployeeAsync(
+                employeeId,
                 userId,
                 providerId,
                 await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
@@ -194,7 +194,7 @@ public class ProviderAdminController : Controller
             error => StatusCode((int)error.HttpStatusCode),
             _ =>
             {
-                logger.LogInformation($"Succesfully deleted ProviderAdmin(id): {providerAdminId} by User(id): {userId}.");
+                logger.LogInformation($"Succesfully deleted Employee(id): {employeeId} by User(id): {userId}.");
 
                 return Ok();
             });
@@ -206,7 +206,7 @@ public class ProviderAdminController : Controller
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPut]
-    public async Task<ActionResult> Block(string providerAdminId, Guid providerId, bool? isBlocked)
+    public async Task<ActionResult> Block(string employeeId, Guid providerId, bool? isBlocked)
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
 
@@ -218,16 +218,16 @@ public class ProviderAdminController : Controller
 
         if (await IsProviderBlocked(providerId).ConfigureAwait(false))
         {
-            return StatusCode(403, "Forbidden to block the provider admin at the blocked provider");
+            return StatusCode(403, "Forbidden to block the Employee at the blocked provider");
         }
 
         if (await IsCurrentUserBlocked())
         {
-            return StatusCode(403, "Forbidden to block the provider admin by the blocked provider.");
+            return StatusCode(403, "Forbidden to block the Employee by the blocked provider.");
         }
 
-        var response = await providerAdminService.BlockProviderAdminAsync(
-                providerAdminId,
+        var response = await employeeService.BlockEmployeeAsync(
+                employeeId,
                 userId,
                 providerId,
                 await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false),
@@ -238,47 +238,47 @@ public class ProviderAdminController : Controller
             error => StatusCode((int)error.HttpStatusCode),
             _ =>
             {
-                logger.LogInformation($"Successfully blocked ProviderAdmin(id): {providerAdminId} by User(id): {userId}.");
+                logger.LogInformation($"Successfully blocked Employee(id): {employeeId} by User(id): {userId}.");
 
                 return Ok();
             });
     }
 
+    // /// <summary>
+    // /// Method to Get filtered data about related Employees.
+    // /// </summary>
+    // /// <param name="filter">Filter to get a part of all employees that were found.</param>
+    // /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    // [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<EmployeeDto>))]
+    // [ProducesResponseType(StatusCodes.Status204NoContent)]
+    // [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    // [HasPermission(Permissions.ProviderRead)]
+    // [HttpGet]
+    // public async Task<IActionResult> GetFilteredProviderAdminsAsync([FromQuery] ProviderAdminSearchFilter filter)
+    // {
+    //     var relatedAdmins = await employeeService.GetFilteredRelatedProviderAdmins(userId, filter).ConfigureAwait(false);
+    //
+    //     return this.SearchResultToOkOrNoContent(relatedAdmins);
+    // }
+
     /// <summary>
-    /// Method to Get filtered data about related ProviderAdmins.
+    /// Method to Get data about related Employees.
     /// </summary>
-    /// <param name="filter">Filter to get a part of all provider admins that were found.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderAdminDto>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<EmployeeDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HasPermission(Permissions.ProviderRead)]
     [HttpGet]
-    public async Task<IActionResult> GetFilteredProviderAdminsAsync([FromQuery] ProviderAdminSearchFilter filter)
+    public async Task<IActionResult> GetRelatedEmployees()
     {
-        var relatedAdmins = await providerAdminService.GetFilteredRelatedProviderAdmins(userId, filter).ConfigureAwait(false);
+        var relatedEmployees = await employeeService.GetRelatedEmployees(userId).ConfigureAwait(false);
 
-        return this.SearchResultToOkOrNoContent(relatedAdmins);
-    }
-
-    /// <summary>
-    /// Method to Get data about related ProviderAdmins.
-    /// </summary>
-    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ProviderAdminDto>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet]
-    public async Task<IActionResult> GetRelatedProviderAdmins()
-    {
-        var relatedAdmins = await providerAdminService.GetRelatedProviderAdmins(userId).ConfigureAwait(false);
-
-        if (!relatedAdmins.Any())
+        if (!relatedEmployees.Any())
         {
             return NoContent();
         }
 
-        return Ok(relatedAdmins);
+        return Ok(relatedEmployees);
     }
 
     /// <summary>
@@ -292,45 +292,45 @@ public class ProviderAdminController : Controller
     [HttpGet]
     public async Task<IActionResult> ManagedWorkshops()
     {
-        var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
+        var userRole = GettingUserProperties.GetUserRole(HttpContext);
 
-        if (userSubrole != Subrole.ProviderDeputy && userSubrole != Subrole.ProviderAdmin)
+        if (userRole is not Role.Employee)
         {
             return BadRequest();
         }
 
-        var relatedWorkshops = await providerAdminService.GetWorkshopsThatProviderAdminCanManage(userId, userSubrole == Subrole.ProviderDeputy).ConfigureAwait(false);
+        var relatedWorkshops = await employeeService.GetWorkshopsThatEmployeeCanManage(userId).ConfigureAwait(false);
 
         return this.SearchResultToOkOrNoContent(relatedWorkshops);
     }
 
     /// <summary>
-    /// Get ProviderAdmin by its id.
+    /// Get Employee by its id.
     /// </summary>
-    /// <param name="providerAdminId">ProviderAdmin's id.</param>
-    /// <returns>Info about ProviderAdmin.</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FullProviderAdminDto))]
+    /// <param name="employeeId">Employee's id.</param>
+    /// <returns>Info about Employee.</returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FullEmployeeDto))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{providerAdminId}")]
-    public async Task<IActionResult> GetProviderAdminById(string providerAdminId)
+    [HttpGet("{employeeId}")]
+    public async Task<IActionResult> GetEmployeeById(string employeeId)
     {
-        var providerAdmin = await providerAdminService.GetFullProviderAdmin(providerAdminId)
+        var employee = await employeeService.GetFullEmployee(employeeId)
             .ConfigureAwait(false);
-        if (providerAdmin == null)
+        if (employee == null)
         {
             return NoContent();
         }
 
-        return Ok(providerAdmin);
+        return Ok(employee);
     }
 
     /// <summary>
-    /// Send new invitation to ProviderAdmin.
+    /// Send new invitation to Employee.
     /// </summary>
-    /// <param name="providerAdminId">ProviderAdmin's id.</param>
+    /// <param name="employeeId">Employee's id.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -338,18 +338,18 @@ public class ProviderAdminController : Controller
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpPut("{providerAdminId}")]
-    public async Task<IActionResult> Reinvite(string providerAdminId)
+    [HttpPut("{employeeId}")]
+    public async Task<IActionResult> Reinvite(string employeeId)
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
 
         if (await IsCurrentUserBlocked())
         {
-            return StatusCode(403, "Forbidden to reinvite the provider admin by the blocked provider.");
+            return StatusCode(403, "Forbidden to reinvite the employee by the blocked provider.");
         }
 
-        var response = await providerAdminService.ReinviteProviderAdminAsync(
-                providerAdminId,
+        var response = await employeeService.ReinviteEmployeeAsync(
+                employeeId,
                 userId,
                 await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
             .ConfigureAwait(false);
@@ -363,7 +363,7 @@ public class ProviderAdminController : Controller
             error => StatusCode((int)error.HttpStatusCode),
             _ =>
             {
-                logger.LogInformation($"Succesfully deleted ProviderAdmin(id): {providerAdminId} by User(id): {userId}.");
+                logger.LogInformation($"Succesfully reinvited employee(id): {employeeId} by User(id): {userId}.");
 
                 return Ok();
             });

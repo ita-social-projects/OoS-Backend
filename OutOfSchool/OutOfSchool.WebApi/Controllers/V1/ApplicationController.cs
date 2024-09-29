@@ -18,7 +18,7 @@ public class ApplicationController : ControllerBase
 {
     private readonly IApplicationService applicationService;
     private readonly IProviderService providerService;
-    private readonly IProviderAdminService providerAdminService;
+    private readonly IEmployeeService employeeService;
     private readonly IWorkshopService workshopService;
     private readonly IUserService userService;
     private readonly IBlockedProviderParentService blockedProviderParentService;
@@ -28,21 +28,21 @@ public class ApplicationController : ControllerBase
     /// </summary>
     /// <param name="applicationService">Service for Application model.</param>
     /// <param name="providerService">Service for Provider model.</param>
-    /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
+    /// <param name="employeeService">Service for ProviderAdmin model.</param>
     /// <param name="workshopService">Service for Workshop model.</param>
     /// <param name="userService">Service for operations with users.</param>
     /// <param name="blockedProviderParentService">Service for blocking parents for providers.</param>
     public ApplicationController(
         IApplicationService applicationService,
         IProviderService providerService,
-        IProviderAdminService providerAdminService,
+        IEmployeeService employeeService,
         IWorkshopService workshopService,
         IUserService userService,
         IBlockedProviderParentService blockedProviderParentService)
     {
         this.applicationService = applicationService;
         this.providerService = providerService;
-        this.providerAdminService = providerAdminService;
+        this.employeeService = employeeService;
         this.workshopService = workshopService;
         this.userService = userService;
         this.blockedProviderParentService = blockedProviderParentService;
@@ -206,7 +206,7 @@ public class ApplicationController : ControllerBase
         else
         {
             var providerAdminIdStringVersion = providerId.ToString();
-            var providerAdmin = await providerAdminService.GetById(providerAdminIdStringVersion).ConfigureAwait(false);
+            var providerAdmin = await employeeService.GetById(providerAdminIdStringVersion).ConfigureAwait(false);
 
             // Standard and admin providers were not found by given id
             if (providerAdmin is null)
@@ -215,7 +215,7 @@ public class ApplicationController : ControllerBase
             }
 
             applications = await applicationService
-                .GetAllByProviderAdmin(providerAdminIdStringVersion, filter, providerAdmin.ProviderId, providerAdmin.IsDeputy)
+                .GetAllByEmployee(providerAdminIdStringVersion, filter, providerAdmin.ProviderId)
                 .ConfigureAwait(false);
         }
 
@@ -270,7 +270,7 @@ public class ApplicationController : ControllerBase
     public async Task<IActionResult> GetByProviderAdminId(Guid providerAdminId, [FromQuery] ApplicationFilter filter)
     {
         var userId = providerAdminId.ToString();
-        var providerAdmin = await providerAdminService.GetById(userId).ConfigureAwait(false);
+        var providerAdmin = await employeeService.GetById(userId).ConfigureAwait(false);
 
         if (providerAdmin is null)
         {
@@ -278,7 +278,7 @@ public class ApplicationController : ControllerBase
         }
 
         var applications = await applicationService
-            .GetAllByProviderAdmin(userId, filter, providerAdmin.ProviderId, providerAdmin.IsDeputy)
+            .GetAllByEmployee(userId, filter, providerAdmin.ProviderId)
             .ConfigureAwait(false);
 
         return this.SearchResultToOkOrNoContent(applications);

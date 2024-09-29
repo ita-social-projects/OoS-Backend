@@ -22,7 +22,7 @@ public class ChangesLogService : IChangesLogService
     private readonly IChangesLogRepository changesLogRepository;
     private readonly IProviderRepository providerRepository;
     private readonly IApplicationRepository applicationRepository;
-    private readonly IEntityRepository<long, ProviderAdminChangesLog> providerAdminChangesLogRepository;
+    private readonly IEntityRepository<long, EmployeeChangesLog> employeeChangesLogRepository;
     private readonly IEntityAddOnlyRepository<long, ParentBlockedByAdminLog> parentBlockedByAdminLogRepository;
     private readonly ILogger<ChangesLogService> logger;
     private readonly IMapper mapper;
@@ -38,7 +38,7 @@ public class ChangesLogService : IChangesLogService
         IChangesLogRepository changesLogRepository,
         IProviderRepository providerRepository,
         IApplicationRepository applicationRepository,
-        IEntityRepository<long, ProviderAdminChangesLog> providerAdminChangesLogRepository,
+        IEntityRepository<long, EmployeeChangesLog> employeeChangesLogRepository,
         IEntityAddOnlyRepository<long, ParentBlockedByAdminLog> parentBlockedByAdminLogRepository,
         ILogger<ChangesLogService> logger,
         IMapper mapper,
@@ -53,7 +53,7 @@ public class ChangesLogService : IChangesLogService
         this.changesLogRepository = changesLogRepository;
         this.providerRepository = providerRepository;
         this.applicationRepository = applicationRepository;
-        this.providerAdminChangesLogRepository = providerAdminChangesLogRepository;
+        this.employeeChangesLogRepository = employeeChangesLogRepository;
         this.parentBlockedByAdminLogRepository = parentBlockedByAdminLogRepository;
         this.logger = logger;
         this.mapper = mapper;
@@ -256,12 +256,12 @@ public class ChangesLogService : IChangesLogService
         };
     }
 
-    public async Task<SearchResult<ProviderAdminChangesLogDto>> GetProviderAdminChangesLogAsync(ProviderAdminChangesLogRequest request)
+    public async Task<SearchResult<EmployeeChangesLogDto>> GetEmployeeChangesLogAsync(EmployeeChangesLogRequest request)
     {
         ValidateFilter(request);
 
         var where = GetQueryFilter(request);
-        var sortExpression = GetProviderAdminChangesOrderParams();
+        var sortExpression = this.GetEmployeeChangesOrderParams();
 
         if (currentUserService.IsMinistryAdmin())
         {
@@ -279,7 +279,7 @@ public class ChangesLogService : IChangesLogService
 
             if (subSettlementsIds.Any())
             {
-                var tempPredicate = PredicateBuilder.False<ProviderAdminChangesLog>();
+                var tempPredicate = PredicateBuilder.False<EmployeeChangesLog>();
 
                 foreach (var item in subSettlementsIds)
                 {
@@ -301,15 +301,14 @@ public class ChangesLogService : IChangesLogService
             where = where.And(a => subSettlementsIds.Contains(a.Provider.LegalAddress.CATOTTGId));
         }
 
-        var count = await providerAdminChangesLogRepository.Count(where).ConfigureAwait(false);
-        var query = providerAdminChangesLogRepository
+        var count = await employeeChangesLogRepository.Count(where).ConfigureAwait(false);
+        var query = employeeChangesLogRepository
             .Get(request.From, request.Size, string.Empty, where, sortExpression, true)
-            .Select(x => new ProviderAdminChangesLogDto()
+            .Select(x => new EmployeeChangesLogDto()
             {
-                ProviderAdminId = x.ProviderAdminUserId,
-                ProviderAdminFullName = $"{x.ProviderAdminUser.LastName} {x.ProviderAdminUser.FirstName} {x.ProviderAdminUser.MiddleName}".TrimEnd(),
+                EmployeeId = x.EmployeeUserId,
+                EmployeeFullName = $"{x.EmployeeUser.LastName} {x.EmployeeUser.FirstName} {x.EmployeeUser.MiddleName}".TrimEnd(),
                 ProviderTitle = x.Provider.FullTitle,
-                IsDeputy = x.IsDeputy,
                 WorkshopCity = x.Provider.LegalAddress.CATOTTG.Name,
                 OperationType = x.OperationType,
                 OperationDate = DateTime.SpecifyKind(x.OperationDate, DateTimeKind.Utc),
@@ -324,7 +323,7 @@ public class ChangesLogService : IChangesLogService
 
         var entities = await query.ToListAsync().ConfigureAwait(false);
 
-        return new SearchResult<ProviderAdminChangesLogDto>
+        return new SearchResult<EmployeeChangesLogDto>
         {
             Entities = entities,
             TotalAmount = count,
@@ -429,18 +428,9 @@ public class ChangesLogService : IChangesLogService
         return expr;
     }
 
-    private Expression<Func<ProviderAdminChangesLog, bool>> GetQueryFilter(ProviderAdminChangesLogRequest request)
+    private Expression<Func<EmployeeChangesLog, bool>> GetQueryFilter(EmployeeChangesLogRequest request)
     {
-        Expression<Func<ProviderAdminChangesLog, bool>> expr = PredicateBuilder.True<ProviderAdminChangesLog>();
-
-        expr = request.AdminType switch
-        {
-            ProviderAdminType.All => expr,
-            ProviderAdminType.Deputies => expr.And(x => x.IsDeputy),
-            ProviderAdminType.Assistants => expr.And(x => !x.IsDeputy),
-            _ => throw new NotImplementedException(),
-        };
-
+        Expression<Func<EmployeeChangesLog, bool>> expr = PredicateBuilder.True<EmployeeChangesLog>();
         if (request.OperationType != null)
         {
             expr = expr.And(x => x.OperationType == request.OperationType);
@@ -458,7 +448,7 @@ public class ChangesLogService : IChangesLogService
 
         if (!string.IsNullOrWhiteSpace(request.SearchString))
         {
-            var tempExpr = PredicateBuilder.False<ProviderAdminChangesLog>();
+            var tempExpr = PredicateBuilder.False<EmployeeChangesLog>();
 
             foreach (var word in request.SearchString.Split(wordSplitSymbols, StringSplitOptions.RemoveEmptyEntries))
             {
@@ -531,10 +521,10 @@ public class ChangesLogService : IChangesLogService
         return sortExpression;
     }
 
-    private Dictionary<Expression<Func<ProviderAdminChangesLog, dynamic>>, SortDirection> GetProviderAdminChangesOrderParams()
+    private Dictionary<Expression<Func<EmployeeChangesLog, dynamic>>, SortDirection> GetEmployeeChangesOrderParams()
     {
         // Returns default ordering so far...
-        var sortExpression = new Dictionary<Expression<Func<ProviderAdminChangesLog, object>>, SortDirection>
+        var sortExpression = new Dictionary<Expression<Func<EmployeeChangesLog, object>>, SortDirection>
         {
             { x => x.OperationDate, SortDirection.Descending },
         };
