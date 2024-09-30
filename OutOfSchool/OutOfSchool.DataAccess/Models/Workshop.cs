@@ -35,7 +35,8 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public int MaxAge { get; set; }
 
     // 5
-    public bool CompetitiveSelection { get; set; } = false;
+    [Required(ErrorMessage = "Property CompetitiveSelection is required")]
+    public bool CompetitiveSelection { get; set; } = default;
 
     // 6
     [MaxLength(500)]
@@ -80,120 +81,128 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public decimal Price { get; set; } = default;
 
     // 17
-    [Required(ErrorMessage = "Short stay is required")]
-    public bool ShortStay { get; set; } = false;
+    public bool WithDisabilityOptions { get; set; } = default;
 
     // 18
-    [Required(ErrorMessage = "Should be indicated if the Workshop operates with funds from parents or benefactors")]
-    public bool IsSelfFinanced { get; set; } = false;
+    [MaxLength(200)]
+    public string DisabilityOptionsDesc { get; set; } = string.Empty;
 
     // 19
-    [Required(ErrorMessage = "Property IsSpecial is required")]
-    public bool IsSpecial { get; set; } = false;
+    [Required(ErrorMessage = "Short stay is required")]
+    public bool ShortStay { get; set; } = default;
 
     // 20
+    [Required(ErrorMessage = "Should be indicated if the Workshop operates with funds from parents or benefactors")]
+    public bool IsSelfFinanced { get; set; } = default;
+
+    // 21
+    [Required(ErrorMessage = "Property IsSpecial is required")]
+    public bool IsSpecial { get; set; } = default;
+
+    // 22
+    public uint SpecialNeedsId { get; set; } = uint.MinValue;
+
+    // 23
+    [Required(ErrorMessage = "Property IsInclusive is required")]
+    public bool IsInclusive { get; set; } = default;
+
+    // 24
     [MaxLength(500)]
     public string AdditionalDescription { get; set; }
 
-    // 21
+    // 25
     public bool AreThereBenefits { get; set; } = false;
 
-    // 22
+    // 26
     [MaxLength(500)]
     public string PreferentialTermsOfParticipation { get; set; }
 
-    // 23
-    public bool WithDisabilityOptions { get; set; } = default;
-
-    // 24
-    public uint DisabilityOptionsDescId { get; set; } = uint.MinValue;
-
-    // 25
+    // 27
     [Required(ErrorMessage = "Educational shift is required")]
     public uint EducationalShiftId { get; set; } = uint.MinValue;
 
-    // 26
+    // 28
     [Required(ErrorMessage = "Language of education is required")]
     public uint LanguageOfEducationId { get; set; } = uint.MinValue;
 
-    // 27
+    // 29
     [Required(ErrorMessage = "Type of age composition is required")]
     public uint TypeOfAgeCompositionId { get; set; } = uint.MinValue;
 
-    // 28
+    // 30
     [Required(ErrorMessage = "Educational disciplines is required")]
     public Guid EducationalDisciplines { get; set; } = Guid.Empty;
 
-    // 29
+    // 31
     [Required(ErrorMessage = "Category is required")]
     public uint CategoryId { get; set; } = uint.MinValue;
 
-    // 30
+    // 32
     [Required(ErrorMessage = "GropeType is required")]
     public uint GropeTypeId { get; set; } = uint.MinValue;
 
-    // 31
+    // 33
     public uint CoverageId { get; set; } = uint.MinValue;
 
-    // 32
+    // 34
     [Required(ErrorMessage = "Provider is required")]
     public Guid ProviderId { get; set; }
 
-    // 33
+    // 35
     public Guid? InstitutionHierarchyId { get; set; }
 
-    // 34
+    // 36
     public Guid? TeacherId { get; set; }
 
-    // 35
+    // 37
     [Required(ErrorMessage = "Cover image is required")]
     [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;
 
-    // 36
+    // 38
     [Required(ErrorMessage = "Contact is required")]
     public Guid ContactId { get; set; }
 
-    // 37
+    // 39
     [Required(ErrorMessage = "Contact information is required")]
     public uint ContactInformationId { get; set; } = uint.MinValue;
 
-    // 38
+    // 40
     public Guid? MemberOfWorkshopId { get; set; }
 
-    // 39
+    // 41
     public virtual Provider Provider { get; set; }
 
-    // 40
+    // 42
     public virtual InstitutionHierarchy InstitutionHierarchy { get; set; }
 
-    // 41
+    // 43
     public virtual Contact Contact { get; set; }
 
-    // 42
+    // 44
     public virtual ContactInformation ContactInformation { get; set; }
 
-    // 43
+    // 45
     public virtual ICollection<WorkshopDescriptionItem> WorkshopDescriptionItems { get; set; }
 
-    // 44
+    // 46
     public virtual List<Workshop> IncludedStudyGroups { get; set; }
 
-    // 45
+    // 47
     public virtual List<ProviderAdmin> ProviderAdmins { get; set; }
 
-    // 46
+    // 48
     public virtual List<Teacher> Teachers { get; set; }
 
-    // 47
+    // 49
     public virtual List<Application> Applications { get; set; }
 
-    // 48
+    // 50
     public virtual List<DateTimeRange> DateTimeRanges { get; set; }
 
-    // 49
+    // 51
     public virtual ICollection<ChatRoomWorkshop> ChatRooms { get; set; }
 
-    // 50
+    // 52
     public virtual List<Image<Workshop>> Images { get; set; }
 }
