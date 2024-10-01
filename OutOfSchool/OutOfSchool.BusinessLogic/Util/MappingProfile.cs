@@ -43,11 +43,11 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src => src.Teachers.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.DateTimeRanges, opt => opt.MapFrom(src => src.DateTimeRanges.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.WorkshopDescriptionItems, opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)))
+
             .ForMember(dest => dest.PhoneNumbers, opt => opt.MapFrom(src => src.Contact.PhoneNumbers))
-
-
-            .ForMember(dest => dest.Addresses, opt => opt.MapFrom(src => src.ContactInformation.Addresses.Where(x => !x.IsDeleted)))
-            ;
+            .ForMember(dest => dest.ContactUserNote, opt => opt.MapFrom(src => src.Contact.UserNote))
+            .ForMember(dest => dest.SocialNetworkContacts, opt => opt.MapFrom(src => src.Contact.OptionalContacts.SocialNetworkContacts))
+            .ForMember(dest => dest.Addresses, opt => opt.MapFrom(src => src.ContactInformation.Addresses.Where(x => !x.IsDeleted)));
 
         CreateSoftDeletedMap<WorkshopBaseDto, Workshop>()
             .ForMember(
@@ -79,6 +79,14 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Applications, opt => opt.Ignore())
             .ForMember(dest => dest.ChatRooms, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore())
+
+            .ForMember(dest => dest.Contact, opt => opt.Ignore())
+            .ForMember(dest => dest.ContactId, opt => opt.Ignore())
+            .ForMember(dest => dest.ContactInformation, opt => opt.Ignore())
+            .ForMember(dest => dest.ContactInformationId, opt => opt.Ignore())
+
+
+
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
             .ForMember(dest => dest.Status, opt => opt.Ignore())
