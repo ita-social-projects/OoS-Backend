@@ -65,10 +65,8 @@ public class WorkshopBaseDto : IValidatableObject
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<DateTimeRangeDto> DateTimeRanges { get; set; }
 
-
-
-
-
+    [Required]
+    public bool IsPaid { get; set; } = false;
 
     [Column(TypeName = "decimal(18,2)")]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
@@ -77,10 +75,11 @@ public class WorkshopBaseDto : IValidatableObject
     [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
     public PayRateType? PayRate { get; set; } = PayRateType.Classes;
 
-    [Required]
+    [Required(ErrorMessage = "Form of learning is required")]
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning FormOfLearning { get; set; }
 
+    [Required(ErrorMessage = "Available seats are required")]
     public uint? AvailableSeats { get; set; } = uint.MaxValue;
 
     public bool CompetitiveSelection { get; set; }
@@ -96,6 +95,11 @@ public class WorkshopBaseDto : IValidatableObject
 
     [MaxLength(200)]
     public string DisabilityOptionsDesc { get; set; } = string.Empty;
+
+
+
+
+
 
     public Guid? InstitutionId { get; set; }
 

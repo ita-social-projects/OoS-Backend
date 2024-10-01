@@ -62,23 +62,25 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public WorkshopStatus Status { get; set; }
 
     // 12
+    [Required(ErrorMessage = "Available seats are required")]
     public uint AvailableSeats { get; set; } = uint.MaxValue;
 
     // 13
-    [Required]
+    [Required(ErrorMessage = "Form of learning is required")]
     public FormOfLearning FormOfLearning { get; set; }
 
     // 14
+    [Required(ErrorMessage = "Property IsPaid is required")]
     public bool IsPaid { get; set; } = false;
 
-    // 15)
-    [Required(ErrorMessage = "Type of pay rate is required")]
-    public PayRateType PayRate { get; set; }
-
-    // 16
+    // 15
     [Column(TypeName = "decimal(18,2)")]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
     public decimal Price { get; set; } = default;
+
+    // 16
+    [Required(ErrorMessage = "Type of pay rate is required")]
+    public PayRateType PayRate { get; set; }
 
     // 17
     public bool WithDisabilityOptions { get; set; } = default;
