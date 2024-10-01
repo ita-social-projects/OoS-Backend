@@ -191,9 +191,10 @@ public class WorkshopBaseDto : IValidatableObject
     // 36
     public Guid? TeacherId { get; set; }
 
+    public Guid? MemberOfWorkshopId { get; set; }
 
-
-
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    public List<string> IncludedStudyGroupTitles { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
