@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Common.Validators;
+//using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
@@ -24,28 +24,34 @@ public class WorkshopBaseDto : IValidatableObject
     [MaxLength(Constants.MaxWorkshopShortTitleLength)]
     public string ShortTitle { get; set; } = string.Empty;
 
-    [DataType(DataType.PhoneNumber)]
-    [Required(ErrorMessage = "Phone number is required")]
-    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
-    [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
-    public string Phone { get; set; } = string.Empty;
+    // [DataType(DataType.PhoneNumber)]
+    // [Required(ErrorMessage = "Phone number is required")]
+    // [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
+    // [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
+    // public string Phone { get; set; } = string.Empty;
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    [CollectionNotEmpty(ErrorMessage = "At least one phone number is required")]
+    public IEnumerable<PhoneNumberDto> PhoneNumbers { get; set; }
 
-    [DataType(DataType.EmailAddress)]
-    [Required(ErrorMessage = "Email is required")]
-    [MaxLength(256)]
-    public string Email { get; set; } = string.Empty;
+    // [DataType(DataType.EmailAddress)]
+    // [Required(ErrorMessage = "Email is required")]
+    // [MaxLength(256)]
+    // public string Email { get; set; } = string.Empty;
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    [CollectionNotEmpty(ErrorMessage = "At least one email is required")]
+    public IEnumerable<EmailDto> Emails { get; set; }
 
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Website { get; set; } = string.Empty;
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Facebook { get; set; } = string.Empty;
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Instagram { get; set; } = string.Empty;
+    // [DataType(DataType.Url)]
+    // [MaxLength(Constants.MaxUnifiedUrlLength)]
+    // public string Website { get; set; } = string.Empty;
+    // [DataType(DataType.Url)]
+    // [MaxLength(Constants.MaxUnifiedUrlLength)]
+    // public string Facebook { get; set; } = string.Empty;
+    // [DataType(DataType.Url)]
+    // [MaxLength(Constants.MaxUnifiedUrlLength)]
+    // public string Instagram { get; set; } = string.Empty;
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    public IEnumerable<SocialNetworkContactDto> SocialNetworkContacts { get; set; }
 
     [Required(ErrorMessage = "Children's min age is required")]
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
@@ -58,6 +64,11 @@ public class WorkshopBaseDto : IValidatableObject
     [Required]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<DateTimeRangeDto> DateTimeRanges { get; set; }
+
+
+
+
+
 
     [Column(TypeName = "decimal(18,2)")]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
