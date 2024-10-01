@@ -63,8 +63,9 @@ public class WorkshopBaseDto : IValidatableObject
     [Range(0, 120, ErrorMessage = "Max age should be a number from 0 to 120")]
     public int MaxAge { get; set; }
 
-    [Required]
+    // [Required]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    [CollectionNotEmpty(ErrorMessage = "At least one DateTime range is required")]
     public List<DateTimeRangeDto> DateTimeRanges { get; set; }
 
     [Required]
@@ -90,7 +91,7 @@ public class WorkshopBaseDto : IValidatableObject
     public string CompetitiveSelectionDescription { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    [CollectionNotEmpty(ErrorMessage = "At least one description is required")]
+    [CollectionNotEmpty(ErrorMessage = "At least one description item is required")]
     public IEnumerable<WorkshopDescriptionItemDto> WorkshopDescriptionItems { get; set; }
 
     public bool WithDisabilityOptions { get; set; } = default;
