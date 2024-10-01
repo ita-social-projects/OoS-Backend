@@ -4,8 +4,9 @@ using OutOfSchool.BusinessLogic.Config.SearchString;
 namespace OutOfSchool.BusinessLogic.Services.SearchString;
 public class SearchStringService : ISearchStringService
 {
+    private const string DefaultSeparator = " ";
     private readonly ILogger<SearchStringService> logger;
-    private readonly IOptions<SearchStringSettings> options;
+    private readonly IOptions<SearchStringOptions> options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SearchStringService"/> class.
@@ -15,7 +16,7 @@ public class SearchStringService : ISearchStringService
     /// An instance of IOptions that provides access to configuration options.
     /// </param>
     public SearchStringService(
-        IOptions<SearchStringSettings> options,
+        IOptions<SearchStringOptions> options,
         ILogger<SearchStringService> logger)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -32,21 +33,15 @@ public class SearchStringService : ISearchStringService
         }
 
         logger.LogDebug("Processing input string: {Input}.", input);
-        string[] separators;
-        string defaultSeparator = "  ";
 
-        if (options.Value == null ||
-            options.Value.Separators == null ||
-            options.Value.Separators.Length == 0)
+        // Use the separators from options if available, otherwise default to space.
+        string[] separators = options.Value?.Separators;
+        if (separators == null || separators.Length == 0)
         {
             logger.LogError(
-            "Configuration issue with {Settings}: either options are not provided. Using default separators.",
-            nameof(SearchStringSettings));
-            separators = new string[] { defaultSeparator };
-        }
-        else
-        {
-            separators = options.Value.Separators;
+                "Configuration issue with {Settings}: options or separators are not provided. Using default separators.",
+                nameof(SearchStringOptions));
+            separators = [DefaultSeparator];
         }
 
         var words = input.Split(separators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);

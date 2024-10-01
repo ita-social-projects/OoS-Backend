@@ -22,6 +22,7 @@ using OutOfSchool.BusinessLogic.Services.Communication;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
@@ -96,6 +97,7 @@ public class ProviderServiceV2Tests
 
         var authorizationServerConfig = Options.Create(new AuthorizationServerConfig { Authority = new Uri("http://test.com") });
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        var searchStringServiceMock = new Mock<ISearchStringService>();
 
         providerService = new ProviderServiceV2(
             providersRepositoryMock.Object,
@@ -121,8 +123,14 @@ public class ProviderServiceV2Tests
             areaAdminRepositoryMock.Object,
             userServiceMock.Object,
             authorizationServerConfig,
+<<<<<<< HEAD
             communicationService.Object);
         providersRepositoryMock.Setup(w => w.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(It.IsAny<int>());
+=======
+            communicationService.Object,
+            searchStringServiceMock.Object);
+        providersRepositoryMock.Setup(w => w.UnitOfWork.CompleteAsync()).ReturnsAsync(It.IsAny<int>());
+>>>>>>> 3bb05be4 (Added SearchStringService  to admin panel services)
     }
 
     #region Create

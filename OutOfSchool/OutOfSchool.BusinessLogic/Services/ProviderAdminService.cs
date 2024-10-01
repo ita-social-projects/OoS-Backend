@@ -8,8 +8,12 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+<<<<<<< HEAD
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+=======
+using OutOfSchool.BusinessLogic.Services.SearchString;
+>>>>>>> 3bb05be4 (Added SearchStringService  to admin panel services)
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -26,6 +30,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
     private readonly IWorkshopService workshopService;
     private readonly ICurrentUserService currentUserService;
     private readonly IApiErrorService apiErrorService;
+    private readonly ISearchStringService searchStringService;
 
     public ProviderAdminService(
         IHttpClientFactory httpClientFactory,
@@ -39,7 +44,8 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         IProviderAdminOperationsService providerAdminOperationsService,
         IWorkshopService workshopService,
         ICurrentUserService currentUserService,
-        IApiErrorService apiErrorService)
+        IApiErrorService apiErrorService,
+        ISearchStringService searchStringService)
         : base(httpClientFactory, communicationConfig, logger)
     {
         this.authorizationServerConfig = authorizationServerConfig.Value;
@@ -51,6 +57,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         this.workshopService = workshopService;
         this.currentUserService = currentUserService;
         this.apiErrorService = apiErrorService;
+        this.searchStringService = searchStringService;
     }
 
     public async Task<Either<ErrorResponse, CreateProviderAdminDto>> CreateProviderAdminAsync(
@@ -659,7 +666,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         }
     }
 
-    private static Expression<Func<ProviderAdminDto, bool>> PredicateBuild(ProviderAdminSearchFilter filter)
+    private Expression<Func<ProviderAdminDto, bool>> PredicateBuild(ProviderAdminSearchFilter filter)
     {
         var predicate = PredicateBuilder.True<ProviderAdminDto>();
 
@@ -667,7 +674,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         {
             var tempPredicate = PredicateBuilder.False<ProviderAdminDto>();
 
-            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            foreach (var word in searchStringService.SplitSearchString(filter.SearchString))
             {
                 tempPredicate = tempPredicate.Or(
                     x => x.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)

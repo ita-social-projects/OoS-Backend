@@ -14,6 +14,7 @@ using OutOfSchool.BusinessLogic.Extensions;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.ProviderAdminOperations;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
@@ -92,6 +93,7 @@ public class ProviderAdminServiceDBTest
         workshopService = new Mock<IWorkshopService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         apiErrorService = new Mock<IApiErrorService>();
+        var searchStringServiceMock = new Mock<ISearchStringService>();
 
         providerAdminService = new ProviderAdminService(
             httpClientFactory.Object,
@@ -105,7 +107,8 @@ public class ProviderAdminServiceDBTest
             providerAdminOperationsService.Object,
             workshopService.Object,
             currentUserServiceMock.Object,
-            apiErrorService.Object);
+            apiErrorService.Object,
+            searchStringServiceMock.Object);
 
         await Seed();
     }

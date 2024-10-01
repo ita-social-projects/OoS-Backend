@@ -1,7 +1,7 @@
 ﻿namespace OutOfSchool.BusinessLogic.Services.SearchString;
 
 /// <summary>
-/// Responsible for handling various operations related to search string processing.
+/// Responsible for handling the operations related to search string processing.
 /// </summary>
 public interface ISearchStringService
 {

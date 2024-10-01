@@ -1,9 +1,9 @@
 ﻿namespace OutOfSchool.BusinessLogic.Config.SearchString;
 
 /// <summary>
-/// The SearchStringSettings class is designed to store settings for search string processing.
+/// The SearchStringOptions class is designed to store settings for search string handling.
 /// </summary>
-public class SearchStringSettings
+public class SearchStringOptions
 {
     /// <summary>
     /// Gets or sets the separators used for splitting  string.

@@ -6,8 +6,12 @@ using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Models;
+<<<<<<< HEAD
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+=======
+using OutOfSchool.BusinessLogic.Services.SearchString;
+>>>>>>> 3bb05be4 (Added SearchStringService  to admin panel services)
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -20,6 +24,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
     private readonly IApiErrorService apiErrorService;
+    private readonly ISearchStringService searchStringService;
 
     public RegionAdminService(
         IHttpClientFactory httpClientFactory,
@@ -31,7 +36,8 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         IMapper mapper,
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,
-        IApiErrorService apiErrorService)
+        IApiErrorService apiErrorService,
+        ISearchStringService searchStringService)
         : base(httpClientFactory, communicationConfig, logger)
     {
         ArgumentNullException.ThrowIfNull(authorizationServerConfig);
@@ -39,6 +45,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         ArgumentNullException.ThrowIfNull(userRepository);
         ArgumentNullException.ThrowIfNull(mapper);
         ArgumentNullException.ThrowIfNull(ministryAdminService);
+        ArgumentNullException.ThrowIfNull(searchStringService);
 
         this.authorizationServerConfig = authorizationServerConfig.Value;
         this.regionAdminRepository = regionAdminRepository;
@@ -47,6 +54,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         this.currentUserService = currentUserService;
         this.ministryAdminService = ministryAdminService;
         this.apiErrorService = apiErrorService;
+        this.searchStringService = searchStringService;
     }
 
     public async Task<RegionAdminDto> GetByIdAsync(string id)
@@ -451,7 +459,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         return ministryAdmin.InstitutionId == regionAdmin.InstitutionId;
     }
 
-    private static Expression<Func<RegionAdmin, bool>> PredicateBuild(RegionAdminFilter filter)
+    private Expression<Func<RegionAdmin, bool>> PredicateBuild(RegionAdminFilter filter)
     {
         var predicate = PredicateBuilder.True<RegionAdmin>();
 
@@ -459,7 +467,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
         {
             var tempPredicate = PredicateBuilder.False<RegionAdmin>();
 
-            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            foreach (var word in searchStringService.SplitSearchString(filter.SearchString))
             {
                 tempPredicate = tempPredicate.Or(
                     x => x.User.FirstName.Contains(word, StringComparison.InvariantCultureIgnoreCase)

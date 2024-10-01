@@ -271,6 +271,10 @@ public static class Startup
         services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
         services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
 
+        // Search string options
+        services.Configure<SearchStringOptions>(configuration.GetSection(nameof(SearchStringOptions)));
+        services.AddScoped<ISearchStringService, SearchStringService>();
+
         // entities services
         services.AddTransient<IApplicationService, ApplicationService>();
         services.AddTransient<ISensitiveApplicationService, ApplicationService>();
@@ -396,10 +400,6 @@ public static class Startup
         services.AddTransient<ICompetitiveEventService, CompetitiveEventService>();
 
         services.AddTransient<IApiErrorService, ApiErrorService>();
-
-        // Search string options
-        services.Configure<SearchStringSettings>(configuration.GetSection(nameof(SearchStringSettings)));
-        services.AddScoped<ISearchStringService, SearchStringService>();
 
         // Register the Permission policy handlers
         services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();

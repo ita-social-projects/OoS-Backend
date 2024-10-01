@@ -15,6 +15,7 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Models;
@@ -87,6 +88,7 @@ public class MinistryAdminServiceTests
         apiErrorServiceUserRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         var apiErrorServiceLogger = new Mock<ILogger<ApiErrorService>>();
         apiErrorService = new ApiErrorService(apiErrorServiceUserRepositoryMock.Object, apiErrorServiceLogger.Object);
+        var searchStringServiceMock = new Mock<ISearchStringService>();
 
         ministryAdminService = new MinistryAdminService(
             httpClientFactory.Object,
@@ -97,7 +99,8 @@ public class MinistryAdminServiceTests
             userRepositoryMock.Object,
             mapper,
             currentUserServiceMock.Object,
-            apiErrorService);
+            apiErrorService,
+            searchStringServiceMock.Object);
     }
 
     [Test]

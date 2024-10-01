@@ -27,6 +27,7 @@ using OutOfSchool.BusinessLogic.Services.Communication;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
@@ -101,6 +102,7 @@ public class ProviderServiceTests
 
         var authorizationServerConfig = Options.Create(new AuthorizationServerConfig { Authority = new Uri("http://test.com") });
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        var searchStringServiceMock = new Mock<ISearchStringService>();
 
         providerService = new ProviderService(
             providersRepositoryMock.Object,
@@ -126,7 +128,9 @@ public class ProviderServiceTests
             areaAdminRepositoryMock.Object,
             userServiceMock.Object,
             authorizationServerConfig,
-            communicationService.Object);
+            communicationService.Object,
+            searchStringServiceMock.Object
+            );
     }
 
     #region Create

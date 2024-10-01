@@ -446,7 +446,7 @@ public class ChildService : IChildService
             var tempPredicate = PredicateBuilder.False<Child>();
             if (filter.SearchString.Length >= 3)
             {
-                foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+                foreach (var word in filter.SearchString.Split([' ', ','], StringSplitOptions.RemoveEmptyEntries))
                 {
                     if (word.Any(c => char.IsLetter(c)))
                     {
