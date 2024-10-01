@@ -96,11 +96,6 @@ public class WorkshopBaseDto : IValidatableObject
     [MaxLength(200)]
     public string DisabilityOptionsDesc { get; set; } = string.Empty;
 
-
-
-
-
-
     public Guid? InstitutionId { get; set; }
 
     public string Institution { get; set; }
@@ -139,6 +134,12 @@ public class WorkshopBaseDto : IValidatableObject
     public DateOnly ActiveFrom { get; set; }
 
     public DateOnly ActiveTo { get; set; }
+
+
+
+
+
+
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
