@@ -109,12 +109,9 @@ public class WorkshopBaseDto : IValidatableObject
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IEnumerable<string> Keywords { get; set; } = default;
 
-    [Required]
-    public long AddressId { get; set; }
-
-    [Required]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    public AddressDto Address { get; set; }
+    [CollectionNotEmpty(ErrorMessage = "At least one address is required")]
+    public IEnumerable<AddressDto> Addresses { get; set; }
 
     public List<TeacherDTO> Teachers { get; set; }
 
