@@ -42,7 +42,12 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProviderLicenseStatus, opt => opt.MapFrom(src => src.Provider.LicenseStatus))
             .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src => src.Teachers.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.DateTimeRanges, opt => opt.MapFrom(src => src.DateTimeRanges.Where(x => !x.IsDeleted)))
-            .ForMember(dest => dest.WorkshopDescriptionItems, opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)));
+            .ForMember(dest => dest.WorkshopDescriptionItems, opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)))
+            .ForMember(dest => dest.PhoneNumbers, opt => opt.MapFrom(src => src.Contact.PhoneNumbers))
+
+
+            .ForMember(dest => dest.Addresses, opt => opt.MapFrom(src => src.ContactInformation.Addresses.Where(x => !x.IsDeleted)))
+            ;
 
         CreateSoftDeletedMap<WorkshopBaseDto, Workshop>()
             .ForMember(

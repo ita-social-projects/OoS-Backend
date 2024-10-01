@@ -33,6 +33,8 @@ public class WorkshopBaseDto : IValidatableObject
     [CollectionNotEmpty(ErrorMessage = "At least one phone number is required")]
     public IEnumerable<PhoneNumberDto> PhoneNumbers { get; set; }
 
+    public string ContactUserNote { get; set; } = string.Empty;
+
     // [DataType(DataType.EmailAddress)]
     // [Required(ErrorMessage = "Email is required")]
     // [MaxLength(256)]
