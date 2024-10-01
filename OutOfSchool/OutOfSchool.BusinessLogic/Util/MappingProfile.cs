@@ -85,14 +85,12 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ContactInformation, opt => opt.Ignore())
             .ForMember(dest => dest.ContactInformationId, opt => opt.Ignore())
 
-
-
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
             .ForMember(dest => dest.Status, opt => opt.Ignore())
-            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore())
             .ForMember(dest => dest.Document, opt => opt.Ignore())
+            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.File, opt => opt.Ignore())
             .ForMember(dest => dest.IsSystemProtected, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
