@@ -113,7 +113,7 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public string AdditionalDescription { get; set; }
 
     // 25
-    public bool AreThereBenefits { get; set; } = false;
+    public bool AreThereBenefits { get; set; } = default;
 
     // 26
     [MaxLength(500)]

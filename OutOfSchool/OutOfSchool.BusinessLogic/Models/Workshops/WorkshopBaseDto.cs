@@ -135,7 +135,64 @@ public class WorkshopBaseDto : IValidatableObject
 
     public DateOnly ActiveTo { get; set; }
 
+    // 19
+    public bool ShortStay { get; set; } = default;
 
+    // 20
+    [Required]
+    public bool IsSelfFinanced { get; set; } = default;
+
+    // 21
+    [Required]
+    public bool IsSpecial { get; set; } = default;
+
+    // 22
+    public uint SpecialNeedsId { get; set; } = uint.MinValue;
+
+    // 23
+    [Required]
+    public bool IsInclusive { get; set; } = default;
+
+    // 24
+    [MaxLength(500)]
+    public string AdditionalDescription { get; set; }
+
+    // 25
+    public bool AreThereBenefits { get; set; } = default;
+
+    // 26
+    [MaxLength(500)]
+    public string PreferentialTermsOfParticipation { get; set; }
+
+    // 27
+    [Required]
+    public uint EducationalShiftId { get; set; } = uint.MinValue;
+
+    // 28
+    [Required(ErrorMessage = "Language of education is required")]
+    public uint LanguageOfEducationId { get; set; } = uint.MinValue;
+
+    // 29
+    [Required(ErrorMessage = "Type of age composition is required")]
+    public uint TypeOfAgeCompositionId { get; set; } = uint.MinValue;
+
+    // 30
+    [Required(ErrorMessage = "Educational disciplines is required")]
+    public Guid EducationalDisciplines { get; set; } = Guid.Empty;
+
+    // 31
+    [Required(ErrorMessage = "Category is required")]
+    public uint CategoryId { get; set; } = uint.MinValue;
+
+    // 32
+    [Required(ErrorMessage = "GropeType is required")]
+    public uint GropeTypeId { get; set; } = uint.MinValue;
+
+    // 33
+    public uint CoverageId { get; set; } = uint.MinValue;
+
+    // 36
+    public Guid? TeacherId { get; set; }
 
 
 
