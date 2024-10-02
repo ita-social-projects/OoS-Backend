@@ -1,7 +1,5 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using OutOfSchool.Common;
 using OutOfSchool.Services.Models.Configurations.Base;
 
 namespace OutOfSchool.Services.Models.Configurations;
@@ -21,13 +19,32 @@ internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
             .WithOne(x => x.Workshop)
             .HasForeignKey(x => x.WorkshopId);
 
-        builder.Property(x => x.Title)
-            .IsRequired()
-            .HasMaxLength(Constants.MaxWorkshopTitleLength);
 
-        builder.Property(x => x.ShortTitle)
-            .IsRequired()
-            .HasMaxLength(Constants.MaxWorkshopShortTitleLength);
+        // builder.Property(x => x.Title)
+        //    .IsRequired()
+        //    .HasMaxLength(Constants.MaxWorkshopTitleLength);
+
+        // builder.Property(x => x.ShortTitle)
+        //    .IsRequired()
+        //    .HasMaxLength(Constants.MaxWorkshopShortTitleLength);
+
+
+        builder.HasOne(x => x.Contact)
+            .WithOne()
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.ContactInformation)
+            .WithOne()
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.DefaultTeacher)
+            .WithOne()
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.MemberOfWorkshop)
+            .WithMany(x => x.IncludedStudyGroups)
+            .HasForeignKey(x => x.MemberOfWorkshopId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         base.Configure(builder);
     }

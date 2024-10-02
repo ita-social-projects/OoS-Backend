@@ -185,26 +185,32 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public virtual ContactInformation ContactInformation { get; set; }
 
     // 45
-    public virtual ICollection<WorkshopDescriptionItem> WorkshopDescriptionItems { get; set; }
+    public virtual Teacher DefaultTeacher { get; set; }
 
     // 46
-    public virtual List<Workshop> IncludedStudyGroups { get; set; }
+    public virtual Workshop MemberOfWorkshop { get; set; }
 
     // 47
-    public virtual List<ProviderAdmin> ProviderAdmins { get; set; }
+    public virtual ICollection<WorkshopDescriptionItem> WorkshopDescriptionItems { get; set; }
 
     // 48
-    public virtual List<Teacher> Teachers { get; set; }
+    public virtual List<Workshop> IncludedStudyGroups { get; set; }
 
     // 49
-    public virtual List<Application> Applications { get; set; }
+    public virtual List<ProviderAdmin> ProviderAdmins { get; set; }
 
     // 50
-    public virtual List<DateTimeRange> DateTimeRanges { get; set; }
+    public virtual List<Teacher> Teachers { get; set; }
 
     // 51
-    public virtual ICollection<ChatRoomWorkshop> ChatRooms { get; set; }
+    public virtual List<Application> Applications { get; set; }
 
     // 52
+    public virtual List<DateTimeRange> DateTimeRanges { get; set; }
+
+    // 53
+    public virtual ICollection<ChatRoomWorkshop> ChatRooms { get; set; }
+
+    // 54
     public virtual List<Image<Workshop>> Images { get; set; }
 }
