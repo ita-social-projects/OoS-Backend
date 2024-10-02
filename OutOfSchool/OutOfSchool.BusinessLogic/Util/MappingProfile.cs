@@ -119,8 +119,7 @@ public class MappingProfile : Profile
         CreateMap<Workshop, WorkshopV2Dto>()
             .IncludeBase<Workshop, WorkshopDto>()
             .Apply(MapImageIds)
-            .Apply(IgnoreAllImages)
-            ;
+            .Apply(IgnoreAllImages);
 
         CreateMap<WorkshopV2Dto, Workshop>()
             .IncludeBase<WorkshopDto, Workshop>();
