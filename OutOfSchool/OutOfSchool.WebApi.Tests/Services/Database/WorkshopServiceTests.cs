@@ -98,7 +98,7 @@ public class WorkshopServiceTests
         var newWorkshop = new Workshop();
 
         // Act
-        var result = await workshopService.Create(mapper.Map<WorkshopBaseDto>(newWorkshop)).ConfigureAwait(false);
+        var result = await workshopService.Create(mapper.Map<WorkshopCreate>(newWorkshop)).ConfigureAwait(false);
 
         // Assert
         workshopRepository.Verify(x => x.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()), Times.Once);
@@ -116,7 +116,7 @@ public class WorkshopServiceTests
         };
 
         // Act
-        var result = await workshopService.Create(mapper.Map<WorkshopBaseDto>(newWorkshop)).ConfigureAwait(false);
+        var result = await workshopService.Create(mapper.Map<WorkshopCreate>(newWorkshop)).ConfigureAwait(false);
 
         // Assert
         result.Should().BeEquivalentTo(ExpectedWorkshopDtoCreateSuccess(newWorkshop));
@@ -134,7 +134,7 @@ public class WorkshopServiceTests
             InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
         };
 
-        var workshopDto = mapper.Map<WorkshopBaseDto>(newWorkshop);
+        var workshopDto = mapper.Map<WorkshopCreate>(newWorkshop);
         workshopDto.AvailableSeats = null;
 
         // Act
@@ -157,7 +157,7 @@ public class WorkshopServiceTests
         };
 
         // Act
-        var result = await workshopService.Create(mapper.Map<WorkshopBaseDto>(newWorkshop)).ConfigureAwait(false);
+        var result = await workshopService.Create(mapper.Map<WorkshopCreate>(newWorkshop)).ConfigureAwait(false);
 
         // Assert
         result.Should().BeEquivalentTo(ExpectedWorkshopDtoCreateSuccess(newWorkshop));
@@ -174,7 +174,7 @@ public class WorkshopServiceTests
         };
 
         // Act and Assert
-        workshopService.Invoking(w => w.Create(mapper.Map<WorkshopBaseDto>(newWorkshop))).Should().ThrowAsync<ArgumentException>();
+        workshopService.Invoking(w => w.Create(mapper.Map<WorkshopCreate>(newWorkshop))).Should().ThrowAsync<ArgumentException>();
     }
     #endregion
 
@@ -384,7 +384,7 @@ public class WorkshopServiceTests
         var expectedTeachers = teachers.Select(s => mapper.Map<TeacherDTO>(s));
 
         // Act
-        var result = await workshopService.Update(mapper.Map<WorkshopBaseDto>(changedFirstEntity)).ConfigureAwait(false);
+        var result = await workshopService.Update(mapper.Map<WorkshopCreate>(changedFirstEntity)).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -405,7 +405,7 @@ public class WorkshopServiceTests
         SetupUpdate(changedFirstEntity);
         var expectedTeachers = teachers.Select(s => mapper.Map<TeacherDTO>(s));
 
-        var changeFirstEntityDto = mapper.Map<WorkshopBaseDto>(changedFirstEntity);
+        var changeFirstEntityDto = mapper.Map<WorkshopCreate>(changedFirstEntity);
         changeFirstEntityDto.AvailableSeats = null;
 
         // Act
@@ -439,7 +439,7 @@ public class WorkshopServiceTests
 
         SetupUpdate(changedFirstEntity);
 
-        var changeFirstEntityDto = mapper.Map<WorkshopBaseDto>(changedFirstEntity);
+        var changeFirstEntityDto = mapper.Map<WorkshopCreate>(changedFirstEntity);
         changeFirstEntityDto.AvailableSeats = newAvailableSeats;
 
         workshopRepository.Setup(x => x.Update(changedFirstEntity)).ReturnsAsync(changedFirstEntity);
@@ -464,7 +464,7 @@ public class WorkshopServiceTests
     public async Task Update_WhenDtoIsNull_ShouldThrowArgumentNullException()
     {
         // Arrange
-        WorkshopBaseDto workshopBaseDto = null;
+        WorkshopCreate workshopBaseDto = null;
 
         // Act and Assert
         await workshopService
@@ -489,7 +489,7 @@ public class WorkshopServiceTests
         var expectedTeachers = teachers.Where(t => !t.IsDeleted).Select(s => mapper.Map<TeacherDTO>(s));
 
         // Act
-        var result = await workshopService.Update(mapper.Map<WorkshopBaseDto>(changedFirstEntity)).ConfigureAwait(false);
+        var result = await workshopService.Update(mapper.Map<WorkshopCreate>(changedFirstEntity)).ConfigureAwait(false);
 
         // Assert
         result.Teachers.Should().BeEquivalentTo(expectedTeachers);

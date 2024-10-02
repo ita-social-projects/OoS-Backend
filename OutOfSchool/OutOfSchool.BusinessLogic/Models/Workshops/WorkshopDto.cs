@@ -7,7 +7,7 @@ using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
-public class WorkshopDto : WorkshopBaseDto, IHasRating
+public class WorkshopDto : WorkshopCreate, IHasRating
 {
     public uint TakenSeats { get; set; } = 0;
 
