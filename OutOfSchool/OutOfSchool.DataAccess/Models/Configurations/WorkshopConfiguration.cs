@@ -17,8 +17,8 @@ internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
 
         builder.HasMany(x => x.WorkshopDescriptionItems)
             .WithOne(x => x.Workshop)
-            .HasForeignKey(x => x.WorkshopId);
-
+            .HasForeignKey(x => x.WorkshopId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // builder.Property(x => x.Title)
         //    .IsRequired()
@@ -27,7 +27,6 @@ internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
         // builder.Property(x => x.ShortTitle)
         //    .IsRequired()
         //    .HasMaxLength(Constants.MaxWorkshopShortTitleLength);
-
 
         builder.HasOne(x => x.Contact)
             .WithOne()
@@ -44,7 +43,7 @@ internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
         builder.HasOne(x => x.MemberOfWorkshop)
             .WithMany(x => x.IncludedStudyGroups)
             .HasForeignKey(x => x.MemberOfWorkshopId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         base.Configure(builder);
     }

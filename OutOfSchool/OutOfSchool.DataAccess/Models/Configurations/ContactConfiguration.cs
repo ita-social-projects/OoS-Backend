@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Newtonsoft.Json;
 
@@ -15,6 +16,13 @@ internal class ContactConfiguration : IEntityTypeConfiguration<Contact>
                     v => JsonConvert.SerializeObject(v),
                     v => JsonConvert.DeserializeObject<OptionalContacts>(v))
                 .HasColumnName(nameof(OptionalContacts))
+                .HasColumnType("longtext");
+
+        builder.Property(e => e.PhoneNumbers)
+                .HasConversion(
+                    v => JsonConvert.SerializeObject(v),
+                    v => JsonConvert.DeserializeObject<List<PhoneNumber>>(v))
+                .HasColumnName(nameof(PhoneNumber))
                 .HasColumnType("longtext");
     }
 }
