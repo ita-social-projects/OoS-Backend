@@ -657,11 +657,38 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         if (filter == null)
         {
-            logger.LogDebug("Method {MethodName} started with null filter. Applying default {Filter}", nameof(FetchByFilterForAdmins), nameof(WorkshopFilterAdministration));
+            logger.LogDebug(
+                "Method {MethodName} started with null filter. Applying default {Filter}",
+                nameof(FetchByFilterForAdmins),
+                nameof(WorkshopFilterAdministration));
+
             filter = new WorkshopFilterAdministration();
         }
 
-        var predicate = await PredicateBuildForAdminds(filter);
+        var (adminInstitutionId, catottgIdAdmin) = await GetAdminInstitutionAndCatottgIds();
+
+        IEnumerable<long> allowedSettlementIdsForAdmin = Enumerable.Empty<long>();
+        IEnumerable<long> subSettlementsIdsByFilter = Enumerable.Empty<long>();
+
+        if (catottgIdAdmin > 0)
+        {
+            allowedSettlementIdsForAdmin = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(catottgIdAdmin)
+                .ConfigureAwait(false);
+        }
+
+        if (filter.CATOTTGId > 0)
+        {
+            subSettlementsIdsByFilter = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId)
+                .ConfigureAwait(false);
+        }
+
+        var predicate = PredicateBuildForAdminds(
+            filter,
+            adminInstitutionId,
+            allowedSettlementIdsForAdmin,
+            subSettlementsIdsByFilter);
 
         var workshops = await workshopRepository.Get(
                 skip: filter.From,
@@ -672,42 +699,84 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             .ToListAsync()
             .ConfigureAwait(false);
 
-        var workshopsCount = workshops.Count;
-        logger.LogInformation("Retrieved {WorkshopsCount} matching recods by filter for admins.", workshopsCount);
+        var workshopsCount = await workshopRepository
+            .Count(predicate)
+            .ConfigureAwait(false);
+
+        logger.LogInformation("Retrieved {WorkshopsCount} matching records by filter for admins.", workshopsCount);
 
         var workshopsDTO = mapper.Map<List<WorkshopDto>>(workshops);
 
-        var result = new SearchResult<WorkshopDto>()
+        return new SearchResult<WorkshopDto>()
         {
             TotalAmount = workshopsCount,
             Entities = workshopsDTO,
         };
-
-        return result;
     }
 
-    private async Task<Expression<Func<Workshop, bool>>> PredicateBuildForAdminds(WorkshopFilterAdministration filter)
+    private async Task<(Guid InstitutionId, long CatottgId)> GetAdminInstitutionAndCatottgIds()
     {
-        var predicate = PredicateBuilder.True<Workshop>();
-
-        // TODO: add condition for united territorial community admin
         if (currentUserService.IsMinistryAdmin())
         {
-            await ApplyFilterForMinistryAdmin(filter).
-                ConfigureAwait(false);
+            var userId = currentUserService.UserId;
+            var ministryAdmin = await ministryAdminService
+                .GetByUserId(userId)
+                .ConfigureAwait(false);
+
+            return (ministryAdmin.InstitutionId, 0);
         }
         else if (currentUserService.IsRegionAdmin())
         {
-            var tempPredicate = await ApplyFilterForRegionAdmin(filter).
-                ConfigureAwait(false);
+            var userId = currentUserService.UserId;
+            var regionAdmin = await regionAdminService
+                .GetByUserId(userId)
+                .ConfigureAwait(false);
 
-            predicate = predicate.And(tempPredicate);
+            if (regionAdmin == null)
+            {
+                var errorMsg = $"Region admin with the specified ID: {userId} not found";
+                logger.LogError(errorMsg);
+                throw new InvalidOperationException(errorMsg);
+            }
+
+            return (regionAdmin.InstitutionId, regionAdmin.CATOTTGId);
+        }
+
+        return (Guid.Empty, 0);
+    }
+
+    private Expression<Func<Workshop, bool>> PredicateBuildForAdminds(
+        WorkshopFilterAdministration filter,
+        Guid adminInstitutionId,
+        IEnumerable<long> allowedSettlementIdsForAdmin,
+        IEnumerable<long> subSettlementFilterIds)
+    {
+        var predicate = PredicateBuilder.True<Workshop>();
+
+        if (adminInstitutionId != Guid.Empty)
+        {
+            predicate = predicate.And(x => x.InstitutionHierarchy.InstitutionId == adminInstitutionId);
+        }
+
+        if (filter.InstitutionId != Guid.Empty)
+        {
+            predicate = predicate.And(x => x.InstitutionHierarchy.InstitutionId == filter.InstitutionId);
+        }
+
+        if (allowedSettlementIdsForAdmin != null && allowedSettlementIdsForAdmin.Any())
+        {
+            predicate = predicate.And(x => allowedSettlementIdsForAdmin.Contains(x.Address.CATOTTGId));
+        }
+
+        if (subSettlementFilterIds != null && subSettlementFilterIds.Any())
+        {
+            predicate = predicate.And(x => subSettlementFilterIds.Contains(x.Address.CATOTTGId));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.SearchString))
         {
             // Split the search string by commas and spaces, remove any empty entries, and trim whitespace from each element.
-            var searchTerms = filter.SearchString.Split(new char[] {' ', ','}, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var searchTerms = filter.SearchString.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
             logger.LogDebug("Received terms from search string: {Words}", searchTerms);
 
@@ -728,61 +797,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             }
         }
 
-        if (filter.InstitutionId != Guid.Empty)
-        {
-            predicate = predicate.And(x => x.InstitutionHierarchy.InstitutionId == filter.InstitutionId);
-        }
-
-        if (filter.CATOTTGId > 0)
-        {
-            var subSettlementsIds = await codeficatorService
-                .GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId)
-                .ConfigureAwait(false);
-
-            predicate = predicate.And(x => subSettlementsIds.Contains(x.Address.CATOTTGId));
-        }
-
         return predicate;
-    }
-
-    private async Task ApplyFilterForMinistryAdmin(WorkshopFilterAdministration filter)
-    {
-        var userId = currentUserService.UserId;
-        var ministryAdmin = await ministryAdminService
-            .GetByUserId(userId)
-            .ConfigureAwait(false);
-
-        filter.InstitutionId = ministryAdmin.InstitutionId;
-    }
-
-    private async Task<Expression<Func<Workshop, bool>>> ApplyFilterForRegionAdmin(WorkshopFilterAdministration filter)
-    {
-        var userId = currentUserService.UserId;
-        var regionAdmin = await regionAdminService
-                .GetByUserId(userId)
-                .ConfigureAwait(false);
-
-        if (regionAdmin == null)
-        {
-            var errorMsg = $"Region admin with the specified ID: {userId} not found";
-            logger.LogError(errorMsg);
-            throw new InvalidOperationException(errorMsg);
-        }
-
-        filter.InstitutionId = regionAdmin.InstitutionId;
-
-        var subSettlementsIds = await codeficatorService
-            .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId)
-            .ConfigureAwait(false);
-
-        var tempPredicate = PredicateBuilder.False<Workshop>();
-
-        foreach (var item in subSettlementsIds)
-        {
-            tempPredicate = tempPredicate.Or(x => x.Address.CATOTTGId == item);
-        }
-
-        return tempPredicate;
     }
 
     public async Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids)

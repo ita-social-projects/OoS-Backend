@@ -213,6 +213,10 @@ public class SensitiveWorkshopsServiceTests
     private void SetUpWorkshopsRepository(List<Workshop> workshopsReturned, WorkshopFilterAdministration filter = null)
     {
         workshopRepository.Setup(
+            x => x.Count(It.IsAny<Expression<Func<Workshop, bool>>>()))
+            .ReturnsAsync(workshopsReturned.Count);
+
+        workshopRepository.Setup(
                 w => w.Get(
                     It.Is<int>(x => x == filter.From),
                     It.Is<int>(x => x == filter.Size),

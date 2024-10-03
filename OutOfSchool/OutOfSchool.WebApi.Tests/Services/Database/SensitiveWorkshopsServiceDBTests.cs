@@ -85,18 +85,20 @@ public class SensitiveWorkshopsServiceDBTests
     }
 
     [Test]
-    public async Task FetchByFilterForAdmins_FilterIsNull_ShouldBuildPredicateAndReturnDefaultAmountOfEntities()
+    public async Task FetchByFilterForAdmins_FilterIsNull_ShouldReturnDefaultAmountEntities()
     {
         // Arrange
+        var workshopDtos = await MapWorkshopsToDtos();
         var filter = new WorkshopFilterAdministration();
-        var workshopDtos = (await MapWorkshopsToDtos())
-            .Take(filter.Size)
-            .ToList();
+        var entities = workshopDtos.
+            Skip(filter.From).
+            Take(filter.Size).
+            ToList();
 
         var expectedResult = new SearchResult<WorkshopDto>()
         {
             TotalAmount = workshopDtos.Count,
-            Entities = workshopDtos,
+            Entities = entities,
         };
 
         // Act
@@ -212,9 +214,8 @@ public class SensitiveWorkshopsServiceDBTests
         var workshopDto = await MapWorkshopsToDtos();
         var userId = Guid.NewGuid().ToString();
         var expectedList = new List<WorkshopDto>() { workshopDto[2], workshopDto[3], workshopDto[4] };
-        var admin = new RegionAdminDto() { CATOTTGId = 4};
+        var admin = new RegionAdminDto() { CATOTTGId = 4, InstitutionId = Guid.Parse("4c865c12-e99a-456b-82b1-7a7c3a2d6935") };
         SetupRegionAdminRole(userId, admin);
-        TestContext.WriteLine(workshopDto);
 
         // Act
         var result = await sensitiveWorkshopService.FetchByFilterForAdmins()
@@ -271,6 +272,75 @@ public class SensitiveWorkshopsServiceDBTests
 
         result.Entities.Should()
             .BeEquivalentTo(expectedList);
+    }
+
+    [Test]
+    public async Task FetchByFilterForAdmins_RoleMinistryAdminFilterByInvalidInstitutionId_ShouldReturnEmptyList()
+    {
+        // Arrange
+        await MapWorkshopsToDtos();
+        var expectedList = new List<WorkshopDto>();
+        var userId = Guid.NewGuid().ToString();
+        var ministryAdmin = new MinistryAdminDto()
+        {
+            Id = userId,
+            InstitutionId = Guid.Parse("d85a3f07-8d7b-45b1-871d-23c5f4e34b92"),
+        };
+
+        SetupMinistryAdminRole(userId, ministryAdmin);
+
+        var filter = new WorkshopFilterAdministration()
+        {
+            InstitutionId = Guid.Parse("4c865c12-e99a-456b-82b1-7a7c3a2d6935"),
+        };
+
+        var expectedResult = new SearchResult<WorkshopDto>()
+        {
+            TotalAmount = expectedList.Count,
+            Entities = expectedList,
+        };
+
+        // Act
+        var result = await sensitiveWorkshopService.FetchByFilterForAdmins(filter)
+            .ConfigureAwait(false);
+
+        result.Should()
+            .BeEquivalentTo(expectedResult);
+    }
+
+    [Test]
+    public async Task FetchByFilterForAdmins_RoleRegionAdminFilterByInvalidInstitutionId_ShouldReturnEmptyList()
+    {
+        // Arrange
+        await MapWorkshopsToDtos();
+        var expectedList = new List<WorkshopDto>();
+        var userId = Guid.NewGuid().ToString();
+
+        var regionAdmin = new RegionAdminDto()
+        {
+            Id = userId,
+            InstitutionId = Guid.Parse("d85a3f07-8d7b-45b1-871d-23c5f4e34b92"),
+        };
+
+        SetupRegionAdminRole(userId, regionAdmin);
+
+        var filter = new WorkshopFilterAdministration()
+        {
+            InstitutionId = Guid.Parse("4c865c12-e99a-456b-82b1-7a7c3a2d6935"),
+        };
+
+        var expectedResult = new SearchResult<WorkshopDto>()
+        {
+            TotalAmount = expectedList.Count,
+            Entities = expectedList,
+        };
+
+        // Act
+        var result = await sensitiveWorkshopService.FetchByFilterForAdmins(filter)
+            .ConfigureAwait(false);
+
+        result.Should()
+            .BeEquivalentTo(expectedResult);
     }
 
     private void Seed()
