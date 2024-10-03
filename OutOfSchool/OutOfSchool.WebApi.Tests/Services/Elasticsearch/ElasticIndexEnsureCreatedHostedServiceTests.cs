@@ -63,6 +63,20 @@ public class ElasticIndexEnsureCreatedHostedServiceTests
     }
 
     [Test]
+    public async Task StartAsync_WithCancelledToken_ShouldExit()
+    {
+        // Arrange
+        using var source = new CancellationTokenSource();
+        source.Cancel();
+
+        // Act
+        await service.StartAsync(source.Token);
+
+        // Assert
+        serviceScopeFactoryMock.Verify(x => x.CreateScope(), Times.Never);
+    }
+
+    [Test]
     public async Task StartAsync_WhenElasticIsHealthyAndIndexDoesNotExist_ShouldCreateIndex()
     {
         // Arrange
@@ -146,5 +160,20 @@ public class ElasticIndexEnsureCreatedHostedServiceTests
         elasticClientMock.Verify(
             x => x.Indices.ExistsAsync(It.IsAny<Indices>(), It.IsAny<CancellationToken>()),
             Times.Never);
+    }
+
+    [Test]
+    public async Task StopAsync_ShouldCompleteSuccessfully()
+    {
+        // Arrange
+        var cancellationToken = new CancellationTokenSource().Token;
+
+        // Act
+        var task = service.StopAsync(cancellationToken);
+
+        // Assert
+        await task;
+        Assert.That(task.IsCompleted, Is.True);
+        Assert.DoesNotThrowAsync(() => service.StopAsync(cancellationToken));
     }
 }
