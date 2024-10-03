@@ -30,8 +30,6 @@ public class WorkshopBaseDto : IValidatableObject
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
     public string Phone { get; set; } = string.Empty;
 
-    public string ContactUserNote { get; set; } = string.Empty;
-
     [DataType(DataType.EmailAddress)]
     [Required(ErrorMessage = "Email is required")]
     [MaxLength(256)]
