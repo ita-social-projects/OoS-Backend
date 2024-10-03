@@ -4,25 +4,32 @@ using OutOfSchool.BusinessLogic.Config.Elasticsearch;
 
 namespace OutOfSchool.BusinessLogic.Services.Elasticsearch;
 
-public class ElasticIndexEnsureCreatedHostedService(
-    IServiceProvider services,
-    ElasticsearchClient client,
-    IOptions<ElasticConfig> elasticOptions,
-    ILogger<ElasticIndexEnsureCreatedHostedService> logger) : IHostedService
+public class ElasticIndexEnsureCreatedHostedService : IHostedService
 {
-    private const int CheckConnectivityDelayMs = 10000;
-    private const int Minute = 60;
-
-    private readonly IServiceProvider services = services;
-    private readonly ElasticsearchClient client = client;
-    private readonly string indexName =
-        elasticOptions?.Value is not null
-            ? elasticOptions.Value.WorkshopIndexName
-            : throw new ArgumentNullException(nameof(elasticOptions));
-
+    private readonly IServiceProvider services;
+    private readonly ElasticsearchClient client;
+    private readonly string indexName;
+    private readonly int checkConnectivityDelayMs;
+    private readonly int connectionWaitingTimeSec;
     private readonly ElasticsearchWorkshopConfiguration configurator = new();
+    private readonly ILogger<ElasticIndexEnsureCreatedHostedService> logger;
 
-    private readonly ILogger<ElasticIndexEnsureCreatedHostedService> logger = logger;
+    public ElasticIndexEnsureCreatedHostedService(
+        IServiceProvider services,
+        ElasticsearchClient client,
+        IOptions<ElasticConfig> elasticOptions,
+        ILogger<ElasticIndexEnsureCreatedHostedService> logger)
+    {
+        this.services = services;
+        this.client = client;
+        this.logger = logger;
+        var config = elasticOptions?.Value
+            ?? throw new ArgumentNullException(nameof(elasticOptions));
+        indexName = config.WorkshopIndexName
+            ?? throw new ArgumentNullException(nameof(elasticOptions), "WorkshopIndexName is null");
+        checkConnectivityDelayMs = config.CheckConnectivityDelayMs;
+        connectionWaitingTimeSec = config.ConnectionWaitingTimeSec;
+    }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -36,10 +43,10 @@ public class ElasticIndexEnsureCreatedHostedService(
         using var scope = services.CreateScope();
         var elasticHealthService = scope.ServiceProvider.GetService<IElasticsearchHealthService>();
         while (!elasticHealthService.IsHealthy
-                && (DateTimeOffset.UtcNow.ToUnixTimeSeconds() - startTime < Minute))
+                && (DateTimeOffset.UtcNow.ToUnixTimeSeconds() - startTime < connectionWaitingTimeSec))
         {
             logger.LogInformation("Waiting for Elastic connection");
-            await Task.Delay(CheckConnectivityDelayMs);
+            await Task.Delay(checkConnectivityDelayMs).ConfigureAwait(false);
         }
 
         if (elasticHealthService.IsHealthy)
