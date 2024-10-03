@@ -10,6 +10,7 @@ using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Images;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Enums;
@@ -71,6 +72,7 @@ public class WorkshopServiceDBTests
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
+        var searchStringServiceMock = new Mock<ISearchStringService>();
 
         workshopService =
             new WorkshopService(
@@ -87,7 +89,8 @@ public class WorkshopServiceDBTests
                 currentUserServiceMock.Object,
                 ministryAdminServiceMock.Object,
                 regionAdminServiceMock.Object,
-                codeficatorServiceMock.Object);
+                codeficatorServiceMock.Object,
+                searchStringServiceMock.Object);
 
         Seed();
     }

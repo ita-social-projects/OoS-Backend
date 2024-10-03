@@ -44,9 +44,6 @@ public class SearchStringService : ISearchStringService
             separators = [DefaultSeparator];
         }
 
-        var words = input.Split(separators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        logger.LogDebug("Split input string into {Length} words.", words.Length);
-
-        return words;
+        return input.Split(separators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 }

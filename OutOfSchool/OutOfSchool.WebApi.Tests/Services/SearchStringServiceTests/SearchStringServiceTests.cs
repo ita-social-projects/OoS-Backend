@@ -32,14 +32,15 @@ public class SearchStringServiceTests
     {
         // Arrange
         string input = "test search string";
-        SetUpOptionsAndExpectedResult(null, input, out var expectedRes);
+        SetUpOptionsAndExpectedResult(null);
+        var expectedResult = new[] { "test", "search", "string" };
 
         // Act
         var result = searchStringService.SplitSearchString(input);
 
         // Assert
         result.Should()
-            .BeEquivalentTo(expectedRes);
+            .BeEquivalentTo(expectedResult);
     }
 
     [Test]
@@ -61,7 +62,7 @@ public class SearchStringServiceTests
     {
         // Arrange
         string input = " ,   ,   , ";
-        SetUpOptionsAndExpectedResult([" ", ", "], input, out var expectedRes);
+        SetUpOptionsAndExpectedResult([" ", ", "]);
 
         // Act
         var result = searchStringService.SplitSearchString(input);
@@ -76,24 +77,21 @@ public class SearchStringServiceTests
     {
         // Arrange
         string input = " test, search string ";
-        SetUpOptionsAndExpectedResult([" ", ", "], input, out var expectedRes);
+        SetUpOptionsAndExpectedResult([" ", ", "]);
+        var expectedResult = new[] { "test", "search", "string" };
 
         // Act
         var result = searchStringService.SplitSearchString(input);
 
         // Assert
         result.Should()
-            .BeEquivalentTo(expectedRes);
+            .BeEquivalentTo(expectedResult);
     }
 
-    private void SetUpOptionsAndExpectedResult(string[] separators, string input, out string[] expectedResult)
+    private void SetUpOptionsAndExpectedResult(string[] separators)
     {
         var options = separators == null ? null : new SearchStringOptions { Separators = separators };
 
         mockSettings.Setup(s => s.Value).Returns(options);
-
-        expectedResult = input.Split(
-            separators ?? new string[] { " " },
-            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 }

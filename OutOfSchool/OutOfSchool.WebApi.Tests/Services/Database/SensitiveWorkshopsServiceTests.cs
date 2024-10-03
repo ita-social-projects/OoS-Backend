@@ -13,6 +13,7 @@ using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Images;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -63,7 +64,8 @@ public class SensitiveWorkshopsServiceTests
                 currentUserServiceMock.Object,
                 ministryAdminServiceMock.Object,
                 regionAdminServiceMock.Object,
-                codeficatorServiceMock.Object);
+                codeficatorServiceMock.Object,
+                new Mock<ISearchStringService>().Object);
     }
 
     #region FetchByFilterForAdmins

@@ -29,7 +29,6 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
@@ -123,14 +122,9 @@ public class ProviderServiceV2Tests
             areaAdminRepositoryMock.Object,
             userServiceMock.Object,
             authorizationServerConfig,
-<<<<<<< HEAD
-            communicationService.Object);
-        providersRepositoryMock.Setup(w => w.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(It.IsAny<int>());
-=======
             communicationService.Object,
             searchStringServiceMock.Object);
-        providersRepositoryMock.Setup(w => w.UnitOfWork.CompleteAsync()).ReturnsAsync(It.IsAny<int>());
->>>>>>> 3bb05be4 (Added SearchStringService  to admin panel services)
+        providersRepositoryMock.Setup(w => w.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(It.IsAny<int>());
     }
 
     #region Create

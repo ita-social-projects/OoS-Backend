@@ -15,13 +15,13 @@ using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Images;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
@@ -67,6 +67,7 @@ public class WorkshopServiceTests
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
+        var searchStringServiceMock = new Mock<ISearchStringService>();
 
         workshopService =
             new WorkshopService(
@@ -83,7 +84,8 @@ public class WorkshopServiceTests
                 currentUserServiceMock.Object,
                 ministryAdminServiceMock.Object,
                 regionAdminServiceMock.Object,
-                codeficatorServiceMock.Object);
+                codeficatorServiceMock.Object,
+                searchStringServiceMock.Object);
     }
 
     #region Create

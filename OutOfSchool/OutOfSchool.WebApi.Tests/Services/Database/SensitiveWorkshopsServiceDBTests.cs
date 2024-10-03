@@ -13,6 +13,7 @@ using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Images;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
@@ -40,6 +41,7 @@ public class SensitiveWorkshopsServiceDBTests
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
+    private Mock<ISearchStringService> searchStringServiceMock;
 
     [SetUp]
     public void SetUp()
@@ -57,7 +59,7 @@ public class SensitiveWorkshopsServiceDBTests
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
-
+        searchStringServiceMock = new Mock<ISearchStringService>();
         sensitiveWorkshopService =
             new WorkshopService(
                 workshopRepository,
@@ -73,7 +75,8 @@ public class SensitiveWorkshopsServiceDBTests
                 currentUserServiceMock.Object,
                 ministryAdminServiceMock.Object,
                 regionAdminServiceMock.Object,
-                codeficatorServiceMock.Object);
+                codeficatorServiceMock.Object,
+                searchStringServiceMock.Object);
 
         Seed();
     }
@@ -122,8 +125,12 @@ public class SensitiveWorkshopsServiceDBTests
             Size = 100,
             CATOTTGId = 1,
         };
+
         codeficatorServiceMock.Setup(c => c.GetAllChildrenIdsByParentIdAsync(
             It.Is<long>(c => c == filter.CATOTTGId))).ReturnsAsync(new List<long>() { 1, 2, 3 });
+
+        searchStringServiceMock.Setup(s => s.SplitSearchString(It.Is<string>(x => x == filter.SearchString)))
+            .Returns(["ворк"]);
 
         var expectedEntities = new List<WorkshopDto> { workshopDtos[0] };
 
@@ -189,9 +196,8 @@ public class SensitiveWorkshopsServiceDBTests
         var userId = Guid.NewGuid().ToString();
         var expectedList = new List<WorkshopDto>() { workshopDtos[3], workshopDtos[4] };
         var admin = new MinistryAdminDto() { InstitutionId = Guid.Parse("4c865c12-e99a-456b-82b1-7a7c3a2d6935") };
-        SetupMinistryAdminRole(userId, admin);
         var filter = new WorkshopFilterAdministration() { SearchString = " ,  основ  ,   " };
-
+        SetupMinistryAdminRole(userId, admin, filter, ["основ"]);
         var expectedResult = new SearchResult<WorkshopDto>()
         {
             TotalAmount = expectedList.Count,
@@ -233,6 +239,8 @@ public class SensitiveWorkshopsServiceDBTests
 
         var expectedList = new List<WorkshopDto>() { workshopDto[0], workshopDto[1] };
         var filter = new WorkshopFilterAdministration() { SearchString = "workshop ,  univers  " };
+        searchStringServiceMock.Setup(s => s.SplitSearchString(It.Is<string>(x => x == filter.SearchString)))
+            .Returns(["workshop", "univers"]);
 
         // Act
         var result = await sensitiveWorkshopService.FetchByFilterForAdmins(filter)
@@ -249,6 +257,8 @@ public class SensitiveWorkshopsServiceDBTests
         var workshopDto = await MapWorkshopsToDtos();
         var expectedList = new List<WorkshopDto>() { workshopDto[6], workshopDto[7], workshopDto[8] };
         var filter = new WorkshopFilterAdministration() { SearchString = "writingclub, test  " };
+        searchStringServiceMock.Setup(s => s.SplitSearchString(It.Is<string>(x => x == filter.SearchString)))
+            .Returns(["writingclub", "test"]);
 
         // Act
         var result = await sensitiveWorkshopService.FetchByFilterForAdmins(filter)
@@ -265,6 +275,8 @@ public class SensitiveWorkshopsServiceDBTests
         var workshopDto = await MapWorkshopsToDtos();
         var expectedList = new List<WorkshopDto>() { workshopDto[1], workshopDto[2], workshopDto[4] };
         var filter = new WorkshopFilterAdministration() { SearchString = "ДАНІ  " };
+        searchStringServiceMock.Setup(s => s.SplitSearchString(It.Is<string>(x => x == filter.SearchString)))
+            .Returns(["ДАНІ"]);
 
         // Act
         var result = await sensitiveWorkshopService.FetchByFilterForAdmins(filter)
@@ -349,11 +361,17 @@ public class SensitiveWorkshopsServiceDBTests
         dbContext.Database.EnsureCreated();
     }
 
-    private void SetupMinistryAdminRole(string userId, MinistryAdminDto admin)
+    private void SetupMinistryAdminRole(
+        string userId,
+        MinistryAdminDto admin,
+        WorkshopFilterAdministration filter = null,
+        string[] splitedInput = null)
     {
         currentUserServiceMock.Setup(s => s.UserId).Returns(userId.ToString());
         currentUserServiceMock.Setup(s => s.IsMinistryAdmin()).Returns(true);
         ministryAdminServiceMock.Setup(s => s.GetByUserId(userId.ToString())).ReturnsAsync(admin);
+        searchStringServiceMock.Setup(s => s.SplitSearchString(It.Is<string>(x => x == filter.SearchString)))
+       .Returns(splitedInput);
     }
 
     private void SetupRegionAdminRole(string userId, RegionAdminDto admin)

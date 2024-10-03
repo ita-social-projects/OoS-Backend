@@ -7,12 +7,9 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
-<<<<<<< HEAD
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
-=======
 using OutOfSchool.BusinessLogic.Services.SearchString;
->>>>>>> 3bb05be4 (Added SearchStringService  to admin panel services)
 
 namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 

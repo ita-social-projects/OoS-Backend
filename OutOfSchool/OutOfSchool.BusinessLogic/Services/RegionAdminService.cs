@@ -3,15 +3,12 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.BusinessLogic.Models;
-<<<<<<< HEAD
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
-=======
-using OutOfSchool.BusinessLogic.Services.SearchString;
->>>>>>> 3bb05be4 (Added SearchStringService  to admin panel services)
 
 namespace OutOfSchool.BusinessLogic.Services;
 
