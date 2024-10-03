@@ -41,6 +41,11 @@ internal class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
             .HasForeignKey(x => x.WorkshopId)
             .IsRequired();
 
+        builder.HasOne(x => x.Workshop)
+            .WithOne(x => x.DefaultTeacher)
+            .HasForeignKey<Workshop>(x => x.TeacherId)
+            .IsRequired(false);
+
         builder.Ignore(x => x.Images);
     }
 }
