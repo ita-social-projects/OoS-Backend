@@ -30,7 +30,7 @@ internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
 
         builder.HasOne(x => x.DefaultTeacher)
             .WithOne(x => x.Workshop)
-            .HasForeignKey<Teacher>(x => x.WorkshopId)
+            .HasForeignKey<Workshop>(x => x.TeacherId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
 
