@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;
@@ -200,10 +201,32 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     // 50
     public virtual List<Image<Workshop>> Images { get; set; }
 
-    // 51
+    [DataType(DataType.PhoneNumber)]
+    [Required(ErrorMessage = "Phone number is required")]
+    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
+    [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
+    [MaxLength(Constants.MaxPhoneNumberLengthWithPlusSign)]
+    public string Phone { get; set; } = string.Empty;
+
+    [DataType(DataType.EmailAddress)]
+    [Required(ErrorMessage = "Email is required")]
+    [MaxLength(256)]
+    public string Email { get; set; } = string.Empty;
+
+    [DataType(DataType.Url)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
+    public string Website { get; set; } = string.Empty;
+
+    [DataType(DataType.Url)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
+    public string Facebook { get; set; } = string.Empty;
+
+    [DataType(DataType.Url)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
+    public string Instagram { get; set; } = string.Empty;
+
     [Required]
     public long AddressId { get; set; }
 
-    // 52
     public virtual Address Address { get; set; }
 }
