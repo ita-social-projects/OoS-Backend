@@ -32,7 +32,7 @@ public class ElasticsearchProviderTests
     #region Search
 
     [Test]
-    public async Task Search_WithValidFilter_ShouldReturnSearchResult()
+    public async Task Search_ShouldReturnSearchResult()
     {
         // Arrange
         var expectedCount = 2;
@@ -57,6 +57,12 @@ public class ElasticsearchProviderTests
         var result = await provider.Search();
 
         // Assert
+        elasticClientMock.Verify(
+            x => x.SearchAsync<WorkshopES>(
+            It.IsAny<Action<SearchRequestDescriptor<WorkshopES>>>(),
+            CancellationToken.None),
+            Times.Once);
+        Assert.IsNotNull(result);
         Assert.AreEqual(expectedCount, result.Entities.Count);
         Assert.AreEqual(expectedCount, result.TotalAmount);
     }
