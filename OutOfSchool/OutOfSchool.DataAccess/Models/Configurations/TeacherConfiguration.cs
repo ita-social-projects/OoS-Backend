@@ -43,7 +43,7 @@ internal class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
 
         builder.HasOne(x => x.Workshop)
             .WithOne(x => x.DefaultTeacher)
-            .HasForeignKey<Workshop>(x => x.TeacherId)
+            .HasForeignKey<Workshop>(x => x.DefaultTeacherId)
             .IsRequired(false);
 
         builder.Ignore(x => x.Images);
