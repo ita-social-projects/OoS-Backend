@@ -11,6 +11,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.ElasticsearchData;
 
@@ -28,6 +29,52 @@ public class ElasticsearchProviderTests
         provider = new ElasticsearchProvider<WorkshopES, WorkshopFilterES>(
             elasticClientMock.Object);
     }
+
+    #region IndexEntityAsync
+
+    [Test]
+    public async Task IndexEntityAsync_WithEntityNotExistedInIndex_ShouldReturnCreated()
+    {
+        // Arrange
+        var entity = WorkshopESGenerator.Generate();
+        var response = new IndexResponse()
+        {
+            Result = Result.Created,
+        };
+        elasticClientMock.Setup(x => x.IndexAsync(entity, CancellationToken.None))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await provider.IndexEntityAsync(entity);
+
+        // Assert
+        elasticClientMock.Verify(x => x.IndexAsync(entity, CancellationToken.None), Times.Once);
+        Assert.IsNotNull(result);
+        Assert.AreEqual(Result.Created, result);
+    }
+
+    [Test]
+    public async Task IndexEntityAsync_WithEntityExistedInIndex_ShouldReturnUpdated()
+    {
+        // Arrange
+        var entity = WorkshopESGenerator.Generate();
+        var response = new IndexResponse()
+        {
+            Result = Result.Updated,
+        };
+        elasticClientMock.Setup(x => x.IndexAsync(entity, CancellationToken.None))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await provider.IndexEntityAsync(entity);
+
+        // Assert
+        elasticClientMock.Verify(x => x.IndexAsync(entity, CancellationToken.None), Times.Once);
+        Assert.IsNotNull(result);
+        Assert.AreEqual(Result.Updated, result);
+    }
+
+    #endregion
 
     #region Search
 
