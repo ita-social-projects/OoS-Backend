@@ -72,7 +72,7 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
 
     // 14
     [Required(ErrorMessage = "Property IsPaid is required")]
-    public bool IsPaid { get; set; } = false;
+    public bool IsPaid { get; set; } = default;
 
     // 15
     [Column(TypeName = "decimal(18,2)")]
