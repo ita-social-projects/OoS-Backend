@@ -106,6 +106,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         workshop.Provider = await providerRepository.GetById(workshop.ProviderId).ConfigureAwait(false);
         workshop.ProviderOwnership = workshop.Provider.Ownership;
 
+        if (dto.DefaultTeacher is not null)
+        {
+            workshop.DefaultTeacher = mapper.Map<Teacher>(dto.DefaultTeacher);
+        }
+
         if (dto.Teachers is not null)
         {
             workshop.Teachers = dto.Teachers.Select(dtoTeacher => mapper.Map<Teacher>(dtoTeacher)).ToList();
@@ -707,7 +712,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         if (!string.IsNullOrWhiteSpace(filter.SearchString))
         {
             // Split the search string by commas and spaces, remove any empty entries, and trim whitespace from each element.
-            var searchTerms = filter.SearchString.Split(new char[] {' ', ','}, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var searchTerms = filter.SearchString.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
             logger.LogDebug("Received terms from search string: {Words}", searchTerms);
 

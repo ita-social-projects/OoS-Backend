@@ -296,6 +296,7 @@ public class WorkshopController : ControllerBase
 
         dto.Id = default;
         dto.Address.Id = default;
+        dto.DefaultTeacher.Id = default;
 
         if (dto.Teachers != null)
         {
