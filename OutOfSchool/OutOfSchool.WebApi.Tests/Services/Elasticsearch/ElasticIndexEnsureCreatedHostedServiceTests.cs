@@ -176,4 +176,64 @@ public class ElasticIndexEnsureCreatedHostedServiceTests
         Assert.That(task.IsCompleted, Is.True);
         Assert.DoesNotThrowAsync(() => service.StopAsync(cancellationToken));
     }
+
+    [Test]
+    public void Constructor_WithValidOptions_ShouldInitializeCorrectly()
+    {
+        // Arrange
+        var validConfig = new ElasticConfig
+        {
+            WorkshopIndexName = "valid-index",
+            CheckConnectivityDelayMs = 100,
+            ConnectionWaitingTimeSec = 5,
+        };
+        elasticOptionsMock.Setup(x => x.Value).Returns(validConfig);
+
+        // Act
+        var service = new ElasticIndexEnsureCreatedHostedService(
+            serviceProviderMock.Object,
+            elasticClientMock.Object,
+            elasticOptionsMock.Object,
+            new Mock<ILogger<ElasticIndexEnsureCreatedHostedService>>().Object);
+
+        // Assert
+        Assert.That(service, Is.Not.Null);
+    }
+
+    [Test]
+    public void Constructor_WithNullOptions_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        elasticOptionsMock.Setup(x => x.Value).Returns((ElasticConfig)null);
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new ElasticIndexEnsureCreatedHostedService(
+            serviceProviderMock.Object,
+            elasticClientMock.Object,
+            elasticOptionsMock.Object,
+            new Mock<ILogger<ElasticIndexEnsureCreatedHostedService>>().Object));
+    }
+
+    [Test]
+    public void Constructor_WithNullWorkshopIndexName_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        var invalidConfig = new ElasticConfig
+        {
+            WorkshopIndexName = null,
+            CheckConnectivityDelayMs = 100,
+            ConnectionWaitingTimeSec = 5,
+        };
+        elasticOptionsMock.Setup(x => x.Value).Returns(invalidConfig);
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentNullException>(() => new ElasticIndexEnsureCreatedHostedService(
+            serviceProviderMock.Object,
+            elasticClientMock.Object,
+            elasticOptionsMock.Object,
+            new Mock<ILogger<ElasticIndexEnsureCreatedHostedService>>().Object));
+
+        Assert.That(ex.ParamName, Is.EqualTo("elasticOptions"));
+        Assert.That(ex.Message, Does.Contain("WorkshopIndexName is null"));
+    }
 }
