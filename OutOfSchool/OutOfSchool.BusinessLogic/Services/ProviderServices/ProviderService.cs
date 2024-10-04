@@ -81,7 +81,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     /// <param name="userService">Service for manage users.</param>
     /// <param name="authorizationServerConfig">Path to authorization server.</param>
     /// <param name="communicationService">Service for communication.</param>
-    /// <param name="searchStringService">Service for handling search string</param>
+    /// <param name="searchStringService">Service for handling search string.</param>
     public ProviderService(
         IProviderRepository providerRepository,
         IEntityRepositorySoftDeleted<string, User> usersRepository,

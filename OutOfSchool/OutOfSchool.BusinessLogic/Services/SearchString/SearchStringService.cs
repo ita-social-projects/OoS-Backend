@@ -32,8 +32,6 @@ public class SearchStringService : ISearchStringService
             return Array.Empty<string>();
         }
 
-        logger.LogDebug("Processing input string: {Input}.", input);
-
         // Use the separators from options if available, otherwise default to space.
         string[] separators = options.Value?.Separators;
         if (separators == null || separators.Length == 0)
@@ -44,6 +42,8 @@ public class SearchStringService : ISearchStringService
             separators = [DefaultSeparator];
         }
 
-        return input.Split(separators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return input.Split(
+            separators,
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 }

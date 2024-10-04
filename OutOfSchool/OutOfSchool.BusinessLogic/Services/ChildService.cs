@@ -2,6 +2,7 @@
 using AutoMapper;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -21,6 +22,7 @@ public class ChildService : IChildService
     private readonly ILogger<ChildService> logger;
     private readonly IMapper mapper;
     private readonly IOptions<ParentConfig> parentConfig;
+    private readonly ISearchStringService searchStringService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChildService"/> class.
@@ -31,6 +33,7 @@ public class ChildService : IChildService
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Automapper DI service.</param>
     /// <param name="parentConfig">Parent configuration.</param>
+    /// <param name ="searchStringService">Service for handling search string.</param>
     public ChildService(
         IEntityRepositorySoftDeleted<Guid, Child> childRepository,
         IParentRepository parentRepository,
@@ -38,7 +41,8 @@ public class ChildService : IChildService
         ILogger<ChildService> logger,
         IMapper mapper,
         IApplicationRepository applicationRepository,
-        IOptions<ParentConfig> parentConfig)
+        IOptions<ParentConfig> parentConfig,
+        ISearchStringService searchStringService)
     {
         this.childRepository = childRepository ?? throw new ArgumentNullException(nameof(childRepository));
         this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
@@ -49,6 +53,7 @@ public class ChildService : IChildService
         this.applicationRepository =
             applicationRepository ?? throw new ArgumentNullException(nameof(applicationRepository));
         this.parentConfig = parentConfig ?? throw new ArgumentNullException(nameof(parentConfig));
+        this.searchStringService = searchStringService ?? throw new ArgumentNullException(nameof(searchStringService));
     }
 
     /// <inheritdoc/>
@@ -437,7 +442,7 @@ public class ChildService : IChildService
         logger.LogDebug($"Child with Id = {id} succesfully deleted.");
     }
 
-    private static Expression<Func<Child, bool>> PredicateBuild(ChildSearchFilter filter)
+    private Expression<Func<Child, bool>> PredicateBuild(ChildSearchFilter filter)
     {
         var predicate = PredicateBuilder.True<Child>();
 
@@ -446,7 +451,7 @@ public class ChildService : IChildService
             var tempPredicate = PredicateBuilder.False<Child>();
             if (filter.SearchString.Length >= 3)
             {
-                foreach (var word in filter.SearchString.Split([' ', ','], StringSplitOptions.RemoveEmptyEntries))
+                foreach (var word in searchStringService.SplitSearchString(filter.SearchString))
                 {
                     if (word.Any(c => char.IsLetter(c)))
                     {

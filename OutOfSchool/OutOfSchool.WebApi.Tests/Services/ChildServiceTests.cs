@@ -12,9 +12,9 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
@@ -46,6 +46,7 @@ public class ChildServiceTests
         mapperMock = new Mock<IMapper>();
         applicationRepositoryMock = new Mock<IApplicationRepository>();
         parentConfigMock = new Mock<IOptions<ParentConfig>>();
+        var searchStringServiceMock = new Mock<ISearchStringService>();
 
         childService = new ChildService(
             childRepositoryMock.Object,
@@ -54,7 +55,8 @@ public class ChildServiceTests
             loggerMock.Object,
             mapperMock.Object,
             applicationRepositoryMock.Object,
-            parentConfigMock.Object);
+            parentConfigMock.Object,
+            searchStringServiceMock.Object);
     }
 
     [Test]
