@@ -155,7 +155,7 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public Guid? InstitutionHierarchyId { get; set; }
 
     // 36
-    public Guid? TeacherId { get; set; }
+    public Guid? DefaultTeacherId { get; set; }
 
     // 37
     [Required(ErrorMessage = "Cover image is required")]
