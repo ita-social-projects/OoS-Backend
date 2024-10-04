@@ -236,4 +236,18 @@ public class ElasticIndexEnsureCreatedHostedServiceTests
         Assert.That(ex.ParamName, Is.EqualTo("elasticOptions"));
         Assert.That(ex.Message, Does.Contain("WorkshopIndexName is null"));
     }
+
+    [Test]
+    public void Constructor_WithNullElasticOptions_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        IOptions<ElasticConfig> nullOptions = null;
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new ElasticIndexEnsureCreatedHostedService(
+            serviceProviderMock.Object,
+            elasticClientMock.Object,
+            nullOptions,
+            new Mock<ILogger<ElasticIndexEnsureCreatedHostedService>>().Object));
+    }
 }
