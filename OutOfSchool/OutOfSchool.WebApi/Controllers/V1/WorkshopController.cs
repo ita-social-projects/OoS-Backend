@@ -298,6 +298,14 @@ public class WorkshopController : ControllerBase
         dto.Address.Id = default;
         dto.DefaultTeacher.Id = default;
 
+        if (dto.WorkshopDescriptionItems is not null)
+        {
+            foreach (var workshopDescription in dto.WorkshopDescriptionItems)
+            {
+                workshopDescription.Id = default;
+            }
+        }
+
         if (dto.Teachers != null)
         {
             foreach (var teacher in dto.Teachers)
