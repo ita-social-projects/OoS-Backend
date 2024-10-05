@@ -111,6 +111,7 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public bool IsInclusive { get; set; } = default;
 
     // 24
+    [Required(ErrorMessage = "Additional description is required")]
     [MaxLength(500)]
     public string AdditionalDescription { get; set; } = string.Empty;
 
