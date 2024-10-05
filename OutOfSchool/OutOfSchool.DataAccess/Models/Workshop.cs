@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Validators;
@@ -111,7 +112,7 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
 
     // 24
     [MaxLength(500)]
-    public string AdditionalDescription { get; set; }
+    public string AdditionalDescription { get; set; } = string.Empty;
 
     // 25
     public bool AreThereBenefits { get; set; } = default;
@@ -155,10 +156,10 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public Guid? InstitutionHierarchyId { get; set; }
 
     // 36
+    [Required(AllowEmptyStrings = true)]
     public Guid? DefaultTeacherId { get; set; }
 
     // 37
-    [Required(ErrorMessage = "Cover image is required")]
     [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;
 
@@ -172,6 +173,8 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public virtual InstitutionHierarchy InstitutionHierarchy { get; set; }
 
     // 41
+    [ForeignKey("DefaultTeacherId")]
+    [DeleteBehavior(DeleteBehavior.Restrict)]
     public virtual Teacher DefaultTeacher { get; set; }
 
     // 42
