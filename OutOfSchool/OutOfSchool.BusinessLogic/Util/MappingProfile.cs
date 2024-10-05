@@ -44,7 +44,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.DateTimeRanges, opt => opt.MapFrom(src => src.DateTimeRanges.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.WorkshopDescriptionItems, opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)))
 
-            .ForMember(dest => dest.IncludedStudyGroupTitles, opt => opt.MapFrom(src => src.IncludedStudyGroups.Where(x => !x.IsDeleted).Select(w => w.ShortTitle)));
+            .ForMember(dest => dest.IncludedStudyGroups, opt => opt.MapFrom(src => src.IncludedStudyGroups.Where(x => !x.IsDeleted)));
 
         CreateSoftDeletedMap<WorkshopBaseDto, Workshop>()
             .ForMember(
