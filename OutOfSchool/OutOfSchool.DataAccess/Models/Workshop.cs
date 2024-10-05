@@ -157,7 +157,6 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public Guid? InstitutionHierarchyId { get; set; }
 
     // 36
-    [Required(AllowEmptyStrings = true)]
     public Guid? DefaultTeacherId { get; set; }
 
     // 37
