@@ -3396,7 +3396,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasOne("OutOfSchool.Services.Models.Workshop", "MemberOfWorkshop")
                         .WithMany("IncludedStudyGroups")
                         .HasForeignKey("MemberOfWorkshopId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
                         .WithMany("Workshops")

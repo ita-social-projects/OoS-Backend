@@ -11,7 +11,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20241005210750_UpdateWorkshopEntity")]
+    [Migration("20241006190718_UpdateWorkshopEntity")]
     partial class UpdateWorkshopEntity
     {
         /// <inheritdoc />
@@ -3399,7 +3399,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.HasOne("OutOfSchool.Services.Models.Workshop", "MemberOfWorkshop")
                         .WithMany("IncludedStudyGroups")
                         .HasForeignKey("MemberOfWorkshopId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
                         .WithMany("Workshops")
