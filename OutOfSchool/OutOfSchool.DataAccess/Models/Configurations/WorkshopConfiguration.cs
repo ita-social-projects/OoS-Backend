@@ -31,7 +31,8 @@ internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
         builder.HasOne(x => x.MemberOfWorkshop)
             .WithMany(x => x.IncludedStudyGroups)
             .HasForeignKey(x => x.MemberOfWorkshopId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.Restrict);
 
         //builder.HasOne(x => x.DefaultTeacher)
         //    .WithOne(x => x.Workshop)

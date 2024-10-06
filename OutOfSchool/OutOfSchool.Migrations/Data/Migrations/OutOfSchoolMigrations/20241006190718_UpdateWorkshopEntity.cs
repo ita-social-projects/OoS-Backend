@@ -161,7 +161,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 column: "MemberOfWorkshopId",
                 principalTable: "Workshops",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Restrict);
         }
 
         /// <inheritdoc />
