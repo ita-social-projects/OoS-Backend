@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Validators;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;
@@ -183,7 +184,7 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public virtual ICollection<WorkshopDescriptionItem> WorkshopDescriptionItems { get; set; }
 
     // 44
-    public virtual List<Workshop> IncludedStudyGroups { get; set; }
+    public virtual ICollection<Workshop> IncludedStudyGroups { get; set; } = new HashSet<Workshop>(); // Navigation property to included study groups
 
     // 45
     public virtual List<ProviderAdmin> ProviderAdmins { get; set; }
