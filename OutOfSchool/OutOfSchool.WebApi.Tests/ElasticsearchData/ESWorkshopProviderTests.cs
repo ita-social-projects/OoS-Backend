@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Elastic.Clients.Elasticsearch;
+using Elastic.Transport;
+using Microsoft.AspNetCore.Http;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.ElasticsearchData;
@@ -117,6 +120,48 @@ public class ESWorkshopProviderTests
     #endregion
 
     #region DeleteRangeOfEntitiesByIdsAsync
+
+    [Test]
+    public async Task DeleteRangeOfEntitiesByIdsAsync_WhenBulkIsSuccessful_ShouldReturnDeleted()
+    {
+        // Arrange
+        var response = TestableResponseFactory
+            .CreateSuccessfulResponse<BulkResponse>(new(), StatusCodes.Status200OK);
+        var ids = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+        elasticClientMock.Setup(x => x.BulkAsync(It.IsAny<BulkRequest>(), CancellationToken.None))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await provider.DeleteRangeOfEntitiesByIdsAsync(ids);
+
+        // Assert
+        elasticClientMock.Verify(
+            x => x.BulkAsync(It.IsAny<BulkRequest>(), CancellationToken.None), Times.Once);
+        Assert.IsNotNull(result);
+        Assert.AreEqual(Result.Deleted, result);
+    }
+
+    [Test]
+    public async Task DeleteRangeOfEntitiesByIdsAsync_WhenBulkFails_ShouldReturnDeleted()
+    {
+        // Arrange
+        var response = TestableResponseFactory
+            .CreateSuccessfulResponse<BulkResponse>(
+                new() { Errors = true },
+                StatusCodes.Status200OK);
+        var ids = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+        elasticClientMock.Setup(x => x.BulkAsync(It.IsAny<BulkRequest>(), CancellationToken.None))
+            .ReturnsAsync(response);
+
+        // Act & Assert
+        var result = await provider.DeleteRangeOfEntitiesByIdsAsync(ids);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(Result.Deleted, result);
+        elasticClientMock.Verify(
+            x => x.BulkAsync(It.IsAny<BulkRequest>(), CancellationToken.None), Times.Once);
+    }
 
     #endregion
 
