@@ -153,7 +153,7 @@ public class ESWorkshopProviderTests
         elasticClientMock.Setup(x => x.BulkAsync(It.IsAny<BulkRequest>(), CancellationToken.None))
             .ReturnsAsync(response);
 
-        // Act & Assert
+        // Act
         var result = await provider.DeleteRangeOfEntitiesByIdsAsync(ids);
 
         // Assert
@@ -165,7 +165,71 @@ public class ESWorkshopProviderTests
 
     #endregion
 
+    #region ReIndexAll
+
+    [Test]
+    public async Task ReIndexAll_WhenReIndexSuccessful_ShouldReturnUpdatedResult()
+    {
+        var source = WorkshopESGenerator.Generate(5);
+        elasticClientMock
+            .Setup(x => x.BulkAll(
+                source,
+                It.IsAny<Action<BulkAllRequestDescriptor<WorkshopES>>>(),
+                CancellationToken.None))
+            .Returns(new BulkAllObservable<WorkshopES>(
+                elasticClientMock.Object,
+                new Mock<IBulkAllRequest<WorkshopES>>().Object,
+                CancellationToken.None));
+
+        // Act
+        var result = await provider.ReIndexAll(source);
+
+        // Assert
+        elasticClientMock.Verify(
+            x => x.DeleteByQueryAsync<WorkshopES>(
+                It.IsAny<DeleteByQueryRequestDescriptor<WorkshopES>>(), CancellationToken.None),
+            Times.Once);
+        elasticClientMock.Verify(
+            x => x.BulkAll(
+                source,
+                It.IsAny<Action<BulkAllRequestDescriptor<WorkshopES>>>(),
+                CancellationToken.None),
+            Times.Once);
+        Assert.AreEqual(Result.Updated, result);
+    }
+
+    [Test]
+    public void ReIndexAll_WhenReIndexFails_ShouldThrowException()
+    {
+        var source = WorkshopESGenerator.Generate(3);
+        var exceptionMessage = "Test exception";
+        elasticClientMock
+            .Setup(x => x.BulkAll(
+                source,
+                It.IsAny<Action<BulkAllRequestDescriptor<WorkshopES>>>(),
+                CancellationToken.None))
+            .Throws(new Exception(exceptionMessage));
+
+        // Act & Assert
+        Exception ex = Assert.ThrowsAsync<Exception>(
+            async () => await provider.ReIndexAll(source));
+        Assert.AreEqual(exceptionMessage, ex.Message);
+        elasticClientMock.Verify(
+            x => x.DeleteByQueryAsync<WorkshopES>(
+                It.IsAny<DeleteByQueryRequestDescriptor<WorkshopES>>(), CancellationToken.None),
+            Times.Once);
+        elasticClientMock.Verify(
+            x => x.BulkAll(
+                source,
+                It.IsAny<Action<BulkAllRequestDescriptor<WorkshopES>>>(),
+                CancellationToken.None),
+            Times.Once);
+    }
+
+    #endregion
+
     #region Search
 
     #endregion
+
 }
