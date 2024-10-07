@@ -3370,7 +3370,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasOne("OutOfSchool.Services.Models.Workshop", "Workshop")
                         .WithMany("Teachers")
                         .HasForeignKey("WorkshopId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Workshop");

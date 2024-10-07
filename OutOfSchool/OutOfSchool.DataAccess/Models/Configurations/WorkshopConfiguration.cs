@@ -13,7 +13,8 @@ internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
 
         builder.HasMany(x => x.Teachers)
             .WithOne(x => x.Workshop)
-            .HasForeignKey(x => x.WorkshopId);
+            .HasForeignKey(x => x.WorkshopId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(x => x.WorkshopDescriptionItems)
              .WithOne(x => x.Workshop)
@@ -34,10 +35,10 @@ internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
             .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
 
-        //builder.HasOne(x => x.DefaultTeacher)
-        //    .WithOne(x => x.Workshop)
-        //    .HasForeignKey<Workshop>(x => x.DefaultTeacherId)
-        //    .IsRequired(false);
+        builder.HasOne(x => x.DefaultTeacher)
+            .WithOne(x => x.Workshop)
+            .HasForeignKey<Teacher>(x => x.WorkshopId)
+            .IsRequired();
 
         base.Configure(builder);
     }

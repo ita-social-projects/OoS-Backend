@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Validators;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;

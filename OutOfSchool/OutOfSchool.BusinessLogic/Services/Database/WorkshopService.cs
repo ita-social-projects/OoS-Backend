@@ -111,9 +111,19 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             workshop.DefaultTeacher = mapper.Map<Teacher>(dto.DefaultTeacher);
         }
 
+        if (dto.MemberOfWorkshop is not null)
+        {
+            workshop.MemberOfWorkshop = mapper.Map<Workshop>(dto.MemberOfWorkshop);
+        }
+
         if (dto.Teachers is not null)
         {
             workshop.Teachers = dto.Teachers.Select(dtoTeacher => mapper.Map<Teacher>(dtoTeacher)).ToList();
+        }
+
+        if (dto.IncludedStudyGroups is not null)
+        {
+            workshop.IncludedStudyGroups = dto.IncludedStudyGroups.Select(mapper.Map<Workshop>).ToList();
         }
 
         workshop.Status = WorkshopStatus.Open;
