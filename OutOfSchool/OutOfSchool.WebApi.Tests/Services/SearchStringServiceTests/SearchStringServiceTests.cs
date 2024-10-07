@@ -60,6 +60,19 @@ public class SearchStringServiceTests
     }
 
     [Test]
+    public void SplitSearchString_WhenInputIsNull_ShouldReturnEmptyArray()
+    {
+        // Act
+        var result = searchStringService.SplitSearchString(null);
+
+        // Assert
+        result.Should()
+            .BeEmpty();
+
+        mockSettings.VerifyAll();
+    }
+
+    [Test]
     public void SplitSearchString_WhenInputIsWhiteSpaceAndCommaCharacters_ShouldReturnEmptyArray()
     {
         // Arrange

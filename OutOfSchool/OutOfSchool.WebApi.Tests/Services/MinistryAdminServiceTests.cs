@@ -234,11 +234,10 @@ public class MinistryAdminServiceTests
         // Arrange
         var filter = new MinistryAdminFilter()
         {
-            SearchString = "ministry@ Адміністратор міністерства",
+            SearchString = "Адміністратор",
         };
 
-        institutionAdmin.User.Email = "ministry@admin.com";
-        institutionAdmin.User.FirstName = "Адміністратор";
+        institutionAdmin.User.FirstName = "Адміністратор міністерства";
 
         var filteredMinistryAdmins = new List<InstitutionAdmin>() { institutionAdmin };
         var expectedDtos = mapper.Map<List<MinistryAdminDto>>(filteredMinistryAdmins);
@@ -246,7 +245,7 @@ public class MinistryAdminServiceTests
         SetupCommonMocks(
             filter,
             filteredMinistryAdmins,
-            ["ministry@", "Адміністратор", "міністерства"]);
+            ["Адміністратор", "міністерства"]);
 
         // Act
         var result = await ministryAdminService.GetByFilter(filter)

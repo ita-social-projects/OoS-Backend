@@ -342,16 +342,16 @@ public class AreaAdminServiceTests
         // Arrange
         var filter = new AreaAdminFilter()
         {
-            SearchString = "admin@, Адміністратор",
+            SearchString = " , admin@",
         };
 
-        areaAdmins[0].User.FirstName = "Адміністратор";
-        areaAdmins[1].User.Email = "admin@";
+        areaAdmins[0].User.Email = "admin@otg.com";
+        areaAdmins[1].User.Email = "admin@otg.org";
 
         var filteredAreaAdmins = new List<AreaAdmin>() { areaAdmins[0], areaAdmins[1] };
         var expectedAdminDtos = mapper.Map<List<AreaAdminDto>>(filteredAreaAdmins);
 
-        SetupCommonMocks(filter, filteredAreaAdmins, ["Адміністратор,admin@"]);
+        SetupCommonMocks(filter, filteredAreaAdmins, ["admin@"]);
 
         var expectedResult = new SearchResult<AreaAdminDto>()
         {

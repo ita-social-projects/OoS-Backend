@@ -316,16 +316,16 @@ public class RegionAdminServiceTests
         // Arrange
         var filter = new RegionAdminFilter()
         {
-            SearchString = "Київська, +306879",
+            SearchString = "Київська, Хмельницька",
         };
 
-        regionAdmins[1].User.PhoneNumber = "+30687911111";
+        regionAdmins[1].CATOTTG = new CATOTTG() { Name = "Хмельницька область" };
         regionAdmins[2].CATOTTG = new CATOTTG() { Name = "Київська область" };
 
         var filteredRegionAdmins = new List<RegionAdmin>() { regionAdmins[1], regionAdmins[2] };
         var expectedDtos = mapper.Map<List<RegionAdminDto>>(filteredRegionAdmins);
 
-        SetupCommonMocks(filteredRegionAdmins, filter, ["Київська", "+306879"]);
+        SetupCommonMocks(filteredRegionAdmins, filter, ["Київська", "Хмельницька"]);
 
         // Act
         var result = await regionAdminService.GetByFilter(filter)
