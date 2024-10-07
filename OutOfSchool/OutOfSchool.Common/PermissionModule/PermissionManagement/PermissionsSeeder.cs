@@ -45,7 +45,7 @@ public static class PermissionsSeeder
         Permissions.CompetitiveEventRead, Permissions.CompetitiveEventAddNew, Permissions.CompetitiveEventEdit, Permissions.CompetitiveEventRemove,
     };
 
-    private static readonly IEnumerable<Permissions> SeedProviderAdminPermissions = new List<Permissions>
+    private static readonly IEnumerable<Permissions> SeedEmployeePermissions = new List<Permissions>
     {
         Permissions.ImpersonalDataRead,
         Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
@@ -147,8 +147,8 @@ public static class PermissionsSeeder
             case "provider":
                 return SeedProviderPermissions.PackPermissionsIntoString();
 
-            case "provideradmin":
-                return SeedProviderAdminPermissions.PackPermissionsIntoString();
+            case "employee":
+                return SeedEmployeePermissions.PackPermissionsIntoString();
 
             case "ministryadmin":
                 return SeedMinistryAdminPermissions.PackPermissionsIntoString();

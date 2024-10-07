@@ -3,7 +3,7 @@ using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.AuthCommon.Services.Interfaces;
 
-public interface IProviderAdminService
+public interface IEmployeeService
 {
     Task<ResponseDto> CreateEmployeeAsync(
         CreateEmployeeDto employeeDto,

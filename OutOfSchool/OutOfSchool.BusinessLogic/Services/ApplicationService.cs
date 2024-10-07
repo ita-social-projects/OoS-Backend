@@ -300,7 +300,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         {
             await currentUserService.UserHasRights(
                 new ProviderRights(providerId),
-                new ProviderAdminWorkshopRights(providerId, id));
+                new EmployeeWorkshopRights(providerId, id));
         }
 
         filter ??= new ApplicationFilter();
@@ -389,11 +389,11 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         bool isDeputy = false)
     {
         logger.LogInformation(
-            "Getting Applications by Employee userId started. Looking ProviderAdmin userId = {UserId}", userId);
+            "Getting Applications by Employee userId started. Looking employee userId = {UserId}", userId);
 
         if (!currentUserService.IsAdmin())
         {
-            await currentUserService.UserHasRights(new ProviderAdminRights(userId));
+            await currentUserService.UserHasRights(new EmployeeRights(userId));
         }
 
         filter ??= new ApplicationFilter();
@@ -405,12 +405,9 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
 
         List<Guid> workshopIds = new List<Guid>();
 
-        if (!isDeputy)
-        {
-            workshopIds =
-                (await employeeService.GetRelatedWorkshopIdsForEmployees(userId).ConfigureAwait(false))
-                .ToList();
-        }
+        workshopIds =
+            (await employeeService.GetRelatedWorkshopIdsForEmployees(userId).ConfigureAwait(false))
+            .ToList();
 
         Expression<Func<Workshop, bool>> workshopFilter =
             w => isDeputy ? w.ProviderId == providerId : workshopIds.Contains(w.Id);
@@ -428,7 +425,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
             whereExpression: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
         logger.LogInformation(
-            "There are {Count} applications in the Db with AdminProvider Id = {UserId}",
+            "There are {Count} applications in the Db with employee Id = {UserId}",
             applications.Count,
             userId);
 
@@ -463,7 +460,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         await currentUserService.UserHasRights(
             new ParentRights(application.ParentId),
             new ProviderRights(application.Workshop.ProviderId),
-            new ProviderAdminWorkshopRights(application.Workshop.ProviderId, application.Workshop.Id));
+            new EmployeeWorkshopRights(application.Workshop.ProviderId, application.Workshop.Id));
 
         return mapper.Map<ApplicationDto>(application);
     }
@@ -876,7 +873,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         await currentUserService.UserHasRights(
             new ParentRights(applicationDto.ParentId),
             new ProviderRights(providerId),
-            new ProviderAdminWorkshopRights(providerId, applicationDto.WorkshopId));
+            new EmployeeWorkshopRights(providerId, applicationDto.WorkshopId));
         var currentApplication = this.CheckApplicationExists(applicationDto.Id);
 
         if (currentApplication is null)

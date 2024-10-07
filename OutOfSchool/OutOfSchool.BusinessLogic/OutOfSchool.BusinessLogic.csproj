@@ -25,7 +25,6 @@
     <PackageReference Include="Elastic.Transport" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
-    <Protobuf Include="..\OutOfSchool.GRPC\Protos\ProviderAdmin.proto" GrpcServices="Client" />
     <PackageReference Include="AutoMapper" />
     <PackageReference Include="Google.Protobuf" />
     <PackageReference Include="Grpc.Net.Client" />
@@ -87,7 +86,24 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Common\Exceptions\" />
+    <Content Remove="stylecop.json" />
+    <AdditionalFiles Include="stylecop.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="..\OutOfSchool.GRPC\Protos\">
+      <Link>OutOfSchool\OutOfSchool.GRPC\Protos</Link>
+    </Folder>
+    <PropertyGroup>
+      <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    </PropertyGroup>
+      <PropertyGroup>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <PackageReference Include="Elastic.Clients.Elasticsearch" />
+        <PackageReference Include="Elastic.CommonSchema" />
+        <PackageReference Include="Elastic.Transport" />
+        <Folder Include="Common\Exceptions\" />
+      </PropertyGroup>
   </ItemGroup>
 
   <ItemGroup>

@@ -14,7 +14,7 @@ using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.AuthCommon.Services;
 
-public class EmployeeService : IProviderAdminService
+public class EmployeeService : IEmployeeService
 {
     private readonly IEmailSenderService emailSender;
     private readonly IMapper mapper;

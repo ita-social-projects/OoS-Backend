@@ -22,7 +22,7 @@ namespace OutOfSchool.AuthServer.Tests.Services;
 public class ProviderAdminServiceGrpcTests
 {
     private ProviderAdminServiceGrpc providerAdminServiceGrpc;
-    private Mock<IProviderAdminService> providerAdminServiceMock;
+    private Mock<IEmployeeService> providerAdminServiceMock;
     private TestServerCallContext serverCallContextMock;
     private Mock<HttpContext> httpContextMock;
     private string userId;
@@ -35,7 +35,7 @@ public class ProviderAdminServiceGrpcTests
         httpContextMock.Setup(c => c.User.FindFirst(IdentityResourceClaimsTypes.Sub))
             .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
 
-        providerAdminServiceMock = new Mock<IProviderAdminService>();
+        providerAdminServiceMock = new Mock<IEmployeeService>();
         serverCallContextMock = new TestServerCallContext(new Dictionary<object, object>()
         {
             {"__HttpContext", httpContextMock.Object}

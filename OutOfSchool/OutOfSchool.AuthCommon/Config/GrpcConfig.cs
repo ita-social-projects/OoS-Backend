@@ -7,6 +7,4 @@ public class GrpcConfig
     public bool Enabled { get; set; }
 
     public int Port { get; set; }
-
-    public string ProviderAdminConfirmationLink { get; set; }
 }

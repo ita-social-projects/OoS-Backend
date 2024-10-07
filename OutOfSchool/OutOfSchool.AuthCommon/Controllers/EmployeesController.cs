@@ -10,16 +10,16 @@ namespace OutOfSchool.AuthCommon.Controllers;
 public class EmployeesController : Controller
 {
     private readonly ILogger<EmployeesController> logger;
-    private readonly IProviderAdminService providerAdminService;
+    private readonly IEmployeeService employeeService;
 
     private string userId;
 
     public EmployeesController(
         ILogger<EmployeesController> logger,
-        IProviderAdminService providerAdminService)
+        IEmployeeService employeeService)
     {
         this.logger = logger;
-        this.providerAdminService = providerAdminService;
+        this.employeeService = employeeService;
     }
 
     public override void OnActionExecuting(ActionExecutingContext context)
@@ -33,45 +33,45 @@ public class EmployeesController : Controller
     {
         logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
-        return await providerAdminService
+        return await employeeService
             .CreateEmployeeAsync(employeeDto, Url, userId);
     }
 
-    [HttpPut("{providerAdminId}")]
+    [HttpPut("{employeeId}")]
     [HasPermission(Permissions.ProviderRemove)]
-    public async Task<ResponseDto> Update(string providerAdminId, UpdateEmployeeDto employeeUpdateDto)
+    public async Task<ResponseDto> Update(string employeeId, UpdateEmployeeDto employeeUpdateDto)
     {
         logger.LogDebug(
             "Operation initiated by User(id): {UserId}",
             userId);
 
-        return await providerAdminService
+        return await employeeService
             .UpdateEmployeeAsync(employeeUpdateDto, userId);
     }
 
-    [HttpDelete("{providerAdminId}")]
+    [HttpDelete("{employeeId}")]
     [HasPermission(Permissions.ProviderRemove)]
-    public async Task<ResponseDto> Delete(string providerAdminId)
+    public async Task<ResponseDto> Delete(string employeeId)
     {
-        if (providerAdminId is null)
+        if (employeeId is null)
         {
-            throw new ArgumentNullException(nameof(providerAdminId));
+            throw new ArgumentNullException(nameof(employeeId));
         }
 
         logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
-        return await providerAdminService
-            .DeleteEmployeeAsync(providerAdminId, userId);
+        return await employeeService
+            .DeleteEmployeeAsync(employeeId, userId);
     }
 
-    [HttpPut("{providerAdminId}/{isBlocked}")]
+    [HttpPut("{employeeId}/{isBlocked}")]
     [HasPermission(Permissions.ProviderRemove)]
-    public async Task<ResponseDto> Block(string providerAdminId, bool isBlocked)
+    public async Task<ResponseDto> Block(string employeeId, bool isBlocked)
     {
         logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
-        return await providerAdminService
-            .BlockEmployeeAsync(providerAdminId, userId, isBlocked);
+        return await employeeService
+            .BlockEmployeeAsync(employeeId, userId, isBlocked);
     }
 
     [HttpPut("{providerId}/{isBlocked}")]
@@ -80,17 +80,17 @@ public class EmployeesController : Controller
     {
         logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
-        return await providerAdminService
+        return await employeeService
             .BlockEmployeesByProviderAsync(providerId, userId, isBlocked);
     }
 
-    [HttpPut("{providerAdminId}")]
+    [HttpPut("{employeeId}")]
     [HasPermission(Permissions.ProviderRemove)]
-    public async Task<ResponseDto> Reinvite(string providerAdminId)
+    public async Task<ResponseDto> Reinvite(string employeeId)
     {
         logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
-        return await providerAdminService
-            .ReinviteEmployeeAsync(providerAdminId, userId, Url);
+        return await employeeService
+            .ReinviteEmployeeAsync(employeeId, userId, Url);
     }
 }
