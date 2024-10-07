@@ -171,7 +171,8 @@ public class WorkshopBaseDto : IValidatableObject
     public Guid? MemberOfWorkshopId { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    public List<WorkshopBaseDto> IncludedStudyGroups { get; set; }
+    // public List<WorkshopBaseDto> IncludedStudyGroups { get; set; }
+    public virtual ICollection<WorkshopBaseDto> IncludedStudyGroups { get; set; } = new HashSet<WorkshopBaseDto>(); // Navigation property to included study groups
 
     [Required]
     public long AddressId { get; set; }
