@@ -1,5 +1,4 @@
-﻿using System;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -28,12 +27,14 @@ public class SearchStringServiceTests
     }
 
     [Test]
-    public void SplitSearchString_ConfigurationIsNull_ShouldApplyDefaultSeparators()
+    public void SplitSearchString_WhenConfigurationIsNull_ShouldApplyDefaultSeparators()
     {
         // Arrange
-        string input = "test search string";
-        SetUpOptionsAndExpectedResult(null);
+        var input = "test search string";
         var expectedResult = new[] { "test", "search", "string" };
+
+        mockSettings.Setup(s => s.Value)
+          .Returns(new SearchStringOptions() { Separators = null});
 
         // Act
         var result = searchStringService.SplitSearchString(input);
@@ -41,44 +42,48 @@ public class SearchStringServiceTests
         // Assert
         result.Should()
             .BeEquivalentTo(expectedResult);
+
+        mockSettings.VerifyAll();
     }
 
     [Test]
-    public void SplitSearchString_InputIsWhiteSpace_ShouldReturnEmptyArray()
+    public void SplitSearchString_WhenInputIsWhiteSpace_ShouldReturnEmptyArray()
     {
-        // Arrange
-        string input = " ";
-
         // Act
-        var result = searchStringService.SplitSearchString(input);
+        var result = searchStringService.SplitSearchString(" ");
 
         // Assert
         result.Should()
             .BeEmpty();
+
+        mockSettings.VerifyAll();
     }
 
     [Test]
-    public void SplitSearchString_InputIsWhiteSpaceAndCommaCharacters_ShouldReturnEmptyArray()
+    public void SplitSearchString_WhenInputIsWhiteSpaceAndCommaCharacters_ShouldReturnEmptyArray()
     {
         // Arrange
-        string input = " ,   ,   , ";
-        SetUpOptionsAndExpectedResult([" ", ", "]);
+        mockSettings.Setup(s => s.Value)
+           .Returns(new SearchStringOptions { Separators = [" ", ", "] });
 
         // Act
-        var result = searchStringService.SplitSearchString(input);
+        var result = searchStringService.SplitSearchString(" ,   ,   , ");
 
         // Assert
         result.Should()
             .BeEmpty();
+
+        mockSettings.VerifyAll();
     }
 
     [Test]
-    public void SplitSearchString_InputIsValid_ShouldReturnArrayOfStrings()
+    public void SplitSearchString_WhenInputIsValid_ShouldReturnArrayOfStrings()
     {
         // Arrange
-        string input = " test, search string ";
-        SetUpOptionsAndExpectedResult([" ", ", "]);
+        var input = " test, search string ";
         var expectedResult = new[] { "test", "search", "string" };
+        mockSettings.Setup(s => s.Value)
+            .Returns(new SearchStringOptions { Separators = [" ", ","] });
 
         // Act
         var result = searchStringService.SplitSearchString(input);
@@ -86,12 +91,7 @@ public class SearchStringServiceTests
         // Assert
         result.Should()
             .BeEquivalentTo(expectedResult);
-    }
 
-    private void SetUpOptionsAndExpectedResult(string[] separators)
-    {
-        var options = separators == null ? null : new SearchStringOptions { Separators = separators };
-
-        mockSettings.Setup(s => s.Value).Returns(options);
+        mockSettings.VerifyAll();
     }
 }
