@@ -355,7 +355,7 @@ public class AreaAdminServiceTests
 
         var expectedResult = new SearchResult<AreaAdminDto>()
         {
-            TotalAmount = expectedAdminDtos.Count,
+            TotalAmount = filteredAreaAdmins.Count,
             Entities = expectedAdminDtos,
         };
 

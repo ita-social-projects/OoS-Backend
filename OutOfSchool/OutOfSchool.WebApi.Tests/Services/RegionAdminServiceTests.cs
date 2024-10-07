@@ -22,7 +22,6 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
@@ -34,6 +33,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class RegionAdminServiceTests
 {
     private readonly string email = "email@gmail.com";
+    private readonly string includeProperties = "Institution,User,CATOTTG";
 
     private Mock<IHttpClientFactory> httpClientFactory;
     private Mock<IOptions<AuthorizationServerConfig>> identityServerConfig;
@@ -44,6 +44,7 @@ public class RegionAdminServiceTests
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IEntityRepositorySoftDeleted<string, User>> apiErrorServiceUserRepositoryMock;
+    private Mock<ISearchStringService> searchStringServiceMock;
 
     private RegionAdminService regionAdminService;
     private RegionAdmin regionAdmin;
@@ -94,7 +95,7 @@ public class RegionAdminServiceTests
         apiErrorServiceUserRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         var apiErrorServiceLogger = new Mock<ILogger<ApiErrorService>>();
         apiErrorService = new ApiErrorService(apiErrorServiceUserRepositoryMock.Object, apiErrorServiceLogger.Object);
-        var searchStringServiceMock = new Mock<ISearchStringService>(); 
+        searchStringServiceMock = new Mock<ISearchStringService>();
 
         regionAdminService = new RegionAdminService(
             httpClientFactory.Object,
@@ -307,5 +308,68 @@ public class RegionAdminServiceTests
         Assert.AreEqual(expected.Group, result.Group);
         Assert.AreEqual(expected.Code, result.Code);
         Assert.AreEqual(expected.Message, result.Message);
+    }
+
+    [Test]
+    public async Task GetByFilter_WhenFilteredBySearchString_ShouldReturnEntities()
+    {
+        // Arrange
+        var filter = new RegionAdminFilter()
+        {
+            SearchString = "Київська, +306879",
+        };
+
+        regionAdmins[1].User.PhoneNumber = "+30687911111";
+        regionAdmins[2].CATOTTG = new CATOTTG() { Name = "Київська область" };
+
+        var filteredRegionAdmins = new List<RegionAdmin>() { regionAdmins[1], regionAdmins[2] };
+        var expectedDtos = mapper.Map<List<RegionAdminDto>>(filteredRegionAdmins);
+
+        SetupCommonMocks(filteredRegionAdmins, filter, ["Київська", "+306879"]);
+
+        // Act
+        var result = await regionAdminService.GetByFilter(filter)
+            .ConfigureAwait(false);
+
+        // Assert
+        result.Entities.Should()
+            .BeEquivalentTo(expectedDtos);
+
+        searchStringServiceMock.VerifyAll();
+        regionAdminRepositoryMock.VerifyAll();
+        currentUserServiceMock.VerifyAll();
+    }
+
+    private void SetupCommonMocks(
+    List<RegionAdmin> filteredRegionAdmins = null,
+    RegionAdminFilter filter = null,
+    string[] splitResults = null,
+    bool isMinistryAdmin = false,
+    bool isRegionAdmin = false)
+    {
+        searchStringServiceMock
+            .Setup(s => s.SplitSearchString(It.Is<string>(x => x == filter.SearchString)))
+            .Returns(splitResults);
+
+        currentUserServiceMock.Setup(s => s.IsMinistryAdmin())
+            .Returns(isMinistryAdmin);
+        currentUserServiceMock.Setup(s => s.IsRegionAdmin())
+            .Returns(isRegionAdmin);
+
+        regionAdminRepositoryMock
+            .Setup(r => r.Count(It.IsAny<Expression<Func<RegionAdmin, bool>>>()))
+            .ReturnsAsync(filteredRegionAdmins.Count);
+
+        regionAdminRepositoryMock
+            .Setup(r =>
+                r.Get(
+                    It.Is<int>(x => x == filter.From),
+                    It.Is<int>(x => x == filter.Size),
+                    It.Is<string>(x => x == includeProperties),
+                    It.IsAny<Expression<Func<RegionAdmin, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<RegionAdmin, dynamic>>, SortDirection>>(),
+                    It.Is<bool>(x => x)))
+            .Returns(filteredRegionAdmins.AsQueryable()
+            .BuildMock());
     }
 }
