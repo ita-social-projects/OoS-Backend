@@ -123,9 +123,19 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var tags = (await tagService.GetAll()).Where(tag => dto.TagIds.Contains(tag.Id));
         workshop.Tags = tags.Select(mapper.Map<Tag>).ToList();
 
+        if (dto.MemberOfWorkshop is not null)
+        {
+            workshop.MemberOfWorkshop = mapper.Map<Workshop>(dto.MemberOfWorkshop);
+        }
+
         if (dto.Teachers is not null)
         {
             workshop.Teachers = dto.Teachers.Select(dtoTeacher => mapper.Map<Teacher>(dtoTeacher)).ToList();
+        }
+
+        if (dto.IncludedStudyGroups is not null)
+        {
+            workshop.IncludedStudyGroups = dto.IncludedStudyGroups.Select(mapper.Map<Workshop>).ToList();
         }
 
         workshop.Status = WorkshopStatus.Open;

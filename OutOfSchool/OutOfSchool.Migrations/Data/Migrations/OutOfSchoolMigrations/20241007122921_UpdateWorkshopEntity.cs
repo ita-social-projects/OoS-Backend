@@ -11,6 +11,10 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Teachers_Workshops_WorkshopId",
+                table: "Teachers");
+
             migrationBuilder.AddColumn<string>(
                 name: "AdditionalDescription",
                 table: "Workshops",
@@ -148,6 +152,14 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 column: "MemberOfWorkshopId");
 
             migrationBuilder.AddForeignKey(
+                name: "FK_Teachers_Workshops_WorkshopId",
+                table: "Teachers",
+                column: "WorkshopId",
+                principalTable: "Workshops",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
                 name: "FK_Workshops_Teachers_DefaultTeacherId",
                 table: "Workshops",
                 column: "DefaultTeacherId",
@@ -167,6 +179,10 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Teachers_Workshops_WorkshopId",
+                table: "Teachers");
+
             migrationBuilder.DropForeignKey(
                 name: "FK_Workshops_Teachers_DefaultTeacherId",
                 table: "Workshops");
@@ -254,6 +270,14 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
             migrationBuilder.DropColumn(
                 name: "TypeOfAgeCompositionId",
                 table: "Workshops");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Teachers_Workshops_WorkshopId",
+                table: "Teachers",
+                column: "WorkshopId",
+                principalTable: "Workshops",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
         }
     }
 }

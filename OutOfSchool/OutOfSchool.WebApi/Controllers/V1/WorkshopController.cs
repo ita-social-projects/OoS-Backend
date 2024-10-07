@@ -296,7 +296,16 @@ public class WorkshopController : ControllerBase
 
         dto.Id = default;
         dto.Address.Id = default;
-        dto.DefaultTeacher.Id = default;
+
+        if (dto.DefaultTeacher is not null)
+        {
+            dto.DefaultTeacher.Id = default;
+        }
+
+        if (dto.MemberOfWorkshop is not null)
+        {
+            dto.MemberOfWorkshop.Id = default;
+        }
 
         if (dto.WorkshopDescriptionItems is not null)
         {
@@ -317,6 +326,14 @@ public class WorkshopController : ControllerBase
         foreach (var dateTimeRangeDto in dto.DateTimeRanges)
         {
             dateTimeRangeDto.Id = default;
+        }
+
+        if (dto.IncludedStudyGroups is not null)
+        {
+            foreach (var includedStudyGrope in dto.IncludedStudyGroups)
+            {
+                includedStudyGrope.Id = default;
+            }
         }
 
         var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
