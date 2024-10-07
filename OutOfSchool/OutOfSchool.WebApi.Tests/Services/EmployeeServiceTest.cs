@@ -38,7 +38,7 @@ public class EmployeeServiceTest
     private Mock<IEmployeeRepository> providerAdminRepository;
     private Mock<IEntityRepositorySoftDeleted<string, OutOfSchool.Services.Models.User>> userRepositoryMock;
     private IMapper mapper;
-    private Mock<IProviderAdminOperationsService> providerAdminOperationsService;
+    private Mock<IEmployeeOperationsService> providerAdminOperationsService;
     private Mock<IWorkshopService> workshopService;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IEntityRepositorySoftDeleted<string, User>> apiErrorServiceUserRepositoryMock;
@@ -91,7 +91,7 @@ public class EmployeeServiceTest
         userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, OutOfSchool.Services.Models.User>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         var logger = new Mock<ILogger<EmployeeService>>();
-        providerAdminOperationsService = new Mock<IProviderAdminOperationsService>();
+        providerAdminOperationsService = new Mock<IEmployeeOperationsService>();
         workshopService = new Mock<IWorkshopService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         apiErrorServiceUserRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();

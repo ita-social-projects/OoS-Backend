@@ -254,9 +254,9 @@ public class EmployeesController : Controller
     // [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     // [HasPermission(Permissions.ProviderRead)]
     // [HttpGet]
-    // public async Task<IActionResult> GetFilteredProviderAdminsAsync([FromQuery] ProviderAdminSearchFilter filter)
+    // public async Task<IActionResult> GetFilteredEmployeesAsync([FromQuery] ProviderAdminSearchFilter filter)
     // {
-    //     var relatedAdmins = await employeeService.GetFilteredRelatedProviderAdmins(userId, filter).ConfigureAwait(false);
+    //     var relatedAdmins = await employeeService.GetFilteredRelatedEmployees(userId, filter).ConfigureAwait(false);
     //
     //     return this.SearchResultToOkOrNoContent(relatedAdmins);
     // }

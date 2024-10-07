@@ -9,14 +9,11 @@ public interface IUserRights
 public record ParentRights(Guid parentId, Guid childId = default)
     : IUserRights;
 
-public record ProviderAdminRights(string providerAdminId)
+public record EmployeeRights(string employeeId)
     : IUserRights;
 
 public record ProviderRights(Guid providerId)
     : IUserRights;
 
-public record ProviderAdminWorkshopRights(Guid providerId, Guid workshopId = default)
-    : IUserRights;
-
-public record ProviderDeputyRights(Guid providerId)
+public record EmployeeWorkshopRights(Guid providerId, Guid workshopId = default)
     : IUserRights;

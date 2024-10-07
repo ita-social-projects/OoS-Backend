@@ -445,16 +445,7 @@ public static class Startup
         services.AddOptions<GRPCConfig>()
             .Bind(configuration.GetSection(GRPCConfig.Name))
             .ValidateDataAnnotations();
-
-        var gRPCConfig = configuration.GetSection(GRPCConfig.Name).Get<GRPCConfig>();
-        if (gRPCConfig.Enabled)
-        {
-            services.AddTransient<IProviderAdminOperationsService, ProviderAdminOperationsGRPCService>();
-        }
-        else
-        {
-            services.AddTransient<IProviderAdminOperationsService, ProviderAdminOperationsRESTService>();
-        }
+        services.AddTransient<IEmployeeOperationsService, EmployeeOperationsRESTService>();
 
         // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
         services.AddSingleton(swaggerConfig);

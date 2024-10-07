@@ -36,7 +36,7 @@ public class ProviderAdminServiceDBTest
     private Mock<IOptions<CommunicationConfig>> communicationConfig;
     private IEntityRepositorySoftDeleted<string, User> userRepository;
     private IMapper mapper;
-    private Mock<IProviderAdminOperationsService> providerAdminOperationsService;
+    private Mock<IEmployeeOperationsService> providerAdminOperationsService;
     private Mock<IWorkshopService> workshopService;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IApiErrorService> apiErrorService;
@@ -88,7 +88,7 @@ public class ProviderAdminServiceDBTest
         userRepository = new EntityRepositorySoftDeleted<string, User>(dbContext);
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         var logger = new Mock<ILogger<EmployeeService>>();
-        providerAdminOperationsService = new Mock<IProviderAdminOperationsService>();
+        providerAdminOperationsService = new Mock<IEmployeeOperationsService>();
         workshopService = new Mock<IWorkshopService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         apiErrorService = new Mock<IApiErrorService>();

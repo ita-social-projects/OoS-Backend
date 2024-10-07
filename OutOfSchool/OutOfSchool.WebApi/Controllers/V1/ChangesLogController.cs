@@ -70,10 +70,10 @@ public class ChangesLogController : ControllerBase
     }
 
     /// <summary>
-    /// Get history of ProviderAdmin changes that matches filter's parameters.
+    /// Get history of Employee changes that matches filter's parameters.
     /// </summary>
     /// <param name="request">Entity that represents searching parameters.</param>
-    /// <returns><see cref="SearchResult{ProviderAdminChangesLogDto}"/>, or no content.</returns>
+    /// <returns><see cref="SearchResult{EmployeeChangesLogDto}"/>, or no content.</returns>
     /// <response code="200">The list of found entities by given filter.</response>
     /// <response code="204">No entity with given filter was found.</response>
     /// <response code="401">If the user is not authorized.</response>
@@ -87,7 +87,7 @@ public class ChangesLogController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> ProviderAdmin([FromQuery] EmployeeChangesLogRequest request)
+    public async Task<IActionResult> Employee([FromQuery] EmployeeChangesLogRequest request)
     {
         var changesLog = await changesLogService.GetEmployeeChangesLogAsync(request).ConfigureAwait(false);
 

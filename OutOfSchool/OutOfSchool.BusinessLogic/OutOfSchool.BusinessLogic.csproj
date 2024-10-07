@@ -19,7 +19,6 @@
     <PackageReference Include="CsvHelper" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
-    <Protobuf Include="..\OutOfSchool.GRPC\Protos\ProviderAdmin.proto" GrpcServices="Client" />
     <PackageReference Include="AutoMapper" />
     <PackageReference Include="Google.Protobuf" />
     <PackageReference Include="Grpc.Net.Client" />
@@ -98,6 +97,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="..\OutOfSchool.GRPC\Protos\">
+      <Link>OutOfSchool\OutOfSchool.GRPC\Protos</Link>
+    </Folder>
     <Folder Include="Common\Exceptions\" />
   </ItemGroup>
 

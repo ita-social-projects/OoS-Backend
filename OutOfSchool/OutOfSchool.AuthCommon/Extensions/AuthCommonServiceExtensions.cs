@@ -53,7 +53,7 @@ public static class AuthCommonServiceExtensions
 
         services.AddTransient<IParentRepository, ParentRepository>();
         services.AddTransient<IEmployeeRepository, EmployeeRepository>();
-        services.AddTransient<IProviderAdminService, EmployeeService>();
+        services.AddTransient<IEmployeeService, EmployeeService>();
         services.AddTransient<IUserManagerAdditionalService, UserManagerAdditionalService>();
         services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
         services.AddTransient<IRegionAdminRepository, RegionAdminRepository>();

@@ -295,11 +295,11 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
         if (isDeputyOrAdmin)
         {
-            var providerAdmins = await employeeRepository.GetByFilter(p => p.UserId == id).ConfigureAwait(false);
-            var providerAdmin = providerAdmins.FirstOrDefault();
-            if (providerAdmin != null)
+            var employees = await employeeRepository.GetByFilter(p => p.UserId == id).ConfigureAwait(false);
+            var employee = employees.FirstOrDefault();
+            if (employee != null)
             {
-                provider = providerAdmin.Provider;
+                provider = employee.Provider;
             }
         }
         else

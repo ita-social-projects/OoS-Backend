@@ -26,7 +26,7 @@ public class AchievementController : ControllerBase
     /// </summary>
     /// <param name="service">Service for Achievement entity.</param>
     /// <param name="providerService">Service for Provider model.</param>
-    /// <param name="employeeService">Service for ProviderAdmin model.</param>
+    /// <param name="employeeService">Service for Employee model.</param>
     /// <param name="workshopService">Service for Workshop model.</param>
 
     public AchievementController(

@@ -147,7 +147,7 @@ public class ChangeLogControllerTests
         changesLogServiceMock.Setup(x => x.GetEmployeeChangesLogAsync(request)).ReturnsAsync(searchResult);
 
         // Act
-        var result = await controller.ProviderAdmin(request);
+        var result = await controller.Employee(request);
 
         // Assert
         result.Should().NotBeNull();
@@ -172,7 +172,7 @@ public class ChangeLogControllerTests
         changesLogServiceMock.Setup(x => x.GetEmployeeChangesLogAsync(request)).ReturnsAsync(searchResult);
 
         // Act
-        var result = await controller.ProviderAdmin(request);
+        var result = await controller.Employee(request);
 
         // Assert
         result.Should().NotBeNull();

@@ -28,7 +28,7 @@ public class ApplicationController : ControllerBase
     /// </summary>
     /// <param name="applicationService">Service for Application model.</param>
     /// <param name="providerService">Service for Provider model.</param>
-    /// <param name="employeeService">Service for ProviderAdmin model.</param>
+    /// <param name="employeeService">Service for Employee model.</param>
     /// <param name="workshopService">Service for Workshop model.</param>
     /// <param name="userService">Service for operations with users.</param>
     /// <param name="blockedProviderParentService">Service for blocking parents for providers.</param>
@@ -198,24 +198,24 @@ public class ApplicationController : ControllerBase
         SearchResult<ApplicationDto> applications;
 
         // if: providerStandard is not null - get an applications and return it
-        // else: find a providerAdmin, get an applications and return it
+        // else: find a employee, get an applications and return it
         if (providerStandard is not null)
         {
             applications = await applicationService.GetAllByProvider(providerId, filter).ConfigureAwait(false);
         }
         else
         {
-            var providerAdminIdStringVersion = providerId.ToString();
-            var providerAdmin = await employeeService.GetById(providerAdminIdStringVersion).ConfigureAwait(false);
+            var employeeIdStringVersion = providerId.ToString();
+            var employee = await employeeService.GetById(employeeIdStringVersion).ConfigureAwait(false);
 
-            // Standard and admin providers were not found by given id
-            if (providerAdmin is null)
+            // employees and providers were not found by given id
+            if (employee is null)
             {
-                return BadRequest($"There is no any provider with given id - {providerId}.");
+                return BadRequest($"There is no any employee or provider with given id - {providerId}.");
             }
 
             applications = await applicationService
-                .GetAllByEmployee(providerAdminIdStringVersion, filter, providerAdmin.ProviderId)
+                .GetAllByEmployee(employeeIdStringVersion, filter, employee.ProviderId)
                 .ConfigureAwait(false);
         }
 
@@ -253,9 +253,9 @@ public class ApplicationController : ControllerBase
     }
 
     /// <summary>
-    /// Get Applications by ProviderAdmin Id.
+    /// Get Applications by employee Id.
     /// </summary>
-    /// <param name="providerAdminId">ProviderAdmin id.</param>
+    /// <param name="employeeId">Employee id.</param>
     /// <param name="filter">Application filter.</param>
     /// <returns>List of applications.</returns>
     /// <response code="200">Entities were found by given Id.</response>
@@ -266,19 +266,19 @@ public class ApplicationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("/api/v{version:apiVersion}/provideradmins/{providerAdminId}/applications")]
-    public async Task<IActionResult> GetByProviderAdminId(Guid providerAdminId, [FromQuery] ApplicationFilter filter)
+    [HttpGet("/api/v{version:apiVersion}/employees/{employeeId}/applications")]
+    public async Task<IActionResult> GetByEmployeeId(Guid employeeId, [FromQuery] ApplicationFilter filter)
     {
-        var userId = providerAdminId.ToString();
-        var providerAdmin = await employeeService.GetById(userId).ConfigureAwait(false);
+        var userId = employeeId.ToString();
+        var employee = await employeeService.GetById(userId).ConfigureAwait(false);
 
-        if (providerAdmin is null)
+        if (employee is null)
         {
-            return BadRequest($"There is no providerAdmin with userId = {userId}");
+            return BadRequest($"There is no employee with userId = {userId}");
         }
 
         var applications = await applicationService
-            .GetAllByEmployee(userId, filter, providerAdmin.ProviderId)
+            .GetAllByEmployee(userId, filter, employee.ProviderId)
             .ConfigureAwait(false);
 
         return this.SearchResultToOkOrNoContent(applications);

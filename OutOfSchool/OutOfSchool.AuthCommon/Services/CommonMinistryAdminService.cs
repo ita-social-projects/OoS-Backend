@@ -282,7 +282,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                     await transaction.RollbackAsync().ConfigureAwait(false);
 
                     logger.LogError(
-                        "Error happened while blocking ProviderAdmin. User(id): {UserId}. {Error}",
+                        "Error happened while blocking Employee. User(id): {UserId}. {Error}",
                         userId,
                         string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description)));
 
@@ -299,7 +299,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                     await transaction.RollbackAsync().ConfigureAwait(false);
 
                     logger.LogError(
-                        "Error happened while updating security stamp. ProviderAdmin. User(id): {UserId}. {Error}",
+                        "Error happened while updating security stamp. Employee. User(id): {UserId}. {Error}",
                         userId,
                         string.Join(Environment.NewLine, updateSecurityStamp.Errors.Select(e => e.Description)));
 

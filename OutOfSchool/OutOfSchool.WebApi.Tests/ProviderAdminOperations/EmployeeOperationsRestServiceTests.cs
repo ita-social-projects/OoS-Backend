@@ -15,14 +15,14 @@ using OutOfSchool.Common.Models;
 namespace OutOfSchool.WebApi.Tests.ProviderAdminOperations;
 
 [TestFixture]
-public class ProviderAdminOperationsRESTServiceTests
+public class EmployeeOperationsRestServiceTests
 {
-    private Mock<ProviderAdminOperationsRESTService> providerAdminOperationsRESTService;
+    private Mock<EmployeeOperationsRESTService> providerAdminOperationsRESTService;
 
     [SetUp]
     public void SetUp()
     {
-        var logger = new Mock<ILogger<ProviderAdminOperationsRESTService>>();
+        var logger = new Mock<ILogger<EmployeeOperationsRESTService>>();
         var authConfig = new Mock<IOptions<AuthorizationServerConfig>>();
         var httpClientFactory = new Mock<IHttpClientFactory>();
         var communicationConfig = new Mock<IOptions<CommunicationConfig>>();
@@ -46,7 +46,7 @@ public class ProviderAdminOperationsRESTServiceTests
             Authority = new Uri("https://www.test.com"),
         });
 
-        providerAdminOperationsRESTService = new Mock<ProviderAdminOperationsRESTService>(
+        providerAdminOperationsRESTService = new Mock<EmployeeOperationsRESTService>(
             logger.Object,
             authConfig.Object,
             httpClientFactory.Object,
@@ -69,7 +69,7 @@ public class ProviderAdminOperationsRESTServiceTests
             });
 
         // Act
-        var result = await providerAdminOperationsRESTService.Object.CreateProviderAdminAsync(It.IsAny<string>(), providerAdminDto, It.IsAny<string>());
+        var result = await providerAdminOperationsRESTService.Object.CreateEmployeeAsync(It.IsAny<string>(), providerAdminDto, It.IsAny<string>());
 
         // Assert
         Assert.AreEqual(HttpStatusCode.OK, result.Match(left => HttpStatusCode.BadRequest, right => HttpStatusCode.OK));
@@ -88,7 +88,7 @@ public class ProviderAdminOperationsRESTServiceTests
             });
 
         // Act
-        var result = await providerAdminOperationsRESTService.Object.CreateProviderAdminAsync(It.IsAny<string>(), providerAdminDto, It.IsAny<string>());
+        var result = await providerAdminOperationsRESTService.Object.CreateEmployeeAsync(It.IsAny<string>(), providerAdminDto, It.IsAny<string>());
 
         // Assert
         Assert.AreEqual(HttpStatusCode.BadRequest, result.Match(left => HttpStatusCode.BadRequest, right => HttpStatusCode.OK));

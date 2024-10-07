@@ -37,7 +37,7 @@ public class EmployeeServiceTests
     private Mock<IOptions<HostsConfig>> fakeHostsConfig;
     private Mock<IUrlHelper> fakeUrlHelper;
 
-    private IProviderAdminService providerAdminService;
+    private IEmployeeService employeeService;
 
     [SetUp]
     public void SetUp()
@@ -85,7 +85,7 @@ public class EmployeeServiceTests
 
         fakeUrlHelper = new Mock<IUrlHelper>();
 
-        providerAdminService = new EmployeeService(
+        employeeService = new EmployeeService(
             fakeMapper.Object,
             employeeRepository,
             new Mock<ILogger<EmployeeService>>().Object,
@@ -129,7 +129,7 @@ public class EmployeeServiceTests
             .Returns(providerAdmin);
 
         // Act
-        var result = await providerAdminService
+        var result = await employeeService
             .CreateEmployeeAsync(createProviderAdminDto, url, userId);
 
         // Assert
@@ -156,7 +156,7 @@ public class EmployeeServiceTests
 
 
         // Act
-        var result = await providerAdminService
+        var result = await employeeService
             .CreateEmployeeAsync(createProviderAdminDto, url, userId);
 
         // Assert

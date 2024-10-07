@@ -25,7 +25,7 @@ public class ChildController : ControllerBase
     /// </summary>
     /// <param name="service">Service for Child model.</param>
     /// <param name="providerService">Service for Provider model.</param>
-    /// <param name="employeeService">Service for ProviderAdmin model.</param>
+    /// <param name="employeeService">Service for Employee model.</param>
     /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
     public ChildController(
         IChildService service,

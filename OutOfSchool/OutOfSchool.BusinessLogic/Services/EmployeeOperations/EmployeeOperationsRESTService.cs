@@ -2,24 +2,24 @@
 using Newtonsoft.Json;
 using OutOfSchool.Common.Models;
 
-namespace OutOfSchool.BusinessLogic.Services.ProviderAdminOperations;
+namespace OutOfSchool.BusinessLogic.Services.EmployeeOperations;
 
 /// <summary>
-/// Implements the interface for creating ProviderAdmin.
+/// Implements the interface for creating Employee.
 /// </summary>
-public class ProviderAdminOperationsRESTService : CommunicationService, IProviderAdminOperationsService
+public class EmployeeOperationsRESTService : CommunicationService, IEmployeeOperationsService
 {
     private readonly AuthorizationServerConfig authorizationServerConfig;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ProviderAdminOperationsRESTService"/> class.
+    /// Initializes a new instance of the <see cref="EmployeeOperationsRESTService"/> class.
     /// </summary>
     /// <param name="logger">Logger.</param>
     /// <param name="authorizationServerConfig">Configuration for connection to OpenIdDict.</param>
     /// <param name="httpClientFactory">HttpClientFactory. For base class.</param>
     /// <param name="communicationConfig">CommunicationConfig. For base class.</param>
-    public ProviderAdminOperationsRESTService(
-        ILogger<ProviderAdminOperationsRESTService> logger,
+    public EmployeeOperationsRESTService(
+        ILogger<EmployeeOperationsRESTService> logger,
         IOptions<AuthorizationServerConfig> authorizationServerConfig,
         IHttpClientFactory httpClientFactory,
         IOptions<CommunicationConfig> communicationConfig)
@@ -29,7 +29,7 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
     }
 
     /// <inheritdoc/>
-    public async Task<Either<ErrorResponse, CreateEmployeeDto>> CreateProviderAdminAsync(
+    public async Task<Either<ErrorResponse, CreateEmployeeDto>> CreateEmployeeAsync(
         string userId,
         CreateEmployeeDto employeeDto,
         string token)

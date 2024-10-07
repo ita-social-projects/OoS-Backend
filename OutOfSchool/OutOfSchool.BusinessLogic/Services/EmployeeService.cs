@@ -22,7 +22,7 @@ public class EmployeeService : CommunicationService, IEmployeeService
     private readonly IEntityRepositorySoftDeleted<string, User> userRepository;
     private readonly IEmployeeRepository employeeRepository;
     private readonly IMapper mapper;
-    private readonly IProviderAdminOperationsService providerAdminOperationsService;
+    private readonly IEmployeeOperationsService employeeOperationsService;
     private readonly IWorkshopService workshopService;
     private readonly ICurrentUserService currentUserService;
     private readonly IApiErrorService apiErrorService;
@@ -36,7 +36,7 @@ public class EmployeeService : CommunicationService, IEmployeeService
         IEntityRepositorySoftDeleted<string, User> userRepository,
         IMapper mapper,
         ILogger<EmployeeService> logger,
-        IProviderAdminOperationsService providerAdminOperationsService,
+        IEmployeeOperationsService employeeOperationsService,
         IWorkshopService workshopService,
         ICurrentUserService currentUserService,
         IApiErrorService apiErrorService)
@@ -47,7 +47,7 @@ public class EmployeeService : CommunicationService, IEmployeeService
         this.employeeRepository = employeeRepository;
         this.userRepository = userRepository;
         this.mapper = mapper;
-        this.providerAdminOperationsService = providerAdminOperationsService;
+        this.employeeOperationsService = employeeOperationsService;
         this.workshopService = workshopService;
         this.currentUserService = currentUserService;
         this.apiErrorService = apiErrorService;
@@ -99,8 +99,8 @@ public class EmployeeService : CommunicationService, IEmployeeService
             };
         }
 
-        return await providerAdminOperationsService
-            .CreateProviderAdminAsync(userId, employeeDto, token)
+        return await employeeOperationsService
+            .CreateEmployeeAsync(userId, employeeDto, token)
             .ConfigureAwait(false);
     }
 

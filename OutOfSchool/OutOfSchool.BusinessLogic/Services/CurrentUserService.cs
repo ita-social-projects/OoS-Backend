@@ -94,8 +94,8 @@ public class CurrentUserService : ICurrentUserService
         {
             var parent = userTypes.OfType<ParentRights>().FirstOrDefault();
             var provider = userTypes.OfType<ProviderRights>().FirstOrDefault();
-            var providerAdmin = userTypes.OfType<ProviderAdminRights>().FirstOrDefault();
-            var providerAdminWorkshop = userTypes.OfType<ProviderAdminWorkshopRights>().FirstOrDefault();
+            var providerAdmin = userTypes.OfType<EmployeeRights>().FirstOrDefault();
+            var providerAdminWorkshop = userTypes.OfType<EmployeeWorkshopRights>().FirstOrDefault();
             var providerDeputy = userTypes.OfType<ProviderDeputyRights>().FirstOrDefault();
 
             var result = await Task.WhenAll(
@@ -142,8 +142,8 @@ public class CurrentUserService : ICurrentUserService
         => userType switch
         {
             ParentRights parent => ParentHasRights(parent.parentId, parent.childId),
-            ProviderAdminRights providerAdmin => ProviderAdminHasRights(providerAdmin.providerAdminId),
-            ProviderAdminWorkshopRights providerAdminWorkshop => this.EmployeeHasWorkshopRights(
+            EmployeeRights providerAdmin => ProviderAdminHasRights(providerAdmin.employeeId),
+            EmployeeWorkshopRights providerAdminWorkshop => this.EmployeeHasWorkshopRights(
                 providerAdminWorkshop.providerId, providerAdminWorkshop.workshopId),
             ProviderRights provider => ProviderHasRights(provider.providerId),
             ProviderDeputyRights providerDeputy => this.EmployeeHasRights(providerDeputy.providerId),

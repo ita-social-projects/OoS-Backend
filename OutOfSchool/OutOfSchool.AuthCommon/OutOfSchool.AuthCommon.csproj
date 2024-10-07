@@ -12,7 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Protobuf Include="..\OutOfSchool.GRPC\Protos\ProviderAdmin.proto" GrpcServices="Server" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
         <PackageReference Include="OpenIddict.EntityFrameworkCore" />
         <PackageReference Include="IdentityModel" />
@@ -41,5 +40,11 @@
 
     <ItemGroup>
         <Watch Include="wwwroot\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="..\OutOfSchool.GRPC\Protos\">
+        <Link>OutOfSchool\OutOfSchool.GRPC\Protos</Link>
+      </Folder>
     </ItemGroup>
 </Project>

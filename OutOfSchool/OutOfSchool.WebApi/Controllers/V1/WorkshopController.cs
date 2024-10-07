@@ -30,7 +30,7 @@ public class WorkshopController : ControllerBase
     /// </summary>
     /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
     /// <param name="providerService">Service for Provider model.</param>
-    /// <param name="employeeService">Service for ProviderAdmin model.</param>
+    /// <param name="employeeService">Service for Employee model.</param>
     /// <param name="userService">Service for operations with users.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="options">Application default values.</param>
@@ -106,9 +106,9 @@ public class WorkshopController : ControllerBase
     }
 
     /// <summary>
-    /// Get all workshops (Id, Title) from the database by provider admin's id sorted by Title.
+    /// Get all workshops (Id, Title) from the database by employee's id sorted by Title.
     /// </summary>
-    /// <param name="providerAdminId">Id of the provider admin.</param>
+    /// <param name="employeeId">Id of the employee.</param>
     /// <returns>The result is a <see cref="List{ShortEntityDto}"/> that contains a sorted by Title list of workshops that were received.</returns>
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ShortEntityDto>))]
@@ -117,15 +117,15 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{providerAdminId}")]
-    public async Task<IActionResult> GetWorkshopListByProviderAdminId(string providerAdminId)
+    [HttpGet("{employeeId}")]
+    public async Task<IActionResult> GetWorkshopListByEmployeeId(string employeeId)
     {
-        if (providerAdminId == string.Empty)
+        if (employeeId == string.Empty)
         {
-            return BadRequest("Provider admin id is empty.");
+            return BadRequest("Emplyee id is empty.");
         }
 
-        var workshops = await combinedWorkshopService.GetWorkshopListByProviderAdminId(providerAdminId);
+        var workshops = await combinedWorkshopService.GetWorkshopListByEmployeeId(employeeId);
 
         if (!workshops.Any())
         {

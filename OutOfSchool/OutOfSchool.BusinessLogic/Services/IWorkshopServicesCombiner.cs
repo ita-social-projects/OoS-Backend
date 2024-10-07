@@ -31,7 +31,7 @@ public interface IWorkshopServicesCombiner
     /// <param name="providerAdminId">Provider admin's key.</param>
     /// <returns>A <see cref="Task{ShortEntityDto}"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="List{ShortEntityDto}"/> that contains elements from the input sequence.</returns>
-    Task<List<ShortEntityDto>> GetWorkshopListByProviderAdminId(string providerAdminId);
+    Task<List<ShortEntityDto>> GetWorkshopListByEmployeeId(string providerAdminId);
 
     /// <summary>
     /// Check if entity is exists by it's key.

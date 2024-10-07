@@ -26,7 +26,7 @@ public class TeacherController : ControllerBase // check permissions for worksho
     /// <param name="teacherService">Service for Teacher model.</param>
     /// <param name="localizer">Localizer.</param
     /// <param name="providerService">Service for Provider.</param>
-    /// <param name="employeeService">Service For ProviderAdmin.</param>
+    /// <param name="employeeService">Service For Employee.</param>
     public TeacherController(
         ITeacherService teacherService,
         IStringLocalizer<SharedResource> localizer,
