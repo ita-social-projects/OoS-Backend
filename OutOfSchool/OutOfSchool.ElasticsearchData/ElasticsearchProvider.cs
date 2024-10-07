@@ -23,7 +23,7 @@ public abstract class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchPr
     /// Initializes a new instance of the <see cref="ElasticsearchProvider{TEntity, TSearch}"/> class.
     /// </summary>
     /// <param name="elasticClient">The configured instance of Elasticsearch client.</param>
-    public ElasticsearchProvider(ElasticsearchClient elasticClient)
+    protected ElasticsearchProvider(ElasticsearchClient elasticClient)
     {
         this.ElasticClient = elasticClient;
     }
