@@ -15,7 +15,7 @@ namespace OutOfSchool.ElasticsearchData;
 /// </summary>
 /// <typeparam name="TEntity">The type of entity that will be used for strongly typed queries.</typeparam>
 /// <typeparam name="TSearch">The type of filter for searching purposes.</typeparam>
-public class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchProvider<TEntity, TSearch>
+public abstract class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchProvider<TEntity, TSearch>
     where TEntity : class, new()
     where TSearch : class, new()
 {
@@ -139,14 +139,7 @@ public class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchProvider<TE
     }
 
     /// <inheritdoc/>
-    public virtual async Task<SearchResultES<TEntity>> Search(TSearch filter = null)
-    {
-        var resp = await ElasticClient.SearchAsync<TEntity>(
-            s => s.Query(
-                q => q.MatchAll(m => m.Boost(1))));
-
-        return new SearchResultES<TEntity>() { TotalAmount = (int)resp.Total, Entities = resp.Documents };
-    }
+    public abstract Task<SearchResultES<TEntity>> Search(TSearch filter = null);
 
     /// <inheritdoc/>
     public async Task<Result> PartialUpdateEntityAsync<TKey>(TKey entityId, IPartial<TEntity> partial)
