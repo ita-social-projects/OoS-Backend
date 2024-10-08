@@ -322,13 +322,24 @@ public class ESWorkshopProviderTests
     }
 
     [Test]
-    public async Task Search_WhenFilterIsValid_ShouldReturnSearchResult()
+    public async Task Search_WithFilter_ShouldReturnSearchResult()
     {
         // Arrange
         var expectedEntities = 5;
         var expectedTotal = 20;
 
-        WorkshopFilterES filter = new();
+        WorkshopFilterES filter = new()
+        {
+            SearchText = "test",
+            City = "Kyiv",
+            DirectionIds = [123456, 158764],
+            WithDisabilityOptions = true,
+            Statuses = [WorkshopStatus.Open],
+            FormOfLearning = [FormOfLearning.Offline, FormOfLearning.Mixed],
+            Workdays = "Tuesday Wednesday",
+            IsStrictWorkdays = true,
+            CATOTTGId = 31375,
+        };
 
         var response = TestableResponseFactory
             .CreateSuccessfulResponse<SearchResponse<WorkshopES>>(
