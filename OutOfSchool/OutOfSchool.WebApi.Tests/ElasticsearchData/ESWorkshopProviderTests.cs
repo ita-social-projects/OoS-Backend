@@ -9,6 +9,7 @@ using Elastic.Transport;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Tests.Common.TestDataGenerators;
@@ -330,6 +331,14 @@ public class ESWorkshopProviderTests
         WorkshopFilterES filter = new()
         {
             SearchText = "test",
+            City = "Kyiv",
+            DirectionIds = [123456, 158764],
+            WithDisabilityOptions = true,
+            Statuses = [WorkshopStatus.Open],
+            FormOfLearning = [FormOfLearning.Offline, FormOfLearning.Mixed],
+            Workdays = "Tuesday Wednesday",
+            IsStrictWorkdays = true,
+            CATOTTGId = 31375,
         };
 
         var response = TestableResponseFactory
