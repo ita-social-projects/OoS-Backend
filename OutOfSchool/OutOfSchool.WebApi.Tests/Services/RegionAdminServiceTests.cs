@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -316,16 +316,16 @@ public class RegionAdminServiceTests
         // Arrange
         var filter = new RegionAdminFilter()
         {
-            SearchString = "Київська, Хмельницька",
+            SearchString = "РҐРјРµР»СЊРЅРёС†СЊРєР°,РљРёС—РІСЃСЊРєР°,  ",
         };
 
-        regionAdmins[1].CATOTTG = new CATOTTG() { Name = "Хмельницька область" };
-        regionAdmins[2].CATOTTG = new CATOTTG() { Name = "Київська область" };
+        regionAdmins[0].CATOTTG = new CATOTTG() { Name = "РҐРјРµР»СЊРЅРёС†СЊРєР° РѕР±Р»Р°СЃС‚СЊ" };
+        regionAdmins[1].CATOTTG = new CATOTTG() { Name = "РљРёС—РІСЃСЊРєР° РѕР±Р»Р°СЃС‚СЊ" };
 
-        var filteredRegionAdmins = new List<RegionAdmin>() { regionAdmins[1], regionAdmins[2] };
+        var filteredRegionAdmins = new List<RegionAdmin>() { regionAdmins[0], regionAdmins[1] };
         var expectedDtos = mapper.Map<List<RegionAdminDto>>(filteredRegionAdmins);
 
-        SetupCommonMocks(filteredRegionAdmins, filter, ["Київська", "Хмельницька"]);
+        SetupCommonMocks(filteredRegionAdmins, filter, ["РљРёС—РІСЃСЊРєР°", "РҐРјРµР»СЊРЅРёС†СЊРєР°"]);
 
         // Act
         var result = await regionAdminService.GetByFilter(filter)

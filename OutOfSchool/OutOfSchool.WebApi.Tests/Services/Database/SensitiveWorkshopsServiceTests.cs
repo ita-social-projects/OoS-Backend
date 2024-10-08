@@ -38,6 +38,7 @@ public class SensitiveWorkshopsServiceTests
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
+    private Mock<ISearchStringService> searchStringServiceMock;
 
     [SetUp]
     public void SetUp()
@@ -48,6 +49,7 @@ public class SensitiveWorkshopsServiceTests
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
+        searchStringServiceMock = new Mock<ISearchStringService>();
 
         sensitiveWorkshopService =
             new WorkshopService(
@@ -65,7 +67,7 @@ public class SensitiveWorkshopsServiceTests
                 ministryAdminServiceMock.Object,
                 regionAdminServiceMock.Object,
                 codeficatorServiceMock.Object,
-                new Mock<ISearchStringService>().Object);
+                searchStringServiceMock.Object);
     }
 
     #region FetchByFilterForAdmins
@@ -173,35 +175,80 @@ public class SensitiveWorkshopsServiceTests
             s => s.GetAllChildrenIdsByParentIdAsync(It.Is<long>(s => s == filterWorkshop.CATOTTGId)), Times.Once);
     }
 
+    [Test]
+    public async Task FetchByFilterForAdmins_FilteredBySearchString_ShouldReturnEntities()
+    {
+        // Arrange
+        var userId = Guid.NewGuid().ToString();
+        var filterWorkshop = new WorkshopFilterAdministration()
+        {
+            SearchString = "Шахмати для початківців",
+        };
+
+        var resultExpected = SetupFetchByFilterForAdmins(
+            userId: userId,
+            isRegionAdmin: false,
+            isMinistryAdmin: false,
+            parentCATOTTGId: 0,
+            filter: filterWorkshop,
+            subSettlementsIds: null,
+            adminRegion: null,
+            adminMinistry: null,
+            searchWords: ["Шахмати", "для", "початківців"]);
+
+        // Act
+        var result = await sensitiveWorkshopService.FetchByFilterForAdmins(filterWorkshop)
+            .ConfigureAwait(false);
+
+        // Assert
+        result.Should()
+            .BeEquivalentTo(resultExpected);
+
+        searchStringServiceMock.VerifyAll();
+        workshopRepository.VerifyAll();
+    }
     #endregion
 
     #region With
 
     private SearchResult<WorkshopDto> SetupFetchByFilterForAdmins(
-        string userId,
-        bool isRegionAdmin,
-        bool isMinistryAdmin,
-        long parentCATOTTGId,
-        WorkshopFilterAdministration filter,
-        IEnumerable<long> subSettlementsIds,
+        string userId = null,
+        bool isRegionAdmin = false,
+        bool isMinistryAdmin = false,
+        long parentCATOTTGId = 0,
+        WorkshopFilterAdministration filter = null,
+        IEnumerable<long> subSettlementsIds = null,
         RegionAdminDto adminRegion = null,
-        MinistryAdminDto adminMinistry = null)
+        MinistryAdminDto adminMinistry = null,
+        string[] searchWords = null)
     {
         var workshops = WorkshopGenerator.Generate(5).ToList();
         var workshopsDto = WorkshopDtoGenerator.Generate(5).ToList();
 
         SetUpCurrentUserService(userId, isRegionAdmin, isMinistryAdmin);
-        regionAdminServiceMock.Setup(a => a.GetByUserId(userId)).ReturnsAsync(adminRegion);
-        ministryAdminServiceMock.Setup(a => a.GetByUserId(userId)).ReturnsAsync(adminMinistry);
-        codeficatorServiceMock.Setup(c => c.GetAllChildrenIdsByParentIdAsync(parentCATOTTGId)).ReturnsAsync(subSettlementsIds);
         SetUpWorkshopsRepository(workshops, filter);
-        mapperMock.Setup(m => m.Map<IEnumerable<WorkshopDto>>(workshops)).Returns(workshopsDto);
+
+        regionAdminServiceMock.Setup(a => a.GetByUserId(userId))
+            .ReturnsAsync(adminRegion);
+
+        ministryAdminServiceMock.Setup(a => a.GetByUserId(userId))
+            .ReturnsAsync(adminMinistry);
+
+        codeficatorServiceMock.Setup(c => c.GetAllChildrenIdsByParentIdAsync(parentCATOTTGId))
+            .ReturnsAsync(subSettlementsIds);
+
+        mapperMock.Setup(m => m.Map<IEnumerable<WorkshopDto>>(workshops))
+            .Returns(workshopsDto);
+
+        searchStringServiceMock.Setup(s => s.SplitSearchString(It.Is<string>(x => x == filter.SearchString)))
+            .Returns(searchWords);
 
         var resultExpected = new SearchResult<WorkshopDto>()
         {
             TotalAmount = workshopsDto.Count,
             Entities = workshopsDto,
         };
+
         return resultExpected;
     }
 

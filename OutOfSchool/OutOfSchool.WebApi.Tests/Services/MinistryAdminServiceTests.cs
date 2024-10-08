@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -234,10 +234,11 @@ public class MinistryAdminServiceTests
         // Arrange
         var filter = new MinistryAdminFilter()
         {
-            SearchString = "Адміністратор",
+            SearchString = "РђРґРјС–РЅС–СЃС‚СЂР°С‚РѕСЂ, ministry@",
         };
 
-        institutionAdmin.User.FirstName = "Адміністратор міністерства";
+        institutionAdmin.User.FirstName = "РђРґРјС–РЅС–СЃС‚СЂР°С‚РѕСЂ РјС–РЅС–СЃС‚РµСЂСЃС‚РІР°";
+        institutionAdmin.User.Email = "ministry@org.com";
 
         var filteredMinistryAdmins = new List<InstitutionAdmin>() { institutionAdmin };
         var expectedDtos = mapper.Map<List<MinistryAdminDto>>(filteredMinistryAdmins);
@@ -245,7 +246,7 @@ public class MinistryAdminServiceTests
         SetupCommonMocks(
             filter,
             filteredMinistryAdmins,
-            ["Адміністратор", "міністерства"]);
+            ["РђРґРјС–РЅС–СЃС‚СЂР°С‚РѕСЂ", "ministry@"]);
 
         // Act
         var result = await ministryAdminService.GetByFilter(filter)
