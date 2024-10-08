@@ -34,10 +34,9 @@ public class ESWorkshopProviderTests
     {
         // Arrange
         var entity = WorkshopESGenerator.Generate();
-        var response = new IndexResponse()
-        {
-            Result = operationResult,
-        };
+        var response = TestableResponseFactory
+            .CreateSuccessfulResponse<IndexResponse>(
+                new() { Result = operationResult }, StatusCodes.Status200OK);
         elasticClientMock.Setup(x => x.IndexAsync(entity, CancellationToken.None))
             .ReturnsAsync(response);
 
@@ -46,7 +45,6 @@ public class ESWorkshopProviderTests
 
         // Assert
         elasticClientMock.Verify(x => x.IndexAsync(entity, CancellationToken.None), Times.Once);
-        Assert.IsNotNull(result);
         Assert.AreEqual(operationResult, result);
     }
 
@@ -61,10 +59,9 @@ public class ESWorkshopProviderTests
     {
         // Arrange
         var entity = WorkshopESGenerator.Generate();
-        var response = new UpdateResponse<WorkshopES>()
-        {
-            Result = operationResult,
-        };
+        var response = TestableResponseFactory
+            .CreateSuccessfulResponse<UpdateResponse<WorkshopES>>(
+                new() { Result = operationResult }, StatusCodes.Status200OK);
         elasticClientMock.Setup(
             x => x.UpdateAsync(
                 entity,
@@ -84,7 +81,6 @@ public class ESWorkshopProviderTests
                 It.IsAny<Action<UpdateRequestDescriptor<WorkshopES, WorkshopES>>>(),
                 CancellationToken.None),
             Times.Once);
-        Assert.IsNotNull(result);
         Assert.AreEqual(operationResult, result);
     }
 
@@ -97,10 +93,9 @@ public class ESWorkshopProviderTests
     public async Task DeleteEntityAsync_ShouldReturnCorrectResult(Result operationResult)
     {
         var entity = WorkshopESGenerator.Generate();
-        var response = new DeleteResponse()
-        {
-            Result = operationResult,
-        };
+        var response = TestableResponseFactory
+            .CreateSuccessfulResponse<DeleteResponse>(
+                new() { Result = operationResult }, StatusCodes.Status200OK);
         elasticClientMock.Setup(x => x.DeleteAsync<WorkshopES>(
             It.IsAny<DeleteRequestDescriptor<WorkshopES>>(), CancellationToken.None))
             .ReturnsAsync(response);
@@ -113,7 +108,6 @@ public class ESWorkshopProviderTests
             x => x.DeleteAsync<WorkshopES>(
             It.IsAny<DeleteRequestDescriptor<WorkshopES>>(), CancellationToken.None),
             Times.Once);
-        Assert.IsNotNull(result);
         Assert.AreEqual(operationResult, result);
     }
 
@@ -157,7 +151,6 @@ public class ESWorkshopProviderTests
         var result = await provider.DeleteRangeOfEntitiesByIdsAsync(ids);
 
         // Assert
-        Assert.IsNotNull(result);
         Assert.AreEqual(Result.Deleted, result);
         elasticClientMock.Verify(
             x => x.BulkAsync(It.IsAny<BulkRequest>(), CancellationToken.None), Times.Once);
@@ -228,7 +221,96 @@ public class ESWorkshopProviderTests
 
     #endregion
 
+    #region IndexAll
+
+    [Test]
+    public async Task IndexAll_WhenIndexingSuccessful_ShouldReturnUpdatedResult()
+    {
+        var source = WorkshopESGenerator.Generate(6);
+        elasticClientMock
+            .Setup(x => x.BulkAll(
+                source,
+                It.IsAny<Action<BulkAllRequestDescriptor<WorkshopES>>>(),
+                CancellationToken.None))
+            .Returns(new BulkAllObservable<WorkshopES>(
+                elasticClientMock.Object,
+                new Mock<IBulkAllRequest<WorkshopES>>().Object,
+                CancellationToken.None));
+
+        // Act
+        var result = await provider.IndexAll(source);
+
+        // Assert
+        elasticClientMock.Verify(
+            x => x.BulkAll(
+                source,
+                It.IsAny<Action<BulkAllRequestDescriptor<WorkshopES>>>(),
+                CancellationToken.None),
+            Times.Once);
+        Assert.AreEqual(Result.Updated, result);
+    }
+
+    [Test]
+    public void ReIndexAll_WhenIndexingFails_ShouldThrowException()
+    {
+        var source = WorkshopESGenerator.Generate(4);
+        var exceptionMessage = "Test exception";
+        elasticClientMock
+            .Setup(x => x.BulkAll(
+                source,
+                It.IsAny<Action<BulkAllRequestDescriptor<WorkshopES>>>(),
+                CancellationToken.None))
+            .Throws(new Exception(exceptionMessage));
+
+        // Act & Assert
+        Exception ex = Assert.ThrowsAsync<Exception>(
+            async () => await provider.IndexAll(source));
+        Assert.AreEqual(exceptionMessage, ex.Message);
+        elasticClientMock.Verify(
+            x => x.BulkAll(
+                source,
+                It.IsAny<Action<BulkAllRequestDescriptor<WorkshopES>>>(),
+                CancellationToken.None),
+            Times.Once);
+    }
+
+    #endregion
+
     #region Search
+
+    #endregion
+
+    #region PartialUpdateEntityAsync
+
+    [TestCase(Result.Updated, TestName = "PartialUpdateEntityAsync_WhenEntityPartialUpdateSuccessful_ShouldReturnUpdatedResult")]
+    [TestCase(Result.NoOp, TestName = "PartialUpdateEntityAsync_WhenEntityIsUpToDate_ShouldReturnNoOpResult")]
+    public async Task PartialUpdateEntityAsync_ShouldReturnCorrectResult(Result operationResult)
+    {
+        // Arrange
+        var workshopId = Guid.NewGuid;
+        var newWorkshopProviderTitle = new WorkshopProviderTitleES()
+        {
+            ProviderTitle = "Нова назва",
+            ProviderTitleEn = "New title",
+        };
+        var response = TestableResponseFactory
+            .CreateSuccessfulResponse<UpdateResponse<WorkshopES>>(
+                new() { Result = operationResult }, StatusCodes.Status200OK);
+        elasticClientMock.Setup(
+            x => x.UpdateAsync(
+                It.IsAny<UpdateRequestDescriptor<WorkshopES, object>>(), CancellationToken.None))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await provider.PartialUpdateEntityAsync(workshopId, newWorkshopProviderTitle);
+
+        // Assert
+        elasticClientMock.Verify(
+            x => x.UpdateAsync(
+                It.IsAny<UpdateRequestDescriptor<WorkshopES, object>>(), CancellationToken.None),
+            Times.Once);
+        Assert.AreEqual(operationResult, result);
+    }
 
     #endregion
 
