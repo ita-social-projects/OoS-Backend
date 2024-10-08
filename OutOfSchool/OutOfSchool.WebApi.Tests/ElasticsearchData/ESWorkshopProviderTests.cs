@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.Core.Search;
 using Elastic.Transport;
 using Microsoft.AspNetCore.Http;
 using Moq;
@@ -277,6 +279,89 @@ public class ESWorkshopProviderTests
     #endregion
 
     #region Search
+
+    [Test]
+    public async Task Search_WhenFilterIsNull_ShouldReturnSearchResult()
+    {
+        // Arrange
+        var expectedEntities = 7;
+        var expectedTotal = 50;
+
+        WorkshopFilterES filter = null;
+
+        var response = TestableResponseFactory
+            .CreateSuccessfulResponse<SearchResponse<WorkshopES>>(
+                new()
+                {
+                    HitsMetadata = new HitsMetadata<WorkshopES>()
+                    {
+                        Hits = new List<Hit<WorkshopES>>(
+                            Enumerable.Repeat(new Hit<WorkshopES>(), expectedEntities)),
+                        Total = new TotalHits { Value = expectedTotal },
+                    },
+                },
+                StatusCodes.Status200OK);
+
+        elasticClientMock.Setup(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await provider.Search(filter);
+
+        // Assert
+        elasticClientMock.Verify(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None),
+            Times.Once);
+        Assert.IsInstanceOf<SearchResultES<WorkshopES>>(result);
+        Assert.AreEqual(expectedTotal, result.TotalAmount);
+        Assert.AreEqual(expectedEntities, result.Entities.Count);
+    }
+
+    [Test]
+    public async Task Search_WhenFilterIsValid_ShouldReturnSearchResult()
+    {
+        // Arrange
+        var expectedEntities = 5;
+        var expectedTotal = 20;
+
+        WorkshopFilterES filter = new()
+        {
+            SearchText = "test",
+        };
+
+        var response = TestableResponseFactory
+            .CreateSuccessfulResponse<SearchResponse<WorkshopES>>(
+                new()
+                {
+                    HitsMetadata = new HitsMetadata<WorkshopES>()
+                    {
+                        Hits = new List<Hit<WorkshopES>>(
+                            Enumerable.Repeat(new Hit<WorkshopES>(), expectedEntities)),
+                        Total = new TotalHits { Value = expectedTotal },
+                    },
+                },
+                StatusCodes.Status200OK);
+
+        elasticClientMock.Setup(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await provider.Search(filter);
+
+        // Assert
+        elasticClientMock.Verify(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None),
+            Times.Once);
+        Assert.IsInstanceOf<SearchResultES<WorkshopES>>(result);
+        Assert.AreEqual(expectedTotal, result.TotalAmount);
+        Assert.AreEqual(expectedEntities, result.Entities.Count);
+    }
 
     #endregion
 
