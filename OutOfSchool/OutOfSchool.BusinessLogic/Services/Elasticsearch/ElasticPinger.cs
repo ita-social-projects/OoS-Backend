@@ -36,7 +36,7 @@ public class ElasticPinger : IElasticsearchHealthService, IHostedService, IDispo
                 catch (Exception ex)
                 {
                     IsHealthy = false;
-                    logger.LogWarning($"Error while pinging Elasticsearch: {ex.Message}");
+                    logger.LogWarning(ex, "Error while pinging Elasticsearch: {Message}", ex.Message);
                 }
             },
             null,
