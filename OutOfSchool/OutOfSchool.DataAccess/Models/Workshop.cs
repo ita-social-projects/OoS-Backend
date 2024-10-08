@@ -172,8 +172,6 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public virtual InstitutionHierarchy InstitutionHierarchy { get; set; }
 
     // 41
-    [ForeignKey("DefaultTeacherId")]
-    [DeleteBehavior(DeleteBehavior.Restrict)]
     public virtual Teacher DefaultTeacher { get; set; }
 
     // 42

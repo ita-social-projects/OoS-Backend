@@ -11,10 +11,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Teachers_Workshops_WorkshopId",
-                table: "Teachers");
-
             migrationBuilder.AddColumn<string>(
                 name: "AdditionalDescription",
                 table: "Workshops",
@@ -141,23 +137,24 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 nullable: false,
                 defaultValue: 0u);
 
+            migrationBuilder.AlterColumn<Guid>(
+                name: "WorkshopId",
+                table: "Teachers",
+                type: "binary(16)",
+                nullable: true,
+                oldClrType: typeof(Guid),
+                oldType: "binary(16)");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Workshops_DefaultTeacherId",
                 table: "Workshops",
-                column: "DefaultTeacherId");
+                column: "DefaultTeacherId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Workshops_MemberOfWorkshopId",
                 table: "Workshops",
                 column: "MemberOfWorkshopId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Teachers_Workshops_WorkshopId",
-                table: "Teachers",
-                column: "WorkshopId",
-                principalTable: "Workshops",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Workshops_Teachers_DefaultTeacherId",
@@ -179,10 +176,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Teachers_Workshops_WorkshopId",
-                table: "Teachers");
-
             migrationBuilder.DropForeignKey(
                 name: "FK_Workshops_Teachers_DefaultTeacherId",
                 table: "Workshops");
@@ -271,13 +264,15 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 name: "TypeOfAgeCompositionId",
                 table: "Workshops");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Teachers_Workshops_WorkshopId",
+            migrationBuilder.AlterColumn<Guid>(
+                name: "WorkshopId",
                 table: "Teachers",
-                column: "WorkshopId",
-                principalTable: "Workshops",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                type: "binary(16)",
+                nullable: false,
+                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"),
+                oldClrType: typeof(Guid),
+                oldType: "binary(16)",
+                oldNullable: true);
         }
     }
 }
