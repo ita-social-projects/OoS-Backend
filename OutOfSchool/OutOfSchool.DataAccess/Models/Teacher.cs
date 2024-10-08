@@ -29,9 +29,9 @@ public class Teacher : IKeyedEntity<Guid>, IImageDependentEntity<Teacher>, ISoft
 
     public string CoverImageId { get; set; }
 
-    public virtual List<Image<Teacher>> Images { get; set; }
+    public Guid? WorkshopId { get; set; }
 
-    public Guid WorkshopId { get; set; }
+    public virtual List<Image<Teacher>> Images { get; set; }
 
     public virtual Workshop Workshop { get; set; }
 }

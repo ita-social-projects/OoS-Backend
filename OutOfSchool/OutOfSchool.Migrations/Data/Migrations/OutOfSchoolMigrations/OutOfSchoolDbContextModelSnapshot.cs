@@ -2371,7 +2371,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(60)
                         .HasColumnType("varchar(60)");
 
-                    b.Property<Guid>("WorkshopId")
+                    b.Property<Guid?>("WorkshopId")
                         .HasColumnType("binary(16)");
 
                     b.HasKey("Id");
@@ -2708,7 +2708,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("AddressId");
 
-                    b.HasIndex("DefaultTeacherId");
+                    b.HasIndex("DefaultTeacherId")
+                        .IsUnique();
 
                     b.HasIndex("InstitutionHierarchyId");
 
@@ -3367,13 +3368,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Teacher", b =>
                 {
-                    b.HasOne("OutOfSchool.Services.Models.Workshop", "Workshop")
+                    b.HasOne("OutOfSchool.Services.Models.Workshop", null)
                         .WithMany("Teachers")
                         .HasForeignKey("WorkshopId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Workshop");
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Workshop", b =>
@@ -3385,8 +3383,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
 
                     b.HasOne("OutOfSchool.Services.Models.Teacher", "DefaultTeacher")
-                        .WithMany()
-                        .HasForeignKey("DefaultTeacherId")
+                        .WithOne()
+                        .HasForeignKey("OutOfSchool.Services.Models.Workshop", "DefaultTeacherId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.InstitutionHierarchy", "InstitutionHierarchy")

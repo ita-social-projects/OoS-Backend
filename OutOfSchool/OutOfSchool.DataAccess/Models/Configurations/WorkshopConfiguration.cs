@@ -11,23 +11,10 @@ internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
         builder.HasMany(x => x.ProviderAdmins)
             .WithMany(x => x.ManagedWorkshops);
 
-        builder.HasMany(x => x.Teachers)
-            .WithOne(x => x.Workshop)
-            .HasForeignKey(x => x.WorkshopId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         builder.HasMany(x => x.WorkshopDescriptionItems)
              .WithOne(x => x.Workshop)
              .HasForeignKey(x => x.WorkshopId)
              .OnDelete(DeleteBehavior.Cascade);
-
-        // builder.Property(x => x.Title)
-        //    .IsRequired()
-        //    .HasMaxLength(Constants.MaxWorkshopTitleLength);
-
-        // builder.Property(x => x.ShortTitle)
-        //    .IsRequired()
-        //    .HasMaxLength(Constants.MaxWorkshopShortTitleLength);
 
         builder.HasOne(x => x.MemberOfWorkshop)
             .WithMany(x => x.IncludedStudyGroups)
@@ -35,10 +22,19 @@ internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
             .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(x => x.DefaultTeacher)
-            .WithOne(x => x.Workshop)
-            .HasForeignKey<Teacher>(x => x.WorkshopId)
-            .IsRequired();
+        // One-to-One relationship (with shadow property in Workshop)
+        builder.HasOne(p => p.DefaultTeacher)
+            .WithOne()
+            .HasForeignKey<Workshop>(x => x.DefaultTeacherId) // Shadow property for One-to-One relationship
+            .IsRequired(false) // Optional relationship
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // One-to-Many relationship (with shadow property in Workshop)
+        builder.HasMany(p => p.Teachers)
+            .WithOne()
+            .HasForeignKey(x => x.WorkshopId) // Shadow property for One-to-Many relationship
+            .IsRequired(false) // Optional relationship
+            .OnDelete(DeleteBehavior.Cascade);
 
         base.Configure(builder);
     }
