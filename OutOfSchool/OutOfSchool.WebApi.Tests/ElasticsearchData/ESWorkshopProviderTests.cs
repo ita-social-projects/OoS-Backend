@@ -494,6 +494,41 @@ public class ESWorkshopProviderTests
         Assert.AreEqual(expectedEntities, result.Entities.Count);
     }
 
+    [TestCase("Tuesday Wednesday", false)]
+    [TestCase("Tuesday Wednesday", true)]
+    public async Task Search_WhenFilterContainsWorkdaysAndOrIsStrictWorkdays_ShouldReturnSearchResult(
+        string workdays, bool isStrictWorkdays)
+    {
+        // Arrange
+        var expectedEntities = 12;
+        var expectedTotal = 20;
+
+        WorkshopFilterES filter = new()
+        {
+            Workdays = workdays,
+            IsStrictWorkdays = isStrictWorkdays,
+        };
+
+        var response = CreateSuccessfulSearchResponse(expectedTotal, expectedEntities);
+
+        elasticClientMock.Setup(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await provider.Search(filter);
+
+        // Assert
+        elasticClientMock.Verify(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None),
+            Times.Once);
+        Assert.IsInstanceOf<SearchResultES<WorkshopES>>(result);
+        Assert.AreEqual(expectedTotal, result.TotalAmount);
+        Assert.AreEqual(expectedEntities, result.Entities.Count);
+    }
+
     [Test]
     public async Task Search_WithMultipleFilterParameters_ShouldReturnSearchResult()
     {
@@ -509,8 +544,6 @@ public class ESWorkshopProviderTests
             WithDisabilityOptions = true,
             Statuses = [WorkshopStatus.Open],
             FormOfLearning = [FormOfLearning.Offline, FormOfLearning.Mixed],
-            Workdays = "Tuesday Wednesday",
-            IsStrictWorkdays = true,
             CATOTTGId = 31375,
             OrderByField = "Nearest",
         };
