@@ -13,6 +13,7 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.ProviderAdminOperations;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Models;
@@ -97,6 +98,7 @@ public class ProviderAdminServiceTest
         apiErrorServiceUserRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         var apiErrorServiceLogger = new Mock<ILogger<ApiErrorService>>();
         apiErrorService = new ApiErrorService(apiErrorServiceUserRepositoryMock.Object, apiErrorServiceLogger.Object);
+        var searchStringServiceMock = new Mock<ISearchStringService>();
 
         providerAdminService = new ProviderAdminService(
             httpClientFactory.Object,
@@ -110,7 +112,8 @@ public class ProviderAdminServiceTest
             providerAdminOperationsService.Object,
             workshopService.Object,
             currentUserServiceMock.Object,
-            apiErrorService);
+            apiErrorService,
+            searchStringServiceMock.Object);
     }
 
     [Test]

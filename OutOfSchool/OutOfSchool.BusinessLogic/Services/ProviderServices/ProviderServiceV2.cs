@@ -9,6 +9,7 @@ using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 
 namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 
@@ -38,7 +39,8 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
         IAreaAdminRepository areaAdminRepository,
         IUserService userService,
         IOptions<AuthorizationServerConfig> authorizationServerConfig,
-        ICommunicationService communicationService)
+        ICommunicationService communicationService,
+        ISearchStringService searchStringService)
         : base(
               providerRepository,
               usersRepository,
@@ -63,7 +65,8 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
               areaAdminRepository,
               userService,
               authorizationServerConfig,
-              communicationService)
+              communicationService,
+              searchStringService)
     {
     }
 

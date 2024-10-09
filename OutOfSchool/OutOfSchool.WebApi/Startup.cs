@@ -12,9 +12,11 @@ using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
+using OutOfSchool.BusinessLogic.Config.SearchString;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.BusinessLogic.Services.Strategies.WorkshopStrategies;
 using OutOfSchool.BusinessLogic.Services.Workshops;
@@ -268,6 +270,10 @@ public static class Startup
         services.AddElasticsearch(elasticConfig);
         services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
         services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
+
+        // Search string options
+        services.Configure<SearchStringOptions>(configuration.GetSection(nameof(SearchStringOptions)));
+        services.AddScoped<ISearchStringService, SearchStringService>();
 
         // entities services
         services.AddTransient<IApplicationService, ApplicationService>();

@@ -17,6 +17,7 @@ using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 
 namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 
@@ -47,6 +48,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     private readonly AuthorizationServerConfig authorizationServerConfig;
     private readonly ICommunicationService communicationService;
     private readonly ILogger<ProviderService> logger;
+    private readonly ISearchStringService searchStringService;
 
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
@@ -79,6 +81,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     /// <param name="userService">Service for manage users.</param>
     /// <param name="authorizationServerConfig">Path to authorization server.</param>
     /// <param name="communicationService">Service for communication.</param>
+    /// <param name="searchStringService">Service for handling search string.</param>
     public ProviderService(
         IProviderRepository providerRepository,
         IEntityRepositorySoftDeleted<string, User> usersRepository,
@@ -103,7 +106,8 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         IAreaAdminRepository areaAdminRepository,
         IUserService userService,
         IOptions<AuthorizationServerConfig> authorizationServerConfig,
-        ICommunicationService communicationService)
+        ICommunicationService communicationService,
+        ISearchStringService searchStringService)
     {
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -129,6 +133,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         this.authorizationServerConfig = authorizationServerConfig.Value ?? throw new ArgumentNullException(nameof(authorizationServerConfig));
         this.communicationService = communicationService ?? throw new ArgumentNullException(nameof(communicationService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.searchStringService = searchStringService ?? throw new ArgumentNullException(nameof(searchStringService));
     }
 
     private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
@@ -902,7 +907,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         {
             var tempPredicate = PredicateBuilder.False<Provider>();
 
-            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            foreach (var word in searchStringService.SplitSearchString(filter.SearchString))
             {
                 if (word.Any(c => char.IsLetter(c)))
                 {

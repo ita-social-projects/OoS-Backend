@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using CsvHelper;
 using CsvHelper.Configuration;
+using FluentAssertions;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -27,13 +28,13 @@ using OutOfSchool.BusinessLogic.Services.Communication;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
@@ -64,6 +65,7 @@ public class ProviderServiceTests
     private Mock<IUserService> userServiceMock;
     private Mock<ICommunicationService> communicationService;
     private Mock<IWorkshopServicesCombiner> workshopServicesCombinerMock;
+    private Mock<ISearchStringService> searchStringServiceMock;
 
     private List<Provider> fakeProviders;
     private User fakeUser;
@@ -101,6 +103,7 @@ public class ProviderServiceTests
 
         var authorizationServerConfig = Options.Create(new AuthorizationServerConfig { Authority = new Uri("http://test.com") });
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        searchStringServiceMock = new Mock<ISearchStringService>();
 
         providerService = new ProviderService(
             providersRepositoryMock.Object,
@@ -126,7 +129,9 @@ public class ProviderServiceTests
             areaAdminRepositoryMock.Object,
             userServiceMock.Object,
             authorizationServerConfig,
-            communicationService.Object);
+            communicationService.Object,
+            searchStringServiceMock.Object
+            );
     }
 
     #region Create
@@ -414,6 +419,42 @@ public class ProviderServiceTests
         Assert.True(result.Entities.All(p => p.InstitutionId == institutionId));
         TestHelper.AssertTwoCollectionsEqualByValues(expected, result.Entities);
         Assert.AreEqual(fakeProviders.Count, result.TotalAmount);
+    }
+
+    [Test]
+    public async Task GetByFilter_WhenFilteredBySearchString_ShouldReturnEntities()
+    {
+        // Arrange
+        var filter = new ProviderFilter()
+        {
+            SearchString = "Провайдер Освітніх Програм",
+        };
+
+        fakeProviders[0].FullTitle = "Провайдер програм";
+        fakeProviders[1].ShortTitle = "Провайдер";
+
+        var filteredProviders = new List<Provider> { fakeProviders[0], fakeProviders[1] };
+        var expectedDtos = mapper.Map<List<ProviderDto>>(filteredProviders);
+        var providerRatings = RatingsGenerator.GetAverageRatings(expectedDtos.Select(p => p.Id));
+
+        SetupMocks(
+            filter,
+            filteredProviders,
+            expectedDtos,
+            providerRatings,
+            ["Провайдер", "Освітніх", "Програм"]);
+
+        // Act
+        var result = await providerService.GetByFilter(filter)
+            .ConfigureAwait(false);
+
+        // Assert
+        result.Entities.Should()
+            .BeEquivalentTo(expectedDtos);
+
+        searchStringServiceMock.VerifyAll();
+        averageRatingServiceMock.VerifyAll();
+        providerAdminRepositoryMock.VerifyAll();
     }
 
     #endregion
@@ -1427,5 +1468,39 @@ public class ProviderServiceTests
         };
     }
 
+    #endregion
+
+    #region SetupMocks
+    private void SetupMocks(
+        ProviderFilter filter = null,
+        List<Provider> filteredProviders = null,
+        List<ProviderDto> expectedDtos = null,
+        IEnumerable<AverageRatingDto> providerRatings = null,
+        string[] searchWords = null)
+    {
+        searchStringServiceMock
+            .Setup(s => s.SplitSearchString(It.Is<string>(x => x == filter.SearchString)))
+            .Returns(searchWords);
+
+        providersRepositoryMock
+            .Setup(repo => repo.Count(It.IsAny<Expression<Func<Provider, bool>>>()))
+            .ReturnsAsync(filteredProviders.Count);
+
+        providersRepositoryMock
+            .Setup(repo => repo.Get(
+                It.Is<int>(x => x == filter.From),
+                It.Is<int>(x => x == filter.Size),
+                It.Is<string>(x => x == string.Empty),
+                It.IsAny<Expression<Func<Provider, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
+                It.Is<bool>(x => !x)))
+            .Returns(filteredProviders.AsQueryable()
+            .BuildMock());
+
+        averageRatingServiceMock
+           .Setup(r => r.GetByEntityIdsAsync(It.Is<IEnumerable<Guid>>(x =>
+                x.SequenceEqual(expectedDtos.Select(p => p.Id)))))
+          .ReturnsAsync(providerRatings);
+    }
     #endregion
 }

@@ -22,13 +22,13 @@ using OutOfSchool.BusinessLogic.Services.Communication;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
@@ -96,6 +96,7 @@ public class ProviderServiceV2Tests
 
         var authorizationServerConfig = Options.Create(new AuthorizationServerConfig { Authority = new Uri("http://test.com") });
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        var searchStringServiceMock = new Mock<ISearchStringService>();
 
         providerService = new ProviderServiceV2(
             providersRepositoryMock.Object,
@@ -121,7 +122,8 @@ public class ProviderServiceV2Tests
             areaAdminRepositoryMock.Object,
             userServiceMock.Object,
             authorizationServerConfig,
-            communicationService.Object);
+            communicationService.Object,
+            searchStringServiceMock.Object);
         providersRepositoryMock.Setup(w => w.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(It.IsAny<int>());
     }
 

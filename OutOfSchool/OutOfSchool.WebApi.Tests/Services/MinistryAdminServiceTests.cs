@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -15,13 +15,13 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
@@ -33,6 +33,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class MinistryAdminServiceTests
 {
     private readonly string email = "email@gmail.com";
+    private readonly string includeProperties = "Institution,User";
 
     private Mock<IHttpClientFactory> httpClientFactory;
     private Mock<IOptions<AuthorizationServerConfig>> identityServerConfig;
@@ -42,6 +43,7 @@ public class MinistryAdminServiceTests
     private IMapper mapper;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IEntityRepositorySoftDeleted<string, User>> apiErrorServiceUserRepositoryMock;
+    private Mock<ISearchStringService> searchStringServiceMock;
 
     private MinistryAdminService ministryAdminService;
     private InstitutionAdmin institutionAdmin;
@@ -87,6 +89,7 @@ public class MinistryAdminServiceTests
         apiErrorServiceUserRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         var apiErrorServiceLogger = new Mock<ILogger<ApiErrorService>>();
         apiErrorService = new ApiErrorService(apiErrorServiceUserRepositoryMock.Object, apiErrorServiceLogger.Object);
+        searchStringServiceMock = new Mock<ISearchStringService>();
 
         ministryAdminService = new MinistryAdminService(
             httpClientFactory.Object,
@@ -97,7 +100,8 @@ public class MinistryAdminServiceTests
             userRepositoryMock.Object,
             mapper,
             currentUserServiceMock.Object,
-            apiErrorService);
+            apiErrorService,
+            searchStringServiceMock.Object);
     }
 
     [Test]
@@ -222,5 +226,69 @@ public class MinistryAdminServiceTests
         Assert.AreEqual(expected.Group, result.Group);
         Assert.AreEqual(expected.Code, result.Code);
         Assert.AreEqual(expected.Message, result.Message);
+    }
+
+    [Test]
+    public async Task GetByFilter_WhenFilteredBySearchString_ShouldReturnEntities()
+    {
+        // Arrange
+        var filter = new MinistryAdminFilter()
+        {
+            SearchString = "Адміністратор, ministry@",
+        };
+
+        institutionAdmin.User.FirstName = "Адміністратор міністерства";
+        institutionAdmin.User.Email = "ministry@org.com";
+
+        var filteredMinistryAdmins = new List<InstitutionAdmin>() { institutionAdmin };
+        var expectedDtos = mapper.Map<List<MinistryAdminDto>>(filteredMinistryAdmins);
+
+        SetupCommonMocks(
+            filter,
+            filteredMinistryAdmins,
+            ["Адміністратор", "ministry@"]);
+
+        // Act
+        var result = await ministryAdminService.GetByFilter(filter)
+            .ConfigureAwait(false);
+
+        // Assert
+        result.Entities.Should()
+            .BeEquivalentTo(expectedDtos);
+
+        searchStringServiceMock.VerifyAll();
+        currentUserServiceMock.VerifyAll();
+        institutionAdminRepositoryMock.VerifyAll();
+    }
+
+    private void SetupCommonMocks(
+        MinistryAdminFilter filter = null,
+        List<InstitutionAdmin> filteredMinistryAdmins = null,
+        string[] searchWords = null,
+        bool isMinistryAdmin = false)
+    {
+
+        searchStringServiceMock.Setup(s => s.SplitSearchString(
+            It.Is<string>(x => x == filter.SearchString)))
+            .Returns(searchWords);
+
+        currentUserServiceMock.Setup(s => s.IsMinistryAdmin())
+            .Returns(isMinistryAdmin);
+
+        institutionAdminRepositoryMock.Setup(r =>
+            r.Get(
+                It.Is<int>(x => x == filter.From),
+                It.Is<int>(x => x == filter.Size),
+                It.Is<string>(x => x == includeProperties),
+                It.IsAny<Expression<Func<InstitutionAdmin, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<InstitutionAdmin, object>>, SortDirection>>(),
+                It.Is<bool>(x => x)
+            ))
+            .Returns(filteredMinistryAdmins.AsQueryable()
+            .BuildMock());
+
+        institutionAdminRepositoryMock.Setup(r =>
+            r.Count(It.IsAny<Expression<Func<InstitutionAdmin, bool>>>()))
+            .ReturnsAsync(filteredMinistryAdmins.Count);
     }
 }

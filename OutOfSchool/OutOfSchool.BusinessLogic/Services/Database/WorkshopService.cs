@@ -8,6 +8,7 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
@@ -41,6 +42,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private readonly IMinistryAdminService ministryAdminService;
     private readonly IRegionAdminService regionAdminService;
     private readonly ICodeficatorService codeficatorService;
+    private readonly ISearchStringService searchStringService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -58,6 +60,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <param name="ministryAdminService"> Service for ministry admin.</param>
     /// <param name="regionAdminService">Service for region admin.</param>
     /// <param name="codeficatorService">Srvice for CATOTTG.</param>
+    /// <param name="searchStringService">Service for handling the search string.</param>
     public WorkshopService(
         IWorkshopRepository workshopRepository,
         IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository,
@@ -72,7 +75,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService,
-        ICodeficatorService codeficatorService)
+        ICodeficatorService codeficatorService,
+        ISearchStringService searchStringService)
     {
         this.workshopRepository = workshopRepository;
         this.dateTimeRangeRepository = dateTimeRangeRepository;
@@ -88,6 +92,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         this.ministryAdminService = ministryAdminService;
         this.regionAdminService = regionAdminService;
         this.codeficatorService = codeficatorService;
+        this.searchStringService = searchStringService;
     }
 
     /// <inheritdoc/>
@@ -775,10 +780,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         if (!string.IsNullOrWhiteSpace(filter.SearchString))
         {
-            // Split the search string by commas and spaces, remove any empty entries, and trim whitespace from each element.
-            var searchTerms = filter.SearchString.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-            logger.LogDebug("Received terms from search string: {Words}", searchTerms);
+            var searchTerms = searchStringService.SplitSearchString(filter.SearchString);
 
             if (searchTerms.Any())
             {
@@ -867,7 +869,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         {
             var tempPredicate = PredicateBuilder.False<Workshop>();
 
-            foreach (var word in filter.SearchText.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            foreach (var word in filter.SearchText.Split([' ', ','], StringSplitOptions.RemoveEmptyEntries))
             {
                 tempPredicate = tempPredicate.Or(x => EF.Functions.Like(x.Keywords, $"%{word}%"));
             }
