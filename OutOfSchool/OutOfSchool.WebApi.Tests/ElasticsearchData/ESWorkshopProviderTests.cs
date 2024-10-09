@@ -375,6 +375,38 @@ public class ESWorkshopProviderTests
     }
 
     [Test]
+    public async Task Search_WhenFilterContainsIsFree_ShouldReturnSearchResult()
+    {
+        // Arrange
+        var expectedEntities = 5;
+        var expectedTotal = 5;
+
+        WorkshopFilterES filter = new()
+        {
+            IsFree = true,
+        };
+
+        var response = CreateSuccessfulSearchResponse(expectedTotal, expectedEntities);
+
+        elasticClientMock.Setup(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await provider.Search(filter);
+
+        // Assert
+        elasticClientMock.Verify(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None),
+            Times.Once);
+        Assert.IsInstanceOf<SearchResultES<WorkshopES>>(result);
+        Assert.AreEqual(expectedTotal, result.TotalAmount);
+        Assert.AreEqual(expectedEntities, result.Entities.Count);
+    }
+
+    [Test]
     public async Task Search_WithMultipleFilterParameters_ShouldReturnSearchResult()
     {
         // Arrange
