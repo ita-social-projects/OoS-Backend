@@ -9,6 +9,7 @@ using Elastic.Transport;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
@@ -512,6 +513,42 @@ public class ESWorkshopProviderTests
             IsStrictWorkdays = true,
             CATOTTGId = 31375,
             OrderByField = "Nearest",
+        };
+
+        var response = CreateSuccessfulSearchResponse(expectedTotal, expectedEntities);
+
+        elasticClientMock.Setup(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await provider.Search(filter);
+
+        // Assert
+        elasticClientMock.Verify(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None),
+            Times.Once);
+        Assert.IsInstanceOf<SearchResultES<WorkshopES>>(result);
+        Assert.AreEqual(expectedTotal, result.TotalAmount);
+        Assert.AreEqual(expectedEntities, result.Entities.Count);
+    }
+
+    [TestCase(OrderBy.Rating)]
+    [TestCase(OrderBy.Statistic)]
+    [TestCase(OrderBy.PriceAsc)]
+    [TestCase(OrderBy.PriceDesc)]
+    [TestCase(OrderBy.Alphabet)]
+    public async Task Search_WhenFilterContainsOrderByField_ShouldReturnSearchResult(OrderBy orderBy)
+    {
+        // Arrange
+        var expectedEntities = 12;
+        var expectedTotal = 20;
+
+        WorkshopFilterES filter = new()
+        {
+            OrderByField = orderBy.ToString(),
         };
 
         var response = CreateSuccessfulSearchResponse(expectedTotal, expectedEntities);
