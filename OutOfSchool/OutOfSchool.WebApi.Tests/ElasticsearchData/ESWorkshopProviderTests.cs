@@ -290,18 +290,7 @@ public class ESWorkshopProviderTests
 
         WorkshopFilterES filter = null;
 
-        var response = TestableResponseFactory
-            .CreateSuccessfulResponse<SearchResponse<WorkshopES>>(
-                new()
-                {
-                    HitsMetadata = new HitsMetadata<WorkshopES>()
-                    {
-                        Hits = new List<Hit<WorkshopES>>(
-                            Enumerable.Repeat(new Hit<WorkshopES>(), expectedEntities)),
-                        Total = new TotalHits { Value = expectedTotal },
-                    },
-                },
-                StatusCodes.Status200OK);
+        var response = CreateSuccessfulSearchResponse(expectedTotal, expectedEntities);
 
         elasticClientMock.Setup(
             x => x.SearchAsync<WorkshopES>(
@@ -339,20 +328,10 @@ public class ESWorkshopProviderTests
             Workdays = "Tuesday Wednesday",
             IsStrictWorkdays = true,
             CATOTTGId = 31375,
+            OrderByField = "Nearest",
         };
 
-        var response = TestableResponseFactory
-            .CreateSuccessfulResponse<SearchResponse<WorkshopES>>(
-                new()
-                {
-                    HitsMetadata = new HitsMetadata<WorkshopES>()
-                    {
-                        Hits = new List<Hit<WorkshopES>>(
-                            Enumerable.Repeat(new Hit<WorkshopES>(), expectedEntities)),
-                        Total = new TotalHits { Value = expectedTotal },
-                    },
-                },
-                StatusCodes.Status200OK);
+        var response = CreateSuccessfulSearchResponse(expectedTotal, expectedEntities);
 
         elasticClientMock.Setup(
             x => x.SearchAsync<WorkshopES>(
@@ -408,4 +387,19 @@ public class ESWorkshopProviderTests
 
     #endregion
 
+    private static SearchResponse<WorkshopES> CreateSuccessfulSearchResponse(int totalHits, int entities)
+    {
+        return TestableResponseFactory
+            .CreateSuccessfulResponse<SearchResponse<WorkshopES>>(
+                new()
+                {
+                    HitsMetadata = new HitsMetadata<WorkshopES>()
+                    {
+                        Hits = new List<Hit<WorkshopES>>(
+                            Enumerable.Repeat(new Hit<WorkshopES>(), entities)),
+                        Total = new TotalHits { Value = totalHits },
+                    },
+                },
+                StatusCodes.Status200OK);
+    }
 }
