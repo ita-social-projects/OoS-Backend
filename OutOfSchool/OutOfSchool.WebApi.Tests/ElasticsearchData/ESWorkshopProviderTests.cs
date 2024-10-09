@@ -374,8 +374,13 @@ public class ESWorkshopProviderTests
         Assert.AreEqual(expectedEntities, result.Entities.Count);
     }
 
-    [Test]
-    public async Task Search_WhenFilterContainsIsFree_ShouldReturnSearchResult()
+    [TestCase(true, 0, int.MaxValue)]
+    [TestCase(false, 10, int.MaxValue)]
+    [TestCase(false, 0, 1000)]
+    [TestCase(true, 50, int.MaxValue)]
+    [TestCase(true, 0, 3000)]
+    public async Task Search_WhenFilterContainsIsFreeAndOrMinPriceAndOrMaxPrice_ShouldReturnSearchResult(
+        bool isFree, int minPrice, int maxPrice)
     {
         // Arrange
         var expectedEntities = 5;
@@ -383,7 +388,89 @@ public class ESWorkshopProviderTests
 
         WorkshopFilterES filter = new()
         {
-            IsFree = true,
+            IsFree = isFree,
+            MinPrice = minPrice,
+            MaxPrice = maxPrice,
+        };
+
+        var response = CreateSuccessfulSearchResponse(expectedTotal, expectedEntities);
+
+        elasticClientMock.Setup(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await provider.Search(filter);
+
+        // Assert
+        elasticClientMock.Verify(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None),
+            Times.Once);
+        Assert.IsInstanceOf<SearchResultES<WorkshopES>>(result);
+        Assert.AreEqual(expectedTotal, result.TotalAmount);
+        Assert.AreEqual(expectedEntities, result.Entities.Count);
+    }
+
+    [TestCase(10, 100, false)]
+    [TestCase(12, 100, true)]
+    [TestCase(0, 12, false)]
+    [TestCase(0, 16, true)]
+    [TestCase(3, 18, false)]
+    [TestCase(4, 12, true)]
+    public async Task Search_WhenFilterContainsMinAgeAndOrMaxAgeAndOrIsAppropriateAge_ShouldReturnSearchResult(
+        int minAge, int maxAge, bool isAppropriateAge)
+    {
+        // Arrange
+        var expectedEntities = 12;
+        var expectedTotal = 34;
+
+        WorkshopFilterES filter = new()
+        {
+            MinAge = minAge,
+            MaxAge = maxAge,
+            IsAppropriateAge = isAppropriateAge,
+        };
+
+        var response = CreateSuccessfulSearchResponse(expectedTotal, expectedEntities);
+
+        elasticClientMock.Setup(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await provider.Search(filter);
+
+        // Assert
+        elasticClientMock.Verify(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None),
+            Times.Once);
+        Assert.IsInstanceOf<SearchResultES<WorkshopES>>(result);
+        Assert.AreEqual(expectedTotal, result.TotalAmount);
+        Assert.AreEqual(expectedEntities, result.Entities.Count);
+    }
+
+    [TestCase("00:00:00:00.0", "00:16:00:00.0", false)]
+    [TestCase("00:00:00:00.0", "00:16:00:00.0", true)]
+    [TestCase("00:12:00:00.0", "00:23:59:59.0", false)]
+    [TestCase("00:12:00:00.0", "00:23:59:59.0", true)]
+    [TestCase("00:10:00:00.0", "00:16:00:00.0", false)]
+    [TestCase("00:10:00:00.0", "00:16:00:00.0", true)]
+    public async Task Search_WhenFilterContainsMinStartTimeAndOrMaxStartTimeAndOrIsAppropriateAge_ShouldReturnSearchResult(
+    TimeSpan minStartTime, TimeSpan maxStartTime, bool isAppropriateHours)
+    {
+        // Arrange
+        var expectedEntities = 7;
+        var expectedTotal = 7;
+
+        WorkshopFilterES filter = new()
+        {
+            MinStartTime = minStartTime,
+            MaxStartTime = maxStartTime,
+            IsAppropriateHours = isAppropriateHours,
         };
 
         var response = CreateSuccessfulSearchResponse(expectedTotal, expectedEntities);
