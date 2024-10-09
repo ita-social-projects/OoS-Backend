@@ -285,7 +285,7 @@ public class ESWorkshopProviderTests
     public async Task Search_WhenFilterIsNull_ShouldReturnSearchResult()
     {
         // Arrange
-        var expectedEntities = 7;
+        var expectedEntities = 12;
         var expectedTotal = 50;
 
         WorkshopFilterES filter = null;
@@ -311,10 +311,74 @@ public class ESWorkshopProviderTests
     }
 
     [Test]
-    public async Task Search_WithFilter_ShouldReturnSearchResult()
+    public async Task Search_WhenFilterContainsIds_ShouldReturnSearchResult()
+    {
+        // Arrange
+        var expectedEntities = 2;
+        var expectedTotal = 2;
+
+        WorkshopFilterES filter = new()
+        {
+            Ids = [Guid.NewGuid(), Guid.NewGuid()],
+        };
+
+        var response = CreateSuccessfulSearchResponse(expectedTotal, expectedEntities);
+
+        elasticClientMock.Setup(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await provider.Search(filter);
+
+        // Assert
+        elasticClientMock.Verify(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None),
+            Times.Once);
+        Assert.IsInstanceOf<SearchResultES<WorkshopES>>(result);
+        Assert.AreEqual(expectedTotal, result.TotalAmount);
+        Assert.AreEqual(expectedEntities, result.Entities.Count);
+    }
+
+    [Test]
+    public async Task Search_WhenFilterContainsInstitutionId_ShouldReturnSearchResult()
     {
         // Arrange
         var expectedEntities = 5;
+        var expectedTotal = 5;
+
+        WorkshopFilterES filter = new()
+        {
+            InstitutionId = Guid.NewGuid(),
+        };
+
+        var response = CreateSuccessfulSearchResponse(expectedTotal, expectedEntities);
+
+        elasticClientMock.Setup(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await provider.Search(filter);
+
+        // Assert
+        elasticClientMock.Verify(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None),
+            Times.Once);
+        Assert.IsInstanceOf<SearchResultES<WorkshopES>>(result);
+        Assert.AreEqual(expectedTotal, result.TotalAmount);
+        Assert.AreEqual(expectedEntities, result.Entities.Count);
+    }
+
+    [Test]
+    public async Task Search_WithMultipleFilterParameters_ShouldReturnSearchResult()
+    {
+        // Arrange
+        var expectedEntities = 12;
         var expectedTotal = 20;
 
         WorkshopFilterES filter = new()
