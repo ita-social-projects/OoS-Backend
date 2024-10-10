@@ -70,36 +70,7 @@ public abstract class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchPr
         var descriptor = new DeleteByQueryRequestDescriptor<TEntity>(Indices.All)
             .Query(q => q.MatchAll(m => m.Boost(1)));
         await ElasticClient.DeleteByQueryAsync<TEntity>(descriptor).ConfigureAwait(false);
-
-        var bulkAllObservable = ElasticClient.BulkAll<TEntity>(source, b => b
-            .MaxDegreeOfParallelism(4)
-            .BackOffTime("10s")
-            .BackOffRetries(2)
-            .RefreshOnCompleted()
-            .Size(1000));
-
-        var waitHandle = new ManualResetEvent(false);
-        ExceptionDispatchInfo exceptionDispatchInfo = null;
-        Result result = Result.NoOp;
-
-        var observer = new BulkAllObserver(
-            onError: exception =>
-            {
-                exceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception);
-                waitHandle.Set();
-            },
-            onCompleted: () =>
-            {
-                result = Result.Updated;
-                waitHandle.Set();
-            });
-
-        bulkAllObservable.Subscribe(observer);
-
-        waitHandle.WaitOne();
-
-        exceptionDispatchInfo?.Throw();
-
+        var result = await IndexAll(source).ConfigureAwait(false);
         return result;
     }
 
