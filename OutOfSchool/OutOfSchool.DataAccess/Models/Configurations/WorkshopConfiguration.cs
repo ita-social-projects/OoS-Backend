@@ -16,25 +16,26 @@ internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
              .HasForeignKey(x => x.WorkshopId)
              .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(x => x.MemberOfWorkshop)
-            .WithMany(x => x.IncludedStudyGroups)
-            .HasForeignKey(x => x.MemberOfWorkshopId)
-            .IsRequired(false)
-            .OnDelete(DeleteBehavior.Restrict);
-
         // One-to-One relationship (with shadow property in Workshop)
-        builder.HasOne(p => p.DefaultTeacher)
+        builder.HasOne(x => x.DefaultTeacher)
             .WithOne()
             .HasForeignKey<Workshop>(x => x.DefaultTeacherId) // Shadow property for One-to-One relationship
             .IsRequired(false) // Optional relationship
             .OnDelete(DeleteBehavior.Restrict);
 
         // One-to-Many relationship (with shadow property in Workshop)
-        builder.HasMany(p => p.Teachers)
+        builder.HasMany(x => x.Teachers)
             .WithOne()
             .HasForeignKey(x => x.WorkshopId) // Shadow property for One-to-Many relationship
             .IsRequired(false) // Optional relationship
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Self-referencing one-to-many relationship configuration
+        builder.HasOne(x => x.MemberOfWorkshop)
+            .WithMany(x => x.IncludedStudyGroups)
+            .HasForeignKey(x => x.MemberOfWorkshopId)
+            .IsRequired(false) // Optional relationship
+            .OnDelete(DeleteBehavior.Restrict);
 
         base.Configure(builder);
     }

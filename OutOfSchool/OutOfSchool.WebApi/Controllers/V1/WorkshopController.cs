@@ -22,6 +22,7 @@ public class WorkshopController : ControllerBase
     private readonly IProviderService providerService;
     private readonly IProviderAdminService providerAdminService;
     private readonly IUserService userService;
+    private readonly ITeacherService teacherService;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly AppDefaultsConfig options;
 
@@ -32,6 +33,7 @@ public class WorkshopController : ControllerBase
     /// <param name="providerService">Service for Provider model.</param>
     /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
     /// <param name="userService">Service for operations with users.</param>
+    /// <param name="teacherService">Service for Teacher model.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="options">Application default values.</param>
     public WorkshopController(
@@ -39,6 +41,7 @@ public class WorkshopController : ControllerBase
         IProviderService providerService,
         IProviderAdminService providerAdminService,
         IUserService userService,
+        ITeacherService teacherService,
         IStringLocalizer<SharedResource> localizer,
         IOptions<AppDefaultsConfig> options)
     {
@@ -47,6 +50,7 @@ public class WorkshopController : ControllerBase
         this.providerAdminService = providerAdminService;
         this.providerService = providerService;
         this.userService = userService;
+        this.teacherService = teacherService;
         this.options = options.Value;
     }
 
@@ -294,47 +298,7 @@ public class WorkshopController : ControllerBase
             return StatusCode(403, "Forbidden to create workshops for another providers.");
         }
 
-        dto.Id = default;
-        dto.Address.Id = default;
-
-        if (dto.DefaultTeacher is not null)
-        {
-            dto.DefaultTeacher.Id = default;
-        }
-
-        if (dto.MemberOfWorkshop is not null)
-        {
-            dto.MemberOfWorkshop.Id = default;
-        }
-
-        if (dto.WorkshopDescriptionItems is not null)
-        {
-            foreach (var workshopDescription in dto.WorkshopDescriptionItems)
-            {
-                workshopDescription.Id = default;
-            }
-        }
-
-        if (dto.Teachers != null)
-        {
-            foreach (var teacher in dto.Teachers)
-            {
-                teacher.Id = default;
-            }
-        }
-
-        foreach (var dateTimeRangeDto in dto.DateTimeRanges)
-        {
-            dateTimeRangeDto.Id = default;
-        }
-
-        if (dto.IncludedStudyGroups is not null)
-        {
-            foreach (var includedStudyGrope in dto.IncludedStudyGroups)
-            {
-                includedStudyGrope.Id = default;
-            }
-        }
+        await TraversDtoAndSetIdToDefaultValue(dto).ConfigureAwait(false);
 
         var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
 
@@ -561,5 +525,85 @@ public class WorkshopController : ControllerBase
             providerId;
 
         return await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false;
+    }
+
+    private async Task TraversDtoAndSetIdToDefaultValue(WorkshopBaseDto dto)
+    {
+        await SetIdToDefaultValue(dto).ConfigureAwait(false);
+
+        var stack = new Stack<WorkshopBaseDto>();
+
+        if (dto.MemberOfWorkshop is not null)
+        {
+            stack.Push(dto.MemberOfWorkshop);
+        }
+
+        if (dto.IncludedStudyGroups is not null && dto.IncludedStudyGroups.Any())
+        {
+            foreach (var includedStudyGrope in dto.IncludedStudyGroups)
+            {
+                stack.Push(includedStudyGrope);
+            }
+        }
+
+        while (stack.Count > 0)
+        {
+            await TraversDtoAndSetIdToDefaultValue(stack.Pop()).ConfigureAwait(false);
+        }
+    }
+
+    private async Task SetIdToDefaultValue(WorkshopBaseDto dto)
+    {
+        dto.Id = default;
+        dto.Address.Id = default;
+
+        if (dto.DefaultTeacher is not null)
+        {
+            dto.DefaultTeacher.Id = default;
+        }
+
+        if (dto.MemberOfWorkshop is not null)
+        {
+            dto.MemberOfWorkshop.Id = default;
+        }
+
+        if (dto.WorkshopDescriptionItems is not null)
+        {
+            foreach (var workshopDescription in dto.WorkshopDescriptionItems)
+            {
+                workshopDescription.Id = default;
+            }
+        }
+
+        if (dto.Teachers != null)
+        {
+            foreach (var teacher in dto.Teachers)
+            {
+                teacher.Id = default;
+            }
+        }
+
+        foreach (var dateTimeRangeDto in dto.DateTimeRanges)
+        {
+            dateTimeRangeDto.Id = default;
+        }
+
+        if (dto.IncludedStudyGroups is not null)
+        {
+            foreach (var includedStudyGrope in dto.IncludedStudyGroups)
+            {
+                includedStudyGrope.Id = default;
+            }
+        }
+
+        if (dto.DefaultTeacherId is not null && !await teacherService.Exists((Guid)dto.DefaultTeacherId).ConfigureAwait(false))
+        {
+            dto.DefaultTeacherId = default;
+        }
+
+        if (dto.MemberOfWorkshopId is not null && !await combinedWorkshopService.Exists((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false))
+        {
+            dto.MemberOfWorkshopId = default;
+        }
     }
 }

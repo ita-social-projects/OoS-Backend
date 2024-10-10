@@ -186,7 +186,10 @@ public static class Startup
                         Duration = cacheProfilesConfig.PublicDurationInSeconds,
                     });
             })
-            .AddNewtonsoftJson()
+            .AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.Objects;
+            })
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
