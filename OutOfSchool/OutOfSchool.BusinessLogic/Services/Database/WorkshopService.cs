@@ -124,7 +124,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         var newWorkshop = await workshopRepository.RunInTransaction(operation).ConfigureAwait(false);
 
-        logger.LogInformation("Workshop with Id = {newWorkshop.Id} created successfully.", newWorkshop.Id);
+        logger.LogInformation("Workshop with Id = {newWorkshopId} created successfully.", newWorkshop.Id);
 
         return mapper.Map<WorkshopBaseDto>(newWorkshop);
     }
