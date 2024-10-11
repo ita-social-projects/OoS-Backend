@@ -94,8 +94,14 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <exception cref="ArgumentNullException">If <see cref="WorkshopBaseDto"/> is null.</exception>
     public async Task<WorkshopBaseDto> Create(WorkshopBaseDto dto)
     {
-        _ = dto ?? throw new ArgumentNullException(nameof(dto));
+        ArgumentNullException.ThrowIfNull(dto);
         logger.LogInformation("Workshop creating was started.");
+
+        if (dto.MemberOfWorkshopId is not null && !await Exists((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false))
+        {
+            var errorMessage = $"The main workshop (with id = {dto.MemberOfWorkshopId}) for the workshop being created was not found.";
+            throw new InvalidOperationException(errorMessage);
+        }
 
         if (dto.AvailableSeats is 0 or null)
         {
@@ -118,7 +124,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         var newWorkshop = await workshopRepository.RunInTransaction(operation).ConfigureAwait(false);
 
-        logger.LogInformation($"Workshop with Id = {newWorkshop?.Id} created successfully.");
+        logger.LogInformation("Workshop with Id = {newWorkshop.Id} created successfully.", newWorkshop.Id);
 
         return mapper.Map<WorkshopBaseDto>(newWorkshop);
     }
