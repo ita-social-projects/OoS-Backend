@@ -22,8 +22,8 @@ public class WorkshopController : ControllerBase
     private readonly IProviderService providerService;
     private readonly IProviderAdminService providerAdminService;
     private readonly IUserService userService;
-    private readonly ITeacherService teacherService;
     private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly ILogger<WorkshopController> logger;
     private readonly AppDefaultsConfig options;
 
     /// <summary>
@@ -33,16 +33,16 @@ public class WorkshopController : ControllerBase
     /// <param name="providerService">Service for Provider model.</param>
     /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
     /// <param name="userService">Service for operations with users.</param>
-    /// <param name="teacherService">Service for Teacher model.</param>
     /// <param name="localizer">Localizer.</param>
+    /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
     /// <param name="options">Application default values.</param>
     public WorkshopController(
         IWorkshopServicesCombiner combinedWorkshopService,
         IProviderService providerService,
         IProviderAdminService providerAdminService,
         IUserService userService,
-        ITeacherService teacherService,
         IStringLocalizer<SharedResource> localizer,
+        ILogger<WorkshopController> logger,
         IOptions<AppDefaultsConfig> options)
     {
         this.localizer = localizer;
@@ -50,7 +50,7 @@ public class WorkshopController : ControllerBase
         this.providerAdminService = providerAdminService;
         this.providerService = providerService;
         this.userService = userService;
-        this.teacherService = teacherService;
+        this.logger = logger;
         this.options = options.Value;
     }
 
@@ -301,22 +301,32 @@ public class WorkshopController : ControllerBase
         // TODO: after refactoring the DTOs for the Workshop entities, this method needs to be replaced with the correct mapping
         await SetIdToDefaultValue(dto).ConfigureAwait(false); // This method includes the setting of the Id properties to the default value.
 
-        var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
-
-        // here we will get "false" if workshop was created by assistant provider admin
-        // because user is not currently associated with new workshop
-        // so we can update information to allow assistant manage created workshop
-
-        if (!(await IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false)))
+        try
         {
-            var userId = User.FindFirst("sub")?.Value;
-            await providerAdminService.GiveAssistantAccessToWorkshop(userId, workshop.Id).ConfigureAwait(false);
-        }
+            var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
 
-        return CreatedAtAction(
-            nameof(GetById),
-            new { id = workshop.Id, },
-            workshop);
+            // here we will get "false" if workshop was created by assistant provider admin
+            // because user is not currently associated with new workshop
+            // so we can update information to allow assistant manage created workshop
+
+            if (!await IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false))
+            {
+                var userId = User.FindFirst("sub")?.Value;
+                await providerAdminService.GiveAssistantAccessToWorkshop(userId, workshop.Id).ConfigureAwait(false);
+            }
+
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = workshop.Id, },
+                workshop);
+        }
+        catch (InvalidOperationException ex)
+        {
+            var errorMessage = $"Unable to create a new workshop: {ex.Message}";
+            logger.LogError(ex, errorMessage);
+
+            return BadRequest(errorMessage);
+        }
     }
 
     /// <summary>
