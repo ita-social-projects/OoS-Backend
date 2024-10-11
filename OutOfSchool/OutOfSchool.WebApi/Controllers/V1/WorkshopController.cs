@@ -23,7 +23,6 @@ public class WorkshopController : ControllerBase
     private readonly IProviderAdminService providerAdminService;
     private readonly IUserService userService;
     private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly ILogger<WorkshopController> logger;
     private readonly AppDefaultsConfig options;
 
     /// <summary>
@@ -34,7 +33,6 @@ public class WorkshopController : ControllerBase
     /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
     /// <param name="userService">Service for operations with users.</param>
     /// <param name="localizer">Localizer.</param>
-    /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
     /// <param name="options">Application default values.</param>
     public WorkshopController(
         IWorkshopServicesCombiner combinedWorkshopService,
@@ -42,7 +40,6 @@ public class WorkshopController : ControllerBase
         IProviderAdminService providerAdminService,
         IUserService userService,
         IStringLocalizer<SharedResource> localizer,
-        ILogger<WorkshopController> logger,
         IOptions<AppDefaultsConfig> options)
     {
         this.localizer = localizer;
@@ -50,7 +47,6 @@ public class WorkshopController : ControllerBase
         this.providerAdminService = providerAdminService;
         this.providerService = providerService;
         this.userService = userService;
-        this.logger = logger;
         this.options = options.Value;
     }
 
@@ -314,32 +310,22 @@ public class WorkshopController : ControllerBase
             dateTimeRangeDto.Id = default;
         }
 
-        try
+        var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
+
+        // here we will get "false" if workshop was created by assistant provider admin
+        // because user is not currently associated with new workshop
+        // so we can update information to allow assistant manage created workshop
+
+        if (!await IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false))
         {
-            var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
-
-            // here we will get "false" if workshop was created by assistant provider admin
-            // because user is not currently associated with new workshop
-            // so we can update information to allow assistant manage created workshop
-
-            if (!await IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false))
-            {
-                var userId = User.FindFirst("sub")?.Value;
-                await providerAdminService.GiveAssistantAccessToWorkshop(userId, workshop.Id).ConfigureAwait(false);
-            }
-
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = workshop.Id, },
-                workshop);
+            var userId = User.FindFirst("sub")?.Value;
+            await providerAdminService.GiveAssistantAccessToWorkshop(userId, workshop.Id).ConfigureAwait(false);
         }
-        catch (InvalidOperationException ex)
-        {
-            var errorMessage = $"Unable to create a new workshop: {ex.Message}";
-            logger.LogError(ex, errorMessage);
 
-            return BadRequest(errorMessage);
-        }
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = workshop.Id, },
+            workshop);
     }
 
     /// <summary>
