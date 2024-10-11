@@ -298,7 +298,8 @@ public class WorkshopController : ControllerBase
             return StatusCode(403, "Forbidden to create workshops for another providers.");
         }
 
-        await TraversDtoAndSetIdToDefaultValue(dto).ConfigureAwait(false); // This method includes the setting of the Id properties to the default value.
+        // TODO: after refactoring the DTOs for the Workshop entities, this method needs to be replaced with the correct mapping
+        await SetIdToDefaultValue(dto).ConfigureAwait(false); // This method includes the setting of the Id properties to the default value.
 
         var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
 
@@ -527,31 +528,6 @@ public class WorkshopController : ControllerBase
         return await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false;
     }
 
-    private async Task TraversDtoAndSetIdToDefaultValue(WorkshopBaseDto dto)
-    {
-        await SetIdToDefaultValue(dto).ConfigureAwait(false);
-
-        var stack = new Stack<WorkshopBaseDto>();
-
-        if (dto.MemberOfWorkshop is not null)
-        {
-            stack.Push(dto.MemberOfWorkshop);
-        }
-
-        if (dto.IncludedStudyGroups is not null && dto.IncludedStudyGroups.Any())
-        {
-            foreach (var includedStudyGrope in dto.IncludedStudyGroups)
-            {
-                stack.Push(includedStudyGrope);
-            }
-        }
-
-        while (stack.Count > 0)
-        {
-            await TraversDtoAndSetIdToDefaultValue(stack.Pop()).ConfigureAwait(false);
-        }
-    }
-
     private async Task SetIdToDefaultValue(WorkshopBaseDto dto)
     {
         dto.Id = default;
@@ -596,14 +572,15 @@ public class WorkshopController : ControllerBase
             }
         }
 
+        // If the DefaultTeacherId property of WorkshopBaseDto is incorrect, set it to the default value.
         if (dto.DefaultTeacherId is not null && !await teacherService.Exists((Guid)dto.DefaultTeacherId).ConfigureAwait(false))
         {
             dto.DefaultTeacherId = default;
         }
 
-        if (dto.MemberOfWorkshopId is not null && !await combinedWorkshopService.Exists((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false))
-        {
-            dto.MemberOfWorkshopId = default;
-        }
+        //if (dto.MemberOfWorkshopId is not null && !await combinedWorkshopService.Exists((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false))
+        //{
+        //    dto.MemberOfWorkshopId = default;
+        //}
     }
 }
