@@ -103,10 +103,10 @@ public static class Startup
         app.UseHeaderPropagation();
 
         app.MapHealthChecks("/healthz/ready", new HealthCheckOptions
-            {
-                Predicate = healthCheck => healthCheck.Tags.Contains("readiness"),
-                AllowCachingResponses = false,
-            })
+        {
+            Predicate = healthCheck => healthCheck.Tags.Contains("readiness"),
+            AllowCachingResponses = false,
+        })
             .RequireHost($"*:{app.Configuration.GetValue<int>("ApplicationPorts:HealthPort")}")
             .WithMetadata(new AllowAnonymousAttribute());
 
@@ -185,10 +185,6 @@ public static class Startup
                         NoStore = false,
                         Duration = cacheProfilesConfig.PublicDurationInSeconds,
                     });
-            })
-            .AddNewtonsoftJson(options =>
-            {
-                options.SerializerSettings.PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.Objects;
             })
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
