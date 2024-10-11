@@ -97,7 +97,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         ArgumentNullException.ThrowIfNull(dto);
         logger.LogInformation("Workshop creating was started.");
 
-        if (dto.MemberOfWorkshopId is not null && !await Exists((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false))
+        if (dto.MemberOfWorkshopId.HasValue && !await Exists((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false))
         {
             var errorMessage = $"The main workshop (with id = {dto.MemberOfWorkshopId}) for the workshop being created was not found.";
             throw new InvalidOperationException(errorMessage);
