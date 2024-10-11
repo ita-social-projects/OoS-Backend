@@ -298,7 +298,7 @@ public class WorkshopController : ControllerBase
             return StatusCode(403, "Forbidden to create workshops for another providers.");
         }
 
-        await TraversDtoAndSetIdToDefaultValue(dto).ConfigureAwait(false);
+        await TraversDtoAndSetIdToDefaultValue(dto).ConfigureAwait(false); // This method includes the setting of the Id properties to the default value.
 
         var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
 
