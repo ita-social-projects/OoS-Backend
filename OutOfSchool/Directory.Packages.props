@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <BaseVersion>8.0.0</BaseVersion>
-    <EFCoreVersion>8.0.1</EFCoreVersion>
-    <OpenIdDictVersion>4.7.0</OpenIdDictVersion>
+    <EFCoreVersion>8.0.7</EFCoreVersion>
+    <OpenIdDictVersion>5.8.0</OpenIdDictVersion>
     <SwaggerVersion>6.3.1</SwaggerVersion>
     <QuartzVersion>3.5.0</QuartzVersion>
     <RedisVersion>6.0.21</RedisVersion>
@@ -49,7 +49,7 @@
     <PackageVersion Include="IdentityModel" Version="6.1.0" />
     <PackageVersion Include="Microsoft.Extensions.Identity.Core" Version="$(EFCoreVersion)" />
     <!-- TODO: check if this dep is needed -->
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="6.25.1" />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.1.2" />
     <!--OpenID Dict-->
     <PackageVersion Include="OpenIddict.AspNetCore" Version="$(OpenIdDictVersion)" />
     <PackageVersion Include="OpenIddict.EntityFrameworkCore" Version="$(OpenIdDictVersion)" />
