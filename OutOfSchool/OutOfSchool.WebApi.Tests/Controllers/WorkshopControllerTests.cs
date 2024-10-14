@@ -8,6 +8,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
@@ -49,9 +50,11 @@ public class WorkshopControllerTests
     private Mock<IProviderAdminService> providerAdminService;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<IUserService> userServiceMoq;
+    private Mock<ITeacherService> teacherServiceMoq;
+    private Mock<ILogger<WorkshopController>> loggerMoq;
+    private Mock<HttpContext> httpContextMoq;
 
     private string userId;
-    private Mock<HttpContext> httpContextMoq;
     private List<WorkshopBaseCard> workshopBaseCards;
     private List<ShortEntityDto> workshopShortEntitiesList;
     private List<WorkshopProviderViewCard> workshopProviderViewCardList;
@@ -91,6 +94,8 @@ public class WorkshopControllerTests
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         providerAdminService = new Mock<IProviderAdminService>();
         userServiceMoq = new Mock<IUserService>();
+        teacherServiceMoq = new Mock<ITeacherService>();
+        loggerMoq = new Mock<ILogger<WorkshopController>>();
 
         controller = new WorkshopController(
             workshopServiceMoq.Object,
@@ -98,6 +103,8 @@ public class WorkshopControllerTests
             providerAdminService.Object,
             userServiceMoq.Object,
             localizer.Object,
+            teacherServiceMoq.Object,
+            loggerMoq.Object,
             options.Object)
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
