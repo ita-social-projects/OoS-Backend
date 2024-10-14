@@ -591,10 +591,5 @@ public class WorkshopController : ControllerBase
         {
             dto.DefaultTeacherId = default;
         }
-
-        //if (dto.MemberOfWorkshopId is not null && !await combinedWorkshopService.Exists((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false))
-        //{
-        //    dto.MemberOfWorkshopId = default;
-        //}
     }
 }
