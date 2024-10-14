@@ -158,15 +158,15 @@ public class ElasticsearchSynchronizationService : IElasticsearchSynchronization
         {
             var workshops = await databaseService.GetByIds(ids).ConfigureAwait(false);
 
-            var sourse = mapper.Map<List<WorkshopES>>(workshops);
+            var source = mapper.Map<List<WorkshopES>>(workshops);
 
             try
             {
-                var result = await esProvider.IndexAll(sourse).ConfigureAwait(false);
+                var result = esProvider.IndexAll(source);
 
                 if (result != Result.Updated)
                 {
-                    logger.LogError($"Error happened while trying to update indexes in Elasticsearch.");
+                    logger.LogError("Error happened while trying to update indexes in Elasticsearch.");
                     return false;
                 }
             }

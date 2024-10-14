@@ -242,7 +242,7 @@ public class ESWorkshopProviderTests
                 CancellationToken.None));
 
         // Act
-        var result = await provider.IndexAll(source);
+        var result = provider.IndexAll(source);
 
         // Assert
         elasticClientMock.Verify(
@@ -267,8 +267,7 @@ public class ESWorkshopProviderTests
             .Throws(new Exception(exceptionMessage));
 
         // Act & Assert
-        Exception ex = Assert.ThrowsAsync<Exception>(
-            async () => await provider.IndexAll(source));
+        Exception ex = Assert.Throws<Exception>(() => provider.IndexAll(source));
         Assert.AreEqual(exceptionMessage, ex.Message);
         elasticClientMock.Verify(
             x => x.BulkAll(

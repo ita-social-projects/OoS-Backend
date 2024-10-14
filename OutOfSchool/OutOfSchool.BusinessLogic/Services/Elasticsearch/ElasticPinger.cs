@@ -26,7 +26,7 @@ public class ElasticPinger : IElasticsearchHealthService, IHostedService, IDispo
     {
         logger.LogInformation("Service started pinging");
         timer = new Timer(
-            async (cb) =>
+            async (_) =>
             {
                 try
                 {

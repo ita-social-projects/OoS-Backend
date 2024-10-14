@@ -70,12 +70,12 @@ public abstract class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchPr
         var descriptor = new DeleteByQueryRequestDescriptor<TEntity>(Indices.All)
             .Query(q => q.MatchAll(m => m.Boost(1)));
         await ElasticClient.DeleteByQueryAsync<TEntity>(descriptor).ConfigureAwait(false);
-        var result = await IndexAll(source).ConfigureAwait(false);
+        var result = IndexAll(source);
         return result;
     }
 
     /// <inheritdoc/>
-    public virtual async Task<Result> IndexAll(IEnumerable<TEntity> source)
+    public virtual Result IndexAll(IEnumerable<TEntity> source)
     {
         var bulkAllObservable = ElasticClient.BulkAll<TEntity>(source, b => b
             .MaxDegreeOfParallelism(4)
