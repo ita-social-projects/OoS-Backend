@@ -56,7 +56,12 @@ public class ElasticIndexEnsureCreatedHostedService : IHostedService
             {
                 await client.Indices.CreateAsync(indexName, configurator.Configure())
                     .ConfigureAwait(false);
+                logger.LogInformation("Elastic index {IndexName} created successfully", indexName);
             }
+        }
+        else
+        {
+            logger.LogError("Failed to ensure Elastic index {IndexName}: connection timeout", indexName);
         }
     }
 
