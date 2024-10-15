@@ -214,7 +214,7 @@ public class WorkshopServiceTests
         createdEntity.Provider = provider;
         createdEntity.AvailableSeats = (uint)availableSeats;
         var expectedTeachers = teachers.Select(mapper.Map<TeacherDTO>);
-        SetupCreateWithWorkshop(createdEntity, true);
+        SetupCreate(createdEntity, true);
 
         // Act
         var result = await workshopService.Create(mapper.Map<WorkshopBaseDto>(createdEntity)).ConfigureAwait(false);
@@ -237,7 +237,7 @@ public class WorkshopServiceTests
         createdEntity.Provider = provider;
         createdEntity.AvailableSeats = 0;
         var expectedTeachers = teachers.Select(mapper.Map<TeacherDTO>);
-        SetupCreateWithWorkshop(createdEntity, true);
+        SetupCreate(createdEntity, true);
 
         // Act
         var result = await workshopService.Create(mapper.Map<WorkshopBaseDto>(createdEntity)).ConfigureAwait(false);
@@ -263,7 +263,7 @@ public class WorkshopServiceTests
         createdEntity.AvailableSeats = 0;
         createdEntity.InstitutionHierarchyId = Guid.NewGuid();
         var expectedTeachers = teachers.Select(mapper.Map<TeacherDTO>);
-        SetupCreateWithWorkshop(createdEntity, true);
+        SetupCreate(createdEntity, true);
 
         // Act
         var result = await workshopService.Create(mapper.Map<WorkshopBaseDto>(createdEntity)).ConfigureAwait(false);
@@ -280,7 +280,7 @@ public class WorkshopServiceTests
     {
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithApplications().WithAddress();
-        SetupCreateWithWorkshop(createdEntity, true);
+        SetupCreate(createdEntity, true);
 
         // Act and Assert
         await workshopService.Invoking(w => w.Create(mapper.Map<WorkshopBaseDto>(createdEntity)))
@@ -301,7 +301,7 @@ public class WorkshopServiceTests
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithApplications().WithAddress();
         createdEntity.MemberOfWorkshopId = Guid.NewGuid();
-        SetupCreateWithWorkshop(createdEntity, false);
+        SetupCreate(createdEntity, false);
 
         // Act and Assert
         await workshopService.Invoking(w => w.Create(mapper.Map<WorkshopBaseDto>(createdEntity)))
@@ -906,7 +906,7 @@ public class WorkshopServiceTests
             });
     }
 
-    private void SetupCreateWithWorkshop(Workshop workshop, bool isMemberOfWorkshopIdExisted)
+    private void SetupCreate(Workshop workshop, bool isMemberOfWorkshopIdExisted)
     {
         var dto = mapper.Map<WorkshopBaseDto>(workshop);
 
