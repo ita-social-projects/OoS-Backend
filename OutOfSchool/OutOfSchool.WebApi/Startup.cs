@@ -15,6 +15,8 @@ using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Config.SearchString;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
+using OutOfSchool.BusinessLogic.Services.DraftStorage;
+using OutOfSchool.BusinessLogic.Services.DraftStorage.Interfaces;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
@@ -105,10 +107,10 @@ public static class Startup
         app.UseHeaderPropagation();
 
         app.MapHealthChecks("/healthz/ready", new HealthCheckOptions
-            {
-                Predicate = healthCheck => healthCheck.Tags.Contains("readiness"),
-                AllowCachingResponses = false,
-            })
+        {
+            Predicate = healthCheck => healthCheck.Tags.Contains("readiness"),
+            AllowCachingResponses = false,
+        })
             .RequireHost($"*:{app.Configuration.GetValue<int>("ApplicationPorts:HealthPort")}")
             .WithMetadata(new AllowAnonymousAttribute());
 
@@ -531,6 +533,8 @@ public static class Startup
 
         services.AddSingleton<ICacheService, CacheService>();
         services.AddSingleton<IMultiLayerCacheService, MultiLayerCache>();
+        services.AddSingleton<IReadWriteCacheService, CacheService>();
+        services.AddSingleton(typeof(IDraftStorageService<>), typeof(DraftStorageService<>));
 
         services.AddHealthChecks()
             .AddDbContextCheck<OutOfSchoolDbContext>(

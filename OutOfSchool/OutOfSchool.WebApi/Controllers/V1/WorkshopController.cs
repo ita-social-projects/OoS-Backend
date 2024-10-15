@@ -316,7 +316,7 @@ public class WorkshopController : ControllerBase
         // because user is not currently associated with new workshop
         // so we can update information to allow assistant manage created workshop
 
-        if (!(await IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false)))
+        if (!await IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false))
         {
             var userId = User.FindFirst("sub")?.Value;
             await providerAdminService.GiveAssistantAccessToWorkshop(userId, workshop.Id).ConfigureAwait(false);
