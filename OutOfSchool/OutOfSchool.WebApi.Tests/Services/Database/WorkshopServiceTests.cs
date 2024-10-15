@@ -300,6 +300,21 @@ public class WorkshopServiceTests
         await workshopService.Invoking(w => w.Create(mapper.Map<WorkshopBaseDto>(createdEntity)))
             .Should().ThrowAsync<InvalidOperationException>();
     }
+
+    [Test]
+    public async Task Create_WhenParentWorkshopIsMemberOfAnotherWorkshop_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var createdEntity = WorkshopGenerator.Generate().WithApplications().WithAddress();
+        createdEntity.MemberOfWorkshopId = Guid.NewGuid();
+        createdEntity.MemberOfWorkshop = WorkshopGenerator.Generate();
+        createdEntity.MemberOfWorkshop.MemberOfWorkshopId = Guid.NewGuid();
+        SetupCreate(createdEntity, false);
+
+        // Act and Assert
+        await workshopService.Invoking(w => w.Create(mapper.Map<WorkshopBaseDto>(createdEntity)))
+            .Should().ThrowAsync<InvalidOperationException>();
+    }
     #endregion
 
 

@@ -108,6 +108,12 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             throw new InvalidOperationException(errorMessage);
         }
 
+        if (dto.MemberOfWorkshopId.HasValue && (await GetById((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false)).MemberOfWorkshopId.HasValue)
+        {
+            var errorMessage = $"The main workshop (with ID = {dto.MemberOfWorkshopId}) for the workshop being created is a member of another workshop, so it cannot be the main workshop.";
+            throw new InvalidOperationException(errorMessage);
+        }
+
         if (dto.AvailableSeats is 0 or null)
         {
             dto.AvailableSeats = uint.MaxValue;

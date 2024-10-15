@@ -169,7 +169,7 @@ public class TeacherService : ITeacherService
     /// <inheritdoc/>
     public Task<bool> Exists(Guid id)
     {
-        logger.LogInformation($"Checking if Teacher exists by Id started. Looking Id = {id}.");
+        logger.LogInformation("Checking if Teacher exists by Id started. Looking Id = {id}.", id);
 
         return teacherRepository.Any(x => x.Id == id);
     }

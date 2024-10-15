@@ -549,19 +549,19 @@ public class WorkshopController : ControllerBase
 
         if (dto.DefaultTeacher is not null)
         {
-            dto.DefaultTeacher.Id = default;
+            dto.DefaultTeacher.Id = Guid.Empty;
         }
 
         if (dto.MemberOfWorkshop is not null)
         {
-            dto.MemberOfWorkshop.Id = default;
+            dto.MemberOfWorkshop.Id = Guid.Empty;
         }
 
         if (dto.WorkshopDescriptionItems is not null)
         {
             foreach (var workshopDescription in dto.WorkshopDescriptionItems)
             {
-                workshopDescription.Id = default;
+                workshopDescription.Id = Guid.Empty;
             }
         }
 
@@ -569,7 +569,7 @@ public class WorkshopController : ControllerBase
         {
             foreach (var teacher in dto.Teachers)
             {
-                teacher.Id = default;
+                teacher.Id = Guid.Empty;
             }
         }
 
@@ -582,7 +582,7 @@ public class WorkshopController : ControllerBase
         {
             foreach (var includedStudyGrope in dto.IncludedStudyGroups)
             {
-                includedStudyGrope.Id = default;
+                includedStudyGrope.Id = Guid.Empty;
             }
         }
 
