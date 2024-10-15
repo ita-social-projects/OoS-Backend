@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-
-namespace OutOfSchool.BusinessLogic.Models;
+﻿namespace OutOfSchool.BusinessLogic.Models;
 
 public interface IHasImages
 {

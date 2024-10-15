@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 
@@ -11,9 +13,11 @@ public class WorkshopDto : WorkshopBaseDto, IHasRating
 
     public float Rating { get; set; }
 
+    [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;
 
-    public List<Guid> ImageIds { get; set; }
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    public IList<string> ImageIds { get; set; }
 
     public int NumberOfRatings { get; set; }
 
