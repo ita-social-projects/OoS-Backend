@@ -284,7 +284,6 @@ public class WorkshopServiceTests
             .Should().ThrowAsync<ArgumentNullException>();
     }
 
-
     [Test]
     public async Task Create_WhenThereIsNotExistedMemberOfWorkshopId_ShouldThrowInvalidOperationException()
     {
@@ -865,7 +864,6 @@ public class WorkshopServiceTests
 
         mapperMock.Setup(m => m.Map<WorkshopBaseDto>(workshop))
             .Returns(dto);
-
         mapperMock.Setup(m => m.Map<Workshop>(It.IsAny<WorkshopBaseDto>()))
             .Returns(mapper.Map<Workshop>(dto));
 
@@ -882,21 +880,14 @@ public class WorkshopServiceTests
 
         workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>()))
                .ReturnsAsync(It.IsAny<Workshop>());
-
         providerRepositoryMock.Setup(p => p.GetById(It.IsAny<Guid>()))
             .Returns(Task.FromResult(workshop.Provider));
-
-
-
         workshopRepository.Setup(w => w.Create(It.IsAny<Workshop>()))
            .ReturnsAsync(workshop);
-
         workshopRepository.Setup(w => w.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(It.IsAny<int>());
-
         mapperMock.Setup(m => m.Map<List<DateTimeRange>>(It.IsAny<List<DateTimeRangeDto>>()))
             .Returns(mapper.Map<List<DateTimeRange>>(It.IsAny<List<DateTimeRangeDto>>()));
-
         workshopRepository.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
             .Returns((Func<Task<Workshop>> f) => f.Invoke());
     }
