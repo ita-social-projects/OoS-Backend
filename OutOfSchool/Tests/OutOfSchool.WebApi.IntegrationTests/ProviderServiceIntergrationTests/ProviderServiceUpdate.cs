@@ -15,6 +15,7 @@ using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Extensions;
@@ -76,6 +77,7 @@ public class ProviderServiceUpdate
         var userServiceMock = new Mock<IUserService>();
         var authorizationServerConfigMock = Options.Create(new AuthorizationServerConfig());
         var communicationServiceMock = new Mock<ICommunicationService>();
+        var searchStringServiceMock = new Mock<ISearchStringService>();
 
         this.providerService = new ProviderService(
             providerRepository,
@@ -101,7 +103,8 @@ public class ProviderServiceUpdate
             areaAdminRepositoryMock.Object,
             userServiceMock.Object,
             authorizationServerConfigMock,
-            communicationServiceMock.Object);
+            communicationServiceMock.Object,
+            searchStringServiceMock.Object);
     }
 
     [Test]

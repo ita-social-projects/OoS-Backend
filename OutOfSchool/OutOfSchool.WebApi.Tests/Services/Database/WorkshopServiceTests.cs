@@ -15,6 +15,7 @@ using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Images;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Enums;
@@ -47,6 +48,7 @@ public class WorkshopServiceTests
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
+    private Mock<ISearchStringService> searchStringServiceMock;
 
     [SetUp]
     public void SetUp()
@@ -66,6 +68,7 @@ public class WorkshopServiceTests
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
+        searchStringServiceMock = new Mock<ISearchStringService>();
 
         workshopService =
             new WorkshopService(
@@ -82,7 +85,8 @@ public class WorkshopServiceTests
                 currentUserServiceMock.Object,
                 ministryAdminServiceMock.Object,
                 regionAdminServiceMock.Object,
-                codeficatorServiceMock.Object);
+                codeficatorServiceMock.Object,
+                searchStringServiceMock.Object);
     }
 
     #region Create
@@ -715,6 +719,36 @@ public class WorkshopServiceTests
         result.Should().BeEquivalentTo(ExpectedSearchResultGetByFilter(WithWorkshopsList()));
     }
 
+    [Test]
+    public async Task GetByFilter_WhenFilteredBySearchString_ShouldBuildPredicateAndReturnEntities()
+    {
+        // Arrange
+        var filter = new WorkshopFilter()
+        {
+            SearchText = "хореографічний, атлетика",
+        };
+
+        var workshops = WithWorkshopsList()
+            .ToList();
+
+        var expectedEntities = new List<Workshop>() { workshops[0], workshops[1] };
+        var workshopIds = expectedEntities.Select(w => w.Id);
+        var expectedResult = ExpectedSearchResultGetByFilter(expectedEntities);
+        SetupGetByFilter(expectedEntities, WithAvarageRatings(workshopIds));
+
+        // Act
+        var result = await workshopService.GetByFilter(filter)
+            .ConfigureAwait(false);
+
+        // Assert
+        result.Should()
+            .BeEquivalentTo(expectedResult);
+
+        workshopRepository.VerifyAll();
+        averageRatingServiceMock.VerifyAll();
+        mapperMock.VerifyAll();
+    }
+
     #endregion
 
     #region With
@@ -731,6 +765,7 @@ public class WorkshopServiceTests
                 AvailableSeats = 30,
                 Title = "10",
                 DateTimeRanges = new List<DateTimeRange>(),
+                Keywords = "хореографічний",
             },
             new Workshop()
             {
@@ -740,6 +775,7 @@ public class WorkshopServiceTests
                 Status = WorkshopStatus.Open,
                 AvailableSeats = 30,
                 Title = "9",
+                Keywords = "атлетика",
             },
             new Workshop()
             {

@@ -8,6 +8,8 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.BusinessLogic.Services.SearchString;
+
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -19,6 +21,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService,
     private readonly IMapper mapper;
     private readonly ICurrentUserService currentUserService;
     private readonly IApiErrorService apiErrorService;
+    private readonly ISearchStringService searchStringService;
 
     public MinistryAdminService(
         IHttpClientFactory httpClientFactory,
@@ -29,7 +32,8 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService,
         IEntityRepositorySoftDeleted<string, User> userRepository,
         IMapper mapper,
         ICurrentUserService currentUserService,
-        IApiErrorService apiErrorService)
+        IApiErrorService apiErrorService,
+        ISearchStringService searchStringService)
         : base(httpClientFactory, communicationConfig, logger)
     {
         this.authorizationServerConfig = (authorizationServerConfig ?? throw new ArgumentNullException(nameof(authorizationServerConfig))).Value;
@@ -38,6 +42,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService,
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.apiErrorService = apiErrorService;
+        this.searchStringService = searchStringService ?? throw new ArgumentNullException(nameof(searchStringService));
     }
 
     public async Task<MinistryAdminDto> GetByIdAsync(string id)
@@ -413,7 +418,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService,
                       && x.Institution.RelatedProviders.Any(rp => rp.Id == providerId)).ConfigureAwait(false);
     }
 
-    private static Expression<Func<InstitutionAdmin, bool>> PredicateBuild(MinistryAdminFilter filter)
+    private Expression<Func<InstitutionAdmin, bool>> PredicateBuild(MinistryAdminFilter filter)
     {
         var predicate = PredicateBuilder.True<InstitutionAdmin>();
 
@@ -421,7 +426,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService,
         {
             var tempPredicate = PredicateBuilder.False<InstitutionAdmin>();
 
-            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            foreach (var word in searchStringService.SplitSearchString(filter.SearchString))
             {
                 tempPredicate = tempPredicate.Or(
                     x => x.User.FirstName.Contains(word, StringComparison.InvariantCultureIgnoreCase)

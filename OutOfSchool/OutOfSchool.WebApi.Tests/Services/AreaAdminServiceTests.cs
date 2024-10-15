@@ -14,13 +14,13 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
@@ -33,6 +33,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class AreaAdminServiceTests
 {
     private readonly string email = "email@gmail.com";
+    private readonly string includeProperties = "Institution,User,CATOTTG.Parent.Parent";
 
     private Mock<ICodeficatorRepository> codeficatorRepositoryMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
@@ -46,6 +47,7 @@ public class AreaAdminServiceTests
     private Mock<IMinistryAdminService> institutionAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<IEntityRepositorySoftDeleted<string, User>> apiErrorServiceUserRepositoryMock;
+    private Mock<ISearchStringService> searchStringServiceMock;
 
     private AreaAdminService areaAdminService;
     private AreaAdmin areaAdmin;
@@ -97,6 +99,7 @@ public class AreaAdminServiceTests
         apiErrorServiceUserRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         var apiErrorServiceLogger = new Mock<ILogger<ApiErrorService>>();
         apiErrorService = new ApiErrorService(apiErrorServiceUserRepositoryMock.Object, apiErrorServiceLogger.Object);
+        searchStringServiceMock = new Mock<ISearchStringService>();
 
         areaAdminService = new AreaAdminService(
             codeficatorRepositoryMock.Object,
@@ -111,7 +114,8 @@ public class AreaAdminServiceTests
             currentUserServiceMock.Object,
             institutionAdminServiceMock.Object,
             regionAdminServiceMock.Object,
-            apiErrorService);
+            apiErrorService,
+            searchStringServiceMock.Object);
     }
 
     [Test]
@@ -330,5 +334,73 @@ public class AreaAdminServiceTests
         Assert.AreEqual(expected.Group, result.Group);
         Assert.AreEqual(expected.Code, result.Code);
         Assert.AreEqual(expected.Message, result.Message);
+    }
+
+    [Test]
+    public async Task GetByFilter_WhenFilteredBySearchString_ShouldReturnEntities()
+    {
+        // Arrange
+        var filter = new AreaAdminFilter()
+        {
+            SearchString = " , admin@",
+        };
+
+        areaAdmins[0].User.Email = "admin@otg.com";
+        areaAdmins[1].User.Email = "admin@otg.org";
+
+        var filteredAreaAdmins = new List<AreaAdmin>() { areaAdmins[0], areaAdmins[1] };
+        var expectedAdminDtos = mapper.Map<List<AreaAdminDto>>(filteredAreaAdmins);
+
+        SetupCommonMocks(filter, filteredAreaAdmins, ["admin@"]);
+
+        var expectedResult = new SearchResult<AreaAdminDto>()
+        {
+            TotalAmount = filteredAreaAdmins.Count,
+            Entities = expectedAdminDtos,
+        };
+
+        // Act
+        var result = await areaAdminService.GetByFilter(filter)
+            .ConfigureAwait(false);
+
+        // Assert
+        result.Should()
+            .BeEquivalentTo(expectedResult);
+
+        searchStringServiceMock.VerifyAll();
+        currentUserServiceMock.VerifyAll();
+        areaAdminRepositoryMock.VerifyAll();
+    }
+
+    private void SetupCommonMocks(
+        AreaAdminFilter filter = null,
+        List<AreaAdmin> filteredAreaAdmins = null,
+        string[] searchWords = null,
+        bool isRegionAdmin = false,
+        bool isMinistryAdmin = false)
+    {
+        searchStringServiceMock.Setup(s => s.SplitSearchString(
+            It.Is<string>(x => x == filter.SearchString)))
+            .Returns(searchWords);
+
+        currentUserServiceMock.Setup(s => s.IsMinistryAdmin())
+            .Returns(isMinistryAdmin);
+
+        currentUserServiceMock.Setup(s => s.IsRegionAdmin())
+            .Returns(isRegionAdmin);
+
+        areaAdminRepositoryMock.Setup(
+            r => r.Count(It.IsAny<Expression<Func<AreaAdmin, bool>>>()))
+            .ReturnsAsync(filteredAreaAdmins.Count);
+
+        areaAdminRepositoryMock.Setup(repo => repo.Get(
+                It.Is<int>(x => x == filter.From),
+                It.Is<int>(x => x == filter.Size),
+                It.Is<string>(x => x == includeProperties),
+                It.IsAny<Expression<Func<AreaAdmin, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<AreaAdmin, dynamic>>, SortDirection>>(),
+                It.Is<bool>(x => x)))
+            .Returns(filteredAreaAdmins.AsQueryable()
+            .BuildMock());
     }
 }
