@@ -3,8 +3,6 @@ using System.Collections.Generic;
 
 using Bogus;
 
-using Nest;
-
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 

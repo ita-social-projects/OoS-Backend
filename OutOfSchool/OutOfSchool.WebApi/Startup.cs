@@ -16,6 +16,7 @@ using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Config.SearchString;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
+using OutOfSchool.BusinessLogic.Services.Elasticsearch;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
@@ -269,6 +270,17 @@ public static class Startup
             .Get<ElasticConfig>();
         services.Configure<ElasticConfig>(configuration.GetSection(ElasticConfig.Name));
         services.AddElasticsearch(elasticConfig);
+
+        // ElasticPinger must precede ElasticIndexEnsureCreatedHostedService
+        services.AddSingleton<ElasticPinger>();
+        services.AddSingleton<IElasticsearchHealthService>(provider => provider.GetService<ElasticPinger>());
+        services.AddHostedService<ElasticPinger>(provider => provider.GetService<ElasticPinger>());
+
+        if (elasticConfig.EnsureIndex)
+        {
+            services.AddHostedService<ElasticIndexEnsureCreatedHostedService>();
+        }
+
         services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
         services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
 
@@ -406,10 +418,6 @@ public static class Startup
         services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
         services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
-        services.AddSingleton<ElasticPinger>();
-        services.AddSingleton<IElasticsearchHealthService>(provider => provider.GetService<ElasticPinger>());
-        services.AddHostedService<ElasticPinger>(provider => provider.GetService<ElasticPinger>());
-
         services.AddSingleton(Log.Logger);
         services.AddVersioning();
         var swaggerConfig = configuration.GetSection(SwaggerConfig.Name).Get<SwaggerConfig>();
@@ -470,7 +478,7 @@ public static class Startup
         services.AddProxy();
 
         var quartzConfig = configuration.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
-        await services.AddDefaultQuartz(
+        services.AddDefaultQuartz(
             configuration,
             quartzConfig.ConnectionStringKey,
             q =>

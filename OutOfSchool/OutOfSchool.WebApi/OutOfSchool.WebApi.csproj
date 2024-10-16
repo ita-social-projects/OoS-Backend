@@ -14,6 +14,7 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="CsvHelper" />
+        <PackageReference Include="Elastic.CommonSchema" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />
         <Protobuf Include="..\OutOfSchool.GRPC\Protos\ProviderAdmin.proto" GrpcServices="Client" />
