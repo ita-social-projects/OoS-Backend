@@ -5,7 +5,7 @@ using OutOfSchool.BusinessLogic.Models.ProvidersInfo;
 namespace OutOfSchool.WebApi.Controllers.V1;
 
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/providers")]
 public class ExternalExportProviderController : ControllerBase
 {

@@ -3,11 +3,12 @@
     <BaseVersion>8.0.0</BaseVersion>
     <EFCoreVersion>8.0.7</EFCoreVersion>
     <OpenIdDictVersion>5.8.0</OpenIdDictVersion>
-    <SwaggerVersion>6.3.1</SwaggerVersion>
+    <SwaggerVersion>6.9.0</SwaggerVersion>
     <QuartzVersion>3.5.0</QuartzVersion>
     <RedisVersion>6.0.21</RedisVersion>
     <AutoMapVersion>12.0.1</AutoMapVersion>
     <ElasticApmVersion>1.27.1</ElasticApmVersion>
+    <VersioningVersion>8.1.0</VersioningVersion>
   </PropertyGroup>
   <ItemGroup>
     <!--Basic Microsoft Packages-->
@@ -80,12 +81,11 @@
     <PackageVersion Include="Microsoft.FeatureManagement" Version="2.5.1" />
     <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="2.5.1" />
     <!--Swagger & Versioning-->
-    <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="$(SwaggerVersion)" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="$(SwaggerVersion)" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="$(SwaggerVersion)" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="$(SwaggerVersion)" />
     <PackageVersion Include="Swashbuckle.AspNetCore.Newtonsoft" Version="$(SwaggerVersion)" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.0.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.0.0" />
+    <PackageVersion Include="Asp.Versioning.Mvc" Version="$(VersioningVersion)" />
+    <PackageVersion Include="Asp.Versioning.Http" Version="$(VersioningVersion)" />
+    <PackageVersion Include="Asp.Versioning.Mvc.ApiExplorer" Version="$(VersioningVersion)" />
     <!--JSON-->
     <PackageVersion Include="JsonSubTypes" Version="1.9.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Asp.Versioning.ApiExplorer;
 using AutoMapper;
 using Elastic.Apm.DiagnosticSource;
 using Elastic.Apm.Elasticsearch;

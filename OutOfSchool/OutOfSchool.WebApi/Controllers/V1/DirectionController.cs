@@ -9,7 +9,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// Controller with CRUD operations for Direction entity.
 /// </summary>
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 [HasPermission(Permissions.SystemManagement)]
 public class DirectionController : ControllerBase

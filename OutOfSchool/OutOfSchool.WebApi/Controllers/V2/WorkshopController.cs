@@ -15,7 +15,7 @@ namespace OutOfSchool.WebApi.Controllers.V2;
 /// </summary>
 [ApiController]
 [FeatureGate(nameof(Feature.Images))]
-[ApiVersion("2.0")]
+[AspApiVersion(2)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class WorkshopController : ControllerBase
 {
