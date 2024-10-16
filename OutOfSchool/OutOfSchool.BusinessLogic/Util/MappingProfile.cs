@@ -693,6 +693,6 @@ public class MappingProfile : Profile
         where TSource : class, IHasEntityImages<TSource>
         where TDestination : class, IHasImages
         => mappings
-            .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId).ToList()))
+            .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
         ;
 }
