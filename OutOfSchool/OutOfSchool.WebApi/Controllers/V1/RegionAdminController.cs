@@ -10,7 +10,7 @@ using OutOfSchool.Services.Enums;
 namespace OutOfSchool.WebApi.Controllers;
 
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class RegionAdminController : Controller
 {

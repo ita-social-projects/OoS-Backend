@@ -7,7 +7,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// <summary>
 /// Controller with operations to get popular workshops and categories.
 /// </summary>
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/popular")]
 [ApiController]
 public class StatisticController : ControllerBase

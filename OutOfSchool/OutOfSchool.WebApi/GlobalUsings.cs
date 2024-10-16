@@ -43,3 +43,6 @@ global using OutOfSchool.WebApi.Middlewares;
 global using OutOfSchool.WebApi.Util;
 global using Serilog;
 global using Serilog.Context;
+
+// Needed to solve ambiguity of new Asp.Versioning objects and olv AspNetCore.Mvc objects
+global using AspApiVersionAttribute = Asp.Versioning.ApiVersionAttribute;

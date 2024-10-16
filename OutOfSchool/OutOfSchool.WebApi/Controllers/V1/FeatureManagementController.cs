@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 namespace OutOfSchool.WebApi.Controllers.V1;
 
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class FeatureManagementController : ControllerBase
 {

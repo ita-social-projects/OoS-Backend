@@ -1,4 +1,5 @@
 using System.Reflection;
+using Asp.Versioning.ApiExplorer;
 using Microsoft.OpenApi.Models;
 
 namespace OutOfSchool.WebApi.Extensions.Startup;
