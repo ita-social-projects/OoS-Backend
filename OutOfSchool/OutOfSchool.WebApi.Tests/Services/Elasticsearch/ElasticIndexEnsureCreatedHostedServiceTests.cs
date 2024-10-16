@@ -81,13 +81,15 @@ public class ElasticIndexEnsureCreatedHostedServiceTests
     {
         // Arrange
         IndexName expectedIndexName = TestIndexName;
-        Indices testIndices = TestIndexName;
         elasticHealthServiceMock.Setup(x => x.IsHealthy).Returns(true);
         var response = TestableResponseFactory
-            .CreateResponse<Elastic.Clients.Elasticsearch.IndexManagement.ExistsResponse>(
-            new(), StatusCodes.Status404NotFound, false);
+            .CreateSuccessfulResponse<CreateIndexResponse>(
+            new(), StatusCodes.Status200OK);
         elasticClientMock.Setup(
-            x => x.Indices.ExistsAsync(testIndices, CancellationToken.None))
+            x => x.Indices.CreateAsync(
+                expectedIndexName,
+                It.IsAny<Action<CreateIndexRequestDescriptor<WorkshopES>>>(),
+                CancellationToken.None))
             .Returns(Task.FromResult(response));
 
         // Act
@@ -100,12 +102,10 @@ public class ElasticIndexEnsureCreatedHostedServiceTests
             Times.Once);
         elasticHealthServiceMock.Verify(x => x.IsHealthy, Times.Exactly(2));
         elasticClientMock.Verify(
-            x => x.Indices.ExistsAsync(testIndices, CancellationToken.None), Times.Once);
-        elasticClientMock.Verify(
             x => x.Indices.CreateAsync(
-            expectedIndexName,
-            It.IsAny<Action<CreateIndexRequestDescriptor<WorkshopES>>>(),
-            CancellationToken.None),
+                expectedIndexName,
+                It.IsAny<Action<CreateIndexRequestDescriptor<WorkshopES>>>(),
+                CancellationToken.None),
             Times.Once);
     }
 
@@ -114,13 +114,15 @@ public class ElasticIndexEnsureCreatedHostedServiceTests
     {
         // Arrange
         IndexName expectedIndexName = TestIndexName;
-        Indices testIndices = TestIndexName;
         elasticHealthServiceMock.Setup(x => x.IsHealthy).Returns(true);
         var response = TestableResponseFactory
-            .CreateSuccessfulResponse<Elastic.Clients.Elasticsearch.IndexManagement.ExistsResponse>(
-            new(), StatusCodes.Status200OK);
+            .CreateResponse<CreateIndexResponse>(
+            new(), StatusCodes.Status400BadRequest, false);
         elasticClientMock.Setup(
-            x => x.Indices.ExistsAsync(testIndices, CancellationToken.None))
+            x => x.Indices.CreateAsync(
+                expectedIndexName,
+                It.IsAny<Action<CreateIndexRequestDescriptor<WorkshopES>>>(),
+                CancellationToken.None))
             .Returns(Task.FromResult(response));
 
         // Act
@@ -131,15 +133,13 @@ public class ElasticIndexEnsureCreatedHostedServiceTests
         serviceProviderMock.Verify(
             x => x.GetService(typeof(IElasticsearchHealthService)),
             Times.Once);
-        elasticClientMock.Verify(
-            x => x.Indices.ExistsAsync(testIndices, CancellationToken.None),
-            Times.Once);
+        elasticHealthServiceMock.Verify(x => x.IsHealthy, Times.Exactly(2));
         elasticClientMock.Verify(
             x => x.Indices.CreateAsync(
-            It.IsAny<IndexName>(),
-            It.IsAny<Action<CreateIndexRequestDescriptor<WorkshopES>>>(),
-            It.IsAny<CancellationToken>()),
-            Times.Never);
+                expectedIndexName,
+                It.IsAny<Action<CreateIndexRequestDescriptor<WorkshopES>>>(),
+                CancellationToken.None),
+            Times.Once);
     }
 
     [Test]

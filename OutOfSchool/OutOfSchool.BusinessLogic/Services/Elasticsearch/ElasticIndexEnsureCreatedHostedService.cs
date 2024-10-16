@@ -51,17 +51,27 @@ public class ElasticIndexEnsureCreatedHostedService : IHostedService
 
         if (elasticHealthService.IsHealthy)
         {
-            var existsResponse = await client.Indices.ExistsAsync(indexName).ConfigureAwait(false);
-            if (existsResponse.ApiCallDetails.HttpStatusCode == StatusCodes.Status404NotFound)
-            {
-                await client.Indices.CreateAsync(indexName, configurator.Configure())
+            // We don't check if the index exists before creating it,
+            // because ElasticHealthService.IsHealthy doesn't guarantee
+            // that Elasticsearch is running at the moment.
+            // Also to reduce the number of requests to the Elasticsearch.
+            // When attempting to create an index with an existing index name,
+            // Elasticsearch v8.15.6 CreateAsync returns a response containing
+            // 400 BadRequest error.
+            var createIndexResponse = await client.Indices.CreateAsync(indexName, configurator.Configure())
                     .ConfigureAwait(false);
+            if (createIndexResponse.IsValidResponse)
+            {
                 logger.LogInformation("Elastic index {IndexName} created successfully", indexName);
+            }
+            else
+            {
+                logger.LogError(createIndexResponse.DebugInformation);
             }
         }
         else
         {
-            logger.LogError("Failed to ensure Elastic index {IndexName}: connection timeout", indexName);
+            logger.LogError("Failed to ensure Elastic index {IndexName}: Elastic is not healthy", indexName);
         }
     }
 
