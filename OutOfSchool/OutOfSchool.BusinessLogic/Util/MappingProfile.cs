@@ -1,6 +1,7 @@
 using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 using GrpcService;
+using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Achievement;
 using OutOfSchool.BusinessLogic.Models.Application;
@@ -16,6 +17,7 @@ using OutOfSchool.BusinessLogic.Models.ProvidersInfo;
 using OutOfSchool.BusinessLogic.Models.SocialGroup;
 using OutOfSchool.BusinessLogic.Models.StatisticReports;
 using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
+using OutOfSchool.BusinessLogic.Models.Tag;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Util.CustomComparers;
 using OutOfSchool.Common.Enums;
@@ -110,6 +112,9 @@ public class MappingProfile : Profile
         CreateMap<WorkshopV2Dto, Workshop>()
             .IncludeBase<WorkshopDto, Workshop>();
 
+        CreateMap<Workshop, WorkshopCreate>()
+            .IncludeBase<Workshop, WorkshopBaseDto>();
+
         CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>().ReverseMap();
 
         CreateMap<WorkshopStatusDto, WorkshopStatusWithTitleDto>()
@@ -122,6 +127,22 @@ public class MappingProfile : Profile
 
         CreateMap<Address, AddressInfoDto>()
              .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
+
+        CreateMap<Tag, TagDto>()
+            .ForMember(dest => dest.Name, opt => opt.MapFrom((src, dest, destMember, context) =>
+            context.Items.ContainsKey("Localization") &&
+            context.Items["Localization"] is LocalizationType loc &&
+            loc == LocalizationType.En ? src.NameEn : src.Name));
+
+        CreateMap<Tag, TagCreate>().ReverseMap();
+
+        CreateMap<SocialGroup, SocialGroupDto>()
+            .ForMember(dest => dest.Name, opt => opt.MapFrom((src, dest, destMembet, context) =>
+            context.Items.ContainsKey("Localization") &&
+            context.Items["Localization"] is LocalizationType loc &&
+            loc == LocalizationType.En ? src.NameEn : src.Name));
+
+        CreateMap<SocialGroup, SocialGroupCreate>().ReverseMap();
 
         CreateSoftDeletedMap<AddressDto, Address>()
             .ForMember(dest => dest.CATOTTG, opt => opt.Ignore())
@@ -299,10 +320,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.AmountOfPendingApplications, opt => opt.MapFrom(src => src.Applications.AmountOfPendingApplications()))
             .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats()))
             .ForMember(dest => dest.UnreadMessages, opt => opt.Ignore());
-
-        CreateMap<SocialGroup, SocialGroupDto>().ReverseMap();
-
-        CreateMap<SocialGroup, SocialGroupCreate>().ReverseMap();
 
         CreateMap<Child, ChildDto>()
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty))

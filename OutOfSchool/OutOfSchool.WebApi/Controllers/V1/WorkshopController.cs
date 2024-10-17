@@ -260,13 +260,13 @@ public class WorkshopController : ControllerBase
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopAddNew)]
     [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopBaseDto))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopCreate))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] WorkshopBaseDto dto)
+    public async Task<IActionResult> Create([FromBody] WorkshopCreate dto)
     {
         if (dto == null)
         {
@@ -315,7 +315,6 @@ public class WorkshopController : ControllerBase
         // here we will get "false" if workshop was created by assistant provider admin
         // because user is not currently associated with new workshop
         // so we can update information to allow assistant manage created workshop
-
         if (!(await IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false)))
         {
             var userId = User.FindFirst("sub")?.Value;
@@ -340,13 +339,13 @@ public class WorkshopController : ControllerBase
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopEdit)]
     [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopBaseDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopCreate))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update([FromBody] WorkshopBaseDto dto)
+    public async Task<IActionResult> Update([FromBody] WorkshopCreate dto)
     {
         if (dto == null)
         {

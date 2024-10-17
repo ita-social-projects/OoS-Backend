@@ -30,5 +30,8 @@ internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
             .HasMaxLength(Constants.MaxWorkshopShortTitleLength);
 
         base.Configure(builder);
+
+        builder.HasMany(x => x.Tags)
+            .WithMany(x => x.Workshops);
     }
 }

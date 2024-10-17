@@ -15,7 +15,7 @@ public interface IWorkshopServicesCombiner
     /// </summary>
     /// <param name="dto">Entity to add.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopBaseDto"/>.</returns>
-    Task<WorkshopBaseDto> Create(WorkshopBaseDto dto);
+    Task<WorkshopCreate> Create(WorkshopCreate dto);
 
     /// <summary>
     /// Get all workshop cards (Id, Title) with the specified provider's Id.
@@ -59,7 +59,7 @@ public interface IWorkshopServicesCombiner
     /// contains the updated <see cref="WorkshopBaseDto"/>.
     /// If the operation fails, the <see cref="Result{WorkshopBaseDto}.OperationResult"/> property
     /// contains error information.</returns>
-    Task<Result<WorkshopBaseDto>> Update(WorkshopBaseDto dto);
+    Task<Result<WorkshopCreate>> Update(WorkshopCreate dto);
 
     /// <summary>
     /// Update status field for existing entity in the database.

@@ -56,7 +56,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopBaseDto> Create(WorkshopBaseDto dto)
+    public async Task<WorkshopCreate> Create(WorkshopCreate dto)
     {
         var workshop = await workshopService.Create(dto).ConfigureAwait(false);
 
@@ -84,12 +84,12 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
     }
 
     /// <inheritdoc/>
-    public async Task<Result<WorkshopBaseDto>> Update(WorkshopBaseDto dto)
+    public async Task<Result<WorkshopCreate>> Update(WorkshopCreate dto)
     {
         var currentWorkshop = await GetById(dto.Id, true).ConfigureAwait(false);
         if (currentWorkshop is null)
         {
-            return Result<WorkshopBaseDto>.Failed(new OperationError
+            return Result<WorkshopCreate>.Failed(new OperationError
             {
                 Code = HttpStatusCode.BadRequest.ToString(),
                 Description = Constants.WorkshopNotFoundErrorMessage,
@@ -98,7 +98,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
 
         if (!IsAvailableSeatsValidForWorkshop(dto.AvailableSeats, currentWorkshop))
         {
-            return Result<WorkshopBaseDto>.Failed(new OperationError
+            return Result<WorkshopCreate>.Failed(new OperationError
             {
                 Code = HttpStatusCode.BadRequest.ToString(),
                 Description = Constants.InvalidAvailableSeatsForWorkshopErrorMessage,
@@ -112,7 +112,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
                 updatedWorkshop.Id,
                 ElasticsearchSyncOperation.Update).ConfigureAwait(false);
 
-        return Result<WorkshopBaseDto>.Success(updatedWorkshop);
+        return Result<WorkshopCreate>.Success(updatedWorkshop);
     }
 
     /// <inheritdoc/>
