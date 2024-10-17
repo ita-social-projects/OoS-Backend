@@ -1,4 +1,8 @@
-﻿namespace OutOfSchool.BusinessLogic.Services.Communication;
+﻿using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace OutOfSchool.Common.Communication;
 
 public class RetryPolicyDelegatingHandler : DelegatingHandler
 {

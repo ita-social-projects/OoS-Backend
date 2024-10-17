@@ -18,6 +18,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -37,7 +38,7 @@ public class ExternalExportProviderServiceTests
         mockProviderRepository = new Mock<IProviderRepository>();
         mockWorkshopRepository = new Mock<IWorkshopRepository>();
         mockAverageRatingService = new Mock<IAverageRatingService>();
-        mockMapper = OutOfSchool.Tests.Common.TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        mockMapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         mockLogger = new Mock<ILogger<ExternalExportProviderService>>();
 
         externalExportProviderService = new ExternalExportProviderService(

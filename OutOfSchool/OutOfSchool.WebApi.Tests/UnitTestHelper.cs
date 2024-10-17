@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using Microsoft.EntityFrameworkCore;
-
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;

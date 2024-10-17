@@ -1,8 +1,10 @@
-﻿using System.Text;
-
+﻿using System;
+using System.IO;
+using System.Text;
 using Newtonsoft.Json;
+using OutOfSchool.BusinessLogic.Services.Communication;
 
-namespace OutOfSchool.BusinessLogic.Extensions;
+namespace OutOfSchool.Common.Extensions;
 
 public static class StreamExtensions
 {

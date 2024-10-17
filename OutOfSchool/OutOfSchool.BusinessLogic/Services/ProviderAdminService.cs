@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;

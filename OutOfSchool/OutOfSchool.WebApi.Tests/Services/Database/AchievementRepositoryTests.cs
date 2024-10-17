@@ -1,14 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.Tests.Common.TestDataGenerators;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
 

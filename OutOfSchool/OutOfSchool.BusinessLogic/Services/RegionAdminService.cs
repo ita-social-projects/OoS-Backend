@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;

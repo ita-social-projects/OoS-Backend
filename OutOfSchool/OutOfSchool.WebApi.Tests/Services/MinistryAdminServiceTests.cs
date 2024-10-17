@@ -18,6 +18,7 @@ using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
 using OutOfSchool.Services.Enums;
@@ -39,7 +40,7 @@ public class MinistryAdminServiceTests
     private Mock<IOptions<AuthorizationServerConfig>> identityServerConfig;
     private Mock<IOptions<CommunicationConfig>> communicationConfig;
     private Mock<IInstitutionAdminRepository> institutionAdminRepositoryMock;
-    private Mock<IEntityRepositorySoftDeleted<string, OutOfSchool.Services.Models.User>> userRepositoryMock;
+    private Mock<IEntityRepositorySoftDeleted<string, User>> userRepositoryMock;
     private IMapper mapper;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IEntityRepositorySoftDeleted<string, User>> apiErrorServiceUserRepositoryMock;
