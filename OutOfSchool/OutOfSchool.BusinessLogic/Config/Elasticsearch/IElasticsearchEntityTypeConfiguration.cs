@@ -1,4 +1,4 @@
-using Nest;
+using Elastic.Clients.Elasticsearch.IndexManagement;
 
 namespace OutOfSchool.BusinessLogic.Config.Elasticsearch;
 
@@ -12,5 +12,5 @@ public interface IElasticsearchEntityTypeConfiguration
     /// </summary>
     /// <param name="indexDescriptor">descriptor for configuring.</param>
     /// <returns>An instance of <see cref="ICreateIndexRequest"/>.</returns>
-    ICreateIndexRequest Configure(CreateIndexDescriptor indexDescriptor);
+    Action<CreateIndexRequestDescriptor<WorkshopES>> Configure();
 }

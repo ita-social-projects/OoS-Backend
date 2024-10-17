@@ -1,17 +1,16 @@
 using System;
 using System.Collections.Generic;
-using Nest;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.ElasticsearchData.Models;
 
-// TODO: check Nested attribute
  public class WorkshopES : IHasRating
 {
-    public const string TitleKeyword = "title.keyword";
+    public const string KeywordSuffix = "keyword";
+    public const string SortSuffix = "sort";
+    public const string TextSuffix = "text";
 
-    [Keyword]
     public Guid Id { get; set; }
 
     public string Title { get; set; }
@@ -24,7 +23,6 @@ namespace OutOfSchool.ElasticsearchData.Models;
 
     public int NumberOfRatings { get; set; }
 
-    [Keyword]
     public Guid ProviderId { get; set; }
 
     public string ProviderTitle { get; set; }
@@ -51,12 +49,10 @@ namespace OutOfSchool.ElasticsearchData.Models;
 
     public AddressES Address { get; set; }
 
-    [Keyword]
     public Guid? InstitutionHierarchyId { get; set; }
 
     public string InstitutionHierarchy { get; set; }
 
-    [Keyword]
     public Guid? InstitutionId { get; set; }
 
     public string Institution { get; set; }
@@ -67,7 +63,6 @@ namespace OutOfSchool.ElasticsearchData.Models;
 
     public List<long> DirectionIds { get; set; }
 
-    [Nested]
     public List<DateTimeRangeES> DateTimeRanges { get; set; }
 
     public WorkshopStatus Status { get; set; }

@@ -8,6 +8,10 @@ public class ElasticConfig
 
     public bool EnsureIndex { get; set; }
 
+    public int CheckConnectivityDelayMs { get; set; }
+
+    public int ConnectionWaitingTimeSec { get; set; }
+
     public bool EnableDebugMode { get; set; }
 
     [Required]

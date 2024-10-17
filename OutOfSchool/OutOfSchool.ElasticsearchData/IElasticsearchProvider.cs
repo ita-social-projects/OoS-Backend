@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Nest;
+using Elastic.Clients.Elasticsearch;
 using OutOfSchool.ElasticsearchData.Models;
 
 namespace OutOfSchool.ElasticsearchData;
@@ -22,8 +22,7 @@ public interface IElasticsearchProvider<TEntity, TSearch>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     /// The task result contains the status of operation that was proceeded in Elasticsearch.
     /// If entity Id does not exist in the base than the status will be <see cref="Result.Created"/>.
-    /// If entity with specified Id already exists in the base than the status will be <see cref="Result.Updated"/>.
-    /// In case of any error occurs the status will be <see cref="Result.Error"/>.</returns>
+    /// If entity with specified Id already exists in the base than the status will be <see cref="Result.Updated"/>.</returns>
     Task<Result> IndexEntityAsync(TEntity entity);
 
     /// <summary>
@@ -34,8 +33,7 @@ public interface IElasticsearchProvider<TEntity, TSearch>
     /// The task result contains the status of operation that was proceeded in Elasticsearch.
     /// If entity Id does not exist in the base than the status will be <see cref="Result.Created"/>.
     /// If entity with specified Id already exists in the base than the status will be <see cref="Result.Updated"/>.
-    /// If entity with specified Id is already updated in the base than the status will be <see cref="Result.Noop"/>.
-    /// In case of any error occurs the status will be <see cref="Result.Error"/>.</returns>
+    /// If entity with specified Id is already updated in the base than the status will be <see cref="Result.NoOp"/>..</returns>
     Task<Result> UpdateEntityAsync(TEntity entity);
 
     /// <summary>
@@ -45,8 +43,7 @@ public interface IElasticsearchProvider<TEntity, TSearch>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     /// The task result contains the status of operation that was proceeded in Elasticsearch.
     /// If entity Id does not exist in the base than the status will be <see cref="Result.NotFound"/>.
-    /// If entity with specified Id was successfuly deleted from the base than the status will be <see cref="Result.Deleted"/>.
-    /// In case of any error occurs the status will be <see cref="Result.Error"/>.</returns>
+    /// If entity with specified Id was successfuly deleted from the base than the status will be <see cref="Result.Deleted"/>.</returns>
     Task<Result> DeleteEntityAsync(TEntity entity);
 
     /// <summary>
@@ -66,11 +63,11 @@ public interface IElasticsearchProvider<TEntity, TSearch>
     /// The internal implementation is based on BulkAll-method.
     /// </summary>
     /// <param name="source">The source from which entities will be retrieved.</param>
-    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
-    /// The task result contains the status of operation that was proceeded in Elasticsearch.
+    /// <returns>A <see cref="Result"/> representing the result of the operation.
+    /// The result contains the status of operation that was proceeded in Elasticsearch.
     /// If successfull status will be <see cref="Result.Updated"/>.</returns>
     /// <exception cref="Exception">If response from the Elasticsearch server was Invalid.</exception>
-    Task<Result> IndexAll(IEnumerable<TEntity> source);
+    Result IndexAll(IEnumerable<TEntity> source);
 
     /// <summary>
     /// Use this method to search entities that match the filter's parameters.
@@ -83,12 +80,13 @@ public interface IElasticsearchProvider<TEntity, TSearch>
     Task<SearchResultES<TEntity>> Search(TSearch filter = null);
 
     /// <summary>
-    /// Use this method to check if Elasticsearch is available.
+    /// Use this method to delete specific entities in the index.
     /// </summary>
+    /// <param name="ids">The Ids of the entities that will be deleted from the index.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
-    /// The task result contains true if server is available.</returns>
-    Task<bool> PingServerAsync();
-
+    /// The task result contains the status of operation that was proceeded in Elasticsearch.
+    /// If entities with specified Ids was successfuly deleted from the base than the status will be <see cref="Result.Deleted"/>.</returns>
+    /// <exception cref="Exception">If response from the Elasticsearch server was Invalid.</exception>
     Task<Result> DeleteRangeOfEntitiesByIdsAsync(IEnumerable<Guid> ids);
 
     /// <summary>

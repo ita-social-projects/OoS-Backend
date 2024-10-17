@@ -15,6 +15,7 @@ using OutOfSchool.BusinessLogic.Models.SocialGroup;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
@@ -910,7 +911,7 @@ public class ApplicationControllerTests
             ProviderTitle = w.ProviderTitle,
             ProviderOwnership = w.ProviderOwnership,
             Title = w.Title,
-            PayRate = (OutOfSchool.Common.Enums.PayRateType)w.PayRate,
+            PayRate = (PayRateType)w.PayRate,
             CoverImageId = w.CoverImageId,
             MinAge = w.MinAge,
             MaxAge = w.MaxAge,

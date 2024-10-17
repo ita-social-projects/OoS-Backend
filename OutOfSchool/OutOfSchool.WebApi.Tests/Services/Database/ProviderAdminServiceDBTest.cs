@@ -17,6 +17,7 @@ using OutOfSchool.BusinessLogic.Services.ProviderAdminOperations;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Common.Config;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;

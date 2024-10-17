@@ -13,7 +13,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// Controller for chat operations between Parent and Provider.
 /// </summary>
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
 [Authorize(Roles = "provider,parent")]
 public class ChatWorkshopController : ControllerBase

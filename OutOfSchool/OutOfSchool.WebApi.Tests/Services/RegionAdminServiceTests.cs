@@ -18,6 +18,7 @@ using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
 using OutOfSchool.Services.Enums;

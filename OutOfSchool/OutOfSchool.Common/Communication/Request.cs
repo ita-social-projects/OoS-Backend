@@ -1,4 +1,7 @@
-﻿namespace OutOfSchool.BusinessLogic.Services.Communication;
+﻿using System;
+using System.Collections.Generic;
+
+namespace OutOfSchool.Common.Communication;
 
 public class Request
 {

@@ -13,7 +13,6 @@ using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 
@@ -204,7 +203,7 @@ public class CompanyInformationServiceTests
             {
                 Id = Guid.NewGuid(),
                 Title = "About Portal",
-                Type = OutOfSchool.Services.Enums.CompanyInformationType.AboutPortal,
+                Type = CompanyInformationType.AboutPortal,
                 CompanyInformationItems = new List<CompanyInformationItem>
                 {
                     new CompanyInformationItem()
@@ -218,7 +217,7 @@ public class CompanyInformationServiceTests
             {
                 Id = Guid.NewGuid(),
                 Title = "Support Information",
-                Type = OutOfSchool.Services.Enums.CompanyInformationType.SupportInformation,
+                Type = CompanyInformationType.SupportInformation,
                 CompanyInformationItems = new List<CompanyInformationItem>
                 {
                     new CompanyInformationItem()

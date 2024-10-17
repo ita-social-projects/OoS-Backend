@@ -10,7 +10,7 @@ using OutOfSchool.BusinessLogic.Services.ProviderServices;
 namespace OutOfSchool.WebApi.Controllers.V1;
 
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class ProviderController : ControllerBase
 {

@@ -97,7 +97,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats()))
             .IncludeBase<object, IHasRating>()
             .ForMember(dest => dest.IsBlocked, opt => opt.MapFrom(src => src.Provider.IsBlocked))
-            .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(w => w.ExternalStorageId)))
+            .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(w => w.ExternalStorageId).ToList()))
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(src => src.CoverImageId))
             .ForMember(dest => dest.ProviderStatus, opt => opt.MapFrom(src => src.Provider.Status));
 
@@ -106,9 +106,7 @@ public class MappingProfile : Profile
 
         CreateMap<Workshop, WorkshopV2Dto>()
             .IncludeBase<Workshop, WorkshopDto>()
-            .Apply(MapImageIds)
-            .Apply(IgnoreAllImages)
-            ;
+            .Apply(IgnoreAllImages);
 
         CreateMap<WorkshopV2Dto, Workshop>()
             .IncludeBase<WorkshopDto, Workshop>();

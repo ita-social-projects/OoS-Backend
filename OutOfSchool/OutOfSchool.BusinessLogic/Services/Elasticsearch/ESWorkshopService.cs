@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
-using Elasticsearch.Net;
-using Nest;
+using Elastic.Clients.Elasticsearch;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 
@@ -49,21 +48,14 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
     {
         NullCheck(entity);
 
-        try
-        {
-            var resp = await esProvider.IndexEntityAsync(entity).ConfigureAwait(false);
+        var resp = await esProvider.IndexEntityAsync(entity).ConfigureAwait(false);
 
-            if (resp == Result.Error)
-            {
-                return false;
-            }
-        }
-        catch (ElasticsearchClientException)
+        if (resp == Result.Updated || resp == Result.Created)
         {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     /// <inheritdoc/>
@@ -71,45 +63,31 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
     {
         NullCheck(entity);
 
-        try
+        var rating = await averageRatingService.GetByEntityIdAsync(entity.Id).ConfigureAwait(false);
+
+        entity.Rating = rating?.Rate ?? default;
+
+        var resp = await esProvider.UpdateEntityAsync(entity).ConfigureAwait(false);
+
+        if (resp == Result.Updated || resp == Result.Created)
         {
-            var rating = await averageRatingService.GetByEntityIdAsync(entity.Id).ConfigureAwait(false);
-
-            entity.Rating = rating?.Rate ?? default;
-
-            var resp = await esProvider.UpdateEntityAsync(entity).ConfigureAwait(false);
-
-            if (resp == Result.Error)
-            {
-                return false;
-            }
-        }
-        catch (ElasticsearchClientException)
-        {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     /// <inheritdoc/>
     public async Task<bool> Delete(Guid id)
     {
-        try
-        {
-            var resp = await esProvider.DeleteEntityAsync(new WorkshopES() { Id = id }).ConfigureAwait(false);
+        var resp = await esProvider.DeleteEntityAsync(new WorkshopES() { Id = id }).ConfigureAwait(false);
 
-            if (resp == Result.Error)
-            {
-                return false;
-            }
-        }
-        catch (ElasticsearchClientException)
+        if (resp == Result.Deleted)
         {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     /// <inheritdoc/>
@@ -136,9 +114,9 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
 
             var resp = await esProvider.ReIndexAll(source).ConfigureAwait(false);
 
-            if (resp == Result.Error)
+            if (resp == Result.Updated)
             {
-                return false;
+                return true;
             }
         }
         catch (Exception)
@@ -146,7 +124,7 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
             return false;
         }
 
-        return true;
+        return false;
     }
 
     /// <inheritdoc/>
@@ -167,30 +145,21 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
     /// <inheritdoc/>
     public async Task<bool> PartialUpdate(Guid id, IPartial<WorkshopES> partialWorkshop)
     {
-        ArgumentNullException.ThrowIfNull(id);
+        var responce = await esProvider.PartialUpdateEntityAsync(id, partialWorkshop).ConfigureAwait(false);
 
-        try
+        if (responce == Result.Updated)
         {
-            var responce = await esProvider.PartialUpdateEntityAsync(id, partialWorkshop).ConfigureAwait(false);
-
-            if (responce == Result.Error)
-            {
-                return false;
-            }
-        }
-        catch (ElasticsearchClientException ex)
-        {
-            logger.LogError(ex, $"Partial update in ElasticSearch failed: {ex.Message}");
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     private void NullCheck(WorkshopES entity)
     {
         if (entity is null)
         {
+            logger.LogError("WorkshopES entity {Entity} is null or uninitialized.", entity);
             throw new ArgumentNullException($"{entity} is not set to an instance.");
         }
     }

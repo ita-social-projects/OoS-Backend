@@ -1,5 +1,6 @@
-using Nest;
-using OutOfSchool.BusinessLogic.Util.Elasticsearch;
+using Elastic.Clients.Elasticsearch.Analysis;
+using Elastic.Clients.Elasticsearch.IndexManagement;
+using OutOfSchool.ElasticsearchData.Extensions;
 
 namespace OutOfSchool.BusinessLogic.Config.Elasticsearch;
 
@@ -10,20 +11,36 @@ public class ElasticsearchWorkshopConfiguration : IElasticsearchEntityTypeConfig
 {
     private const string DefaultLanguage = "uk";
     private const string DefaultCountry = "UA";
+    private const string TimeFormat = "HH:mm:ss";
 
     /// <inheritdoc/>
-    public ICreateIndexRequest Configure(CreateIndexDescriptor indexDescriptor)
+    public Action<CreateIndexRequestDescriptor<WorkshopES>> Configure()
     {
-        _ = indexDescriptor ?? throw new ArgumentNullException(nameof(indexDescriptor));
-
-        indexDescriptor
-            .Map<WorkshopES>(x => x.AutoMap<WorkshopES>()
-                .Properties(ps => ps
-                    .Text(t => t
-                        .Name(n => n.Title)
-                        .Fields(f =>
-                            f.Custom(new IcuCollationKeywordProperty(DefaultLanguage, DefaultCountry))))));
-
-        return indexDescriptor;
+        return descriptor => descriptor
+            .Mappings(map => map
+                .Properties(p => p
+                    .Object(g => g.Address, c => c
+                        .Properties(p => p.GeoPoint(g => g.Address.Point)))
+                    .Nested(n => n.DateTimeRanges, c => c
+                        .Properties(dp => dp
+                            .Date(
+                                nameof(DateTimeRangeES.StartTime).FirstCharToLowerCase(),
+                                d => d.Format(TimeFormat))
+                            .Date(
+                                nameof(DateTimeRangeES.EndTime).FirstCharToLowerCase(),
+                                d => d.Format(TimeFormat))))
+                    .Keyword(n => n.DirectionIds)
+                    .Keyword(n => n.FormOfLearning)
+                    .Keyword(n => n.Id)
+                    .Keyword(n => n.InstitutionId)
+                    .Keyword(n => n.ProviderStatus)
+                    .Keyword(n => n.Status)
+                    .Keyword(n => n.Title, i => i
+                        .Fields(p => p
+                            .Text(WorkshopES.TextSuffix)
+                            .IcuCollation(WorkshopES.SortSuffix, ic => ic
+                                .Language(DefaultLanguage)
+                                .Country(DefaultCountry)
+                                .CaseFirst(IcuCollationCaseFirst.Upper))))));
     }
 }

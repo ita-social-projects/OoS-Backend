@@ -1,13 +1,20 @@
-﻿using System.Net.Http.Headers;
+﻿using System;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using OutOfSchool.Common.Communication.ICommunication;
+using OutOfSchool.Common.Config;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Models;
-using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
 
-namespace OutOfSchool.BusinessLogic.Services.Communication;
+namespace OutOfSchool.Common.Communication;
 
 public class CommunicationService : ICommunicationService
 {
@@ -33,7 +40,7 @@ public class CommunicationService : ICommunicationService
 
     protected ILogger<CommunicationService> Logger => logger;
 
-    public async virtual Task<Either<ErrorResponse, T>> SendRequest<T>(Request request)
+    public virtual async Task<Either<ErrorResponse, T>> SendRequest<T>(Request request)
     where T : IResponse
     {
         if (request is null)

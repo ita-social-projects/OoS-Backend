@@ -1,4 +1,4 @@
-﻿namespace OutOfSchool.BusinessLogic.Config;
+﻿namespace OutOfSchool.Common.Config;
 
 public class CommunicationConfig
 {

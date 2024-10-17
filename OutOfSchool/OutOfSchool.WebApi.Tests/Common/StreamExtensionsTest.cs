@@ -4,7 +4,7 @@ using System.Text;
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
-using OutOfSchool.BusinessLogic.Extensions;
+using OutOfSchool.Common.Extensions;
 
 namespace OutOfSchool.WebApi.Tests.Common;
 

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Asp.Versioning.ApiExplorer;
 using AutoMapper;
 using Elastic.Apm.DiagnosticSource;
 using Elastic.Apm.Elasticsearch;
@@ -15,13 +16,15 @@ using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Config.SearchString;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
-using OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
+using OutOfSchool.BusinessLogic.Services.Elasticsearch;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.BusinessLogic.Services.Strategies.WorkshopStrategies;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Common.Communication;
+using OutOfSchool.Common.Communication.ICommunication;
 using OutOfSchool.Common.Models;
 using OutOfSchool.EmailSender;
 using OutOfSchool.EmailSender.Services;
@@ -274,6 +277,17 @@ public static class Startup
             .Get<ElasticConfig>();
         services.Configure<ElasticConfig>(configuration.GetSection(ElasticConfig.Name));
         services.AddElasticsearch(elasticConfig);
+
+        // ElasticPinger must precede ElasticIndexEnsureCreatedHostedService
+        services.AddSingleton<ElasticPinger>();
+        services.AddSingleton<IElasticsearchHealthService>(provider => provider.GetService<ElasticPinger>());
+        services.AddHostedService<ElasticPinger>(provider => provider.GetService<ElasticPinger>());
+
+        if (elasticConfig.EnsureIndex)
+        {
+            services.AddHostedService<ElasticIndexEnsureCreatedHostedService>();
+        }
+
         services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
         services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
 
@@ -411,10 +425,6 @@ public static class Startup
         services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
         services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
-        services.AddSingleton<ElasticPinger>();
-        services.AddSingleton<IElasticsearchHealthService>(provider => provider.GetService<ElasticPinger>());
-        services.AddHostedService<ElasticPinger>(provider => provider.GetService<ElasticPinger>());
-
         services.AddSingleton(Log.Logger);
         services.AddVersioning();
         var swaggerConfig = configuration.GetSection(SwaggerConfig.Name).Get<SwaggerConfig>();
@@ -475,7 +485,7 @@ public static class Startup
         services.AddProxy();
 
         var quartzConfig = configuration.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
-        await services.AddDefaultQuartz(
+        services.AddDefaultQuartz(
             configuration,
             quartzConfig.ConnectionStringKey,
             q =>
