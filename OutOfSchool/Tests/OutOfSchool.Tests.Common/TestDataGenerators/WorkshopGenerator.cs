@@ -28,7 +28,19 @@ public static class WorkshopGenerator
         .RuleFor(x => x.Keywords, f => f.Lorem.Sentence())
         .RuleFor(x => x.PayRate, f => f.PickRandom<PayRateType>())
         .RuleFor(x => x.UpdatedAt, _ => DateTime.Now)
-        .RuleFor(x => x.FormOfLearning, f => f.PickRandom<FormOfLearning>());
+        .RuleFor(x => x.FormOfLearning, f => f.PickRandom<FormOfLearning>())
+        .RuleFor(x => x.ActiveFrom, (f, w) => f.Date.BetweenDateOnly(DateOnly.FromDateTime(DateTime.Now.AddDays(-30)), DateOnly.FromDateTime(DateTime.Now)))
+        .RuleFor(x => x.ActiveTo, f => f.Date.BetweenDateOnly(DateOnly.FromDateTime(DateTime.Now), DateOnly.FromDateTime(DateTime.Now.AddDays(300))))
+        .RuleFor(x => x.AdditionalDescription, f => f.Lorem.Sentence(3))
+        .RuleFor(x => x.AreThereBenefits, _ => true)
+        .RuleFor(x => x.PreferentialTermsOfParticipation, f => f.Lorem.Sentences(3))
+        .RuleFor(x => x.CompetitiveSelection, _ => true)
+        .RuleFor(x => x.CompetitiveSelectionDescription, f => f.Lorem.Sentence(3))
+        .RuleFor(x => x.IsPaid, _ => true)
+        .RuleFor(x => x.IsSelfFinanced, f => f.Random.Bool())
+        .RuleFor(x => x.IsSpecial, _ => false)
+        .RuleFor(x => x.ShortStay, f => f.Random.Bool())
+        .RuleFor(x => x.ShortTitle, f => f.Company.CompanyName());
 
     public static Workshop Generate() => faker.Generate();
 

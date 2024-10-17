@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.HeaderPropagation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
@@ -108,10 +109,10 @@ public static class Startup
         app.UseHeaderPropagation();
 
         app.MapHealthChecks("/healthz/ready", new HealthCheckOptions
-            {
-                Predicate = healthCheck => healthCheck.Tags.Contains("readiness"),
-                AllowCachingResponses = false,
-            })
+        {
+            Predicate = healthCheck => healthCheck.Tags.Contains("readiness"),
+            AllowCachingResponses = false,
+        })
             .RequireHost($"*:{app.Configuration.GetValue<int>("ApplicationPorts:HealthPort")}")
             .WithMetadata(new AllowAnonymousAttribute());
 
@@ -191,7 +192,12 @@ public static class Startup
                         Duration = cacheProfilesConfig.PublicDurationInSeconds,
                     });
             })
-            .AddNewtonsoftJson()
+
+            // to handle self-references during serialization
+            .AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+            })
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
