@@ -99,8 +99,20 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <exception cref="ArgumentNullException">If <see cref="WorkshopBaseDto"/> is null.</exception>
     public async Task<WorkshopBaseDto> Create(WorkshopBaseDto dto)
     {
-        _ = dto ?? throw new ArgumentNullException(nameof(dto));
+        ArgumentNullException.ThrowIfNull(dto);
         logger.LogInformation("Workshop creating was started.");
+
+        if (dto.MemberOfWorkshopId.HasValue && !await Exists((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false))
+        {
+            var errorMessage = $"The main workshop (with id = {dto.MemberOfWorkshopId}) for the workshop being created was not found.";
+            throw new InvalidOperationException(errorMessage);
+        }
+
+        if (dto.MemberOfWorkshopId.HasValue && (await GetById((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false)).MemberOfWorkshopId.HasValue)
+        {
+            var errorMessage = $"The main workshop (with ID = {dto.MemberOfWorkshopId}) for the workshop being created is a member of another workshop, so it cannot be the main workshop.";
+            throw new InvalidOperationException(errorMessage);
+        }
 
         if (dto.AvailableSeats is 0 or null)
         {
@@ -111,14 +123,9 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         workshop.Provider = await providerRepository.GetById(workshop.ProviderId).ConfigureAwait(false);
         workshop.ProviderOwnership = workshop.Provider.Ownership;
 
-        if (dto.DefaultTeacher is not null)
-        {
-            workshop.DefaultTeacher = mapper.Map<Teacher>(dto.DefaultTeacher);
-        }
-
         if (dto.Teachers is not null)
         {
-            workshop.Teachers = dto.Teachers.Select(dtoTeacher => mapper.Map<Teacher>(dtoTeacher)).ToList();
+            workshop.Teachers = dto.Teachers.Select(mapper.Map<Teacher>).ToList();
         }
 
         workshop.Status = WorkshopStatus.Open;
@@ -128,7 +135,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         var newWorkshop = await workshopRepository.RunInTransaction(operation).ConfigureAwait(false);
 
-        logger.LogInformation($"Workshop with Id = {newWorkshop?.Id} created successfully.");
+        logger.LogInformation("Workshop with Id = {newWorkshopId} created successfully.", newWorkshop.Id);
 
         return mapper.Map<WorkshopBaseDto>(newWorkshop);
     }
@@ -874,10 +881,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         {
             var tempPredicate = PredicateBuilder.False<Workshop>();
 
-            // Fix Rider ambiguous method with either char or string args
-            // ReSharper disable once UseCollectionExpression
-            // ReSharper disable once RedundantExplicitArrayCreation
-            foreach (var word in filter.SearchText.Split(new char[] {' ', ','}, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var word in filter.SearchText.Split([' ', ','], StringSplitOptions.RemoveEmptyEntries))
             {
                 tempPredicate = tempPredicate.Or(x => EF.Functions.Like(x.Keywords, $"%{word}%"));
             }
