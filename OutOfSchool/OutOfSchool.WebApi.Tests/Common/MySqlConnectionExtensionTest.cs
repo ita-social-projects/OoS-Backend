@@ -5,10 +5,10 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using NUnit.Framework;
+using OutOfSchool.BackgroundJobs.Config;
+using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Extensions.Startup;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Config.Quartz;
 
 namespace OutOfSchool.WebApi.Tests.Common;
 
@@ -129,7 +129,7 @@ public class MySqlConnectionExtensionTest
         var configuration = Setup(overridesNoGuidFormat);
 
         // Act & Assert
-        var ex = Assert.Throws<Exception>(() =>
+        var ex = Assert.Throws<ArgumentException>(() =>
             configuration.GetMySqlConnectionString<WebApiConnectionOptions>(
                 "Test",
                 options => new MySqlConnectionStringBuilder
@@ -153,7 +153,7 @@ public class MySqlConnectionExtensionTest
         var configuration = Setup(connectionString);
 
         // Act & Assert
-        var ex = Assert.Throws<Exception>(() =>
+        var ex = Assert.Throws<ArgumentException>(() =>
             configuration.GetMySqlConnectionString<WebApiConnectionOptions>("Something"));
         Assert.AreEqual(ex?.Message, "Provide a valid connection string or options");
     }
@@ -165,7 +165,7 @@ public class MySqlConnectionExtensionTest
         var configuration = Setup(connectionStringNoGuidFormat);
 
         // Act & Assert
-        var ex = Assert.Throws<Exception>(() =>
+        var ex = Assert.Throws<ArgumentException>(() =>
             configuration.GetMySqlConnectionString<WebApiConnectionOptions>("Test"));
         Assert.AreEqual(
             ex?.Message,

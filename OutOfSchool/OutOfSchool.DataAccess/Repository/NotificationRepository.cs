@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base;
 
 namespace OutOfSchool.Services.Repository;
 
@@ -25,20 +26,14 @@ public class NotificationRepository : SensitiveEntityRepository<Notification>, I
     /// <inheritdoc/>
     public async Task ClearNotifications()
     {
-        // TODO: replace it in EFCore7:
-        // await db.Notifications.Where(x => x.ReadDateTime == null && x.CreatedDateTime < dateNotReaded).ExecuteDeleteAsync();
-        // await db.Notifications.Where(x => x.ReadDateTime != null && x.CreatedDateTime < dateReaded).ExecuteDeleteAsync();
         var dateNotReaded = DateTimeOffset.UtcNow.AddYears(-1);
         var dateReaded = DateTimeOffset.UtcNow.AddMonths(-1);
 
-        await db.Database.ExecuteSqlRawAsync(
-            @"DELETE FROM Notifications WHERE ReadDateTime IS NULL AND CreatedDateTime < {0};
-            DELETE FROM Notifications WHERE ReadDateTime IS NOT NULL AND CreatedDateTime < {1};",
-            dateNotReaded,
-            dateReaded);
+        await db.Notifications.Where(x => (x.ReadDateTime == null && x.CreatedDateTime < dateNotReaded)
+            || (x.ReadDateTime != null && x.CreatedDateTime < dateReaded)).ExecuteDeleteAsync();
     }
 
-    /// <inheritdoc/>
+        /// <inheritdoc/>
     public async Task<IEnumerable<Notification>> SetReadDateTimeByType(string userId, NotificationType notificationType, DateTimeOffset dateTime)
     {
         var notifications = db.Notifications.Where(n => n.UserId == userId
@@ -49,5 +44,13 @@ public class NotificationRepository : SensitiveEntityRepository<Notification>, I
         await db.SaveChangesAsync();
 
         return await notifications.ToListAsync();
+    }
+
+    /// <inheritdoc/>
+    public Task SetReadDateTimeForAllUnreaded(string userId, DateTimeOffset dateTime)
+    {
+        return db.Notifications
+            .Where(n => n.UserId == userId && n.ReadDateTime == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(n => n.ReadDateTime, dateTime));
     }
 }

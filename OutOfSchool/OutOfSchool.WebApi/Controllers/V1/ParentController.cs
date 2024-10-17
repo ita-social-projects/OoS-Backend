@@ -1,8 +1,8 @@
-﻿using AutoMapper;
+using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Parent;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -10,7 +10,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// Controller with CRUD operations for parent entity.
 /// </summary>
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/parents")]
 public class ParentController : ControllerBase
 {
@@ -25,6 +25,32 @@ public class ParentController : ControllerBase
         IParentService serviceParent)
     {
         this.serviceParent = serviceParent ?? throw new ArgumentNullException(nameof(serviceParent));
+    }
+
+    /// <summary>
+    /// Create new Parent entity in DB.
+    /// </summary>
+    /// <param name="parentCreateDto">DTO containing necessary information to create new Parent.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [Authorize(Roles = "parent")]
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> Create([FromBody] ParentCreateDto parentCreateDto)
+    {
+        try
+        {
+            var parentDto = await serviceParent.Create(parentCreateDto).ConfigureAwait(false);
+
+            return CreatedAtAction(nameof(GetProfile), parentDto);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     /// <summary>
@@ -60,4 +86,29 @@ public class ParentController : ControllerBase
         var parentDto = await serviceParent.GetByUserId(userId).ConfigureAwait(false);
         return parentDto is not null ? Ok(parentDto) : NoContent();
     }
-}
+
+    /// <summary>
+    /// Block or unblock Parent entity based on the provided information.
+    /// </summary>
+    /// <param name="parentBlockUnblock">A DTO containing the necessary information to block or unblock a parent,
+    /// including the ParentId, the desired block status, and a reason.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [HasPermission(Permissions.ParentBlock)]
+    [HttpPost("BlockUnblockParent")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> BlockUnblockParent([FromBody] BlockUnblockParentDto parentBlockUnblock)
+    {
+        var result = await serviceParent.BlockUnblockParent(parentBlockUnblock).ConfigureAwait(false);
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(result.OperationResult);
+        }
+
+        return Ok();
+    }
+ }

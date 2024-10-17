@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using CsvHelper.Configuration.Attributes;
-using Microsoft.EntityFrameworkCore;
 
 namespace OutOfSchool.Services.Models;
 

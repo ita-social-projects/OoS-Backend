@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Common;
 using OutOfSchool.WebApi.Middlewares;
 
 namespace OutOfSchool.WebApi.Tests.Middlewares;
@@ -76,7 +77,7 @@ public class AuthorizationTokenMiddlewareTests
         httpContextMoq.Setup(x => x.Request.Headers)
             .Returns(new HeaderDictionary(headers));
 
-        var path = new PathString("/chathub");
+        var path = new PathString("/hubs");
         httpContextMoq.Setup(x => x.Request.Path)
             .Returns(new PathString(path));
 
@@ -104,7 +105,7 @@ public class AuthorizationTokenMiddlewareTests
         httpContextMoq.Setup(x => x.Request.Headers)
             .Returns(new HeaderDictionary(headers));
 
-        var path = new PathString("/chathub/workshop");
+        var path = new PathString(Constants.PathToChatHub);
         httpContextMoq.Setup(x => x.Request.Path)
             .Returns(new PathString(path));
 

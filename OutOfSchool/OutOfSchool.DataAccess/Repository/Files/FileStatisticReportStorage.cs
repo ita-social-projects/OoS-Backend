@@ -1,6 +1,5 @@
-﻿using OutOfSchool.Services.Contexts;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.Images;
+﻿using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Api.Files;
 
 namespace OutOfSchool.Services.Repository.Files;
 

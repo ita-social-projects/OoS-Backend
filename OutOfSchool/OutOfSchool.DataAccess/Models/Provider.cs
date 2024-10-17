@@ -4,30 +4,41 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models;
 
-public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
+public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISoftDeleted, IHasEntityImages<Provider>
 {
     public Guid Id { get; set; }
 
+    public bool IsDeleted { get; set; }
+
     [Required(ErrorMessage = "Full Title is required")]
     [DataType(DataType.Text)]
-    [MaxLength(120)]
-    [MinLength(1)]
-    public string FullTitle { get; set; }
+    [MinLength(Constants.MinProviderFullTitleLength)]
+    [MaxLength(Constants.MaxProviderFullTitleLength)]
+    public string FullTitle { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Short Title is required")]
     [DataType(DataType.Text)]
-    [MaxLength(60)]
-    [MinLength(1)]
-    public string ShortTitle { get; set; }
+    [MinLength(Constants.MinProviderShortTitleLength)]
+    [MaxLength(Constants.MaxProviderShortTitleLength)]
+    public string ShortTitle { get; set; } = string.Empty;
+
+    [DataType(DataType.Text)]
+    [MaxLength(Constants.MaxProviderFullTitleLength)]
+    public string FullTitleEn { get; set; } = string.Empty;
+
+    [DataType(DataType.Text)]
+    [MaxLength(Constants.MaxProviderShortTitleLength)]
+    public string ShortTitleEn { get; set; } = string.Empty;
 
     [DataType(DataType.Url)]
-    [MaxLength(Constants.UnifiedUrlLength)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
     public string Website { get; set; } = string.Empty;
 
     [DataType(DataType.EmailAddress)]
@@ -37,11 +48,11 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
     public string Email { get; set; } = string.Empty;
 
     [DataType(DataType.Url)]
-    [MaxLength(Constants.UnifiedUrlLength)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
     public string Facebook { get; set; } = string.Empty;
 
     [DataType(DataType.Url)]
-    [MaxLength(Constants.UnifiedUrlLength)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
     public string Instagram { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "EDRPOU/IPN code is required")]
@@ -61,16 +72,14 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
     public DateTime? DirectorDateOfBirth { get; set; } = default;
 
     [DataType(DataType.PhoneNumber)]
-    [RegularExpression(
-        Constants.PhoneNumberRegexModel,
-        ErrorMessage = Constants.PhoneErrorMessage)]
+    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
-    [MaxLength(Constants.UnifiedPhoneLength)]
     [Required(ErrorMessage = "PhoneNumber is required")]
+    [MaxLength(Constants.MaxPhoneNumberLengthWithPlusSign)]
     public string PhoneNumber { get; set; } = string.Empty;
 
     [Required]
-    [MaxLength(180)]
+    [MaxLength(Constants.MaxProviderFounderLength)]
     public string Founder { get; set; } = string.Empty;
 
     [Required]
@@ -93,6 +102,13 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
     public ProviderLicenseStatus LicenseStatus { get; set; }
 
     public bool IsBlocked { get; set; } = false;
+
+    [DataType(DataType.PhoneNumber)]
+    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
+    [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
+    [Required(ErrorMessage = "PhoneNumber is required")]
+    [MaxLength(Constants.MaxPhoneNumberLengthWithPlusSign)]
+    public string BlockPhoneNumber { get; set; } = string.Empty;
 
     [MaxLength(500)]
     public string BlockReason { get; set; }
@@ -135,4 +151,7 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
 
     [NotMapped]
     public static readonly ProviderStatus[] ValidProviderStatuses = { ProviderStatus.Approved, ProviderStatus.Recheck };
+
+    [DataType(DataType.DateTime)]
+    public DateTime UpdatedAt { get; set; }
 }

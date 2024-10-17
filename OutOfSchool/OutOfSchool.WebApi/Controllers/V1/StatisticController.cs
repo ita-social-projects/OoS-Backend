@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
+﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
 /// <summary>
 /// Controller with operations to get popular workshops and categories.
 /// </summary>
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/popular")]
 [ApiController]
 public class StatisticController : ControllerBase
@@ -39,6 +33,7 @@ public class StatisticController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DirectionDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ResponseCache(CacheProfileName = Constants.CacheProfilePublic)]
     [AllowAnonymous]
     public async Task<IActionResult> GetDirections(int limit, [FromQuery] long catottgId)
     {
@@ -66,6 +61,7 @@ public class StatisticController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopCard>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ResponseCache(CacheProfileName = Constants.CacheProfilePublic)]
     [AllowAnonymous]
     public async Task<IActionResult> GetWorkshops(int limit, [FromQuery] long catottgId)
     {

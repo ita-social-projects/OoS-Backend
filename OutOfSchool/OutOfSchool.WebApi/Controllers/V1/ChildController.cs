@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -9,13 +11,14 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// Controller with CRUD operations for a Child entity.
 /// </summary>
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/children")]
 public class ChildController : ControllerBase
 {
     private readonly IChildService service;
     private readonly IProviderService providerService;
     private readonly IProviderAdminService providerAdminService;
+    private readonly IWorkshopServicesCombiner combinedWorkshopService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChildController"/> class.
@@ -23,11 +26,17 @@ public class ChildController : ControllerBase
     /// <param name="service">Service for Child model.</param>
     /// <param name="providerService">Service for Provider model.</param>
     /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
-    public ChildController(IChildService service, IProviderService providerService, IProviderAdminService providerAdminService)
+    /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
+    public ChildController(
+        IChildService service,
+        IProviderService providerService,
+        IProviderAdminService providerAdminService,
+        IWorkshopServicesCombiner combinedWorkshopService)
     {
         this.service = service ?? throw new ArgumentNullException(nameof(service));
         this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
         this.providerAdminService = providerAdminService ?? throw new ArgumentNullException(nameof(providerAdminService));
+        this.combinedWorkshopService = combinedWorkshopService ?? throw new ArgumentNullException(nameof(combinedWorkshopService));
     }
 
     /// <summary>
@@ -35,7 +44,7 @@ public class ChildController : ControllerBase
     /// </summary>
     /// <param name="filter">Filter to get a part of all children that were found.</param>
     /// <returns>The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
-    [HasPermission(Permissions.SystemManagement)]
+    [Authorize(Roles = "techadmin,ministryadmin")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ChildDto>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -145,6 +154,13 @@ public class ChildController : ControllerBase
     [HttpGet("/api/v{version:apiVersion}/workshops/{id}/children/approved")]
     public async Task<IActionResult> GetApprovedByWorkshopId(Guid workshopId, [FromQuery] OffsetFilter offsetFilter)
     {
+        var isWorkshopExists = await combinedWorkshopService.Exists(workshopId).ConfigureAwait(false);
+
+        if (!isWorkshopExists)
+        {
+            return NotFound($"There is no Workshop in DB with Id - {workshopId}");
+        }
+
         var userHasRights = await this.IsUserProvidersOwnerOrAdmin(workshopId).ConfigureAwait(false);
         if (!userHasRights)
         {
@@ -160,14 +176,17 @@ public class ChildController : ControllerBase
         {
             Guid workshopProviderId = await providerService.GetProviderIdForWorkshopById(workshopId);
             var userId = GettingUserProperties.GetUserId(User);
-            try
-            {
-                var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
-                return workshopProviderId == provider?.Id;
-            }
-            catch (ArgumentException)
+            var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
+
+            if (userSubrole == Subrole.ProviderAdmin)
             {
                 return await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, workshopProviderId, workshopId).ConfigureAwait(false);
+            }
+            else
+            {
+                bool isDeputy = userSubrole == Subrole.ProviderDeputy;
+                var provider = await providerService.GetByUserId(userId, isDeputy).ConfigureAwait(false);
+                return workshopProviderId == provider?.Id;
             }
         }
 
@@ -180,13 +199,14 @@ public class ChildController : ControllerBase
     /// <param name="childCreateDto">Child entity to add.</param>
     /// <returns>The child that was created.</returns>
     [HasPermission(Permissions.ChildAddNew)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChildDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(ChildCreateDto childCreateDto)
+    public async Task<IActionResult> Create([FromBody] ChildCreateDto childCreateDto)
     {
         string userId = GettingUserProperties.GetUserId(User);
 
@@ -204,13 +224,14 @@ public class ChildController : ControllerBase
     /// <param name="childrenCreateDtos">The list of the children entities to add.</param>
     /// <returns>The list of the children that were created.</returns>
     [HasPermission(Permissions.ChildAddNew)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChildDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost("batch")]
-    public async Task<IActionResult> CreateChildren(List<ChildCreateDto> childrenCreateDtos)
+    public async Task<IActionResult> CreateChildren([FromBody] List<ChildCreateDto> childrenCreateDtos)
     {
         string userId = GettingUserProperties.GetUserId(User);
 
@@ -230,13 +251,14 @@ public class ChildController : ControllerBase
     /// <param name="id">Child's Id.</param>
     /// <returns>The child that was updated.</returns>
     [HasPermission(Permissions.ChildEdit)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChildDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(ChildUpdateDto dto, Guid id)
+    public async Task<IActionResult> Update([FromBody] ChildUpdateDto dto, Guid id)
     {
         string userId = GettingUserProperties.GetUserId(User);
 
@@ -258,8 +280,11 @@ public class ChildController : ControllerBase
     public async Task<IActionResult> Delete(Guid id)
     {
         string userId = GettingUserProperties.GetUserId(User);
+        var userRole = GettingUserProperties.GetUserRole(User);
 
-        await service.DeleteChildCheckingItsUserIdProperty(id, userId).ConfigureAwait(false);
+        var isTechAdmin = userRole.Equals(Role.TechAdmin.ToString(), StringComparison.OrdinalIgnoreCase);
+
+        await service.DeleteChildCheckingItsUserIdProperty(id, userId, isTechAdmin).ConfigureAwait(false);
 
         return NoContent();
     }

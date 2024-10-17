@@ -1,12 +1,9 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Google.Api.Gax;
 using Google.Apis.Storage.v1.Data;
 using Google.Cloud.Storage.V1;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.Services.Repository.Files;
 

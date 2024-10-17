@@ -9,4 +9,5 @@ public enum InstitutionType
     Complex,
     Profile,
     Specialized,
+    Other,
 }

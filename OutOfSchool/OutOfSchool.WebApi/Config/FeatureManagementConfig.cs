@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace OutOfSchool.WebApi.Config;
+﻿namespace OutOfSchool.WebApi.Config;
 
 public class FeatureManagementConfig
 {
@@ -15,5 +10,11 @@ public class FeatureManagementConfig
 
     public bool Release3 { get; set; }
 
+    public bool ShowForProduction { get; set; }
+
+    public bool TechAdminImport { get; set; }
+
     public bool Images { get; set; }
+
+    public bool TechAdminExport { get; set; }
 }

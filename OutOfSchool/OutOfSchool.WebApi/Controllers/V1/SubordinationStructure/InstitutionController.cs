@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.WebApi.Models.SubordinationStructure;
+using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 
 namespace OutOfSchool.WebApi.Controllers.V1.SubordinationStructure;
 
@@ -7,7 +7,7 @@ namespace OutOfSchool.WebApi.Controllers.V1.SubordinationStructure;
 /// Controller with CRUD operations for Institution entity.
 /// </summary>
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class InstitutionController : Controller
 {
@@ -40,12 +40,12 @@ public class InstitutionController : Controller
     public async Task<IActionResult> GetAll([FromQuery] bool filterNonGovernment = false)
     {
         var institutions = await service.GetAll(filterNonGovernment).ConfigureAwait(false);
-
+    
         if (!institutions.Any())
         {
             return NoContent();
         }
-
+    
         return Ok(institutions);
     }
 }

@@ -1,80 +1,80 @@
-name: Build
+name: Build&Test
 on:
   push:
-    branches: 
-     - main
-     - develop
-     - '*' 
+    branches:
+    - main
+    - develop
+    - '*'
   pull_request:
     branches: [ develop ]
 
 jobs:
   build:
-    name: Build
-    runs-on: windows-latest
+    name: SonarCloud
+    runs-on: ubuntu-latest
     steps:
-      - name: Set up JDK 11
-        uses: actions/setup-java@v1
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
         with:
-          java-version: 1.11
-      - uses: actions/checkout@v2
+          java-version: 17
+          distribution: 'temurin'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.300
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Cache SonarCloud packages
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
-          path: ~\sonar\cache
+          path: ~/sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
       - name: Cache SonarCloud scanner
         id: cache-sonar-scanner
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
-          path: .\.sonar\scanner
+          path: .sonar/scanner
           key: ${{ runner.os }}-sonar-scanner
           restore-keys: ${{ runner.os }}-sonar-scanner
       - name: Install SonarCloud scanner
         if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
-        shell: powershell
         run: |
-          New-Item -Path .\.sonar\scanner -ItemType Directory
-          dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+          dotnet tool update dotnet-sonarscanner --tool-path .sonar/scanner
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        shell: powershell
         run: |
-          cd .\OutOfSchool\ 
-          ..\.sonar\scanner\dotnet-sonarscanner begin /k:"ita-social-projects-oos-backend" /o:"ita-social-projects" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.vstest.reportsPaths="/OutOfSchool.IdentityServer.Tests/TestResults/*.trx, /OutOfSchool.WebApi.Tests/TestResults/*.trx" /d:"sonar.verbose=true" /d:"sonar.cs.opencover.reportsPaths"="/OutOfSchool.IdentityServer.Tests/coverage.opencover.xml, /OutOfSchool.WebApi.Tests/coverage.opencover.xml"
-          dotnet build      
-          dotnet add OutOfSchool.IdentityServer.Tests\OutOfSchool.IdentityServer.Tests.csproj package coverlet.msbuild
-          dotnet add OutOfSchool.WebApi.Tests\OutOfSchool.WebApi.Tests.csproj package coverlet.msbuild
+          cd ./OutOfSchool/
+          ../.sonar/scanner/dotnet-sonarscanner begin /k:"ita-social-projects-oos-backend" /o:"ita-social-projects" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.vstest.reportsPaths="OutOfSchool.AuthServer.Tests/TestResults/*.trx, OutOfSchool.WebApi.Tests/TestResults/*.trx, Tests/OutOfSchool.WebApi.IntegrationTests/TestResults/*.trx" /d:"sonar.cs.opencover.reportsPaths"="OutOfSchool.AuthServer.Tests/coverage.opencover.xml, OutOfSchool.WebApi.Tests/coverage.opencover.xml, Tests/OutOfSchool.WebApi.IntegrationTests/coverage.opencover.xml"
+          dotnet build
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover -l:trx
-          ..\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+          ../.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
   test:
     runs-on: ${{ matrix.os }}
-    strategy: 
-      matrix: 
+    strategy:
+      matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
-    - uses: actions/checkout@v2
-      
+    - uses: actions/checkout@v3
+
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 6.0.406
-        
+        dotnet-version: 8.0.300
+
     - name: Clean
       run: dotnet clean ./OutOfSchool/OutOfSchool.sln --configuration Release && dotnet nuget locals all --clear
-      
+
     - name: Restore dependencies
       run: dotnet restore ./OutOfSchool/
-               
+
     - name: Build
       run: dotnet build --configuration Release --no-restore ./OutOfSchool
-      
+
     - name: Test
       run: dotnet test --no-restore --no-build --configuration Release ./OutOfSchool

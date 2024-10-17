@@ -1,12 +1,13 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base;
 
 namespace OutOfSchool.Services.Repository;
 
-public class RegionAdminRepository : EntityRepository<(string, long), RegionAdmin>, IRegionAdminRepository
+public class RegionAdminRepository : EntityRepositorySoftDeleted<(string, long), RegionAdmin>, IRegionAdminRepository
 {
     private readonly OutOfSchoolDbContext db;
 

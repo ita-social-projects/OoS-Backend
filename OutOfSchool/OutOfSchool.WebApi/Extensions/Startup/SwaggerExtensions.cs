@@ -1,14 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.Extensions.DependencyInjection;
+using Asp.Versioning.ApiExplorer;
 using Microsoft.OpenApi.Models;
-using OutOfSchool.Common.Config;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Extensions.Startup;
 
@@ -44,7 +36,7 @@ public static class SwaggerExtensions
                     {
                         AuthorizationCode = new OpenApiOAuthFlow
                         {
-                            AuthorizationUrl = new Uri($"{identityBaseUrl}/connect/authorize", UriKind.Absolute),
+                            AuthorizationUrl = new Uri($"{identityBaseUrl}/connect/authorize?prompt=login", UriKind.Absolute),
                             TokenUrl = new Uri($"{identityBaseUrl}/connect/token", UriKind.Absolute),
                             Scopes = new Dictionary<string, string>
                             {

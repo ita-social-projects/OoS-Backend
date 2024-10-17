@@ -1,0 +1,9 @@
+﻿@using OutOfSchool.RazorTemplatesData.Models.Emails
+@model ApplicationStatusViewModel
+
+Відмовлено
+На жаль,
+@Model.ChildFullName
+не може бути зарахован@(Model.UaEnding) до
+@Model.WorkshopTitle
+Причина:"@Model.RejectionMessage"

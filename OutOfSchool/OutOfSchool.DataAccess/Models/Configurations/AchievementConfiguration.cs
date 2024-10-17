@@ -9,6 +9,10 @@ internal class AchievementConfiguration : IEntityTypeConfiguration<Achievement>
     {
         builder.HasKey(x => x.Id);
 
+        builder.HasIndex(x => x.IsDeleted);
+
+        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
+
         builder.HasMany(x => x.Children)
             .WithMany(x => x.Achievements);
     }

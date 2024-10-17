@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
+using Elastic.Clients.Elasticsearch;
 using Microsoft.Extensions.DependencyInjection;
-using Nest;
 using NUnit.Framework;
-using OutOfSchool.WebApi.Config;
+using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.WebApi.Extensions;
 
 namespace OutOfSchool.WebApi.Tests.Extensions;
@@ -26,6 +26,6 @@ public class ElasticsearchExtensionTests
         ServiceProvider provider = coll.BuildServiceProvider();
 
         // Assert
-        Assert.IsInstanceOf<ElasticClient>(provider.GetService<ElasticClient>());
+        Assert.IsInstanceOf<ElasticsearchClient>(provider.GetService<ElasticsearchClient>());
     }
 }

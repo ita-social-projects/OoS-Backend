@@ -1,9 +1,10 @@
 ﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Achievement;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Achievement;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -11,7 +12,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// Controller with CRUD operations for Achievement entity.
 /// </summary>
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class AchievementController : ControllerBase
 {
@@ -72,12 +73,7 @@ public class AchievementController : ControllerBase
     {
         var achievements = await achievementService.GetByFilter(filter).ConfigureAwait(false);
 
-        if (achievements.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(achievements);
+        return this.SearchResultToOkOrNoContent(achievements);
     }
 
     /// <summary>
@@ -98,8 +94,27 @@ public class AchievementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Create(AchievementCreateDTO achievementDto)
+    public async Task<IActionResult> Create([FromBody] AchievementCreateDTO achievementDto)
     {
+        if (achievementDto == null)
+        {
+            return BadRequest("Achievement is null.");
+        }
+
+        var isWorkshopExists = await workshopService.Exists(achievementDto.WorkshopId).ConfigureAwait(false);
+
+        if (!isWorkshopExists)
+        {
+            return NotFound($"There is no Workshop in DB with Id - {achievementDto.WorkshopId}");
+        }
+
+        var providerId = await providerService.GetProviderIdForWorkshopById(achievementDto.WorkshopId).ConfigureAwait(false);
+
+        if (await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false)
+        {
+            return StatusCode(403, "It is forbidden to add achievements to workshops at blocked providers");
+        }
+
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -141,13 +156,21 @@ public class AchievementController : ControllerBase
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopEdit)]
     [HttpPut]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AchievementDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Update(AchievementCreateDTO achievementDto)
+    public async Task<ActionResult> Update([FromBody] AchievementCreateDTO achievementDto)
     {
+        var providerId = await providerService.GetProviderIdForWorkshopById(achievementDto.WorkshopId).ConfigureAwait(false);
+
+        if (await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false)
+        {
+            return StatusCode(403, "It is forbidden to update the workshops achievements at blocked providers");
+        }
+
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -182,6 +205,7 @@ public class AchievementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Delete(Guid id)
     {
+
         AchievementDto achievement;
 
         try
@@ -191,6 +215,13 @@ public class AchievementController : ControllerBase
         catch (ArgumentException ex)
         {
             return BadRequest(ex.Message);
+        }
+
+        var providerId = await providerService.GetProviderIdForWorkshopById(achievement.WorkshopId).ConfigureAwait(false);
+
+        if (await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false)
+        {
+            return StatusCode(403, "It is forbidden to delete the workshops achievements at blocked providers");
         }
 
         var userHasRights = await this.IsUserProvidersOwnerOrAdmin(achievement.WorkshopId).ConfigureAwait(false);
@@ -220,23 +251,17 @@ public class AchievementController : ControllerBase
 
         var userId = GettingUserProperties.GetUserId(User);
         var providerId = await workshopService.GetWorkshopProviderOwnerIdAsync(workshopId).ConfigureAwait(false);
-        try
-        {
-            var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
-            if (providerId != provider?.Id)
-            {
-                return false;
-            }
-        }
-        catch (ArgumentException)
-        {
-            var isUserRelatedAdmin = await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId).ConfigureAwait(false);
-            if (!isUserRelatedAdmin)
-            {
-                return false;
-            }
-        }
+        var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
 
-        return true;
+        if (userSubrole == Subrole.ProviderAdmin)
+        {
+            return await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId).ConfigureAwait(false);
+        }
+        else
+        {
+            bool isDeputy = userSubrole == Subrole.ProviderDeputy;
+            var provider = await providerService.GetByUserId(userId, isDeputy).ConfigureAwait(false);
+            return providerId == provider?.Id;
+        }
     }
 }

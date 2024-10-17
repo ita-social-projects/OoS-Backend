@@ -9,10 +9,10 @@ using Google.Cloud.Storage.V1;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Common.Synchronization;
+using OutOfSchool.BusinessLogic.Services.Gcp;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Common.Synchronization;
-using OutOfSchool.WebApi.Services.Gcp;
 using Object = Google.Apis.Storage.v1.Data.Object;
 
 namespace OutOfSchool.WebApi.Tests.Services.Gcp;

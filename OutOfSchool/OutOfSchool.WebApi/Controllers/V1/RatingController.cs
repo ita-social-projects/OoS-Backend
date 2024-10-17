@@ -1,25 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
-using Castle.Core.Internal;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.Common.PermissionsModule;
-using OutOfSchool.ElasticsearchData.Models;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Services.AverageRatings;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services.AverageRatings;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class RatingController : ControllerBase
 {
@@ -122,12 +110,7 @@ public class RatingController : ControllerBase
     {
         var ratings = await ratingService.GetAllByEntityId(entityId, filter).ConfigureAwait(false);
 
-        if (ratings.TotalAmount == 0)
-        {
-            return NoContent();
-        }
-
-        return Ok(ratings);
+        return this.SearchResultToOkOrNoContent(ratings);
     }
 
     /// <summary>
@@ -183,12 +166,13 @@ public class RatingController : ControllerBase
     /// <param name="dto">Rating entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.RatingAddNew)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(RatingDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(RatingDto dto)
+    public async Task<IActionResult> Create([FromBody] RatingDto dto)
     {
         var rating = await ratingService.Create(dto).ConfigureAwait(false);
 
@@ -212,12 +196,13 @@ public class RatingController : ControllerBase
     /// <param name="dto">Rating to update.</param>
     /// <returns>Rating.</returns>
     [HasPermission(Permissions.RatingEdit)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RatingDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(RatingDto dto)
+    public async Task<IActionResult> Update([FromBody] RatingDto dto)
     {
         var rating = await ratingService.Update(dto).ConfigureAwait(false);
 

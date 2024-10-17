@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/users/personalinfo")]
 [HasPermission(Permissions.PersonalInfo)]
 public class PersonalInfoController : ControllerBase
@@ -41,17 +42,11 @@ public class PersonalInfoController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetPersonalInfo()
     {
-        ShortUserDto info;
-        if (currentUserService.IsInRole(Role.Parent))
-        {
-            info = await parentService.GetPersonalInfoByUserId(currentUserService.UserId);
-        }
-        else
-        {
-            info = await userService.GetById(currentUserService.UserId);
-        }
+        var info = currentUserService.IsInRole(Role.Parent)
+            ? await parentService.GetPersonalInfoByUserId(currentUserService.UserId)
+            : null;
 
-        return info is null ? NoContent() : Ok(info);
+        return Ok(info ?? (await userService.GetById(currentUserService.UserId)));
     }
 
 
@@ -61,12 +56,13 @@ public class PersonalInfoController : ControllerBase
     /// <param name="dto">New User's personal information.</param>
     /// <returns>Updated User's personal information.</returns>
     [HttpPut]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdatePersonalInfo(ShortUserDto dto)
+    public async Task<IActionResult> UpdatePersonalInfo([FromBody] ShortUserDto dto)
     {
         ShortUserDto result;
         if (currentUserService.IsInRole(Role.Parent))

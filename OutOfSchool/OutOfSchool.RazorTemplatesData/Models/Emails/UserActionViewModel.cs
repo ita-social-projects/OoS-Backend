@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OutOfSchool.RazorTemplatesData.Models.Emails;
+﻿namespace OutOfSchool.RazorTemplatesData.Models.Emails;
 
 public class UserActionViewModel
 {

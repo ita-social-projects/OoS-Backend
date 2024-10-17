@@ -3,6 +3,7 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 
 namespace OutOfSchool.Services.Extensions;
 
@@ -51,21 +52,25 @@ public static class ModelBuilderExtension
             {
                 Id = 1,
                 Name = "Працює",
+                NameEn = "Active",
             },
             new InstitutionStatus
             {
                 Id = 2,
                 Name = "Перебуває в стані реорганізації",
+                NameEn = "Undergoing reorganization",
             },
             new InstitutionStatus
             {
                 Id = 3,
                 Name = "Має намір на реорганізацію",
+                NameEn = "Waiting for reorganization",
             },
             new InstitutionStatus
             {
                 Id = 4,
-                Name = "Відсутній",
+                Name = "Відсутній статус",
+                NameEn = "Without status",
             });
 
         // default seed permissions.
@@ -111,6 +116,20 @@ public static class ModelBuilderExtension
                 RoleName = Role.RegionAdmin.ToString(),
                 PackedPermissions = PermissionsSeeder.SeedPermissions(Role.RegionAdmin.ToString()),
                 Description = "region admin permissions",
+            },
+            new PermissionsForRole
+            {
+                Id = 7,
+                RoleName = Role.AreaAdmin.ToString(),
+                PackedPermissions = PermissionsSeeder.SeedPermissions(Role.AreaAdmin.ToString()),
+                Description = "area admin permissions",
+            },
+            new PermissionsForRole
+            {
+                 Id = 8,
+                 RoleName = Role.Moderator.ToString(),
+                 PackedPermissions = PermissionsSeeder.SeedPermissions(Role.Moderator.ToString()),
+                 Description = "moderator permissions",
             }
         );
 
@@ -230,6 +249,84 @@ public static class ModelBuilderExtension
             {
                 Id = 13L,
                 Name = "Інше",
+            });
+
+        builder.Entity<CompetitiveEventAccountingType>().HasData(
+            new CompetitiveEventAccountingType
+            {
+                Id = 1,
+                Title = "Освітній проєкт",
+                TitleEn = "Educational project",
+            },
+            new CompetitiveEventAccountingType
+            {
+                Id = 2,
+                Title = "Конкурс (не має етапів)",
+                TitleEn = "Competition",
+            },
+            new CompetitiveEventAccountingType
+            {
+                Id = 3,
+                Title = "Основний конкурс (має мати підпорядковані конкурси-етапи)",
+                TitleEn = "Main competition",
+            },
+            new CompetitiveEventAccountingType
+            {
+                Id = 4,
+                Title = "Етап конкурсу (має мати батьківський основний конкурс)",
+                TitleEn = "Contest stage",
+            });
+
+        builder.Entity<CompetitiveEventCoverage>().HasData(
+            new CompetitiveEventCoverage
+            {
+                Id = 1,
+                Title = "Локальний (Шкільний)",
+                TitleEn = "Local (School)",
+            },
+            new CompetitiveEventCoverage
+            {
+                Id = 2,
+                Title = "Міський",
+                TitleEn = "City",
+            },
+            new CompetitiveEventCoverage
+            {
+                Id = 3,
+                Title = "Районний",
+                TitleEn = "Raional",
+            },
+            new CompetitiveEventCoverage
+            {
+                Id = 4,
+                Title = "Обласний",
+                TitleEn = "Regional",
+            },
+            new CompetitiveEventCoverage
+            {
+                Id = 5,
+                Title = "Всеукраїнський",
+                TitleEn = "All-Ukrainian",
+            },
+            new CompetitiveEventCoverage
+            {
+                Id = 6,
+                Title = "Міжнародний",
+                TitleEn = "International",
+            });
+
+        builder.Entity<CompetitiveEventRegistrationDeadline>().HasData(
+            new CompetitiveEventRegistrationDeadline
+            {
+                Id = 1,
+                Title = "Постійно (протягом року)",
+                TitleEn = "Constantly (during the year)",
+            },
+            new CompetitiveEventRegistrationDeadline
+            {
+                Id = 2,
+                Title = "Певний місяць або місяці року",
+                TitleEn = "A certain month or months of the year",
             });
     }
 

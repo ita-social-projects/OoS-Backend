@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
+﻿using System.Threading.Tasks;
+using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Common.StatusPermissions;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Common.StatusPermissions;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Common;
 

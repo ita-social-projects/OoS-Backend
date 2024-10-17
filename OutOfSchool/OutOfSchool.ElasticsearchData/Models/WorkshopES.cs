@@ -1,28 +1,33 @@
 using System;
 using System.Collections.Generic;
-using Nest;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.ElasticsearchData.Models;
 
-// TODO: check Nested attribute
-public class WorkshopES
+ public class WorkshopES : IHasRating
 {
-    public const string TitleKeyword = "title.keyword";
+    public const string KeywordSuffix = "keyword";
+    public const string SortSuffix = "sort";
+    public const string TextSuffix = "text";
 
-    [Keyword]
     public Guid Id { get; set; }
 
     public string Title { get; set; }
+
+    public string ShortTitle { get; set; }
 
     public string CoverImageId { get; set; }
 
     public float Rating { get; set; }
 
-    [Keyword]
+    public int NumberOfRatings { get; set; }
+
     public Guid ProviderId { get; set; }
 
     public string ProviderTitle { get; set; }
+
+    public string ProviderTitleEn { get; set; }
 
     public ProviderStatus ProviderStatus { get; set; }
 
@@ -35,6 +40,7 @@ public class WorkshopES
     public int MaxAge { get; set; }
 
     public bool CompetitiveSelection { get; set; }
+
     public decimal Price { get; set; }
 
     public PayRateType PayRate { get; set; }
@@ -43,12 +49,10 @@ public class WorkshopES
 
     public AddressES Address { get; set; }
 
-    [Keyword]
     public Guid? InstitutionHierarchyId { get; set; }
 
     public string InstitutionHierarchy { get; set; }
 
-    [Keyword]
     public Guid? InstitutionId { get; set; }
 
     public string Institution { get; set; }
@@ -59,7 +63,6 @@ public class WorkshopES
 
     public List<long> DirectionIds { get; set; }
 
-    [Nested]
     public List<DateTimeRangeES> DateTimeRanges { get; set; }
 
     public WorkshopStatus Status { get; set; }
@@ -71,4 +74,6 @@ public class WorkshopES
     public uint TakenSeats { get; set; }
 
     public ProviderLicenseStatus ProviderLicenseStatus { get; set; }
+
+    public FormOfLearning FormOfLearning { get; set; }
 }

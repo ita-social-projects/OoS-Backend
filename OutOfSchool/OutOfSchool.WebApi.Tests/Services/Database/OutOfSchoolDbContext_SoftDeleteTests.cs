@@ -54,12 +54,12 @@ public class OutOfSchoolDbContext_SoftDeleteTests
         dbContext.Entry(workshop).State = EntityState.Deleted;
         dbContext.SaveChanges();
         var deletedEntry = dbContext.Entry(workshop);
-        var unmodifiedEntries = dbContext.Workshops.Select(x => dbContext.Entry(x)).ToList();
+        var unmodifiedEntries = dbContext.Workshops.Where(x => x.Id != workshop.Id).Select(x => dbContext.Entry(x)).ToList();
 
         // Assert
         Assert.AreEqual(initialWorkshopsCount, dbContext.Workshops.IgnoreQueryFilters().Count());
-        Assert.AreEqual(expectedWorkshopsCount, dbContext.Workshops.Count());
-        Assert.False(dbContext.Workshops.Any(x => x.Id == workshop.Id));
+        Assert.AreEqual(expectedWorkshopsCount, dbContext.Workshops.Count(x => !x.IsDeleted));
+        Assert.False(dbContext.Workshops.Any(x => !x.IsDeleted && x.Id == workshop.Id));
         Assert.True(dbContext.Workshops.IgnoreQueryFilters().Any(x => x.Id == workshop.Id));
         Assert.AreEqual(EntityState.Unchanged, deletedEntry.State);
         Assert.AreEqual(true, deletedEntry.CurrentValues["IsDeleted"]);
@@ -79,12 +79,12 @@ public class OutOfSchoolDbContext_SoftDeleteTests
         dbContext.Entry(workshop).State = EntityState.Deleted;
         await dbContext.SaveChangesAsync();
         var deletedEntry = dbContext.Entry(workshop);
-        var unmodifiedEntries = await dbContext.Workshops.Select(x => dbContext.Entry(x)).ToListAsync();
+        var unmodifiedEntries = await dbContext.Workshops.Where(x => x.Id != workshop.Id).Select(x => dbContext.Entry(x)).ToListAsync();
 
         // Assert
         Assert.AreEqual(initialWorkshopsCount, dbContext.Workshops.IgnoreQueryFilters().Count());
-        Assert.AreEqual(expectedWorkshopsCount, dbContext.Workshops.Count());
-        Assert.False(dbContext.Workshops.Any(x => x.Id == workshop.Id));
+        Assert.AreEqual(expectedWorkshopsCount, dbContext.Workshops.Count(x => !x.IsDeleted));
+        Assert.False(dbContext.Workshops.Any(x => !x.IsDeleted && x.Id == workshop.Id));
         Assert.True(dbContext.Workshops.IgnoreQueryFilters().Any(x => x.Id == workshop.Id));
         Assert.AreEqual(EntityState.Unchanged, deletedEntry.State);
         Assert.AreEqual(true, deletedEntry.CurrentValues["IsDeleted"]);

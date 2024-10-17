@@ -1,0 +1,13 @@
+﻿@using OutOfSchool.RazorTemplatesData.Models.Emails
+@model ApplicationStatusViewModel
+
+<main class="container">
+    <div class="content">
+        <h1 class="title">Вітаємо!</h1>
+        <p class="text">@Model.ChildFullName</p>
+        <p class="text">Прийнят@(Model.UaEnding) до конкурсного відбору до</p>
+        <p class="text">
+            <a href="@Model.WorkshopUrl" target="_blank">"@Model.WorkshopTitle"</a>
+        </p>
+    </div>
+</main>

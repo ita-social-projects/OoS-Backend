@@ -10,5 +10,6 @@ public enum NotificationType
     Chat,
     Workshop,
     Provider,
-    System, //LicenseApproval
+    System,
+    Parent, //LicenseApproval
 }

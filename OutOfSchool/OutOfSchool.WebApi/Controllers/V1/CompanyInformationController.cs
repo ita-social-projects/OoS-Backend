@@ -1,14 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Common.PermissionsModule;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -65,12 +59,13 @@ public abstract class CompanyInformationController : ControllerBase
     /// <param name="companyInformationModel">Entity to update.</param>
     /// <returns>Updated information about CompanyInformation.</returns>
     [HasPermission(Permissions.SystemManagement)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompanyInformationDto))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(CompanyInformationDto companyInformationModel)
+    public async Task<IActionResult> Update([FromBody] CompanyInformationDto companyInformationModel)
     {
         if (!ModelState.IsValid)
         {

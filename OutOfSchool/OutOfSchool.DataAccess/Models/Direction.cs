@@ -4,7 +4,7 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models;
 
-public class Direction : IKeyedEntity<long>
+public class Direction : IKeyedEntity<long>, ISoftDeleted
 {
     public long Id { get; set; }
 
@@ -16,6 +16,8 @@ public class Direction : IKeyedEntity<long>
 
     [MaxLength(500)]
     public string Description { get; set; } = string.Empty;
+
+    public bool IsDeleted { get; set; }
 
     public virtual List<InstitutionHierarchy> InstitutionHierarchies { get; set; }
 }

@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using OutOfSchool.Services;
+using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
@@ -22,7 +24,7 @@ public class ProviderRepositoryTests
     public async Task SetUp()
     {
         providers = ProvidersGenerator.Generate(3)
-            .WithWorkshops();
+            .WithWorkshops().WithUser();
 
         AddProviderAdmins(providers);
 
@@ -43,10 +45,10 @@ public class ProviderRepositoryTests
         // Arrange
         using var context = GetContext();
         var providerRepository = GetProviderRepository(context);
-        var initialProvidersCount = context.Providers.Count();
-        var provider = context.Providers.First();
+        var initialProvidersCount = context.Providers.Count(x => !x.IsDeleted);
+        var provider = context.Providers.IncludeProperties("LegalAddress,ActualAddress").First();
         var expectedProvidersCount = initialProvidersCount - 1;
-        var expectedWorkshopsCount = context.Workshops.Count() - provider.Workshops.Count;
+        var expectedWorkshopsCount = context.Workshops.Count(x => !x.IsDeleted) - provider.Workshops.Count;
         var expectedAddressesCount = context.Addresses.Count() - 2; // 2 = Legal + Actual
         var expectedProviderAdminsCount = context.ProviderAdmins.Count() - provider.ProviderAdmins.Count;
 
@@ -65,18 +67,74 @@ public class ProviderRepositoryTests
 
         // Assert
         Assert.AreEqual(initialProvidersCount, context.Providers.IgnoreQueryFilters().Count());
-        Assert.AreEqual(expectedProvidersCount, context.Providers.Count());
-        Assert.AreEqual(expectedAddressesCount, context.Addresses.Count());
-        Assert.AreEqual(expectedWorkshopsCount, context.Workshops.Count());
-        Assert.AreEqual(expectedProviderAdminsCount, context.ProviderAdmins.Count());
-        Assert.False(context.Workshops.Any(x => x.ProviderId == provider.Id));
+        Assert.AreEqual(expectedProvidersCount, context.Providers.Count(x => !x.IsDeleted));
+        Assert.AreEqual(expectedAddressesCount, context.Addresses.Count(x => !x.IsDeleted));
+        Assert.AreEqual(expectedWorkshopsCount, context.Workshops.Count(x => !x.IsDeleted));
+        Assert.AreEqual(expectedProviderAdminsCount, context.ProviderAdmins.Count(x => !x.IsDeleted));
+        Assert.False(context.Workshops.Any(x => !x.IsDeleted && x.ProviderId == provider.Id));
         Assert.True(context.Workshops.IgnoreQueryFilters().Any(x => x.ProviderId == provider.Id));
-        Assert.False(context.ProviderAdmins.Any(x => x.ProviderId == provider.Id));
+        Assert.False(context.ProviderAdmins.Any(x => !x.IsDeleted && x.ProviderId == provider.Id));
         Assert.True(context.ProviderAdmins.IgnoreQueryFilters().Any(x => x.ProviderId == provider.Id));
         Assert.AreEqual(EntityState.Unchanged, context.Entry(provider).State);
         Assert.AreEqual(true, context.Entry(provider).CurrentValues["IsDeleted"]);
         Assert.True(workshops.All(x => (bool)x.CurrentValues["IsDeleted"] == true));
         Assert.True(providerAdmins.All(x => (bool)x.CurrentValues["IsDeleted"] == true));
+    }
+
+    [Test]
+    public async Task CheckExistsByEdrpous_ReturnValues_ExcludeExistsValues()
+    {
+        // Arrange
+        using var context = GetContext();
+        var providerRepository = GetProviderRepository(context);
+
+        var firstEdrpou = context.Providers.First().EdrpouIpn;
+
+        var data = new Dictionary<int, string>()
+        {
+            { 1, firstEdrpou },
+            { 2, firstEdrpou + "1" },
+            { 3, firstEdrpou + "2" },
+        };
+
+        var expectedResult = new List<int>()
+        {
+            1,
+        };
+
+        // Act
+        var result = await providerRepository.CheckExistsByEdrpous(data).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(expectedResult, result);
+    }
+
+    [Test]
+    public async Task CheckExistsByEmails_ReturnValues_ExcludeExistsValues()
+    {
+        // Arrange
+        using var context = GetContext();
+        var providerRepository = GetProviderRepository(context);
+
+        var firstEmail = context.Providers.First().User.Email;
+
+        var data = new Dictionary<int, string>()
+        {
+            { 1, firstEmail },
+            { 2, "q" + firstEmail },
+            { 3, "qq" + firstEmail },
+        };
+
+        var expectedResult = new List<int>()
+        {
+            1,
+        };
+
+        // Act
+        var result = await providerRepository.CheckExistsByEmails(data).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(expectedResult, result);
     }
 
     #endregion

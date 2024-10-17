@@ -39,14 +39,14 @@ public static class ConnectionStringExtensions
 
         if (string.IsNullOrEmpty(connectionStringBuilder.ConnectionString))
         {
-            throw new Exception("Provide a valid connection string or options");
+            throw new ArgumentException("Provide a valid connection string or options");
         }
 
         if (typeof(IMySqlGuidConnectionOptions).IsAssignableFrom(typeof(TOptions)))
         {
             if (!connectionStringBuilder.ContainsKey("guidformat") || !string.Equals(connectionStringBuilder["guidformat"].ToString(), "binary16", StringComparison.OrdinalIgnoreCase))
             {
-                throw new Exception("The connection string should have a key: 'guidformat' and a value: 'binary16'");
+                throw new ArgumentException("The connection string should have a key: 'guidformat' and a value: 'binary16'");
             }
         }
         else

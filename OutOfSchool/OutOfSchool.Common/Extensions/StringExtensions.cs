@@ -1,8 +1,9 @@
-using System;
+﻿using System;
+using System.Text.RegularExpressions;
 
 namespace OutOfSchool.Common.Extensions;
 
-public static class StringExtensions
+public static partial class StringExtensions
 {
     public static TEnum ToEnum<TEnum>(this string value, TEnum defaultValue)
         where TEnum : struct
@@ -35,4 +36,17 @@ public static class StringExtensions
             ? value[^length..]
             : value;
     }
+
+    public static string RemoveCharsByRegexPattern(this string value, Regex regexPattern)
+    {
+        if (value.IsNullOrEmpty() || regexPattern == null)
+        {
+            return value;
+        }
+
+        return regexPattern.Replace(value, string.Empty);
+    }
+
+    [GeneratedRegex(@"[^а-яА-ЯіІїЇєЄґҐ\-\s]", RegexOptions.None, 200)]
+    public static partial Regex ExcludeAllCharsExceptUkrainianCharsDashSpace();
 }

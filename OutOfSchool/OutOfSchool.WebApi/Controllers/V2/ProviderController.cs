@@ -1,15 +1,16 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
-using OutOfSchool.WebApi.Common;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.WebApi.Controllers.V2;
 
 [ApiController]
 [FeatureGate(nameof(Feature.Images))]
-[ApiVersion("2.0")]
+[AspApiVersion(2)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class ProviderController : ControllerBase
 {
@@ -27,28 +28,6 @@ public class ProviderController : ControllerBase
     {
         this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
-
-    /// <summary>
-    /// Get Providers that match filter's parameters.
-    /// </summary>
-    /// <param name="filter">Entity that represents searching parameters.</param>
-    /// <returns><see cref="SearchResult{ProviderDto}"/>, or no content.</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet]
-    [AllowAnonymous]
-    public async Task<IActionResult> Get([FromQuery] ProviderFilter filter)
-    {
-        var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
-
-        if (providers.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(providers);
     }
 
     /// <summary>
@@ -110,9 +89,9 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [HttpPost]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Create([FromForm] ProviderDto providerModel)
+    public async Task<IActionResult> Create([FromForm] ProviderCreateDto providerModel)
     {
-        providerModel.Id = default;
+        providerModel.Id = Guid.Empty;
         providerModel.LegalAddress.Id = default;
 
         if (providerModel.ActualAddress != null)
@@ -185,15 +164,17 @@ public class ProviderController : ControllerBase
     [HttpDelete("{uid:guid}")]
     public async Task<IActionResult> Delete(Guid uid)
     {
-        try
-        {
-            await providerService.Delete(uid).ConfigureAwait(false);
-        }
-        catch (ArgumentNullException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        var result = await providerService.Delete(
+            uid,
+            await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
+            .ConfigureAwait(false);
 
-        return NoContent();
+        return result.Match<ActionResult>(
+            error => StatusCode((int)error.HttpStatusCode, error.Message),
+            result =>
+            {
+                logger.LogInformation("Successfully deleted Provider with id: {uid}", uid);
+                return Ok();
+            });
     }
 }

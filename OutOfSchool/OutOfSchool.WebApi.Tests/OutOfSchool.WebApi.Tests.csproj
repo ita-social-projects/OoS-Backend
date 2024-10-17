@@ -11,6 +11,7 @@
 
   <PropertyGroup>
     <CodeAnalysisRuleSet>..\StyleCopAnalyzersRules.ruleset</CodeAnalysisRuleSet>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
   
   <ItemGroup>
@@ -19,8 +20,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="FluentAssertions" />
-    <PackageReference Include="IdentityModel" />
+    <PackageReference Include="MockQueryable.EntityFrameworkCore" />
+    <PackageReference Include="MySql.Data" />
+	<PackageReference Include="FluentAssertions" />
+	<PackageReference Include="IdentityModel" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" />
     <PackageReference Include="MockQueryable.Moq" />
@@ -37,6 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OutOfSchool.AuthCommon\OutOfSchool.AuthCommon.csproj" />
     <ProjectReference Include="..\OutOfSchool.WebApi\OutOfSchool.WebApi.csproj" />
     <ProjectReference Include="..\Tests\OutOfSchool.Tests.Common\OutOfSchool.Tests.Common.csproj" />
   </ItemGroup>

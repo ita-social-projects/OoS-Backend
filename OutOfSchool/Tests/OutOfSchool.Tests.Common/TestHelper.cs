@@ -1,12 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NUnit.Framework;
-using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using AutoMapper;
+using OutOfSchool.Common.Extensions;
 
 namespace OutOfSchool.Tests.Common;
 
@@ -21,6 +18,14 @@ public static class TestHelper
         where TProfile : Profile, new()
     {
         var config = new MapperConfiguration(cfg => cfg.AddProfile<TProfile>());
+        return config.CreateMapper();
+    }
+
+    public static IMapper CreateMapperInstanceOfProfileTypes<TProfile1, TProfile2>()
+        where TProfile1 : Profile, new()
+        where TProfile2 : Profile, new()
+    {
+        var config = new MapperConfiguration(cfg => cfg.UseProfile<TProfile1>().UseProfile<TProfile2>());
         return config.CreateMapper();
     }
 

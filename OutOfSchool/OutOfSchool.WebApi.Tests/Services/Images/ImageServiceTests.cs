@@ -9,12 +9,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models.Images;
+using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.Services.Common.Exceptions;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository.Files;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models.Images;
-using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Tests.Services.Images;
 

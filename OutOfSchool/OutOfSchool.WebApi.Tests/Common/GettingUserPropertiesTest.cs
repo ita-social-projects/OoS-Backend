@@ -3,8 +3,8 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.Common;
-using OutOfSchool.WebApi.Common;
 
 namespace OutOfSchool.WebApi.Tests.Common;
 
@@ -20,8 +20,8 @@ public class GettingUserPropertiesTest
     public void Setup()
     {
         httpContextMoq = new Mock<HttpContext>();
-        httpContextMoq.Setup(x => x.User.FindFirst("sub")).Returns(userIdClaim);
-        httpContextMoq.Setup(x => x.User.FindFirst("role")).Returns(userRoleClaim);
+        httpContextMoq.Setup(x => x.User.FindFirst(IdentityResourceClaimsTypes.Sub)).Returns(userIdClaim);
+        httpContextMoq.Setup(x => x.User.FindFirst(IdentityResourceClaimsTypes.Role)).Returns(userRoleClaim);
         httpContextMoq.Setup(x => x.User.FindFirst("subrole")).Returns(userSubroleClaim);
     }
 
