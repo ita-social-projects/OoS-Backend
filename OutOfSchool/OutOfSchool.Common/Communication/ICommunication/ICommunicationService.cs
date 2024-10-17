@@ -1,6 +1,7 @@
-﻿using OutOfSchool.Common.Models;
+﻿using System.Threading.Tasks;
+using OutOfSchool.Common.Models;
 
-namespace OutOfSchool.BusinessLogic.Services.Communication.ICommunication;
+namespace OutOfSchool.Common.Communication.ICommunication;
 
 public interface ICommunicationService
 {

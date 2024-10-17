@@ -18,7 +18,6 @@ using OutOfSchool.Redis;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.WebApi.Tests.Services;

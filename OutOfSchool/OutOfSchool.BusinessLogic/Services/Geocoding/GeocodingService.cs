@@ -6,6 +6,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.Geocoding;
+using OutOfSchool.Common.Communication;
 
 namespace OutOfSchool.BusinessLogic.Services;
 

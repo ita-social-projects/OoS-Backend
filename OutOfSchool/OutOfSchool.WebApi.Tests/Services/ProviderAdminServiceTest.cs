@@ -16,10 +16,10 @@ using OutOfSchool.BusinessLogic.Services.ProviderAdminOperations;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
@@ -37,7 +37,7 @@ public class ProviderAdminServiceTest
     private Mock<IOptions<ProviderAdminConfig>> providerAdminConfig;
     private Mock<IOptions<CommunicationConfig>> communicationConfig;
     private Mock<IProviderAdminRepository> providerAdminRepository;
-    private Mock<IEntityRepositorySoftDeleted<string, OutOfSchool.Services.Models.User>> userRepositoryMock;
+    private Mock<IEntityRepositorySoftDeleted<string, User>> userRepositoryMock;
     private IMapper mapper;
     private Mock<IProviderAdminOperationsService> providerAdminOperationsService;
     private Mock<IWorkshopService> workshopService;
@@ -89,7 +89,7 @@ public class ProviderAdminServiceTest
                 MaxNumberOfRetries = 7,
             });
         providerAdminRepository = new Mock<IProviderAdminRepository>();
-        userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, OutOfSchool.Services.Models.User>>();
+        userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         var logger = new Mock<ILogger<ProviderAdminService>>();
         providerAdminOperationsService = new Mock<IProviderAdminOperationsService>();

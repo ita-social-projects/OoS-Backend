@@ -1,4 +1,6 @@
-﻿namespace OutOfSchool.BusinessLogic.Services.Communication;
+﻿using System.Net.Http;
+
+namespace OutOfSchool.Common.Communication;
 
 public enum HttpMethodType
 {

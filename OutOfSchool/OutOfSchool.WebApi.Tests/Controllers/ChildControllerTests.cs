@@ -15,6 +15,7 @@ using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Common;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
@@ -331,7 +332,7 @@ public class ChildControllerTests
                 ProviderTitle = existingWorkshop.ProviderTitle,
                 ProviderOwnership = existingWorkshop.ProviderOwnership,
                 Title = existingWorkshop.Title,
-                PayRate = (OutOfSchool.Common.Enums.PayRateType)existingWorkshop.PayRate,
+                PayRate = (PayRateType)existingWorkshop.PayRate,
                 CoverImageId = existingWorkshop.CoverImageId,
                 MinAge = existingWorkshop.MinAge,
                 MaxAge = existingWorkshop.MaxAge,

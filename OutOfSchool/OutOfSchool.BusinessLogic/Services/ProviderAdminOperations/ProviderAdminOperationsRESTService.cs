@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.BusinessLogic.Services.ProviderAdminOperations;

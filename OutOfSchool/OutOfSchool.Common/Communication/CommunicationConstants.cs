@@ -23,7 +23,7 @@ public static class CommunicationConstants
     public const string BlockMinistryAdmin = "ministryadmin/block/";
 
     public const string ReinviteMinistryAdmin = "ministryadmin/reinvite/";
-    
+
     public const string UpdateAreaAdmin = "areaadmin/update/";
 
     public const string DeleteAreaAdmin = "areaadmin/delete/";
@@ -33,9 +33,9 @@ public static class CommunicationConstants
     public const string ReinviteAreaAdmin = "areaadmin/reinvite/";
 
     public const string CreateAreaAdmin = "areaadmin/create";
-    
+
     public const string CreateRegionAdmin = "regionadmin/create";
-    
+
     public const string UpdateRegionAdmin = "regionadmin/update/";
 
     public const string DeleteRegionAdmin = "regionadmin/delete/";
