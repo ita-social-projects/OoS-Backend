@@ -91,7 +91,7 @@ public class EmployeesControllerTests
             },
         };
 
-        var filter = new ProviderAdminSearchFilter();
+        var filter = new EmployeeSearchFilter();
 
         providerAdminService.Setup(x => x.GetFilteredRelatedProviderAdmins(It.IsAny<string>(), filter)).ReturnsAsync(searchResult);
 
@@ -114,7 +114,7 @@ public class EmployeesControllerTests
         var searchResult = new SearchResult<EmployeeDto>()
         { };
 
-        var filter = new ProviderAdminSearchFilter();
+        var filter = new EmployeeSearchFilter();
 
         providerAdminService.Setup(x => x.GetFilteredRelatedProviderAdmins(userId, filter)).ReturnsAsync(searchResult);
 

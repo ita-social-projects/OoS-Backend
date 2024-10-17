@@ -244,22 +244,22 @@ public class EmployeesController : Controller
             });
     }
 
-    // /// <summary>
-    // /// Method to Get filtered data about related Employees.
-    // /// </summary>
-    // /// <param name="filter">Filter to get a part of all employees that were found.</param>
-    // /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    // [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<EmployeeDto>))]
-    // [ProducesResponseType(StatusCodes.Status204NoContent)]
-    // [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    // [HasPermission(Permissions.ProviderRead)]
-    // [HttpGet]
-    // public async Task<IActionResult> GetFilteredEmployeesAsync([FromQuery] ProviderAdminSearchFilter filter)
-    // {
-    //     var relatedAdmins = await employeeService.GetFilteredRelatedEmployees(userId, filter).ConfigureAwait(false);
-    //
-    //     return this.SearchResultToOkOrNoContent(relatedAdmins);
-    // }
+    /// <summary>
+    /// Method to Get filtered data about related Employees.
+    /// </summary>
+    /// <param name="filter">Filter to get a part of all employees that were found.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<EmployeeDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HasPermission(Permissions.ProviderRead)]
+    [HttpGet]
+    public async Task<IActionResult> GetFilteredProviderAdminsAsync([FromQuery] EmployeeSearchFilter filter)
+    {
+        var relatedAdmins = await employeeService.GetFilteredRelatedProviderAdmins(userId, filter).ConfigureAwait(false);
+    
+        return this.SearchResultToOkOrNoContent(relatedAdmins);
+    }
 
     /// <summary>
     /// Method to Get data about related Employees.
