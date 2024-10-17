@@ -439,6 +439,39 @@ public class EmployeeService : CommunicationService, IEmployeeService
 
         return employee != null;
     }
+    
+    public async Task<SearchResult<EmployeeDto>> GetFilteredRelatedProviderAdmins(string userId, EmployeeSearchFilter filter)
+    {
+        filter ??= new EmployeeSearchFilter();
+        ModelValidationHelper.ValidateOffsetFilter(filter);
+
+        var relatedAdmins = await this.GetRelatedEmployees(userId).ConfigureAwait(false);
+
+        int totalAmount;
+
+        if (string.IsNullOrEmpty(filter.SearchString))
+        {
+            totalAmount = relatedAdmins.Count();
+        }
+        else
+        {
+            var filterPredicate = PredicateBuild(filter).Compile();
+            totalAmount = relatedAdmins.Count(filterPredicate);
+            relatedAdmins = relatedAdmins.Where(filterPredicate);
+        }
+
+        relatedAdmins = relatedAdmins.OrderBy(x => x.AccountStatus).ThenBy(x => x.LastName).ThenBy(x => x.FirstName).ThenBy(x => x.MiddleName);
+
+        var providerAdmins = relatedAdmins.Skip(filter.From).Take(filter.Size).ToList();
+
+        var searchResult = new SearchResult<EmployeeDto>()
+        {
+            TotalAmount = totalAmount,
+            Entities = providerAdmins,
+        };
+
+        return searchResult;
+    }
 
     public async Task<IEnumerable<EmployeeDto>> GetRelatedEmployees(string userId)
     {
@@ -597,7 +630,7 @@ public class EmployeeService : CommunicationService, IEmployeeService
         }
     }
 
-    private static Expression<Func<EmployeeDto, bool>> PredicateBuild(ProviderAdminSearchFilter filter)
+    private static Expression<Func<EmployeeDto, bool>> PredicateBuild(EmployeeSearchFilter filter)
     {
         var predicate = PredicateBuilder.True<EmployeeDto>();
 

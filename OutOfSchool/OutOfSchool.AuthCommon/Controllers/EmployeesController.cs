@@ -37,9 +37,9 @@ public class EmployeesController : Controller
             .CreateEmployeeAsync(employeeDto, Url, userId);
     }
 
-    [HttpPut("{employeeId}")]
+    [HttpPut("{providerAdminId}")]
     [HasPermission(Permissions.ProviderRemove)]
-    public async Task<ResponseDto> Update(string employeeId, UpdateEmployeeDto employeeUpdateDto)
+    public async Task<ResponseDto> Update(string providerAdminId, UpdateEmployeeDto employeeUpdateDto)
     {
         logger.LogDebug(
             "Operation initiated by User(id): {UserId}",
@@ -49,29 +49,29 @@ public class EmployeesController : Controller
             .UpdateEmployeeAsync(employeeUpdateDto, userId);
     }
 
-    [HttpDelete("{employeeId}")]
+    [HttpDelete("{providerAdminId}")]
     [HasPermission(Permissions.ProviderRemove)]
-    public async Task<ResponseDto> Delete(string employeeId)
+    public async Task<ResponseDto> Delete(string providerAdminId)
     {
-        if (employeeId is null)
+        if (providerAdminId is null)
         {
-            throw new ArgumentNullException(nameof(employeeId));
+            throw new ArgumentNullException(nameof(providerAdminId));
         }
 
         logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
         return await employeeService
-            .DeleteEmployeeAsync(employeeId, userId);
+            .DeleteEmployeeAsync(providerAdminId, userId);
     }
 
-    [HttpPut("{employeeId}/{isBlocked}")]
+    [HttpPut("{providerAdminId}/{isBlocked}")]
     [HasPermission(Permissions.ProviderRemove)]
-    public async Task<ResponseDto> Block(string employeeId, bool isBlocked)
+    public async Task<ResponseDto> Block(string providerAdminId, bool isBlocked)
     {
         logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
         return await employeeService
-            .BlockEmployeeAsync(employeeId, userId, isBlocked);
+            .BlockEmployeeAsync(providerAdminId, userId, isBlocked);
     }
 
     [HttpPut("{providerId}/{isBlocked}")]
@@ -84,13 +84,13 @@ public class EmployeesController : Controller
             .BlockEmployeesByProviderAsync(providerId, userId, isBlocked);
     }
 
-    [HttpPut("{employeeId}")]
+    [HttpPut("{providerAdminId}")]
     [HasPermission(Permissions.ProviderRemove)]
-    public async Task<ResponseDto> Reinvite(string employeeId)
+    public async Task<ResponseDto> Reinvite(string providerAdminId)
     {
         logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 
         return await employeeService
-            .ReinviteEmployeeAsync(employeeId, userId, Url);
+            .ReinviteEmployeeAsync(providerAdminId, userId, Url);
     }
 }

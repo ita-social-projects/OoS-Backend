@@ -119,7 +119,7 @@ public class ProviderAdminServiceDBTest
     [Test]
     public async Task GetFilteredRelatedProviderAdmins_WhenCalled_ReturnsEntities()
     {
-        var filter = new ProviderAdminSearchFilter();
+        var filter = new EmployeeSearchFilter();
 
         // Act
         var result = await employeeService.GetFilteredRelatedProviderAdmins(providerUser.Id, filter).ConfigureAwait(false);
