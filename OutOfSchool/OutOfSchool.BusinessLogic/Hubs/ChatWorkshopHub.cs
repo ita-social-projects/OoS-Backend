@@ -145,7 +145,10 @@ public class ChatWorkshopHub : Hub
                 return;
             }
 
-            var userHasRights = await this.UserHasRigtsForChatRoomAsync(chatMessageWorkshopCreateDto.WorkshopId, chatMessageWorkshopCreateDto.ParentId).ConfigureAwait(false);
+            var workshops = await workshopRepository.GetByFilter(w => w.Id == chatMessageWorkshopCreateDto.WorkshopId, "Provider").ConfigureAwait(false);
+            var workshop = workshops.SingleOrDefault();
+
+            var userHasRights = await this.UserHasRigtsForChatRoomAsync(workshop, chatMessageWorkshopCreateDto.ParentId).ConfigureAwait(false);
 
             if (!userHasRights)
             {
@@ -166,8 +169,6 @@ public class ChatWorkshopHub : Hub
             await AddConnectionsToGroupAsync(parent.UserId, createdMessageDto.ChatRoomId.ToString()).ConfigureAwait(false);
 
             // Add Provider's connections to the Group.
-            var workshops = await workshopRepository.GetByFilter(w => w.Id == chatMessageWorkshopCreateDto.WorkshopId, "Provider").ConfigureAwait(false);
-            var workshop = workshops.SingleOrDefault();
             await AddConnectionsToGroupAsync(workshop.Provider.UserId, createdMessageDto.ChatRoomId.ToString()).ConfigureAwait(false);
 
             // Add Provider's deputy connections to the Group.
@@ -243,7 +244,7 @@ public class ChatWorkshopHub : Hub
         }
     }
 
-    private async Task<bool> UserHasRigtsForChatRoomAsync(Guid workshopId, Guid parentId)
+    private async Task<bool> UserHasRigtsForChatRoomAsync(Workshop workshop, Guid parentId)
     {
         var userId = GettingUserProperties.GetUserId(Context.User);
         LogErrorThrowExceptionIfPropertyIsNull(userId, nameof(userId));
@@ -253,11 +254,9 @@ public class ChatWorkshopHub : Hub
 
         bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
 
-        var workshop = await workshopRepository.GetById(workshopId);
-
         bool isParentBlocked = await blockedProviderParentService.IsBlocked(parentId, workshop.ProviderId);
 
-        if (isParentBlocked)
+        if (isParentBlocked || workshop.IsBlocked)
         {
             return false;
         }
@@ -268,7 +267,7 @@ public class ChatWorkshopHub : Hub
             LogErrorThrowExceptionIfPropertyIsNull(userSubroleName, nameof(userSubroleName));
             Subrole userSubrole = (Subrole)Enum.Parse(typeof(Subrole), userSubroleName, true);
 
-            return await validationService.UserIsWorkshopOwnerAsync(userId, workshopId, userSubrole);
+            return await validationService.UserIsWorkshopOwnerAsync(userId, workshop.Id, userSubrole);
         }
 
         return await validationService.UserIsParentOwnerAsync(userId, parentId);
