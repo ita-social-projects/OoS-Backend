@@ -122,6 +122,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var workshop = mapper.Map<Workshop>(dto);
         workshop.Provider = await providerRepository.GetById(workshop.ProviderId).ConfigureAwait(false);
         workshop.ProviderOwnership = workshop.Provider.Ownership;
+        workshop.ProviderTitle = workshop.Provider.FullTitle;
+        workshop.ProviderTitleEn = workshop.Provider.FullTitleEn;
 
         if (dto.Teachers is not null)
         {
@@ -149,23 +151,43 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
 
+        if (dto.MemberOfWorkshopId.HasValue && !await Exists((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false))
+        {
+            var errorMessage = $"The main workshop (with id = {dto.MemberOfWorkshopId}) for the workshop being created was not found.";
+            throw new InvalidOperationException(errorMessage);
+        }
+
+        if (dto.MemberOfWorkshopId.HasValue && (await GetById((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false)).MemberOfWorkshopId.HasValue)
+        {
+            var errorMessage = $"The main workshop (with ID = {dto.MemberOfWorkshopId}) for the workshop being created is a member of another workshop, so it cannot be the main workshop.";
+            throw new InvalidOperationException(errorMessage);
+        }
+
+        if (dto.AvailableSeats is 0 or null)
+        {
+            dto.AvailableSeats = uint.MaxValue;
+        }
+
+        var createdWorkshop = mapper.Map<Workshop>(dto);
+        createdWorkshop.Provider = await providerRepository.GetById(createdWorkshop.ProviderId).ConfigureAwait(false);
+        createdWorkshop.ProviderOwnership = createdWorkshop.Provider.Ownership;
+        createdWorkshop.ProviderTitle = createdWorkshop.Provider.FullTitle;
+        createdWorkshop.ProviderTitleEn = createdWorkshop.Provider.FullTitleEn;
+
+        if (dto.Teachers is not null)
+        {
+            createdWorkshop.Teachers = dto.Teachers.Select(mapper.Map<Teacher>).ToList();
+        }
+
+        createdWorkshop.Status = WorkshopStatus.Open;
+
         async Task<(Workshop createdWorkshop, MultipleImageUploadingResult imagesUploadResult, Result<string>
             coverImageUploadResult)> CreateWorkshopAndDependencies()
         {
-            var createdWorkshop = mapper.Map<Workshop>(dto);
-            createdWorkshop.Status = WorkshopStatus.Open;
             var workshop = await workshopRepository.Create(createdWorkshop).ConfigureAwait(false);
 
-            if (dto.Teachers != null)
-            {
-                foreach (var teacherDto in dto.Teachers)
-                {
-                    teacherDto.WorkshopId = workshop.Id;
-                    await teacherService.Create(teacherDto).ConfigureAwait(false);
-                }
-            }
-
             MultipleImageUploadingResult imagesUploadingResult = null;
+
             if (dto.ImageFiles?.Count > 0)
             {
                 workshop.Images = new List<Image<Workshop>>();

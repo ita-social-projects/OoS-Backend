@@ -50,8 +50,8 @@ public class WorkshopController : ControllerBase
     {
         this.localizer = localizer;
         this.combinedWorkshopService = combinedWorkshopService;
-        this.providerAdminService = providerAdminService;
         this.providerService = providerService;
+        this.providerAdminService = providerAdminService;
         this.userService = userService;
         this.teacherService = teacherService;
         this.logger = logger;
@@ -303,7 +303,7 @@ public class WorkshopController : ControllerBase
         }
 
         // TODO: after refactoring the DTOs for the Workshop entities, this method needs to be replaced with the correct mapping
-        await SetIdToDefaultValue(dto).ConfigureAwait(false); // This method includes the setting of the Id properties to the default value.
+        await SetIdsToDefaultValue(dto).ConfigureAwait(false); // This method sets the properties with the Id to the default value.
 
         try
         {
@@ -542,7 +542,7 @@ public class WorkshopController : ControllerBase
         return await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false;
     }
 
-    private async Task SetIdToDefaultValue(WorkshopBaseDto dto)
+    private async Task SetIdsToDefaultValue(WorkshopBaseDto dto)
     {
         dto.Id = default;
         dto.Address.Id = default;
