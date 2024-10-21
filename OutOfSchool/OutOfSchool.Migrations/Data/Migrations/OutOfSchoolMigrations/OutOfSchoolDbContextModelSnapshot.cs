@@ -31,7 +31,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ChildrenId");
 
-                    b.ToTable("AchievementChild", (string)null);
+                    b.ToTable("AchievementChild");
                 });
 
             modelBuilder.Entity("ChildSocialGroup", b =>
@@ -46,7 +46,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("SocialGroupsId");
 
-                    b.ToTable("ChildSocialGroup", (string)null);
+                    b.ToTable("ChildSocialGroup");
                 });
 
             modelBuilder.Entity("DirectionInstitutionHierarchy", b =>
@@ -61,7 +61,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("InstitutionHierarchiesId");
 
-                    b.ToTable("DirectionInstitutionHierarchy", (string)null);
+                    b.ToTable("DirectionInstitutionHierarchy");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
@@ -78,7 +78,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DataProtectionKeys", (string)null);
+                    b.ToTable("DataProtectionKeys");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -242,7 +242,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("Achievements", (string)null);
+                    b.ToTable("Achievements");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.AchievementTeacher", b =>
@@ -270,7 +270,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("AchievementTeachers", (string)null);
+                    b.ToTable("AchievementTeachers");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.AchievementType", b =>
@@ -297,7 +297,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("AchievementTypes", (string)null);
+                    b.ToTable("AchievementTypes");
 
                     b.HasData(
                         new
@@ -390,7 +390,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("Addresses", (string)null);
+                    b.ToTable("Addresses");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Application", b =>
@@ -441,7 +441,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("Applications", (string)null);
+                    b.ToTable("Applications");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.AreaAdmin", b =>
@@ -468,7 +468,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("AreaAdmins", (string)null);
+                    b.ToTable("AreaAdmins");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.AverageRating", b =>
@@ -497,7 +497,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("AverageRatings", (string)null);
+                    b.ToTable("AverageRatings");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.BlockedProviderParent", b =>
@@ -543,7 +543,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ProviderId");
 
-                    b.ToTable("BlockedProviderParents", (string)null);
+                    b.ToTable("BlockedProviderParents");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.CATOTTG", b =>
@@ -596,7 +596,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("CATOTTGs", (string)null);
+                    b.ToTable("CATOTTGs");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChangesLog", b =>
@@ -639,7 +639,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ChangesLog", (string)null);
+                    b.ToTable("ChangesLog");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatWorkshop.ChatMessageWorkshop", b =>
@@ -676,7 +676,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("ChatMessageWorkshops", (string)null);
+                    b.ToTable("ChatMessageWorkshops");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatWorkshop.ChatRoomWorkshop", b =>
@@ -707,7 +707,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("ChatRoomWorkshops", (string)null);
+                    b.ToTable("ChatRoomWorkshops");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Child", b =>
@@ -761,7 +761,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("Children", (string)null);
+                    b.ToTable("Children");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformation", b =>
@@ -779,7 +779,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CompanyInformation", (string)null);
+                    b.ToTable("CompanyInformation");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformationItem", b =>
@@ -803,7 +803,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("CompanyInformationId");
 
-                    b.ToTable("CompanyInformationItems", (string)null);
+                    b.ToTable("CompanyInformationItems");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", b =>
@@ -1172,7 +1172,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("DateTimeRanges", null, t =>
+                    b.ToTable("DateTimeRanges", t =>
                         {
                             t.HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "EndTime >= StartTime");
                         });
@@ -1202,7 +1202,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("Directions", (string)null);
+                    b.ToTable("Directions");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ElasticsearchSyncRecord", b =>
@@ -1225,7 +1225,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ElasticsearchSyncRecords", (string)null);
+                    b.ToTable("ElasticsearchSyncRecords");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Favorite", b =>
@@ -1254,7 +1254,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("Favorites", (string)null);
+                    b.ToTable("Favorites");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.FileInDb", b =>
@@ -1270,7 +1270,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FilesInDb", (string)null);
+                    b.ToTable("FilesInDb");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Provider>", b =>
@@ -1283,7 +1283,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("EntityId", "ExternalStorageId");
 
-                    b.ToTable("ProviderImages", (string)null);
+                    b.ToTable("ProviderImages");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", b =>
@@ -1296,7 +1296,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("EntityId", "ExternalStorageId");
 
-                    b.ToTable("WorkshopImages", (string)null);
+                    b.ToTable("WorkshopImages");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionAdmin", b =>
@@ -1318,7 +1318,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("InstitutionAdmins", (string)null);
+                    b.ToTable("InstitutionAdmins");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionStatus", b =>
@@ -1344,7 +1344,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("InstitutionStatuses", (string)null);
+                    b.ToTable("InstitutionStatuses");
 
                     b.HasData(
                         new
@@ -1412,7 +1412,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.OperationWithObject", b =>
@@ -1449,7 +1449,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("RowSeparator");
 
-                    b.ToTable("OperationsWithObjects", (string)null);
+                    b.ToTable("OperationsWithObjects");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
@@ -1480,7 +1480,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Parents", (string)null);
+                    b.ToTable("Parents");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ParentBlockedByAdminLog", b =>
@@ -1512,7 +1512,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ParentBlockedByAdminLog", (string)null);
+                    b.ToTable("ParentBlockedByAdminLog");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.PermissionsForRole", b =>
@@ -1536,7 +1536,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PermissionsForRoles", (string)null);
+                    b.ToTable("PermissionsForRoles");
 
                     b.HasData(
                         new
@@ -1760,7 +1760,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Providers", (string)null);
+                    b.ToTable("Providers");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ProviderAdmin", b =>
@@ -1788,7 +1788,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ProviderId");
 
-                    b.ToTable("ProviderAdmins", (string)null);
+                    b.ToTable("ProviderAdmins");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ProviderAdminChangesLog", b =>
@@ -1838,7 +1838,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProviderAdminChangesLog", (string)null);
+                    b.ToTable("ProviderAdminChangesLog");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ProviderSectionItem", b =>
@@ -1869,7 +1869,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ProviderId");
 
-                    b.ToTable("ProviderSectionItems", (string)null);
+                    b.ToTable("ProviderSectionItems");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ProviderType", b =>
@@ -1884,7 +1884,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProviderTypes", (string)null);
+                    b.ToTable("ProviderTypes");
 
                     b.HasData(
                         new
@@ -1968,7 +1968,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("QuartzJobs", (string)null);
+                    b.ToTable("QuartzJobs");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Rating", b =>
@@ -2002,7 +2002,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("Ratings", (string)null);
+                    b.ToTable("Ratings");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.RegionAdmin", b =>
@@ -2029,7 +2029,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("RegionAdmins", (string)null);
+                    b.ToTable("RegionAdmins");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SocialGroup", b =>
@@ -2056,7 +2056,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("SocialGroups", (string)null);
+                    b.ToTable("SocialGroups");
 
                     b.HasData(
                         new
@@ -2122,7 +2122,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("StatisticReports", (string)null);
+                    b.ToTable("StatisticReports");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.StatisticReportCSV", b =>
@@ -2235,7 +2235,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("StatisticReportsCSV", (string)null);
+                    b.ToTable("StatisticReportsCSV");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SubordinationStructure.Institution", b =>
@@ -2263,7 +2263,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("Institutions", (string)null);
+                    b.ToTable("Institutions");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SubordinationStructure.InstitutionFieldDescription", b =>
@@ -2293,7 +2293,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("InstitutionFieldDescriptions", (string)null);
+                    b.ToTable("InstitutionFieldDescriptions");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SubordinationStructure.InstitutionHierarchy", b =>
@@ -2328,7 +2328,626 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("InstitutionHierarchies", (string)null);
+                    b.ToTable("InstitutionHierarchies");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Tag", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("NameEn")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Tags");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            Name = "Музичний Гурток",
+                            NameEn = "Music Workshop"
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            Name = "Спортивна Секція",
+                            NameEn = "Sports Section"
+                        },
+                        new
+                        {
+                            Id = 3L,
+                            Name = "Хореографія",
+                            NameEn = "Choreography"
+                        },
+                        new
+                        {
+                            Id = 4L,
+                            Name = "Образотворче Мистецтво",
+                            NameEn = "Fine Arts"
+                        },
+                        new
+                        {
+                            Id = 5L,
+                            Name = "Театральна Студія",
+                            NameEn = "Theater Studio"
+                        },
+                        new
+                        {
+                            Id = 6L,
+                            Name = "Футбол",
+                            NameEn = "Football"
+                        },
+                        new
+                        {
+                            Id = 7L,
+                            Name = "Волейбол",
+                            NameEn = "Volleyball"
+                        },
+                        new
+                        {
+                            Id = 8L,
+                            Name = "Плавання",
+                            NameEn = "Swimming"
+                        },
+                        new
+                        {
+                            Id = 9L,
+                            Name = "Легка Атлетика",
+                            NameEn = "Track and Field"
+                        },
+                        new
+                        {
+                            Id = 10L,
+                            Name = "Баскетбол",
+                            NameEn = "Basketball"
+                        },
+                        new
+                        {
+                            Id = 11L,
+                            Name = "Гімнастика",
+                            NameEn = "Gymnastics"
+                        },
+                        new
+                        {
+                            Id = 12L,
+                            Name = "Танці",
+                            NameEn = "Dancing"
+                        },
+                        new
+                        {
+                            Id = 13L,
+                            Name = "Йога",
+                            NameEn = "Yoga"
+                        },
+                        new
+                        {
+                            Id = 14L,
+                            Name = "Карате",
+                            NameEn = "Karate"
+                        },
+                        new
+                        {
+                            Id = 15L,
+                            Name = "Айкідо",
+                            NameEn = "Aikido"
+                        },
+                        new
+                        {
+                            Id = 16L,
+                            Name = "Боротьба",
+                            NameEn = "Wrestling"
+                        },
+                        new
+                        {
+                            Id = 17L,
+                            Name = "Джудо",
+                            NameEn = "Judo"
+                        },
+                        new
+                        {
+                            Id = 18L,
+                            Name = "Кулінарія",
+                            NameEn = "Culinary Arts"
+                        },
+                        new
+                        {
+                            Id = 19L,
+                            Name = "Рукоділля",
+                            NameEn = "Handicrafts"
+                        },
+                        new
+                        {
+                            Id = 20L,
+                            Name = "Малювання",
+                            NameEn = "Drawing"
+                        },
+                        new
+                        {
+                            Id = 21L,
+                            Name = "Скульптура",
+                            NameEn = "Sculpture"
+                        },
+                        new
+                        {
+                            Id = 22L,
+                            Name = "Фотографія",
+                            NameEn = "Photography"
+                        },
+                        new
+                        {
+                            Id = 23L,
+                            Name = "Кіно Мистецтво",
+                            NameEn = "Cinema Art"
+                        },
+                        new
+                        {
+                            Id = 24L,
+                            Name = "Акторська Майстерність",
+                            NameEn = "Acting"
+                        },
+                        new
+                        {
+                            Id = 25L,
+                            Name = "Психологічні Тренінги",
+                            NameEn = "Psychological Training"
+                        },
+                        new
+                        {
+                            Id = 26L,
+                            Name = "Робототехніка",
+                            NameEn = "Robotics"
+                        },
+                        new
+                        {
+                            Id = 27L,
+                            Name = "Програмування",
+                            NameEn = "Programming"
+                        },
+                        new
+                        {
+                            Id = 28L,
+                            Name = "Інформаційні Технології",
+                            NameEn = "Information Technology"
+                        },
+                        new
+                        {
+                            Id = 29L,
+                            Name = "Шахи",
+                            NameEn = "Chess"
+                        },
+                        new
+                        {
+                            Id = 30L,
+                            Name = "Логіка",
+                            NameEn = "Logic"
+                        },
+                        new
+                        {
+                            Id = 31L,
+                            Name = "Екологія",
+                            NameEn = "Ecology"
+                        },
+                        new
+                        {
+                            Id = 32L,
+                            Name = "Наукові Дослідження",
+                            NameEn = "Scientific Research"
+                        },
+                        new
+                        {
+                            Id = 33L,
+                            Name = "Біологія",
+                            NameEn = "Biology"
+                        },
+                        new
+                        {
+                            Id = 34L,
+                            Name = "Астрономія",
+                            NameEn = "Astronomy"
+                        },
+                        new
+                        {
+                            Id = 35L,
+                            Name = "Математика",
+                            NameEn = "Mathematics"
+                        },
+                        new
+                        {
+                            Id = 36L,
+                            Name = "Фізика",
+                            NameEn = "Physics"
+                        },
+                        new
+                        {
+                            Id = 37L,
+                            Name = "Хімія",
+                            NameEn = "Chemistry"
+                        },
+                        new
+                        {
+                            Id = 38L,
+                            Name = "Іноземні Мови",
+                            NameEn = "Foreign Languages"
+                        },
+                        new
+                        {
+                            Id = 39L,
+                            Name = "Англійська Мова",
+                            NameEn = "English Language"
+                        },
+                        new
+                        {
+                            Id = 40L,
+                            Name = "Німецька Мова",
+                            NameEn = "German Language"
+                        },
+                        new
+                        {
+                            Id = 41L,
+                            Name = "Французька Мова",
+                            NameEn = "French Language"
+                        },
+                        new
+                        {
+                            Id = 42L,
+                            Name = "Іспанська Мова",
+                            NameEn = "Spanish Language"
+                        },
+                        new
+                        {
+                            Id = 43L,
+                            Name = "Журналістика",
+                            NameEn = "Journalism"
+                        },
+                        new
+                        {
+                            Id = 44L,
+                            Name = "Риторика",
+                            NameEn = "Rhetoric"
+                        },
+                        new
+                        {
+                            Id = 45L,
+                            Name = "Літературна Творчість",
+                            NameEn = "Literary Creativity"
+                        },
+                        new
+                        {
+                            Id = 46L,
+                            Name = "Історія",
+                            NameEn = "History"
+                        },
+                        new
+                        {
+                            Id = 47L,
+                            Name = "Археологія",
+                            NameEn = "Archaeology"
+                        },
+                        new
+                        {
+                            Id = 48L,
+                            Name = "Мистецтвознавство",
+                            NameEn = "Art Studies"
+                        },
+                        new
+                        {
+                            Id = 49L,
+                            Name = "Культурологія",
+                            NameEn = "Cultural Studies"
+                        },
+                        new
+                        {
+                            Id = 50L,
+                            Name = "Краєзнавство",
+                            NameEn = "Local History"
+                        },
+                        new
+                        {
+                            Id = 51L,
+                            Name = "Етнографія",
+                            NameEn = "Ethnography"
+                        },
+                        new
+                        {
+                            Id = 52L,
+                            Name = "Радіо Аматорство",
+                            NameEn = "Radio Amateur"
+                        },
+                        new
+                        {
+                            Id = 53L,
+                            Name = "Модельний Спорт",
+                            NameEn = "Model Sports"
+                        },
+                        new
+                        {
+                            Id = 54L,
+                            Name = "Авіамоделювання",
+                            NameEn = "Aeromodelling"
+                        },
+                        new
+                        {
+                            Id = 55L,
+                            Name = "Судномоделювання",
+                            NameEn = "Ship Modelling"
+                        },
+                        new
+                        {
+                            Id = 56L,
+                            Name = "Конструювання",
+                            NameEn = "Construction"
+                        },
+                        new
+                        {
+                            Id = 57L,
+                            Name = "Технічне Моделювання",
+                            NameEn = "Technical Modelling"
+                        },
+                        new
+                        {
+                            Id = 58L,
+                            Name = "Декоративно Прикладне Мистецтво",
+                            NameEn = "Decorative Arts"
+                        },
+                        new
+                        {
+                            Id = 59L,
+                            Name = "Кераміка",
+                            NameEn = "Ceramics"
+                        },
+                        new
+                        {
+                            Id = 60L,
+                            Name = "Різьба По Дереву",
+                            NameEn = "Wood Carving"
+                        },
+                        new
+                        {
+                            Id = 61L,
+                            Name = "Вишивка",
+                            NameEn = "Embroidery"
+                        },
+                        new
+                        {
+                            Id = 62L,
+                            Name = "Плетіння",
+                            NameEn = "Weaving"
+                        },
+                        new
+                        {
+                            Id = 63L,
+                            Name = "Бісероплетіння",
+                            NameEn = "Bead Weaving"
+                        },
+                        new
+                        {
+                            Id = 64L,
+                            Name = "Флористика",
+                            NameEn = "Floristry"
+                        },
+                        new
+                        {
+                            Id = 65L,
+                            Name = "Дизайн",
+                            NameEn = "Design"
+                        },
+                        new
+                        {
+                            Id = 66L,
+                            Name = "Архітектура",
+                            NameEn = "Architecture"
+                        },
+                        new
+                        {
+                            Id = 67L,
+                            Name = "Моделювання Одягу",
+                            NameEn = "Fashion Design"
+                        },
+                        new
+                        {
+                            Id = 68L,
+                            Name = "Кравецтво",
+                            NameEn = "Tailoring"
+                        },
+                        new
+                        {
+                            Id = 69L,
+                            Name = "Хенд Мейд",
+                            NameEn = "Handmade"
+                        },
+                        new
+                        {
+                            Id = 70L,
+                            Name = "Графічний Дизайн",
+                            NameEn = "Graphic Design"
+                        },
+                        new
+                        {
+                            Id = 71L,
+                            Name = "Анімація",
+                            NameEn = "Animation"
+                        },
+                        new
+                        {
+                            Id = 72L,
+                            Name = "3D Моделювання",
+                            NameEn = "3D Modelling"
+                        },
+                        new
+                        {
+                            Id = 73L,
+                            Name = "Мультиплікація",
+                            NameEn = "Cartoon Making"
+                        },
+                        new
+                        {
+                            Id = 74L,
+                            Name = "Відеомонтаж",
+                            NameEn = "Video Editing"
+                        },
+                        new
+                        {
+                            Id = 75L,
+                            Name = "Цифровий Мистецький Дизайн",
+                            NameEn = "Digital Art Design"
+                        },
+                        new
+                        {
+                            Id = 76L,
+                            Name = "Сучасне Мистецтво",
+                            NameEn = "Modern Art"
+                        },
+                        new
+                        {
+                            Id = 77L,
+                            Name = "Естрадний Спів",
+                            NameEn = "Pop Singing"
+                        },
+                        new
+                        {
+                            Id = 78L,
+                            Name = "Вокальний Ансамбль",
+                            NameEn = "Vocal Ensemble"
+                        },
+                        new
+                        {
+                            Id = 79L,
+                            Name = "Оркестр",
+                            NameEn = "Orchestra"
+                        },
+                        new
+                        {
+                            Id = 80L,
+                            Name = "Гра На Гітарі",
+                            NameEn = "Guitar Playing"
+                        },
+                        new
+                        {
+                            Id = 81L,
+                            Name = "Гра На Фортепіано",
+                            NameEn = "Piano Playing"
+                        },
+                        new
+                        {
+                            Id = 82L,
+                            Name = "Сольний Спів",
+                            NameEn = "Solo Singing"
+                        },
+                        new
+                        {
+                            Id = 83L,
+                            Name = "Хоровий Спів",
+                            NameEn = "Choral Singing"
+                        },
+                        new
+                        {
+                            Id = 84L,
+                            Name = "Фольклорний Ансамбль",
+                            NameEn = "Folklore Ensemble"
+                        },
+                        new
+                        {
+                            Id = 85L,
+                            Name = "Етнічна Музика",
+                            NameEn = "Ethnic Music"
+                        },
+                        new
+                        {
+                            Id = 86L,
+                            Name = "Духові Інструменти",
+                            NameEn = "Wind Instruments"
+                        },
+                        new
+                        {
+                            Id = 87L,
+                            Name = "Струнні Інструменти",
+                            NameEn = "String Instruments"
+                        },
+                        new
+                        {
+                            Id = 88L,
+                            Name = "Барабани",
+                            NameEn = "Drums"
+                        },
+                        new
+                        {
+                            Id = 89L,
+                            Name = "Перкусія",
+                            NameEn = "Percussion"
+                        },
+                        new
+                        {
+                            Id = 90L,
+                            Name = "Музичний Театр",
+                            NameEn = "Musical Theater"
+                        },
+                        new
+                        {
+                            Id = 91L,
+                            Name = "Сценічна Мова",
+                            NameEn = "Stage Speech"
+                        },
+                        new
+                        {
+                            Id = 92L,
+                            Name = "Імпровізація",
+                            NameEn = "Improvisation"
+                        },
+                        new
+                        {
+                            Id = 93L,
+                            Name = "Сценічний Рух",
+                            NameEn = "Stage Movement"
+                        },
+                        new
+                        {
+                            Id = 94L,
+                            Name = "Сценографія",
+                            NameEn = "Scenography"
+                        },
+                        new
+                        {
+                            Id = 95L,
+                            Name = "Художнє Читання",
+                            NameEn = "Artistic Reading"
+                        },
+                        new
+                        {
+                            Id = 96L,
+                            Name = "Модерн",
+                            NameEn = "Modern Dance"
+                        },
+                        new
+                        {
+                            Id = 97L,
+                            Name = "Балет",
+                            NameEn = "Ballet"
+                        },
+                        new
+                        {
+                            Id = 98L,
+                            Name = "Сучасні Танці",
+                            NameEn = "Modern Dances"
+                        },
+                        new
+                        {
+                            Id = 99L,
+                            Name = "Народні Танці",
+                            NameEn = "Folk Dances"
+                        },
+                        new
+                        {
+                            Id = 100L,
+                            Name = "Фітнес",
+                            NameEn = "Fitness"
+                        });
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Teacher", b =>
@@ -2380,7 +2999,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("Teachers", (string)null);
+                    b.ToTable("Teachers");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.User", b =>
@@ -2658,7 +3277,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ProviderId");
 
-                    b.ToTable("Workshops", (string)null);
+                    b.ToTable("Workshops");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.WorkshopDescriptionItem", b =>
@@ -2691,7 +3310,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("WorkshopDescriptionItems", (string)null);
+                    b.ToTable("WorkshopDescriptionItems");
                 });
 
             modelBuilder.Entity("ProviderAdminWorkshop", b =>
@@ -2706,7 +3325,22 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ProviderAdminsUserId");
 
-                    b.ToTable("ProviderAdminWorkshop", (string)null);
+                    b.ToTable("ProviderAdminWorkshop");
+                });
+
+            modelBuilder.Entity("TagWorkshop", b =>
+                {
+                    b.Property<long>("TagsId")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("WorkshopsId")
+                        .HasColumnType("binary(16)");
+
+                    b.HasKey("TagsId", "WorkshopsId");
+
+                    b.HasIndex("WorkshopsId");
+
+                    b.ToTable("TagWorkshop");
                 });
 
             modelBuilder.Entity("AchievementChild", b =>
@@ -3363,6 +3997,21 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasOne("OutOfSchool.Services.Models.ProviderAdmin", null)
                         .WithMany()
                         .HasForeignKey("ProviderAdminsUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TagWorkshop", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Tag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.Workshop", null)
+                        .WithMany()
+                        .HasForeignKey("WorkshopsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
