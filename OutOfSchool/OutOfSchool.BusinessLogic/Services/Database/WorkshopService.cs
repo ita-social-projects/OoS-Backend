@@ -49,6 +49,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// </summary>
     /// <param name="workshopRepository">Repository for Workshop entity.</param>
     /// <param name="dateTimeRangeRepository">Repository for DateTimeRange entity.</param>
+    /// <param name="roomRepository">Repository for ChatRoomWorkshop entity.</param>
     /// <param name="teacherService">Teacher service.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Automapper DI service.</param>
@@ -99,38 +100,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <exception cref="ArgumentNullException">If <see cref="WorkshopBaseDto"/> is null.</exception>
     public async Task<WorkshopBaseDto> Create(WorkshopBaseDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
-        logger.LogInformation("Workshop creating was started.");
-
-        if (dto.MemberOfWorkshopId.HasValue && !await Exists((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false))
-        {
-            var errorMessage = $"The main workshop (with id = {dto.MemberOfWorkshopId}) for the workshop being created was not found.";
-            throw new InvalidOperationException(errorMessage);
-        }
-
-        if (dto.MemberOfWorkshopId.HasValue && (await GetById((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false)).MemberOfWorkshopId.HasValue)
-        {
-            var errorMessage = $"The main workshop (with ID = {dto.MemberOfWorkshopId}) for the workshop being created is a member of another workshop, so it cannot be the main workshop.";
-            throw new InvalidOperationException(errorMessage);
-        }
-
-        if (dto.AvailableSeats is 0 or null)
-        {
-            dto.AvailableSeats = uint.MaxValue;
-        }
-
-        var workshop = mapper.Map<Workshop>(dto);
-        workshop.Provider = await providerRepository.GetById(workshop.ProviderId).ConfigureAwait(false);
-        workshop.ProviderOwnership = workshop.Provider.Ownership;
-        workshop.ProviderTitle = workshop.Provider.FullTitle;
-        workshop.ProviderTitleEn = workshop.Provider.FullTitleEn;
-
-        if (dto.Teachers is not null)
-        {
-            workshop.Teachers = dto.Teachers.Select(mapper.Map<Teacher>).ToList();
-        }
-
-        workshop.Status = WorkshopStatus.Open;
+        var workshop = await CheckDtoAndPrepareCreatedWorkshop(dto);
 
         Func<Task<Workshop>> operation = async () =>
             await workshopRepository.Create(workshop).ConfigureAwait(false);
@@ -148,38 +118,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <exception cref="DbUpdateException">If unreal to update entity.</exception>
     public async Task<WorkshopResultDto> CreateV2(WorkshopV2Dto dto)
     {
-        _ = dto ?? throw new ArgumentNullException(nameof(dto));
-        logger.LogInformation("Workshop creating was started.");
-
-        if (dto.MemberOfWorkshopId.HasValue && !await Exists((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false))
-        {
-            var errorMessage = $"The main workshop (with id = {dto.MemberOfWorkshopId}) for the workshop being created was not found.";
-            throw new InvalidOperationException(errorMessage);
-        }
-
-        if (dto.MemberOfWorkshopId.HasValue && (await GetById((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false)).MemberOfWorkshopId.HasValue)
-        {
-            var errorMessage = $"The main workshop (with ID = {dto.MemberOfWorkshopId}) for the workshop being created is a member of another workshop, so it cannot be the main workshop.";
-            throw new InvalidOperationException(errorMessage);
-        }
-
-        if (dto.AvailableSeats is 0 or null)
-        {
-            dto.AvailableSeats = uint.MaxValue;
-        }
-
-        var createdWorkshop = mapper.Map<Workshop>(dto);
-        createdWorkshop.Provider = await providerRepository.GetById(createdWorkshop.ProviderId).ConfigureAwait(false);
-        createdWorkshop.ProviderOwnership = createdWorkshop.Provider.Ownership;
-        createdWorkshop.ProviderTitle = createdWorkshop.Provider.FullTitle;
-        createdWorkshop.ProviderTitleEn = createdWorkshop.Provider.FullTitleEn;
-
-        if (dto.Teachers is not null)
-        {
-            createdWorkshop.Teachers = dto.Teachers.Select(mapper.Map<Teacher>).ToList();
-        }
-
-        createdWorkshop.Status = WorkshopStatus.Open;
+        var createdWorkshop = await CheckDtoAndPrepareCreatedWorkshop(dto);
 
         async Task<(Workshop createdWorkshop, MultipleImageUploadingResult imagesUploadResult, Result<string>
             coverImageUploadResult)> CreateWorkshopAndDependencies()
@@ -1123,5 +1062,53 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
                 Status = WorkshopStatus.Closed,
             }).ConfigureAwait(false);
         }
+    }
+
+    private async Task<Workshop> CheckDtoAndPrepareCreatedWorkshop(WorkshopBaseDto dto)
+    {
+        _ = dto ?? throw new ArgumentNullException(nameof(dto));
+        logger.LogInformation("Workshop creating was started.");
+
+        if (dto.MemberOfWorkshopId.HasValue && !await Exists((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false))
+        {
+            var errorMessage = $"The main workshop (with id = {dto.MemberOfWorkshopId}) for the workshop being created was not found.";
+            throw new InvalidOperationException(errorMessage);
+        }
+
+        if (dto.MemberOfWorkshopId.HasValue && (await GetById((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false)).MemberOfWorkshopId.HasValue)
+        {
+            var errorMessage = $"The main workshop (with ID = {dto.MemberOfWorkshopId}) for the workshop being created is a member of another workshop, so it cannot be the main workshop.";
+            throw new InvalidOperationException(errorMessage);
+        }
+
+        if (dto.AvailableSeats is 0 or null)
+        {
+            dto.AvailableSeats = uint.MaxValue;
+        }
+
+        Workshop createdWorkshop;
+
+        if (dto is WorkshopV2Dto v2Dto)
+        {
+            createdWorkshop = mapper.Map<Workshop>(v2Dto);
+        }
+        else
+        {
+            createdWorkshop = mapper.Map<Workshop>(dto);
+        }
+
+        createdWorkshop.Provider = await providerRepository.GetById(createdWorkshop.ProviderId).ConfigureAwait(false);
+        createdWorkshop.ProviderOwnership = createdWorkshop.Provider.Ownership;
+        createdWorkshop.ProviderTitle = createdWorkshop.Provider.FullTitle;
+        createdWorkshop.ProviderTitleEn = createdWorkshop.Provider.FullTitleEn;
+
+        if (dto.Teachers is not null)
+        {
+            createdWorkshop.Teachers = dto.Teachers.Select(mapper.Map<Teacher>).ToList();
+        }
+
+        createdWorkshop.Status = WorkshopStatus.Open;
+
+        return createdWorkshop;
     }
 }
