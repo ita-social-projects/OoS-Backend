@@ -34,14 +34,14 @@ public class WorkshopServicesCombinerTests
     private Mock<IEntityRepositorySoftDeleted<long, Favorite>> favoriteRepository;
     private Mock<IApplicationRepository> applicationRepository;
     private Mock<IElasticsearchProvider<WorkshopES, WorkshopFilterES>> esProvider;
-
+    private Mock<IElasticsearchSynchronizationService> elasticsearchSynchronizationService;
     private IWorkshopServicesCombiner service;
 
     [SetUp]
     public void SetUp()
     {
         workshopService = new Mock<IWorkshopService>();
-        var elasticsearchSynchronizationService = new Mock<IElasticsearchSynchronizationService>();
+        elasticsearchSynchronizationService = new Mock<IElasticsearchSynchronizationService>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
 
         favoriteRepository = new Mock<IEntityRepositorySoftDeleted<long, Favorite>>();
@@ -70,6 +70,7 @@ public class WorkshopServicesCombinerTests
             mapper);
     }
 
+    #region GetById
     [Test]
     [TestCase(false)]
     [TestCase(true)]
@@ -106,7 +107,55 @@ public class WorkshopServicesCombinerTests
         Assert.IsNull(result);
         workshopService.Verify(x => x.GetById(id, asNoTracking), Times.Once);
     }
+    #endregion
 
+    #region Create
+    [Test]
+    public async Task Create_WithValidDto_ShouldReturnSucceededResult()
+    {
+        // Arrange
+        var newWorkshopBaseDto = WorkshopBaseDtoGenerator.Generate();
+        newWorkshopBaseDto.AvailableSeats = 10;
+
+        workshopService.Setup(x => x.Create(newWorkshopBaseDto))
+            .ReturnsAsync(newWorkshopBaseDto).Verifiable(Times.Once);
+        elasticsearchSynchronizationService.Setup(
+            x => x.AddNewRecordToElasticsearchSynchronizationTable(
+                ElasticsearchSyncEntity.Workshop,
+                newWorkshopBaseDto.Id,
+                ElasticsearchSyncOperation.Create)).Verifiable(Times.Once);
+
+        // Act
+        var result = await service.Create(newWorkshopBaseDto).ConfigureAwait(false);
+
+        // Assert
+        workshopService.VerifyAll();
+        elasticsearchSynchronizationService.VerifyAll();
+        Assert.IsNotNull(result);
+        Assert.AreEqual(newWorkshopBaseDto, result);
+    }
+
+    [Test]
+    public void Create_WithNotExistedWorkshop_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var newWorkshopBaseDto = (WorkshopBaseDto)null;
+        workshopService.Setup(x => x.Create(newWorkshopBaseDto))
+            .ThrowsAsync(new ArgumentNullException()).Verifiable(Times.Once);
+        elasticsearchSynchronizationService.Setup(
+            x => x.AddNewRecordToElasticsearchSynchronizationTable(
+                ElasticsearchSyncEntity.Workshop,
+                Guid.NewGuid(),
+                ElasticsearchSyncOperation.Create)).Verifiable(Times.Never);
+
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await service.Create(newWorkshopBaseDto));
+        workshopService.VerifyAll();
+        elasticsearchSynchronizationService.VerifyAll();
+    }
+    #endregion
+
+    #region Update
     [Test]
     public async Task Update_WithValidDto_ShouldReturnSucceededResult()
     {
@@ -176,7 +225,9 @@ public class WorkshopServicesCombinerTests
         Assert.AreEqual(HttpStatusCode.BadRequest.ToString(), firstError.Code);
         Assert.AreEqual(Constants.InvalidAvailableSeatsForWorkshopErrorMessage, firstError.Description);
     }
+    #endregion
 
+    #region UpdateStatus
     [Test]
     public async Task UpdateStatus_WhenDtoIsNull_ThrowsArgumentNullException()
     {
@@ -259,6 +310,7 @@ public class WorkshopServicesCombinerTests
                 null),
             Times.Once);
     }
+    #endregion
 
     [Test]
     public async Task UpdateProviderStatus_WhenCalled_CallPartialUpdates()
