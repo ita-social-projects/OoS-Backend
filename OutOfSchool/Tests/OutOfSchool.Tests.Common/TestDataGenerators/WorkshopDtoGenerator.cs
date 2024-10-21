@@ -2,6 +2,7 @@
 using OutOfSchool.Common.Enums;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using System.Collections.Generic;
+using OutOfSchool.BusinessLogic.Models.Tag;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -15,6 +16,11 @@ public static class WorkshopDtoGenerator
     .RuleFor(x => x.IsBlocked, f => f.Random.Bool())
     .RuleFor(x => x.ProviderOwnership, f => f.PickRandom<OwnershipType>())
     .RuleFor(x => x.ProviderStatus, f => f.PickRandom<ProviderStatus>())
+    .RuleFor(x => x.Tags, f => f.Make(5, () => new TagDto
+    {
+        Id = f.Random.Long(1, 100),
+        Name = f.Commerce.ProductName()
+    }))
     .CustomInstantiator(f =>
     {
         var dto = new WorkshopDto();

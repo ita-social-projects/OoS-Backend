@@ -9,7 +9,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
 public static class WorkshopBaseDtoGenerator
 {
-    public static readonly Faker<WorkshopCreate> Faker = new Faker<WorkshopCreate>()
+    public static readonly Faker<WorkshopBaseDto> Faker = new Faker<WorkshopBaseDto>()
         .RuleForType(typeof(int), f => f.Random.Int())
         .RuleForType(typeof(Guid), f => f.Random.Guid())
         .RuleForType(typeof(long), f => f.Random.Long(0, long.MaxValue))
@@ -43,12 +43,11 @@ public static class WorkshopBaseDtoGenerator
         .RuleFor(x => x.Teachers, f => f.Make(new Random().Next(1, 3), () => new TeacherDTO()))
         .RuleFor(x => x.ProviderId, f => f.Random.Guid())
         .RuleFor(x => x.ProviderTitle, f => f.Company.CompanyName())
-        .RuleFor(x => x.ProviderLicenseStatus, f => f.PickRandom<ProviderLicenseStatus>())
-        .RuleFor(x => x.TagIds, _ => new List<long>());
+        .RuleFor(x => x.ProviderLicenseStatus, f => f.PickRandom<ProviderLicenseStatus>());
 
-    public static WorkshopCreate Generate() => Faker.Generate();
+    public static WorkshopBaseDto Generate() => Faker.Generate();
 
-    public static List<WorkshopCreate> Generate(int count) => Faker.Generate(count);
+    public static List<WorkshopBaseDto> Generate(int count) => Faker.Generate(count);
 
-    public static void Populate(WorkshopCreate dto) => Faker.Populate(dto);
+    public static void Populate(WorkshopBaseDto dto) => Faker.Populate(dto);
 }

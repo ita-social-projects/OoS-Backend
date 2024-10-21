@@ -94,4 +94,11 @@ public static class WorkshopGenerator
 
     public static List<Workshop> WithImages(this List<Workshop> workshops)
         => workshops.Select(x => x.WithImages()).ToList();
+
+    public static Workshop WithTags(this Workshop workshop)
+    {
+        workshop.Tags = TagsGenerator.Generate(new Random().Next(1, 4))
+            .WithWorkshop(workshop);
+        return workshop;
+    }
 }
