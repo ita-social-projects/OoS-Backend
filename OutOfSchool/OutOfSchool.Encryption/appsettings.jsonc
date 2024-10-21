@@ -1,0 +1,96 @@
+{
+  "AppDefaults": {
+    "Version": "replace_me"
+  },
+  "Serilog": {
+    "Using": [
+      "Serilog.Exceptions"
+    ],
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Information",
+        "System": "Warning"
+      }
+    },
+    "Enrich": [
+      "FromLogContext",
+      "FromGlobalLogContext"
+    ]
+  },
+  "ElasticApm": {
+    "Enabled": false,
+    "ServerUrl":  "https://eck-stack-eck-apm-server-apm-http:8200/",
+    "SecretToken":  "replace_me",
+    "ServiceName": "Encryption",
+    "ServiceVersion": "replace_me",
+    "Environment": "Development",
+    "TransactionSampleRate": 1.0,
+    "CentralConfig": false,
+    "CloudProvider": "none",
+    "TransactionIgnoreUrls" : "/hubs/*, /healthz/*, /VAADIN/*, /heartbeat*, /favicon.ico, *.js, *.css, *.jpg, *.jpeg, *.png, *.gif, *.webp, *.svg, *.woff, *.woff2"
+  },
+  // Configuration options for EUSignCP library
+  "EUSign": {
+    // The default DNS name of the OCSP server.
+    // It is used when checking certificates in cases where there is no link to the OCSP server of the CA (НЕДП) in the certificate
+    // or in the settings of the OCSP access points of the library
+    "DefaultOCSPServer": "czo.gov.ua",
+    // The default DNS name of the TSP server.
+    // It is used when imposing a signature in cases where there is no reference to the TSP server of the CA in the certificate
+    // of the signer or the TSP server of the CA (НЕДП)
+    "DefaultTSPServer": "acskidd.gov.ua",
+    // Private key options
+    // The private key can be stored either on the file system or on the private key medium
+    "PrivateKey": {
+      // The path to the private key on the server's file system
+      // (if the string is empty, the private key medium will be used)
+      "FileName": "Key-6.dat",
+      // If a JKS file (*.jks) is used as the server's private key (container of ЦСК (НЕДП) Приватбанк keys),
+      // it is necessary to specify the name of the key (alias) in the container
+      // (the full list of key names (alias) is returned by the EnumJKSPrivateKeys function)
+      "JKSAlias": "",
+      // The name of the private key medium type
+      // (the full list of private key medium types is returned by the EnumKeyMediaTypes function)
+      "MediaType": "криптомод. ІІТ Гряда-301",
+      // The name of the private key medium
+      // (a complete list of private key media for a given type is returned by the EnumKeyMediaDevices function)
+      "MediaDevice": "001:3011 (192.168.0.100)",
+      // Password of the server's private key.
+      // If Гряда-301 is used as the medium, the username and password are set as ##Login##Password
+      "Password": "12345678",
+      // An array of paths to the server's private key certificates.
+      // It is used if НЕДП does not support automatic download of certificates using the CMP protocol
+      "CertificateFilePaths": [],
+      // The name of the Certificate Authority that issued the server's private key certificates
+      // for automatic search of certificates according to the CMP protocol
+      // (used when the CA (НЕДП) supports the CMP protocol and the array with paths to private key certificates is not specified)
+      "CAIssuerCN": "Тестовий ЦСК АТ \"ІІТ\""
+    },
+    "CA": {
+      // Parameters of all compatible CAs (НЕДП) in the form of a JSON file.
+      // The file can be downloaded from the Дія's CA website (НЕДП):  https://ca.informjust.ua/download/Soft/CAs.json
+      // or from the IIT website: https://iit.com.ua/download/productfiles/CAs.json
+      // WARNING! The dev environment uses a file that includes the test IIT CA and is intended exclusively for testing
+      "JsonPath": "Certificates/CAs.Test.json",
+      // The chain of all certificates of Central Certification Authorities, CAs (НЕДП) and their servers.
+      // The file can be downloaded from the Дія's CA website (НЕДП): https://ca.informjust.ua/download/Soft/CACertificates.p7b
+      // or from the IIT website: https://iit.com.ua/download/productfiles/CACertificates.p7b
+      // WARNING! The dev environment uses a file that includes certificates of the test IIT CA and is intended exclusively for testing
+      "CertificatesPath": "Certificates/CACertificates.Test.p7b"
+    },
+    // Proxy server settings
+    "Proxy": {
+      // A sign of the need to use a proxy server
+      "Use": false,
+      // DNS name or IP address of the proxy server
+      "Address": "",
+      // TCP port of the proxy server
+      "Port": "3128",
+      // Username of the proxy server
+      "User": "",
+      // Password of the proxy server user
+      "Password": ""
+    }
+  }
+}
