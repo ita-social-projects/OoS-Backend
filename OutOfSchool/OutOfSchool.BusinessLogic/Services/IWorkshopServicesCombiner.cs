@@ -14,8 +14,8 @@ public interface IWorkshopServicesCombiner
     /// Add entity to the database.
     /// </summary>
     /// <param name="dto">Entity to add.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopBaseDto"/>.</returns>
-    Task<WorkshopCreate> Create(WorkshopCreate dto);
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopCreateUpdateDto"/>.</returns>
+    Task<WorkshopDto> Create(WorkshopCreateUpdateDto dto);
 
     /// <summary>
     /// Get all workshop cards (Id, Title) with the specified provider's Id.
@@ -53,13 +53,24 @@ public interface IWorkshopServicesCombiner
     /// Update existing entity in the database.
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
-    /// <returns>A <see cref="Task{TResult}"/> containing a <see cref="Result{WorkshopBaseDto}"/>
+    /// <returns>A <see cref="Task{TResult}"/> containing a <see cref="Result{Workshop}"/>
     /// that indicates the success or failure of the operation.
-    /// If the operation succeeds, the <see cref="Result{WorkshopBaseDto}.Value"/> property
-    /// contains the updated <see cref="WorkshopBaseDto"/>.
-    /// If the operation fails, the <see cref="Result{WorkshopBaseDto}.OperationResult"/> property
+    /// If the operation succeeds, the <see cref="Result{Workshop}.Value"/> property
+    /// contains the updated <see cref="WorkshopCreateUpdateDto"/>.
+    /// If the operation fails, the <see cref="Result{Workshop}.OperationResult"/> property
     /// contains error information.</returns>
-    Task<Result<WorkshopCreate>> Update(WorkshopCreate dto);
+    Task<Result<WorkshopDto>> Update(WorkshopCreateUpdateDto dto);
+
+    /// <summary>
+    /// Update the Tags for existing Worskshop.
+    /// </summary>
+    /// <param name="dto">The Woskshop to be updated.</param>
+    /// <returns>The updated <see cref="Workshop"/> entity if the update was successful, otherwise returns null.</returns>
+    /// <remarks>
+    /// This method will update the tags associated with a workshop based on the provided list of tag Ids.
+    /// If the workshop does not exist, the method will return null.
+    /// </remarks>
+    Task<Result<WorkshopDto>> UpdateTags(WorkshopTagsUpdateDto dto);
 
     /// <summary>
     /// Update status field for existing entity in the database.

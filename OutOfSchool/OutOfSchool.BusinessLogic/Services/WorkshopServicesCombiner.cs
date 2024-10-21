@@ -56,7 +56,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopCreate> Create(WorkshopCreate dto)
+    public async Task<WorkshopDto> Create(WorkshopCreateUpdateDto dto)
     {
         var workshop = await workshopService.Create(dto).ConfigureAwait(false);
 
@@ -66,7 +66,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
                 ElasticsearchSyncOperation.Create)
             .ConfigureAwait(false);
 
-        return workshop;
+        return mapper.Map<WorkshopDto>(workshop);
     }
 
     /// <inheritdoc/>
@@ -84,12 +84,12 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
     }
 
     /// <inheritdoc/>
-    public async Task<Result<WorkshopCreate>> Update(WorkshopCreate dto)
+    public async Task<Result<WorkshopDto>> Update(WorkshopCreateUpdateDto dto)
     {
         var currentWorkshop = await GetById(dto.Id, true).ConfigureAwait(false);
         if (currentWorkshop is null)
         {
-            return Result<WorkshopCreate>.Failed(new OperationError
+            return Result<WorkshopDto>.Failed(new OperationError
             {
                 Code = HttpStatusCode.BadRequest.ToString(),
                 Description = Constants.WorkshopNotFoundErrorMessage,
@@ -98,7 +98,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
 
         if (!IsAvailableSeatsValidForWorkshop(dto.AvailableSeats, currentWorkshop))
         {
-            return Result<WorkshopCreate>.Failed(new OperationError
+            return Result<WorkshopDto>.Failed(new OperationError
             {
                 Code = HttpStatusCode.BadRequest.ToString(),
                 Description = Constants.InvalidAvailableSeatsForWorkshopErrorMessage,
@@ -112,7 +112,17 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
                 updatedWorkshop.Id,
                 ElasticsearchSyncOperation.Update).ConfigureAwait(false);
 
-        return Result<WorkshopCreate>.Success(updatedWorkshop);
+        return Result<WorkshopDto>.Success(updatedWorkshop);
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<WorkshopDto>> UpdateTags(WorkshopTagsUpdateDto dto)
+    {
+        _ = dto ?? throw new ArgumentNullException(nameof(dto));
+
+        var workshop = await workshopService.UpdateTags(dto).ConfigureAwait(false);
+
+        return Result<WorkshopDto>.Success(workshop);
     }
 
     /// <inheritdoc/>

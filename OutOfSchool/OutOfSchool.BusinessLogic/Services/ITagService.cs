@@ -18,8 +18,8 @@ public interface ITagService
     /// <summary>
     /// Get entity by it's key.
     /// </summary>
-    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
-    /// <param name="id">Key in the table.</param>
+    /// /// <param name="id">Key in the table.</param>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param> 
     /// <returns>Tag.</returns>
     Task<TagDto> GetById(long id, LocalizationType localization = LocalizationType.Ua);
 
@@ -28,7 +28,7 @@ public interface ITagService
     /// </summary>
     /// <param name="dto">Tag entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<TagCreate> Create(TagCreate dto);
+    Task<Tag> Create(TagCreate dto);
 
     /// <summary>
     /// Update entity.
@@ -36,7 +36,7 @@ public interface ITagService
     /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <param name="dto">Tag entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<TagDto> Update(TagDto dto, LocalizationType localization = LocalizationType.Ua);
+    Task<Tag> Update(TagDto dto, LocalizationType localization = LocalizationType.Ua);
 
     /// <summary>
     ///  Delete entity.

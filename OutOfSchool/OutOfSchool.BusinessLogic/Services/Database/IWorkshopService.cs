@@ -13,7 +13,7 @@ public interface IWorkshopService
     /// </summary>
     /// <param name="dto">Entity to add.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopDto"/>.</returns>
-    Task<WorkshopCreate> Create(WorkshopCreate dto);
+    Task<WorkshopDto> Create(WorkshopCreateUpdateDto dto);
 
     /// <summary>
     /// Add entity to the database.
@@ -43,7 +43,14 @@ public interface IWorkshopService
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopDto"/>.</returns>
-    Task<WorkshopCreate> Update(WorkshopCreate dto);
+    Task<WorkshopDto> Update(WorkshopCreateUpdateDto dto);
+
+    /// <summary>
+    /// Update the tags for a certain workshop.
+    /// </summary>
+    /// <param name="dto">The tags to be added.</param>
+    /// /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopDto"/>.</returns>
+    Task<WorkshopDto> UpdateTags(WorkshopTagsUpdateDto dto);
 
     /// <summary>
     /// Update existing entity in the database.

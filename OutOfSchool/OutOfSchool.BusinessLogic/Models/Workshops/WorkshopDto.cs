@@ -2,12 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
+using OutOfSchool.BusinessLogic.Models.Tag;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
-public class WorkshopDto : WorkshopCreate, IHasRating
+public class WorkshopDto : WorkshopBaseDto, IHasRating
 {
     public uint TakenSeats { get; set; } = 0;
 
@@ -18,6 +19,8 @@ public class WorkshopDto : WorkshopCreate, IHasRating
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IList<string> ImageIds { get; set; }
+
+    public List<TagDto> Tags { get; set; }
 
     public int NumberOfRatings { get; set; }
 

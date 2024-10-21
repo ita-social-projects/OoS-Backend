@@ -46,6 +46,7 @@ public class WorkshopServiceDBTests
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
+    private Mock<ITagService> tagServiceMock;
 
     [SetUp]
     public async Task SetUp()
@@ -72,6 +73,7 @@ public class WorkshopServiceDBTests
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
+        tagServiceMock = new Mock<ITagService>();
         var searchStringServiceMock = new Mock<ISearchStringService>();
 
         workshopService =
@@ -90,6 +92,7 @@ public class WorkshopServiceDBTests
                 ministryAdminServiceMock.Object,
                 regionAdminServiceMock.Object,
                 codeficatorServiceMock.Object,
+                tagServiceMock.Object,
                 searchStringServiceMock.Object);
 
         Seed();

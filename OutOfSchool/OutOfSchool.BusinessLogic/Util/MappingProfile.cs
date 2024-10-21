@@ -89,7 +89,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-            .ForMember(dest => dest.DeleteDate, opt => opt.Ignore());
+            .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
+            .ForMember(dest => dest.Tags, opt => opt.Ignore());
 
         CreateMap<Workshop, WorkshopDto>()
             .IncludeBase<Workshop, WorkshopBaseDto>()
@@ -98,7 +99,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.IsBlocked, opt => opt.MapFrom(src => src.Provider.IsBlocked))
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(w => w.ExternalStorageId).ToList()))
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(src => src.CoverImageId))
-            .ForMember(dest => dest.ProviderStatus, opt => opt.MapFrom(src => src.Provider.Status));
+            .ForMember(dest => dest.ProviderStatus, opt => opt.MapFrom(src => src.Provider.Status))
+            .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags));
 
         CreateMap<WorkshopDto, Workshop>()
             .IncludeBase<WorkshopBaseDto, Workshop>();
@@ -110,8 +112,31 @@ public class MappingProfile : Profile
         CreateMap<WorkshopV2Dto, Workshop>()
             .IncludeBase<WorkshopDto, Workshop>();
 
-        CreateMap<Workshop, WorkshopCreate>()
-            .IncludeBase<Workshop, WorkshopBaseDto>();
+        CreateMap<Workshop, WorkshopCreateUpdateDto>()
+            .IncludeBase<Workshop, WorkshopBaseDto>()
+            .ForMember(dest => dest.TagIds, opt => opt.MapFrom(src => src.Tags.Select(tag => tag.Id).ToList()));
+
+        CreateMap<WorkshopDto, WorkshopCreateUpdateDto>()
+            .ForMember(dest => dest.TagIds, opt => opt.MapFrom(src => src.Tags.Select(tag => tag.Id).ToList()));
+
+        CreateMap<WorkshopCreateUpdateDto, Workshop>()
+            .IncludeBase<WorkshopBaseDto, Workshop>()
+            .ForMember(dest => dest.Tags, opt => opt.Ignore());
+
+        CreateMap<WorkshopCreateUpdateDto, WorkshopDto>()
+            .ForMember(dest => dest.Tags, opt => opt.MapFrom(src =>
+                src.TagIds.Select(id => new TagDto { Id = id }).ToList()))
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
+            .ForMember(dest => dest.Rating, opt => opt.Ignore())
+            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+            .ForMember(dest => dest.ImageIds, opt => opt.Ignore())
+            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
+            .ForMember(dest => dest.Status, opt => opt.Ignore())
+            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderStatus, opt => opt.Ignore());
+
+        CreateMap<WorkshopCreateUpdateDto, IHasRating>();
 
         CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>().ReverseMap();
 
@@ -128,11 +153,13 @@ public class MappingProfile : Profile
 
         CreateMap<Tag, TagDto>()
             .ForMember(dest => dest.Name, opt => opt.MapFrom((src, dest, destMember, context) =>
-            context.Items.ContainsKey("Localization") &&
+            /*context.Items.ContainsKey("Localization") &&
             context.Items["Localization"] is LocalizationType loc &&
-            loc == LocalizationType.En ? src.NameEn : src.Name));
+            loc == LocalizationType.En ? src.NameEn : src.Name))*/
+            src.Name));
 
-        CreateMap<Tag, TagCreate>().ReverseMap();
+        CreateMap<TagCreate, Tag>()
+            .ForMember(dest => dest.Workshops, opt => opt.Ignore());
 
         CreateMap<SocialGroup, SocialGroupDto>()
             .ForMember(dest => dest.Name, opt => opt.MapFrom((src, dest, destMembet, context) =>
@@ -140,7 +167,9 @@ public class MappingProfile : Profile
             context.Items["Localization"] is LocalizationType loc &&
             loc == LocalizationType.En ? src.NameEn : src.Name));
 
-        CreateMap<SocialGroup, SocialGroupCreate>().ReverseMap();
+        CreateMap<SocialGroupCreate, SocialGroup>()
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+            .ForMember(dest => dest.Children, opt => opt.Ignore());
 
         CreateSoftDeletedMap<AddressDto, Address>()
             .ForMember(dest => dest.CATOTTG, opt => opt.Ignore())

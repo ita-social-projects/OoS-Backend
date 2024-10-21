@@ -6,6 +6,7 @@ using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Images;
+using OutOfSchool.BusinessLogic.Models.Tag;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.SearchString;
@@ -15,6 +16,8 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+
+using SendGrid.Helpers.Errors.Model;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -43,6 +46,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private readonly IRegionAdminService regionAdminService;
     private readonly ICodeficatorService codeficatorService;
     private readonly ISearchStringService searchStringService;
+    private readonly ITagService tagService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -61,6 +65,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <param name="regionAdminService">Service for region admin.</param>
     /// <param name="codeficatorService">Srvice for CATOTTG.</param>
     /// <param name="searchStringService">Service for handling the search string.</param>
+    /// <param name="codeficatorService">Service for CATOTTG.</param>
+    /// <param name="tagService">Service for Tag entity.</param>
     public WorkshopService(
         IWorkshopRepository workshopRepository,
         IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository,
@@ -76,6 +82,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService,
         ICodeficatorService codeficatorService,
+        ITagService tagService,
         ISearchStringService searchStringService)
     {
         this.workshopRepository = workshopRepository;
@@ -93,11 +100,12 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         this.regionAdminService = regionAdminService;
         this.codeficatorService = codeficatorService;
         this.searchStringService = searchStringService;
+        this.tagService = tagService;
     }
 
     /// <inheritdoc/>
-    /// <exception cref="ArgumentNullException">If <see cref="WorkshopBaseDto"/> is null.</exception>
-    public async Task<WorkshopCreate> Create(WorkshopCreate dto)
+    /// <exception cref="ArgumentNullException">If <see cref="WorkshopCreateUpdateDto"/> is null.</exception>
+    public async Task<WorkshopDto> Create(WorkshopCreateUpdateDto dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
@@ -110,6 +118,18 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var workshop = mapper.Map<Workshop>(dto);
         workshop.Provider = await providerRepository.GetById(workshop.ProviderId).ConfigureAwait(false);
         workshop.ProviderOwnership = workshop.Provider.Ownership;
+
+        var tags = new List<TagDto>();
+
+        foreach (var tagId in dto.TagIds)
+        {
+            var tag = await tagService.GetById(tagId);
+            if (tag != null)
+            {
+                var tagDto = mapper.Map<TagDto>(tag);
+                tags.Add(tagDto);
+            }
+        }
 
         if (dto.Teachers is not null)
         {
@@ -125,7 +145,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         logger.LogInformation($"Workshop with Id = {newWorkshop?.Id} created successfully.");
 
-        return mapper.Map<WorkshopCreate>(newWorkshop);
+        return mapper.Map<WorkshopDto>(newWorkshop);
     }
 
     /// <inheritdoc/>
@@ -351,9 +371,9 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     }
 
     /// <inheritdoc/>
-    /// <exception cref="ArgumentNullException">If <see cref="WorkshopBaseDto"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">If <see cref="WorkshopCreateUpdateDto"/> is null.</exception>
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-    public async Task<WorkshopCreate> Update(WorkshopCreate dto)
+    public async Task<WorkshopDto> Update(WorkshopCreateUpdateDto dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation($"Updating Workshop with Id = {dto?.Id} started.");
@@ -361,13 +381,30 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         async Task<Workshop> UpdateWorkshopLocally()
         {
             await UpdateDateTimeRanges(dto.DateTimeRanges, dto.Id).ConfigureAwait(false);
+
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto!.Id).ConfigureAwait(false);
 
-            // In case if AddressId was changed. AddresId is one and unique for workshop.
             dto.AddressId = currentWorkshop.AddressId;
             dto.Address.Id = currentWorkshop.AddressId;
 
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherDTO>()).ConfigureAwait(false);
+
+            if (!dto.TagIds.IsNullOrEmpty())
+            {
+                var tags = new List<TagDto>();
+                foreach (var tagId in dto.TagIds)
+                {
+                    var tag = await tagService.GetById(tagId);
+                    if (tag != null)
+                    {
+                        var tagDto = mapper.Map<TagDto>(tag);
+                        tags.Add(tagDto);
+                    }
+                }
+
+                currentWorkshop.Tags.Clear();
+                currentWorkshop.Tags.AddRange(tags.Select(tagDto => new Tag { Id = tagDto.Id }));
+            }
 
             dto.AvailableSeats = dto.AvailableSeats.GetMaxValueIfNullOrZero();
 
@@ -384,7 +421,37 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var updatedWorkshop = await workshopRepository
             .RunInTransaction(UpdateWorkshopLocally).ConfigureAwait(false);
 
-        return mapper.Map<WorkshopCreate>(updatedWorkshop);
+        return mapper.Map<WorkshopDto>(updatedWorkshop);
+    }
+
+    /// <inheritdoc/>
+    public async Task<WorkshopDto> UpdateTags(WorkshopTagsUpdateDto dto)
+    {
+        logger.LogInformation($"Updating the tags for Workshop with Id = {dto.WorkshopId} started.");
+
+        var workshop = await workshopRepository.GetById(dto.WorkshopId);
+        if (workshop == null)
+        {
+            throw new NotFoundException($"Workshop with Id {dto.WorkshopId} not found.");
+        }
+
+        var tags = new List<TagDto>();
+        foreach (var tagId in dto.TagIds)
+        {
+            var tag = await tagService.GetById(tagId);
+            if (tag != null)
+            {
+                var tagDto = mapper.Map<TagDto>(tag);
+                tags.Add(tagDto);
+            }
+        }
+
+        workshop.Tags.Clear();
+        workshop.Tags.AddRange(tags.Select(tagDto => new Tag { Id = tagDto.Id }));
+
+        await workshopRepository.Update(workshop);
+
+        return mapper.Map<WorkshopDto>(workshop);
     }
 
     /// <inheritdoc/>
@@ -1014,10 +1081,15 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private async Task ChangeTeachers(Workshop currentWorkshop, List<TeacherDTO> teacherDtoList)
     {
         var deletedIds = currentWorkshop.Teachers
-            .Where(x => !x.IsDeleted)
-            .Select(x => x.Id)
-            .Except(teacherDtoList.Select(x => x.Id))
-            .ToList();
+        .Where(x => !x.IsDeleted)
+        .Select(x => x.Id)
+        .Except(teacherDtoList.Select(x => x.Id))
+        .ToList();
+
+        var deleteTasks = deletedIds
+            .Select(deletedId => teacherService.Delete(deletedId));
+
+        await Task.WhenAll(deleteTasks).ConfigureAwait(false);
 
         foreach (var deletedId in deletedIds)
         {

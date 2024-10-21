@@ -28,7 +28,7 @@ public interface ISocialGroupService
     /// </summary>
     /// <param name="dto">SocialGroup entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<SocialGroupCreate> Create(SocialGroupCreate dto);
+    Task<SocialGroupDto> Create(SocialGroupCreate dto);
 
     /// <summary>
     /// Update entity.
