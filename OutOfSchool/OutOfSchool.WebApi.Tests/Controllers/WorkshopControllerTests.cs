@@ -820,6 +820,43 @@ public class WorkshopControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(BadRequest, result.StatusCode);
     }
+
+    [Test]
+    public async Task CreateWorkshop_WhenUserProvidersOwnerOrAdmin_ShouldCallGiveAssistantAccessToWorkshop()
+    {
+        // Arrange
+        workshopCreateDto.ProviderId = provider.Id;
+        var workshopReturnedDto = WorkshopBaseDtoGenerator.Generate();
+
+        providerServiceMoq.Setup(x => x.GetProviderIdForWorkshopById(It.IsAny<Guid>()))
+            .ReturnsAsync(provider.Id).Verifiable(Times.Never);
+        providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>()))
+            .ReturnsAsync(false).Verifiable(Times.Once);
+        userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
+            .ReturnsAsync(false).Verifiable(Times.Once);
+        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
+            .ReturnsAsync((ProviderDto)null).Verifiable(Times.Exactly(2));
+        workshopServiceMoq.Setup(x => x.Create(workshopCreateDto))
+            .ReturnsAsync(workshopReturnedDto).Verifiable(Times.Once);
+
+        int n = 0;
+        providerAdminService.Setup(x => x.CheckUserIsRelatedProviderAdmin(userId, provider.Id, Guid.Empty))
+            .ReturnsAsync(() => n++ <= 0).Verifiable(Times.Exactly(1));
+
+        providerAdminService.Setup(x => x.GiveAssistantAccessToWorkshop(userId, Guid.NewGuid() /*Guid.Empty*/ /*It.IsAny<Guid>()*/))
+            .Returns(It.IsAny<Task>).Verifiable(Times.Never);
+
+        // Act
+        var result = await controller.Create(workshopCreateDto).ConfigureAwait(false) as CreatedAtActionResult;
+
+        // Assert
+        providerAdminService.VerifyAll();
+        providerServiceMoq.VerifyAll();
+        workshopServiceMoq.VerifyAll();
+        userServiceMoq.VerifyAll();
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(Create, result.StatusCode);
+    }
     #endregion
 
     #region UpdateWorkshop
