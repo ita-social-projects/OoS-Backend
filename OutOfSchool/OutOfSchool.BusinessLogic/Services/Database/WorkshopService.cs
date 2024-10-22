@@ -100,6 +100,12 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <exception cref="ArgumentNullException">If <see cref="WorkshopBaseDto"/> is null.</exception>
     public async Task<WorkshopBaseDto> Create(WorkshopBaseDto dto)
     {
+        _ = dto ?? throw new ArgumentNullException(nameof(dto));
+        logger.LogInformation("Workshop creating was started.");
+
+        // TODO: after refactoring the DTOs for the Workshop entities, this method needs to be replaced with the correct mapping
+        await SetIdsToDefaultValue(dto); // This method sets the properties with the Id to the default value.
+
         var workshop = await CheckDtoAndPrepareCreatedWorkshop(dto);
 
         Func<Task<Workshop>> operation = async () =>
@@ -118,6 +124,12 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <exception cref="DbUpdateException">If unreal to update entity.</exception>
     public async Task<WorkshopResultDto> CreateV2(WorkshopV2Dto dto)
     {
+        _ = dto ?? throw new ArgumentNullException(nameof(dto));
+        logger.LogInformation("Workshop creating was started.");
+
+        // TODO: after refactoring the DTOs for the Workshop entities, this method needs to be replaced with the correct mapping
+        await SetIdsToDefaultValue(dto); // This method sets the properties with the Id to the default value.
+
         var createdWorkshop = await CheckDtoAndPrepareCreatedWorkshop(dto);
 
         async Task<(Workshop createdWorkshop, MultipleImageUploadingResult imagesUploadResult, Result<string>
@@ -1069,9 +1081,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
     private async Task<Workshop> CheckDtoAndPrepareCreatedWorkshop(WorkshopBaseDto dto)
     {
-        _ = dto ?? throw new ArgumentNullException(nameof(dto));
-        logger.LogInformation("Workshop creating was started.");
-
         if (dto.MemberOfWorkshopId.HasValue && !await Exists((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false))
         {
             var errorMessage = $"The main workshop (with id = {dto.MemberOfWorkshopId}) for the workshop being created was not found.";
@@ -1113,5 +1122,63 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         createdWorkshop.Status = WorkshopStatus.Open;
 
         return createdWorkshop;
+    }
+
+    private async Task SetIdsToDefaultValue(WorkshopBaseDto dto)
+    {
+        dto.Id = default;
+
+        if (dto.Address is not null)
+        {
+            dto.Address.Id = default;
+        }
+
+        if (dto.DefaultTeacher is not null)
+        {
+            dto.DefaultTeacher.Id = Guid.Empty;
+        }
+
+        if (dto.MemberOfWorkshop is not null)
+        {
+            dto.MemberOfWorkshop.Id = Guid.Empty;
+        }
+
+        if (dto.WorkshopDescriptionItems is not null)
+        {
+            foreach (var workshopDescription in dto.WorkshopDescriptionItems)
+            {
+                workshopDescription.Id = Guid.Empty;
+            }
+        }
+
+        if (dto.Teachers is not null)
+        {
+            foreach (var teacher in dto.Teachers)
+            {
+                teacher.Id = Guid.Empty;
+            }
+        }
+
+        if (dto.DateTimeRanges is not null)
+        {
+            foreach (var dateTimeRangeDto in dto.DateTimeRanges)
+            {
+                dateTimeRangeDto.Id = default;
+            }
+        }
+
+        if (dto.IncludedStudyGroups is not null)
+        {
+            foreach (var includedStudyGrope in dto.IncludedStudyGroups)
+            {
+                includedStudyGrope.Id = Guid.Empty;
+            }
+        }
+
+        // If the DefaultTeacherId property of WorkshopBaseDto is incorrect, set it to the default value.
+        if (dto.DefaultTeacherId is not null && !await teacherService.Exists((Guid)dto.DefaultTeacherId).ConfigureAwait(false))
+        {
+            dto.DefaultTeacherId = default;
+        }
     }
 }

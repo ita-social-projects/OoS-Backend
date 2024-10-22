@@ -214,6 +214,60 @@ public class WorkshopServiceTests
         await workshopService.Invoking(w => w.Create(mapper.Map<WorkshopBaseDto>(createdEntity)))
             .Should().ThrowAsync<InvalidOperationException>();
     }
+
+    [Test]
+    public async Task CreateWorkshop_CallSetIdsToDefaultValueMethod_ShouldSetIdsToDefaultValue(
+        [Random(2, 5, 1)] int teachersInWorkshop,
+        [Random(2, 25, 1)] int availableSeats)
+    {
+        // Arrange
+        var createdEntity = WorkshopGenerator.Generate().WithProvider().WithAddress();
+        var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(createdEntity);
+        createdEntity.Teachers = teachers;
+        createdEntity.AvailableSeats = (uint)availableSeats;
+        var expectedTeachers = teachers.Select(mapper.Map<TeacherDTO>);
+        SetupCreate(createdEntity);
+        var workshopCreateDto = mapper.Map<WorkshopBaseDto>(createdEntity);
+
+        // Act
+        var result = await workshopService.Create(workshopCreateDto).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(workshopCreateDto?.Address?.Id, default(long));
+        Assert.AreEqual(workshopCreateDto?.DefaultTeacher?.Id, workshopCreateDto?.DefaultTeacher is null ? null : Guid.Empty);
+        Assert.AreEqual(workshopCreateDto?.MemberOfWorkshop?.Id, workshopCreateDto?.MemberOfWorkshop is null ? null : Guid.Empty);
+        if (workshopCreateDto?.WorkshopDescriptionItems is not null)
+        {
+            foreach (var workshopDescription in workshopCreateDto?.WorkshopDescriptionItems)
+            {
+                Assert.AreEqual(workshopDescription?.Id, workshopDescription?.Id is null ? null : Guid.Empty);
+            }
+        }
+
+        if (workshopCreateDto?.Teachers is not null)
+        {
+            foreach (var teacher in workshopCreateDto?.Teachers)
+            {
+                Assert.AreEqual(teacher?.Id, teacher?.Id is null ? null : Guid.Empty);
+            }
+        }
+
+        if (workshopCreateDto?.DateTimeRanges is not null)
+        {
+            foreach (var dateTimeRange in workshopCreateDto?.DateTimeRanges)
+            {
+                Assert.AreEqual(dateTimeRange?.Id, default(long));
+            }
+        }
+
+        if (workshopCreateDto?.IncludedStudyGroups is not null)
+        {
+            foreach (var includedStudyGroupe in workshopCreateDto?.IncludedStudyGroups)
+            {
+                Assert.AreEqual(includedStudyGroupe?.Id, includedStudyGroupe?.Id is null ? null : Guid.Empty);
+            }
+        }
+    }
     #endregion
 
     #region CreateV2
@@ -962,10 +1016,8 @@ public class WorkshopServiceTests
         mapperMock.Setup(m => m.Map<WorkshopBaseDto>(workshop))
             .Returns(workshopBaseDto);
 
-
         mapperMock.Setup(m => m.Map<WorkshopDto>(workshop))
             .Returns(workshopDto);
-
 
         mapperMock.Setup(m => m.Map<Workshop>(It.IsAny<WorkshopBaseDto>()))
             .Returns(mapper.Map<Workshop>(workshopBaseDto));
@@ -985,12 +1037,6 @@ public class WorkshopServiceTests
             .ReturnsAsync(workshop);
         workshopRepository.Setup(w => w.GetWithNavigations(It.IsAny<Guid>(), It.IsAny<bool>()))
             .ReturnsAsync(workshop);
-
-
-
-        //workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>()))
-        //       .ReturnsAsync(It.IsAny<Workshop>());
-
 
         providerRepositoryMock.Setup(p => p.GetById(It.IsAny<Guid>()))
             .Returns(Task.FromResult(workshop.Provider));

@@ -302,9 +302,6 @@ public class WorkshopController : ControllerBase
             return StatusCode(403, "Forbidden to create workshops for another providers.");
         }
 
-        // TODO: after refactoring the DTOs for the Workshop entities, this method needs to be replaced with the correct mapping
-        await SetIdsToDefaultValue(dto).ConfigureAwait(false); // This method sets the properties with the Id to the default value.
-
         try
         {
             var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
@@ -540,56 +537,5 @@ public class WorkshopController : ControllerBase
             providerId;
 
         return await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false;
-    }
-
-    private async Task SetIdsToDefaultValue(WorkshopBaseDto dto)
-    {
-        dto.Id = default;
-        dto.Address.Id = default;
-
-        if (dto.DefaultTeacher is not null)
-        {
-            dto.DefaultTeacher.Id = Guid.Empty;
-        }
-
-        if (dto.MemberOfWorkshop is not null)
-        {
-            dto.MemberOfWorkshop.Id = Guid.Empty;
-        }
-
-        if (dto.WorkshopDescriptionItems is not null)
-        {
-            foreach (var workshopDescription in dto.WorkshopDescriptionItems)
-            {
-                workshopDescription.Id = Guid.Empty;
-            }
-        }
-
-        if (dto.Teachers != null)
-        {
-            foreach (var teacher in dto.Teachers)
-            {
-                teacher.Id = Guid.Empty;
-            }
-        }
-
-        foreach (var dateTimeRangeDto in dto.DateTimeRanges)
-        {
-            dateTimeRangeDto.Id = default;
-        }
-
-        if (dto.IncludedStudyGroups is not null)
-        {
-            foreach (var includedStudyGrope in dto.IncludedStudyGroups)
-            {
-                includedStudyGrope.Id = Guid.Empty;
-            }
-        }
-
-        // If the DefaultTeacherId property of WorkshopBaseDto is incorrect, set it to the default value.
-        if (dto.DefaultTeacherId is not null && !await teacherService.Exists((Guid)dto.DefaultTeacherId).ConfigureAwait(false))
-        {
-            dto.DefaultTeacherId = default;
-        }
     }
 }
