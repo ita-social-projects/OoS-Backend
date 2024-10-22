@@ -822,11 +822,13 @@ public class WorkshopControllerTests
     }
 
     [Test]
-    public async Task CreateWorkshop_WhenUserProvidersOwnerOrAdmin_ShouldCallGiveAssistantAccessToWorkshop()
+    public async Task CreateWorkshop_WhenUserProvidersOwnerOrAdmin_ShouldCallGiveAssistantAccessToWorkshopOnce()
     {
         // Arrange
         workshopCreateDto.ProviderId = provider.Id;
         var workshopReturnedDto = WorkshopBaseDtoGenerator.Generate();
+        workshopReturnedDto.Id = Guid.Empty;
+        workshopReturnedDto.ProviderId = provider.Id;
 
         providerServiceMoq.Setup(x => x.GetProviderIdForWorkshopById(It.IsAny<Guid>()))
             .ReturnsAsync(provider.Id).Verifiable(Times.Never);
@@ -841,10 +843,9 @@ public class WorkshopControllerTests
 
         int n = 0;
         providerAdminService.Setup(x => x.CheckUserIsRelatedProviderAdmin(userId, provider.Id, Guid.Empty))
-            .ReturnsAsync(() => n++ <= 0).Verifiable(Times.Exactly(1));
-
-        providerAdminService.Setup(x => x.GiveAssistantAccessToWorkshop(userId, Guid.NewGuid() /*Guid.Empty*/ /*It.IsAny<Guid>()*/))
-            .Returns(It.IsAny<Task>).Verifiable(Times.Never);
+            .ReturnsAsync(() => n++ <= 0).Verifiable(Times.Exactly(2));
+        providerAdminService.Setup(x => x.GiveAssistantAccessToWorkshop(userId, workshopReturnedDto.Id))
+            .Verifiable(Times.Once);
 
         // Act
         var result = await controller.Create(workshopCreateDto).ConfigureAwait(false) as CreatedAtActionResult;
