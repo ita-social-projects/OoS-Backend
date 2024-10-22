@@ -845,7 +845,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             // Fix Rider ambiguous method with either char or string args
             // ReSharper disable once UseCollectionExpression
             // ReSharper disable once RedundantExplicitArrayCreation
-            foreach (var word in filter.SearchText.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var word in filter.SearchText.Split(new char[] {' ', ','}, StringSplitOptions.RemoveEmptyEntries))
             {
                 tempPredicate = tempPredicate.Or(x => EF.Functions.Like(x.Keywords, $"%{word}%"));
             }
