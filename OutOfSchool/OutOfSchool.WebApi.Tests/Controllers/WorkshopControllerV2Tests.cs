@@ -97,7 +97,6 @@ public class WorkshopControllerV2Tests
             workshopServiceMoq.Object,
             providerServiceMoq.Object,
             localizer.Object,
-            teacherServiceMoq.Object,
             loggerMoq.Object,
             providerAdminService.Object,
             userServiceMoq.Object,

@@ -24,7 +24,6 @@ public class WorkshopController : ControllerBase
     private readonly IWorkshopServicesCombinerV2 combinedWorkshopService;
     private readonly IProviderService providerService;
     private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly ITeacherService teacherService;
     private readonly ILogger<WorkshopController> logger;
     private readonly IProviderAdminService providerAdminService;
     private readonly IUserService userService;
@@ -37,7 +36,6 @@ public class WorkshopController : ControllerBase
     /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
     /// <param name="providerService">Service for Provider model.</param>
     /// <param name="localizer">Localizer.</param>
-    /// <param name="teacherService">Service for Teacher model.</param>
     /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
     /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
     /// <param name="userService">Service for operations with users.</param>
@@ -46,7 +44,6 @@ public class WorkshopController : ControllerBase
         IWorkshopServicesCombinerV2 combinedWorkshopService,
         IProviderService providerService,
         IStringLocalizer<SharedResource> localizer,
-        ITeacherService teacherService,
         ILogger<WorkshopController> logger,
         IProviderAdminService providerAdminService,
         IUserService userService,
@@ -55,7 +52,6 @@ public class WorkshopController : ControllerBase
         this.localizer = localizer;
         this.combinedWorkshopService = combinedWorkshopService;
         this.providerService = providerService;
-        this.teacherService = teacherService;
         this.logger = logger;
         this.providerAdminService = providerAdminService;
         this.userService = userService;

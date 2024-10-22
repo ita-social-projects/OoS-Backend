@@ -23,7 +23,6 @@ public class WorkshopController : ControllerBase
     private readonly IProviderAdminService providerAdminService;
     private readonly IUserService userService;
     private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly ITeacherService teacherService;
     private readonly ILogger<WorkshopController> logger;
     private readonly AppDefaultsConfig options;
 
@@ -35,7 +34,6 @@ public class WorkshopController : ControllerBase
     /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
     /// <param name="userService">Service for operations with users.</param>
     /// <param name="localizer">Localizer.</param>
-    /// <param name="teacherService">Service for Teacher model.</param>
     /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
     /// <param name="options">Application default values.</param>
     public WorkshopController(
@@ -44,7 +42,6 @@ public class WorkshopController : ControllerBase
         IProviderAdminService providerAdminService,
         IUserService userService,
         IStringLocalizer<SharedResource> localizer,
-        ITeacherService teacherService,
         ILogger<WorkshopController> logger,
         IOptions<AppDefaultsConfig> options)
     {
@@ -53,7 +50,6 @@ public class WorkshopController : ControllerBase
         this.providerService = providerService;
         this.providerAdminService = providerAdminService;
         this.userService = userService;
-        this.teacherService = teacherService;
         this.logger = logger;
         this.options = options.Value;
     }
