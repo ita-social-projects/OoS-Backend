@@ -233,14 +233,14 @@ public class WorkshopServiceTests
         var result = await workshopService.Create(workshopCreateDto).ConfigureAwait(false);
 
         // Assert
-        Assert.AreEqual(workshopCreateDto?.Address?.Id, default(long));
-        Assert.AreEqual(workshopCreateDto?.DefaultTeacher?.Id, workshopCreateDto?.DefaultTeacher is null ? null : Guid.Empty);
-        Assert.AreEqual(workshopCreateDto?.MemberOfWorkshop?.Id, workshopCreateDto?.MemberOfWorkshop is null ? null : Guid.Empty);
+        Assert.AreEqual(default(long), workshopCreateDto?.Address?.Id);
+        Assert.AreEqual(workshopCreateDto?.DefaultTeacher is null ? null : Guid.Empty, workshopCreateDto?.DefaultTeacher?.Id);
+        Assert.AreEqual(workshopCreateDto?.MemberOfWorkshop is null ? null : Guid.Empty, workshopCreateDto?.MemberOfWorkshop?.Id);
         if (workshopCreateDto?.WorkshopDescriptionItems is not null)
         {
             foreach (var workshopDescription in workshopCreateDto?.WorkshopDescriptionItems)
             {
-                Assert.AreEqual(workshopDescription?.Id, workshopDescription?.Id is null ? null : Guid.Empty);
+                Assert.AreEqual(workshopDescription?.Id is null ? null : Guid.Empty, workshopDescription?.Id);
             }
         }
 
@@ -248,7 +248,7 @@ public class WorkshopServiceTests
         {
             foreach (var teacher in workshopCreateDto?.Teachers)
             {
-                Assert.AreEqual(teacher?.Id, teacher?.Id is null ? null : Guid.Empty);
+                Assert.AreEqual(teacher?.Id is null ? null : Guid.Empty, teacher?.Id);
             }
         }
 
@@ -256,7 +256,7 @@ public class WorkshopServiceTests
         {
             foreach (var dateTimeRange in workshopCreateDto?.DateTimeRanges)
             {
-                Assert.AreEqual(dateTimeRange?.Id, default(long));
+                Assert.AreEqual(default(long), dateTimeRange?.Id);
             }
         }
 
@@ -264,7 +264,7 @@ public class WorkshopServiceTests
         {
             foreach (var includedStudyGroupe in workshopCreateDto?.IncludedStudyGroups)
             {
-                Assert.AreEqual(includedStudyGroupe?.Id, includedStudyGroupe?.Id is null ? null : Guid.Empty);
+                Assert.AreEqual(includedStudyGroupe?.Id is null ? null : Guid.Empty, includedStudyGroupe?.Id);
             }
         }
     }

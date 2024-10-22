@@ -102,7 +102,6 @@ public class WorkshopControllerTests
             providerAdminService.Object,
             userServiceMoq.Object,
             localizer.Object,
-            teacherServiceMoq.Object,
             loggerMoq.Object,
             options.Object)
         {

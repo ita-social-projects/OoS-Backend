@@ -1126,7 +1126,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
     private async Task SetIdsToDefaultValue(WorkshopBaseDto dto)
     {
-        dto.Id = default;
+        dto.Id = Guid.Empty;
 
         if (dto.Address is not null)
         {
