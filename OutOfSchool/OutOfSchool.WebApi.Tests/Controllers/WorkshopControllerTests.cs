@@ -92,7 +92,6 @@ public class WorkshopControllerTests
         providerServiceMoq = new Mock<IProviderService>();
         providerAdminService = new Mock<IProviderAdminService>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
-        providerAdminService = new Mock<IProviderAdminService>();
         userServiceMoq = new Mock<IUserService>();
         teacherServiceMoq = new Mock<ITeacherService>();
         loggerMoq = new Mock<ILogger<WorkshopController>>();
