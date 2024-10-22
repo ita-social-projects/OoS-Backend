@@ -61,10 +61,10 @@ public class TagService : ITagService
         {
             throw new ArgumentOutOfRangeException(
                 nameof(id),
-                localizer["The id cannot be greater than number of table entities."]);
+                localizer["A Tag with a respective Id does not exist."]);
         }
 
-        logger.LogDebug($"Successfully got a SocialGroup with Id = {id} and {localization} localization.");
+        logger.LogDebug($"Successfully got a Tag with Id = {id} and {localization} localization.");
 
         return mapper.Map<TagDto>(tag, opt =>
         opt.Items["Localization"] = localization);
@@ -87,13 +87,13 @@ public class TagService : ITagService
     /// <inheritdoc/>
     public async Task<Tag> Update(TagDto dto, LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogDebug($"Updating Tag with Id = {dto?.Id}, {localization} localization, started.");
+        logger.LogDebug($"Updating Tag with Id = {dto.Id}, {localization} localization, started.");
 
         var tagLocalized = await repository.GetById(dto.Id).ConfigureAwait(false);
 
         if (tagLocalized == null)
         {
-            logger.LogError($"Updating failed. Tag with Id = {dto?.Id} doesn't exist in the system.");
+            logger.LogError($"Updating failed. Tag with Id = {dto.Id} doesn't exist in the system.");
 
             return null;
         }
@@ -109,7 +109,7 @@ public class TagService : ITagService
 
         var tag = await repository.Update(tagLocalized).ConfigureAwait(false);
 
-        logger.LogDebug($"Tag with Id = {tag?.Id} updated succesfully.");
+        logger.LogDebug($"Tag with Id = {tag.Id} updated succesfully.");
 
         return tag;
     }
