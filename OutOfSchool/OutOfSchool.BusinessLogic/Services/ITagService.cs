@@ -28,15 +28,15 @@ public interface ITagService
     /// </summary>
     /// <param name="dto">Tag entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<Tag> Create(TagCreate dto);
+    Task<TagDto> Create(TagCreate dto);
 
     /// <summary>
     /// Update entity.
     /// </summary>
+    /// /// <param name="dto">Tag entity to add.</param>
     /// <param name="localization">Localization: Ua - 0, En - 1.</param>
-    /// <param name="dto">Tag entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<Tag> Update(TagDto dto, LocalizationType localization = LocalizationType.Ua);
+    Task<TagDto> Update(TagDto dto, LocalizationType localization = LocalizationType.Ua);
 
     /// <summary>
     ///  Delete entity.
