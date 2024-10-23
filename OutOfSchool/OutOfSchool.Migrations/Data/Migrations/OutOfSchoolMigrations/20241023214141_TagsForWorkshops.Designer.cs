@@ -11,8 +11,8 @@ using OutOfSchool.Services;
 namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20241022070728_TagMigration")]
-    partial class TagMigration
+    [Migration("20241023214141_TagsForWorkshops")]
+    partial class TagsForWorkshops
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
