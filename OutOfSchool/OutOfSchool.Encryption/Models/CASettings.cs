@@ -2,19 +2,19 @@ namespace OutOfSchool.Encryption.Models;
 
 public class CASettings
 {
-    public string[] issuerCNs { get; set; }
+    public string[] IssuerCNs { get; set; }
 
-    public string address { get; set; }
+    public string Address { get; set; }
 
-    public string ocspAccessPointAddress { get; set; }
+    public string OcspAccessPointAddress { get; set; }
 
-    public string ocspAccessPointPort { get; set; }
+    public string OcspAccessPointPort { get; set; }
 
-    public string cmpAddress { get; set; }
+    public string CmpAddress { get; set; }
 
-    public string tspAddress { get; set; }
+    public string TspAddress { get; set; }
 
-    public string tspAddressPort { get; set; }
+    public string TspAddressPort { get; set; }
 
-    public bool directAccess { get; set; }
+    public bool DirectAccess { get; set; }
 }

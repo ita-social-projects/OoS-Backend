@@ -1,5 +1,7 @@
 using Asp.Versioning;
 using Elastic.Apm.DiagnosticSource;
+using OutOfSchool.Encryption.Config;
+using OutOfSchool.Encryption.Constants;
 using OutOfSchool.Encryption.Handlers;
 using OutOfSchool.Encryption.Services;
 using Serilog;
@@ -21,6 +23,11 @@ builder.Host.UseSerilog((ctx, lc) => lc
 GlobalLogContext.PushProperty("AppVersion", builder.Configuration.GetSection("AppDefaults:Version").Value);
 
 builder.Services.AddElasticApmForAspNetCore(new HttpDiagnosticsSubscriber());
+builder.Services
+    .AddOptions<EUSignConfig>()
+    .BindConfiguration(EUSignConfig.ConfigSectionName)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 if (builder.Environment.IsDevelopment())
 {
@@ -28,12 +35,13 @@ if (builder.Environment.IsDevelopment())
 }
 else
 {
+    builder.Services.AddSingleton<IIoOperationsService, IoOperationsService>();
     builder.Services.AddSingleton<IEUSignOAuth2Service, EUSignOAuth2Service>();
 }
 
 builder.Services.AddApiVersioning(options =>
     {
-        options.DefaultApiVersion = new ApiVersion(1);
+        options.DefaultApiVersion = new ApiVersion(AppConstants.ApiVersion1);
         options.ReportApiVersions = true;
         options.AssumeDefaultVersionWhenUnspecified = true;
         options.ApiVersionReader = ApiVersionReader.Combine(new UrlSegmentApiVersionReader());
@@ -49,13 +57,13 @@ var app = builder.Build();
 app.UseSerilogRequestLogging();
 
 var apiVersionSet = app.NewApiVersionSet()
-    .HasApiVersion(new ApiVersion(1))
+    .HasApiVersion(new ApiVersion(AppConstants.ApiVersion1))
     .ReportApiVersions()
     .Build();
 
 app.UseExceptionHandler(handler => handler.Run(async ctx => await Results.Problem().ExecuteAsync(ctx)));
 
-AppHandlers.Map(app, apiVersionSet);
+app.MapAppHandlers(apiVersionSet);
 
 try
 {

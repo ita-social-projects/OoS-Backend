@@ -4,14 +4,17 @@ using System.Text.Json;
 using EUSignCP;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Encryption.Config;
+using OutOfSchool.Encryption.Constants;
 using OutOfSchool.Encryption.Models;
 
 namespace OutOfSchool.Encryption.Services;
 
+/// <inheritdoc/>
 public class EUSignOAuth2Service : IEUSignOAuth2Service
 {
     private readonly EUSignConfig eUSignConfig;
     private readonly Logger<EUSignOAuth2Service> logger;
+    private readonly IIoOperationsService ioOperationsService;
 
     // ReSharper disable once InconsistentNaming
     [SuppressMessage(
@@ -19,16 +22,19 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
         "SA1306:Field names should begin with lower-case letter",
         Justification = "CA is an acronym")]
     private CASettings[] CAs = null;
+
     private IntPtr context = IntPtr.Zero;
     private IntPtr pkContext = IntPtr.Zero;
     private byte[] pkSignCert = null;
-    private byte[] pkEnvelopCert = null;
+    private byte[] pkEnvelopeCert = null;
 
     public EUSignOAuth2Service(
         IOptions<EUSignConfig> config,
+        IIoOperationsService ioOperationsService,
         Logger<EUSignOAuth2Service> logger)
     {
         this.eUSignConfig = config.Value;
+        this.ioOperationsService = ioOperationsService;
         this.logger = logger;
 
         if (!IsInitialized())
@@ -68,9 +74,9 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
     }
 
     /// <inheritdoc/>
-    public CertificateResponse GetEnvelopCertificateBase64()
+    public CertificateResponse GetEnvelopeCertificateBase64()
     {
-        if (pkEnvelopCert == null)
+        if (pkEnvelopeCert == null)
         {
             logger.LogError("No envelop certificate was loaded");
             return null;
@@ -78,13 +84,18 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
 
         return new()
         {
-            CertBase64 = Convert.ToBase64String(pkEnvelopCert),
+            CertBase64 = Convert.ToBase64String(pkEnvelopeCert),
         };
     }
 
     /// <inheritdoc/>
-    public UserInfoResponse DecryptUserInfo(EnvelopedUserInfoResponse encryptedUserInfo)
+    public UserInfoResponse DecryptUserInfo([NotNull] EnvelopedUserInfoResponse encryptedUserInfo)
     {
+        if (encryptedUserInfo == null)
+        {
+            return null;
+        }
+
         try
         {
             IEUSignCP.CtxDevelopData(
@@ -94,7 +105,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                 out var developedUserInfo,
                 out _);
 
-            Stream userInfoStream = new MemoryStream(developedUserInfo);
+            using var userInfoStream = ioOperationsService.GetMemoryStreamFromBytes(developedUserInfo);
             return JsonSerializer.Deserialize<UserInfoResponse>(userInfoStream);
         }
         catch (Exception ex)
@@ -151,10 +162,10 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
         {
             throw new EUSignOAuth2Exception(
                 $"""
-                  An error occurred while searching for key information media.
-                  Error description: media not found.
-                  Search parameters: media type - {type}, device - {device}
-                  """);
+                 An error occurred while searching for key information media.
+                 Error description: media not found.
+                 Search parameters: media type - {type}, device - {device}
+                 """);
         }
     }
 
@@ -202,12 +213,17 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
             false,
             3600);
 
+        if (Uri.CheckHostName(eUSignConfig.Proxy.Host) is UriHostNameType.Unknown or UriHostNameType.Basic)
+        {
+            throw new ArgumentException("The proxy address is invalid.", nameof(eUSignConfig.Proxy.Host));
+        }
+
         // Встановлення параметрів Proxy-серверу для доступу к серверам ЦСК
         IEUSignCP.SetProxySettings(
-            eUSignConfig.Proxy.Use,
+            eUSignConfig.Proxy.Enabled,
             eUSignConfig.Proxy.User != string.Empty,
-            eUSignConfig.Proxy.Address,
-            eUSignConfig.Proxy.Port,
+            eUSignConfig.Proxy.Host,
+            eUSignConfig.Proxy.Port.ToString(),
             eUSignConfig.Proxy.User,
             eUSignConfig.Proxy.Password,
             true);
@@ -220,24 +236,24 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
 
         // Встановлення параметрів OCSP-серверу ЦСК за замовчанням
         IEUSignCP.SetOCSPSettings(
-            true, true, eUSignConfig.DefaultOCSPServer, "80");
+            true, true, eUSignConfig.DefaultOCSPServer, eUSignConfig.DefaultOCSPPort.ToString());
 
         // Встановлення налаштувань точок доступу до OCSP-серверів
         // Необхідні при обслуговуванні користувачів з різних ЦСК
         IEUSignCP.SetOCSPAccessInfoModeSettings(true);
 
-        var fsCAs = new FileStream(eUSignConfig.CA.JsonPath, FileMode.OpenOrCreate);
+        using var fsCAs = ioOperationsService.GetFileStreamFromPath(eUSignConfig.CA.JsonPath, FileMode.OpenOrCreate);
 
         CAs = JsonSerializer.Deserialize<CASettings[]>(fsCAs);
 
         foreach (var ca in CAs)
         {
-            foreach (var commonName in ca.issuerCNs)
+            foreach (var commonName in ca.IssuerCNs)
             {
                 IEUSignCP.SetOCSPAccessInfoSettings(
                     commonName,
-                    ca.ocspAccessPointAddress,
-                    ca.ocspAccessPointPort);
+                    ca.OcspAccessPointAddress,
+                    ca.OcspAccessPointPort);
             }
         }
 
@@ -248,13 +264,13 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
         // - з параметрів TSP, що встановлені за замовчанням.
 
         // Встановлення параметрів TSP-серверу ЦСК за замовчанням
-        IEUSignCP.SetTSPSettings(true, eUSignConfig.DefaultTSPServer, "80");
+        IEUSignCP.SetTSPSettings(true, eUSignConfig.DefaultTSPServer, eUSignConfig.DefaultTSPPort.ToString());
 
         // Встановлення налаштувань LDAP-cервера
         IEUSignCP.SetLDAPSettings(false, string.Empty, string.Empty, true, string.Empty, string.Empty);
 
         // Встановлення параметрів CMP-серверу ЦСК
-        IEUSignCP.SetCMPSettings(false, string.Empty, "80", string.Empty);
+        IEUSignCP.SetCMPSettings(false, string.Empty, AppConstants.DefaultPort.ToString(), string.Empty);
 
         // Збереження кореневих сертифікатів ЦЗО та ЦСК
         IEUSignCP.SaveCertificates(
@@ -283,7 +299,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
     /// </summary>
     /// <param name="caSubjectCN">Required CS Subject Common Name.</param>
     /// <returns>A <see cref="CASettings"/> with required CA parameters.</returns>
-    private CASettings GetCA(string caSubjectCN) => CAs.FirstOrDefault(ca => ca.issuerCNs.Any(cn => cn == caSubjectCN));
+    private CASettings GetCA(string caSubjectCN) => CAs.FirstOrDefault(ca => ca.IssuerCNs.Any(cn => cn == caSubjectCN));
 
     /// <summary>
     /// This code is from IIT Library usage example with minimal code styling changes.
@@ -310,8 +326,6 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
         bool fromFile = !string.IsNullOrEmpty(pkFile);
         IEUSignCP.EU_KEY_MEDIA keyMedia = new IEUSignCP.EU_KEY_MEDIA(0, 0, string.Empty);
         CASettings ca = null;
-        IEUSignCP.EU_CERT_OWNER_INFO info;
-        IEUSignCP.EU_CERT_INFO_EX infoEx;
 
         try
         {
@@ -320,32 +334,29 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
             {
                 foreach (var file in certsFiles)
                 {
-                    if (!File.Exists(file))
+                    if (!ioOperationsService.Exists(file))
                     {
                         throw new Exception($"The certificate file is missing: {file}");
                     }
 
-                    certs.Add(File.ReadAllBytes(file));
+                    certs.Add(ioOperationsService.ReadAllBytes(file));
                 }
             }
 
             if (fromFile)
             {
                 // Зчитування ос. ключа з файлу до байтового масиву
-                if (!File.Exists(pkFile))
+                if (!ioOperationsService.Exists(pkFile))
                 {
                     throw new Exception($"The private key file is missing: {pkFile}");
                 }
 
-                pKey = File.ReadAllBytes(pkFile);
+                pKey = ioOperationsService.ReadAllBytes(pkFile);
                 if (!string.IsNullOrEmpty(jksAlias))
                 {
                     // Пошук відповідного ос. ключа в контейнері JKS
                     IEUSignCP.GetJKSPrivateKey(pKey, jksAlias, out pKey, out var certificates);
-                    foreach (var certificate in certificates)
-                    {
-                        certs.Add(certificate);
-                    }
+                    certs.AddRange(certificates);
                 }
             }
             else
@@ -354,6 +365,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                 GetKeyMedia(pkTypeName, pkDeviceName, password, out keyMedia);
             }
 
+            IEUSignCP.EU_CERT_INFO_EX infoEx;
             if (certs.Count == 0 && !string.IsNullOrEmpty(caIssuerCN))
             {
                 // Пошук налаштувань ЦСК для ключа
@@ -363,7 +375,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                     throw new Exception($"CA settings not found: {caIssuerCN}");
                 }
 
-                if (ca.cmpAddress != string.Empty)
+                if (ca.CmpAddress != string.Empty)
                 {
                     byte[] keyInfo;
                     byte[] certsCMP;
@@ -379,8 +391,8 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                         IEUSignCP.GetKeyInfo(keyMedia, out keyInfo);
                     }
 
-                    string[] cmpServers = { ca.cmpAddress };
-                    string[] cmpServersPorts = { "80" };
+                    string[] cmpServers = { ca.CmpAddress };
+                    string[] cmpServersPorts = { AppConstants.DefaultPort.ToString() };
                     IEUSignCP.GetCertificatesByKeyInfo(
                         keyInfo, cmpServers, cmpServersPorts, out certsCMP);
 
@@ -424,7 +436,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                     context,
                     pKey,
                     password,
-                    out info,
+                    out _,
                     out pkContext);
             }
             else
@@ -432,7 +444,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                 IEUSignCP.CtxReadPrivateKey(
                     context,
                     keyMedia,
-                    out info,
+                    out _,
                     out pkContext);
             }
 
@@ -459,7 +471,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                     IEUSignCP.EU_CERT_KEY_TYPE_DSTU4145,
                     IEUSignCP.EU_KEY_USAGE_KEY_AGREEMENT,
                     out infoEx,
-                    out pkEnvelopCert);
+                    out pkEnvelopeCert);
             }
             catch (Exception)
             {
