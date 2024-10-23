@@ -2,9 +2,11 @@
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement.Mvc;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Util.ControllersResultsHelpers;
 
@@ -22,6 +24,10 @@ public class WorkshopController : ControllerBase
     private readonly IWorkshopServicesCombinerV2 combinedWorkshopService;
     private readonly IProviderService providerService;
     private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly ILogger<WorkshopController> logger;
+    private readonly IProviderAdminService providerAdminService;
+    private readonly IUserService userService;
+
     private readonly AppDefaultsConfig options;
 
     /// <summary>
@@ -30,16 +36,25 @@ public class WorkshopController : ControllerBase
     /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
     /// <param name="providerService">Service for Provider model.</param>
     /// <param name="localizer">Localizer.</param>
+    /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
+    /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
+    /// <param name="userService">Service for operations with users.</param>
     /// <param name="options">Application default values.</param>
     public WorkshopController(
         IWorkshopServicesCombinerV2 combinedWorkshopService,
         IProviderService providerService,
         IStringLocalizer<SharedResource> localizer,
+        ILogger<WorkshopController> logger,
+        IProviderAdminService providerAdminService,
+        IUserService userService,
         IOptions<AppDefaultsConfig> options)
     {
         this.localizer = localizer;
         this.combinedWorkshopService = combinedWorkshopService;
         this.providerService = providerService;
+        this.logger = logger;
+        this.providerAdminService = providerAdminService;
+        this.userService = userService;
         this.options = options.Value;
     }
 
@@ -146,18 +161,46 @@ public class WorkshopController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Create([FromForm] WorkshopV2Dto dto)
     {
-        var userHasRights = await IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
+        if (dto == null)
+        {
+            return BadRequest("Workshop is null.");
+        }
+
+        if (await IsProviderBlocked(dto.ProviderId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to create workshops at blocked providers");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to create the workshop by the blocked provider.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.ProviderId).ConfigureAwait(false);
         if (!userHasRights)
         {
             return StatusCode(403, "Forbidden to create workshops for another providers.");
         }
 
-        dto.Id = default;
-        dto.Address.Id = default;
+        try
+        {
+            var creationResult = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
 
-        var creationResult = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
+            // here we will get "false" if workshop was created by assistant provider admin
+            // because user is not currently associated with new workshop
+            // so we can update information to allow assistant manage created workshop
+            if (!await IsUserProvidersOwnerOrAdmin(creationResult.Workshop.ProviderId, creationResult.Workshop.Id).ConfigureAwait(false))
+            {
+                var userId = User.FindFirst("sub")?.Value;
+                await providerAdminService.GiveAssistantAccessToWorkshop(userId, creationResult.Workshop.Id).ConfigureAwait(false);
+            }
 
-        return CreatedAtAction(
+            return CreatedAtAction(
             nameof(GetById),
             new { id = creationResult.Workshop.Id, },
             new WorkshopResponseDto
@@ -166,6 +209,14 @@ public class WorkshopController : ControllerBase
                 UploadingCoverImageResult = creationResult.UploadingCoverImageResult?.CreateSingleUploadingResult(),
                 UploadingImagesResults = creationResult.UploadingImagesResults?.CreateMultipleUploadingResult(),
             });
+        }
+        catch (InvalidOperationException ex)
+        {
+            var errorMessage = $"Unable to create a new workshop: {ex.Message}";
+            logger.LogError(ex, errorMessage);
+
+            return BadRequest(errorMessage);
+        }
     }
 
     /// <summary>
@@ -274,5 +325,53 @@ public class WorkshopController : ControllerBase
             UploadingCoverImageResult = updatingResult.UploadingCoverImageResult?.CreateSingleUploadingResult(),
             UploadingImagesResults = updatingResult.UploadingImagesResults?.CreateMultipleUploadingResult(),
         };
+    }
+
+    private async Task<bool> IsUserProvidersOwnerOrAdmin(Guid providerId, Guid workshopId = default)
+    {
+        if (User.IsInRole(nameof(Role.Provider).ToLower()))
+        {
+            var userId = GettingUserProperties.GetUserId(User);
+            var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
+
+            if (provider != null)
+            {
+                if (provider.Id != providerId)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                var isUserRelatedAdmin = await providerAdminService
+                    .CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId)
+                    .ConfigureAwait(false);
+
+                if (!isUserRelatedAdmin)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private async Task<bool> IsCurrentUserBlocked()
+    {
+        var userId = GettingUserProperties.GetUserId(User);
+
+        return await userService.IsBlocked(userId);
+    }
+
+    private async Task<bool> IsProviderBlocked(Guid providerId, Guid workshopId = default)
+    {
+        providerId = providerId == Guid.Empty ?
+            await providerService.GetProviderIdForWorkshopById(workshopId).ConfigureAwait(false) :
+            providerId;
+
+        return await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false;
     }
 }

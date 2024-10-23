@@ -146,19 +146,6 @@ public class TeacherService : ITeacherService
         }
     }
 
-    private async Task UpdateTeacher()
-    {
-        try
-        {
-            await teacherRepository.SaveChangesAsync().ConfigureAwait(false);
-        }
-        catch (DbUpdateException ex)
-        {
-            logger.LogError(ex, "Unreal to update teacher.");
-            throw;
-        }
-    }
-
     /// <inheritdoc/>
     public async Task<Guid> GetTeachersWorkshopId(Guid teacherId)
     {
@@ -176,6 +163,27 @@ public class TeacherService : ITeacherService
         logger.LogInformation($"Successfully found a Teacher with Id = {teacherId}.");
         var teachersWorkshopId = teacher.WorkshopId;
         logger.LogInformation($"Successfully found WorkshopId - {teachersWorkshopId} for Teacher  with Id = {teacherId}.");
-        return teachersWorkshopId;
+        return teachersWorkshopId ?? Guid.Empty;
+    }
+
+    /// <inheritdoc/>
+    public Task<bool> Exists(Guid id)
+    {
+        logger.LogInformation("Checking if Teacher exists by Id started. Looking Id = {id}.", id);
+
+        return teacherRepository.Any(x => x.Id == id);
+    }
+
+    private async Task UpdateTeacher()
+    {
+        try
+        {
+            await teacherRepository.SaveChangesAsync().ConfigureAwait(false);
+        }
+        catch (DbUpdateException ex)
+        {
+            logger.LogError(ex, "Unreal to update teacher.");
+            throw;
+        }
     }
 }

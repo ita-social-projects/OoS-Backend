@@ -42,7 +42,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProviderLicenseStatus, opt => opt.MapFrom(src => src.Provider.LicenseStatus))
             .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src => src.Teachers.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.DateTimeRanges, opt => opt.MapFrom(src => src.DateTimeRanges.Where(x => !x.IsDeleted)))
-            .ForMember(dest => dest.WorkshopDescriptionItems, opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)));
+            .ForMember(dest => dest.WorkshopDescriptionItems, opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)))
+            .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore());
 
         CreateSoftDeletedMap<WorkshopBaseDto, Workshop>()
             .ForMember(
@@ -68,6 +69,7 @@ public class MappingProfile : Profile
 
                 return dateTimeRanges;
             }))
+
             .ForMember(dest => dest.Teachers, opt => opt.Ignore())
             .ForMember(dest => dest.Provider, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
@@ -87,7 +89,11 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-            .ForMember(dest => dest.DeleteDate, opt => opt.Ignore());
+            .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
+            .ForMember(dest => dest.MemberOfWorkshop, opt => opt.Ignore())
+            .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderTitle, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderTitleEn, opt => opt.Ignore());
 
         CreateMap<Workshop, WorkshopDto>()
             .IncludeBase<Workshop, WorkshopBaseDto>()

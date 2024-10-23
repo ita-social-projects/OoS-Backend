@@ -55,9 +55,12 @@ public class WorkshopBaseDto : IValidatableObject
     [Range(0, 120, ErrorMessage = "Max age should be a number from 0 to 120")]
     public int MaxAge { get; set; }
 
-    [Required]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    [CollectionNotEmpty(ErrorMessage = "At least one DateTime range is required")]
     public List<DateTimeRangeDto> DateTimeRanges { get; set; }
+
+    [Required]
+    public bool IsPaid { get; set; } = false;
 
     [Column(TypeName = "decimal(18,2)")]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
@@ -66,10 +69,11 @@ public class WorkshopBaseDto : IValidatableObject
     [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
     public PayRateType? PayRate { get; set; } = PayRateType.Classes;
 
-    [Required]
+    [Required(ErrorMessage = "Form of learning is required")]
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning FormOfLearning { get; set; }
 
+    [Required(ErrorMessage = "Available seats are required")]
     public uint? AvailableSeats { get; set; } = uint.MaxValue;
 
     public bool CompetitiveSelection { get; set; }
@@ -78,7 +82,7 @@ public class WorkshopBaseDto : IValidatableObject
     public string CompetitiveSelectionDescription { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    [CollectionNotEmpty(ErrorMessage = "At least one description is required")]
+    [CollectionNotEmpty(ErrorMessage = "At least one description item is required")]
     public IEnumerable<WorkshopDescriptionItemDto> WorkshopDescriptionItems { get; set; }
 
     public bool WithDisabilityOptions { get; set; } = default;
@@ -94,18 +98,15 @@ public class WorkshopBaseDto : IValidatableObject
 
     public string InstitutionHierarchy { get; set; }
 
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    public TeacherDTO DefaultTeacher { get; set; }
+
     public List<long> DirectionIds { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IEnumerable<string> Keywords { get; set; } = default;
 
-    [Required]
-    public long AddressId { get; set; }
-
-    [Required]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    public AddressDto Address { get; set; }
-
     public List<TeacherDTO> Teachers { get; set; }
 
     [Required]
@@ -124,6 +125,64 @@ public class WorkshopBaseDto : IValidatableObject
     public DateOnly ActiveFrom { get; set; }
 
     public DateOnly ActiveTo { get; set; }
+
+    public bool ShortStay { get; set; } = default;
+
+    [Required]
+    public bool IsSelfFinanced { get; set; } = default;
+
+    [Required]
+    public bool IsSpecial { get; set; } = default;
+
+    public uint SpecialNeedsId { get; set; } = uint.MinValue;
+
+    [Required]
+    public bool IsInclusive { get; set; } = default;
+
+    [MaxLength(500)]
+    public string AdditionalDescription { get; set; }
+
+    public bool AreThereBenefits { get; set; } = default;
+
+    [MaxLength(500)]
+    public string PreferentialTermsOfParticipation { get; set; }
+
+    [Required]
+    public uint EducationalShiftId { get; set; } = uint.MinValue;
+
+    [Required(ErrorMessage = "Language of education is required")]
+    public uint LanguageOfEducationId { get; set; } = uint.MinValue;
+
+    [Required(ErrorMessage = "Type of age composition is required")]
+    public uint TypeOfAgeCompositionId { get; set; } = uint.MinValue;
+
+    [Required(ErrorMessage = "Educational disciplines is required")]
+    public Guid EducationalDisciplines { get; set; } = Guid.Empty;
+
+    [Required(ErrorMessage = "Category is required")]
+    public uint CategoryId { get; set; } = uint.MinValue;
+
+    [Required(ErrorMessage = "GropeType is required")]
+    public uint GropeTypeId { get; set; } = uint.MinValue;
+
+    public uint CoverageId { get; set; } = uint.MinValue;
+
+    public Guid? DefaultTeacherId { get; set; }
+
+    public Guid? MemberOfWorkshopId { get; set; }
+
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    public WorkshopBaseDto MemberOfWorkshop { get; set; }
+
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    public virtual ICollection<WorkshopBaseDto> IncludedStudyGroups { get; set; } // Navigation property to included study groups
+
+    [Required]
+    public long AddressId { get; set; }
+
+    [Required]
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    public AddressDto Address { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

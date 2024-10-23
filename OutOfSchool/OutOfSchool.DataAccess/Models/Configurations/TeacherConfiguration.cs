@@ -1,5 +1,4 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Common;
@@ -36,10 +35,7 @@ internal class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
             .IsRequired()
             .HasMaxLength(300); // ??
 
-        builder.HasOne(x => x.Workshop)
-            .WithMany(x => x.Teachers)
-            .HasForeignKey(x => x.WorkshopId)
-            .IsRequired();
+        builder.Ignore(x => x.Workshop);
 
         builder.Ignore(x => x.Images);
     }

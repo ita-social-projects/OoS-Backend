@@ -49,6 +49,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// </summary>
     /// <param name="workshopRepository">Repository for Workshop entity.</param>
     /// <param name="dateTimeRangeRepository">Repository for DateTimeRange entity.</param>
+    /// <param name="roomRepository">Repository for ChatRoomWorkshop entity.</param>
     /// <param name="teacherService">Teacher service.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Automapper DI service.</param>
@@ -102,28 +103,17 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
 
-        if (dto.AvailableSeats is 0 or null)
-        {
-            dto.AvailableSeats = uint.MaxValue;
-        }
+        // TODO: after refactoring the DTOs for the Workshop entities, this method needs to be replaced with the correct mapping
+        await SetIdsToDefaultValue(dto); // This method sets the properties with the Id to the default value.
 
-        var workshop = mapper.Map<Workshop>(dto);
-        workshop.Provider = await providerRepository.GetById(workshop.ProviderId).ConfigureAwait(false);
-        workshop.ProviderOwnership = workshop.Provider.Ownership;
-
-        if (dto.Teachers is not null)
-        {
-            workshop.Teachers = dto.Teachers.Select(dtoTeacher => mapper.Map<Teacher>(dtoTeacher)).ToList();
-        }
-
-        workshop.Status = WorkshopStatus.Open;
+        var workshop = await CheckDtoAndPrepareCreatedWorkshop(dto);
 
         Func<Task<Workshop>> operation = async () =>
             await workshopRepository.Create(workshop).ConfigureAwait(false);
 
         var newWorkshop = await workshopRepository.RunInTransaction(operation).ConfigureAwait(false);
 
-        logger.LogInformation($"Workshop with Id = {newWorkshop?.Id} created successfully.");
+        logger.LogInformation("Workshop with Id = {newWorkshopId} created successfully.", newWorkshop.Id);
 
         return mapper.Map<WorkshopBaseDto>(newWorkshop);
     }
@@ -137,23 +127,18 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
 
+        // TODO: after refactoring the DTOs for the Workshop entities, this method needs to be replaced with the correct mapping
+        await SetIdsToDefaultValue(dto); // This method sets the properties with the Id to the default value.
+
+        var createdWorkshop = await CheckDtoAndPrepareCreatedWorkshop(dto);
+
         async Task<(Workshop createdWorkshop, MultipleImageUploadingResult imagesUploadResult, Result<string>
             coverImageUploadResult)> CreateWorkshopAndDependencies()
         {
-            var createdWorkshop = mapper.Map<Workshop>(dto);
-            createdWorkshop.Status = WorkshopStatus.Open;
             var workshop = await workshopRepository.Create(createdWorkshop).ConfigureAwait(false);
 
-            if (dto.Teachers != null)
-            {
-                foreach (var teacherDto in dto.Teachers)
-                {
-                    teacherDto.WorkshopId = workshop.Id;
-                    await teacherService.Create(teacherDto).ConfigureAwait(false);
-                }
-            }
-
             MultipleImageUploadingResult imagesUploadingResult = null;
+
             if (dto.ImageFiles?.Count > 0)
             {
                 workshop.Images = new List<Image<Workshop>>();
@@ -872,7 +857,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             // Fix Rider ambiguous method with either char or string args
             // ReSharper disable once UseCollectionExpression
             // ReSharper disable once RedundantExplicitArrayCreation
-            foreach (var word in filter.SearchText.Split(new char[] {' ', ','}, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var word in filter.SearchText.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 tempPredicate = tempPredicate.Or(x => EF.Functions.Like(x.Keywords, $"%{word}%"));
             }
@@ -1091,6 +1076,82 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
                 WorkshopId = currentWorkshop.Id,
                 Status = WorkshopStatus.Closed,
             }).ConfigureAwait(false);
+        }
+    }
+
+    private async Task<Workshop> CheckDtoAndPrepareCreatedWorkshop(WorkshopBaseDto dto)
+    {
+        if (dto.MemberOfWorkshopId.HasValue && !await Exists((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false))
+        {
+            var errorMessage = $"The main workshop (with id = {dto.MemberOfWorkshopId}) for the workshop being created was not found.";
+            throw new InvalidOperationException(errorMessage);
+        }
+
+        if (dto.MemberOfWorkshopId.HasValue && (await GetById((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false)).MemberOfWorkshopId.HasValue)
+        {
+            var errorMessage = $"The main workshop (with ID = {dto.MemberOfWorkshopId}) for the workshop being created is a member of another workshop, so it cannot be the main workshop.";
+            throw new InvalidOperationException(errorMessage);
+        }
+
+        if (dto.AvailableSeats is 0 or null)
+        {
+            dto.AvailableSeats = uint.MaxValue;
+        }
+
+        Workshop createdWorkshop;
+
+        if (dto is WorkshopV2Dto v2Dto)
+        {
+            createdWorkshop = mapper.Map<Workshop>(v2Dto);
+        }
+        else
+        {
+            createdWorkshop = mapper.Map<Workshop>(dto);
+        }
+
+        createdWorkshop.Provider = await providerRepository.GetById(createdWorkshop.ProviderId).ConfigureAwait(false);
+        createdWorkshop.ProviderOwnership = createdWorkshop.Provider.Ownership;
+        createdWorkshop.ProviderTitle = createdWorkshop.Provider.FullTitle;
+        createdWorkshop.ProviderTitleEn = createdWorkshop.Provider.FullTitleEn;
+
+        if (dto.Teachers is not null)
+        {
+            createdWorkshop.Teachers = dto.Teachers.Select(mapper.Map<Teacher>).ToList();
+        }
+
+        createdWorkshop.Status = WorkshopStatus.Open;
+
+        return createdWorkshop;
+    }
+
+    private async Task SetIdsToDefaultValue(WorkshopBaseDto dto)
+    {
+        dto.Id = Guid.Empty;
+
+        if (dto.Address is not null)
+        {
+            dto.Address.Id = default;
+        }
+
+        if (dto.DefaultTeacher is not null)
+        {
+            dto.DefaultTeacher.Id = Guid.Empty;
+        }
+
+        if (dto.MemberOfWorkshop is not null)
+        {
+            dto.MemberOfWorkshop.Id = Guid.Empty;
+        }
+
+        dto.WorkshopDescriptionItems?.ToList().ForEach(e => e.Id = Guid.Empty);
+        dto.Teachers?.ToList().ForEach(e => e.Id = Guid.Empty);
+        dto.DateTimeRanges?.ToList().ForEach(e => e.Id = default);
+        dto.IncludedStudyGroups?.ToList().ForEach(e => e.Id = Guid.Empty);
+
+        // If the DefaultTeacherId property of WorkshopBaseDto is incorrect, set it to the default value.
+        if (dto.DefaultTeacherId is not null && !await teacherService.Exists((Guid)dto.DefaultTeacherId).ConfigureAwait(false))
+        {
+            dto.DefaultTeacherId = default;
         }
     }
 }

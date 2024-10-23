@@ -23,6 +23,7 @@ public class WorkshopController : ControllerBase
     private readonly IProviderAdminService providerAdminService;
     private readonly IUserService userService;
     private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly ILogger<WorkshopController> logger;
     private readonly AppDefaultsConfig options;
 
     /// <summary>
@@ -33,6 +34,7 @@ public class WorkshopController : ControllerBase
     /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
     /// <param name="userService">Service for operations with users.</param>
     /// <param name="localizer">Localizer.</param>
+    /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
     /// <param name="options">Application default values.</param>
     public WorkshopController(
         IWorkshopServicesCombiner combinedWorkshopService,
@@ -40,13 +42,15 @@ public class WorkshopController : ControllerBase
         IProviderAdminService providerAdminService,
         IUserService userService,
         IStringLocalizer<SharedResource> localizer,
+        ILogger<WorkshopController> logger,
         IOptions<AppDefaultsConfig> options)
     {
         this.localizer = localizer;
         this.combinedWorkshopService = combinedWorkshopService;
-        this.providerAdminService = providerAdminService;
         this.providerService = providerService;
+        this.providerAdminService = providerAdminService;
         this.userService = userService;
+        this.logger = logger;
         this.options = options.Value;
     }
 
@@ -294,38 +298,32 @@ public class WorkshopController : ControllerBase
             return StatusCode(403, "Forbidden to create workshops for another providers.");
         }
 
-        dto.Id = default;
-        dto.Address.Id = default;
-
-        if (dto.Teachers != null)
+        try
         {
-            foreach (var teacher in dto.Teachers)
+            var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
+
+            // here we will get "false" if workshop was created by assistant provider admin
+            // because user is not currently associated with new workshop
+            // so we can update information to allow assistant manage created workshop
+
+            if (!await IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false))
             {
-                teacher.Id = default;
+                var userId = User.FindFirst("sub")?.Value;
+                await providerAdminService.GiveAssistantAccessToWorkshop(userId, workshop.Id).ConfigureAwait(false);
             }
-        }
 
-        foreach (var dateTimeRangeDto in dto.DateTimeRanges)
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = workshop.Id, },
+                workshop);
+        }
+        catch (InvalidOperationException ex)
         {
-            dateTimeRangeDto.Id = default;
+            var errorMessage = $"Unable to create a new workshop: {ex.Message}";
+            logger.LogError(ex, errorMessage);
+
+            return BadRequest(errorMessage);
         }
-
-        var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
-
-        // here we will get "false" if workshop was created by assistant provider admin
-        // because user is not currently associated with new workshop
-        // so we can update information to allow assistant manage created workshop
-
-        if (!(await IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false)))
-        {
-            var userId = User.FindFirst("sub")?.Value;
-            await providerAdminService.GiveAssistantAccessToWorkshop(userId, workshop.Id).ConfigureAwait(false);
-        }
-
-        return CreatedAtAction(
-            nameof(GetById),
-            new { id = workshop.Id, },
-            workshop);
     }
 
     /// <summary>
