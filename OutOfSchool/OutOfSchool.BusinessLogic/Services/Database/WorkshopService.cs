@@ -857,7 +857,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             // Fix Rider ambiguous method with either char or string args
             // ReSharper disable once UseCollectionExpression
             // ReSharper disable once RedundantExplicitArrayCreation
-            foreach (var word in filter.SearchText.Split(new char[] {' ', ','}, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var word in filter.SearchText.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 tempPredicate = tempPredicate.Or(x => EF.Functions.Like(x.Keywords, $"%{word}%"));
             }
@@ -1143,37 +1143,10 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             dto.MemberOfWorkshop.Id = Guid.Empty;
         }
 
-        if (dto.WorkshopDescriptionItems is not null)
-        {
-            foreach (var workshopDescription in dto.WorkshopDescriptionItems)
-            {
-                workshopDescription.Id = Guid.Empty;
-            }
-        }
-
-        if (dto.Teachers is not null)
-        {
-            foreach (var teacher in dto.Teachers)
-            {
-                teacher.Id = Guid.Empty;
-            }
-        }
-
-        if (dto.DateTimeRanges is not null)
-        {
-            foreach (var dateTimeRangeDto in dto.DateTimeRanges)
-            {
-                dateTimeRangeDto.Id = default;
-            }
-        }
-
-        if (dto.IncludedStudyGroups is not null)
-        {
-            foreach (var includedStudyGrope in dto.IncludedStudyGroups)
-            {
-                includedStudyGrope.Id = Guid.Empty;
-            }
-        }
+        dto.WorkshopDescriptionItems?.ToList().ForEach(e => e.Id = Guid.Empty);
+        dto.Teachers?.ToList().ForEach(e => e.Id = Guid.Empty);
+        dto.DateTimeRanges?.ToList().ForEach(e => e.Id = default);
+        dto.IncludedStudyGroups?.ToList().ForEach(e => e.Id = Guid.Empty);
 
         // If the DefaultTeacherId property of WorkshopBaseDto is incorrect, set it to the default value.
         if (dto.DefaultTeacherId is not null && !await teacherService.Exists((Guid)dto.DefaultTeacherId).ConfigureAwait(false))
