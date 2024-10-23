@@ -50,7 +50,6 @@ public class WorkshopControllerTests
     private Mock<IProviderAdminService> providerAdminService;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<IUserService> userServiceMoq;
-    private Mock<ITeacherService> teacherServiceMoq;
     private Mock<ILogger<WorkshopController>> loggerMoq;
     private Mock<HttpContext> httpContextMoq;
 
@@ -93,7 +92,6 @@ public class WorkshopControllerTests
         providerAdminService = new Mock<IProviderAdminService>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         userServiceMoq = new Mock<IUserService>();
-        teacherServiceMoq = new Mock<ITeacherService>();
         loggerMoq = new Mock<ILogger<WorkshopController>>();
 
         controller = new WorkshopController(
