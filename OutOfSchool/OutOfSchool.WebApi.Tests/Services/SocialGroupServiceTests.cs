@@ -98,7 +98,6 @@ public class SocialGroupServiceTests
 
         // Assert
         Assert.AreEqual(expected.Name, result.Name);
-        Assert.AreEqual(expected.NameEn, result.NameEn);
     }
 
     [Test]

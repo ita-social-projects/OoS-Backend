@@ -188,7 +188,7 @@ public class SocialGroupControllerTests
     public async Task CreateSocialGroup_WhenModelIsValid_ReturnsCreatedAtActionResult()
     {
         // Arrange
-        service.Setup(x => x.Create(socialGroupLocalized)).ReturnsAsync(socialGroupLocalized);
+        service.Setup(x => x.Create(socialGroupLocalized)).ReturnsAsync(socialGroup);
 
         // Act
         var result = await controller.Create(socialGroupLocalized).ConfigureAwait(false) as CreatedAtActionResult;

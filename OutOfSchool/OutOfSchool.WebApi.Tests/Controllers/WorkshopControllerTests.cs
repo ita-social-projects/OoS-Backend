@@ -38,8 +38,8 @@ public class WorkshopControllerTests
     private static List<WorkshopDto> workshops;
     private static List<WorkshopCard> workshopCards;
     private static WorkshopDto workshop;
-    private static WorkshopBaseDto workshopCreateDto;
-    private static WorkshopBaseDto workshopUpdateDto;
+    private static WorkshopCreateUpdateDto workshopCreateDto;
+    private static WorkshopCreateUpdateDto workshopUpdateDto;
     private static ProviderDto provider;
     private static Mock<IOptions<AppDefaultsConfig>> options;
 
@@ -68,8 +68,8 @@ public class WorkshopControllerTests
 
         workshops = WorkshopDtoGenerator.Generate(5);
         workshop = WorkshopDtoGenerator.Generate();
-        workshopCreateDto = WorkshopBaseDtoGenerator.Generate();
-        workshopUpdateDto = WorkshopBaseDtoGenerator.Generate();
+        workshopCreateDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        workshopUpdateDto = WorkshopCreateUpdateDtoGenerator.Generate();
         provider = ProviderDtoGenerator.Generate();
         workshopCards = WorkshopCardGenerator.Generate(5);
         workshopBaseCards = WorkshopBaseCardGenerator.Generate(5);
@@ -630,7 +630,7 @@ public class WorkshopControllerTests
         workshopCreateDto.ProviderId = provider.Id;
         providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
-        workshopServiceMoq.Setup(x => x.Create(workshopCreateDto)).ReturnsAsync(workshopCreateDto);
+        workshopServiceMoq.Setup(x => x.Create(workshopCreateDto)).ReturnsAsync(workshop);
 
         // Act
         var result = await controller.Create(workshopCreateDto).ConfigureAwait(false) as CreatedAtActionResult;
@@ -646,7 +646,7 @@ public class WorkshopControllerTests
     public async Task CreateWorkshop_WhenModelIsInvalid_ShouldReturnBadRequestObjectResult()
     {
         // Arrange
-        workshopServiceMoq.Setup(x => x.Create(workshopCreateDto)).ReturnsAsync(workshopCreateDto);
+        workshopServiceMoq.Setup(x => x.Create(workshopCreateDto)).ReturnsAsync(workshop);
         controller.ModelState.AddModelError("CreateWorkshop", "Invalid model state.");
 
         // Act
@@ -681,7 +681,7 @@ public class WorkshopControllerTests
     public async Task UpdateWorkshop_WhenModelIsValid_ShouldReturnOkObjectResult()
     {
         // Arrange
-        SetupUpdateReturn(Result<WorkshopBaseDto>.Success(workshopUpdateDto));
+        SetupUpdateReturn(Result<WorkshopDto>.Success(workshop));
 
         // Act
         var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as OkObjectResult;
@@ -701,7 +701,7 @@ public class WorkshopControllerTests
         var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert
-        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopBaseDto>()), Times.Never);
+        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopCreateUpdateDto>()), Times.Never);
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(BadRequest, result.StatusCode);
     }
@@ -719,7 +719,7 @@ public class WorkshopControllerTests
 
         // Assert
         providerServiceMoq.VerifyAll();
-        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopBaseDto>()), Times.Never);
+        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopCreateUpdateDto>()), Times.Never);
         Assert.IsNotNull(result);
         Assert.AreEqual(Forbidden, result.StatusCode);
     }
@@ -728,7 +728,7 @@ public class WorkshopControllerTests
     public async Task UpdateWorkshop_WhenDtoIsNull_ShouldReturnBadRequestObjectResult()
     {
         // Arrange
-        WorkshopBaseDto workshopBaseDto = null;
+        WorkshopCreateUpdateDto workshopBaseDto = null;
 
         // Act
         var result = await controller.Update(workshopBaseDto).ConfigureAwait(false) as ObjectResult;
@@ -742,7 +742,7 @@ public class WorkshopControllerTests
     public async Task UpdateWorkshop_WhenUpdateResultIsFailed_ShouldReturnBadRequestObjectResult()
     {
         // Arrange
-        var failedResult = Result<WorkshopBaseDto>.Failed(new OperationError
+        var failedResult = Result<WorkshopDto>.Failed(new OperationError
         {
             Code = HttpStatusCode.BadRequest.ToString(),
             Description = Constants.WorkshopNotFoundErrorMessage,
@@ -762,7 +762,7 @@ public class WorkshopControllerTests
     public async Task UpdateWorkshop_WhenUpdateResultIsFailedAndErrorIsNull_ShouldReturnBadRequestObjectResult()
     {
         // Arrange
-        var failedResult = Result<WorkshopBaseDto>.Failed(null);
+        var failedResult = Result<WorkshopDto>.Failed(null);
         SetupUpdateReturn(failedResult);
 
         // Act
@@ -778,7 +778,7 @@ public class WorkshopControllerTests
     public async Task UpdateWorkshop_WhenUpdateResultFailsAndErrorsIsEmpty_ShouldReturnBadRequestObjectResult()
     {
         // Arrange
-        var failedResult = Result<WorkshopBaseDto>.Failed([]);
+        var failedResult = Result<WorkshopDto>.Failed([]);
         SetupUpdateReturn(failedResult);
 
         // Act
@@ -946,7 +946,7 @@ public class WorkshopControllerTests
         };
     }
 
-    private void SetupUpdateReturn(Result<WorkshopBaseDto> result)
+    private void SetupUpdateReturn(Result<WorkshopDto> result)
     {
         workshopUpdateDto.ProviderId = provider.Id;
         providerServiceMoq.Setup(x => x.IsBlocked(provider.Id)).ReturnsAsync(false);

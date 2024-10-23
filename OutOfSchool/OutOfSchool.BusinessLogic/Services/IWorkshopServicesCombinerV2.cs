@@ -16,7 +16,7 @@ public interface IWorkshopServicesCombinerV2 : IWorkshopServicesCombiner
     /// Update existing entity in the database.
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
-    /// <returns>A <see cref="Task{TResult}"/> containing a <see cref="Result{WorkshopBaseDto}"/>
+    /// <returns>A <see cref="Task{TResult}"/> containing a <see cref="Result{WorkshopCreateUpdateDto}"/>
     /// that indicates the success or failure of the operation.
     /// If the operation succeeds, the <see cref="Result{WorkshopResultDto}.Value"/> property
     /// contains the updated <see cref="WorkshopResultDto"/>.

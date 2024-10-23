@@ -1,61 +1,62 @@
 ﻿using System.Net.Mime;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Enums;
-using OutOfSchool.BusinessLogic.Models.SocialGroup;
+using OutOfSchool.BusinessLogic.Models.Tag;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
 [ApiController]
-[AspApiVersion(1)]
+[ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
-public class SocialGroupController : ControllerBase
+public class TagController : ControllerBase
 {
-    private readonly ISocialGroupService service;
+    private readonly ITagService service;
     private readonly IStringLocalizer<SharedResource> localizer;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SocialGroupController"/> class.
+    /// Initializes a new instance of the <see cref="TagController"/> class.
     /// </summary>
-    /// <param name="service">Service for SocialGroup model.</param>
+    /// <param name="service">Service for Tag model.</param>
     /// <param name="localizer">Localizer.</param>
-    public SocialGroupController(ISocialGroupService service, IStringLocalizer<SharedResource> localizer)
+    public TagController(ITagService service, IStringLocalizer<SharedResource> localizer)
     {
         this.service = service;
         this.localizer = localizer;
     }
 
     /// <summary>
-    /// Get all Social Groups from the database.
+    /// Get all Tags from the database.
     /// </summary>
     /// <param name="localization">Localization: Ua - 0, En - 1.</param>
-    /// <returns>List of all Social Groups.</returns>
+    /// <returns>List of all Tags.</returns>
     [HasPermission(Permissions.ImpersonalDataRead)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<SocialGroupDto>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<TagDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
     public async Task<IActionResult> Get(LocalizationType localization = LocalizationType.Ua)
     {
-        var socialGroup = await service.GetAll(localization).ConfigureAwait(false);
+        var tag = await service.GetAll(localization).ConfigureAwait(false);
 
-        if (!socialGroup.Any())
+        if (!tag.Any())
         {
             return NoContent();
         }
 
-        return Ok(socialGroup);
+        return Ok(tag);
     }
 
     /// <summary>
-    /// Get Social Group by it's id.
+    /// Get Tag by it's id.
     /// </summary>
-    /// <param name="id">Social Group id.</param>
+    /// <param name="id">Tag id.</param>
     /// <param name="localization">Localization: Ua - 0, En - 1.</param>
-    /// <returns>Social Group.</returns>
+    /// <returns>Tag.</returns>
     [HasPermission(Permissions.ImpersonalDataRead)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SocialGroupDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TagDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -68,9 +69,9 @@ public class SocialGroupController : ControllerBase
     }
 
     /// <summary>
-    /// Add a new Social Group to the database.
+    /// Add a new Tag to the database.
     /// </summary>
-    /// <param name="dto">Social Group entity to add.</param>
+    /// <param name="dto">Tag entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.SystemManagement)]
     [Consumes(MediaTypeNames.Application.Json)]
@@ -79,44 +80,44 @@ public class SocialGroupController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] SocialGroupCreate dto)
+    public async Task<IActionResult> Create([FromBody] TagCreate dto)
     {
-        var socialGroup = await service.Create(dto).ConfigureAwait(false);
+        var tag = await service.Create(dto).ConfigureAwait(false);
 
         return CreatedAtAction(
             nameof(GetById),
-            new { id = socialGroup.Id, },
-            socialGroup);
+            new { id = tag.Id},
+            tag);
     }
 
     /// <summary>
-    /// Update info about a Social Group in the database.
+    /// Update info about a Tag in the database.
     /// </summary>
-    /// <param name="dto">Social Group to update.</param>
     /// <param name="localization">Localization: Ua - 0, En - 1.</param>
-    /// <returns>Social Group.</returns>
+    /// <param name="dto">Tag to update.</param>
+    /// <returns>Tag.</returns>
     [HasPermission(Permissions.SystemManagement)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SocialGroupDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TagDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(SocialGroupDto dto, LocalizationType localization = LocalizationType.Ua)
+    public async Task<IActionResult> Update(TagDto dto, LocalizationType localization = LocalizationType.Ua)
     {
-        var socialGroup = await service.Update(dto, localization).ConfigureAwait(false);
+        var tag = await service.Update(dto, localization).ConfigureAwait(false);
 
-        if (socialGroup == null)
+        if (tag == null)
         {
-            return BadRequest(socialGroup);
+            return BadRequest(tag);
         }
 
-        return Ok(socialGroup);
+        return Ok(tag);
     }
 
     /// <summary>
-    /// Delete a specific Social Group from the database.
+    /// Delete a specific Tag from the database.
     /// </summary>
-    /// <param name="id">Social Group id.</param>
+    /// <param name="id">Tag id.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.SystemManagement)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
