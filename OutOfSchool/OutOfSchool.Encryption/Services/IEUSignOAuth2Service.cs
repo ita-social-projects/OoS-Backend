@@ -2,6 +2,10 @@ using OutOfSchool.Encryption.Models;
 
 namespace OutOfSchool.Encryption.Services;
 
+/// <summary>
+/// This interface defines two primary methods for handling encryption certificates and decrypting user information
+/// in the context of OAuth 2.0 authentication, specifically using the IIT End User Library for Ukrainian government services.
+/// </summary>
 public interface IEUSignOAuth2Service
 {
     /// <summary>
@@ -13,7 +17,7 @@ public interface IEUSignOAuth2Service
     /// Note: Our CommunicationService also has QueryHelpers.AddQueryString call. Keep that in mind.
     /// </summary>
     /// <returns>A <see cref="CertificateResponse"/> wrapper containing the certificate.</returns>
-    public CertificateResponse GetEnvelopCertificateBase64();
+    public CertificateResponse GetEnvelopeCertificateBase64();
 
     /// <summary>
     /// Decrypts user information using IIT End User Library.

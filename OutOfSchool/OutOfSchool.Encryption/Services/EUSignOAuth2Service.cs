@@ -8,6 +8,7 @@ using OutOfSchool.Encryption.Models;
 
 namespace OutOfSchool.Encryption.Services;
 
+/// <inheritdoc/>
 public class EUSignOAuth2Service : IEUSignOAuth2Service
 {
     private readonly EUSignConfig eUSignConfig;
@@ -22,7 +23,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
     private IntPtr context = IntPtr.Zero;
     private IntPtr pkContext = IntPtr.Zero;
     private byte[] pkSignCert = null;
-    private byte[] pkEnvelopCert = null;
+    private byte[] pkEnvelopeCert = null;
 
     public EUSignOAuth2Service(
         IOptions<EUSignConfig> config,
@@ -68,9 +69,9 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
     }
 
     /// <inheritdoc/>
-    public CertificateResponse GetEnvelopCertificateBase64()
+    public CertificateResponse GetEnvelopeCertificateBase64()
     {
-        if (pkEnvelopCert == null)
+        if (pkEnvelopeCert == null)
         {
             logger.LogError("No envelop certificate was loaded");
             return null;
@@ -78,13 +79,18 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
 
         return new()
         {
-            CertBase64 = Convert.ToBase64String(pkEnvelopCert),
+            CertBase64 = Convert.ToBase64String(pkEnvelopeCert),
         };
     }
 
     /// <inheritdoc/>
-    public UserInfoResponse DecryptUserInfo(EnvelopedUserInfoResponse encryptedUserInfo)
+    public UserInfoResponse DecryptUserInfo([NotNull] EnvelopedUserInfoResponse encryptedUserInfo)
     {
+        if (encryptedUserInfo == null)
+        {
+            return null;
+        }
+
         try
         {
             IEUSignCP.CtxDevelopData(
@@ -94,7 +100,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                 out var developedUserInfo,
                 out _);
 
-            Stream userInfoStream = new MemoryStream(developedUserInfo);
+            using var userInfoStream = new MemoryStream(developedUserInfo);
             return JsonSerializer.Deserialize<UserInfoResponse>(userInfoStream);
         }
         catch (Exception ex)
@@ -202,11 +208,16 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
             false,
             3600);
 
+        if (Uri.CheckHostName(eUSignConfig.Proxy.Host) is UriHostNameType.Unknown or UriHostNameType.Basic)
+        {
+            throw new ArgumentException("The proxy address is invalid.", nameof(eUSignConfig.Proxy.Host));
+        }
+
         // Встановлення параметрів Proxy-серверу для доступу к серверам ЦСК
         IEUSignCP.SetProxySettings(
-            eUSignConfig.Proxy.Use,
+            eUSignConfig.Proxy.Enabled,
             eUSignConfig.Proxy.User != string.Empty,
-            eUSignConfig.Proxy.Address,
+            eUSignConfig.Proxy.Host,
             eUSignConfig.Proxy.Port,
             eUSignConfig.Proxy.User,
             eUSignConfig.Proxy.Password,
@@ -226,18 +237,18 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
         // Необхідні при обслуговуванні користувачів з різних ЦСК
         IEUSignCP.SetOCSPAccessInfoModeSettings(true);
 
-        var fsCAs = new FileStream(eUSignConfig.CA.JsonPath, FileMode.OpenOrCreate);
+        using var fsCAs = new FileStream(eUSignConfig.CA.JsonPath, FileMode.OpenOrCreate);
 
         CAs = JsonSerializer.Deserialize<CASettings[]>(fsCAs);
 
         foreach (var ca in CAs)
         {
-            foreach (var commonName in ca.issuerCNs)
+            foreach (var commonName in ca.IssuerCNs)
             {
                 IEUSignCP.SetOCSPAccessInfoSettings(
                     commonName,
-                    ca.ocspAccessPointAddress,
-                    ca.ocspAccessPointPort);
+                    ca.OcspAccessPointAddress,
+                    ca.OcspAccessPointPort);
             }
         }
 
@@ -283,7 +294,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
     /// </summary>
     /// <param name="caSubjectCN">Required CS Subject Common Name.</param>
     /// <returns>A <see cref="CASettings"/> with required CA parameters.</returns>
-    private CASettings GetCA(string caSubjectCN) => CAs.FirstOrDefault(ca => ca.issuerCNs.Any(cn => cn == caSubjectCN));
+    private CASettings GetCA(string caSubjectCN) => CAs.FirstOrDefault(ca => ca.IssuerCNs.Any(cn => cn == caSubjectCN));
 
     /// <summary>
     /// This code is from IIT Library usage example with minimal code styling changes.
@@ -310,8 +321,6 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
         bool fromFile = !string.IsNullOrEmpty(pkFile);
         IEUSignCP.EU_KEY_MEDIA keyMedia = new IEUSignCP.EU_KEY_MEDIA(0, 0, string.Empty);
         CASettings ca = null;
-        IEUSignCP.EU_CERT_OWNER_INFO info;
-        IEUSignCP.EU_CERT_INFO_EX infoEx;
 
         try
         {
@@ -342,10 +351,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                 {
                     // Пошук відповідного ос. ключа в контейнері JKS
                     IEUSignCP.GetJKSPrivateKey(pKey, jksAlias, out pKey, out var certificates);
-                    foreach (var certificate in certificates)
-                    {
-                        certs.Add(certificate);
-                    }
+                    certs.AddRange(certificates);
                 }
             }
             else
@@ -354,6 +360,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                 GetKeyMedia(pkTypeName, pkDeviceName, password, out keyMedia);
             }
 
+            IEUSignCP.EU_CERT_INFO_EX infoEx;
             if (certs.Count == 0 && !string.IsNullOrEmpty(caIssuerCN))
             {
                 // Пошук налаштувань ЦСК для ключа
@@ -363,7 +370,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                     throw new Exception($"CA settings not found: {caIssuerCN}");
                 }
 
-                if (ca.cmpAddress != string.Empty)
+                if (ca.CmpAddress != string.Empty)
                 {
                     byte[] keyInfo;
                     byte[] certsCMP;
@@ -379,7 +386,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                         IEUSignCP.GetKeyInfo(keyMedia, out keyInfo);
                     }
 
-                    string[] cmpServers = { ca.cmpAddress };
+                    string[] cmpServers = { ca.CmpAddress };
                     string[] cmpServersPorts = { "80" };
                     IEUSignCP.GetCertificatesByKeyInfo(
                         keyInfo, cmpServers, cmpServersPorts, out certsCMP);
@@ -424,7 +431,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                     context,
                     pKey,
                     password,
-                    out info,
+                    out _,
                     out pkContext);
             }
             else
@@ -432,7 +439,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                 IEUSignCP.CtxReadPrivateKey(
                     context,
                     keyMedia,
-                    out info,
+                    out _,
                     out pkContext);
             }
 
@@ -459,7 +466,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                     IEUSignCP.EU_CERT_KEY_TYPE_DSTU4145,
                     IEUSignCP.EU_KEY_USAGE_KEY_AGREEMENT,
                     out infoEx,
-                    out pkEnvelopCert);
+                    out pkEnvelopeCert);
             }
             catch (Exception)
             {

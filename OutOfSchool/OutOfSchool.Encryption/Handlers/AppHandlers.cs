@@ -1,5 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
 using Asp.Versioning.Builder;
 using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.Encryption.Constants;
 using OutOfSchool.Encryption.Models;
 using OutOfSchool.Encryption.Services;
 
@@ -7,13 +9,13 @@ namespace OutOfSchool.Encryption.Handlers;
 
 public static class AppHandlers
 {
-    public static void Map(WebApplication app, ApiVersionSet apiVersionSet)
+    public static WebApplication MapAppHandlers(this WebApplication app, ApiVersionSet apiVersionSet)
     {
         app.MapGet(
                 "api/{version:apiVersion}/certificate",
                 ([FromServices] EUSignOAuth2Service euSignOAuth2Service) =>
                 {
-                    var cert = euSignOAuth2Service.GetEnvelopCertificateBase64();
+                    var cert = euSignOAuth2Service.GetEnvelopeCertificateBase64();
                     if (cert != null)
                     {
                         return Results.Ok(cert);
@@ -25,11 +27,11 @@ public static class AppHandlers
                         statusCode: 500);
                 })
             .WithApiVersionSet(apiVersionSet)
-            .MapToApiVersion(1);
+            .MapToApiVersion(AppConstants.API_V1);
 
         app.MapPost(
-                "api/{version:apiVersion}/decryption", (
-                    EnvelopedUserInfoResponse encryptedUserInfo,
+                "api/{version:apiVersion}/decrypt", (
+                    [NotNull] EnvelopedUserInfoResponse encryptedUserInfo,
                     [FromServices] EUSignOAuth2Service euSignOAuth2Service) =>
                 {
                     if (encryptedUserInfo == null)
@@ -50,6 +52,8 @@ public static class AppHandlers
                         statusCode: 500);
                 })
             .WithApiVersionSet(apiVersionSet)
-            .MapToApiVersion(1);
+            .MapToApiVersion(AppConstants.API_V1);
+
+        return app;
     }
 }

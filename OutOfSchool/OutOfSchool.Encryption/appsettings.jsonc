@@ -58,7 +58,7 @@
       "MediaDevice": "001:3011 (192.168.0.100)",
       // Password of the server's private key.
       // If Гряда-301 is used as the medium, the username and password are set as ##Login##Password
-      "Password": "12345678",
+      "Password": "",
       // An array of paths to the server's private key certificates.
       // It is used if НЕДП does not support automatic download of certificates using the CMP protocol
       "CertificateFilePaths": [],
@@ -82,9 +82,9 @@
     // Proxy server settings
     "Proxy": {
       // A sign of the need to use a proxy server
-      "Use": false,
+      "Enabled": false,
       // DNS name or IP address of the proxy server
-      "Address": "",
+      "Host": "",
       // TCP port of the proxy server
       "Port": "3128",
       // Username of the proxy server

@@ -2,7 +2,7 @@ namespace OutOfSchool.Encryption.Config;
 
 public class EUSignConfig
 {
-    public static readonly string Name = "EUSign";
+    public static readonly string ConfigSectionName = "EUSign";
 
     public string DefaultOCSPServer { get; set; }
 

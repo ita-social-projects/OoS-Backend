@@ -4,13 +4,13 @@ public class UserInfoResponse
 {
     public string Issuer { get; set; }
 
-    public string Issuercn { get; set; }
+    public string IssuerCn { get; set; }
 
     public string Serial { get; set; }
 
     public string Subject { get; set; }
 
-    public string Subjectcn { get; set; }
+    public string SubjectCn { get; set; }
 
     public string Locality { get; set; }
 
@@ -22,11 +22,11 @@ public class UserInfoResponse
 
     public string Title { get; set; }
 
-    public string Lastname { get; set; }
+    public string LastName { get; set; }
 
-    public string Middlename { get; set; }
+    public string MiddleName { get; set; }
 
-    public string Givenname { get; set; }
+    public string GivenName { get; set; }
 
     public string Email { get; set; }
 
@@ -36,7 +36,7 @@ public class UserInfoResponse
 
     public string Dns { get; set; }
 
-    public string Edrpoucode { get; set; }
+    public string EdrpouCode { get; set; }
 
-    public string Drfocode { get; set; }
+    public string DrfoCode { get; set; }
 }
