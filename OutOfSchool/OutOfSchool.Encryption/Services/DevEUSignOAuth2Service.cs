@@ -14,8 +14,14 @@ public class DevEUSignOAuth2Service : IEUSignOAuth2Service
     };
 
     /// <inheritdoc/>
-    public UserInfoResponse DecryptUserInfo([NotNull] EnvelopedUserInfoResponse encryptedUserInfo) =>
+    public UserInfoResponse DecryptUserInfo([NotNull] EnvelopedUserInfoResponse encryptedUserInfo)
+    {
+        if (encryptedUserInfo == null)
+        {
+            return null;
+        }
 
         // Mock local auth server sends data as unencrypted string.
-        JsonSerializer.Deserialize<UserInfoResponse>(encryptedUserInfo.EncryptedUserInfo);
+        return JsonSerializer.Deserialize<UserInfoResponse>(encryptedUserInfo.EncryptedUserInfo);
+    }
 }

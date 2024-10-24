@@ -14,6 +14,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
 {
     private readonly EUSignConfig eUSignConfig;
     private readonly Logger<EUSignOAuth2Service> logger;
+    private readonly IIoOperationsService ioOperationsService;
 
     // ReSharper disable once InconsistentNaming
     [SuppressMessage(
@@ -21,6 +22,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
         "SA1306:Field names should begin with lower-case letter",
         Justification = "CA is an acronym")]
     private CASettings[] CAs = null;
+
     private IntPtr context = IntPtr.Zero;
     private IntPtr pkContext = IntPtr.Zero;
     private byte[] pkSignCert = null;
@@ -28,9 +30,11 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
 
     public EUSignOAuth2Service(
         IOptions<EUSignConfig> config,
+        IIoOperationsService ioOperationsService,
         Logger<EUSignOAuth2Service> logger)
     {
         this.eUSignConfig = config.Value;
+        this.ioOperationsService = ioOperationsService;
         this.logger = logger;
 
         if (!IsInitialized())
@@ -101,7 +105,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                 out var developedUserInfo,
                 out _);
 
-            using var userInfoStream = new MemoryStream(developedUserInfo);
+            using var userInfoStream = ioOperationsService.GetMemoryStreamFromBytes(developedUserInfo);
             return JsonSerializer.Deserialize<UserInfoResponse>(userInfoStream);
         }
         catch (Exception ex)
@@ -158,10 +162,10 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
         {
             throw new EUSignOAuth2Exception(
                 $"""
-                  An error occurred while searching for key information media.
-                  Error description: media not found.
-                  Search parameters: media type - {type}, device - {device}
-                  """);
+                 An error occurred while searching for key information media.
+                 Error description: media not found.
+                 Search parameters: media type - {type}, device - {device}
+                 """);
         }
     }
 
@@ -238,7 +242,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
         // Необхідні при обслуговуванні користувачів з різних ЦСК
         IEUSignCP.SetOCSPAccessInfoModeSettings(true);
 
-        using var fsCAs = new FileStream(eUSignConfig.CA.JsonPath, FileMode.OpenOrCreate);
+        using var fsCAs = ioOperationsService.GetFileStreamFromPath(eUSignConfig.CA.JsonPath, FileMode.OpenOrCreate);
 
         CAs = JsonSerializer.Deserialize<CASettings[]>(fsCAs);
 
@@ -330,24 +334,24 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
             {
                 foreach (var file in certsFiles)
                 {
-                    if (!File.Exists(file))
+                    if (!ioOperationsService.Exists(file))
                     {
                         throw new Exception($"The certificate file is missing: {file}");
                     }
 
-                    certs.Add(File.ReadAllBytes(file));
+                    certs.Add(ioOperationsService.ReadAllBytes(file));
                 }
             }
 
             if (fromFile)
             {
                 // Зчитування ос. ключа з файлу до байтового масиву
-                if (!File.Exists(pkFile))
+                if (!ioOperationsService.Exists(pkFile))
                 {
                     throw new Exception($"The private key file is missing: {pkFile}");
                 }
 
-                pKey = File.ReadAllBytes(pkFile);
+                pKey = ioOperationsService.ReadAllBytes(pkFile);
                 if (!string.IsNullOrEmpty(jksAlias))
                 {
                     // Пошук відповідного ос. ключа в контейнері JKS
@@ -387,8 +391,8 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                         IEUSignCP.GetKeyInfo(keyMedia, out keyInfo);
                     }
 
-                    string[] cmpServers = { ca.CmpAddress };
-                    string[] cmpServersPorts = { AppConstants.DEFAULT_PORT };
+                    string[] cmpServers = {ca.CmpAddress};
+                    string[] cmpServersPorts = {AppConstants.DEFAULT_PORT};
                     IEUSignCP.GetCertificatesByKeyInfo(
                         keyInfo, cmpServers, cmpServersPorts, out certsCMP);
 

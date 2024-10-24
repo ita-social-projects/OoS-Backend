@@ -35,6 +35,7 @@ if (builder.Environment.IsDevelopment())
 }
 else
 {
+    builder.Services.AddSingleton<IIoOperationsService, IoOperationsService>();
     builder.Services.AddSingleton<IEUSignOAuth2Service, EUSignOAuth2Service>();
 }
 
