@@ -118,6 +118,8 @@ public static class Startup
         app.MapControllers();
         app.MapHub<ChatWorkshopHub>(Constants.PathToChatHub);
         app.MapHub<NotificationHub>(Constants.PathToNotificationHub);
+
+        app.MapHealthChecks("/healthz/active");
     }
 
     public static async Task AddApplicationServices(this WebApplicationBuilder builder)
