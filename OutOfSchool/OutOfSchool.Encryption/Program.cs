@@ -41,7 +41,7 @@ else
 
 builder.Services.AddApiVersioning(options =>
     {
-        options.DefaultApiVersion = new ApiVersion(1);
+        options.DefaultApiVersion = new ApiVersion(AppConstants.API_V1);
         options.ReportApiVersions = true;
         options.AssumeDefaultVersionWhenUnspecified = true;
         options.ApiVersionReader = ApiVersionReader.Combine(new UrlSegmentApiVersionReader());
