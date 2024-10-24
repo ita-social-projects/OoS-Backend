@@ -13,7 +13,6 @@ namespace OutOfSchool.Services.Repository.Files;
 /// </summary>
 public class GcpImagesSyncDataRepository : IGcpImagesSyncDataRepository
 {
-    private readonly OutOfSchoolDbContext dbContext;
     private readonly DbSet<Workshop> workshopSet;
     private readonly DbSet<Teacher> teacherSet;
     private readonly DbSet<Provider> providerSet;
@@ -22,7 +21,7 @@ public class GcpImagesSyncDataRepository : IGcpImagesSyncDataRepository
 
     public GcpImagesSyncDataRepository(OutOfSchoolDbContext dbContext)
     {
-        this.dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        _ = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
 
         workshopSet = dbContext.Set<Workshop>();
         teacherSet = dbContext.Set<Teacher>();

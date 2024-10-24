@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using OutOfSchool.Services;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Tests;
 
 namespace OutOfSchool.WebApi.Tests;
@@ -20,7 +18,7 @@ public class EntityRepositoryTest
     {
         using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
         {
-            var repository = new EntityRepository<long, SocialGroup>(context);
+            var repository = new EntityRepositorySoftDeleted<long, SocialGroup>(context);
 
             // Act
             var group = repository.GetById(1).Result;
@@ -103,7 +101,7 @@ public class EntityRepositoryTest
     {
         using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
         {
-            var repository = new EntityRepository<long, SocialGroup>(context);
+            var repository = new EntityRepositorySoftDeleted<long, SocialGroup>(context);
             SocialGroup socialGroup = new SocialGroup { Id = 1, Name = "sg1" };
 
             // Act
@@ -120,7 +118,7 @@ public class EntityRepositoryTest
     {
         using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
         {
-            var repository = new EntityRepository<long, SocialGroup>(context);
+            var repository = new EntityRepositorySoftDeleted<long, SocialGroup>(context);
 
             // Act
             var socialGroups = repository.GetAll();
@@ -135,7 +133,7 @@ public class EntityRepositoryTest
     {
         using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
         {
-            var repository = new EntityRepository<long, SocialGroup>(context);
+            var repository = new EntityRepositorySoftDeleted<long, SocialGroup>(context);
 
             // Act
             SocialGroup socialGroup = new SocialGroup { Id = 2, Name = "sg22" };

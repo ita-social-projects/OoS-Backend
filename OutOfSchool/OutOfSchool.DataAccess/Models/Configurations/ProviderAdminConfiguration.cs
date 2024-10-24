@@ -9,6 +9,10 @@ internal class ProviderAdminConfiguration : IEntityTypeConfiguration<ProviderAdm
     {
         builder.HasKey(x => x.UserId);
 
+        builder.HasIndex(x => x.IsDeleted);
+
+        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
+
         builder.Property(x => x.ProviderId)
             .IsRequired();
 

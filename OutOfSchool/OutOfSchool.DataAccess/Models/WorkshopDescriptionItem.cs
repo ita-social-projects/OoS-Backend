@@ -3,9 +3,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models;
 
-public class WorkshopDescriptionItem : IKeyedEntity<Guid>
+public class WorkshopDescriptionItem : IKeyedEntity<Guid>, ISoftDeleted
 {
     public Guid Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     [Required(ErrorMessage = "Description heading is required")]
     [MaxLength(200)]

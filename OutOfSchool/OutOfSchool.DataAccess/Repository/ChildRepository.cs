@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Base;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.Services.Repository;
 
-public class ChildRepository : EntityRepository<Guid, Child>, IEntityRepository<Guid, Child>
+public class ChildRepository : EntityRepositorySoftDeleted<Guid, Child>, IEntityRepository<Guid, Child>
 {
-    private readonly OutOfSchoolDbContext db;
-
     public ChildRepository(OutOfSchoolDbContext dbContext)
         : base(dbContext)
     {
-        db = dbContext;
     }
 
     public override Task<Child> Create(Child child)

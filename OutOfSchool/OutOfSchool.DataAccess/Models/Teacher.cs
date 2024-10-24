@@ -6,9 +6,11 @@ using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.Services.Models;
 
-public class Teacher : IKeyedEntity<Guid>, IImageDependentEntity<Teacher>
+public class Teacher : IKeyedEntity<Guid>, IImageDependentEntity<Teacher>, ISoftDeleted
 {
     public Guid Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     [MaxLength(60)]
     public string FirstName { get; set; }

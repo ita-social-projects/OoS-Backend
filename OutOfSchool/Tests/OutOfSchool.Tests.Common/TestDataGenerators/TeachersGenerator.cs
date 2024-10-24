@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-
 using Bogus;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -51,7 +49,7 @@ public static class TeachersGenerator
     }
 
     /// <summary>
-    /// Assigns given <paramref name="workshop"/> to the each item of the given <paramref name="teachers"/> collection
+    /// Assigns given <paramref name="workshop"/> to each item of the given <paramref name="teachers"/> collection
     /// </summary>
     /// <returns>Input collection with assigned <paramref name="workshop"/>.</returns>
     public static List<Teacher> WithWorkshop(this List<Teacher> teachers, Workshop workshop)
@@ -61,4 +59,30 @@ public static class TeachersGenerator
 
         return teachers;
     }
+
+    /// <summary>
+    /// Assigns given <paramref name="isDeleted"/> to the given <paramref name="teacher"/> collection
+    /// </summary>
+    /// <returns><see cref="Teacher"/> object with assigned <paramref name="isDeleted"/>.</returns>
+    public static Teacher WithIsDeleted(this Teacher teacher, bool isDeleted = false)
+    {
+        _ = teacher ?? throw new ArgumentNullException(nameof(teacher));
+
+        teacher.IsDeleted = isDeleted;
+
+        return teacher;
+    }
+
+    /// <summary>
+    /// Assigns given <paramref name="isDeleted"/> to each item of the given <paramref name="teachers"/> collection
+    /// </summary>
+    /// <returns>Input collection with assigned <paramref name="isDeleted"/>.</returns>
+    public static List<Teacher> WithIsDeleted(this List<Teacher> teachers, bool isDeleted)
+    {
+        _ = teachers ?? throw new ArgumentNullException(nameof(teachers));
+        teachers.ForEach(t => t.WithIsDeleted(isDeleted));
+
+        return teachers;
+    }
+
 }

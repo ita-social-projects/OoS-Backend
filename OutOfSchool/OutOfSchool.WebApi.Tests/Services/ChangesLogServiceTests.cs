@@ -9,16 +9,17 @@ using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Config;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Changes;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.SubordinationStructure;
-using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Changes;
-using OutOfSchool.WebApi.Services;
-using static OutOfSchool.WebApi.Tests.Services.Database.ChangesLogRepositoryTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -31,13 +32,17 @@ public class ChangesLogServiceTests
     private Mock<IProviderRepository> providerRepository;
     private Mock<IApplicationRepository> applicationRepository;
     private Mock<IEntityRepository<long, ProviderAdminChangesLog>> providerAdminChangesLogRepository;
+    private Mock<IEntityAddOnlyRepository<long, ParentBlockedByAdminLog>> parentBlockedByAdminLogRepository;
     private Mock<IValueProjector> valueProjector;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
+    private Mock<IAreaAdminService> areaAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
 
     private User user;
+    private Parent parent;
+    private User parentUser;
     private Provider provider;
     private Workshop workshop;
     private Application application;
@@ -46,6 +51,9 @@ public class ChangesLogServiceTests
     public void SetUp()
     {
         user = UserGenerator.Generate();
+        parent = ParentGenerator.Generate();
+        parentUser = UserGenerator.Generate();
+        parent.User = parentUser;
         provider = ProvidersGenerator.Generate();
         provider.Institution = InstitutionsGenerator.Generate();
         workshop = WorkshopGenerator.Generate();
@@ -68,10 +76,12 @@ public class ChangesLogServiceTests
         providerRepository = new Mock<IProviderRepository>(MockBehavior.Strict);
         applicationRepository = new Mock<IApplicationRepository>(MockBehavior.Strict);
         providerAdminChangesLogRepository = new Mock<IEntityRepository<long, ProviderAdminChangesLog>>(MockBehavior.Strict);
+        parentBlockedByAdminLogRepository = new Mock<IEntityAddOnlyRepository<long, ParentBlockedByAdminLog>>();
         valueProjector = new Mock<IValueProjector>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock= new Mock<IRegionAdminService>();
+        areaAdminServiceMock = new Mock<IAreaAdminService>();
         codeficatorServiceMock= new Mock<ICodeficatorService>();
     }
 
@@ -107,6 +117,39 @@ public class ChangesLogServiceTests
 
         // Assert
         Assert.AreEqual(0, result);
+    }
+    #endregion
+
+    #region AddCreatingOfEntityToDbContext
+    [Test]
+    public async Task AddCreatingOfEntityToDbContext_WhenTrackingIsEnabledForTheEntity_AddsToContext()
+    {
+        // Arrange
+        var options = CreateChangesLogOptions();
+        changesLogRepository.Setup(repo => repo.AddCreatingOfEntityToChangesLog(
+                It.IsAny<Provider>(),
+                It.IsAny<string>()))
+            .ReturnsAsync(new ChangesLog());
+        var changesLogService = GetChangesLogService();
+
+        // Act
+        var result = await changesLogService.AddCreatingOfEntityToDbContext(new Provider(), user.Id).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(true, result);
+    }
+
+    [Test]
+    public async Task AddCreatingOfEntityToDbContext_WhenTrackingIsNotEnabledForTheEntity_DoesNotLogChanges()
+    {
+        // Arrange
+        var changesLogService = GetChangesLogService();
+
+        // Act
+        var result = await changesLogService.AddCreatingOfEntityToDbContext(new Address(), user.Id).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(false, result);
     }
     #endregion
 
@@ -164,6 +207,7 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.Any(x => x.ProviderTitle == provider.FullTitle));
         Assert.True(result.Entities.Any(x => x.ProviderCity == provider.LegalAddress.CATOTTG.Name));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));
     }
 
     [Test]
@@ -229,6 +273,7 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.Any(x => x.ProviderTitle == provider.FullTitle));
         Assert.True(result.Entities.Any(x => x.ProviderCity == provider.LegalAddress.CATOTTG.Name));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));
     }
 
     [Test]
@@ -300,6 +345,7 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.Any(x => x.ProviderTitle == provider.FullTitle));
         Assert.True(result.Entities.Any(x => x.ProviderCity == provider.LegalAddress.CATOTTG.Name));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));
     }
 
     [Test]
@@ -356,6 +402,7 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.All(x => x.WorkshopCity == application.Workshop.Address.CATOTTG.Name));
         Assert.True(result.Entities.All(x => x.ProviderTitle == application.Workshop.ProviderTitle));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));
     }
 
     [Test]
@@ -424,14 +471,21 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.All(x => x.WorkshopCity == application.Workshop.Address.CATOTTG.Name));
         Assert.True(result.Entities.All(x => x.ProviderTitle == application.Workshop.ProviderTitle));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));
     }
 
     [Test]
-    public async Task GetProviderAdminChangesLog_WhenCalled_ReturnsSearchResult()
+    [TestCase(ProviderAdminType.All, "")]
+    [TestCase(ProviderAdminType.Assistants, "")]
+    [TestCase(ProviderAdminType.Deputies, "")]
+    [TestCase(ProviderAdminType.All, "test")]
+    public async Task GetProviderAdminChangesLog_WhenCalled_ReturnsSearchResult(ProviderAdminType providerAdminType, string searchString)
     {
         // Arange
         var changesLogService = GetChangesLogService();
         var request = new ProviderAdminChangesLogRequest();
+        request.AdminType = providerAdminType;
+        request.SearchString = searchString;
 
         var entitiesCount = 5;
         var totalAmount = 10;
@@ -443,7 +497,7 @@ public class ChangesLogServiceTests
                 ProviderAdminUser = UserGenerator.Generate(),
                 User = user,
                 Provider = provider,
-                ManagedWorkshop = workshop,
+                IsDeputy = true,
             })
             .AsQueryable()
             .BuildMock();
@@ -473,6 +527,7 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.All(x => x.ProviderTitle == provider.FullTitle));
         Assert.True(result.Entities.All(x => x.InstitutionTitle == provider.Institution.Title));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        Assert.True(result.Entities.All(x => x.OperationDate.Kind == DateTimeKind.Utc));
     }
 
     [Test]
@@ -502,7 +557,7 @@ public class ChangesLogServiceTests
                 ProviderAdminUser = UserGenerator.Generate(),
                 User = user,
                 Provider = provider,
-                ManagedWorkshop = workshop,
+                IsDeputy = true,
             })
             .AsQueryable()
             .BuildMock();
@@ -532,6 +587,283 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.All(x => x.ProviderTitle == provider.FullTitle));
         Assert.True(result.Entities.All(x => x.InstitutionTitle == provider.Institution.Title));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        Assert.True(result.Entities.All(x => x.OperationDate.Kind == DateTimeKind.Utc));
+    }
+
+    [Test]
+    public async Task GetProviderAdminChangesLog_WhenAreaAdminCalled_ReturnsSearchResult()
+    {
+        // Arange
+        var institutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4");
+        long catottgId = 31737;
+        var subCatottgIds = new List<long> { 31738, 31739, 31740 };
+        var changesLogService = GetChangesLogService();
+        var request = new ProviderAdminChangesLogRequest();
+        provider = provider.WithInstitutionId(institutionId);
+
+        currentUserServiceMock.Setup(x => x.IsAreaAdmin()).Returns(true);
+        areaAdminServiceMock
+            .Setup(x => x.GetByUserId(It.IsAny<string>()))
+            .Returns(Task.FromResult<AreaAdminDto>(new AreaAdminDto()
+            {
+                InstitutionId = institutionId,
+                CATOTTGId = catottgId,
+            }));
+        codeficatorServiceMock
+            .Setup(x => x.GetAllChildrenIdsByParentIdAsync(It.IsAny<long>()))
+            .Returns(Task.FromResult<IEnumerable<long>>(subCatottgIds));
+
+        var totalAmount = 3;
+        var entitiesCount = 3;
+        var providerAdminChangesLogs = Enumerable.Range(1, entitiesCount)
+            .Select(x => new ProviderAdminChangesLog
+            {
+                Id = x,
+                ProviderId = provider.Id,
+                ProviderAdminUser = UserGenerator.Generate(),
+                User = user,
+                Provider = provider,
+                IsDeputy = true,
+            })
+            .AsQueryable()
+            .BuildMock();
+
+        providerAdminChangesLogRepository
+            .Setup(repo => repo.Count(It.IsAny<Expression<Func<ProviderAdminChangesLog, bool>>>()))
+            .Returns(Task.FromResult(totalAmount));
+        mapper.Setup(m => m.Map<ShortUserDto>(user))
+            .Returns(new ShortUserDto { Id = user.Id });
+        providerAdminChangesLogRepository
+            .Setup(repo => repo.Get(
+                request.From,
+                request.Size,
+                string.Empty,
+                It.IsAny<Expression<Func<ProviderAdminChangesLog, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<ProviderAdminChangesLog, object>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(providerAdminChangesLogs);
+
+        // Act
+        var result = await changesLogService.GetProviderAdminChangesLogAsync(request);
+
+        // Assert
+        Assert.AreEqual(totalAmount, result.TotalAmount);
+        Assert.AreEqual(entitiesCount, result.Entities.Count);
+        Assert.True(result.Entities.All(x => x.ProviderTitle == provider.FullTitle));
+        Assert.True(result.Entities.All(x => x.InstitutionTitle == provider.Institution.Title));
+        Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        Assert.True(result.Entities.All(x => x.OperationDate.Kind == DateTimeKind.Utc));
+        currentUserServiceMock.Verify(x => x.IsRegionAdmin(), Times.Once);
+    }
+
+    [Test]
+    public async Task GetParentBlockedByAdminChangesLogAsync_WithValidRequest_ReturnsExpectedResult()
+    {
+        // Arrange
+        var changesLogService = GetChangesLogService();
+        var request = new ParentBlockedByAdminChangesLogRequest
+        {
+            ShowParents = ShowParents.All,
+            DateFrom = new DateTime(2023, 1, 1),
+            DateTo = DateTime.UtcNow.AddDays(2),
+            SearchString = "Test",
+        };
+ 
+        var fakeData = new List<ParentBlockedByAdminLog>
+        {
+            new()
+            {
+                Id = 1,
+                ParentId = parent.Id,
+                Parent = parent,
+                User = user,
+                UserId = user.Id,
+                OperationDate = new DateTime(2023, 10, 1),
+                Reason = "Test Reason to block",
+                IsBlocked = true,
+            },
+            new()
+            {
+                Id = 2,
+                ParentId = parent.Id,
+                Parent = parent,
+                User = user,
+                UserId = user.Id,
+                OperationDate = DateTime.UtcNow,
+                Reason = "Test Reason to unblock",
+                IsBlocked = false,
+            },
+        };
+
+        mapper.Setup(m => m.Map<ShortUserDto>(user))
+            .Returns(new ShortUserDto { Id = user.Id });
+
+        parentBlockedByAdminLogRepository.Setup(x => x.Count(It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>()))
+            .ReturnsAsync(fakeData.Count);
+
+        parentBlockedByAdminLogRepository.Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<ParentBlockedByAdminLog, dynamic>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(fakeData.AsTestAsyncEnumerableQuery());
+
+         // Act
+        var result = await changesLogService.GetParentBlockedByAdminChangesLogAsync(request);
+
+        // Assert
+        Assert.IsInstanceOf<SearchResult<ParentBlockedByAdminChangesLogDto>>(result);
+        var searchResult = result;
+        Assert.AreEqual(fakeData.Count, searchResult.TotalAmount);
+        Assert.AreEqual(fakeData.Count, searchResult.Entities.Count);
+    }
+
+    [Test]
+    public void GetParentBlockedByAdminChangesLogAsync_WithInvalidShowParentsInRequest_ThrowNotImplementedException()
+    {
+        // Arrange
+        var changesLogService = GetChangesLogService();
+        var request = new ParentBlockedByAdminChangesLogRequest
+        {
+            ShowParents = (ShowParents)100,
+            DateFrom = new DateTime(2023, 1, 1),
+            DateTo = DateTime.UtcNow.AddDays(2),
+            SearchString = "Test",
+        };
+
+        // Act and Assert
+        Assert.ThrowsAsync<NotImplementedException>(
+            async () => await changesLogService.GetParentBlockedByAdminChangesLogAsync(request));
+    }
+
+    [Test]
+    public async Task GetParentBlockedByAdminChangesLogAsync_WithDateToMaxValueInRequest_ReturnsExpectedResult()
+    {
+        // Arrange
+        var changesLogService = GetChangesLogService();
+        var request = new ParentBlockedByAdminChangesLogRequest
+        {
+            ShowParents = ShowParents.All,
+            DateFrom = new DateTime(2023, 1, 1),
+            DateTo = DateTime.MaxValue,
+            SearchString = "Test",
+        };
+
+        var fakeData = new List<ParentBlockedByAdminLog>
+        {
+            new()
+            {
+                Id = 1,
+                ParentId = parent.Id,
+                Parent = parent,
+                User = user,
+                UserId = user.Id,
+                OperationDate = new DateTime(2023, 10, 1),
+                Reason = "Test Reason to block",
+                IsBlocked = true,
+            },
+            new()
+            {
+                Id = 2,
+                ParentId = parent.Id,
+                Parent = parent,
+                User = user,
+                UserId = user.Id,
+                OperationDate = DateTime.UtcNow,
+                Reason = "Test Reason to unblock",
+                IsBlocked = false,
+            },
+        };
+
+        mapper.Setup(m => m.Map<ShortUserDto>(user))
+            .Returns(new ShortUserDto { Id = user.Id });
+
+        parentBlockedByAdminLogRepository.Setup(x => x.Count(It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>()))
+            .ReturnsAsync(fakeData.Count);
+
+        parentBlockedByAdminLogRepository.Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<ParentBlockedByAdminLog, dynamic>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(fakeData.AsTestAsyncEnumerableQuery());
+
+        // Act
+        var result = await changesLogService.GetParentBlockedByAdminChangesLogAsync(request);
+
+        // Assert
+        Assert.IsInstanceOf<SearchResult<ParentBlockedByAdminChangesLogDto>>(result);
+        var searchResult = result;
+        Assert.AreEqual(fakeData.Count, searchResult.TotalAmount);
+        Assert.AreEqual(fakeData.Count, searchResult.Entities.Count);
+    }
+
+    [Test]
+    public async Task GetParentBlockedByAdminChangesLogAsync_WithDateFromMinValueInRequest_ReturnsExpectedResult()
+    {
+        // Arrange
+        var changesLogService = GetChangesLogService();
+        var request = new ParentBlockedByAdminChangesLogRequest
+        {
+            ShowParents = ShowParents.All,
+            DateFrom = DateTime.MinValue,
+            DateTo = DateTime.UtcNow.AddDays(2),
+            SearchString = "Test",
+        };
+
+        var fakeData = new List<ParentBlockedByAdminLog>
+        {
+            new()
+            {
+                Id = 1,
+                ParentId = parent.Id,
+                Parent = parent,
+                User = user,
+                UserId = user.Id,
+                OperationDate = new DateTime(2023, 10, 1),
+                Reason = "Test Reason to block",
+                IsBlocked = true,
+            },
+            new()
+            {
+                Id = 2,
+                ParentId = parent.Id,
+                Parent = parent,
+                User = user,
+                UserId = user.Id,
+                OperationDate = DateTime.UtcNow,
+                Reason = "Test Reason to unblock",
+                IsBlocked = false,
+            },
+        };
+
+        mapper.Setup(m => m.Map<ShortUserDto>(user))
+            .Returns(new ShortUserDto { Id = user.Id });
+
+        parentBlockedByAdminLogRepository.Setup(x => x.Count(It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>()))
+            .ReturnsAsync(fakeData.Count);
+
+        parentBlockedByAdminLogRepository.Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<ParentBlockedByAdminLog, dynamic>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(fakeData.AsTestAsyncEnumerableQuery());
+
+        // Act
+        var result = await changesLogService.GetParentBlockedByAdminChangesLogAsync(request);
+
+        // Assert
+        Assert.IsInstanceOf<SearchResult<ParentBlockedByAdminChangesLogDto>>(result);
+        var searchResult = result;
+        Assert.AreEqual(fakeData.Count, searchResult.TotalAmount);
+        Assert.AreEqual(fakeData.Count, searchResult.Entities.Count);
     }
     #endregion
 
@@ -551,11 +883,13 @@ public class ChangesLogServiceTests
             providerRepository.Object,
             applicationRepository.Object,
             providerAdminChangesLogRepository.Object,
+            parentBlockedByAdminLogRepository.Object,
             logger.Object,
             mapper.Object,
             valueProjector.Object,
             currentUserServiceMock.Object,
             ministryAdminServiceMock.Object,
             regionAdminServiceMock.Object,
+            areaAdminServiceMock.Object,
             codeficatorServiceMock.Object);
 }

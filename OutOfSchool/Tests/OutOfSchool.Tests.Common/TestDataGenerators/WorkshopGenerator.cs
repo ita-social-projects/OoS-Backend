@@ -20,23 +20,25 @@ public static class WorkshopGenerator
         .RuleFor(x => x.Instagram, f => f.Internet.Url())
         .RuleFor(x => x.MinAge, f => f.Random.Number(1, 18))
         .RuleFor(x => x.Price, f => f.Random.Decimal())
-        .RuleFor(x => x.WorkshopDescriptionItems, f => f.Make(new Random().Next(1, 4), () =>
-            new WorkshopDescriptionItem()
-            {
-                Id = Guid.NewGuid(),
-                SectionName = f.Lorem.Sentence(),
-                Description = f.Lorem.Paragraph(),
-            }))
+        .RuleFor(x => x.WorkshopDescriptionItems, f => WorkshopDescriptionItemGenerator.Generate(4))
         .RuleFor(x => x.WithDisabilityOptions, f => f.Random.Bool())
         .RuleFor(x => x.DisabilityOptionsDesc, f => f.Lorem.Sentence())
         .RuleFor(x => x.CoverImageId, f => f.Image.LoremFlickrUrl())
         .RuleFor(x => x.ProviderTitle, f => f.Company.CompanyName())
         .RuleFor(x => x.Keywords, f => f.Lorem.Sentence())
-        .RuleFor(x => x.PayRate, f => f.PickRandom<PayRateType>());
+        .RuleFor(x => x.PayRate, f => f.PickRandom<PayRateType>())
+        .RuleFor(x => x.UpdatedAt, _ => DateTime.Now)
+        .RuleFor(x => x.FormOfLearning, f => f.PickRandom<FormOfLearning>());
 
     public static Workshop Generate() => faker.Generate();
 
     public static List<Workshop> Generate(int count) => faker.Generate(count);
+
+    public static Workshop WithId(this Workshop workshop, Guid id)
+    {
+        workshop.Id = id;
+        return workshop;
+    }
 
     public static Workshop WithProvider(this Workshop workshop, Provider provider = null)
     {
@@ -65,7 +67,9 @@ public static class WorkshopGenerator
     public static Workshop WithApplications(this Workshop workshop)
     {
         workshop.Applications = ApplicationGenerator.Generate(new Random().Next(1, 4))
-            .WithWorkshop(workshop);
+            .WithWorkshop(workshop)
+            .WithParent(ParentGenerator.Generate())
+            .WithChild(ChildGenerator.Generate());
         return workshop;
     }
 
@@ -90,4 +94,11 @@ public static class WorkshopGenerator
 
     public static List<Workshop> WithImages(this List<Workshop> workshops)
         => workshops.Select(x => x.WithImages()).ToList();
+
+    public static Workshop WithTags(this Workshop workshop)
+    {
+        workshop.Tags = TagsGenerator.Generate(new Random().Next(1, 4))
+            .WithWorkshop(workshop);
+        return workshop;
+    }
 }

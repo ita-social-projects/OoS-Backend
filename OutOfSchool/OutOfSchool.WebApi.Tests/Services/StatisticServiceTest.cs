@@ -9,15 +9,17 @@ using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.Redis;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
-using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Services.AverageRatings;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -28,7 +30,7 @@ public class StatisticServiceTest
 
     private Mock<IApplicationRepository> applicationRepository;
     private Mock<IWorkshopRepository> workshopRepository;
-    private Mock<IEntityRepository<long, Direction>> directionRepository;
+    private Mock<IEntityRepositorySoftDeleted<long, Direction>> directionRepository;
     private Mock<IMapper> mapper;
     private Mock<ICacheService> cache;
     private Mock<IAverageRatingService> averageRatingServiceMock;
@@ -38,7 +40,7 @@ public class StatisticServiceTest
     {
         applicationRepository = new Mock<IApplicationRepository>();
         workshopRepository = new Mock<IWorkshopRepository>();
-        directionRepository = new Mock<IEntityRepository<long, Direction>>();
+        directionRepository = new Mock<IEntityRepositorySoftDeleted<long, Direction>>();
         var logger = new Mock<ILogger<StatisticService>>();
         mapper = new Mock<IMapper>();
         cache = new Mock<ICacheService>();

@@ -1,25 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Config;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Providers;
-using OutOfSchool.WebApi.Models.Workshop;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -32,9 +35,11 @@ public class WorkshopControllerTests
     private const int BadRequest = 400;
     private const int Forbidden = 403;
 
-    private static List<WorkshopDTO> workshops;
+    private static List<WorkshopDto> workshops;
     private static List<WorkshopCard> workshopCards;
-    private static WorkshopDTO workshop;
+    private static WorkshopDto workshop;
+    private static WorkshopCreateUpdateDto workshopCreateDto;
+    private static WorkshopCreateUpdateDto workshopUpdateDto;
     private static ProviderDto provider;
     private static Mock<IOptions<AppDefaultsConfig>> options;
 
@@ -43,6 +48,7 @@ public class WorkshopControllerTests
     private Mock<IProviderService> providerServiceMoq;
     private Mock<IProviderAdminService> providerAdminService;
     private Mock<IStringLocalizer<SharedResource>> localizer;
+    private Mock<IUserService> userServiceMoq;
 
     private string userId;
     private Mock<HttpContext> httpContextMoq;
@@ -60,13 +66,15 @@ public class WorkshopControllerTests
         httpContextMoq.Setup(x => x.User.IsInRole("provider"))
             .Returns(true);
 
-        workshops = WithWorkshops();
-        workshop = WithWorkshop();
-        provider = WithProvider();
-        workshopCards = WithWorkshopCards();
+        workshops = WorkshopDtoGenerator.Generate(5);
+        workshop = WorkshopDtoGenerator.Generate();
+        workshopCreateDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        workshopUpdateDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        provider = ProviderDtoGenerator.Generate();
+        workshopCards = WorkshopCardGenerator.Generate(5);
         workshopBaseCards = WorkshopBaseCardGenerator.Generate(5);
         workshopShortEntitiesList = ShortEntityDtoGenerator.Generate(10);
-        workshopProviderViewCardList = WithWorkshopProviderViewCards();
+        workshopProviderViewCardList = WorkshopProviderViewCardGenerator.Generate(5);
 
         var config = new AppDefaultsConfig();
         config.City = "Київ";
@@ -82,11 +90,13 @@ public class WorkshopControllerTests
         providerAdminService = new Mock<IProviderAdminService>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         providerAdminService = new Mock<IProviderAdminService>();
+        userServiceMoq = new Mock<IUserService>();
 
         controller = new WorkshopController(
             workshopServiceMoq.Object,
             providerServiceMoq.Object,
             providerAdminService.Object,
+            userServiceMoq.Object,
             localizer.Object,
             options.Object)
         {
@@ -94,12 +104,66 @@ public class WorkshopControllerTests
         };
     }
 
+    #region GetByFilter
+    [Test]
+    public async Task GetByFilter_WhenSearchResultIsNotNullOrEmpty_ReturnsOkObjectResult()
+    {
+        // Arrange
+        var searchResult = new SearchResult<WorkshopCard>()
+        {
+            TotalAmount = 1,
+            Entities = new List<WorkshopCard>()
+            {
+                new WorkshopCard(),
+            },
+        };
+
+        var filter = new WorkshopFilter();
+
+        workshopServiceMoq.Setup(x => x.GetByFilter(filter)).ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.GetByFilter(filter);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<OkObjectResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status200OK);
+    }
+
+    [Test]
+    public async Task GetByFilter_WhenSearchResultIsNullOrEmpty_ReturnsNoContentObjectResult()
+    {
+        // Arrange
+        var searchResult = new SearchResult<WorkshopCard>()
+        { };
+
+        var filter = new WorkshopFilter();
+
+        workshopServiceMoq.Setup(x => x.GetByFilter(filter)).ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.GetByFilter(filter);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<NoContentResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status204NoContent);
+    }
+    #endregion
+
     #region GetWorkshopById
     [Test]
     public async Task GetWorkshopById_WhenIdIsValid_ShouldReturnOkResultObject()
     {
         // Arrange
-        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
 
         // Act
         var result = await controller.GetById(workshop.Id).ConfigureAwait(false) as OkObjectResult;
@@ -114,7 +178,7 @@ public class WorkshopControllerTests
     public async Task GetWorkshopById_WhenThereIsNoWorkshopWithId_ShouldReturnNoContent()
     {
         // Arrange
-        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync((WorkshopDTO)null);
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync((WorkshopDto)null);
 
         // Act
         var result = await controller.GetById(workshop.Id).ConfigureAwait(false) as NoContentResult;
@@ -126,14 +190,159 @@ public class WorkshopControllerTests
     }
     #endregion
 
+    #region GetCompetitiveSelectionDescription
+    [Test]
+    public async Task GetCompetitiveSelectionDescription_WhenIdIsValid_ShouldReturnOkResultObject()
+    {
+        // Arrange
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
+
+        // Act
+        var result = await controller.GetCompetitiveSelectionDescription(workshop.Id);
+
+        // Assert
+        workshopServiceMoq.VerifyAll();
+
+        result.Should()
+            .NotBeNull();
+
+        result.Should()
+            .BeOfType<OkObjectResult>()
+            .Which.StatusCode
+            .Should()
+            .Be(StatusCodes.Status200OK);
+    }
+
+    [Test]
+    public async Task GetCompetitiveSelectionDescription_WhenThereIsNoWorkshopWithId_ShouldReturnNoContent()
+    {
+        // Arrange
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync((WorkshopDto)null);
+
+        // Act
+        var result = await controller.GetCompetitiveSelectionDescription(workshop.Id);
+
+        // Assert
+        workshopServiceMoq.VerifyAll();
+
+        result.Should()
+            .NotBeNull();
+
+        result.Should()
+            .BeOfType<NoContentResult>()
+            .Which.StatusCode
+            .Should()
+            .Be(StatusCodes.Status204NoContent);
+    }
+
+    [TestCase(null)]
+    [TestCase("")]
+    public async Task GetCompetitiveSelectionDescription_WhenCompetitiveSelectionDescriptionIsNullOrEmpty_ShouldReturnNoContent(string competitiveSelectionDescription)
+    {
+        // Arrange
+        var workshopWithoutCSD = WorkshopDtoGenerator.Generate();
+        workshopWithoutCSD.CompetitiveSelectionDescription = competitiveSelectionDescription;
+
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshopWithoutCSD);
+
+        // Act
+        var result = await controller.GetCompetitiveSelectionDescription(workshop.Id);
+
+        // Assert
+        workshopServiceMoq.VerifyAll();
+
+        result.Should()
+            .NotBeNull();
+
+        result.Should()
+            .BeOfType<NoContentResult>()
+            .Which.StatusCode
+            .Should()
+            .Be(StatusCodes.Status204NoContent);
+    }
+
+    [Test]
+    public async Task GetCompetitiveSelectionDescription_EmptyId_ReturnsBadRequest()
+    {
+        // Act
+        var result = await controller.GetCompetitiveSelectionDescription(Guid.Empty);
+
+        // Assert
+        result.Should()
+            .NotBeNull();
+
+        result.Should()
+            .BeOfType<BadRequestObjectResult>()
+            .Which.StatusCode
+            .Should()
+            .Be(StatusCodes.Status400BadRequest);
+    }
+        #endregion
+
     #region GetByProviderId
+    [Test]
+    public async Task GetByProviderId_WhenSearchResultIsNotNullOrEmpty_ReturnsOkObjectResult()
+    {
+        // Arrange
+        var searchResult = new SearchResult<WorkshopProviderViewCard>()
+        {
+            TotalAmount = 1,
+            Entities = new List<WorkshopProviderViewCard>()
+            {
+                new WorkshopProviderViewCard(),
+            },
+        };
+
+        var providerId = Guid.NewGuid();
+
+        var filter = new ExcludeIdFilter();
+
+        workshopServiceMoq.Setup(x => x.GetByProviderId(providerId, filter)).ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.GetByProviderId(providerId, filter);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<OkObjectResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status200OK);
+    }
+
+    [Test]
+    public async Task GetByProviderId_WhenSearchResultIsNullOrEmpty_ReturnsNoContentObjectResult()
+    {
+        // Arrange
+        var searchResult = new SearchResult<WorkshopProviderViewCard>()
+        { };
+
+        var providerId = Guid.NewGuid();
+
+        var filter = new ExcludeIdFilter();
+
+        workshopServiceMoq.Setup(x => x.GetByProviderId(providerId, filter)).ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.GetByProviderId(providerId, filter);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<NoContentResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status204NoContent);
+    }
+
     [Test]
     public async Task GetByProviderId_WhenThereAreWorkshops_ShouldReturnOkResultObject()
     {
         // Arrange
         var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
-        var searchResult = new SearchResult<WorkshopBaseCard>() { TotalAmount = 5, Entities = workshopBaseCards };
-        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        var searchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = 5, Entities = workshopProviderViewCardList };
+        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
             .ReturnsAsync(searchResult);
 
         // Act
@@ -143,7 +352,7 @@ public class WorkshopControllerTests
         workshopServiceMoq.VerifyAll();
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(Ok, result.StatusCode);
-        Assert.AreEqual(workshops.Count, (result.Value as SearchResult<WorkshopBaseCard>).TotalAmount);
+        Assert.AreEqual(workshops.Count, (result.Value as SearchResult<WorkshopProviderViewCard>).TotalAmount);
     }
 
     [Test]
@@ -151,8 +360,8 @@ public class WorkshopControllerTests
     {
         // Arrange
         var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
-        var emptySearchResult = new SearchResult<WorkshopBaseCard>() { TotalAmount = 0, Entities = new List<WorkshopBaseCard>() };
-        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        var emptySearchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = 0, Entities = new List<WorkshopProviderViewCard>() };
+        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
             .ReturnsAsync(emptySearchResult);
 
         // Act
@@ -182,8 +391,8 @@ public class WorkshopControllerTests
         var expectedWorkshopCount = workshopBaseCards.Count - 1;
         var excludedId = workshopBaseCards.FirstOrDefault().WorkshopId;
         var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue, ExcludedId = excludedId };
-        var searchResult = new SearchResult<WorkshopBaseCard>() { TotalAmount = 4, Entities = workshopBaseCards.Skip(1).ToList() };
-        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopBaseCard>(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        var searchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = 4, Entities = workshopProviderViewCardList.Skip(1).ToList() };
+        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
             .ReturnsAsync(searchResult);
 
         // Act
@@ -193,7 +402,7 @@ public class WorkshopControllerTests
         workshopServiceMoq.VerifyAll();
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(Ok, result.StatusCode);
-        Assert.AreEqual(expectedWorkshopCount, (result.Value as SearchResult<WorkshopBaseCard>).TotalAmount);
+        Assert.AreEqual(expectedWorkshopCount, (result.Value as SearchResult<WorkshopProviderViewCard>).TotalAmount);
     }
 
     #endregion
@@ -324,7 +533,7 @@ public class WorkshopControllerTests
         // Arrange
         var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
         var searchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = 5, Entities = workshopProviderViewCardList };
-        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopProviderViewCard>(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
             .ReturnsAsync(searchResult);
 
         // Act
@@ -343,7 +552,7 @@ public class WorkshopControllerTests
         // Arrange
         var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
         var emptySearchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = 0, Entities = new List<WorkshopProviderViewCard>() };
-        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopProviderViewCard>(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
             .ReturnsAsync(emptySearchResult);
 
         // Act
@@ -363,7 +572,7 @@ public class WorkshopControllerTests
         var filter = new ExcludeIdFilter() { From = 0, Size = expectedCount };
         var expectedTotalAmount = 5;
         var searchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = expectedTotalAmount, Entities = workshopProviderViewCardList.Take(expectedCount).ToList() };
-        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopProviderViewCard>(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
             .ReturnsAsync(searchResult);
 
         // Act
@@ -387,7 +596,7 @@ public class WorkshopControllerTests
         var expectedResult = workshopProviderViewCardList.Skip(skipCount).Take(expectedCount).ToList();
         var filter = new ExcludeIdFilter() { From = skipCount, Size = expectedCount };
         var searchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = expectedTotalAmount, Entities = expectedResult };
-        workshopServiceMoq.Setup(x => x.GetByProviderId<WorkshopProviderViewCard>(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
             .ReturnsAsync(searchResult);
 
         // Act
@@ -418,15 +627,17 @@ public class WorkshopControllerTests
     public async Task CreateWorkshop_WhenModelIsValid_ShouldReturnCreatedAtActionResult()
     {
         // Arrange
+        workshopCreateDto.ProviderId = provider.Id;
+        providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
-        workshopServiceMoq.Setup(x => x.Create(workshop)).ReturnsAsync(workshop);
+        workshopServiceMoq.Setup(x => x.Create(workshopCreateDto)).ReturnsAsync(workshop);
 
         // Act
-        var result = await controller.Create(workshop).ConfigureAwait(false) as CreatedAtActionResult;
+        var result = await controller.Create(workshopCreateDto).ConfigureAwait(false) as CreatedAtActionResult;
 
         // Assert
         providerServiceMoq.VerifyAll();
-        workshopServiceMoq.Verify(x => x.Create(workshop), Times.Once);
+        workshopServiceMoq.Verify(x => x.Create(workshopCreateDto), Times.Once);
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(Create, result.StatusCode);
     }
@@ -435,14 +646,14 @@ public class WorkshopControllerTests
     public async Task CreateWorkshop_WhenModelIsInvalid_ShouldReturnBadRequestObjectResult()
     {
         // Arrange
-        workshopServiceMoq.Setup(x => x.Create(workshop)).ReturnsAsync(workshop);
+        workshopServiceMoq.Setup(x => x.Create(workshopCreateDto)).ReturnsAsync(workshop);
         controller.ModelState.AddModelError("CreateWorkshop", "Invalid model state.");
 
         // Act
-        var result = await controller.Create(workshop).ConfigureAwait(false) as BadRequestObjectResult;
+        var result = await controller.Create(workshopCreateDto).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert
-        workshopServiceMoq.Verify(x => x.Create(workshop), Times.Never);
+        workshopServiceMoq.Verify(x => x.Create(workshopCreateDto), Times.Never);
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(BadRequest, result.StatusCode);
     }
@@ -455,11 +666,11 @@ public class WorkshopControllerTests
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(notAuthorProvider);
 
         // Act
-        var result = await controller.Create(workshop) as ObjectResult;
+        var result = await controller.Create(workshopCreateDto) as ObjectResult;
 
         // Assert
         providerServiceMoq.VerifyAll();
-        workshopServiceMoq.Verify(x => x.Create(workshop), Times.Never);
+        workshopServiceMoq.Verify(x => x.Create(workshopCreateDto), Times.Never);
         Assert.IsNotNull(result);
         Assert.AreEqual(Forbidden, result.StatusCode);
     }
@@ -470,11 +681,10 @@ public class WorkshopControllerTests
     public async Task UpdateWorkshop_WhenModelIsValid_ShouldReturnOkObjectResult()
     {
         // Arrange
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
-        workshopServiceMoq.Setup(x => x.Update(workshop)).ReturnsAsync(workshop);
+        SetupUpdateReturn(Result<WorkshopDto>.Success(workshop));
 
         // Act
-        var result = await controller.Update(workshop).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -485,14 +695,13 @@ public class WorkshopControllerTests
     public async Task UpdateWorkshop_WhenModelIsInvalid_ShouldReturnBadRequestObjectResult()
     {
         // Arrange
-        workshopServiceMoq.Setup(x => x.Update(workshop)).ReturnsAsync(workshop);
         controller.ModelState.AddModelError("CreateWorkshop", "Invalid model state.");
 
         // Act
-        var result = await controller.Update(workshop).ConfigureAwait(false) as BadRequestObjectResult;
+        var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert
-        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopDTO>()), Times.Never);
+        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopCreateUpdateDto>()), Times.Never);
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(BadRequest, result.StatusCode);
     }
@@ -502,16 +711,83 @@ public class WorkshopControllerTests
     {
         // Arrange
         var notAuthorProvider = new ProviderDto() { Id = It.IsAny<Guid>(), UserId = userId };
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(notAuthorProvider);
+        providerServiceMoq.Setup(x => x.GetByUserId(userId, It.IsAny<bool>()))
+            .ReturnsAsync(notAuthorProvider);
 
         // Act
-        var result = await controller.Update(workshop).ConfigureAwait(false) as ObjectResult;
+        var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as ObjectResult;
 
         // Assert
         providerServiceMoq.VerifyAll();
-        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopDTO>()), Times.Never);
+        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopCreateUpdateDto>()), Times.Never);
         Assert.IsNotNull(result);
         Assert.AreEqual(Forbidden, result.StatusCode);
+    }
+
+    [Test]
+    public async Task UpdateWorkshop_WhenDtoIsNull_ShouldReturnBadRequestObjectResult()
+    {
+        // Arrange
+        WorkshopCreateUpdateDto workshopBaseDto = null;
+
+        // Act
+        var result = await controller.Update(workshopBaseDto).ConfigureAwait(false) as ObjectResult;
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(BadRequest, result.StatusCode);
+    }
+
+    [Test]
+    public async Task UpdateWorkshop_WhenUpdateResultIsFailed_ShouldReturnBadRequestObjectResult()
+    {
+        // Arrange
+        var failedResult = Result<WorkshopDto>.Failed(new OperationError
+        {
+            Code = HttpStatusCode.BadRequest.ToString(),
+            Description = Constants.WorkshopNotFoundErrorMessage,
+        });
+        SetupUpdateReturn(failedResult);
+
+        // Act
+        var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as ObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(BadRequest, result.StatusCode);
+        Assert.AreEqual(Constants.WorkshopNotFoundErrorMessage, result.Value);
+    }
+
+    [Test]
+    public async Task UpdateWorkshop_WhenUpdateResultIsFailedAndErrorIsNull_ShouldReturnBadRequestObjectResult()
+    {
+        // Arrange
+        var failedResult = Result<WorkshopDto>.Failed(null);
+        SetupUpdateReturn(failedResult);
+
+        // Act
+        var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as ObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(BadRequest, result.StatusCode);
+        Assert.AreEqual(Constants.UnknownErrorDuringUpdateMessage, result.Value);
+    }
+
+    [Test]
+    public async Task UpdateWorkshop_WhenUpdateResultFailsAndErrorsIsEmpty_ShouldReturnBadRequestObjectResult()
+    {
+        // Arrange
+        var failedResult = Result<WorkshopDto>.Failed([]);
+        SetupUpdateReturn(failedResult);
+
+        // Act
+        var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as ObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(BadRequest, result.StatusCode);
+        Assert.AreEqual(Constants.UnknownErrorDuringUpdateMessage, result.Value);
     }
     #endregion
 
@@ -520,11 +796,13 @@ public class WorkshopControllerTests
     public async Task UpdateStatus_WhenModelIsValid_ShouldReturnOkObjectResult()
     {
         // Arrange
+        workshop.ProviderId = provider.Id;
+
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
 
         var updateRequest = WithWorkshopStatusDto(workshop.Id, WorkshopStatus.Open);
 
-        workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId))
+        workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId, It.IsAny<bool>()))
             .ReturnsAsync(workshop);
         workshopServiceMoq.Setup(x => x.UpdateStatus(updateRequest))
             .ReturnsAsync(updateRequest);
@@ -546,8 +824,8 @@ public class WorkshopControllerTests
 
         var updateRequest = WithWorkshopStatusDto(nonExistentId, WorkshopStatus.Open);
 
-        workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId))
-            .ReturnsAsync(null as WorkshopDTO);
+        workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId, It.IsAny<bool>()))
+            .ReturnsAsync(null as WorkshopDto);
 
         // Act
         var result = await controller.UpdateStatus(updateRequest).ConfigureAwait(false) as NotFoundObjectResult;
@@ -563,10 +841,11 @@ public class WorkshopControllerTests
         // Arrange
         var updateRequest = WithWorkshopStatusDto(workshop.Id, WorkshopStatus.Closed);
 
+        workshop.ProviderId = provider.Id;
         workshop.ProviderOwnership = OwnershipType.Common;
 
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
-        workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId))
+        workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId, It.IsAny<bool>()))
             .ReturnsAsync(workshop);
         workshopServiceMoq.Setup(x => x.UpdateStatus(updateRequest)).
             ThrowsAsync(new ArgumentException(It.IsAny<string>()));
@@ -585,7 +864,7 @@ public class WorkshopControllerTests
         // Arrange
         var workShopStatusDto = WithWorkshopStatusDto(workshop.Id, WorkshopStatus.Open);
         var notAuthorProvider = new ProviderDto() { Id = It.IsAny<Guid>(), UserId = userId };
-        workshopServiceMoq.Setup(x => x.GetById(workShopStatusDto.WorkshopId))
+        workshopServiceMoq.Setup(x => x.GetById(workShopStatusDto.WorkshopId, It.IsAny<bool>()))
             .ReturnsAsync(workshop);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(notAuthorProvider);
 
@@ -593,7 +872,7 @@ public class WorkshopControllerTests
         var result = await controller.UpdateStatus(workShopStatusDto) as ObjectResult;
 
         // Assert
-        workshopServiceMoq.Verify(x => x.Create(workshop), Times.Never);
+        workshopServiceMoq.Verify(x => x.Create(workshopCreateDto), Times.Never);
         Assert.IsNotNull(result);
         Assert.AreEqual(Forbidden, result.StatusCode);
     }
@@ -605,8 +884,10 @@ public class WorkshopControllerTests
     public async Task DeleteWorkshop_WhenIdIsValid_ShouldReturnNoContentResult()
     {
         // Arrange
-        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
+        workshop.ProviderId = provider.Id;
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
+        providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
         workshopServiceMoq.Setup(x => x.Delete(workshop.Id)).Returns(Task.CompletedTask);
 
         // Act
@@ -624,7 +905,7 @@ public class WorkshopControllerTests
     public async Task DeleteWorkshop_WhenThereIsNoWorkshopWithId_ShouldNoContentResult()
     {
         // Arrange
-        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(() => null);
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(() => null);
 
         // Act
         var result = await controller.Delete(workshop.Id) as NoContentResult;
@@ -640,7 +921,7 @@ public class WorkshopControllerTests
     public async Task DeleteWorkshop_WhenIdProviderHasNoRights_ShouldReturn403ObjectResult()
     {
         // Arrange
-        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
         var notAuthorProvider = new ProviderDto() { Id = It.IsAny<Guid>(), UserId = userId };
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(notAuthorProvider);
 
@@ -656,271 +937,6 @@ public class WorkshopControllerTests
     }
     #endregion
 
-    private WorkshopDTO WithWorkshop()
-    {
-        return new WorkshopDTO()
-        {
-            Id = Guid.NewGuid(),
-            Title = "Title6",
-            Phone = "1111111111",
-            WorkshopDescriptionItems = new[]
-            {
-                WithWorkshopDescriptionItem(),
-                WithWorkshopDescriptionItem(),
-            },
-            Price = 6000,
-            WithDisabilityOptions = true,
-            Status = WorkshopStatus.Open,
-            ProviderTitle = "ProviderTitle",
-            DisabilityOptionsDesc = "Desc6",
-            Website = "website6",
-            Instagram = "insta6",
-            Facebook = "facebook6",
-            Email = "email6@gmail.com",
-            MaxAge = 10,
-            MinAge = 4,
-            CoverImageId = "image6",
-            ProviderId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
-            InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-            AddressId = 55,
-            Address = new AddressDto
-            {
-                Id = 55,
-                CATOTTGId = 4970,
-                Street = "Street55",
-                BuildingNumber = "BuildingNumber55",
-                Latitude = 0,
-                Longitude = 0,
-            },
-            Teachers = new List<TeacherDTO>
-            {
-                new TeacherDTO
-                {
-                    Id = Guid.NewGuid(),
-                    FirstName = "Alex",
-                    LastName = "Brown",
-                    MiddleName = "SomeMiddleName",
-                    Description = "Description",
-                    //Image = "Image",
-                    DateOfBirth = DateTime.Parse("2000-01-01"),
-                    WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
-                },
-                new TeacherDTO
-                {
-                    Id = Guid.NewGuid(),
-                    FirstName = "John",
-                    LastName = "Snow",
-                    MiddleName = "SomeMiddleName",
-                    Description = "Description",
-                    //Image = "Image",
-                    DateOfBirth = DateTime.Parse("1990-01-01"),
-                    WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
-                },
-            },
-            DateTimeRanges = new List<DateTimeRangeDto>()
-            {
-                new DateTimeRangeDto
-                {
-                    Id = It.IsAny<long>(),
-                    EndTime = It.IsAny<TimeSpan>(),
-                    StartTime = It.IsAny<TimeSpan>(),
-                    Workdays = new List<DaysBitMask>()
-                    {
-                        DaysBitMask.Monday,
-                        DaysBitMask.Thursday,
-                    },
-                },
-            },
-            PayRate = PayRateType.Course,
-        };
-    }
-
-    private List<WorkshopDTO> WithWorkshops()
-    {
-        return new List<WorkshopDTO>()
-        {
-            new WorkshopDTO()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Title1",
-                Phone = "1111111111",
-                WorkshopDescriptionItems = new[]
-                {
-                    WithWorkshopDescriptionItem(),
-                },
-                Price = 1000,
-                WithDisabilityOptions = true,
-                ProviderId = Guid.NewGuid(),
-                ProviderTitle = "ProviderTitle",
-                DisabilityOptionsDesc = "Desc1",
-                Website = "website1",
-                Instagram = "insta1",
-                Facebook = "facebook1",
-                Email = "email1@gmail.com",
-                MaxAge = 10,
-                MinAge = 4,
-                CoverImageId = "image1",
-                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                Address = new AddressDto
-                {
-                    CATOTTGId = 4970,
-                },
-            },
-            new WorkshopDTO()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Title2",
-                Phone = "1111111111",
-                WorkshopDescriptionItems = new[]
-                {
-                    WithWorkshopDescriptionItem(),
-                    WithWorkshopDescriptionItem(),
-                    WithWorkshopDescriptionItem(),
-                },
-                Price = 2000,
-                WithDisabilityOptions = true,
-                ProviderId = Guid.NewGuid(),
-                ProviderTitle = "ProviderTitle",
-                DisabilityOptionsDesc = "Desc2",
-                Website = "website2",
-                Instagram = "insta2",
-                Facebook = "facebook2",
-                Email = "email2@gmail.com",
-                MaxAge = 10,
-                MinAge = 4,
-                CoverImageId = "image2",
-                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                Address = new AddressDto
-                {
-                    CATOTTGId = 4970,
-                },
-            },
-            new WorkshopDTO()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Title3",
-                Phone = "1111111111",
-                WorkshopDescriptionItems = new[]
-                {
-                    WithWorkshopDescriptionItem(),
-                    WithWorkshopDescriptionItem(),
-                    WithWorkshopDescriptionItem(),
-                },
-                Price = 3000,
-                WithDisabilityOptions = true,
-                ProviderId = Guid.NewGuid(),
-                ProviderTitle = "ProviderTitleNew",
-                DisabilityOptionsDesc = "Desc3",
-                Website = "website3",
-                Instagram = "insta3",
-                Facebook = "facebook3",
-                Email = "email3@gmail.com",
-                MaxAge = 10,
-                MinAge = 4,
-                CoverImageId = "image3",
-                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-            },
-            new WorkshopDTO()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Title4",
-                Phone = "1111111111",
-                WorkshopDescriptionItems = new[]
-                {
-                    WithWorkshopDescriptionItem(),
-                    WithWorkshopDescriptionItem(),
-                },
-                Price = 4000,
-                WithDisabilityOptions = true,
-                ProviderId = Guid.NewGuid(),
-                ProviderTitle = "ProviderTitleNew",
-                DisabilityOptionsDesc = "Desc4",
-                Website = "website4",
-                Instagram = "insta4",
-                Facebook = "facebook4",
-                Email = "email4@gmail.com",
-                MaxAge = 10,
-                MinAge = 4,
-                CoverImageId = "image4",
-                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-            },
-            new WorkshopDTO()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Title5",
-                Phone = "1111111111",
-                WorkshopDescriptionItems = new[]
-                {
-                    WithWorkshopDescriptionItem(),
-                },
-                Price = 5000,
-                WithDisabilityOptions = true,
-                ProviderId = Guid.NewGuid(),
-                ProviderTitle = "ProviderTitleNew",
-                DisabilityOptionsDesc = "Desc5",
-                Website = "website5",
-                Instagram = "insta5",
-                Facebook = "facebook5",
-                Email = "email5@gmail.com",
-                MaxAge = 10,
-                MinAge = 4,
-                CoverImageId = "image5",
-                InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                Address = new AddressDto
-                {
-                    CATOTTGId = 4970,
-                },
-            },
-        };
-    }
-
-    private ProviderDto WithProvider()
-    {
-        return new ProviderDto()
-        {
-            UserId = userId,
-            Id = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
-        };
-    }
-
-    private List<WorkshopCard> WithWorkshopCards()
-    {
-        return WithWorkshops().Select(w => new WorkshopCard
-        {
-            WorkshopId = w.Id,
-            ProviderTitle = w.ProviderTitle,
-            ProviderOwnership = w.ProviderOwnership,
-            Title = w.Title,
-            PayRate = w.PayRate,
-            CoverImageId = w.CoverImageId,
-            MinAge = w.MinAge,
-            MaxAge = w.MaxAge,
-            Price = w.Price,
-            DirectionIds = w.DirectionIds,
-            ProviderId = w.ProviderId,
-            Address = w.Address,
-            WithDisabilityOptions = w.WithDisabilityOptions,
-            Rating = w.Rating,
-            ProviderLicenseStatus = w.ProviderLicenseStatus,
-            InstitutionHierarchyId = w.InstitutionHierarchyId,
-            InstitutionId = w.InstitutionId,
-            Institution = w.Institution,
-            AvailableSeats = w.AvailableSeats,
-            TakenSeats = w.TakenSeats,
-        }).ToList();
-    }
-
-    private WorkshopDescriptionItemDto WithWorkshopDescriptionItem()
-    {
-        var id = Guid.NewGuid();
-        return new WorkshopDescriptionItemDto
-        {
-            Id = id,
-            SectionName = "test heading",
-            Description = $"test description text sentence for id: {id.ToString()}",
-        };
-    }
-
     private WorkshopStatusDto WithWorkshopStatusDto(Guid workshopDtoId, WorkshopStatus workshopStatus)
     {
         return new WorkshopStatusDto()
@@ -930,30 +946,13 @@ public class WorkshopControllerTests
         };
     }
 
-    private List<WorkshopProviderViewCard> WithWorkshopProviderViewCards()
+    private void SetupUpdateReturn(Result<WorkshopDto> result)
     {
-        return new List<WorkshopProviderViewCard>()
-        {
-            new WorkshopProviderViewCard()
-            {
-                Title = "Title1",
-            },
-            new WorkshopProviderViewCard()
-            {
-                Title = "Title2",
-            },
-            new WorkshopProviderViewCard()
-            {
-                Title = "Title3",
-            },
-            new WorkshopProviderViewCard()
-            {
-                Title = "Title4",
-            },
-            new WorkshopProviderViewCard()
-            {
-                Title = "Title5",
-            },
-        };
+        workshopUpdateDto.ProviderId = provider.Id;
+        providerServiceMoq.Setup(x => x.IsBlocked(provider.Id)).ReturnsAsync(false);
+        providerServiceMoq.Setup(x => x.GetByUserId(userId, It.IsAny<bool>()))
+            .ReturnsAsync(provider);
+        workshopServiceMoq.Setup(x => x.Update(workshopUpdateDto))
+            .ReturnsAsync(result);
     }
 }

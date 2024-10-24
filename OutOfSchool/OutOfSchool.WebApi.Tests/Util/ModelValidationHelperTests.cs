@@ -1,7 +1,7 @@
 ﻿using System;
 using NUnit.Framework;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Util;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Util;
 
 namespace OutOfSchool.WebApi.Tests.Util;
 

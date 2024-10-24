@@ -1,12 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NUnit.Framework;
-using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using AutoMapper;
+using OutOfSchool.Common.Extensions;
 
 namespace OutOfSchool.Tests.Common;
 
@@ -21,6 +18,14 @@ public static class TestHelper
         where TProfile : Profile, new()
     {
         var config = new MapperConfiguration(cfg => cfg.AddProfile<TProfile>());
+        return config.CreateMapper();
+    }
+
+    public static IMapper CreateMapperInstanceOfProfileTypes<TProfile1, TProfile2>()
+        where TProfile1 : Profile, new()
+        where TProfile2 : Profile, new()
+    {
+        var config = new MapperConfiguration(cfg => cfg.UseProfile<TProfile1>().UseProfile<TProfile2>());
         return config.CreateMapper();
     }
 
@@ -75,6 +80,36 @@ public static class TestHelper
     {
         var tuppledProperties = GetTuppledProperties<TValue>(expected, actual);
         tuppledProperties.AssertPropertiesAreEqual();
+    }
+
+    public static void AssertEquivalentWithNullHandling<TValue>(TValue expected, TValue actual)
+    {
+        if (expected is IEnumerable<object> expectedCollection &&
+        actual is IEnumerable<object> actualCollection &&
+        AreCollectionsEquivalent(expectedCollection, actualCollection))
+        {
+            return;
+        }
+
+        if (ReferenceEquals(expected, actual))
+        {
+            return;
+        }
+
+        if (expected is null || actual is null)
+        {
+            Assert.Fail($"Expected and actual values are not both null. Expected: {expected}, Actual: {actual}");
+        }
+
+        var tuppledProperties = GetTuppledProperties(expected, actual);
+        tuppledProperties.AssertPropertiesAreEqual();
+    }
+
+    private static bool AreCollectionsEquivalent<T>(T? expected, T? actual)
+    where T : class, IEnumerable<object>
+    {
+        return (expected == null || !expected.Any()) &&
+               (actual == null || !actual.Any());
     }
 
     private static IEnumerable<(object , object, string)> GetTuppledProperties<TValue>(TValue expected, TValue actual)

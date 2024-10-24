@@ -8,16 +8,20 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
-using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base;
+using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Models.ChatWorkshop;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -34,8 +38,10 @@ public class ChatRoomWorkshopServiceTests
 
     private static ChatRoomWorkshop[] rooms;
 
-    private IEntityRepository<Guid, ChatRoomWorkshop> roomRepository;
+    private IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository;
     private Mock<IChatRoomWorkshopModelForChatListRepository> roomWithSpecialModelRepositoryMock;
+    private Mock<IWorkshopService> workshopServiceMock;
+    private Mock<IBlockedProviderParentService> blockedProviderParentServiceMock;
     private Mock<ILogger<ChatRoomWorkshopService>> loggerMock;
     private IMapper mapper;
 
@@ -53,11 +59,11 @@ public class ChatRoomWorkshopServiceTests
         users[2].Role = Role.Provider.ToString().ToLower();
         users[3].Role = Role.Provider.ToString().ToLower();
 
-        parents = new Parent[2]
-        {
+        parents =
+        [
             new Parent() { Id = Guid.NewGuid(), UserId = users[0].Id, Gender = Gender.Male, DateOfBirth = DateTime.Today},
             new Parent() { Id = Guid.NewGuid(), UserId = users[1].Id, Gender = Gender.Female, DateOfBirth = DateTime.Today},
-        };
+        ];
 
         providers = ProvidersGenerator.Generate(2).ToArray();
         providers[0].UserId = users[2].Id;
@@ -68,13 +74,13 @@ public class ChatRoomWorkshopServiceTests
         workshops[1].ProviderId = providers[0].Id;
         workshops[2].ProviderId = providers[1].Id;
 
-        rooms = new ChatRoomWorkshop[4]
-        {
+        rooms =
+        [
             new ChatRoomWorkshop() { Id = Guid.NewGuid(), WorkshopId = workshops[0].Id, ParentId = parents[0].Id, },
             new ChatRoomWorkshop() { Id = Guid.NewGuid(), WorkshopId = workshops[0].Id, ParentId = parents[1].Id, },
             new ChatRoomWorkshop() { Id = Guid.NewGuid(), WorkshopId = workshops[1].Id, ParentId = parents[0].Id, },
             new ChatRoomWorkshop() { Id = Guid.NewGuid(), WorkshopId = workshops[1].Id, ParentId = parents[1].Id, },
-        };
+        ];
 
         var builder =
             new DbContextOptionsBuilder<OutOfSchoolDbContext>()
@@ -84,15 +90,21 @@ public class ChatRoomWorkshopServiceTests
         options = builder.Options;
         dbContext = new OutOfSchoolDbContext(options);
 
-        roomRepository = new EntityRepository<Guid, ChatRoomWorkshop>(dbContext);
+        roomRepository = new EntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>(dbContext);
         roomWithSpecialModelRepositoryMock = new Mock<IChatRoomWorkshopModelForChatListRepository>();
         loggerMock = new Mock<ILogger<ChatRoomWorkshopService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        workshopServiceMock = new Mock<IWorkshopService>();
+        workshopServiceMock.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(new WorkshopDto() { ProviderId = Guid.Empty });
+        blockedProviderParentServiceMock = new Mock<IBlockedProviderParentService>();
+        blockedProviderParentServiceMock.Setup(x => x.IsBlocked(It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync(false);
 
         roomService = new ChatRoomWorkshopService(
             roomRepository,
             loggerMock.Object,
             roomWithSpecialModelRepositoryMock.Object,
+            workshopServiceMock.Object,
+            blockedProviderParentServiceMock.Object,
             mapper);
 
         SeedDatabase();
@@ -134,6 +146,31 @@ public class ChatRoomWorkshopServiceTests
         Assert.AreNotEqual(default(int), result.Id);
         Assert.AreEqual(dbContext.ChatRoomWorkshops.LastOrDefault()?.Id, result.Id);
     }
+
+    [Test]
+    public async Task CreateOrReturnExisting_WhenParentIsBlockedByProvider_ShouldReturnNull()
+    {
+        // Arrange
+        var roomCount = dbContext.ChatRoomWorkshops.Count();
+        var workshopId = workshops[2].Id;
+        var parentId = parents[0].Id;
+
+        blockedProviderParentServiceMock.Setup(x => x.IsBlocked(It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync(true);
+
+        var chatRoomService = new ChatRoomWorkshopService(
+            roomRepository,
+            loggerMock.Object,
+            roomWithSpecialModelRepositoryMock.Object,
+            workshopServiceMock.Object,
+            blockedProviderParentServiceMock.Object,
+            mapper);
+
+        // Act
+        var result = await roomService.CreateOrReturnExistingAsync(workshopId, parentId).ConfigureAwait(false);
+
+        // Assert
+        Assert.Null(result);
+    }
     #endregion
 
     #region Delete
@@ -142,13 +179,13 @@ public class ChatRoomWorkshopServiceTests
     {
         // Arrange
         var existingId = rooms[0].Id;
-        var roomCount = dbContext.ChatRoomWorkshops.Count();
+        var roomCount = dbContext.ChatRoomWorkshops.Count(x => !x.IsDeleted);
 
         // Act
         await roomService.DeleteAsync(existingId).ConfigureAwait(false);
 
         // Assert
-        Assert.AreEqual(roomCount - 1, dbContext.ChatRoomWorkshops.Count());
+        Assert.AreEqual(roomCount - 1, dbContext.ChatRoomWorkshops.Count(x => !x.IsDeleted));
     }
 
     [Test]
@@ -278,6 +315,7 @@ public class ChatRoomWorkshopServiceTests
 
     #region GetByWorkshopIdAsync
     [Test]
+    [Ignore("Testing of unused method")]
     public async Task GetByWorkshopIdAsync_WhenRoomExist_ShouldReturnFoundEntity()
     {
         // Arrange
@@ -298,6 +336,7 @@ public class ChatRoomWorkshopServiceTests
     }
 
     [Test]
+    [Ignore("Testing of unused method")]
     public async Task GetByWorkshopIdAsync_WhenRoomDoesNotExist_ShouldReturnNull()
     {
         // Arrange
@@ -380,6 +419,38 @@ public class ChatRoomWorkshopServiceTests
     }
     #endregion
 
+    #region GetChatRoomIdsByWorkshopIdsAsync
+    [Test]
+    public async Task GetChatRoomIdsByWorkshopIdsAsync_WhenRoomExist_ShouldReturnFoundEntity()
+    {
+        // Arrange
+        var existingworkshopIds = workshops.Select(x => x.Id);
+
+        // Act
+        var result = await roomService.GetChatRoomIdsByWorkshopIdsAsync(existingworkshopIds).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<IEnumerable<Guid>>(result);
+        Assert.IsNotNull(result);
+        Assert.IsTrue(result.Any());
+    }
+
+    [Test]
+    public async Task GetChatRoomIdsByWorkshopIdsAsync_WhenRoomDoesNotExist_ShouldReturnNull()
+    {
+        // Arrange
+        var notExistingWorkshopIds = new Guid[] { Guid.NewGuid(), Guid.NewGuid() };
+
+        // Act
+        var result = await roomService.GetChatRoomIdsByWorkshopIdsAsync(notExistingWorkshopIds).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<IEnumerable<Guid>>(result);
+        Assert.IsNotNull(result);
+        Assert.IsFalse(result.Any());
+    }
+    #endregion
+
     #region GetUniqueChatRoomAsync
     [Test]
     public async Task GetUniqueChatRoom_WhenRoomExists_ShouldReturnFoundEntity()
@@ -411,6 +482,117 @@ public class ChatRoomWorkshopServiceTests
 
         // Assert
         Assert.IsNull(result);
+    }
+    #endregion
+
+    #region GetCurrentUserUnreadMessagesCountAsync
+    [Test]
+    public async Task GetCurrentUserUnreadMessagesCount_WhenUserRoleIsParent_ShouldReturnCorrectCount()
+    {
+        // Arrange
+        var parentId = parents[0].Id;
+        var role = Role.Parent;
+        var chatRooms = new List<ChatRoomWorkshopForChatList>
+        {
+            new ChatRoomWorkshopForChatList { NotReadByCurrentUserMessagesCount = 1 },
+            new ChatRoomWorkshopForChatList { NotReadByCurrentUserMessagesCount = 1 },
+        };
+
+        var expectedCount = chatRooms.Count(r => r.NotReadByCurrentUserMessagesCount > 0);
+
+        roomWithSpecialModelRepositoryMock
+            .Setup(x => x.GetByParentIdAsync(parentId, It.IsAny<bool>()))
+            .ReturnsAsync(chatRooms);
+
+        // Act
+        var result = await roomService.GetCurrentUserUnreadMessagesCountAsync(parentId, role).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(expectedCount, result);
+    }
+
+    [Test]
+    public async Task GetCurrentUserUnreadMessagesCount_WhenUserRoleIsProvider_ShouldReturnCorrectCount()
+    {
+        // Arrange
+        var providerId = providers[0].Id;
+        var role = Role.Provider;
+        var chatRooms = new List<ChatRoomWorkshopForChatList>
+        {
+            new ChatRoomWorkshopForChatList { NotReadByCurrentUserMessagesCount = 1 },
+            new ChatRoomWorkshopForChatList { NotReadByCurrentUserMessagesCount = 1 },
+            new ChatRoomWorkshopForChatList { NotReadByCurrentUserMessagesCount = 1 },
+        };
+
+        var expectedCount = chatRooms.Count(r => r.NotReadByCurrentUserMessagesCount > 0);
+
+        roomWithSpecialModelRepositoryMock
+            .Setup(x => x.GetByProviderIdAsync(providerId, It.IsAny<bool>()))
+            .ReturnsAsync(chatRooms);
+
+        // Act
+        var result = await roomService.GetCurrentUserUnreadMessagesCountAsync(providerId, role).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(expectedCount, result);
+    }
+
+    [Test]
+    public void GetCurrentUserUnreadMessagesCount_WhenUserRoleIsNotValid_ShouldThrowArgumentException()
+    {
+        // Arrange
+        var providerId = providers[0].Id;
+        var role = Role.TechAdmin;
+
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentException>(async () =>
+        {
+            await roomService.GetCurrentUserUnreadMessagesCountAsync(providerId, role).ConfigureAwait(false);
+        });
+    }
+    #endregion
+
+    #region GetChatRoomByFilter
+    [Test]
+    public async Task GetChatRoomByFilter_WhenUserIsInValidParent_ShouldReturnEmptySearchResult()
+    {
+        // Arrange
+        var invalidParentId = Guid.NewGuid();
+        var expectedEmptyList = new List<ChatRoomWorkshopDtoWithLastMessage>();
+
+        roomWithSpecialModelRepositoryMock
+            .Setup(x => x.GetByParentIdAsync(invalidParentId, false))
+            .Returns(Task.FromResult(new List<ChatRoomWorkshopForChatList>()));
+
+        // Act
+        var result = await roomService
+            .GetChatRoomByFilter(new ChatWorkshopFilter(), invalidParentId, false);
+
+        // Assert
+        Assert.That(result is not null);
+        Assert.AreEqual(0, result.TotalAmount);
+        Assert.AreEqual(expectedEmptyList, result.Entities);
+    }
+
+    [Test]
+    public async Task GetChatRoomByFilter_WhenUserIsInValidProvider_ShouldReturnEmptySearchResult()
+    {
+        // Arrange
+        var invalidProviderId = Guid.NewGuid();
+        var expectedEmptyList = new List<ChatRoomWorkshopDtoWithLastMessage>();
+
+        roomWithSpecialModelRepositoryMock
+            .Setup(x => x.GetByWorkshopIdsAsync(It.IsAny<IEnumerable<Guid>>(), true))
+            .Returns(Task.FromResult(new List<ChatRoomWorkshopForChatList>()));
+
+        // Act
+        var result = await roomService
+            .GetChatRoomByFilter(new ChatWorkshopFilter(), invalidProviderId, true);
+
+        // Assert
+        Assert.That(result is not null);
+        Assert.AreEqual(0, result.TotalAmount);
+        Assert.AreEqual(expectedEmptyList, result.Entities);
     }
     #endregion
 

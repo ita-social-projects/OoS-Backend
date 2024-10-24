@@ -1,21 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -33,7 +34,7 @@ public class InstitutionStatusControllerTests
     {
         // setup controller
         service = new Mock<IStatusService>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         controller = new InstitutionStatusController(service.Object, localizer.Object);
 
@@ -48,7 +49,7 @@ public class InstitutionStatusControllerTests
         // Arrange
         var expected = institutionStatuses.Select(x => mapper.Map<InstitutionStatusDTO>(x));
 
-        service.Setup(x => x.GetAll()).ReturnsAsync(institutionStatuses.Select(x => mapper.Map<InstitutionStatusDTO>(x)));
+        service.Setup(x => x.GetAll(It.IsAny<LocalizationType>())).ReturnsAsync(institutionStatuses.Select(x => mapper.Map<InstitutionStatusDTO>(x)));
 
         // Act
         var response = await controller.Get().ConfigureAwait(false);
@@ -61,7 +62,7 @@ public class InstitutionStatusControllerTests
     public async Task GetInstitutionStatuses_WhenEmptyCollection_ReturnsNoContentResult()
     {
         // Arrange
-        service.Setup(x => x.GetAll()).ReturnsAsync(new List<InstitutionStatusDTO>());
+        service.Setup(x => x.GetAll(It.IsAny<LocalizationType>())).ReturnsAsync(new List<InstitutionStatusDTO>());
 
         // Act
         var response = await controller.Get().ConfigureAwait(false);
@@ -77,7 +78,7 @@ public class InstitutionStatusControllerTests
         var existingId = TestDataHelper.RandomItem(institutionStatuses as ICollection<InstitutionStatus>).Id;
         var expected = mapper.Map<InstitutionStatusDTO>(institutionStatuses.First(x => x.Id == existingId));
 
-        service.Setup(x => x.GetById(existingId))
+        service.Setup(x => x.GetById(existingId, It.IsAny<LocalizationType>()))
             .ReturnsAsync(mapper.Map<InstitutionStatusDTO>(institutionStatuses.First(x => x.Id == existingId)));
 
         // Act
@@ -93,7 +94,7 @@ public class InstitutionStatusControllerTests
         // Arrange
         var invalidId = TestDataHelper.GetNegativeInt();
         var exceptedResponse = new BadRequestObjectResult(TestDataHelper.GetRandomWords());
-        service.Setup(x => x.GetById(invalidId))
+        service.Setup(x => x.GetById(invalidId, It.IsAny<LocalizationType>()))
             .ReturnsAsync(mapper.Map<InstitutionStatusDTO>(institutionStatuses.SingleOrDefault(x => x.Id == invalidId)));
 
         // Act
@@ -110,7 +111,7 @@ public class InstitutionStatusControllerTests
         var notExistId = TestDataHelper.GetPositiveInt(institutionStatuses.Count(), int.MaxValue);
         var expectedResponse = new BadRequestObjectResult(TestDataHelper.GetRandomWords());
 
-        service.Setup(x => x.GetById(notExistId)).Throws<ArgumentOutOfRangeException>();
+        service.Setup(x => x.GetById(notExistId, It.IsAny<LocalizationType>())).Throws<ArgumentOutOfRangeException>();
 
         // Act
         var response = await controller.GetById(notExistId).ConfigureAwait(false);
@@ -143,7 +144,7 @@ public class InstitutionStatusControllerTests
     {
         // Arrange
         var expected = mapper.Map<InstitutionStatusDTO>(institutionStatus);
-        service.Setup(x => x.Update(expected)).ReturnsAsync(mapper.Map<InstitutionStatusDTO>(institutionStatus));
+        service.Setup(x => x.Update(expected, It.IsAny<LocalizationType>())).ReturnsAsync(mapper.Map<InstitutionStatusDTO>(institutionStatus));
 
         // Act
         var response = await controller.Update(expected).ConfigureAwait(false);

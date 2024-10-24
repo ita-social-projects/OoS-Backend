@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.WebApi.Common;
+using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -38,6 +39,57 @@ public class DirectionControllerTests
 
         directions = FakeDirections();
         direction = FakeDirection();
+    }
+
+    [Test]
+    public async Task GetByFilter_WhenSearchResultIsNotNullOrEmpty_ReturnOkObjectResult()
+    {
+        // Arrange
+        var data = new SearchResult<DirectionDto>()
+        {
+            Entities = new List<DirectionDto>() { new DirectionDto() },
+            TotalAmount = 1,
+        };
+
+        var directionFilter = new DirectionFilter();
+
+        service.Setup(x => x.GetByFilter(directionFilter, true)).ReturnsAsync(data);
+
+        // Act
+        var result = await controller.GetByFilter(directionFilter, true);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<OkObjectResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status200OK);
+    }
+
+    [Test]
+    public async Task GetByFilter_WhenSearchResultIsNullOrEmpty_ReturnNoContentObjectResult()
+    {
+        // Arrange
+        var data = new SearchResult<DirectionDto>()
+        {
+
+        };
+
+        var directionFilter = new DirectionFilter();
+
+        service.Setup(x => x.GetByFilter(directionFilter, true)).ReturnsAsync(data);
+
+        // Act
+        var result = await controller.GetByFilter(directionFilter, true);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<NoContentResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status204NoContent);
     }
 
     [Test]
@@ -118,99 +170,6 @@ public class DirectionControllerTests
 
         // Act
         var result = await controller.Create(direction).ConfigureAwait(false);
-
-        // Assert
-        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-        Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
-    }
-
-    [Test]
-    public async Task Update_WhenModelIsValid_ReturnsOkObjectResult()
-    {
-        // Arrange
-        var changedDirection = new DirectionDto()
-        {
-            Id = 1,
-            Title = "ChangedTitle",
-        };
-        service.Setup(x => x.Update(changedDirection)).ReturnsAsync(changedDirection);
-
-        // Act
-        var result = await controller.Update(changedDirection).ConfigureAwait(false) as OkObjectResult;
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(200, result.StatusCode);
-    }
-
-    [Test]
-    public async Task Update_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
-    {
-        // Arrange
-        controller.ModelState.AddModelError("UpdateDirection", "Invalid model state.");
-
-        // Act
-        var result = await controller.Update(direction).ConfigureAwait(false);
-
-        // Assert
-        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-        Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
-    }
-
-    [Test]
-    [TestCase(1)]
-    public async Task Delete_WhenIdIsValid_ReturnsNoContentResult(long id)
-    {
-        // Arrange
-        service.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Success(direction));
-
-        // Act
-        var result = await controller.Delete(id) as NoContentResult;
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(204, result.StatusCode);
-    }
-
-    [Test]
-    [TestCase(0)]
-    public void Delete_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
-    {
-        // Arrange
-        service.Setup(x => x.Delete(id));
-
-        // Act and Assert
-        Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-            async () => await controller.Delete(id).ConfigureAwait(false));
-    }
-
-    [Test]
-    [TestCase(10)]
-    public async Task Delete_WhenIdIsInvalid_ReturnsNull(long id)
-    {
-        // Arrange
-        service.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Success(direction));
-
-        // Act
-        var result = await controller.Delete(id) as OkObjectResult;
-
-        // Assert
-        Assert.That(result, Is.Null);
-    }
-
-    [Test]
-    [TestCase(10)]
-    public async Task Delete_WhenThereAreRelatedWorkshops_ReturnsBadRequestObjectResult(long id)
-    {
-        // Arrange
-        service.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Failed(new OperationError
-        {
-            Code = "400",
-            Description = "Some workshops assosiated with this direction. Deletion prohibited.",
-        }));
-
-        // Act
-        var result = await controller.Delete(id);
 
         // Assert
         Assert.That(result, Is.TypeOf<BadRequestObjectResult>());

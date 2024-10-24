@@ -3,9 +3,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models;
 
-public class AchievementTeacher : IKeyedEntity<long>
+public class AchievementTeacher : IKeyedEntity<long>, ISoftDeleted
 {
     public long Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     [Required]
     public Guid AchievementId { get; set; }

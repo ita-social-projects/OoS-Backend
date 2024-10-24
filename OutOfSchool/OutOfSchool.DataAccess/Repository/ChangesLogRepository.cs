@@ -1,16 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base;
 
 namespace OutOfSchool.Services.Repository;
 
 public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChangesLogRepository
 {
+    public const string CreatingOperation = "Creating";
+
     public ChangesLogRepository(OutOfSchoolDbContext dbContext)
         : base(dbContext)
     {
@@ -46,8 +51,15 @@ public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChanges
             if (propertyName == "InstitutionId")
             {
                 propertyNameTmp = "Institution";
-                oldValueTmp = dbContext.Institutions.Where(x => x.Id == Guid.Parse(oldValue)).SingleOrDefault().Title;
-                newValueTmp = dbContext.Institutions.Where(x => x.Id == Guid.Parse(newValue)).SingleOrDefault().Title;
+                oldValueTmp = dbContext.Institutions.Where(x => x.Id == Guid.Parse(oldValue)).Single().Title;
+                newValueTmp = dbContext.Institutions.Where(x => x.Id == Guid.Parse(newValue)).Single().Title;
+            }
+
+            if (propertyName == "InstitutionStatusId")
+            {
+                propertyNameTmp = "InstitutionStatus";
+                oldValueTmp = dbContext.InstitutionStatuses.Where(x => x.Id == long.Parse(oldValue)).Single().Name;
+                newValueTmp = dbContext.InstitutionStatuses.Where(x => x.Id == long.Parse(newValue)).Single().Name;
             }
 
             result.Add(CreateChangesLogRecord(
@@ -66,6 +78,26 @@ public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChanges
         }
 
         return result;
+    }
+
+    public Task<ChangesLog> AddCreatingOfEntityToChangesLog<TEntity>(
+        TEntity entity,
+        string userId)
+        where TEntity : class, IKeyedEntity, new()
+    {
+        var entry = dbContext.Entry(entity);
+        var (entityIdGuid, entityIdLong) = GetEntityId(entry);
+
+        var changesLog = CreateChangesLogRecord(
+            typeof(TEntity).Name,
+            CreatingOperation,
+            entityIdGuid,
+            entityIdLong,
+            string.Empty,
+            string.Empty,
+            userId);
+
+        return Create(changesLog);
     }
 
     // TODO: logging of the Institution changes is yet to be configured
@@ -130,7 +162,7 @@ public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChanges
             EntityIdLong = entityIdLong,
             OldValue = oldValue.Limit(dbContext.GetPropertyMaxLength<ChangesLog>(nameof(ChangesLog.OldValue)) ?? 0),
             NewValue = newValue.Limit(dbContext.GetPropertyMaxLength<ChangesLog>(nameof(ChangesLog.NewValue)) ?? 0),
-            UpdatedDate = DateTime.Now,
+            UpdatedDate = DateTime.UtcNow,
             UserId = userId,
         };
 }

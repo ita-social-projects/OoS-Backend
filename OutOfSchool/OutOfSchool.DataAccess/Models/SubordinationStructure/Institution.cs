@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models.SubordinationStructure;
 
-public class Institution : IKeyedEntity<Guid>
+public class Institution : IKeyedEntity<Guid>, ISoftDeleted
 {
     public Guid Id { get; set; }
 
@@ -16,6 +16,8 @@ public class Institution : IKeyedEntity<Guid>
     public int NumberOfHierarchyLevels { get; set; }
 
     public bool IsGovernment { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     public virtual List<Provider> RelatedProviders { get; set; }
 }

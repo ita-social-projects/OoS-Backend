@@ -1,18 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.Common.PermissionsModule;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Teachers;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -20,7 +10,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// Controller with CRUD operations for a Teacher entity.
 /// </summary>
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 [HasPermission(Permissions.SystemManagement)]
 public class TeacherController : ControllerBase // check permissions for workshopIds for public controller

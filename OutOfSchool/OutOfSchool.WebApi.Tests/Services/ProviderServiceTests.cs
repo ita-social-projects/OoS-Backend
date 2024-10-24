@@ -2,26 +2,37 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Config;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.BusinessLogic.Services.Images;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Common;
+using OutOfSchool.Common.Communication;
+using OutOfSchool.Common.Communication.ICommunication;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Providers;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Services.AverageRatings;
-using OutOfSchool.WebApi.Services.Images;
-using OutOfSchool.WebApi.Util;
-using Quartz.Impl.AdoJobStore.Common;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -32,7 +43,7 @@ public class ProviderServiceTests
 
     private Mock<IProviderRepository> providersRepositoryMock;
     private Mock<IProviderAdminRepository> providerAdminRepositoryMock;
-    private Mock<IEntityRepository<string, User>> usersRepositoryMock;
+    private Mock<IEntityRepositorySoftDeleted<string, User>> usersRepositoryMock;
     private IMapper mapper;
     private Mock<INotificationService> notificationService;
     private Mock<IProviderAdminService> providerAdminService;
@@ -43,6 +54,10 @@ public class ProviderServiceTests
     private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<IRegionAdminRepository> regionAdminRepositoryMock;
     private Mock<IAverageRatingService> averageRatingServiceMock;
+    private Mock<IAreaAdminService> areaAdminServiceMock;
+    private Mock<IAreaAdminRepository> areaAdminRepositoryMock;
+    private Mock<IUserService> userServiceMock;
+    private Mock<ICommunicationService> communicationService;
 
     private List<Provider> fakeProviders;
     private User fakeUser;
@@ -58,7 +73,7 @@ public class ProviderServiceTests
         // TODO: configure mock and writer tests for provider admins
         providerAdminRepositoryMock = new Mock<IProviderAdminRepository>();
         usersRepositoryMock = CreateUsersRepositoryMock(fakeUser);
-        var addressRepo = new Mock<IEntityRepository<long, Address>>();
+        var addressRepo = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderService>>();
         var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
@@ -73,9 +88,15 @@ public class ProviderServiceTests
         codeficatorServiceMock = new Mock<ICodeficatorService>();
         regionAdminRepositoryMock = new Mock<IRegionAdminRepository>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
+        areaAdminServiceMock = new Mock<IAreaAdminService>();
+        areaAdminRepositoryMock = new Mock<IAreaAdminRepository>();
+        userServiceMock = new Mock<IUserService>();
+        communicationService = new Mock<ICommunicationService>();
 
+        var authorizationServerConfig = Options.Create(new AuthorizationServerConfig { Authority = new Uri("http://test.com") });
 
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        var searchStringServiceMock = new Mock<ISearchStringService>();
 
         providerService = new ProviderService(
             providersRepositoryMock.Object,
@@ -96,7 +117,13 @@ public class ProviderServiceTests
             regionAdminServiceMock.Object,
             codeficatorServiceMock.Object,
             regionAdminRepositoryMock.Object,
-            averageRatingServiceMock.Object);
+            averageRatingServiceMock.Object,
+            areaAdminServiceMock.Object,
+            areaAdminRepositoryMock.Object,
+            userServiceMock.Object,
+            authorizationServerConfig,
+            communicationService.Object,
+            searchStringServiceMock.Object);
     }
 
     #region Create
@@ -106,7 +133,7 @@ public class ProviderServiceTests
     public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity(string license, ProviderLicenseStatus expectedLicenseStatus)
     {
         // Arrange
-        var dto = ProviderDtoGenerator.Generate();
+        var dto = ProviderCreateDtoGenerator.Generate();
         dto.License = license;
         dto.Status = ProviderStatus.Approved;
 
@@ -118,6 +145,8 @@ public class ProviderServiceTests
         expected.ImageIds = new List<string>();
         expected.ProviderSectionItems = Enumerable.Empty<ProviderSectionItemDto>();
 
+        var recipientsIds = new List<string>() { fakeUser.Id };
+
         providersRepositoryMock.Setup(r => r.Create(It.IsAny<Provider>()))
             .ReturnsAsync((Provider p) => p);
         providersRepositoryMock.Setup(r => r.GetById(expected.Id))
@@ -127,16 +156,9 @@ public class ProviderServiceTests
                 NotificationType.Provider,
                 NotificationAction.Create,
                 expected.Id,
-                providerService,
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
-            .Callback((
-                NotificationType type,
-                NotificationAction action,
-                Guid objectId,
-                INotificationReciever service,
-                Dictionary<string, string> additionalData,
-                string groupedData) => service.GetNotificationsRecipientIds(action, additionalData, objectId))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -150,7 +172,7 @@ public class ProviderServiceTests
     public async Task Create_ValidEntity_UpdatesOwnerIsRegisteredField()
     {
         // Arrange
-        var provider = ProviderDtoGenerator.Generate();
+        var provider = ProviderCreateDtoGenerator.Generate();
         provider.UserId = fakeUser.Id;
         fakeUser.IsRegistered = false;
 
@@ -172,7 +194,7 @@ public class ProviderServiceTests
     public void Create_WhenUserIdExists_ThrowsInvalidOperationException()
     {
         // Arrange
-        var providerToBeCreated = ProviderDtoGenerator.Generate();
+        var providerToBeCreated = ProviderCreateDtoGenerator.Generate();
         fakeProviders.RandomItem().UserId = providerToBeCreated.UserId;
 
         // Act and Assert
@@ -184,7 +206,7 @@ public class ProviderServiceTests
     public async Task Create_WhenActualAddressIsTheSameAsLegal_ActualAddressIsCleared()
     {
         // Arrange
-        var expectedEntity = ProviderDtoGenerator.Generate();
+        var expectedEntity = ProviderCreateDtoGenerator.Generate();
         expectedEntity.ActualAddress = expectedEntity.LegalAddress;
         Provider receivedProvider = default;
         providersRepositoryMock.Setup(x => x.Create(It.IsAny<Provider>())).
@@ -209,7 +231,7 @@ public class ProviderServiceTests
         providersRepositoryMock.Setup(x => x.Create(It.IsAny<Provider>())).Callback<Provider>(p => receivedProvider = p);
 
         // Act
-        await providerService.Create(mapper.Map<ProviderDto>(expectedEntity));// expectedEntity.ToModel());
+        await providerService.Create(mapper.Map<ProviderCreateDto>(expectedEntity));// expectedEntity.ToModel());
 
         // Assert
         Assert.That(receivedProvider.ActualAddress, Is.Not.Null);
@@ -221,7 +243,7 @@ public class ProviderServiceTests
     {
         // Arrange
         providersRepositoryMock.Setup(r => r.SameExists(It.IsAny<Provider>())).Returns(true);
-        var randomProvider = mapper.Map<ProviderDto>(fakeProviders.RandomItem());// fakeProviders.RandomItem().ToModel();
+        var randomProvider = mapper.Map<ProviderCreateDto>(fakeProviders.RandomItem());// fakeProviders.RandomItem().ToModel();
 
         // Act & Assert
         Assert.ThrowsAsync<InvalidOperationException>(async () => await providerService.Create(randomProvider));
@@ -399,9 +421,20 @@ public class ProviderServiceTests
     public async Task GetById_WhenIdIsValid_ReturnsEntity()
     {
         // Arrange
-        var existingProvider = fakeProviders.RandomItem();
+        var providersMock = fakeProviders.AsQueryable().BuildMock();
+        var existingProvider = fakeProviders.First();
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>())).ReturnsAsync(existingProvider);
+        providersRepositoryMock.Setup(r => r.Get(
+                0,
+                0,
+                string.Empty,
+                It.IsAny<Expression<Func<Provider, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
+                true))
+        .Returns(providersMock);
+
+        providersRepositoryMock.Setup(r => r.Any(It.IsAny<Expression<Func<Provider, bool>>>())).ReturnsAsync(true);
+
         averageRatingServiceMock.Setup(r => r.GetByEntityIdAsync(It.IsAny<Guid>())).ReturnsAsync(new AverageRatingDto());
 
         // Act
@@ -441,17 +474,19 @@ public class ProviderServiceTests
         providerToUpdateDto.FullTitle = updatedTitle;
         expectedProviderDto.FullTitle = updatedTitle;
 
+        var recipientsIds = new List<string>() { fakeUser.Id };
+
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Provider>>>()))
             .Returns((Func<Task<Provider>> f) => f.Invoke());
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
         notificationService.Setup(s => s.Create(
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                providerService,
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -483,7 +518,7 @@ public class ProviderServiceTests
 
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
         // Act
@@ -510,17 +545,19 @@ public class ProviderServiceTests
         expected.Status = ProviderStatus.Recheck;
         expected.FullTitle = updatedTitle;
 
+        var recipientsIds = new List<string>() { fakeUser.Id };
+
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Provider>>>()))
             .Returns((Func<Task<Provider>> f) => f.Invoke());
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
         notificationService.Setup(s => s.Create(
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                providerService,
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -550,15 +587,17 @@ public class ProviderServiceTests
         expected.Status = ProviderStatus.Recheck;
         expected.EdrpouIpn = updatedEdrpouIpn;
 
+        var recipientsIds = new List<string>() { fakeUser.Id };
+
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
         notificationService.Setup(s => s.Create(
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                providerService,
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -591,15 +630,17 @@ public class ProviderServiceTests
         expected.LicenseStatus = ProviderLicenseStatus.Pending;
         expected.License = updatedLicense;
 
+        var recipientsIds = new List<string>() { fakeUser.Id };
+
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
         notificationService.Setup(s => s.Create(
                 NotificationType.Provider,
                 NotificationAction.Update,
                 provider.Id,
-                providerService,
+                recipientsIds,
                 It.IsAny<Dictionary<string, string>>(),
                 null))
             .Returns(Task.CompletedTask);
@@ -631,7 +672,7 @@ public class ProviderServiceTests
 
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
         // Act
@@ -672,7 +713,7 @@ public class ProviderServiceTests
 
         providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
         // Act
@@ -692,262 +733,70 @@ public class ProviderServiceTests
         // Arrange
         var providerToDeleteDto = mapper.Map<ProviderDto>(fakeProviders.RandomItem());//fakeProviders.RandomItem().ToModel();
         var deleteMethodArguments = new List<Provider>();
+        var deleteUserArguments = new List<string>();
         providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(fakeProviders.Single(p => p.Id == providerToDeleteDto.Id));
+        providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task>>()))
+            .Returns((Func<Task> f) => f.Invoke());
         providersRepositoryMock.Setup(r => r.Delete(Capture.In(deleteMethodArguments)));
+        userServiceMock.Setup(r => r.Delete(Capture.In(deleteUserArguments)));
+        currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(true);
+        communicationService.Setup(x => x.SendRequest<ResponseDto>(It.IsAny<Request>())).ReturnsAsync(new ResponseDto());
 
         // Act
-        await providerService.Delete(providerToDeleteDto.Id).ConfigureAwait(false);
+        await providerService.Delete(providerToDeleteDto.Id, It.IsAny<string>()).ConfigureAwait(false);
+        var userToDeleteId = deleteUserArguments.Single();
         var result = mapper.Map<ProviderDto>(deleteMethodArguments.Single());//deleteMethodArguments.Single().ToModel();
 
         // Assert
         TestHelper.AssertDtosAreEqual(providerToDeleteDto, result);
+        Assert.AreEqual(providerToDeleteDto.UserId, userToDeleteId);
     }
 
-    // TODO: providerService.Delete method should be fixed before
-
     [Test]
-    public void Delete_WhenIdIsInvalid_ThrowsArgumentNullException()
+    public async Task Delete_WhenIdIsInvalid_ReturnNotFoundErrorResponse()
     {
         // Arrange
         var fakeProviderInvalidId = Guid.NewGuid();
-        var provider = new Provider()
-        {
-            Id = fakeProviderInvalidId,
-        };
-        providersRepositoryMock.Setup(p => p.Delete(provider)).Returns(Task.CompletedTask);
-        providersRepositoryMock.Setup(p => p.GetWithNavigations(provider.Id)).ThrowsAsync(new ArgumentNullException());
-
-        // Act and Assert
-        Assert.ThrowsAsync<ArgumentNullException>(
-            async () => await providerService.Delete(fakeProviderInvalidId).ConfigureAwait(false));
-    }
-
-    #endregion
-
-    #region UpdateStatus
-
-    [Test]
-    public async Task UpdateStatus_WhenDtoIsValid_UpdatesProviderEntity()
-    {
-        // Arrange
-        var provider = ProvidersGenerator.Generate();
-        provider.Status = ProviderStatus.Pending;
-        var dto = new ProviderStatusDto
-        {
-            ProviderId = provider.Id,
-            Status = ProviderStatus.Approved,
-        };
-
-        providersRepositoryMock.Setup(r => r.GetById(dto.ProviderId))
-            .ReturnsAsync(provider);
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
-            .ReturnsAsync(It.IsAny<int>());
-        notificationService
-            .Setup(s => s.Create(
-                NotificationType.Provider,
-                NotificationAction.Update,
-                dto.ProviderId,
-                providerService,
-                It.IsAny<Dictionary<string, string>>(),
-                null))
-            .Callback((
-                NotificationType type,
-                NotificationAction action,
-                Guid objectId,
-                INotificationReciever service,
-                Dictionary<string, string> additionalData,
-                string groupedData) => service.GetNotificationsRecipientIds(action, additionalData, objectId))
-            .Returns(Task.CompletedTask);
 
         // Act
-        var result = await providerService.UpdateStatus(dto, fakeUser.Id).ConfigureAwait(false);
+        var result = await providerService.Delete(fakeProviderInvalidId, It.IsAny<string>()).ConfigureAwait(false);
 
         // Assert
-        Assert.AreEqual(provider.Status, dto.Status);
+        Assert.AreEqual(HttpStatusCode.NotFound, result.Match(left => HttpStatusCode.NotFound, right => HttpStatusCode.OK));
     }
 
     [Test]
-    public async Task UpdateStatus_WhenProviderIdIsNonExistent_ReturnsNull()
+    public async Task Delete_WhenUserHasNoRights_ReturnForbiddenErrorResponse()
     {
         // Arrange
-        var dto = new ProviderStatusDto
-        {
-            ProviderId = Guid.NewGuid(),
-            Status = ProviderStatus.Approved,
-        };
-
-        providersRepositoryMock.Setup(r => r.GetById(dto.ProviderId))
-            .ReturnsAsync(null as Provider);
+        Guid providerToDeleteId = Guid.NewGuid();
+        string providerToDeleteUserId = fakeUser.Id;
+        providersRepositoryMock.Setup(p => p.GetWithNavigations(providerToDeleteId)).ReturnsAsync(new Provider() { UserId = providerToDeleteUserId });
+        currentUserServiceMock.Setup(p => p.UserId).Returns(string.Empty);
+        currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(false);
 
         // Act
-        var result = await providerService.UpdateStatus(dto, fakeUser.Id).ConfigureAwait(false);
+        var result = await providerService.Delete(providerToDeleteId, It.IsAny<string>()).ConfigureAwait(false);
 
         // Assert
-        Assert.IsNull(result);
+        Assert.AreEqual(HttpStatusCode.Forbidden, result.Match(left => HttpStatusCode.Forbidden, right => HttpStatusCode.OK));
     }
 
-    #endregion
-
-    #region UpdateLicenseStatus
-
     [Test]
-    public async Task UpdateLicenseStatus_WhenDtoIsValid_UpdatesProviderEntity()
+    public async Task Delete_WhenUserHasRightsAndIdIsValid_CommunicationServiceSendsRequest()
     {
         // Arrange
-        var provider = ProvidersGenerator.Generate();
-        provider.License = TestDataHelper.GetPositiveInt(10, 10).ToString();
-        provider.LicenseStatus = ProviderLicenseStatus.Pending;
-        var dto = new ProviderLicenseStatusDto
-        {
-            ProviderId = provider.Id,
-            LicenseStatus = ProviderLicenseStatus.Approved,
-        };
-
-        providersRepositoryMock.Setup(r => r.GetById(dto.ProviderId))
-            .ReturnsAsync(provider);
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
-            .ReturnsAsync(It.IsAny<int>());
-        notificationService
-            .Setup(s => s.Create(
-                NotificationType.Provider,
-                NotificationAction.Update,
-                dto.ProviderId,
-                providerService,
-                It.IsAny<Dictionary<string, string>>(),
-                null))
-            .Callback((
-                NotificationType type,
-                NotificationAction action,
-                Guid objectId,
-                INotificationReciever service,
-                Dictionary<string, string> additionalData,
-                string groupedData) => service.GetNotificationsRecipientIds(action, additionalData, objectId))
-            .Returns(Task.CompletedTask);
+        currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(true);
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
+    .ReturnsAsync(fakeProviders.FirstOrDefault());
+        communicationService.Setup(x => x.SendRequest<ResponseDto>(It.IsAny<Request>())).ReturnsAsync(new ResponseDto());
 
         // Act
-        var result = await providerService.UpdateLicenseStatus(dto, fakeUser.Id).ConfigureAwait(false);
+        await providerService.Delete(It.IsAny<Guid>(), It.IsAny<string>()).ConfigureAwait(false);
 
         // Assert
-        Assert.AreEqual(provider.LicenseStatus, dto.LicenseStatus);
-    }
-
-    [Test]
-    public async Task UpdateLicenseStatus_WhenProviderIdIsNonExistent_ReturnsNull()
-    {
-        // Arrange
-        var dto = new ProviderLicenseStatusDto
-        {
-            ProviderId = Guid.NewGuid(),
-            LicenseStatus = ProviderLicenseStatus.Approved,
-        };
-
-        providersRepositoryMock.Setup(r => r.GetById(dto.ProviderId))
-            .ReturnsAsync(null as Provider);
-
-        // Act
-        var result = await providerService.UpdateLicenseStatus(dto, fakeUser.Id).ConfigureAwait(false);
-
-        // Assert
-        Assert.IsNull(result);
-    }
-
-    [Test]
-    public void UpdateLicenseStatus_WhenProviderLicenseIsNull_ThrowsException()
-    {
-        // Arrange
-        var provider = ProvidersGenerator.Generate();
-        provider.License = null;
-        provider.LicenseStatus = ProviderLicenseStatus.NotProvided;
-        // provider.License = TestDataHelper.GetPositiveInt(10, 10).ToString();
-        var dto = new ProviderLicenseStatusDto
-        {
-            ProviderId = provider.Id,
-            LicenseStatus = ProviderLicenseStatus.Approved,
-        };
-
-        providersRepositoryMock.Setup(r => r.GetById(dto.ProviderId))
-            .ReturnsAsync(provider);
-
-        // Act and Assert
-        Assert.ThrowsAsync<ArgumentException>(
-            async () => await providerService.UpdateLicenseStatus(dto, fakeUser.Id));
-    }
-
-    [Test]
-    public void UpdateLicenseStatus_SetNotProvidedLicenseStatus_WhenProviderHasLicense_ThrowsException()
-    {
-        // Arrange
-        var provider = ProvidersGenerator.Generate();
-        provider.License = TestDataHelper.GetPositiveInt(10, 10).ToString();
-        provider.LicenseStatus = ProviderLicenseStatus.Pending;
-        var dto = new ProviderLicenseStatusDto
-        {
-            ProviderId = provider.Id,
-            LicenseStatus = ProviderLicenseStatus.NotProvided,
-        };
-
-        providersRepositoryMock.Setup(r => r.GetById(dto.ProviderId))
-            .ReturnsAsync(provider);
-
-        // Act and Assert
-        Assert.ThrowsAsync<ArgumentException>(
-            async () => await providerService.UpdateLicenseStatus(dto, fakeUser.Id));
-    }
-
-    #endregion
-
-    #region GetNotificationsRecipientIds
-
-    [Test]
-    public async Task GetNotificationsRecipientIds_WhenProviderNotFound_ReturnsEmptyList()
-    {
-        // Arrange
-        var provider = ProvidersGenerator.Generate();
-        var additionalData = new Dictionary<string, string>
-        {
-            { "Status", "Approved" },
-        };
-
-        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
-            .ReturnsAsync(null as Provider);
-
-        // Act
-        var recipientIds = await (providerService as INotificationReciever).GetNotificationsRecipientIds(
-            NotificationAction.Update,
-            additionalData,
-            provider.Id);
-
-        // Assert
-        Assert.IsEmpty(recipientIds);
-    }
-
-    [TestCaseSource(nameof(AdditionalTestData))]
-    public async Task GetNotificationsRecipientIds_WhenIsUpdatedStatusOrLicenseStatus_ReturnsProviderAdminsList(Dictionary<string, string> additionalData)
-    {
-        // Arrange
-        var provider = ProvidersGenerator.Generate();
-        var providerDeputiesIds = new List<string>
-        {
-            Guid.NewGuid().ToString(),
-            Guid.NewGuid().ToString(),
-        };
-
-        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
-            .ReturnsAsync(provider);
-        providerAdminService.Setup(s => s.GetProviderDeputiesIds(provider.Id))
-            .ReturnsAsync(providerDeputiesIds);
-
-        var expected = providerDeputiesIds.Concat(new[] { provider.UserId });
-
-        // Act
-        var recipientIds = await (providerService as INotificationReciever).GetNotificationsRecipientIds(
-            NotificationAction.Update,
-            additionalData,
-            provider.Id);
-
-        // Assert
-        CollectionAssert.IsSubsetOf(expected, recipientIds);
+        communicationService.Verify(x => x.SendRequest<ResponseDto>(It.IsAny<Request>()), Times.AtLeastOnce);
     }
 
     #endregion
@@ -955,39 +804,23 @@ public class ProviderServiceTests
     #region Block
 
     [Test]
-    public async Task Block_ReturnsProviderBlockDto_IfDtoIsValid()
+    public void Block_ReturnsArgumentNullException_IfDtoIsNull()
     {
         // Arrange
-        var provider = fakeProviders.First();
 
-        var providerBlockDto = new ProviderBlockDto()
-        {
-            Id = provider.Id,
-            IsBlocked = true,
-            BlockReason = "Test reason",
-        };
-
-        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
-            .ReturnsAsync(provider);
-        providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
-            .ReturnsAsync(It.IsAny<int>());
-        providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<ProviderBlockDto>>>()))
-            .ReturnsAsync(providerBlockDto);
-
-        // Act
-        var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
-
-        // Assert
-        Assert.AreEqual(providerBlockDto, result);
+        // Act, Assert
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await providerService.Block(null).ConfigureAwait(false));
     }
 
     [Test]
     public async Task Block_ReturnsNull_IfDtoIsNotValid()
     {
         // Arrange
+        var provider = ProvidersGenerator.Generate();
+
         var providerBlockDto = new ProviderBlockDto()
         {
-            Id = Guid.NewGuid(),
+            Id = provider.Id,
             IsBlocked = true,
             BlockReason = "Test reason",
         };
@@ -999,10 +832,302 @@ public class ProviderServiceTests
         var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
 
         // Assert
-        Assert.IsNull(result);
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.NotFound, result.HttpStatusCode);
+        Assert.IsNull(result.Result);
+    }
+
+    [Test]
+    public async Task Block_ReturnsProviderBlockDto_IfDtoIsValid()
+    {
+        // Arrange
+        var provider = ProvidersGenerator.Generate();
+
+        var providerBlockDto = new ProviderBlockDto()
+        {
+            Id = provider.Id,
+            IsBlocked = true,
+            BlockReason = "Test reason",
+        };
+
+        var recipientsIds = new List<string>() { provider.UserId };
+
+        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
+            .ReturnsAsync(provider);
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(It.IsAny<int>());
+        providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<ProviderBlockDto>>>()))
+            .ReturnsAsync(providerBlockDto);
+        currentUserServiceMock.Setup(x => x.IsAdmin())
+            .Returns(true);
+        currentUserServiceMock.Setup(x => x.IsMinistryAdmin())
+            .Returns(false);
+        currentUserServiceMock.Setup(x => x.IsRegionAdmin())
+            .Returns(false);
+        currentUserServiceMock.Setup(x => x.IsAreaAdmin())
+            .Returns(false);
+        notificationService.Setup(s => s.Create(
+                NotificationType.Provider,
+                NotificationAction.Block,
+                provider.Id,
+                recipientsIds,
+                It.IsAny<Dictionary<string, string>>(),
+                null))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsTrue(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.OK, result.HttpStatusCode);
+        Assert.AreEqual(providerBlockDto, result.Result);
+    }
+
+    [Test]
+    public async Task Block_ReturnsProviderBlockDto_IfMinistryAdminHasRights()
+    {
+        // Arrange
+        var institutionId = Guid.NewGuid();
+
+        var provider = ProvidersGenerator.Generate();
+        provider.InstitutionId = institutionId;
+
+        MinistryAdminDto ministryAdmin = AdminGenerator.GenerateMinistryAdminDto();
+        ministryAdmin.InstitutionId = institutionId;
+
+        var providerBlockDto = new ProviderBlockDto()
+        {
+            Id = provider.Id,
+            IsBlocked = true,
+            BlockReason = "Test reason",
+        };
+
+        var recipientsIds = new List<string>() { provider.UserId };
+
+        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
+            .ReturnsAsync(provider);
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(It.IsAny<int>());
+        providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<ProviderBlockDto>>>()))
+            .ReturnsAsync(providerBlockDto);
+        ministryAdminServiceMock.Setup(x => x.GetByUserId(It.IsAny<string>()))
+            .Returns(Task.FromResult(ministryAdmin));
+        currentUserServiceMock.Setup(x => x.IsAdmin())
+            .Returns(true);
+        currentUserServiceMock.Setup(x => x.IsMinistryAdmin())
+            .Returns(true);
+        currentUserServiceMock.Setup(x => x.IsAreaAdmin())
+            .Returns(false);
+        notificationService.Setup(s => s.Create(
+                NotificationType.Provider,
+                NotificationAction.Block,
+                provider.Id,
+                recipientsIds,
+                It.IsAny<Dictionary<string, string>>(),
+                null))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsTrue(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.OK, result.HttpStatusCode);
+        Assert.AreEqual(providerBlockDto, result.Result);
+    }
+
+    [Test]
+    public async Task Block_ReturnsProviderBlockDto_IfRegionAdminHasRights()
+    {
+        // Arrange
+        var institutionId = Guid.NewGuid();
+        var catottgId = 12345;
+
+        var provider = ProvidersGenerator.Generate();
+        provider.InstitutionId = institutionId;
+        provider.LegalAddress.CATOTTGId = catottgId;
+
+        RegionAdminDto regionAdmin = AdminGenerator.GenerateRegionAdminDto();
+        regionAdmin.InstitutionId = institutionId;
+        regionAdmin.CATOTTGId = catottgId;
+
+        var providerBlockDto = new ProviderBlockDto()
+        {
+            Id = provider.Id,
+            IsBlocked = true,
+            BlockReason = "Test reason",
+        };
+
+        var recipientsIds = new List<string>() { provider.UserId };
+
+        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
+            .ReturnsAsync(provider);
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(It.IsAny<int>());
+        providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<ProviderBlockDto>>>()))
+            .ReturnsAsync(providerBlockDto);
+        regionAdminServiceMock.Setup(x => x.GetByUserId(It.IsAny<string>()))
+            .Returns(Task.FromResult(regionAdmin));
+        currentUserServiceMock.Setup(x => x.IsAdmin())
+            .Returns(true);
+        currentUserServiceMock.Setup(x => x.IsRegionAdmin())
+            .Returns(true);
+        currentUserServiceMock.Setup(x => x.IsAreaAdmin())
+            .Returns(false);
+        codeficatorServiceMock.Setup(x => x.GetAllChildrenIdsByParentIdAsync(It.IsAny<long>()))
+            .Returns(Task.FromResult((IEnumerable<long>)new List<long> { catottgId }));
+        notificationService.Setup(s => s.Create(
+                NotificationType.Provider,
+                NotificationAction.Block,
+                provider.Id,
+                recipientsIds,
+                It.IsAny<Dictionary<string, string>>(),
+                null))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsTrue(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.OK, result.HttpStatusCode);
+        Assert.AreEqual(providerBlockDto, result.Result);
+    }
+
+    [Test]
+    public async Task Block_ReturnsProviderBlockDto_IfAreaAdminHasRights()
+    {
+        // Arrange
+        var institutionId = Guid.NewGuid();
+        var catottgId = 12345;
+
+        var provider = ProvidersGenerator.Generate();
+        provider.InstitutionId = institutionId;
+        provider.LegalAddress.CATOTTGId = catottgId;
+
+        AreaAdminDto areaAdmin = AdminGenerator.GenerateAreaAdminDto();
+        areaAdmin.InstitutionId = institutionId;
+        areaAdmin.CATOTTGId = catottgId;
+
+        var providerBlockDto = new ProviderBlockDto()
+        {
+            Id = provider.Id,
+            IsBlocked = true,
+            BlockReason = "Test reason",
+        };
+
+        var recipientsIds = new List<string>() { provider.UserId };
+
+        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
+            .ReturnsAsync(provider);
+        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(It.IsAny<int>());
+        providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<ProviderBlockDto>>>()))
+            .ReturnsAsync(providerBlockDto);
+        areaAdminServiceMock.Setup(x => x.GetByUserId(It.IsAny<string>()))
+            .Returns(Task.FromResult(areaAdmin));
+        currentUserServiceMock.Setup(x => x.IsAdmin())
+            .Returns(true);
+        currentUserServiceMock.Setup(x => x.IsRegionAdmin())
+            .Returns(false);
+        currentUserServiceMock.Setup(x => x.IsAreaAdmin())
+            .Returns(true);
+        codeficatorServiceMock.Setup(x => x.GetAllChildrenIdsByParentIdAsync(It.IsAny<long>()))
+            .Returns(Task.FromResult((IEnumerable<long>)new List<long> { catottgId }));
+        notificationService.Setup(s => s.Create(
+                NotificationType.Provider,
+                NotificationAction.Block,
+                provider.Id,
+                recipientsIds,
+                It.IsAny<Dictionary<string, string>>(),
+                null))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsTrue(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.OK, result.HttpStatusCode);
+        Assert.AreEqual(providerBlockDto, result.Result);
+    }
+
+    [Test]
+    public async Task Block_ReturnsNull_IfNotAdmin()
+    {
+        // Arrange
+        var provider = ProvidersGenerator.Generate();
+
+        var providerBlockDto = new ProviderBlockDto()
+        {
+            Id = provider.Id,
+            IsBlocked = true,
+            BlockReason = "Test reason",
+        };
+
+        providersRepositoryMock.Setup(r => r.GetById(providerBlockDto.Id))
+            .ReturnsAsync(provider);
+
+        currentUserServiceMock.Setup(x => x.IsAdmin())
+            .Returns(false);
+
+        // Act
+        var result = await providerService.Block(providerBlockDto).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.Forbidden, result.HttpStatusCode);
+        Assert.IsNull(result.Result);
     }
 
     #endregion Block
+
+    #region ValidateImportData
+
+    [Test]
+    public void ValidateImportData_ReturnsArgumentNullException_IfDtoIsNull()
+    {
+        // Arrange
+
+        // Act, Assert
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await providerService.ValidateImportData(null).ConfigureAwait(false));
+    }
+
+    [Test]
+    [TestCase(false, false)]
+    [TestCase(true, false)]
+    [TestCase(false, true)]
+    [TestCase(true, true)]
+    public async Task ValidateImportData_ExecuteGettingData_IfDtoIsValid(bool checkEdrpous, bool checkEmails)
+    {
+        // Arrange
+        var timesEdrpous = Times.Never;
+        var timesEmails = Times.Never;
+
+        var data = new ImportDataValidateRequest();
+
+        if (checkEdrpous)
+        {
+            data.Edrpous.Add(1, "test");
+            timesEdrpous = Times.Once;
+        }
+
+        if (checkEmails)
+        {
+            data.Emails.Add(1, "test");
+            timesEmails = Times.Once;
+        }
+
+        // Act
+        var result = await providerService.ValidateImportData(data).ConfigureAwait(false);
+
+        // Assert
+        providersRepositoryMock.Verify(x => x.CheckExistsByEdrpous(data.Edrpous), timesEdrpous);
+        providersRepositoryMock.Verify(x => x.CheckExistsByEmails(data.Emails), timesEmails);
+    }
+
+    #endregion ValidateImportData
 
     #region TestDataSets
 
@@ -1030,9 +1155,9 @@ public class ProviderServiceTests
 
     #endregion
 
-    private static Mock<IEntityRepository<string, User>> CreateUsersRepositoryMock(User fakeUser)
+    private static Mock<IEntityRepositorySoftDeleted<string, User>> CreateUsersRepositoryMock(User fakeUser)
     {
-        var usersRepository = new Mock<IEntityRepository<string, User>>();
+        var usersRepository = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         usersRepository.Setup(r => r.GetAll()).Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
         usersRepository.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), string.Empty)).Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
 

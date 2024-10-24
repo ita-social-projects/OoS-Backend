@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base;
 
 namespace OutOfSchool.Services.Repository;
 
-public class WorkshopRepository : SensitiveEntityRepository<Workshop>, IWorkshopRepository
+public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>, IWorkshopRepository
 {
     private readonly OutOfSchoolDbContext db;
 
@@ -30,14 +33,22 @@ public class WorkshopRepository : SensitiveEntityRepository<Workshop>, IWorkshop
         await db.SaveChangesAsync();
     }
 
-    public async Task<Workshop> GetWithNavigations(Guid id)
+    /// <inheritdoc/>
+    public async Task<Workshop> GetWithNavigations(Guid id, bool asNoTracking = false)
     {
-        return await db.Workshops
+        IQueryable<Workshop> query = db.Workshops
             .Include(ws => ws.Address)
             .Include(ws => ws.Teachers)
             .Include(ws => ws.DateTimeRanges)
             .Include(ws => ws.Images)
-            .SingleOrDefaultAsync(ws => ws.Id == id);
+            .Include(ws => ws.Tags);
+
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
+
+        return await query.SingleOrDefaultAsync(ws => ws.Id == id && !ws.IsDeleted);
     }
 
     public async Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids)
@@ -45,13 +56,14 @@ public class WorkshopRepository : SensitiveEntityRepository<Workshop>, IWorkshop
         return await dbSet.Where(w => ids.Contains(w.Id)).ToListAsync();
     }
 
-    public async Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle)
+    public async Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle, string providerTitleEn)
     {
         var workshops = db.Workshops.Where(ws => ws.ProviderId == providerId);
-        await workshops.ForEachAsync(ws =>
-        {
-            ws.ProviderTitle = providerTitle;
-        });
+
+        await workshops.ExecuteUpdateAsync(settter => settter
+                .SetProperty(ws => ws.ProviderTitle, providerTitle)
+                .SetProperty(ws => ws.ProviderTitleEn, providerTitleEn))
+            .ConfigureAwait(false);
 
         await db.SaveChangesAsync();
 
@@ -83,5 +95,18 @@ public class WorkshopRepository : SensitiveEntityRepository<Workshop>, IWorkshop
         await dbContext.SaveChangesAsync().ConfigureAwait(false);
 
         return await Task.FromResult(workshop).ConfigureAwait(false);
+    }
+
+    public Task<List<Workshop>> GetAllWithDeleted(Expression<Func<Workshop, bool>> whereExpression)
+    {
+        IQueryable<Workshop> query = db.Workshops;
+
+        if (whereExpression != null)
+        {
+            query = query.Where(whereExpression);
+        }
+
+        return query.ToListAsync();
+
     }
 }

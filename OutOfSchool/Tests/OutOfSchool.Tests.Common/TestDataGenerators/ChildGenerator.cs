@@ -54,6 +54,24 @@ public static class ChildGenerator
         return children;
     }
 
+    public static Child WithGeneratedParent(this Child child)
+    {
+        _ = child ?? throw new ArgumentNullException(nameof(child));
+
+        child.WithParent(ParentGenerator.Generate());
+
+        return child;
+    }
+
+    public static List<Child> WithGeneratedParent(this List<Child> children)
+    {
+        _ = children ?? throw new ArgumentNullException(nameof(children));
+
+        children.ForEach(x => x.WithParent(ParentGenerator.Generate()));
+
+        return children;
+    }
+
     public static Child WithSocial(this Child child, SocialGroup socialGroup)
     {
         _ = child ?? throw new ArgumentNullException(nameof(child));

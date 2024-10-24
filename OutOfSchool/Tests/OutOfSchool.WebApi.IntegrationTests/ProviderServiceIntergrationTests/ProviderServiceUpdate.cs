@@ -1,23 +1,33 @@
-namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests;
-
-using OutOfSchool.WebApi.Services.Images;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Config;
+using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.BusinessLogic.Services.Images;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Common.Communication.ICommunication;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Models.Providers;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
-using OutOfSchool.WebApi.Services.AverageRatings;
+
+namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests;
 
 [TestFixture]
 public class ProviderServiceUpdate
@@ -42,14 +52,14 @@ public class ProviderServiceUpdate
             await context.SaveChangesAsync();
         }
 
-        this.mapper = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile(typeof(MappingProfile))));
+        this.mapper = new Mapper(new MapperConfiguration(cfg => cfg.UseProfile<CommonProfile>().UseProfile<MappingProfile>()));
 
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderService>>();
-        var addressRepository = new Mock<IEntityRepository<long, Address>>();
+        var addressRepository = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
         var providerRepository = new ProviderRepository(GetContext());
         var providerAdminRepository = new Mock<IProviderAdminRepository>();
-        var userRepository = new Mock<IEntityRepository<string, User>>();
+        var userRepository = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
         var providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
         var changesLogService = new Mock<IChangesLogService>();
@@ -62,6 +72,12 @@ public class ProviderServiceUpdate
         var codeficatorService = new Mock<ICodeficatorService>();
         var regionAdminRepository = new Mock<IRegionAdminRepository>();
         var averageRatingService = new Mock<IAverageRatingService>();
+        var areaAdminServiceMock = new Mock<IAreaAdminService>();
+        var areaAdminRepositoryMock = new Mock<IAreaAdminRepository>();
+        var userServiceMock = new Mock<IUserService>();
+        var authorizationServerConfigMock = Options.Create(new AuthorizationServerConfig());
+        var communicationServiceMock = new Mock<ICommunicationService>();
+        var searchStringServiceMock = new Mock<ISearchStringService>();
 
         this.providerService = new ProviderService(
             providerRepository,
@@ -82,7 +98,13 @@ public class ProviderServiceUpdate
             regionAdminService.Object,
             codeficatorService.Object,
             regionAdminRepository.Object,
-            averageRatingService.Object);
+            averageRatingService.Object,
+            areaAdminServiceMock.Object,
+            areaAdminRepositoryMock.Object,
+            userServiceMock.Object,
+            authorizationServerConfigMock,
+            communicationServiceMock.Object,
+            searchStringServiceMock.Object);
     }
 
     [Test]

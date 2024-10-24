@@ -12,4 +12,8 @@ public enum NotificationAction
     Delete,
     Message,
     LicenseApproval,
+    Block,
+    Unblock,
+    ProviderBlock,
+    ProviderUnblock,
 }

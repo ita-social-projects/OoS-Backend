@@ -8,7 +8,9 @@ namespace OutOfSchool.ElasticsearchData.Models;
 
 public class WorkshopFilterES
 {
-    public List<Guid> Ids { get; set; } = null;
+    public static readonly TimeSpan MaxTimeInDay = new(23, 59, 59);
+
+    public List<Guid> Ids { get; set; } = [];
 
     public string SearchText { get; set; } = string.Empty;
 
@@ -34,7 +36,7 @@ public class WorkshopFilterES
 
     public TimeSpan MinStartTime { get; set; } = new TimeSpan(0, 0, 0);
 
-    public TimeSpan MaxStartTime { get; set; } = new TimeSpan(23, 59, 59);
+    public TimeSpan MaxStartTime { get; set; } = MaxTimeInDay;
 
     public int Size { get; set; } = 12;
 
@@ -57,4 +59,6 @@ public class WorkshopFilterES
     public string ElasticRadius { get; set; } = GeoMathHelper.ElasticRadius;
 
     public Guid? InstitutionId { get; set; } = Guid.Empty;
+
+    public IReadOnlyCollection<FormOfLearning> FormOfLearning { get; set; } = new List<FormOfLearning>();
 }

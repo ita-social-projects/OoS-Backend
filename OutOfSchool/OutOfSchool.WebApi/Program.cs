@@ -13,7 +13,7 @@ builder.Host.UseSerilog((ctx, lc) => lc
 GlobalLogContext.PushProperty("AppVersion", builder.Configuration.GetSection("AppDefaults:Version").Value);
 
 // Add services to the container.
-builder.AddApplicationServices();
+await builder.AddApplicationServices();
 
 var app = builder.Build();
 
@@ -22,12 +22,12 @@ app.Configure();
 
 try
 {
-    Log.Information("Application has started.");
+    Log.Information("Application has started");
     app.Run();
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "Application failed to start.");
+    Log.Fatal(ex, "Application failed to start");
 }
 finally
 {

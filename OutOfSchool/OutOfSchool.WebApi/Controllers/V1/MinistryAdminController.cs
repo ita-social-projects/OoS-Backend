@@ -1,17 +1,17 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Controllers;
 
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class MinistryAdminController : Controller
 {
@@ -88,35 +88,11 @@ public class MinistryAdminController : Controller
     }
 
     /// <summary>
-    /// Get MinistryAdmins that match filter's parameters.
-    /// </summary>
-    /// <param name="filter">Entity that represents searching parameters.</param>
-    /// <returns><see cref="SearchResult{MinistryAdminDto}"/>, or no content.</returns>
-    [HasPermission(Permissions.MinistryAdminRead)]
-    [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<MinistryAdminDto>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByFilter([FromQuery] MinistryAdminFilter filter)
-    {
-        var ministryAdmins = await ministryAdminService.GetByFilter(filter).ConfigureAwait(false);
-
-        if (ministryAdmins.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(ministryAdmins);
-    }
-
-    /// <summary>
     /// Method for creating new MinistryAdmin.
     /// </summary>
     /// <param name="ministryAdminBase">Entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(MinistryAdminBaseDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -125,7 +101,7 @@ public class MinistryAdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HasPermission(Permissions.MinistryAdminAddNew)]
     [HttpPost]
-    public async Task<ActionResult> Create(MinistryAdminBaseDto ministryAdminBase)
+    public async Task<ActionResult> Create([FromBody] MinistryAdminBaseDto ministryAdminBase)
     {
         logger.LogDebug("{Path} started. User(id): {UserId}", path, userId);
 
@@ -143,7 +119,7 @@ public class MinistryAdminController : Controller
             .ConfigureAwait(false);
 
         return response.Match<ActionResult>(
-            error => StatusCode((int)error.HttpStatusCode, error.Message),
+            error => StatusCode((int)error.HttpStatusCode, new { error.Message, error.ApiErrorResponse }),
             result =>
             {
                 logger.LogInformation("Successfully created MinistryAdmin(id): {result.UserId} by User(id): {UserId}", result.UserId, userId);
@@ -154,15 +130,16 @@ public class MinistryAdminController : Controller
     /// <summary>
     /// To update MinistryAdmin entity that already exists.
     /// </summary>
-    /// <param name="updateMinistryAdminDto">MinistryAdminDto object with new properties.</param>
+    /// <param name="updateMinistryAdminDto">BaseUserDto object with new properties.</param>
     /// <returns>MinistryAdmin's key.</returns>
     [HasPermission(Permissions.MinistryAdminEdit)]
     [HttpPut]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MinistryAdminDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Update(MinistryAdminDto updateMinistryAdminDto)
+    public async Task<ActionResult> Update([FromBody] BaseUserDto updateMinistryAdminDto)
     {
         if (updateMinistryAdminDto == null)
         {

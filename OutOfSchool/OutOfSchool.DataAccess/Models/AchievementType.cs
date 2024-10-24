@@ -1,9 +1,8 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models;
 
-public class AchievementType : IKeyedEntity<long>
+public class AchievementType : IKeyedEntity<long>, ISoftDeleted
 {
     public long Id { get; set; }
 
@@ -17,4 +16,6 @@ public class AchievementType : IKeyedEntity<long>
     [MaxLength(200)]
     [MinLength(1)]
     public string TitleEn { get; set; }
+
+    public bool IsDeleted { get; set; }
 }

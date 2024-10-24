@@ -6,14 +6,16 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models.Codeficator;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Tests.Common;
-using OutOfSchool.WebApi.Models.Codeficator;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -36,7 +38,7 @@ public class CodeficatorServiceTests
         options = builder.Options;
         context = new OutOfSchoolDbContext(options);
 
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         repository = new CodeficatorRepository(context);
         service = new CodeficatorService(repository, mapper);
 

@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OutOfSchool.BusinessLogic\OutOfSchool.BusinessLogic.csproj" />
+    <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
+  </ItemGroup>
+
+</Project>

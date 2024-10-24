@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <CodeAnalysisRuleSet>..\StyleCopAnalyzersRules.ruleset</CodeAnalysisRuleSet>
+        <TargetFramework>net8.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="coverlet.msbuild">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="FluentAssertions" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+        <PackageReference Include="Microsoft.AspNet.Identity.Core" />
+        <PackageReference Include="Moq" />
+        <PackageReference Include="Bogus" />
+        <PackageReference Include="NUnit" />
+        <PackageReference Include="NUnit3TestAdapter" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="System.Linq.Async" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\OutOfSchool.AuthorizationServer\OutOfSchool.AuthorizationServer.csproj" />
+        
+        <!-- GrpcService namespace is present in both WebApi (transitive of Tests.Common) and in AuthCommon.
+             Need to exclude transitives, or the tests using GrpcService namespace won't compile-->
+        <ProjectReference Include="..\Tests\OutOfSchool.Tests.Common\OutOfSchool.Tests.Common.csproj" ExcludeAssets="all" />
+    </ItemGroup>
+</Project>

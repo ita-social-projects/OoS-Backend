@@ -1,12 +1,24 @@
-﻿using System;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.WebApi.Extensions;
 
 public static class ControllerExtension
 {
+    public static IActionResult SearchResultToOkOrNoContent<T>(this ControllerBase controller, SearchResult<T> searchResult)
+    {
+        ExtensionValidation(controller);
+
+        // searchResult.TotalAmount < searchResult.Entities.Count - checking bug variant
+        if (searchResult.IsNullOrEmpty() || searchResult.TotalAmount < searchResult.Entities?.Count)
+        {
+            return controller.NoContent();
+        }
+
+        return controller.Ok(searchResult);
+    }
+
     public static string GetJwtClaimByName(this ControllerBase controller, string claimName)
     {
         ExtensionValidation(controller);

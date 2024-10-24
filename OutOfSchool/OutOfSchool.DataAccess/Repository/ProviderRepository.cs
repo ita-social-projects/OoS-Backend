@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base;
 
 namespace OutOfSchool.Services.Repository;
 
-public class ProviderRepository : SensitiveEntityRepository<Provider>, IProviderRepository
+public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>, IProviderRepository
 {
     private readonly OutOfSchoolDbContext db;
 
@@ -21,14 +24,14 @@ public class ProviderRepository : SensitiveEntityRepository<Provider>, IProvider
     /// </summary>
     /// <param name="entity">Entity.</param>
     /// <returns>Bool.</returns>
-    public bool SameExists(Provider entity) => db.Providers.Any(x => x.EdrpouIpn == entity.EdrpouIpn || x.Email == entity.Email);
+    public bool SameExists(Provider entity) => db.Providers.Any(x => !x.IsDeleted && (x.EdrpouIpn == entity.EdrpouIpn || x.Email == entity.Email));
 
     /// <summary>
     /// Checks if the user is trying to create second account.
     /// </summary>
     /// <param name="id">User id.</param>
     /// <returns>Bool.</returns>
-    public bool ExistsUserId(string id) => db.Providers.Any(x => x.UserId == id);
+    public bool ExistsUserId(string id) => db.Providers.Any(x => !x.IsDeleted && x.UserId == id);
 
     /// <summary>
     /// Tries to insert a new <see cref="Provider"/> entity with all related objects into the database.
@@ -78,6 +81,49 @@ public class ProviderRepository : SensitiveEntityRepository<Provider>, IProvider
          .Include(x => x.LegalAddress) // TODO: Doesn't work softDelete using Include, only using loop below in Delete() method
          .Include(x => x.Workshops)
          .ThenInclude(w => w.Applications)
-         .SingleOrDefaultAsync(provider => provider.Id == id);
+         .SingleOrDefaultAsync(provider => !provider.IsDeleted && provider.Id == id);
+    }
+
+    public Task<List<Provider>> GetAllWithDeleted(DateTime updatedAfter, int from, int size)
+    {
+        IQueryable<Provider> query = db.Providers;
+
+        query = updatedAfter == default
+            ? query.Where(provider => !provider.IsDeleted)
+            : query.Where(provider => provider.UpdatedAt > updatedAfter || provider.Workshops.Any(w => w.UpdatedAt > updatedAfter));
+
+        return query.Skip(from).Take(size).ToListAsync();
+    }
+
+    public Task<int> CountWithDeleted(DateTime updatedAfter)
+    {
+        IQueryable<Provider> query = dbSet;
+
+        query = updatedAfter == default
+        ? query.Where(provider => !provider.IsDeleted)
+        : query.Where(provider => provider.UpdatedAt > updatedAfter || provider.Workshops.Any(w => w.UpdatedAt > updatedAfter));
+
+        return query.CountAsync();
+    }
+
+    public async Task<List<int>> CheckExistsByEdrpous(Dictionary<int, string> edrpous)
+    {
+        var existingEdrpouIpn = await db.Providers
+            .Where(x => edrpous.Values.Contains(x.EdrpouIpn))
+            .Select(x => x.EdrpouIpn)
+            .ToListAsync();
+
+        return edrpous.Where(x => existingEdrpouIpn.Contains(x.Value)).Select(x => x.Key).ToList();
+    }
+
+    public async Task<List<int>> CheckExistsByEmails(Dictionary<int, string> emails)
+    {
+        var existingEmails = await db.Providers
+            .Include(x => x.User)
+            .Where(x => emails.Values.Contains(x.User.Email))
+            .Select(x => x.User.Email)
+            .ToListAsync();
+
+        return emails.Where(x => existingEmails.Contains(x.Value)).Select(x => x.Key).ToList();
     }
 }

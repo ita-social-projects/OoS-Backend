@@ -1,17 +1,17 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using AutoMapper;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.Tests.Common;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -20,19 +20,18 @@ public class MinistryAdminControllerTests
 {
     private MinistryAdminController ministryAdminController;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
-    private IMapper mapper;
     private MinistryAdminDto ministryAdminDto;
-    private List<MinistryAdminDto> ministryAdminDtos;
+    private HttpContext fakeHttpContext;
 
     [SetUp]
     public void Setup()
     {
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         ministryAdminController =
             new MinistryAdminController(ministryAdminServiceMock.Object, new Mock<ILogger<MinistryAdminController>>().Object);
         ministryAdminDto = AdminGenerator.GenerateMinistryAdminDto();
-        ministryAdminDtos = AdminGenerator.GenerateMinistryAdminsDtos(10);
+        fakeHttpContext = GetFakeHttpContext();
+        ministryAdminController.ControllerContext.HttpContext = fakeHttpContext;
     }
 
     [Test]
@@ -66,38 +65,48 @@ public class MinistryAdminControllerTests
     }
 
     [Test]
-    public async Task GetMinistryAdmins_WhenCalled_ReturnsOkResultObject_WithExpectedCollectionDtos()
+    public async Task Update_WithNullModel_ReturnsBadRequestObjectResult()
     {
         // Arrange
-        var expected = new SearchResult<MinistryAdminDto>
-        {
-            TotalAmount = 10,
-            Entities = ministryAdminDtos.Select(x => mapper.Map<MinistryAdminDto>(x)).ToList(),
-        };
-
-        ministryAdminServiceMock.Setup(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>()))
-            .ReturnsAsync(expected);
+        ministryAdminController.ModelState.Clear();
 
         // Act
-        var result = await ministryAdminController.GetByFilter(new MinistryAdminFilter()).ConfigureAwait(false) as OkObjectResult;
+        var result = await ministryAdminController.Update(null);
 
         // Assert
-        ministryAdminServiceMock.VerifyAll();
-        result.AssertResponseOkResultAndValidateValue(expected);
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
     }
 
-    [Test]
-    public async Task GetByFilter_WhenNoRecordsInDB_ReturnsNoContentResult()
+    private HttpContext GetFakeHttpContext()
     {
-        // Arrange
-        ministryAdminServiceMock.Setup(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>()))
-            .ReturnsAsync(new SearchResult<MinistryAdminDto> { TotalAmount = 0, Entities = new List<MinistryAdminDto>() });
+        var authProps = new AuthenticationProperties();
 
-        // Act
-        var result = await ministryAdminController.GetByFilter(new MinistryAdminFilter()).ConfigureAwait(false);
+        authProps.StoreTokens(new List<AuthenticationToken>
+        {
+            new() { Name = "access_token", Value = "accessTokenValue"},
+        });
 
-        // Assert
-        ministryAdminServiceMock.VerifyAll();
-        Assert.IsInstanceOf<NoContentResult>(result);
+        var authResult = AuthenticateResult
+            .Success(new AuthenticationTicket(new ClaimsPrincipal(), authProps, It.IsAny<string>()));
+
+        var authenticationServiceMock = new Mock<IAuthenticationService>();
+
+        authenticationServiceMock
+            .Setup(x => x.AuthenticateAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
+            .ReturnsAsync(authResult);
+
+        var serviceProviderMock = new Mock<IServiceProvider>();
+
+        serviceProviderMock
+            .Setup(s => s.GetService(typeof(IAuthenticationService)))
+            .Returns(authenticationServiceMock.Object);
+
+        var context = new DefaultHttpContext()
+        {
+            RequestServices = serviceProviderMock.Object,
+        };
+
+        return context;
     }
 }

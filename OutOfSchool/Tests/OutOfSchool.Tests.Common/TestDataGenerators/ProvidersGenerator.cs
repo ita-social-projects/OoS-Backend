@@ -22,6 +22,7 @@ public static class ProvidersGenerator
         .RuleFor(x => x.Instagram, f => f.Internet.Url())
         .RuleFor(x => x.DirectorDateOfBirth, f => f.Person.DateOfBirth)
         .RuleFor(x => x.EdrpouIpn, _ => TestDataHelper.EdrpouIpnString)
+        .RuleFor(x => x.Email, _ => TestDataHelper.GetRandomEmail())
         .RuleFor(x => x.PhoneNumber, f => f.Person.Phone)
         .RuleFor(x => x.Founder, f => f.Person.FullName)
         .RuleFor(x => x.Ownership, f => f.Random.ArrayElement((OwnershipType[])Enum.GetValues(typeof(OwnershipType))))
@@ -29,22 +30,32 @@ public static class ProvidersGenerator
         .RuleFor(x => x.Status, f => f.Random.ArrayElement((ProviderStatus[])Enum.GetValues(typeof(ProviderStatus))))
         .RuleFor(x => x.License, f => f.Random.AlphaNumeric(15))
         .RuleFor(x => x.UserId, f => f.Random.Guid().ToString())
-        .RuleFor(x => x.LegalAddress, _ => AddressGenerator.Generate())
-        .RuleFor(x => x.ActualAddress, _ => AddressGenerator.Generate())
         .RuleFor(x => x.InstitutionType, f => f.PickRandom<InstitutionType>())
-        .RuleFor(x => x.IsBlocked, _ => false);
+        .RuleFor(x => x.IsBlocked, _ => false)
+        .RuleFor(x => x.UpdatedAt, _ => DateTime.Now);
 
     /// <summary>
     /// Creates new instance of the <see cref="Provider"/> class with random data.
     /// </summary>
     /// <returns><see cref="Provider"/> object.</returns>
-    public static Provider Generate() => faker.Generate();
+    public static Provider Generate() => faker.Generate().WithAddress();
 
     /// <summary>
     /// Generates a list of the <see cref="Provider"/> objects.
     /// </summary>
     /// <param name="count">count of instances to generate.</param>
-    public static List<Provider> Generate(int count) => faker.Generate(count);
+    public static List<Provider> Generate(int count) => faker.Generate(count).WithAddress();
+
+    public static Provider WithAddress(this Provider provider)
+    {
+        var address = AddressGenerator.Generate();
+        provider = TestDataHelper.ApplyOnItem(provider, (provider, address) => { provider.LegalAddress = address; provider.LegalAddressId = address.Id; }, address);
+        address = AddressGenerator.Generate();
+        return TestDataHelper.ApplyOnItem(provider, (provider, address) => { provider.ActualAddress = address; provider.ActualAddressId = address.Id; }, address);
+    }
+
+    public static List<Provider> WithAddress(this List<Provider> workshops)
+        => workshops.Select(x => WithAddress(x)).ToList();
 
     public static Provider WithWorkshops(this Provider provider)
     {
@@ -80,4 +91,14 @@ public static class ProvidersGenerator
         }
         return providers;
     }
+
+    public static Provider WithUser(this Provider provider)
+    {
+        provider.User = UserGenerator.Generate();
+        provider.UserId = provider.User.Id;
+        return provider;
+    }
+
+    public static List<Provider> WithUser(this List<Provider> providers)
+        => providers.Select(x => x.WithUser()).ToList();
 }

@@ -2,9 +2,11 @@
 
 namespace OutOfSchool.Services.Models;
 
-public class CATOTTG : IKeyedEntity<long>
+public class CATOTTG : IKeyedEntity<long>, ISoftDeleted
 {
     public long Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     [MaxLength(20)]
     public string Code { get; set; } = string.Empty;

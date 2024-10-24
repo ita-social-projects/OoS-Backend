@@ -18,9 +18,7 @@ public class ProviderAdminChangesLog : IKeyedEntity<long>
 
     public virtual Provider Provider { get; set; }
 
-    public Guid? ManagedWorkshopId { get; set; }
-
-    public virtual Workshop ManagedWorkshop { get; set; }
+    public bool IsDeputy { get; set; }
 
     [Required]
     public OperationType OperationType { get; set; }
@@ -32,4 +30,14 @@ public class ProviderAdminChangesLog : IKeyedEntity<long>
     public string UserId { get; set; }
 
     public virtual User User { get; set; }
+
+    [Required]
+    [MaxLength(128)]
+    public string PropertyName { get; set; }
+
+    [MaxLength(500)]
+    public string OldValue { get; set; }
+
+    [MaxLength(500)]
+    public string NewValue { get; set; }
 }

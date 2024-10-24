@@ -1,23 +1,8 @@
-using System;
-using Castle.Core.Configuration;
 using Google.Cloud.Storage.V1;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using OutOfSchool.BusinessLogic.Util.FakeImplementations;
 using OutOfSchool.Services.Contexts;
-using OutOfSchool.Services.Contexts.Configuration;
-using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Repository.Files;
-using OutOfSchool.WebApi.Common.QuartzConstants;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Config.Quartz;
-using OutOfSchool.WebApi.Services.Elasticsearch;
-using OutOfSchool.WebApi.Services.Gcp;
-using OutOfSchool.WebApi.Services.Images;
-using OutOfSchool.WebApi.Util;
-using OutOfSchool.WebApi.Util.FakeImplementations;
-using Quartz;
 
 namespace OutOfSchool.WebApi.Extensions.Startup;
 
@@ -55,30 +40,5 @@ public static class FileStorageExtensions
 
         return services.AddScoped<IImageFilesStorage, GcpImagesStorage>(provider
             => new GcpImagesStorage(provider.GetRequiredService<IGcpStorageContext>()));
-    }
-
-    /// <summary>
-    /// Adds all essential methods to synchronize gcp files with the main database.
-    /// </summary>
-    /// <param name="quartz">Quartz Configurator.</param>
-    /// <param name="services">Service collection.</param>
-    /// <param name="quartzConfig">Quartz configuration.</param>
-    /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
-    public static void AddGcpSynchronization(this IServiceCollectionQuartzConfigurator quartz, IServiceCollection services, QuartzConfig quartzConfig)
-    {
-        _ = services ?? throw new ArgumentNullException(nameof(services));
-        _ = quartzConfig ?? throw new ArgumentNullException(nameof(quartzConfig));
-
-        services.AddScoped<IGcpImagesSyncDataRepository, GcpImagesSyncDataRepository>();
-        services.AddScoped<IGcpStorageSynchronizationService, GcpImagesStorageSynchronizationService>();
-
-        var gcpImagesJobKey = new JobKey(JobConstants.GcpImagesSynchronization, GroupConstants.Gcp);
-
-        quartz.AddJob<GcpStorageSynchronizationQuartzJob>(j => j.WithIdentity(gcpImagesJobKey));
-        quartz.AddTrigger(t => t
-            .WithIdentity(JobTriggerConstants.GcpImagesSynchronization, GroupConstants.Gcp)
-            .ForJob(gcpImagesJobKey)
-            .StartNow()
-            .WithCronSchedule(quartzConfig.CronSchedules.GcpImagesSyncCronScheduleString));
     }
 }

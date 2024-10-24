@@ -3,10 +3,12 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base;
 
 namespace OutOfSchool.Services.Repository;
 
-public class InstitutionAdminRepository : EntityRepository<(string, Guid), InstitutionAdmin>, IInstitutionAdminRepository
+public class InstitutionAdminRepository : EntityRepositorySoftDeleted<(string, Guid), InstitutionAdmin>, IInstitutionAdminRepository
 {
     private readonly OutOfSchoolDbContext db;
 

@@ -8,15 +8,18 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Achievement;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Tests.Common;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Achievement;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -46,7 +49,7 @@ public class AchievementServiceTest
         achievementRepository = new AchievementRepository(context);
         logger = new Mock<ILogger<AchievementService>>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         service = new AchievementService(achievementRepository, logger.Object, localizer.Object, mapper);
 
         SeedDatabase();

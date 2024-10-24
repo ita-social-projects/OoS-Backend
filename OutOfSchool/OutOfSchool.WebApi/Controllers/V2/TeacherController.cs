@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Teachers;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Teachers;
 using OutOfSchool.WebApi.Util.ControllersResultsHelpers;
 
 namespace OutOfSchool.WebApi.Controllers.V2;
@@ -13,7 +13,7 @@ namespace OutOfSchool.WebApi.Controllers.V2;
 /// </summary>
 [ApiController]
 [FeatureGate(nameof(Feature.Images))]
-[ApiVersion("2.0")]
+[AspApiVersion(2)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 [HasPermission(Permissions.SystemManagement)]
 public class TeacherController : ControllerBase // check permissions for workshopIds for public controller
