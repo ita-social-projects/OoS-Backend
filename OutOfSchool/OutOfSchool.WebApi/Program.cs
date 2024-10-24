@@ -19,7 +19,7 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.Configure();
-
+app.MapHealthChecks("/api/v1/healthcheck2"); // !!!!!!!!!!!!!
 try
 {
     Log.Information("Application has started");
