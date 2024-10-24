@@ -40,7 +40,8 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
             .Include(ws => ws.Address)
             .Include(ws => ws.Teachers)
             .Include(ws => ws.DateTimeRanges)
-            .Include(ws => ws.Images);
+            .Include(ws => ws.Images)
+            .Include(ws => ws.Tags);
 
         if (asNoTracking)
         {

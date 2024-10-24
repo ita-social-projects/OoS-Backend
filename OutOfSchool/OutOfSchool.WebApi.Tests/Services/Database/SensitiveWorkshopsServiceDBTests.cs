@@ -41,6 +41,7 @@ public class SensitiveWorkshopsServiceDBTests
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
+    private Mock<ITagService> tagServiceMock;
     private Mock<ISearchStringService> searchStringServiceMock;
 
     [SetUp]
@@ -59,6 +60,8 @@ public class SensitiveWorkshopsServiceDBTests
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
+        tagServiceMock = new Mock<ITagService>();
+
         searchStringServiceMock = new Mock<ISearchStringService>();
         sensitiveWorkshopService =
             new WorkshopService(
@@ -76,6 +79,7 @@ public class SensitiveWorkshopsServiceDBTests
                 ministryAdminServiceMock.Object,
                 regionAdminServiceMock.Object,
                 codeficatorServiceMock.Object,
+                tagServiceMock.Object,
                 searchStringServiceMock.Object);
 
         Seed();

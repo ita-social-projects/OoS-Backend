@@ -309,6 +309,7 @@ public static class Startup
         services.AddTransient<IRatingService, RatingService>();
         services.AddTransient<IAverageRatingService, AverageRatingService>();
         services.AddTransient<ISocialGroupService, SocialGroupService>();
+        services.AddTransient<ITagService, TagService>();
         services.AddTransient<IStatusService, StatusService>();
         services.AddTransient<IStatisticService, StatisticService>();
         services.AddTransient<ITeacherService, TeacherService>();

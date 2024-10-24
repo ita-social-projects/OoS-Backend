@@ -113,20 +113,36 @@ public class WorkshopServicesCombinerTests
         // Arrange
         var currentWorkshopDto = WorkshopDtoGenerator.Generate();
         currentWorkshopDto.TakenSeats = 4;
-        var newWorkshopBaseDto = WorkshopBaseDtoGenerator.Generate();
-        newWorkshopBaseDto.AvailableSeats = 10;
-        workshopService.Setup(x => x.GetById(newWorkshopBaseDto.Id, true))
+        var newWorkshopCreateUpdateDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        newWorkshopCreateUpdateDto.AvailableSeats = 10;
+        workshopService.Setup(x => x.GetById(newWorkshopCreateUpdateDto.Id, true))
             .ReturnsAsync(currentWorkshopDto);
-        workshopService.Setup(x => x.Update(newWorkshopBaseDto)).ReturnsAsync(newWorkshopBaseDto);
+
+        var updatedWorkshopDto = mapper.Map<WorkshopDto>(newWorkshopCreateUpdateDto);
+        workshopService.Setup(x => x.Update(newWorkshopCreateUpdateDto))
+            .ReturnsAsync(updatedWorkshopDto);
 
         // Act
-        var result = await service.Update(newWorkshopBaseDto).ConfigureAwait(false);
+        var result = await service.Update(newWorkshopCreateUpdateDto).ConfigureAwait(false);
 
         // Assert
         workshopService.VerifyAll();
         Assert.IsNotNull(result);
         Assert.IsTrue(result.Succeeded);
-        Assert.AreEqual(newWorkshopBaseDto, result.Value);
+        var actual = result.Value;
+        Assert.AreEqual(newWorkshopCreateUpdateDto.Title, actual.Title);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.ShortTitle, actual.ShortTitle);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.Phone, actual.Phone);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.Email, actual.Email);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.Website, actual.Website);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.MinAge, actual.MinAge);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.MaxAge, actual.MaxAge);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.Price, actual.Price);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.ProviderId, actual.ProviderId);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.ProviderTitle, actual.ProviderTitle);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.AvailableSeats, actual.AvailableSeats);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.WithDisabilityOptions, actual.WithDisabilityOptions);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.TagIds, actual.Tags.Select(x => x.Id).ToList());
     }
 
     [Test]
@@ -134,12 +150,12 @@ public class WorkshopServicesCombinerTests
     {
         // Arrange
         var currentWorkshopDto = null as WorkshopDto;
-        var newWorkshopBaseDto = WorkshopBaseDtoGenerator.Generate();
-        workshopService.Setup(x => x.GetById(newWorkshopBaseDto.Id, true))
+        var newWorkshopCreateUpdateDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        workshopService.Setup(x => x.GetById(newWorkshopCreateUpdateDto.Id, true))
             .ReturnsAsync(currentWorkshopDto);
 
         // Act
-        var result = await service.Update(newWorkshopBaseDto).ConfigureAwait(false);
+        var result = await service.Update(newWorkshopCreateUpdateDto).ConfigureAwait(false);
         var firstError = result.OperationResult.Errors.FirstOrDefault();
 
         // Assert
@@ -158,7 +174,7 @@ public class WorkshopServicesCombinerTests
         // Arrange
         var currentWorkshopDto = WorkshopDtoGenerator.Generate();
         currentWorkshopDto.TakenSeats = 5;
-        var newWorkshopBaseDto = WorkshopBaseDtoGenerator.Generate();
+        var newWorkshopBaseDto = WorkshopCreateUpdateDtoGenerator.Generate();
         newWorkshopBaseDto.AvailableSeats = 3;
         workshopService.Setup(x => x.GetById(newWorkshopBaseDto.Id, true))
             .ReturnsAsync(currentWorkshopDto);

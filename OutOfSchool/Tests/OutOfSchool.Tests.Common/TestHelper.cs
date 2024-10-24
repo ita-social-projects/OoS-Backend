@@ -82,6 +82,36 @@ public static class TestHelper
         tuppledProperties.AssertPropertiesAreEqual();
     }
 
+    public static void AssertEquivalentWithNullHandling<TValue>(TValue expected, TValue actual)
+    {
+        if (expected is IEnumerable<object> expectedCollection &&
+        actual is IEnumerable<object> actualCollection &&
+        AreCollectionsEquivalent(expectedCollection, actualCollection))
+        {
+            return;
+        }
+
+        if (ReferenceEquals(expected, actual))
+        {
+            return;
+        }
+
+        if (expected is null || actual is null)
+        {
+            Assert.Fail($"Expected and actual values are not both null. Expected: {expected}, Actual: {actual}");
+        }
+
+        var tuppledProperties = GetTuppledProperties(expected, actual);
+        tuppledProperties.AssertPropertiesAreEqual();
+    }
+
+    private static bool AreCollectionsEquivalent<T>(T? expected, T? actual)
+    where T : class, IEnumerable<object>
+    {
+        return (expected == null || !expected.Any()) &&
+               (actual == null || !actual.Any());
+    }
+
     private static IEnumerable<(object , object, string)> GetTuppledProperties<TValue>(TValue expected, TValue actual)
     {
         return expected.GetType().GetProperties()
