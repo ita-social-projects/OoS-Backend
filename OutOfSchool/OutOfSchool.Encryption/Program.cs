@@ -23,8 +23,11 @@ builder.Host.UseSerilog((ctx, lc) => lc
 GlobalLogContext.PushProperty("AppVersion", builder.Configuration.GetSection("AppDefaults:Version").Value);
 
 builder.Services.AddElasticApmForAspNetCore(new HttpDiagnosticsSubscriber());
-builder.Services.Configure<EUSignConfig>(
-    builder.Configuration.GetSection(EUSignConfig.ConfigSectionName));
+builder.Services
+    .AddOptions<EUSignConfig>()
+    .BindConfiguration(EUSignConfig.ConfigSectionName)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 if (builder.Environment.IsDevelopment())
 {

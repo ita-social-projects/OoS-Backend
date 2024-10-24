@@ -36,10 +36,12 @@
     // It is used when checking certificates in cases where there is no link to the OCSP server of the CA (НЕДП) in the certificate
     // or in the settings of the OCSP access points of the library
     "DefaultOCSPServer": "czo.gov.ua",
+    "DefaultOCSPPort": "80",
     // The default DNS name of the TSP server.
     // It is used when imposing a signature in cases where there is no reference to the TSP server of the CA in the certificate
     // of the signer or the TSP server of the CA (НЕДП)
     "DefaultTSPServer": "acskidd.gov.ua",
+    "DefaultTSPPort": "80",
     // Private key options
     // The private key can be stored either on the file system or on the private key medium
     "PrivateKey": {

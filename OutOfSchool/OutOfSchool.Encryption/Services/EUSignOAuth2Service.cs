@@ -4,6 +4,7 @@ using System.Text.Json;
 using EUSignCP;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Encryption.Config;
+using OutOfSchool.Encryption.Constants;
 using OutOfSchool.Encryption.Models;
 
 namespace OutOfSchool.Encryption.Services;
@@ -231,7 +232,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
 
         // Встановлення параметрів OCSP-серверу ЦСК за замовчанням
         IEUSignCP.SetOCSPSettings(
-            true, true, eUSignConfig.DefaultOCSPServer, "80");
+            true, true, eUSignConfig.DefaultOCSPServer, eUSignConfig.DefaultOCSPPort);
 
         // Встановлення налаштувань точок доступу до OCSP-серверів
         // Необхідні при обслуговуванні користувачів з різних ЦСК
@@ -259,13 +260,13 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
         // - з параметрів TSP, що встановлені за замовчанням.
 
         // Встановлення параметрів TSP-серверу ЦСК за замовчанням
-        IEUSignCP.SetTSPSettings(true, eUSignConfig.DefaultTSPServer, "80");
+        IEUSignCP.SetTSPSettings(true, eUSignConfig.DefaultTSPServer, eUSignConfig.DefaultTSPPort);
 
         // Встановлення налаштувань LDAP-cервера
         IEUSignCP.SetLDAPSettings(false, string.Empty, string.Empty, true, string.Empty, string.Empty);
 
         // Встановлення параметрів CMP-серверу ЦСК
-        IEUSignCP.SetCMPSettings(false, string.Empty, "80", string.Empty);
+        IEUSignCP.SetCMPSettings(false, string.Empty, AppConstants.DEFAULT_PORT, string.Empty);
 
         // Збереження кореневих сертифікатів ЦЗО та ЦСК
         IEUSignCP.SaveCertificates(
@@ -387,7 +388,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                     }
 
                     string[] cmpServers = { ca.CmpAddress };
-                    string[] cmpServersPorts = { "80" };
+                    string[] cmpServersPorts = { AppConstants.DEFAULT_PORT };
                     IEUSignCP.GetCertificatesByKeyInfo(
                         keyInfo, cmpServers, cmpServersPorts, out certsCMP);
 
