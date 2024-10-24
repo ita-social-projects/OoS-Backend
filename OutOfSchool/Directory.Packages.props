@@ -20,8 +20,10 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(BaseVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(BaseVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <!-- Needed for EUSign Library -->
+    <PackageVersion Include="System.Text.Encoding.CodePages" Version="8.0.0" />
     <!--MVC-->
     <!-- TODO: Isn't AspNetCore.Mvc.Core included by default for a Web project?-->
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
@@ -55,6 +57,7 @@
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.1.2" />
     <!--OpenID Dict-->
     <PackageVersion Include="OpenIddict.AspNetCore" Version="$(OpenIdDictVersion)" />
+    <PackageVersion Include="OpenIddict.Client.AspNetCore" Version="$(OpenIdDictVersion)" />
     <PackageVersion Include="OpenIddict.EntityFrameworkCore" Version="$(OpenIdDictVersion)" />
     <PackageVersion Include="OpenIddict.Quartz" Version="$(OpenIdDictVersion)" />
     <PackageVersion Include="OpenIddict.Validation.AspNetCore" Version="$(OpenIdDictVersion)" />

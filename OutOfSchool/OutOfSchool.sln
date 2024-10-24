@@ -52,6 +52,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.BusinessLogic",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.BackgroundJobs", "OutOfSchool.BackgroundJobs\OutOfSchool.BackgroundJobs.csproj", "{A139159B-E506-4727-B218-BD4D83827F73}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.Encryption", "OutOfSchool.Encryption\OutOfSchool.Encryption.csproj", "{BE012E4A-7023-4D71-B485-4019698CF09A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -130,6 +132,10 @@ Global
 		{A139159B-E506-4727-B218-BD4D83827F73}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A139159B-E506-4727-B218-BD4D83827F73}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A139159B-E506-4727-B218-BD4D83827F73}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE012E4A-7023-4D71-B485-4019698CF09A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE012E4A-7023-4D71-B485-4019698CF09A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE012E4A-7023-4D71-B485-4019698CF09A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE012E4A-7023-4D71-B485-4019698CF09A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
