@@ -1,0 +1,16 @@
+steps:
+# Build the container image
+- name: 'gcr.io/k8s-skaffold/pack'
+  entrypoint: 'pack'
+  args:
+    - build
+    - ${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-encr:$SHORT_SHA
+    - --cache-image=${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-cache:encr
+    - --builder=paketobuildpacks/builder:base
+    - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
+    - --buildpack=gcr.io/paketo-buildpacks/environment-variables
+    - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.Encryption/
+    - --env=BPE_AppDefaults__Version=$SHORT_SHA
+    - --publish
+options:
+  logging: CLOUD_LOGGING_ONLY
