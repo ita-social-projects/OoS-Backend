@@ -106,104 +106,7 @@ public class WorkshopServiceTests
         SetupCreate(createdEntity, isMemberOfWorkshopIdExisted);
 
         // Act
-<<<<<<< HEAD
-        var result = await workshopService.Create(mapper.Map<WorkshopCreateUpdateDto>(newWorkshop)).ConfigureAwait(false);
-
-        // Assert
-        workshopRepository.Verify(x => x.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()), Times.Once);
-    }
-
-    [Test]
-    public async Task Create_WhenEntityIsValid_ShouldReturnThisEntity([Random(1, 100, 1)] long id)
-    {
-        // Arrange
-        SetupCreate();
-        var newWorkshop = new Workshop()
-        {
-            Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
-            InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
-        };
-        mapperMock.Setup(m => m.Map<WorkshopDto>(It.IsAny<Workshop>())).Returns(mapper.Map<WorkshopDto>(newWorkshop));
-
-        // Act
-        var result = await workshopService.Create(mapper.Map<WorkshopCreateUpdateDto>(newWorkshop)).ConfigureAwait(false);
-
-        // Assert
-        result.Should().BeEquivalentTo(ExpectedWorkshopDtoCreateSuccess(newWorkshop), options => options.Excluding(x => x.Id).Excluding(x => x.Tags));
-        result.AvailableSeats.Should().Be(uint.MaxValue);
-    }
-
-    [Test]
-    public async Task Create_WhenEntityIsValidAvaliableSeatsIsNull_ShouldReturnThisEntity([Random(1, 100, 1)] long id)
-    {
-        // Arrange
-        SetupCreate();
-        var newWorkshop = new Workshop()
-        {
-            Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
-            InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
-        };
-
-        var workshopCreateDto = mapper.Map<WorkshopCreateUpdateDto>(newWorkshop);
-        workshopCreateDto.AvailableSeats = null;
-
-        mapperMock.Setup(m => m.Map<WorkshopDto>(It.IsAny<Workshop>())).Returns(mapper.Map<WorkshopDto>(newWorkshop));
-
-        // Act
-        var result = await workshopService.Create(workshopCreateDto).ConfigureAwait(false);
-
-        // Assert
-        // result.Should().BeEquivalentTo(ExpectedWorkshopDtoCreateSuccess(newWorkshop));
-        TestHelper.AssertEquivalentWithNullHandling(ExpectedWorkshopDtoCreateSuccess(newWorkshop), result);
-        result.AvailableSeats.Should().Be(uint.MaxValue);
-    }
-
-    [Test]
-    public async Task Create_WhenDirectionsIdsAreWrong_ShouldReturnEntitiesWithRightDirectionsIds([Random(1, 100, 1)] long id)
-    {
-        // Arrange
-        SetupCreate();
-        var newWorkshop = new Workshop
-        {
-            Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
-            InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
-        };
-
-        // Act
-        var result = await workshopService.Create(mapper.Map<WorkshopCreateUpdateDto>(newWorkshop)).ConfigureAwait(false);
-
-        // Assert
-        result.Should().BeEquivalentTo(ExpectedWorkshopDtoCreateSuccess(newWorkshop));
-    }
-
-    [Test]
-    public void Create_WhenThereIsNoClassId_ShouldThrowArgumentException()
-    {
-        // Arrange
-        SetupCreate();
-        var newWorkshop = new Workshop()
-        {
-            InstitutionHierarchyId = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e"),
-        };
-
-        // Act and Assert
-        workshopService.Invoking(w => w.Create(mapper.Map<WorkshopCreateUpdateDto>(newWorkshop))).Should().ThrowAsync<ArgumentException>();
-    }
-    #endregion
-
-    #region new Create
-    [Test]
-    public async Task Create_Whenever_ShouldRunInTransaction()
-    {
-        // Arrange
-        SetupCreate();
-        var newWorkshop = new Workshop();
-
-        // Act
-        var result = await workshopService.Create(mapper.Map<WorkshopBaseDto>(newWorkshop)).ConfigureAwait(false);
-=======
         var result = await workshopService.Create(mapper.Map<WorkshopBaseDto>(createdEntity)).ConfigureAwait(false);
->>>>>>> e430b9a7 (1) Fixed tests for Create() method of WorkshopService in WorkshopServiceTests class.)
 
         // Assert
         workshopRepository.Verify(x => x.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()), Times.Once);
@@ -241,6 +144,9 @@ public class WorkshopServiceTests
         createdEntity.AvailableSeats = 0;
         var expectedTeachers = teachers.Select(mapper.Map<TeacherDTO>);
         SetupCreate(createdEntity);
+
+        var workshopDto = mapper.Map<WorkshopBaseDto>(newWorkshop);
+        workshopDto.AvailableSeats = null;
 
         // Act
         var result = await workshopService.Create(mapper.Map<WorkshopBaseDto>(createdEntity)).ConfigureAwait(false);
@@ -313,60 +219,6 @@ public class WorkshopServiceTests
         // Act and Assert
         await workshopService.Invoking(w => w.Create(mapper.Map<WorkshopBaseDto>(createdEntity)))
             .Should().ThrowAsync<InvalidOperationException>();
-    }
-
-    [Test]
-    public async Task CreateWorkshop_CallSetIdsToDefaultValueMethod_ShouldSetIdsToDefaultValue(
-        [Random(2, 5, 1)] int teachersInWorkshop,
-        [Random(2, 25, 1)] int availableSeats)
-    {
-        // Arrange
-        var createdEntity = WorkshopGenerator.Generate().WithProvider().WithAddress();
-        var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(createdEntity);
-        createdEntity.Teachers = teachers;
-        createdEntity.AvailableSeats = (uint)availableSeats;
-        var expectedTeachers = teachers.Select(mapper.Map<TeacherDTO>);
-        SetupCreate(createdEntity);
-        var workshopCreateDto = mapper.Map<WorkshopBaseDto>(createdEntity);
-
-        // Act
-        var result = await workshopService.Create(workshopCreateDto).ConfigureAwait(false);
-
-        // Assert
-        Assert.AreEqual(default(long), workshopCreateDto?.Address?.Id);
-        Assert.AreEqual(workshopCreateDto?.DefaultTeacher is null ? null : Guid.Empty, workshopCreateDto?.DefaultTeacher?.Id);
-        Assert.AreEqual(workshopCreateDto?.MemberOfWorkshop is null ? null : Guid.Empty, workshopCreateDto?.MemberOfWorkshop?.Id);
-        if (workshopCreateDto?.WorkshopDescriptionItems is not null)
-        {
-            foreach (var workshopDescription in workshopCreateDto?.WorkshopDescriptionItems)
-            {
-                Assert.AreEqual(workshopDescription?.Id is null ? null : Guid.Empty, workshopDescription?.Id);
-            }
-        }
-
-        if (workshopCreateDto?.Teachers is not null)
-        {
-            foreach (var teacher in workshopCreateDto?.Teachers)
-            {
-                Assert.AreEqual(teacher?.Id is null ? null : Guid.Empty, teacher?.Id);
-            }
-        }
-
-        if (workshopCreateDto?.DateTimeRanges is not null)
-        {
-            foreach (var dateTimeRange in workshopCreateDto?.DateTimeRanges)
-            {
-                Assert.AreEqual(default(long), dateTimeRange?.Id);
-            }
-        }
-
-        if (workshopCreateDto?.IncludedStudyGroups is not null)
-        {
-            foreach (var includedStudyGroupe in workshopCreateDto?.IncludedStudyGroups)
-            {
-                Assert.AreEqual(includedStudyGroupe?.Id is null ? null : Guid.Empty, includedStudyGroupe?.Id);
-            }
-        }
     }
     #endregion
 
@@ -1126,77 +978,10 @@ public class WorkshopServiceTests
         mapperMock.Setup(m => m.Map<WorkshopBaseDto>(workshop))
             .Returns(workshopBaseDto);
 
+
         mapperMock.Setup(m => m.Map<WorkshopDto>(workshop))
             .Returns(workshopDto);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-        providerRepositoryMock
-            .Setup(p => p.GetById(It.IsAny<Guid>()))
-            .Returns(Task.FromResult(provider));
-        workshopRepository.Setup(
-                w => w.Create(It.IsAny<Workshop>()))
-            .ReturnsAsync((Workshop workshop) =>
-            {
-                return new Workshop
-                {
-                    Id = id,
-                    AvailableSeats = workshop.AvailableSeats,
-                };
-            });
-        workshopRepository.Setup(
-                w => w.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
-            .Returns(async (Func<Task<Workshop>> func) =>
-            {
-                var workshop = await func();
-                return new Workshop
-                {
-                    Id = id,
-                    AvailableSeats = workshop.AvailableSeats,
-                };
-            });
-        mapperMock.Setup(m => m.Map<WorkshopCreateUpdateDto>(It.IsAny<Workshop>()))
-            .Returns((Workshop workshop) =>
-            {
-                var dto = new WorkshopCreateUpdateDto
-                {
-                    Id = id,
-                    AvailableSeats = workshop.AvailableSeats,
-                };
-
-                return dto;
-            });
-        mapperMock.Setup(m => m.Map<Workshop>(It.IsAny<WorkshopCreateUpdateDto>()))
-            .Returns((WorkshopCreateUpdateDto dto) =>
-            {
-                var workshop = new Workshop
-                {
-                    Id = id,
-                    AvailableSeats = (uint)dto.AvailableSeats,
-                };
-=======
-
-=======
->>>>>>> d1ffe16d (Refactored code for 'Create Workshop' - moved SetIdsToDefaultValue() and CheckDtoAndPrepareCreatedWorkshop() methods from WorkshopController to WorkshopService class.)
-        mapperMock.Setup(m => m.Map<Workshop>(It.IsAny<WorkshopBaseDto>()))
-            .Returns(mapper.Map<Workshop>(workshopBaseDto));
->>>>>>> e430b9a7 (1) Fixed tests for Create() method of WorkshopService in WorkshopServiceTests class.)
-
-        if (isMemberOfWorkshopIdExisted)
-        {
-            workshopRepository.Setup(w => w.Any(It.IsAny<Expression<Func<Workshop, bool>>>()))
-                .ReturnsAsync(true);
-        }
-        else
-        {
-            workshopRepository.Setup(w => w.Any(It.IsAny<Expression<Func<Workshop, bool>>>()))
-                .ReturnsAsync(false);
-        }
-
-        workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(workshop);
-        workshopRepository.Setup(w => w.GetWithNavigations(It.IsAny<Guid>(), It.IsAny<bool>()))
-            .ReturnsAsync(workshop);
 
         providerRepositoryMock.Setup(p => p.GetById(It.IsAny<Guid>()))
             .Returns(Task.FromResult(workshop.Provider));
