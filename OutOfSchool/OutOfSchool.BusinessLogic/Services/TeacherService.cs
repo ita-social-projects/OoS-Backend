@@ -166,6 +166,14 @@ public class TeacherService : ITeacherService
         return teachersWorkshopId ?? Guid.Empty;
     }
 
+    /// <inheritdoc/>
+    public Task<bool> Exists(Guid id)
+    {
+        logger.LogInformation($"Checking if Teacher exists by Id started. Looking Id = {id}.");
+
+        return teacherRepository.Any(x => x.Id == id);
+    }
+
     private async Task UpdateTeacher()
     {
         try

@@ -133,11 +133,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             workshop.Teachers = dto.Teachers.Select(dtoTeacher => mapper.Map<Teacher>(dtoTeacher)).ToList();
         }
 
-        if (dto.IncludedStudyGroups is not null)
-        {
-            workshop.IncludedStudyGroups = dto.IncludedStudyGroups.Select(mapper.Map<Workshop>).ToList();
-        }
-
         workshop.Status = WorkshopStatus.Open;
 
         Func<Task<Workshop>> operation = async () =>

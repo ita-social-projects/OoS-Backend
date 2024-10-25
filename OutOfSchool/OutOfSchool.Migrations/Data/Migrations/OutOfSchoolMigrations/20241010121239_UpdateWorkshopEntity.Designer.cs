@@ -11,7 +11,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20241008150513_UpdateWorkshopEntity")]
+    [Migration("20241010121239_UpdateWorkshopEntity")]
     partial class UpdateWorkshopEntity
     {
         /// <inheritdoc />
