@@ -90,6 +90,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
 <<<<<<< HEAD
+<<<<<<< HEAD
             .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
 <<<<<<< HEAD
             .ForMember(dest => dest.Tags, opt => opt.Ignore());
@@ -102,6 +103,11 @@ public class MappingProfile : Profile
 =======
             .ForMember(dest => dest.DeleteDate, opt => opt.Ignore());
 >>>>>>> 6054ec1c (1) Replaced WorkshopId  property type with Guid? instead of Guid in Teacher class;)
+=======
+            .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
+            .ForMember(dest => dest.MemberOfWorkshop, opt => opt.Ignore())
+            .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore());
+>>>>>>> b71812a8 (1) Changed Create method of WorkshopService - added a check for the MemberOfWorkshopId property.)
 
         CreateMap<Workshop, WorkshopDto>()
             .IncludeBase<Workshop, WorkshopBaseDto>()
