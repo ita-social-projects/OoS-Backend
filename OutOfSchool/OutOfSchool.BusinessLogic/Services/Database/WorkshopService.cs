@@ -111,18 +111,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         ArgumentNullException.ThrowIfNull(dto);
         logger.LogInformation("Workshop creating was started.");
 
-        if (dto.MemberOfWorkshopId.HasValue && !await Exists((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false))
-        {
-            var errorMessage = $"The main workshop (with id = {dto.MemberOfWorkshopId}) for the workshop being created was not found.";
-            throw new InvalidOperationException(errorMessage);
-        }
-
-        if (dto.MemberOfWorkshopId.HasValue && (await GetById((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false)).MemberOfWorkshopId.HasValue)
-        {
-            var errorMessage = $"The main workshop (with ID = {dto.MemberOfWorkshopId}) for the workshop being created is a member of another workshop, so it cannot be the main workshop.";
-            throw new InvalidOperationException(errorMessage);
-        }
-
         if (dto.AvailableSeats is 0 or null)
         {
             dto.AvailableSeats = uint.MaxValue;
