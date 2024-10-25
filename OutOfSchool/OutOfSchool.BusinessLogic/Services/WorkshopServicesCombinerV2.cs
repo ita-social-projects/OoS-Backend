@@ -39,7 +39,7 @@ public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopSer
     {
     }
 
-    public new async Task<WorkshopResultDto> Create(WorkshopV2Dto dto)
+    public async Task<WorkshopResultDto> Create(WorkshopV2Dto dto)
     {
         var creationResult = await workshopService.CreateV2(dto).ConfigureAwait(false);
 
@@ -52,7 +52,7 @@ public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopSer
         return creationResult;
     }
 
-    public new async Task<Result<WorkshopResultDto>> Update(WorkshopV2Dto dto)
+    public async Task<Result<WorkshopResultDto>> Update(WorkshopV2Dto dto)
     {
         var currentWorkshop = await GetById(dto.Id, true).ConfigureAwait(false);
         if (currentWorkshop is null)

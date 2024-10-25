@@ -53,7 +53,7 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public string ProviderTitleEn { get; set; } = string.Empty;
 
     // 9
-    public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;
+    public OwnershipType ProviderOwnership { get; set; }
 
     // 10
     [MaxLength(200)]

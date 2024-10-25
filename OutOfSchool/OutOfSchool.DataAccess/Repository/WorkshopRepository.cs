@@ -107,6 +107,5 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
         }
 
         return query.ToListAsync();
-
     }
 }

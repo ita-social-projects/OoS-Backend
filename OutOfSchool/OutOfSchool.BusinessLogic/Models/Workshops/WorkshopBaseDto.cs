@@ -105,6 +105,7 @@ public class WorkshopBaseDto : IValidatableObject
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IEnumerable<string> Keywords { get; set; } = default;
 
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<TeacherDTO> Teachers { get; set; }
 
     [Required]

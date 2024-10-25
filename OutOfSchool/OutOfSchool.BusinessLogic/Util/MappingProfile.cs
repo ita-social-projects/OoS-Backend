@@ -43,7 +43,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProviderLicenseStatus, opt => opt.MapFrom(src => src.Provider.LicenseStatus))
             .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src => src.Teachers.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.DateTimeRanges, opt => opt.MapFrom(src => src.DateTimeRanges.Where(x => !x.IsDeleted)))
-            .ForMember(dest => dest.WorkshopDescriptionItems, opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)));
+            .ForMember(dest => dest.WorkshopDescriptionItems, opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)))
+            .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore());
 
         CreateSoftDeletedMap<WorkshopBaseDto, Workshop>()
             .ForMember(
@@ -106,8 +107,14 @@ public class MappingProfile : Profile
 =======
             .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
             .ForMember(dest => dest.MemberOfWorkshop, opt => opt.Ignore())
+<<<<<<< HEAD
             .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore());
 >>>>>>> b71812a8 (1) Changed Create method of WorkshopService - added a check for the MemberOfWorkshopId property.)
+=======
+            .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderTitle, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderTitleEn, opt => opt.Ignore());
+>>>>>>> df5cfad4 (1) Added attribute  [ModelBinder(BinderType = typeof(JsonModelBinder))] to Teachers property of WorkshopBaseDto class.)
 
         CreateMap<Workshop, WorkshopDto>()
             .IncludeBase<Workshop, WorkshopBaseDto>()
