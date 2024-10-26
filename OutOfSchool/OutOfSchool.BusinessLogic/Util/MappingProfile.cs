@@ -131,16 +131,16 @@ public class MappingProfile : Profile
 
         CreateMap<WorkshopCreateUpdateDto, WorkshopDto>()
             .ForMember(dest => dest.Tags, opt => opt.MapFrom(src =>
-                src.TagIds.Select(id => new TagDto { Id = id }).ToList()));
-            //.ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
-            //.ForMember(dest => dest.Rating, opt => opt.Ignore())
-            //.ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
-            //.ForMember(dest => dest.ImageIds, opt => opt.Ignore())
-            //.ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
-            //.ForMember(dest => dest.Status, opt => opt.Ignore())
-            //.ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
-            //.ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore())
-            //.ForMember(dest => dest.ProviderStatus, opt => opt.Ignore());
+                src.TagIds.Select(id => new TagDto { Id = id }).ToList()))
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
+            .ForMember(dest => dest.Rating, opt => opt.Ignore())
+            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+            .ForMember(dest => dest.ImageIds, opt => opt.Ignore())
+            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
+            .ForMember(dest => dest.Status, opt => opt.Ignore())
+            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderStatus, opt => opt.Ignore());
 
         CreateMap<WorkshopCreateUpdateDto, IHasRating>();
 
