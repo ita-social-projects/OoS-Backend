@@ -114,7 +114,7 @@ public class WorkshopServicesCombinerTests
     public async Task Create_WithValidDto_ShouldReturnSucceededResult()
     {
         // Arrange
-        var newWorkshopBaseDto = WorkshopBaseDtoGenerator.Generate();
+        var newWorkshopBaseDto = WorkshopDtoGenerator.Generate();
         newWorkshopBaseDto.AvailableSeats = 10;
 
         workshopService.Setup(x => x.Create(newWorkshopBaseDto))
@@ -139,7 +139,7 @@ public class WorkshopServicesCombinerTests
     public void Create_WithNotExistedWorkshop_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        var newWorkshopBaseDto = (WorkshopBaseDto)null;
+        var newWorkshopBaseDto = (WorkshopCreateUpdateDto)null;
         workshopService.Setup(x => x.Create(newWorkshopBaseDto))
             .ThrowsAsync(new ArgumentNullException()).Verifiable(Times.Once);
         elasticsearchSynchronizationService.Setup(

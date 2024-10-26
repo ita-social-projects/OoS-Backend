@@ -90,31 +90,13 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-<<<<<<< HEAD
-<<<<<<< HEAD
             .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
-<<<<<<< HEAD
-            .ForMember(dest => dest.Tags, opt => opt.Ignore());
-=======
-
+            .ForMember(dest => dest.Tags, opt => opt.Ignore())
             .ForMember(dest => dest.DefaultTeacher, opt => opt.Ignore())
             .ForMember(dest => dest.MemberOfWorkshop, opt => opt.Ignore())
-            .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore());
->>>>>>> 5e39c78e (1) Removed the ContactUserNote property from WorkshopBaseDto class.)
-=======
-            .ForMember(dest => dest.DeleteDate, opt => opt.Ignore());
->>>>>>> 6054ec1c (1) Replaced WorkshopId  property type with Guid? instead of Guid in Teacher class;)
-=======
-            .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
-            .ForMember(dest => dest.MemberOfWorkshop, opt => opt.Ignore())
-<<<<<<< HEAD
-            .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore());
->>>>>>> b71812a8 (1) Changed Create method of WorkshopService - added a check for the MemberOfWorkshopId property.)
-=======
             .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderTitle, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderTitleEn, opt => opt.Ignore());
->>>>>>> df5cfad4 (1) Added attribute  [ModelBinder(BinderType = typeof(JsonModelBinder))] to Teachers property of WorkshopBaseDto class.)
 
         CreateMap<Workshop, WorkshopDto>()
             .IncludeBase<Workshop, WorkshopBaseDto>()
@@ -149,16 +131,16 @@ public class MappingProfile : Profile
 
         CreateMap<WorkshopCreateUpdateDto, WorkshopDto>()
             .ForMember(dest => dest.Tags, opt => opt.MapFrom(src =>
-                src.TagIds.Select(id => new TagDto { Id = id }).ToList()))
-            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
-            .ForMember(dest => dest.Rating, opt => opt.Ignore())
-            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
-            .ForMember(dest => dest.ImageIds, opt => opt.Ignore())
-            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
-            .ForMember(dest => dest.Status, opt => opt.Ignore())
-            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderStatus, opt => opt.Ignore());
+                src.TagIds.Select(id => new TagDto { Id = id }).ToList()));
+            //.ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
+            //.ForMember(dest => dest.Rating, opt => opt.Ignore())
+            //.ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+            //.ForMember(dest => dest.ImageIds, opt => opt.Ignore())
+            //.ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
+            //.ForMember(dest => dest.Status, opt => opt.Ignore())
+            //.ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
+            //.ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore())
+            //.ForMember(dest => dest.ProviderStatus, opt => opt.Ignore());
 
         CreateMap<WorkshopCreateUpdateDto, IHasRating>();
 

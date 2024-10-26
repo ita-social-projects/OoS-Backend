@@ -109,50 +109,15 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <exception cref="ArgumentNullException">If <see cref="WorkshopCreateUpdateDto"/> is null.</exception>
     public async Task<WorkshopDto> Create(WorkshopCreateUpdateDto dto)
     {
-<<<<<<< HEAD
-<<<<<<< HEAD
-        ArgumentNullException.ThrowIfNull(dto);
-        logger.LogInformation("Workshop creating was started.");
-
-        if (dto.AvailableSeats is 0 or null)
-        {
-            dto.AvailableSeats = uint.MaxValue;
-        }
-
-        var workshop = mapper.Map<Workshop>(dto);
-        workshop.Provider = await providerRepository.GetById(workshop.ProviderId).ConfigureAwait(false);
-        workshop.ProviderOwnership = workshop.Provider.Ownership;
-        workshop.ProviderTitle = workshop.Provider.FullTitle;
-        workshop.ProviderTitleEn = workshop.Provider.FullTitleEn;
-
-        var tags = (await tagService.GetAll()).Where(tag => dto.TagIds.Contains(tag.Id));
-        workshop.Tags = tags.Select(mapper.Map<Tag>).ToList();
-
-        if (dto.MemberOfWorkshop is not null)
-        {
-            workshop.MemberOfWorkshop = mapper.Map<Workshop>(dto.MemberOfWorkshop);
-        }
-
-        if (dto.Teachers is not null)
-        {
-            workshop.Teachers = dto.Teachers.Select(mapper.Map<Teacher>).ToList();
-        }
-
-        workshop.Status = WorkshopStatus.Open;
-=======
-=======
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
 
         // TODO: after refactoring the DTOs for the Workshop entities, this method needs to be replaced with the correct mapping
-        await SetIdsToDefaultValue(dto); // This method sets the properties with the Id to the default value.
-
->>>>>>> d1ffe16d (Refactored code for 'Create Workshop' - moved SetIdsToDefaultValue() and CheckDtoAndPrepareCreatedWorkshop() methods from WorkshopController to WorkshopService class.)
-        var workshop = await CheckDtoAndPrepareCreatedWorkshop(dto);
->>>>>>> 75c72768 (Refactored CreateV2() and Create() methods of WorkshopService class - checking Dto and preparing createdWorkshop moved to a separate method - CheckDtoAndPrepareCreatedWorkshop().)
+        await SetIdsToDefaultValue(dto); // This method sets the dto properties with Id to the default value.
+        var createdWorkshop = await CheckDtoAndPrepareCreatedWorkshop(dto);
 
         Func<Task<Workshop>> operation = async () =>
-            await workshopRepository.Create(workshop).ConfigureAwait(false);
+            await workshopRepository.Create(createdWorkshop).ConfigureAwait(false);
 
         var newWorkshop = await workshopRepository.RunInTransaction(operation).ConfigureAwait(false);
 
@@ -172,7 +137,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         // TODO: after refactoring the DTOs for the Workshop entities, this method needs to be replaced with the correct mapping
         await SetIdsToDefaultValue(dto); // This method sets the properties with the Id to the default value.
-
         var createdWorkshop = await CheckDtoAndPrepareCreatedWorkshop(dto);
 
         async Task<(Workshop createdWorkshop, MultipleImageUploadingResult imagesUploadResult, Result<string>
@@ -1174,7 +1138,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         }
     }
 
-    private async Task<Workshop> CheckDtoAndPrepareCreatedWorkshop(WorkshopBaseDto dto)
+    private async Task<Workshop> CheckDtoAndPrepareCreatedWorkshop(WorkshopCreateUpdateDto dto)
     {
         if (dto.MemberOfWorkshopId.HasValue && !await Exists((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false))
         {
@@ -1219,7 +1183,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         return createdWorkshop;
     }
 
-    private async Task SetIdsToDefaultValue(WorkshopBaseDto dto)
+    private async Task SetIdsToDefaultValue(WorkshopCreateUpdateDto dto)
     {
         dto.Id = Guid.Empty;
 

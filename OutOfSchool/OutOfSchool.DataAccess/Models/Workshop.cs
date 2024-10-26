@@ -179,24 +179,8 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public long AddressId { get; set; }
 
     public virtual Address Address { get; set; }
-<<<<<<< HEAD
-
-    public virtual List<ProviderAdmin> ProviderAdmins { get; set; }
-
-    public virtual List<Teacher> Teachers { get; set; }
-
-    public virtual List<Application> Applications { get; set; }
-
-    public virtual List<DateTimeRange> DateTimeRanges { get; set; }
 
     public virtual List<Tag> Tags { get; set; }
 
-    // These properties are only for navigation EF Core.
-    public virtual ICollection<ChatRoomWorkshop> ChatRooms { get; set; }
-
-    public virtual List<Image<Workshop>> Images { get; set; }
-
     public bool IsBlocked { get; set; } = false;
-=======
->>>>>>> f7f44ab3 (Changed Workshop class.)
 }

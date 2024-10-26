@@ -292,35 +292,19 @@ public class WorkshopController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.ProviderId).ConfigureAwait(false);
+        var userHasRights = await IsUserProvidersOwnerOrAdmin(dto.ProviderId).ConfigureAwait(false);
         if (!userHasRights)
         {
             return StatusCode(403, "Forbidden to create workshops for another providers.");
         }
 
-<<<<<<< HEAD
-        // TODO: after refactoring the DTOs for the Workshop entities, this method needs to be replaced with the correct mapping
-        await SetIdsToDefaultValue(dto).ConfigureAwait(false); // This method sets the properties with the Id to the default value.
-
-<<<<<<< HEAD
-        var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
-
-        // here we will get "false" if workshop was created by assistant provider admin
-        // because user is not currently associated with new workshop
-        // so we can update information to allow assistant manage created workshop
-        if (!(await IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false)))
-=======
-=======
->>>>>>> d1ffe16d (Refactored code for 'Create Workshop' - moved SetIdsToDefaultValue() and CheckDtoAndPrepareCreatedWorkshop() methods from WorkshopController to WorkshopService class.)
         try
->>>>>>> 513a7c27 (Added try-catch block to Create action of WorkshopController.)
         {
             var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
 
             // here we will get "false" if workshop was created by assistant provider admin
             // because user is not currently associated with new workshop
             // so we can update information to allow assistant manage created workshop
-
             if (!await IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false))
             {
                 var userId = User.FindFirst("sub")?.Value;

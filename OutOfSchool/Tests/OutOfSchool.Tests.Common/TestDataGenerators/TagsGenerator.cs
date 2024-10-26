@@ -45,7 +45,10 @@ public static class TagsGenerator
     public static Tag WithWorkshopId(this Tag tag, Workshop workshop)
     {
         _ = tag ?? throw new ArgumentNullException(nameof(tag));
-
+        if (tag.Workshops is null)
+        {
+            tag.Workshops = new List<Workshop>();
+        }
         tag.Workshops.Add(workshop);
 
         return tag;
