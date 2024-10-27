@@ -209,9 +209,9 @@ public class SensitiveWorkshopsServiceTests
         // Assert
         result.Should()
             .BeEquivalentTo(resultExpected);
-        workshopRepository.VerifyAll();
 
         searchStringServiceMock.VerifyAll();
+        workshopRepository.VerifyAll();
     }
     #endregion
 

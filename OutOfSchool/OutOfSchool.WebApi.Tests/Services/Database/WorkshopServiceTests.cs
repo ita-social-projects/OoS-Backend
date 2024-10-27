@@ -655,7 +655,6 @@ public class WorkshopServiceTests
         // Act
         var result = await workshopService.Update(mapper.Map<WorkshopCreateUpdateDto>(changedFirstEntity)).ConfigureAwait(false);
 
-
         // Assert
         result.Should().NotBeNull();
         result.Teachers.Should().BeEquivalentTo(expectedTeachers);
