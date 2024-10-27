@@ -106,7 +106,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(w => w.ExternalStorageId).ToList()))
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(src => src.CoverImageId))
             .ForMember(dest => dest.ProviderStatus, opt => opt.MapFrom(src => src.Provider.Status))
-            .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags));
+            .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags))
+            .ForMember(dest => dest.TagIds, opt => opt.MapFrom(src => src.Tags.Select(tag => tag.Id)));
 
         CreateMap<WorkshopDto, Workshop>()
             .IncludeBase<WorkshopBaseDto, Workshop>();

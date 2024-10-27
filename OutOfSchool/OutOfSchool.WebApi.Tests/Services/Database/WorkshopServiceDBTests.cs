@@ -47,6 +47,7 @@ public class WorkshopServiceDBTests
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<ITagService> tagServiceMock;
+    private Mock<IEntityRepository<long, Tag>> tagRepository;
 
     [SetUp]
     public async Task SetUp()
@@ -75,25 +76,27 @@ public class WorkshopServiceDBTests
         codeficatorServiceMock = new Mock<ICodeficatorService>();
         tagServiceMock = new Mock<ITagService>();
         var searchStringServiceMock = new Mock<ISearchStringService>();
+        tagRepository = new Mock<IEntityRepository<long, Tag>>();
 
         workshopService =
-            new WorkshopService(
-                workshopRepository,
-                dateTimeRangeRepository.Object,
-                roomRepository.Object,
-                teacherService.Object,
-                logger.Object,
-                mapper,
-                workshopImagesMediator.Object,
-                providerAdminRepository.Object,
-                averageRatingServiceMock.Object,
-                providerRepositoryMock.Object,
-                currentUserServiceMock.Object,
-                ministryAdminServiceMock.Object,
-                regionAdminServiceMock.Object,
-                codeficatorServiceMock.Object,
-                tagServiceMock.Object,
-                searchStringServiceMock.Object);
+                new WorkshopService(
+                    workshopRepository,
+                    tagRepository.Object,
+                    dateTimeRangeRepository.Object,
+                    roomRepository.Object,
+                    teacherService.Object,
+                    logger.Object,
+                    mapper,
+                    workshopImagesMediator.Object,
+                    providerAdminRepository.Object,
+                    averageRatingServiceMock.Object,
+                    providerRepositoryMock.Object,
+                    currentUserServiceMock.Object,
+                    ministryAdminServiceMock.Object,
+                    regionAdminServiceMock.Object,
+                    codeficatorServiceMock.Object,
+                    tagServiceMock.Object,
+                    searchStringServiceMock.Object);
 
         Seed();
     }

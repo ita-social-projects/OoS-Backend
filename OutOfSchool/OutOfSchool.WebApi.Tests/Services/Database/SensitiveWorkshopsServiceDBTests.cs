@@ -43,6 +43,7 @@ public class SensitiveWorkshopsServiceDBTests
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<ITagService> tagServiceMock;
     private Mock<ISearchStringService> searchStringServiceMock;
+    private Mock<IEntityRepository<long, Tag>> tagRepository;
 
     [SetUp]
     public void SetUp()
@@ -61,11 +62,13 @@ public class SensitiveWorkshopsServiceDBTests
         currentUserServiceMock = new Mock<ICurrentUserService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         tagServiceMock = new Mock<ITagService>();
+        tagRepository = new Mock<IEntityRepository<long, Tag>>();
 
         searchStringServiceMock = new Mock<ISearchStringService>();
         sensitiveWorkshopService =
             new WorkshopService(
                 workshopRepository,
+                tagRepository.Object,
                 new Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>>().Object,
                 new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>().Object,
                 new Mock<ITeacherService>().Object,
@@ -233,7 +236,7 @@ public class SensitiveWorkshopsServiceDBTests
 
         result.Entities.Should()
             .BeEquivalentTo(expectedList);
-     }
+    }
 
     [Test]
     public async Task FetchByFilterForAdmins_FilteringByProviderTitleEn_ShouldBuildPredicateAndReturnMatchEntities()

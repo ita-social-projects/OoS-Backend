@@ -40,6 +40,7 @@ public class SensitiveWorkshopsServiceTests
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<ITagService> tagServiceMock;
     private Mock<ISearchStringService> searchStringServiceMock;
+    private Mock<IEntityRepository<long, Tag>> tagRepository;
 
     [SetUp]
     public void SetUp()
@@ -52,10 +53,12 @@ public class SensitiveWorkshopsServiceTests
         codeficatorServiceMock = new Mock<ICodeficatorService>();
         tagServiceMock = new Mock<ITagService>();
         searchStringServiceMock = new Mock<ISearchStringService>();
+        tagRepository = new Mock<IEntityRepository<long, Tag>>();
 
         sensitiveWorkshopService =
             new WorkshopService(
                 workshopRepository.Object,
+                tagRepository.Object,
                 new Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>>().Object,
                 new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>().Object,
                 new Mock<ITeacherService>().Object,
@@ -110,7 +113,7 @@ public class SensitiveWorkshopsServiceTests
         var userId = Guid.Parse("f9d79c19-17f0-4cbe-8a2f-6e299983bdc7").ToString();
         var subSettlementsIds = new List<long>() { codeficatorId };
         RegionAdminDto admin = null;
-        SetupFetchByFilterForAdmins(userId,  true, false, codeficatorId, null, subSettlementsIds, admin);
+        SetupFetchByFilterForAdmins(userId, true, false, codeficatorId, null, subSettlementsIds, admin);
 
         // Assert
         Func<Task<SearchResult<WorkshopDto>>> result = () => sensitiveWorkshopService.FetchByFilterForAdmins();
@@ -153,7 +156,7 @@ public class SensitiveWorkshopsServiceTests
         var institutionId = Guid.NewGuid();
         var parentCATOTTGId = 11;
         var userId = Guid.Parse("2c8a3a36-53c8-4a2d-9a73-b223b611d469").ToString();
-        var subSettlementsIds = new List<long>() { parentCATOTTGId, 40, 30};
+        var subSettlementsIds = new List<long>() { parentCATOTTGId, 40, 30 };
         var admin = new MinistryAdminDto() { Id = userId, InstitutionId = institutionId };
         var filterWorkshop = new WorkshopFilterAdministration()
         {
@@ -206,9 +209,9 @@ public class SensitiveWorkshopsServiceTests
         // Assert
         result.Should()
             .BeEquivalentTo(resultExpected);
+        workshopRepository.VerifyAll();
 
         searchStringServiceMock.VerifyAll();
-        workshopRepository.VerifyAll();
     }
     #endregion
 

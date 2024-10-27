@@ -32,6 +32,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private readonly string includingPropertiesForMappingWorkShopCard = $"{nameof(Workshop.Address)}";
 
     private readonly IWorkshopRepository workshopRepository;
+    private readonly IEntityRepository<long, Tag> tagRepository;
     private readonly IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository;
     private readonly IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository;
     private readonly ITeacherService teacherService;
@@ -71,6 +72,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <param name="tagService">Service for Tag entity.</param>
     public WorkshopService(
         IWorkshopRepository workshopRepository,
+        IEntityRepository<long, Tag> tagRepository,
         IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository,
         IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository,
         ITeacherService teacherService,
@@ -88,6 +90,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         ISearchStringService searchStringService)
     {
         this.workshopRepository = workshopRepository;
+        this.tagRepository = tagRepository;
         this.dateTimeRangeRepository = dateTimeRangeRepository;
         this.roomRepository = roomRepository;
         this.teacherService = teacherService;
@@ -1152,11 +1155,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             throw new InvalidOperationException(errorMessage);
         }
 
-        if (dto.AvailableSeats is 0 or null)
-        {
-            dto.AvailableSeats = uint.MaxValue;
-        }
-
+        dto.AvailableSeats = dto.AvailableSeats.GetMaxValueIfNullOrZero();
         Workshop createdWorkshop;
 
         if (dto is WorkshopV2Dto v2Dto)
@@ -1173,7 +1172,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         createdWorkshop.ProviderTitle = createdWorkshop.Provider.FullTitle;
         createdWorkshop.ProviderTitleEn = createdWorkshop.Provider.FullTitleEn;
 
-        if (dto.Teachers is not null)
+        if (!dto.Teachers.IsNullOrEmpty())
         {
             createdWorkshop.Teachers = dto.Teachers.Select(mapper.Map<Teacher>).ToList();
         }

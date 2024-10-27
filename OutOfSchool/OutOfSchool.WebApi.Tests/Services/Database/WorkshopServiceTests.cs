@@ -54,6 +54,7 @@ public class WorkshopServiceTests
     private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<ITagService> tagServiceMock;
     private Mock<ISearchStringService> searchStringServiceMock;
+    private Mock<IEntityRepository<long, Tag>> tagRepository;
 
     [SetUp]
     public void SetUp()
@@ -75,25 +76,27 @@ public class WorkshopServiceTests
         codeficatorServiceMock = new Mock<ICodeficatorService>();
         tagServiceMock = new Mock<ITagService>();
         searchStringServiceMock = new Mock<ISearchStringService>();
+        tagRepository = new Mock<IEntityRepository<long, Tag>>();
 
         workshopService =
-            new WorkshopService(
-                workshopRepository.Object,
-                dateTimeRangeRepository.Object,
-                roomRepository.Object,
-                teacherService.Object,
-                logger.Object,
-                mapperMock.Object,
-                workshopImagesMediator.Object,
-                providerAdminRepository.Object,
-                averageRatingServiceMock.Object,
-                providerRepositoryMock.Object,
-                currentUserServiceMock.Object,
-                ministryAdminServiceMock.Object,
-                regionAdminServiceMock.Object,
-                codeficatorServiceMock.Object,
-                tagServiceMock.Object,
-                searchStringServiceMock.Object);
+                new WorkshopService(
+                    workshopRepository.Object,
+                    tagRepository.Object,
+                    dateTimeRangeRepository.Object,
+                    roomRepository.Object,
+                    teacherService.Object,
+                    logger.Object,
+                    mapperMock.Object,
+                    workshopImagesMediator.Object,
+                    providerAdminRepository.Object,
+                    averageRatingServiceMock.Object,
+                    providerRepositoryMock.Object,
+                    currentUserServiceMock.Object,
+                    ministryAdminServiceMock.Object,
+                    regionAdminServiceMock.Object,
+                    codeficatorServiceMock.Object,
+                    tagServiceMock.Object,
+                    searchStringServiceMock.Object);
     }
 
     #region Create
