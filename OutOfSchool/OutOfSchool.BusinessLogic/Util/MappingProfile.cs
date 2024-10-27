@@ -92,7 +92,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
             .ForMember(dest => dest.Tags, opt => opt.Ignore())
-            .ForMember(dest => dest.DefaultTeacher, opt => opt.Ignore())
             .ForMember(dest => dest.MemberOfWorkshop, opt => opt.Ignore())
             .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderTitle, opt => opt.Ignore())
