@@ -4,11 +4,12 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 using OutOfSchool.Common.Communication.ICommunication;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Extensions;
@@ -75,7 +76,7 @@ public class CommunicationService : ICommunicationService
             {
                 requestMessage.Content =
                     new StringContent(
-                        JsonConvert.SerializeObject(request.Data),
+                        JsonSerializer.Serialize(request.Data),
                         Encoding.UTF8,
                         MediaTypeNames.Application.Json);
             }

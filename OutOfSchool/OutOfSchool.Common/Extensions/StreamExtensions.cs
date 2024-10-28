@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json;
+
+//using Newtonsoft.Json;
 using OutOfSchool.BusinessLogic.Services.Communication;
 
 namespace OutOfSchool.Common.Extensions;
@@ -19,7 +21,7 @@ public static class StreamExtensions
 
         using var streamReader = new StreamReader(stream);
 
-        return JsonConvert.DeserializeObject<T>(streamReader.ReadToEnd());
+        return JsonSerializer.Deserialize<T>(streamReader.ReadToEnd());
     }
 
     public static void SerializeToJsonAndWrite<T>(this Stream stream, T objectToWrite)
