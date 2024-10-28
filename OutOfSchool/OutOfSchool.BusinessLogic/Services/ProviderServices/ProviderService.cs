@@ -1,24 +1,24 @@
 ﻿using System.Data;
 using System.Linq.Expressions;
 using System.Text;
+using System.Text.Json;
 using AutoMapper;
 using CsvHelper;
 using CsvHelper.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using OutOfSchool.Common.Enums;
-using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Communication.ICommunication;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.BusinessLogic.Services.SearchString;
 
 namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 
@@ -817,7 +817,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                 Message = r.Message,
             })
             .Map(r => r.Result is not null
-            ? JsonConvert.DeserializeObject<ActionResult>(r.Result.ToString())
+            ? JsonSerializer.Deserialize<ActionResult>(r.Result.ToString())
             : null);
     }
 

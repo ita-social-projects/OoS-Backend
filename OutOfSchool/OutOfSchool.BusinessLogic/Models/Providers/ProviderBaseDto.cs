@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
@@ -97,13 +97,13 @@ public class ProviderBaseDto : IHasCoverImage, IHasImages
     [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;
 
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IFormFile CoverImage { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IList<string> ImageIds { get; set; }
 
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<IFormFile> ImageFiles { get; set; }
 
     // TODO: Does not used by front-end, can be removed.

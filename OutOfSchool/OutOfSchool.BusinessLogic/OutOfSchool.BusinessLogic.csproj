@@ -55,7 +55,6 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" />
     <PackageReference Include="MySql.Data" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
-    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="JsonSubTypes" />
     <PackageReference Include="Quartz.AspNetCore" />
     <PackageReference Include="Quartz.Extensions.DependencyInjection" />

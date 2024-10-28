@@ -2,14 +2,14 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
-using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Models.Images;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.Common.Communication.ICommunication;
+using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.BusinessLogic.Services.SearchString;
 
 namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 

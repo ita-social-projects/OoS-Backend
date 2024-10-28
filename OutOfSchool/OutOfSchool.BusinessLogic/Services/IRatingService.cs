@@ -1,5 +1,5 @@
-﻿using OutOfSchool.BusinessLogic.Models;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
+using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.BusinessLogic.Services;
 

@@ -1,8 +1,9 @@
 ﻿using System.Linq.Expressions;
+using System.Text.Json;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.Common.Communication;
@@ -129,8 +130,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert
-                    .DeserializeObject<RegionAdminBaseDto>(result.Result.ToString())
+                ? JsonSerializer.Deserialize<RegionAdminBaseDto>(result.Result.ToString())
                 : null);
     }
 
@@ -281,7 +281,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? mapper.Map<RegionAdminDto>(JsonConvert.DeserializeObject<RegionAdminBaseDto>(result.Result.ToString()))
+                ? mapper.Map<RegionAdminDto>(JsonSerializer.Deserialize<RegionAdminBaseDto>(result.Result.ToString()))
                 : null);
     }
 
@@ -327,8 +327,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert
-                    .DeserializeObject<ActionResult>(result.Result.ToString())
+                ? JsonSerializer.Deserialize<ActionResult>(result.Result.ToString())
                 : null);
     }
 
@@ -378,8 +377,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert
-                    .DeserializeObject<ActionResult>(result.Result.ToString())
+                ? JsonSerializer.Deserialize<ActionResult>(result.Result.ToString())
                 : null);
     }
 
@@ -440,8 +438,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert
-                    .DeserializeObject<ActionResult>(result.Result.ToString())
+                ? JsonSerializer.Deserialize<ActionResult>(result.Result.ToString())
                 : null);
     }
 

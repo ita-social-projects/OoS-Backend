@@ -2,10 +2,10 @@
 using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.Extensions.Options;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Changes;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 

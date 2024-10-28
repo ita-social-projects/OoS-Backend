@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Newtonsoft.Json;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 

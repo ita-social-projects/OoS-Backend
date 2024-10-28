@@ -1,9 +1,9 @@
 using System.Linq.Expressions;
 using AutoMapper;
-using OutOfSchool.Common.Models;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Parent;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 

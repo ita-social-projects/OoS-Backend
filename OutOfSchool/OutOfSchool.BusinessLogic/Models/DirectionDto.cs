@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Models;
 
@@ -16,7 +16,7 @@ public class DirectionDto
     [MaxLength(500)]
     public string Description { get; set; } = string.Empty;
 
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? WorkshopsCount { get; set; }
 
     public DirectionDto WithCount(int? count)

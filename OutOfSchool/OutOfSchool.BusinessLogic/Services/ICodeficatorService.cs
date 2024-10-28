@@ -1,5 +1,5 @@
-﻿using OutOfSchool.Common.Models;
-using OutOfSchool.BusinessLogic.Models.Codeficator;
+﻿using OutOfSchool.BusinessLogic.Models.Codeficator;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.BusinessLogic.Services;
 

@@ -1,5 +1,5 @@
-﻿using OutOfSchool.Common.Enums;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models.Providers;
 

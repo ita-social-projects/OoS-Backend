@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Newtonsoft.Json;
-using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Enums;
+using System.Text.Json.Serialization;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 

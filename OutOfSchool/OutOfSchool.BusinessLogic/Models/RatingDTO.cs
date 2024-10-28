@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.BusinessLogic.Models;
 

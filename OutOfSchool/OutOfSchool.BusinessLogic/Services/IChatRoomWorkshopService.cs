@@ -1,6 +1,6 @@
-﻿using OutOfSchool.Services.Enums;
-using OutOfSchool.BusinessLogic.Models;
+﻿using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Services;
 

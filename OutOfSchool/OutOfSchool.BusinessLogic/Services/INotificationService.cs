@@ -1,5 +1,5 @@
-﻿using OutOfSchool.Services.Enums;
-using OutOfSchool.BusinessLogic.Models.Notifications;
+﻿using OutOfSchool.BusinessLogic.Models.Notifications;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Services;
 

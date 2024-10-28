@@ -1,7 +1,7 @@
-﻿using AutoMapper;
-using OutOfSchool.Services.Enums;
+﻿using System.Linq.Expressions;
+using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
-using System.Linq.Expressions;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;

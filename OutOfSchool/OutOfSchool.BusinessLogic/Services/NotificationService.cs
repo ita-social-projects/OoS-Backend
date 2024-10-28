@@ -1,8 +1,8 @@
-﻿using AutoMapper;
+﻿using System.Text.Json;
+using AutoMapper;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using OutOfSchool.BusinessLogic.Models.Notifications;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
@@ -61,7 +61,7 @@ public class NotificationService : INotificationService
 
         await notificationHub.Clients
             .Group(notification.UserId)
-            .SendAsync("ReceiveNotification", JsonConvert.SerializeObject(new { unreadNotificationsCount, notificationDtoReturn }))
+            .SendAsync("ReceiveNotification", JsonSerializer.Serialize(new { unreadNotificationsCount, notificationDtoReturn }))
             .ConfigureAwait(false);
 
         return notificationDtoReturn;
@@ -104,7 +104,7 @@ public class NotificationService : INotificationService
 
             await notificationHub.Clients
                 .Group(notification.UserId)
-                .SendAsync("ReceiveNotification", JsonConvert.SerializeObject(new { unreadNotificationsCount, newNotificationDto }))
+                .SendAsync("ReceiveNotification", JsonSerializer.Serialize(new { unreadNotificationsCount, newNotificationDto }))
                 .ConfigureAwait(false);
 
             logger.LogInformation(

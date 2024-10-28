@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using Newtonsoft.Json;
-using OutOfSchool.Services.Enums;
+using System.Text.Json.Serialization;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models;
 

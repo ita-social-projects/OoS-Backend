@@ -1,10 +1,10 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.StatisticReports;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Files;
 
 namespace OutOfSchool.BusinessLogic.Services;
 

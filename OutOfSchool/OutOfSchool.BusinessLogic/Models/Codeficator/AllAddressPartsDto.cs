@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 

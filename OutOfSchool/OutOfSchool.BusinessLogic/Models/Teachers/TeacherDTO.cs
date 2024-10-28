@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 
@@ -39,7 +39,7 @@ public class TeacherDTO
 
     public string CoverImageId { get; set; }
 
-    [JsonProperty(NullValueHandling=NullValueHandling.Ignore)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IFormFile CoverImage { get; set; }
 
     public Guid WorkshopId { get; set; }

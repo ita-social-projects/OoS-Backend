@@ -1,10 +1,10 @@
 ﻿using System.Linq.Expressions;
+using System.Text.Json;
 using AutoMapper;
 using Microsoft.AspNetCore.SignalR;
-using Newtonsoft.Json;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
@@ -114,7 +114,7 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
             if (notReadChatMessages.Count > 0)
             {
                 var chatMessageIds = notReadChatMessages.Select(x => x.Id);
-                var resultMessage = JsonConvert.SerializeObject(chatMessageIds);
+                var resultMessage = JsonSerializer.Serialize(chatMessageIds);
 
                 await workshopHub.Clients.Group(chatRoomId.ToString()).SendAsync("ReadChatMessagesByUser", resultMessage).ConfigureAwait(false);
             }

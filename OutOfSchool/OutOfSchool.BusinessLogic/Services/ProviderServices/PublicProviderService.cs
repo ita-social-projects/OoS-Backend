@@ -1,5 +1,5 @@
-﻿using OutOfSchool.Services.Enums;
-using OutOfSchool.BusinessLogic.Models.Providers;
+﻿using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services.ProviderServices;

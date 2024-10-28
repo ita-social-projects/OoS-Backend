@@ -1,9 +1,9 @@
-﻿using OutOfSchool.Services.Common.Exceptions;
-using OutOfSchool.Services.Models.Images;
-using OutOfSchool.Services.Repository.Files;
-using OutOfSchool.BusinessLogic.Common;
+﻿using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Common.Resources.Codes;
 using OutOfSchool.BusinessLogic.Models.Images;
+using OutOfSchool.Services.Common.Exceptions;
+using OutOfSchool.Services.Models.Images;
+using OutOfSchool.Services.Repository.Files;
 
 namespace OutOfSchool.BusinessLogic.Services.Images;
 

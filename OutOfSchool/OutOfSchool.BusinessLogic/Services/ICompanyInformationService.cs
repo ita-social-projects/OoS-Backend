@@ -1,5 +1,5 @@
-﻿using OutOfSchool.Services.Enums;
-using OutOfSchool.BusinessLogic.Models;
+﻿using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Services;
 

@@ -1,7 +1,7 @@
 using Google.Apis.Storage.v1.Data;
 using Google.Cloud.Storage.V1;
-using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.BusinessLogic.Common.Synchronization;
+using OutOfSchool.Services.Repository.Files;
 
 namespace OutOfSchool.BusinessLogic.Services.Gcp;
 

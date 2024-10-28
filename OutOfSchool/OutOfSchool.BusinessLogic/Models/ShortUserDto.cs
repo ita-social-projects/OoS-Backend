@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 
@@ -17,11 +17,11 @@ public class ShortUserDto : BaseUserDto
     public bool EmailConfirmed { get; set; }
 
     [EnumDataType(typeof(Gender), ErrorMessage = Constants.EnumErrorMessage)]
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Gender? Gender { get; set; }
 
     [DataType(DataType.Date)]
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [CustomAge(MinAge = Constants.AdultAge, ErrorMessage = Constants.DayOfBirthErrorMessage)]
     public DateTime? DateOfBirth { get; set; }
 }

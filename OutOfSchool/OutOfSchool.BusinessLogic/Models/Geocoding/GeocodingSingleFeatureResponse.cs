@@ -1,84 +1,84 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Models.Geocoding;
 
 public class GeocodingSingleFeatureResponse : GeocodingApiResponse
 {
-    [JsonProperty("type")]
+    [JsonPropertyName("type")]
     public override string Type { get; } = "Feature";
 
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string Id { get; set; }
 
-    [JsonProperty("properties")]
+    [JsonPropertyName("properties")]
     public Properties Properties { get; set; }
 
-    [JsonProperty("bbox")]
+    [JsonPropertyName("bbox")]
     public List<double> Bbox { get; set; }
 
-    [JsonProperty("geo_centroid")]
+    [JsonPropertyName("geo_centroid")]
     public GeoCentroid GeoCentroid { get; set; }
 
-    [JsonProperty("url")]
+    [JsonPropertyName("url")]
     public Uri Url { get; set; }
 }
 
 public class GeoCentroid
 {
-    [JsonProperty("type")]
+    [JsonPropertyName("type")]
     public string Type { get; set; }
 
-    [JsonProperty("coordinates")]
+    [JsonPropertyName("coordinates")]
     public List<double> Coordinates { get; set; }
 }
 
 public class Properties
 {
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
 
-    [JsonProperty("categories")]
+    [JsonPropertyName("categories")]
     public string Categories { get; set; }
 
-    [JsonProperty("country_code")]
+    [JsonPropertyName("country_code")]
     public string CountryCode { get; set; }
 
-    [JsonProperty("country")]
+    [JsonPropertyName("country")]
     public string Country { get; set; }
 
-    [JsonProperty("postal_code")]
+    [JsonPropertyName("postal_code")]
     public string PostalCode { get; set; }
 
-    [JsonProperty("street_id")]
+    [JsonPropertyName("street_id")]
     public string StreetId { get; set; }
 
-    [JsonProperty("lang")]
+    [JsonPropertyName("lang")]
     public string Lang { get; set; }
 
-    [JsonProperty("street")]
+    [JsonPropertyName("street")]
     public string Street { get; set; }
 
-    [JsonProperty("street_type")]
+    [JsonPropertyName("street_type")]
     public string StreetType { get; set; }
 
-    [JsonProperty("settlement_id")]
+    [JsonPropertyName("settlement_id")]
     public string SettlementId { get; set; }
 
-    [JsonProperty("settlement")]
+    [JsonPropertyName("settlement")]
     public string Settlement { get; set; }
 
-    [JsonProperty("settlement_type")]
+    [JsonPropertyName("settlement_type")]
     public string SettlementType { get; set; }
 
-    [JsonProperty("copyright")]
+    [JsonPropertyName("copyright")]
     public string Copyright { get; set; }
 
-    [JsonProperty("relevance")]
+    [JsonPropertyName("relevance")]
     public double Relevance { get; set; }
 
-    [JsonProperty("settlement_url")]
+    [JsonPropertyName("settlement_url")]
     public Uri SettlementUrl { get; set; }
 
-    [JsonProperty("street_url")]
+    [JsonPropertyName("street_url")]
     public Uri StreetUrl { get; set; }
 }

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.BusinessLogic.Models.Providers;
 
 namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 

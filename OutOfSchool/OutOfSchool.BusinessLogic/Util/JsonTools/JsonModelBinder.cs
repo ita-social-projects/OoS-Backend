@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Newtonsoft.Json;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace OutOfSchool.BusinessLogic.Util.JsonTools;
 
@@ -18,7 +18,7 @@ public class JsonModelBinder : IModelBinder
             bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
 
             var valueAsString = valueProviderResult.FirstValue;
-            var result = JsonConvert.DeserializeObject(valueAsString, bindingContext.ModelType);
+            var result = JsonSerializer.Deserialize(valueAsString, bindingContext.ModelType);
             if (result != null)
             {
                 bindingContext.Result = ModelBindingResult.Success(result);

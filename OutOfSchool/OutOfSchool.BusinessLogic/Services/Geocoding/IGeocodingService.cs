@@ -1,7 +1,7 @@
 #nullable enable
 
-using OutOfSchool.Common.Models;
 using OutOfSchool.BusinessLogic.Models.Geocoding;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.BusinessLogic.Services;
 

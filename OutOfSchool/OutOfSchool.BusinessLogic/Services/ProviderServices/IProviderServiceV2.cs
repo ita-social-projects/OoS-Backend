@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.Common.Models;
 using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 

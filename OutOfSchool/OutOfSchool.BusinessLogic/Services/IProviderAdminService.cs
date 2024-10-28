@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.Common.Models;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.BusinessLogic.Services;
 

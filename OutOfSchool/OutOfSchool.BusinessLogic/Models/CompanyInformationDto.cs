@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models;
 

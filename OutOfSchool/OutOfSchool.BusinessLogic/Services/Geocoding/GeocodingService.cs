@@ -2,11 +2,11 @@
 
 using AutoMapper;
 using Microsoft.Extensions.Options;
-using OutOfSchool.Common.Enums;
-using OutOfSchool.Common.Models;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.Geocoding;
 using OutOfSchool.Common.Communication;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
