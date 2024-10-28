@@ -18,7 +18,6 @@
         <PackageReference Include="OpenIddict.AspNetCore" />
         <PackageReference Include="OpenIddict.Quartz" />
         <PackageReference Include="LazyCache.AspNetCore" />
-        <PackageReference Include="Newtonsoft.Json" />
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
         <PackageReference Include="Serilog.AspNetCore" />
         <PackageReference Include="Serilog.Enrichers.GlobalLogContext" />
@@ -34,10 +33,10 @@
         <PackageReference Include="Quartz.Serialization.Json" />
         <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
         <PackageReference Include="MySql.Data" />
-        <PackageReference Include="Elastic.Apm.AspNetCore"/>
-        <PackageReference Include="Elastic.Apm.EntityFrameworkCore"/>
-        <PackageReference Include="Elastic.Apm.Elasticsearch"/>
-        <PackageReference Include="Elastic.Apm.StackExchange.Redis"/>
+        <PackageReference Include="Elastic.Apm.AspNetCore" />
+        <PackageReference Include="Elastic.Apm.EntityFrameworkCore" />
+        <PackageReference Include="Elastic.Apm.Elasticsearch" />
+        <PackageReference Include="Elastic.Apm.StackExchange.Redis" />
     </ItemGroup>
 
     <ProjectExtensions>
