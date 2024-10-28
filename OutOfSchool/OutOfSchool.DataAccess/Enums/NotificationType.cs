@@ -1,9 +1,8 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+﻿using System.Text.Json.Serialization;
 
 namespace OutOfSchool.Services.Enums;
 
-[JsonConverter(typeof(StringEnumConverter))]
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum NotificationType
 {
     Application,

@@ -1,10 +1,12 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+﻿using System.Text.Json.Serialization;
+//using Newtonsoft.Json;
+//using Newtonsoft.Json.Converters;
 
 namespace OutOfSchool.Services.Enums;
 
 // TODO: Swagger ignores this attribute on model property in webapi layer
-[JsonConverter(typeof(StringEnumConverter))]
+//[JsonConverter(typeof(StringEnumConverter))]
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ApplicationStatus
 {
     Pending = 1,
