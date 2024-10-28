@@ -1,6 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
-        <PackageReference Include="Newtonsoft.Json" />
     </ItemGroup>
 </Project>
