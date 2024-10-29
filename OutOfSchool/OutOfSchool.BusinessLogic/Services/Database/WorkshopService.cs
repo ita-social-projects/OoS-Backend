@@ -32,6 +32,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private readonly string includingPropertiesForMappingWorkShopCard = $"{nameof(Workshop.Address)}";
 
     private readonly IWorkshopRepository workshopRepository;
+    private readonly IEntityRepository<long, Tag> tagRepository;
     private readonly IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository;
     private readonly IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository;
     private readonly ITeacherService teacherService;
@@ -52,6 +53,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
     /// </summary>
     /// <param name="workshopRepository">Repository for Workshop entity.</param>
+    /// <param name="tagRepository">Repository for Tag entity.</param>
     /// <param name="dateTimeRangeRepository">Repository for DateTimeRange entity.</param>
     /// <param name="teacherService">Teacher service.</param>
     /// <param name="logger">Logger.</param>
@@ -69,6 +71,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <param name="tagService">Service for Tag entity.</param>
     public WorkshopService(
         IWorkshopRepository workshopRepository,
+        IEntityRepository<long, Tag> tagRepository,
         IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository,
         IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository,
         ITeacherService teacherService,
@@ -86,6 +89,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         ISearchStringService searchStringService)
     {
         this.workshopRepository = workshopRepository;
+        this.tagRepository = tagRepository;
         this.dateTimeRangeRepository = dateTimeRangeRepository;
         this.roomRepository = roomRepository;
         this.teacherService = teacherService;
@@ -119,17 +123,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         workshop.Provider = await providerRepository.GetById(workshop.ProviderId).ConfigureAwait(false);
         workshop.ProviderOwnership = workshop.Provider.Ownership;
 
-        var tags = new List<TagDto>();
-
-        foreach (var tagId in dto.TagIds)
-        {
-            var tag = await tagService.GetById(tagId);
-            if (tag != null)
-            {
-                var tagDto = mapper.Map<TagDto>(tag);
-                tags.Add(tagDto);
-            }
-        }
+        workshop.Tags = (await tagRepository.GetAll()).Where(tag => dto.TagIds.Contains(tag.Id)).ToList();
 
         if (dto.Teachers is not null)
         {
