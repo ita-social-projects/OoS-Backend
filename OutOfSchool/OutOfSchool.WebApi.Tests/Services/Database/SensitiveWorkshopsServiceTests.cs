@@ -33,6 +33,7 @@ public class SensitiveWorkshopsServiceTests
 
     private ISensitiveWorkshopsService sensitiveWorkshopService;
     private Mock<IWorkshopRepository> workshopRepository;
+    private Mock<IEntityRepository<long, Tag>> tagRepository;
     private Mock<IMapper> mapperMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
@@ -45,6 +46,7 @@ public class SensitiveWorkshopsServiceTests
     public void SetUp()
     {
         workshopRepository = new Mock<IWorkshopRepository>();
+        tagRepository = new Mock<IEntityRepository<long, Tag>>();
         mapperMock = new Mock<IMapper>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
@@ -56,6 +58,7 @@ public class SensitiveWorkshopsServiceTests
         sensitiveWorkshopService =
             new WorkshopService(
                 workshopRepository.Object,
+                new Mock<IEntityRepository<long, Tag>>().Object,
                 new Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>>().Object,
                 new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>().Object,
                 new Mock<ITeacherService>().Object,

@@ -33,6 +33,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class WorkshopServiceTests
 {
     private IWorkshopService workshopService;
+    private Mock<IEntityRepository<long, Tag>> tagRepository;
     private Mock<IWorkshopRepository> workshopRepository;
     private Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>> dateTimeRangeRepository;
     private Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>> roomRepository;
@@ -55,6 +56,7 @@ public class WorkshopServiceTests
     public void SetUp()
     {
         workshopRepository = new Mock<IWorkshopRepository>();
+        tagRepository = new Mock<IEntityRepository<long, Tag>>();
         dateTimeRangeRepository = new Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>>();
         roomRepository = new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>();
         teacherService = new Mock<ITeacherService>();
@@ -75,6 +77,7 @@ public class WorkshopServiceTests
         workshopService =
             new WorkshopService(
                 workshopRepository.Object,
+                tagRepository.Object,
                 dateTimeRangeRepository.Object,
                 roomRepository.Object,
                 teacherService.Object,
