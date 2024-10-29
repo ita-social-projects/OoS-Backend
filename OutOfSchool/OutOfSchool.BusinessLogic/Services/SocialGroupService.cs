@@ -46,8 +46,15 @@ public class SocialGroupService : ISocialGroupService
             ? "SocialGroup table is empty."
             : $"All {socialGroups.Count()} records were successfully received from the SocialGroup table");
 
-        return mapper.Map<List<SocialGroupDto>>(socialGroups, opt =>
-        opt.Items["Localization"] = localization);
+        return socialGroups.Select(x =>
+        new SocialGroupDto()
+        {
+            Id = x.Id,
+            Name = localization == LocalizationType.En ? x.NameEn : x.Name,
+        }).ToList();
+
+        /*return mapper.Map<List<SocialGroupDto>>(socialGroups, opt =>
+        opt.Items["Localization"] = localization);*/
     }
 
     /// <inheritdoc/>
@@ -66,12 +73,18 @@ public class SocialGroupService : ISocialGroupService
 
         logger.LogInformation($"Successfully got a SocialGroup with Id = {id} and {localization} localization.");
 
-        return mapper.Map<SocialGroupDto>(socialGroup, opt =>
-        opt.Items["Localization"] = localization);
+        return new SocialGroupDto()
+        {
+            Id = socialGroup.Id,
+            Name = localization == LocalizationType.En ? socialGroup.NameEn : socialGroup.Name,
+        };
+
+        /*return mapper.Map<SocialGroupDto>(socialGroup, opt =>
+        opt.Items["Localization"] = localization);*/
     }
 
     /// <inheritdoc/>
-    public async Task<SocialGroupDto> Create(SocialGroupCreate dto)
+    public async Task<SocialGroupCreate> Create(SocialGroupCreate dto)
     {
         logger.LogInformation("SocialGroup creating was started.");
 
@@ -81,8 +94,7 @@ public class SocialGroupService : ISocialGroupService
 
         logger.LogInformation($"SocialGroup with Id = {newSocialGroup?.Id} created successfully.");
 
-        return mapper.Map<SocialGroupDto>(socialGroup, opt =>
-        opt.Items["Localization"] = LocalizationType.Ua);
+        return mapper.Map<SocialGroupCreate>(newSocialGroup);
     }
 
     /// <inheritdoc/>

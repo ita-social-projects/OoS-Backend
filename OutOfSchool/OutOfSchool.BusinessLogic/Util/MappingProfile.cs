@@ -1,7 +1,6 @@
 using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 using GrpcService;
-using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Achievement;
 using OutOfSchool.BusinessLogic.Models.Application;
@@ -163,9 +162,12 @@ public class MappingProfile : Profile
 
         CreateMap<SocialGroup, SocialGroupDto>()
             .ForMember(dest => dest.Name, opt => opt.MapFrom((src, dest, destMembet, context) =>
-            context.Items.ContainsKey("Localization") &&
+            /*context.Items.ContainsKey("Localization") &&
             context.Items["Localization"] is LocalizationType loc &&
-            loc == LocalizationType.En ? src.NameEn : src.Name));
+            loc == LocalizationType.En ? src.NameEn : src.Name))*/
+            src.Name));
+
+        CreateMap<SocialGroup, SocialGroupCreate>();
 
         CreateMap<SocialGroupCreate, SocialGroup>()
             .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
