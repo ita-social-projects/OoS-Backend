@@ -48,6 +48,9 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
 
     public Guid ChiefJudgeId { get; set; }
 
+    [ForeignKey(nameof(ChiefJudgeId))]
+    public Judge ChiefJudge { get; set; } // added TK
+
     //[ForeignKey(nameof(ChiefJudgeId))]
     //public virtual Individual ChiefJudgeId { get; set; }
 
@@ -84,6 +87,8 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
 
     public Guid VenueId { get; set; }
 
+    public string VenueName { get; set; } // TK added
+
     //[ForeignKey(nameof(VenueId))]
     //public virtual Premises Venue { get; set; }
 
@@ -95,6 +100,8 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
     public virtual ICollection<Provider> ParticipantsOfTheEvent { get; set; }
 
     public bool AreThereBenefits { get; set; }
+
+    public string Benefits { get; set; } // TK added
 
     public uint Rating { get; set; }
 
