@@ -8,6 +8,7 @@ using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 
 namespace OutOfSchool.Services.Models;
 
@@ -117,6 +118,8 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISo
     public string UserId { get; set; }
 
     public virtual List<Workshop> Workshops { get; set; }
+
+    public virtual List<WorkshopDraft> WorkshopDrafts { get; set; }
 
     public virtual User User { get; set; }
 
