@@ -1207,7 +1207,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         dto.IncludedStudyGroups?.ToList().ForEach(e => e.Id = Guid.Empty);
 
         // If the DefaultTeacherId property of WorkshopBaseDto is incorrect, set it to the default value.
-        if (dto.DefaultTeacherId is not null && !await teacherService.Exists((Guid)dto.DefaultTeacherId).ConfigureAwait(false))
+        if (dto.DefaultTeacherId is not null && !await teacherService.ExistsAsync((Guid)dto.DefaultTeacherId).ConfigureAwait(false))
         {
             dto.DefaultTeacherId = default;
         }

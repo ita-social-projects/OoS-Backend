@@ -46,7 +46,7 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
 
     public OwnershipType ProviderOwnership { get; set; }
 
-    [MaxLength(200)]
+    [MaxLength(Constants.MaxKeywordsLength)]
     public string Keywords { get; set; } = string.Empty;
 
     public WorkshopStatus Status { get; set; }
@@ -54,7 +54,6 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     [Required(ErrorMessage = "Available seats are required")]
     public uint AvailableSeats { get; set; } = uint.MaxValue;
 
-    // 13
     [Required(ErrorMessage = "Form of learning is required")]
     public FormOfLearning FormOfLearning { get; set; }
 
@@ -87,12 +86,12 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     [Required(ErrorMessage = "Property IsInclusive is required")]
     public bool IsInclusive { get; set; } = default;
 
-    [MaxLength(500)]
+    [MaxLength(Constants.MaxAdditionalDescriptionLength)]
     public string AdditionalDescription { get; set; }
 
     public bool AreThereBenefits { get; set; } = default;
 
-    [MaxLength(500)]
+    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
     public string PreferentialTermsOfParticipation { get; set; }
 
     [Required(ErrorMessage = "Educational shift is required")]

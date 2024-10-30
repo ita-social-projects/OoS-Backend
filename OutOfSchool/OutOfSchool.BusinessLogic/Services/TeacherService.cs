@@ -166,6 +166,14 @@ public class TeacherService : ITeacherService
         return teachersWorkshopId ?? Guid.Empty;
     }
 
+    /// <inheritdoc/>
+    public async Task<bool> ExistsAsync(Guid id)
+    {
+        logger.LogDebug("Checking if Teacher exists by Id started. Looking Id = {id}.", id);
+
+        return await teacherRepository.Any(x => x.Id == id);
+    }
+
     private async Task UpdateTeacher()
     {
         try
@@ -174,16 +182,8 @@ public class TeacherService : ITeacherService
         }
         catch (DbUpdateException ex)
         {
-            logger.LogError(ex, "Unreal to update teacher.");
+            logger.LogError(ex, "Unable to update teacher.");
             throw;
         }
-    }
-
-    /// <inheritdoc/>
-    public Task<bool> Exists(Guid id)
-    {
-        logger.LogInformation("Checking if Teacher exists by Id started. Looking Id = {id}.", id);
-
-        return teacherRepository.Any(x => x.Id == id);
     }
 }

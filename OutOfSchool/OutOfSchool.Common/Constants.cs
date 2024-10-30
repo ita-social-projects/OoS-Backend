@@ -164,4 +164,19 @@ public static class Constants
     /// Maximum length of provider short title.
     /// </summary>
     public const int MaxProviderShortTitleLength = 60;
+
+    /// <summary>
+    /// Maximum length of additional description.
+    /// </summary>
+    public const int MaxAdditionalDescriptionLength = 500;
+
+    /// <summary>
+    /// Maximum length of preferential terms of participation.
+    /// </summary>
+    public const int MaxPreferentialTermsOfParticipationLength = 500;
+
+    /// <summary>
+    /// Maximum length of keywords.
+    /// </summary>
+    public const int MaxKeywordsLength = 200;
 }

@@ -58,7 +58,6 @@ public class WorkshopBaseDto : IValidatableObject
     [CollectionNotEmpty(ErrorMessage = "At least one DateTime range is required")]
     public List<DateTimeRangeDto> DateTimeRanges { get; set; }
 
-    [Required]
     public bool IsPaid { get; set; } = false;
 
     [Column(TypeName = "decimal(18,2)")]
@@ -125,18 +124,15 @@ public class WorkshopBaseDto : IValidatableObject
 
     public DateOnly ActiveTo { get; set; }
 
-    public bool ShortStay { get; set; } = default;
+    public bool ShortStay { get; set; } = false;
 
-    [Required]
-    public bool IsSelfFinanced { get; set; } = default;
+    public bool IsSelfFinanced { get; set; } = false;
 
-    [Required]
-    public bool IsSpecial { get; set; } = default;
+    public bool IsSpecial { get; set; } = false;
 
     public uint SpecialNeedsId { get; set; } = uint.MinValue;
 
-    [Required]
-    public bool IsInclusive { get; set; } = default;
+    public bool IsInclusive { get; set; } = false;
 
     [MaxLength(500)]
     public string AdditionalDescription { get; set; }
