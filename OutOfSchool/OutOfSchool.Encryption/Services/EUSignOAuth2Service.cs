@@ -132,15 +132,12 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
             int typeIndex, deviceIndex;
             string curType, curDevice;
 
-            typeIndex = 0;
-            while (true)
+            for (typeIndex = 0; typeIndex <= Int32.MaxValue; typeIndex++)
             {
                 IEUSignCP.EnumKeyMediaTypes(typeIndex, out curType);
                 if (curType == type)
                 {
-                    deviceIndex = 0;
-
-                    while (true)
+                    for (deviceIndex = 0; deviceIndex <= Int32.MaxValue; deviceIndex++)
                     {
                         IEUSignCP.EnumKeyMediaDevices(
                             typeIndex, deviceIndex, out curDevice);
@@ -150,12 +147,8 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                                 typeIndex, deviceIndex, password);
                             return;
                         }
-
-                        deviceIndex++;
                     }
                 }
-
-                typeIndex++;
             }
         }
         catch (Exception)
