@@ -6,7 +6,7 @@ steps:
     - build
     - ${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-api:$SHORT_SHA
     - --cache-image=${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-cache:api
-    - --builder=paketobuildpacks/builder:base
+    - --builder=paketobuildpacks/builder-jammy-base:latest
     - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --buildpack=gcr.io/paketo-buildpacks/environment-variables
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.WebApi/

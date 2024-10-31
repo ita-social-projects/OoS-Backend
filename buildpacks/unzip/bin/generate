@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+output_dir=$CNB_OUTPUT_DIR
+
+cat >> "${output_dir}/build.Dockerfile" <<EOL
+ARG base_image
+FROM \${base_image}
+
+USER root
+RUN apt-get update && apt-get install -y unzip
+
+ARG user_id
+USER \${user_id}
+EOL

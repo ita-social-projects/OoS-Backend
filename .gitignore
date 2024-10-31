@@ -338,3 +338,6 @@ fabric.properties
 **/.DS_Store
 **/.idea
 **/.vagrant
+
+# Add buildpacks bin folder
+!buildpacks/**/bin/

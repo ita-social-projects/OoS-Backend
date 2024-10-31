@@ -6,7 +6,7 @@ steps:
     - build
     - gcr.io/$PROJECT_ID/oos-api:$SHORT_SHA
     - --cache-image=gcr.io/$PROJECT_ID/oos-cache:api
-    - --builder=paketobuildpacks/builder:base
+    - --builder=paketobuildpacks/builder-jammy-base:latest
     - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --buildpack=gcr.io/paketo-buildpacks/environment-variables
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.WebApi/

@@ -8,7 +8,7 @@ steps:
     - --cache-image=${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-cache:auth
     - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --buildpack=gcr.io/paketo-buildpacks/environment-variables
-    - --builder=paketobuildpacks/builder:base
+    - --builder=paketobuildpacks/builder-jammy-base:latest
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.AuthorizationServer/
     - --env=BPE_AppDefaults__Version=$SHORT_SHA
     - --publish

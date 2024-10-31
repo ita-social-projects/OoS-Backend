@@ -1,0 +1,16 @@
+api = "0.9"
+
+[buildpack]
+description = "A buildpack to add a layer of C IIT libraries for encryption service"
+id = "outofschool/iit"
+version = "0.0.1"
+name = "Buildpack for IIT"
+
+[[buildpack.licenses]]
+type = "MIT"
+
+[metadata]
+include-files = ["buildpack.toml"]
+
+[[targets]]
+os = "linux"

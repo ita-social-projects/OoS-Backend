@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+function topic() {
+    echo "-----> $*"
+}
+
+topic "IIT Buildpack"
+
+layers_dir="$CNB_LAYERS_DIR"
+
+iit_layer="${CNB_LAYERS_DIR}/iit"
+mkdir -p "${iit_layer}"
+
+iit_version=${BP_IIT_URL##*/}
+
+if [ -f "${layers_dir}/iit.toml" ]; then
+    cached_iit_version=$(awk -F'=' '/^\[metadata\]/ {in_section=1; next} /^\[.*\]/ {in_section=0} in_section && $1 ~ /iit_version/ {gsub(/[ "]/, "", $2); print $2}' "${layers_dir}/iit.toml" || echo 'NOT FOUND')
+else
+    cached_iit_version="None"
+fi
+
+if [[ "${iit_version}" == "${cached_iit_version}" ]]; then
+    topic "Reusing IIT Libraries"
+else
+    topic "Downloading and extracting IIT libraries"
+    rm -rf "${iit_layer}/lib"
+    curl -s -o "./iit.zip" "${BP_IIT_URL}"
+    unzip -j -o "./iit.zip" 'Modules/Linux/64/*' -d "${iit_layer}/lib"
+    rm "./iit.zip"
+
+    # TODO: LD_LIBRARY_PATH is automatically set by buildpack lifecycle
+    # TODO: leave this here in case the behaviour changes
+    # topic "Writing environment variables"
+    # iit_env_dir=${iit_layer}/env.launch
+    # mkdir -p "$iit_env_dir"
+    # echo -n "$iit_layer" > "${iit_env_dir}/LD_LIBRARY_PATH.prepend"
+    # echo -n "$iit_layer" > "${iit_env_dir}/LD_LIBRARY_PATH.default"
+    # echo -n ":" > "${iit_env_dir}/LD_LIBRARY_PATH.delim"
+fi
+
+cat > "${iit_layer}.toml" <<EOL
+[types]
+launch = true
+cache = true
+[metadata]
+iit_version = "${iit_version}"
+EOL
