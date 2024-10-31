@@ -560,10 +560,9 @@ public static class Startup
         var mailConfig = configuration
             .GetSection(EmailOptions.SectionName)
             .Get<EmailOptions>();
-        services.AddEmailSenderService(
-            builder.Environment.IsDevelopment(),
-            mailConfig.SendGridKey,
-            builder => builder.Bind(configuration.GetSection(EmailOptions.SectionName)));
+
+        services.AddEmailSender(builder.Environment.IsDevelopment(), mailConfig.SendGridKey);
+        services.AddEmailSenderService(builder => builder.Bind(configuration.GetSection(EmailOptions.SectionName)));
 
         // Hosts options
         services.Configure<HostsConfig>(configuration.GetSection(HostsConfig.Name));
