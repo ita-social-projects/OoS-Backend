@@ -29,22 +29,6 @@ public static class ServiceProviderExtensions
         bool isDevelopment,
         string sendGridApiKey)
     {
-        // if (isDevelopment && string.IsNullOrWhiteSpace(sendGridApiKey))
-        // {
-        //     services.AddTransient<IEmailSenderService, DevEmailSender>();
-        //     return services;
-        // }
-        //
-        // if (string.IsNullOrWhiteSpace(sendGridApiKey))
-        // {
-        //     sendGridApiKey = PlaceholderForSendGridApiKey;
-        // }
-        // services.AddSendGrid(options =>
-        // {
-        //     options.ApiKey = sendGridApiKey;
-        //     options.HttpErrorAsException = true;
-        // });
-        
         if (isDevelopment && string.IsNullOrWhiteSpace(sendGridApiKey))
         {
             services.AddSingleton<IEmailSender, DevelopmentEmailSender>();

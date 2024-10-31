@@ -5,14 +5,12 @@ using NUnit.Framework;
 using OutOfSchool.EmailSender.Quartz;
 using OutOfSchool.EmailSender;
 using Quartz;
-using SendGrid;
 using System.Threading.Tasks;
 using System;
 using SendGrid.Helpers.Mail;
-using System.Net;
 using System.Text;
-using System.Threading;
 using System.Collections.Generic;
+using OutOfSchool.EmailSender.Senders;
 
 namespace OutOfSchool.AuthServer.Tests.EmailSender;
 
@@ -22,7 +20,7 @@ public class EmailSenderJobTests
     private const string DateTimeStringFormat = "dd.MM.yyyy HH:mm:ss zzz";
     private Mock<IOptions<EmailOptions>> _mockEmailOptions;
     private Mock<ILogger<EmailSenderJob>> _mockLogger;
-    private Mock<ISendGridClient> _mockSendGridClient;
+    private Mock<IEmailSender> _mockEmailSender;
 
     private EmailSenderJob _emailSenderJob;
 
@@ -31,12 +29,12 @@ public class EmailSenderJobTests
     {
         _mockEmailOptions = new Mock<IOptions<EmailOptions>>();
         _mockLogger = new Mock<ILogger<EmailSenderJob>>();
-        _mockSendGridClient = new Mock<ISendGridClient>();
+        _mockEmailSender = new Mock<IEmailSender>();
 
         _emailSenderJob = new EmailSenderJob(
             _mockEmailOptions.Object,
             _mockLogger.Object,
-            _mockSendGridClient.Object
+            _mockEmailSender.Object
         );
     }
 
@@ -52,8 +50,8 @@ public class EmailSenderJobTests
         await _emailSenderJob.Execute(mockContext.Object);
 
         // Assert
-        _mockSendGridClient.Verify(
-            client => client.SendEmailAsync(It.IsAny<SendGridMessage>(), It.IsAny<CancellationToken>()),
+        _mockEmailSender.Verify(
+            sender => sender.SendAsync(It.IsAny<SendGridMessage>()),
             Times.Never);
     }
 
@@ -69,8 +67,8 @@ public class EmailSenderJobTests
         await _emailSenderJob.Execute(mockContext.Object);
 
         // Assert
-        _mockSendGridClient.Verify(
-            client => client.SendEmailAsync(It.IsAny<SendGridMessage>(), It.IsAny<CancellationToken>()),
+        _mockEmailSender.Verify(
+            sender => sender.SendAsync(It.IsAny<SendGridMessage>()),
             Times.Never);
     }
 
@@ -94,8 +92,8 @@ public class EmailSenderJobTests
         await _emailSenderJob.Execute(mockContext.Object);
 
         // Assert
-        _mockSendGridClient.Verify(
-            client => client.SendEmailAsync(It.IsAny<SendGridMessage>(), It.IsAny<CancellationToken>()),
+        _mockEmailSender.Verify(
+            sender => sender.SendAsync(It.IsAny<SendGridMessage>()),
             Times.Never);
     }
 
@@ -114,15 +112,14 @@ public class EmailSenderJobTests
                 { EmailSenderStringConstants.PlainContent, Convert.ToBase64String(Encoding.ASCII.GetBytes("Hello")) },
                 { EmailSenderStringConstants.ExpirationTime, DateTimeOffset.Now.AddDays(1).ToString(DateTimeStringFormat) }
             });
-        _mockSendGridClient.Setup(client => client.SendEmailAsync(It.IsAny<SendGridMessage>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Response(HttpStatusCode.OK, null, null));
+        // _mockEmailSender.Setup(sender => sender.SendAsync(It.IsAny<SendGridMessage>())).ReturnsAsync(new Response(HttpStatusCode.OK, null, null));
 
         // Act
         await _emailSenderJob.Execute(mockContext.Object);
 
         // Assert
-        _mockSendGridClient.Verify(
-            client => client.SendEmailAsync(It.IsAny<SendGridMessage>(), It.IsAny<CancellationToken>()),
+        _mockEmailSender.Verify(
+            sender => sender.SendAsync(It.IsAny<SendGridMessage>()),
             Times.Once);
     }
 
@@ -141,12 +138,13 @@ public class EmailSenderJobTests
                 { EmailSenderStringConstants.PlainContent, Convert.ToBase64String(Encoding.ASCII.GetBytes("Hello")) },
                 { EmailSenderStringConstants.ExpirationTime, DateTimeOffset.Now.AddDays(1).ToString(DateTimeStringFormat) }
             });
-        _mockSendGridClient.Setup(client => client.SendEmailAsync(It.IsAny<SendGridMessage>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Response(HttpStatusCode.TooManyRequests, null, null));
+        _mockEmailSender.Setup(sender => sender.SendAsync(It.IsAny<SendGridMessage>()))
+            .ThrowsAsync(new JobExecutionException());
 
         // Act & Assert
         Assert.ThrowsAsync<JobExecutionException>(() => _emailSenderJob.Execute(mockContext.Object));
     }
+    
 
     [Test]
     public async Task Execute_WithSendGridError_ShoundNotThrowException()
@@ -159,19 +157,19 @@ public class EmailSenderJobTests
             {
                 { EmailSenderStringConstants.Email, "test@example.com" },
                 { EmailSenderStringConstants.Subject, "Test Email" },
-                { EmailSenderStringConstants.HtmlContent, Convert.ToBase64String(Encoding.ASCII.GetBytes("<html><body><h1>Hello</h1></body></html>")) },
-                { EmailSenderStringConstants.PlainContent, Convert.ToBase64String(Encoding.ASCII.GetBytes("Hello")) },
+                { EmailSenderStringConstants.HtmlContent, Convert.ToBase64String("<html><body><h1>Hello</h1></body></html>"u8.ToArray()) },
+                { EmailSenderStringConstants.PlainContent, Convert.ToBase64String("Hello"u8.ToArray()) },
                 { EmailSenderStringConstants.ExpirationTime, DateTimeOffset.Now.AddDays(1).ToString(DateTimeStringFormat) }
             });
-        _mockSendGridClient.Setup(client => client.SendEmailAsync(It.IsAny<SendGridMessage>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Response(HttpStatusCode.BadRequest, null, null));
+        _mockEmailSender.Setup(client => client.SendAsync(It.IsAny<SendGridMessage>()))
+            .ThrowsAsync(new Exception());
 
         // Act
         Assert.ThrowsAsync<JobExecutionException>(() => _emailSenderJob.Execute(mockContext.Object));
 
         // Assert
-        _mockSendGridClient.Verify(
-            client => client.SendEmailAsync(It.IsAny<SendGridMessage>(), It.IsAny<CancellationToken>()),
+        _mockEmailSender.Verify(
+            sender => sender.SendAsync(It.IsAny<SendGridMessage>()),
             Times.Once);
     }
 }
