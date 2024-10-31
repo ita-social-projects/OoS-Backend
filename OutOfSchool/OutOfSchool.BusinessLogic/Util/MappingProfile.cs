@@ -174,6 +174,7 @@ public class MappingProfile : Profile
         ///     context.Items.ContainsKey("Localization") &&
         ///     context.Items["Localization"] is LocalizationType loc &&
         ///     loc == LocalizationType.En ? src.NameEn : src.Name))
+        ///     src.Name));
         /// </summary>
         CreateMap<SocialGroup, SocialGroupDto>()
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name));
