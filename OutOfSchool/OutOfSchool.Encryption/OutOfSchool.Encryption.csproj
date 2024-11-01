@@ -8,7 +8,6 @@
 
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <CodeAnalysisRuleSet>..\StyleCopAnalyzersRules.ruleset</CodeAnalysisRuleSet>
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
   
@@ -28,19 +27,9 @@
     <PackageReference Include="Serilog.Sinks.File" />
     <PackageReference Include="Serilog.Expressions" />
     <PackageReference Include="Elastic.Apm.AspNetCore"/>
-    <PackageReference Include="StyleCop.Analyzers">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="stylecop.json" />
-    <AdditionalFiles Include="stylecop.json">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </AdditionalFiles>
     <None Remove="appsettings.jsonc" />
     <Content Include="appsettings.jsonc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
