@@ -22,6 +22,8 @@ builder.Host.UseSerilog((ctx, lc) => lc
 
 GlobalLogContext.PushProperty("AppVersion", builder.Configuration.GetSection("AppDefaults:Version").Value);
 
+builder.Services.AddSingleton(Log.Logger);
+
 builder.Services.AddElasticApmForAspNetCore(new HttpDiagnosticsSubscriber());
 builder.Services
     .AddOptions<EUSignConfig>()
@@ -67,6 +69,13 @@ app.MapAppHandlers(apiVersionSet);
 
 try
 {
+    using (var scope = app.Services.CreateScope())
+    {
+        // Check EUSign is able to initialize
+        // There's no reason to run this application without it.
+        scope.ServiceProvider.GetRequiredService(typeof(IEUSignOAuth2Service));
+    }
+
     Log.Information("Application has started");
     app.Run();
 }

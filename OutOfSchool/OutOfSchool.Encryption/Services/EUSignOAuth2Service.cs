@@ -13,7 +13,7 @@ namespace OutOfSchool.Encryption.Services;
 public class EUSignOAuth2Service : IEUSignOAuth2Service
 {
     private readonly EUSignConfig eUSignConfig;
-    private readonly Logger<EUSignOAuth2Service> logger;
+    private readonly ILogger<EUSignOAuth2Service> logger;
     private readonly IIoOperationsService ioOperationsService;
 
     // ReSharper disable once InconsistentNaming
@@ -31,7 +31,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
     public EUSignOAuth2Service(
         IOptions<EUSignConfig> config,
         IIoOperationsService ioOperationsService,
-        Logger<EUSignOAuth2Service> logger)
+        ILogger<EUSignOAuth2Service> logger)
     {
         this.eUSignConfig = config.Value;
         this.ioOperationsService = ioOperationsService;
