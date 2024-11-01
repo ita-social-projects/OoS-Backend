@@ -6,11 +6,14 @@ steps:
     - build
     - ${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-encr:$SHORT_SHA
     - --cache-image=${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-cache:encr
-    - --builder=paketobuildpacks/builder:base
+    - --builder=paketobuildpacks/builder-jammy-base:latest
     - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --buildpack=gcr.io/paketo-buildpacks/environment-variables
+    - --buildpack=./buildpacks/iit
+    - --extension=./buildpacks/unzip
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.Encryption/
     - --env=BPE_AppDefaults__Version=$SHORT_SHA
+    - --env=BP_IIT_URL="${_IIT_URL}"
     - --publish
 options:
   logging: CLOUD_LOGGING_ONLY
