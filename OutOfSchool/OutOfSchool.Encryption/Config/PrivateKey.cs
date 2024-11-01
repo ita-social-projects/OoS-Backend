@@ -1,7 +1,10 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace OutOfSchool.Encryption.Config;
 
 public class PrivateKey
 {
+    [Required]
     public string FileName { get; set; }
 
     public string JKSAlias { get; set; }

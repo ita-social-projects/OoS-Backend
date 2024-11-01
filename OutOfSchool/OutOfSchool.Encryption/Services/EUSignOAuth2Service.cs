@@ -49,7 +49,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                 throw new EUSignOAuth2Exception("An error occurred while initializing the cryptographic library.", ex);
             }
 
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
         }
 
         if (!IsPrivateKeyLoaded())
@@ -129,15 +129,14 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
 
         try
         {
-            int typeIndex, deviceIndex;
             string curType, curDevice;
 
-            for (typeIndex = 0; typeIndex <= Int32.MaxValue; typeIndex++)
+            for (var typeIndex = 0; typeIndex <= Int32.MaxValue; typeIndex++)
             {
                 IEUSignCP.EnumKeyMediaTypes(typeIndex, out curType);
                 if (curType == type)
                 {
-                    for (deviceIndex = 0; deviceIndex <= Int32.MaxValue; deviceIndex++)
+                    for (var deviceIndex = 0; deviceIndex <= Int32.MaxValue; deviceIndex++)
                     {
                         IEUSignCP.EnumKeyMediaDevices(
                             typeIndex, deviceIndex, out curDevice);
@@ -260,10 +259,10 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
         IEUSignCP.SetTSPSettings(true, eUSignConfig.DefaultTSPServer, eUSignConfig.DefaultTSPPort.ToString());
 
         // Встановлення налаштувань LDAP-cервера
-        IEUSignCP.SetLDAPSettings(false, string.Empty, string.Empty, true, string.Empty, string.Empty);
+        IEUSignCP.SetLDAPSettings(eUSignConfig.LDAP.Enabled, eUSignConfig.LDAP.Host, eUSignConfig.LDAP.Port.ToString(), eUSignConfig.LDAP.IsAnonymous, eUSignConfig.LDAP.User, eUSignConfig.LDAP.Password);
 
         // Встановлення параметрів CMP-серверу ЦСК
-        IEUSignCP.SetCMPSettings(false, string.Empty, AppConstants.DefaultPort.ToString(), string.Empty);
+        IEUSignCP.SetCMPSettings(eUSignConfig.CMP.Enabled, eUSignConfig.CMP.Host, eUSignConfig.CMP.Port.ToString(), eUSignConfig.CMP.CommonName);
 
         // Збереження кореневих сертифікатів ЦЗО та ЦСК
         IEUSignCP.SaveCertificates(
@@ -389,8 +388,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                     IEUSignCP.GetCertificatesByKeyInfo(
                         keyInfo, cmpServers, cmpServersPorts, out certsCMP);
 
-                    int i = 0;
-                    while (true)
+                    for (var i = 0; i <= Int32.MaxValue; i++)
                     {
                         try
                         {
@@ -410,8 +408,6 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
 
                             break;
                         }
-
-                        i++;
                     }
                 }
             }

@@ -86,13 +86,27 @@
       // A sign of the need to use a proxy server
       "Enabled": false,
       // DNS name or IP address of the proxy server
-      "Host": "",
+      "Host": "127.0.0.1",
       // TCP port of the proxy server
       "Port": 3128,
       // Username of the proxy server
       "User": "",
       // Password of the proxy server user
       "Password": ""
+    },
+    "LDAP": {
+      "Enabled": false,
+      "Host": "127.0.0.1",
+      "Port": 389,
+      "IsAnonymous": true,
+      "User": "",
+      "Password": ""
+    },
+    "CMP": {
+      "Enabled": false,
+      "Host": "127.0.0.1",
+      "Port": 80,
+      "CommonName": ""
     }
   }
 }

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Encryption.Config;
 
-public class Proxy
+public class CMP
 {
     public bool Enabled { get; set; }
 
@@ -12,7 +12,5 @@ public class Proxy
     [Range(0, 65535, ErrorMessage = "Port is out of range.")]
     public int Port { get; set; }
 
-    public string User { get; set; }
-
-    public string Password { get; set; }
+    public string CommonName { get; set; }
 }
