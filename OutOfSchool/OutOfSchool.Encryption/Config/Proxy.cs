@@ -15,4 +15,6 @@ public class Proxy
     public string User { get; set; }
 
     public string Password { get; set; }
+    
+    public bool SavePassword { get; set; }
 }

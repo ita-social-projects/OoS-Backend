@@ -27,4 +27,6 @@ public class EUSignConfig
     public LDAP LDAP { get; set; }
     
     public CMP CMP { get; set; }
+    
+    public FileStore FileStore { get; set; }
 }

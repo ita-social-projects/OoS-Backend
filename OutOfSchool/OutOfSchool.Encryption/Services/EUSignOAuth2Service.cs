@@ -196,14 +196,14 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
 
         // Встановлення налаштувань Сховища сертифікатів та СВС
         IEUSignCP.SetFileStoreSettings(
-            string.Empty,
-            false,
-            true,
-            false,
-            false,
-            false,
-            false,
-            3600);
+            eUSignConfig.FileStore.Path,
+            eUSignConfig.FileStore.CheckCRLs,
+            eUSignConfig.FileStore.AutoRefresh,
+            eUSignConfig.FileStore.OwnCRLsOnly,
+            eUSignConfig.FileStore.FullAndDeltaCRLs,
+            eUSignConfig.FileStore.AutoDownloadCRLs,
+            eUSignConfig.FileStore.SaveLoadedCerts,
+            eUSignConfig.FileStore.ExpireTime);
 
         if (Uri.CheckHostName(eUSignConfig.Proxy.Host) is UriHostNameType.Unknown or UriHostNameType.Basic)
         {
@@ -213,12 +213,12 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
         // Встановлення параметрів Proxy-серверу для доступу к серверам ЦСК
         IEUSignCP.SetProxySettings(
             eUSignConfig.Proxy.Enabled,
-            eUSignConfig.Proxy.User != string.Empty,
+            eUSignConfig.Proxy.User == string.Empty,
             eUSignConfig.Proxy.Host,
             eUSignConfig.Proxy.Port.ToString(),
             eUSignConfig.Proxy.User,
             eUSignConfig.Proxy.Password,
-            true);
+            eUSignConfig.Proxy.SavePassword);
 
         // Встановлення параметрів OCSP-серверів для перевірки сертифікатів підписувачів
         // Порядок використання параметрів OCSP:
@@ -259,7 +259,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
         IEUSignCP.SetTSPSettings(true, eUSignConfig.DefaultTSPServer, eUSignConfig.DefaultTSPPort.ToString());
 
         // Встановлення налаштувань LDAP-cервера
-        IEUSignCP.SetLDAPSettings(eUSignConfig.LDAP.Enabled, eUSignConfig.LDAP.Host, eUSignConfig.LDAP.Port.ToString(), eUSignConfig.LDAP.IsAnonymous, eUSignConfig.LDAP.User, eUSignConfig.LDAP.Password);
+        IEUSignCP.SetLDAPSettings(eUSignConfig.LDAP.Enabled, eUSignConfig.LDAP.Host, eUSignConfig.LDAP.Port.ToString(), eUSignConfig.LDAP.User == string.Empty, eUSignConfig.LDAP.User, eUSignConfig.LDAP.Password);
 
         // Встановлення параметрів CMP-серверу ЦСК
         IEUSignCP.SetCMPSettings(eUSignConfig.CMP.Enabled, eUSignConfig.CMP.Host, eUSignConfig.CMP.Port.ToString(), eUSignConfig.CMP.CommonName);

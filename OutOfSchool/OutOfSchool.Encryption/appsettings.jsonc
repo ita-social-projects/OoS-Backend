@@ -92,13 +92,13 @@
       // Username of the proxy server
       "User": "",
       // Password of the proxy server user
-      "Password": ""
+      "Password": "",
+      "SavePassword": true
     },
     "LDAP": {
       "Enabled": false,
       "Host": "127.0.0.1",
       "Port": 389,
-      "IsAnonymous": true,
       "User": "",
       "Password": ""
     },
@@ -107,6 +107,16 @@
       "Host": "127.0.0.1",
       "Port": 80,
       "CommonName": ""
+    },
+    "FileStore": {
+      "Path": "",
+      "CheckCRLs": false,
+      "AutoRefresh": true,
+      "OwnCRLsOnly": false,
+      "FullAndDeltaCRLs": false,
+      "AutoDownloadCRLs": false,
+      "SaveLoadedCerts": false,
+      "ExpireTime": 3600
     }
   }
 }
