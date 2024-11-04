@@ -19,6 +19,8 @@ public class TimespanConverter : JsonConverter<TimeSpan>
 
     public override void Write(Utf8JsonWriter writer, TimeSpan value, JsonSerializerOptions options)
     {
+        ArgumentNullException.ThrowIfNull(writer);
+
         var timespanFormatted = $"{value.ToString(TimeSpanFormatString)}";
         writer.WriteStringValue(timespanFormatted);
     }

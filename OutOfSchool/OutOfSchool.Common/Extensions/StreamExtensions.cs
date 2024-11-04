@@ -1,10 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using System.Text.Json;
-
-//using Newtonsoft.Json;
-using OutOfSchool.BusinessLogic.Services.Communication;
 
 namespace OutOfSchool.Common.Extensions;
 
@@ -33,12 +29,9 @@ public static class StreamExtensions
             throw new NotSupportedException("Can't write to this stream");
         }
 
-        using var streamWriter = new StreamWriter(stream, new UTF8Encoding(), CommunicationConstants.BufferSize, true);
-        using var jsonTextWriter = new JsonTextWriter(streamWriter);
+        using var jsonTextWriter = new Utf8JsonWriter(stream);
 
-        var jsonSerializer = new JsonSerializer();
-
-        jsonSerializer.Serialize(jsonTextWriter, objectToWrite);
+        JsonSerializer.Serialize(jsonTextWriter, objectToWrite);
         jsonTextWriter.Flush();
     }
 }
