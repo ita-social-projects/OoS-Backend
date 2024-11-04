@@ -50,8 +50,6 @@
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" />
         <PackageReference Include="MySql.Data" />
 		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
-        <PackageReference Include="Newtonsoft.Json" />
-        <PackageReference Include="JsonSubTypes" />
         <PackageReference Include="Quartz.AspNetCore" />
         <PackageReference Include="Quartz.Extensions.DependencyInjection" />
         <PackageReference Include="Quartz.Plugins.TimeZoneConverter" />
@@ -76,10 +74,10 @@
         <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
         <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.AspNetCore.HeaderPropagation" />
-        <PackageReference Include="Elastic.Apm.AspNetCore"/>
-        <PackageReference Include="Elastic.Apm.EntityFrameworkCore"/>
-        <PackageReference Include="Elastic.Apm.Elasticsearch"/>
-        <PackageReference Include="Elastic.Apm.StackExchange.Redis"/>
+        <PackageReference Include="Elastic.Apm.AspNetCore" />
+        <PackageReference Include="Elastic.Apm.EntityFrameworkCore" />
+        <PackageReference Include="Elastic.Apm.Elasticsearch" />
+        <PackageReference Include="Elastic.Apm.StackExchange.Redis" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\OutOfSchool.BackgroundJobs\OutOfSchool.BackgroundJobs.csproj" />
