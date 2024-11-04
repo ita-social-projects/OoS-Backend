@@ -20,11 +20,4 @@
     <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
     <ProjectReference Include="..\OutOfSchool.AuthCommon\OutOfSchool.AuthCommon.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="./appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
 </Project>

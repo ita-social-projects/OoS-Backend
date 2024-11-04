@@ -1,46 +1,34 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <RootNamespace>OutOfSchool.Services</RootNamespace>
-    </PropertyGroup>
   <PropertyGroup>
-    <CodeAnalysisRuleSet>..\StyleCopAnalyzersRules.ruleset</CodeAnalysisRuleSet>
+      <RootNamespace>OutOfSchool.Services</RootNamespace>
   </PropertyGroup>
-
   
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
-    <ItemGroup>
-      <None Remove="stylecop.json" />
-    </ItemGroup>
+  <ItemGroup>
+    <None Remove="stylecop.json" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <AdditionalFiles Include="stylecop.json" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CsvHelper" />
+    <PackageReference Include="Google.Cloud.Storage.V1" />
+    <PackageReference Include="H3Lib" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
+    <PackageReference Include="Newtonsoft.Json" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="CsvHelper" />
-      <PackageReference Include="Google.Cloud.Storage.V1" />
-      <PackageReference Include="H3Lib" />
-      <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
-      <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
-        <PrivateAssets>all</PrivateAssets>
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      </PackageReference>
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
-      <PackageReference Include="Newtonsoft.Json" />
-      <PackageReference Include="StyleCop.Analyzers">
-        <PrivateAssets>all</PrivateAssets>
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      </PackageReference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
+  </ItemGroup>
 </Project>

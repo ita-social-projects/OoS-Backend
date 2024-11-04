@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
     <PropertyGroup>
         <PackageId>auth</PackageId>
-        <CodeAnalysisRuleSet>..\StyleCopAnalyzersRules.ruleset</CodeAnalysisRuleSet>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
@@ -28,15 +27,6 @@
         <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
         <ProjectReference Include="..\OutOfSchool.RazorTemplatesData\OutOfSchool.RazorTemplatesData.csproj" />
         <ProjectReference Include="..\OutOfSchool.GRPC\OutOfSchool.GRPC.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="StyleCop.Analyzers">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <Content Remove="stylecop.json" />
-        <AdditionalFiles Include="stylecop.json" />
     </ItemGroup>
 
     <ItemGroup>

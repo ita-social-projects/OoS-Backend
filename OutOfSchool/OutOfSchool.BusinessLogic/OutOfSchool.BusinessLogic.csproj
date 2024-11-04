@@ -8,7 +8,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <CodeAnalysisRuleSet>..\StyleCopAnalyzersRules.ruleset</CodeAnalysisRuleSet>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AnalysisLevel>latest</AnalysisLevel>
   </PropertyGroup>
 
   <ItemGroup>
@@ -71,10 +74,6 @@
     <PackageReference Include="Serilog.Expressions" />
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
-    <PackageReference Include="StyleCop.Analyzers">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.AspNetCore.HeaderPropagation" />
   </ItemGroup>
@@ -87,11 +86,6 @@
     <ProjectReference Include="..\OutOfSchool.GRPC\OutOfSchool.GRPC.csproj" />
     <ProjectReference Include="..\OutOfSchool.RazorTemplatesData\OutOfSchool.RazorTemplatesData.csproj" />
     <ProjectReference Include="..\OutOfSchool.Redis\OutOfSchool.Redis.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Remove="stylecop.json" />
-    <AdditionalFiles Include="stylecop.json" />
   </ItemGroup>
 
   <ItemGroup>

@@ -107,7 +107,6 @@
     <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <!--Code Analysis-->
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
-    <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.435" />
     <!--GRPC-->
     <PackageVersion Include="Grpc.AspNetCore" Version="2.46.0" />
     <PackageVersion Include="Grpc.Core" Version="2.46.3" />

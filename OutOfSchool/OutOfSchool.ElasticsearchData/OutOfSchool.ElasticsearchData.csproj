@@ -1,9 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <CodeAnalysisRuleSet>..\StyleCopAnalyzersRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
@@ -11,17 +7,8 @@
   <ItemGroup>
     <PackageReference Include="Elastic.Clients.Elasticsearch" />
     <PackageReference Include="Elastic.Transport" />
-    <PackageReference Include="StyleCop.Analyzers">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
-
-  <ItemGroup>
-    <Content Remove="stylecop.json" />
-    <AdditionalFiles Include="stylecop.json" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
   </ItemGroup>
