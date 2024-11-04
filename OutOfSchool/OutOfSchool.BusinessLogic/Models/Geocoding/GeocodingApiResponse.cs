@@ -1,13 +1,12 @@
-using JsonSubTypes;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.BusinessLogic.Models.Geocoding;
 
-[JsonConverter(typeof(JsonSubtypes), "type")]
-[JsonSubtypes.KnownSubType(typeof(GeocodingSingleFeatureResponse), "Feature")]
-[JsonSubtypes.KnownSubType(typeof(GeocodingListFeatureResponse), "FeatureCollection")]
-[JsonSubtypes.FallBackSubType(typeof(GeocodingEmptyResponse))]
+[JsonDerivedType(typeof(GeocodingApiResponse), typeDiscriminator: "type")]
+[JsonDerivedType(typeof(GeocodingSingleFeatureResponse), typeDiscriminator: "Feature")]
+[JsonDerivedType(typeof(GeocodingListFeatureResponse), typeDiscriminator: "FeatureCollection")]
+[JsonDerivedType(typeof(GeocodingEmptyResponse))]
 public class GeocodingApiResponse : IResponse
 {
     public virtual string Type { get; }
