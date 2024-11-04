@@ -1,4 +1,5 @@
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Util.JsonTools;
 
@@ -9,15 +10,16 @@ public class TimespanConverter : JsonConverter<TimeSpan>
     /// </summary>
     public const string TimeSpanFormatString = @"hh\:mm";
 
-    public override void WriteJson(JsonWriter writer, TimeSpan value, JsonSerializer serializer)
+
+    public override TimeSpan Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var timespanFormatted = $"{value.ToString(TimeSpanFormatString)}";
-        writer.WriteValue(timespanFormatted);
+        TimeSpan.TryParseExact(reader.GetString(), TimeSpanFormatString, null, out var parsedTimeSpan);
+        return parsedTimeSpan;
     }
 
-    public override TimeSpan ReadJson(JsonReader reader, Type objectType, TimeSpan existingValue, bool hasExistingValue, JsonSerializer serializer)
+    public override void Write(Utf8JsonWriter writer, TimeSpan value, JsonSerializerOptions options)
     {
-        TimeSpan.TryParseExact((string)reader.Value, TimeSpanFormatString, null, out var parsedTimeSpan);
-        return parsedTimeSpan;
+        var timespanFormatted = $"{value.ToString(TimeSpanFormatString)}";
+        writer.WriteStringValue(timespanFormatted);
     }
 }
