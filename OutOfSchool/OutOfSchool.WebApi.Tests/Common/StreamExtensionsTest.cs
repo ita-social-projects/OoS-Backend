@@ -1,8 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Text;
+using System.Text.Json;
 using Moq;
-using Newtonsoft.Json;
 using NUnit.Framework;
 using OutOfSchool.Common.Extensions;
 
@@ -43,12 +42,9 @@ public class StreamExtensionsTest
 
         var bytes = new byte[BufferSize];
 
-        using var streamWriter = new StreamWriter(new MemoryStream(bytes), new UTF8Encoding(), BufferSize, true);
-        using var jsonTextWriter = new JsonTextWriter(streamWriter);
+        using var jsonTextWriter = new Utf8JsonWriter(new MemoryStream(bytes));
 
-        var jsonSerializer = new JsonSerializer();
-
-        jsonSerializer.Serialize(jsonTextWriter, objectToWrite);
+        JsonSerializer.Serialize(jsonTextWriter, objectToWrite);
         jsonTextWriter.Flush();
 
         // Act

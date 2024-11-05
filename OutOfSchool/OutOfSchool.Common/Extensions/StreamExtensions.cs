@@ -15,9 +15,20 @@ public static class StreamExtensions
             throw new NotSupportedException("Can't read this stream");
         }
 
-        using var streamReader = new StreamReader(stream);
+        using (stream)
+        {
+            // Define buffer size
+            Span<byte> buffer = new byte[1024];
 
-        return JsonSerializer.Deserialize<T>(streamReader.ReadToEnd());
+            // Read data from the stream into the buffer
+            int bytesRead = stream.Read(buffer);
+
+            // Initialize the Utf8JsonReader with the buffer slice containing actual data
+            var reader = new Utf8JsonReader(buffer[..bytesRead], isFinalBlock: true, state: default);
+
+            // Deserialize JSON data using Utf8JsonReader
+            return JsonSerializer.Deserialize<T>(ref reader);
+        }
     }
 
     public static void SerializeToJsonAndWrite<T>(this Stream stream, T objectToWrite)

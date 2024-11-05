@@ -17,7 +17,6 @@ using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
