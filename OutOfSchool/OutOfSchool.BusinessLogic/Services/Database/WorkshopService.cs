@@ -32,7 +32,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private readonly string includingPropertiesForMappingWorkShopCard = $"{nameof(Workshop.Address)}";
 
     private readonly IWorkshopRepository workshopRepository;
-    private readonly IEntityRepository<long, Tag> tagRepository;
     private readonly IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository;
     private readonly IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository;
     private readonly ITeacherService teacherService;
@@ -71,7 +70,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <param name="tagService">Service for Tag entity.</param>
     public WorkshopService(
         IWorkshopRepository workshopRepository,
-        IEntityRepository<long, Tag> tagRepository,
         IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository,
         IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository,
         ITeacherService teacherService,
@@ -89,7 +87,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         ISearchStringService searchStringService)
     {
         this.workshopRepository = workshopRepository;
-        this.tagRepository = tagRepository;
         this.dateTimeRangeRepository = dateTimeRangeRepository;
         this.roomRepository = roomRepository;
         this.teacherService = teacherService;
@@ -123,7 +120,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         workshop.Provider = await providerRepository.GetById(workshop.ProviderId).ConfigureAwait(false);
         workshop.ProviderOwnership = workshop.Provider.Ownership;
 
-        workshop.Tags = (await tagRepository.GetAll()).Where(tag => dto.TagIds.Contains(tag.Id)).ToList();
+        var tags = (await tagService.GetAll()).Where(tag => dto.TagIds.Contains(tag.Id));
+        workshop.Tags = tags.Select(mapper.Map<Tag>).ToList();
 
         if (dto.Teachers is not null)
         {
