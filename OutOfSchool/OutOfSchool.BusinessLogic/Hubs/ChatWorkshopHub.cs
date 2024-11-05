@@ -132,7 +132,9 @@ public class ChatWorkshopHub : Hub
         try
         {
             // Deserialize from string to Object
-            var chatMessageWorkshopCreateDto = JsonSerializer.Deserialize<ChatMessageWorkshopCreateDto>(chatNewMessage);
+            var chatMessageWorkshopCreateDto = JsonSerializer.Deserialize<ChatMessageWorkshopCreateDto>(
+                chatNewMessage,
+                options: GetJsonSerializerOptions());
 
             var chatRoomExists = await roomService.GetByIdAsync(chatMessageWorkshopCreateDto.ChatRoomId).ConfigureAwait(false) is not null;
 
@@ -201,6 +203,11 @@ public class ChatWorkshopHub : Hub
             var messageForUser = localizer["Server error. Please try again later or contact technical support."];
             await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", messageForUser).ConfigureAwait(false);
         }
+    }
+
+    private static JsonSerializerOptions GetJsonSerializerOptions()
+    {
+        return new() { PropertyNameCaseInsensitive = true, };
     }
 
     private void AddUsersConnectionIdTracking(string userId)

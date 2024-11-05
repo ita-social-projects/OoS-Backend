@@ -236,7 +236,7 @@ public class ChatWorkshopHubTests
         .ReturnsAsync(false);
 
         // Act
-        await chatHub.SendMessageToOthersInGroupAsync(validNewMessage).ConfigureAwait(false);
+        await chatHub.SendMessageToOthersInGroupAsync(validNewMessage.Replace('\'', '"')).ConfigureAwait(false);
 
         // Assert
         messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopCreateDto>(), It.IsAny<Role>()), Times.Once);
