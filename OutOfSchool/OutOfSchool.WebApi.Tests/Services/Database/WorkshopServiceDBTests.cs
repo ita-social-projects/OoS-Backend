@@ -33,7 +33,6 @@ public class WorkshopServiceDBTests
 
     private IWorkshopService workshopService;
     private IWorkshopRepository workshopRepository;
-    private Mock<IEntityRepository<long, Tag>> tagRepository;
     private Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>> dateTimeRangeRepository;
     private Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>> roomRepository;
     private Mock<ITeacherService> teacherService;
@@ -61,7 +60,6 @@ public class WorkshopServiceDBTests
         dbContext = new OutOfSchoolDbContext(dbContextOptions);
 
         workshopRepository = new WorkshopRepository(dbContext);
-        tagRepository = new Mock<IEntityRepository<long, Tag>>();
         dateTimeRangeRepository = new Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>>();
         roomRepository = new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>();
         teacherService = new Mock<ITeacherService>();
@@ -81,7 +79,6 @@ public class WorkshopServiceDBTests
         workshopService =
             new WorkshopService(
                 workshopRepository,
-                tagRepository.Object,
                 dateTimeRangeRepository.Object,
                 roomRepository.Object,
                 teacherService.Object,

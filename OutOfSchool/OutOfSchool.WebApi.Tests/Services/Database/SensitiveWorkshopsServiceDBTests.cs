@@ -36,7 +36,6 @@ public class SensitiveWorkshopsServiceDBTests
 
     private ISensitiveWorkshopsService sensitiveWorkshopService;
     private IWorkshopRepository workshopRepository;
-    private Mock<IEntityRepository<long, Tag>> tagRepository;
     private IMapper mapper;
     private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
@@ -56,7 +55,6 @@ public class SensitiveWorkshopsServiceDBTests
         dbContext = new OutOfSchoolDbContext(dbContextOptions);
 
         workshopRepository = new WorkshopRepository(dbContext);
-        tagRepository = new Mock<IEntityRepository<long, Tag>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
@@ -68,7 +66,6 @@ public class SensitiveWorkshopsServiceDBTests
         sensitiveWorkshopService =
             new WorkshopService(
                 workshopRepository,
-                new Mock<IEntityRepository<long, Tag>>().Object,
                 new Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>>().Object,
                 new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>().Object,
                 new Mock<ITeacherService>().Object,
