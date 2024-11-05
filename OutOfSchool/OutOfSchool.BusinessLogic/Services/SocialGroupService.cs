@@ -52,9 +52,6 @@ public class SocialGroupService : ISocialGroupService
             Id = x.Id,
             Name = localization == LocalizationType.En ? x.NameEn : x.Name,
         }).ToList();
-
-        /*return mapper.Map<List<SocialGroupDto>>(socialGroups, opt =>
-        opt.Items["Localization"] = localization);*/
     }
 
     /// <inheritdoc/>
@@ -84,7 +81,7 @@ public class SocialGroupService : ISocialGroupService
     }
 
     /// <inheritdoc/>
-    public async Task<SocialGroupCreate> Create(SocialGroupCreate dto)
+    public async Task<SocialGroupDto> Create(SocialGroupCreate dto)
     {
         logger.LogInformation("SocialGroup creating was started.");
 
@@ -94,7 +91,11 @@ public class SocialGroupService : ISocialGroupService
 
         logger.LogInformation($"SocialGroup with Id = {newSocialGroup?.Id} created successfully.");
 
-        return mapper.Map<SocialGroupCreate>(newSocialGroup);
+        return new SocialGroupDto()
+        {
+            Id = socialGroup.Id,
+            Name = socialGroup.Name
+        };
     }
 
     /// <inheritdoc/>
