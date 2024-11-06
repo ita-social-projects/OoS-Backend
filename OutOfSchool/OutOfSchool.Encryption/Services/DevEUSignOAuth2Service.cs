@@ -21,7 +21,12 @@ public class DevEUSignOAuth2Service : IEUSignOAuth2Service
             return null;
         }
 
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
         // Mock local auth server sends data as unencrypted string.
-        return JsonSerializer.Deserialize<UserInfoResponse>(encryptedUserInfo.EncryptedUserInfo);
+        return JsonSerializer.Deserialize<UserInfoResponse>(encryptedUserInfo.EncryptedUserInfo, options);
     }
 }

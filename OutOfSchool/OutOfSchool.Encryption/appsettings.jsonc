@@ -74,12 +74,12 @@
       // The file can be downloaded from the Дія's CA website (НЕДП):  https://ca.informjust.ua/download/Soft/CAs.json
       // or from the IIT website: https://iit.com.ua/download/productfiles/CAs.json
       // WARNING! The dev environment uses a file that includes the test IIT CA and is intended exclusively for testing
-      "JsonPath": "Certificates/CAs.Test.json",
+      "JsonPath": "/workspace/iit-ca/CAs.Test.json",
       // The chain of all certificates of Central Certification Authorities, CAs (НЕДП) and their servers.
       // The file can be downloaded from the Дія's CA website (НЕДП): https://ca.informjust.ua/download/Soft/CACertificates.p7b
       // or from the IIT website: https://iit.com.ua/download/productfiles/CACertificates.p7b
       // WARNING! The dev environment uses a file that includes certificates of the test IIT CA and is intended exclusively for testing
-      "CertificatesPath": "Certificates/CACertificates.Test.p7b"
+      "CertificatesPath": "/workspace/iit-ca/CACertificates.Test.All.p7b"
     },
     // Proxy server settings
     "Proxy": {
