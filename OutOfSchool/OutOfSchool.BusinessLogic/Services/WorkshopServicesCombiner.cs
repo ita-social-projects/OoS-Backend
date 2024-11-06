@@ -66,7 +66,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
                 ElasticsearchSyncOperation.Create)
             .ConfigureAwait(false);
 
-        return /*mapper.Map<WorkshopDto>*/(workshop);
+        return workshop;
     }
 
     /// <inheritdoc/>
