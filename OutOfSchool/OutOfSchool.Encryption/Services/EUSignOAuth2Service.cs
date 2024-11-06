@@ -15,8 +15,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
     private readonly EUSignConfig eUSignConfig;
     private readonly ILogger<EUSignOAuth2Service> logger;
     private readonly IIoOperationsService ioOperationsService;
-    private readonly JsonSerializerOptions
-        jsonSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+    private readonly JsonSerializerOptions jsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
     // ReSharper disable once InconsistentNaming
     [SuppressMessage(
