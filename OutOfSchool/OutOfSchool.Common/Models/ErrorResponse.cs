@@ -3,11 +3,13 @@ using OutOfSchool.Common.Responses;
 
 namespace OutOfSchool.Common.Models;
 
-public class ErrorResponse
+public class ErrorResponse : IErrorResponse
 {
     public HttpStatusCode HttpStatusCode { get; set; }
 
     public string Message { get; set; }
+
+    public string Content { get; set; }
 
     public ApiErrorResponse ApiErrorResponse { get; set; }
 

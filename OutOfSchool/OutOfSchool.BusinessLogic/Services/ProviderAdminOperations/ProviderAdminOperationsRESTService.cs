@@ -49,7 +49,7 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
             userId,
             request.Url);
 
-        var response = await SendRequest<ResponseDto>(request)
+        var response = await SendRequest<ResponseDto, ErrorResponse>(request)
             .ConfigureAwait(false);
 
         return response

@@ -27,6 +27,7 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Communication.ICommunication;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
@@ -741,7 +742,7 @@ public class ProviderServiceTests
         providersRepositoryMock.Setup(r => r.Delete(Capture.In(deleteMethodArguments)));
         userServiceMock.Setup(r => r.Delete(Capture.In(deleteUserArguments)));
         currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(true);
-        communicationService.Setup(x => x.SendRequest<ResponseDto>(It.IsAny<Request>())).ReturnsAsync(new ResponseDto());
+        communicationService.Setup(x => x.SendRequest<ResponseDto, ErrorResponse>(It.IsAny<Request>(), null)).ReturnsAsync(new ResponseDto());
 
         // Act
         await providerService.Delete(providerToDeleteDto.Id, It.IsAny<string>()).ConfigureAwait(false);
@@ -790,13 +791,13 @@ public class ProviderServiceTests
         currentUserServiceMock.Setup(p => p.IsAdmin()).Returns(true);
         providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
     .ReturnsAsync(fakeProviders.FirstOrDefault());
-        communicationService.Setup(x => x.SendRequest<ResponseDto>(It.IsAny<Request>())).ReturnsAsync(new ResponseDto());
+        communicationService.Setup(x => x.SendRequest<ResponseDto, ErrorResponse>(It.IsAny<Request>(), null)).ReturnsAsync(new ResponseDto());
 
         // Act
         await providerService.Delete(It.IsAny<Guid>(), It.IsAny<string>()).ConfigureAwait(false);
 
         // Assert
-        communicationService.Verify(x => x.SendRequest<ResponseDto>(It.IsAny<Request>()), Times.AtLeastOnce);
+        communicationService.Verify(x => x.SendRequest<ResponseDto, ErrorResponse>(It.IsAny<Request>(), null), Times.AtLeastOnce);
     }
 
     #endregion

@@ -95,7 +95,7 @@ public class GeocodingService : CommunicationService, IGeocodingService
             },
         };
 
-        var response = await SendRequest<GeocodingApiResponse>(req);
+        var response = await SendRequest<GeocodingApiResponse, ErrorResponse>(req);
 
         return response.Map(r =>
         {
@@ -146,7 +146,7 @@ public class GeocodingService : CommunicationService, IGeocodingService
                 { "order", "distance" },
             },
         };
-        var response = await SendRequest<GeocodingApiResponse>(req).ConfigureAwait(false);
+        var response = await SendRequest<GeocodingApiResponse, ErrorResponse>(req).ConfigureAwait(false);
         return await response
             .Map(r => r switch
             {

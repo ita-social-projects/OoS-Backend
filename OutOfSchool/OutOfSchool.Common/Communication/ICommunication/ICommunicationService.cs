@@ -1,10 +1,14 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.Common.Communication.ICommunication;
 
 public interface ICommunicationService
 {
-    Task<Either<ErrorResponse, T>> SendRequest<T>(Request request)
-        where T : IResponse;
+    Task<Either<TError, T>> SendRequest<T, TError>(
+        Request request,
+        IErrorHandler<TError> errorHandler = null)
+        where T : IResponse
+        where TError : IErrorResponse;
 }
