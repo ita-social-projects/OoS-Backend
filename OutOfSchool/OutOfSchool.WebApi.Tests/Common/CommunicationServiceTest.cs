@@ -172,6 +172,36 @@ public class CommunicationServiceTest
                 return null;
             });
     }
+    
+    [Test]
+    public async Task SendRequest_WithHttpException_ReturnsErrorResponse()
+    {
+        // Arrange
+        var request = new Request
+        {
+            HttpMethodType = HttpMethodType.Get,
+            Token = "secret",
+            Url = uri,
+        };
+        var setup = SetupSendAsync(handler, HttpMethod.Get, uri.ToString());
+        setup.Throws(new HttpRequestException(null, null, HttpStatusCode.InsufficientStorage));
+
+        // Act
+        var result = await communicationService.SendRequest<TestResponse, ErrorResponse>(request);
+
+        result.Match<object?>(
+            error =>
+            {
+                Assert.IsInstanceOf<ErrorResponse>(error);
+                Assert.AreEqual(HttpStatusCode.InsufficientStorage, error.HttpStatusCode);
+                return null;
+            },
+            _ =>
+            {
+                Assert.Fail();
+                return null;
+            });
+    }
 
     private static ISetup<HttpMessageHandler, Task<HttpResponseMessage>> SetupSendAsync(
         Mock<HttpMessageHandler> handler, HttpMethod requestMethod, string requestUrl)

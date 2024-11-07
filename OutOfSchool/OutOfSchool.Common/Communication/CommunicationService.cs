@@ -143,6 +143,12 @@ public class CommunicationService : ICommunicationService
         IErrorHandler<TError>? errorHandler)
     {
         var response = new CommunicationError();
+
+        if (ex is HttpRequestException e)
+        {
+            response.HttpStatusCode = e.StatusCode ?? HttpStatusCode.InternalServerError;
+        }
+
         return await HandleErrorAsync(response, ex.Message, errorHandler);
     }
 }
