@@ -13,6 +13,7 @@ using Moq.Language.Flow;
 using Moq.Protected;
 using NUnit.Framework;
 using OutOfSchool.Common.Communication;
+using OutOfSchool.Common.Communication.ICommunication;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Models;
 
@@ -45,7 +46,8 @@ public class CommunicationServiceTest
         httpClientFactory = new Mock<IHttpClientFactory>();
         httpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(client);
         logger = new Mock<ILogger<CommunicationService>>();
-        communicationService = new CommunicationService(httpClientFactory.Object, communicationOptions.Object, logger.Object);
+        communicationService =
+            new CommunicationService(httpClientFactory.Object, communicationOptions.Object, logger.Object);
     }
 
     [Test]
@@ -71,10 +73,7 @@ public class CommunicationServiceTest
         // Act
         var result = await communicationService.SendRequest<TestResponse, ErrorResponse>(request);
 
-        result.DoRight(r =>
-        {
-            Assert.AreEqual("OK", r.Content);
-        });
+        result.DoRight(r => { Assert.AreEqual("OK", r.Content); });
     }
 
     [Test]
@@ -128,6 +127,52 @@ public class CommunicationServiceTest
             });
     }
 
+    [Test]
+    public void SendRequest_WithServerErrorAndWrongHandler_ThrowsException()
+    {
+        // Arrange
+        var request = new Request
+        {
+            HttpMethodType = HttpMethodType.Get,
+            Url = uri,
+        };
+        var setup = SetupSendAsync(handler, HttpMethod.Get, uri.ToString());
+        ReturnsHttpResponseAsync(setup, null, HttpStatusCode.Unauthorized);
+
+        // Act
+        Assert.ThrowsAsync<InvalidOperationException>(() =>
+            communicationService.SendRequest<TestResponse, TestError>(request));
+    }
+
+    [Test]
+    public async Task SendRequest_WithServerErrorAndCustomHandler_ReturnsErrorResponse()
+    {
+        // Arrange
+        var request = new Request
+        {
+            HttpMethodType = HttpMethodType.Get,
+            Url = uri,
+        };
+        var setup = SetupSendAsync(handler, HttpMethod.Get, uri.ToString());
+        ReturnsHttpResponseAsync(setup, null, HttpStatusCode.Unauthorized);
+
+        // Act
+        var result = await communicationService.SendRequest<TestResponse, TestError>(request, new TestErrorHandler());
+
+        result.Match<object?>(
+            error =>
+            {
+                Assert.IsInstanceOf<TestError>(error);
+                Assert.AreEqual(HttpStatusCode.Unauthorized, error.HttpStatusCode);
+                return null;
+            },
+            _ =>
+            {
+                Assert.Fail();
+                return null;
+            });
+    }
+
     private static ISetup<HttpMessageHandler, Task<HttpResponseMessage>> SetupSendAsync(
         Mock<HttpMessageHandler> handler, HttpMethod requestMethod, string requestUrl)
     {
@@ -164,5 +209,25 @@ public class CommunicationServiceTest
     private class TestResponse : IResponse
     {
         public string? Content { get; set; }
+    }
+
+    private class TestError : IErrorResponse
+    {
+        public HttpStatusCode HttpStatusCode { get; set; }
+
+        public string Message { get; set; }
+
+        public string Content { get; set; }
+    }
+
+    private class TestErrorHandler : IErrorHandler<TestError>
+    {
+        public Task<TestError> HandleErrorAsync(CommunicationError errorResponse, string? message = null)
+        {
+            return Task.FromResult(new TestError
+            {
+                HttpStatusCode = errorResponse.HttpStatusCode,
+            });
+        }
     }
 }
