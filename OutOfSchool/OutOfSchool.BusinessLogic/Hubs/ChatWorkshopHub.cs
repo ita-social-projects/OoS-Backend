@@ -207,7 +207,7 @@ public class ChatWorkshopHub : Hub
 
     private static JsonSerializerOptions GetJsonSerializerOptions()
     {
-        return new() { PropertyNameCaseInsensitive = true, };
+        return new JsonSerializerOptions(JsonSerializerDefaults.Web);
     }
 
     private void AddUsersConnectionIdTracking(string userId)
