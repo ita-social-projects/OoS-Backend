@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.BusinessLogic.Models.Judge;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
+//using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 
@@ -73,6 +75,8 @@ public class CompetitiveEventDto
     public string PreferentialTermsOfParticipation { get; set; }
 
     //public virtual List<Individual> Judges { get; set; }
+    //public virtual ICollection<Judge> Judges { get; set; }
+    public List<JudgeDto> Judges { get; set; }
 
     public List<ProviderDto> ParticipantsOfTheEvent { get; set; }
 

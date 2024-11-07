@@ -10,6 +10,7 @@ using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.Geocoding;
+using OutOfSchool.BusinessLogic.Models.Judge;
 using OutOfSchool.BusinessLogic.Models.Notifications;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.ProvidersInfo;
@@ -402,6 +403,14 @@ public class MappingProfile : Profile
 
         CreateMap<Teacher, TeacherInfoDto>()
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
+
+        CreateMap<Judge, JudgeDto>()
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
+
+        CreateMap<JudgeDto, Judge>() 
+          .ForMember(dest => dest.CompetetiveEventId, opt => opt.Ignore())
+          .ForMember(dest => dest.CompetitiveEvent, opt => opt.Ignore())
+          .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
         CreateMap<DateTimeRange, DateTimeRangeDto>()
             .ForMember(dtr => dtr.Workdays, cfg => cfg.MapFrom(dtr => dtr.Workdays.ToDaysBitMaskEnumerable().ToList()));

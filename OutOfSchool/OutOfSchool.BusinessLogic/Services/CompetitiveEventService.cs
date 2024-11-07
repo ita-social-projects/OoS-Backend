@@ -15,14 +15,17 @@ public class CompetitiveEventService : ICompetitiveEventService
     private readonly ILogger<CompetitiveEventService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
+    private readonly IEntityRepository<Guid, Judge> judgeRepository;
 
     public CompetitiveEventService(
         IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> competitiveEventRepository,
+        // IEntityRepository<Guid, Judge> judgeRepository,
         ILogger<CompetitiveEventService> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper)
     {
         this.competitiveEventRepository = competitiveEventRepository ?? throw new ArgumentNullException(nameof(competitiveEventRepository));
+        // this.judgeRepository = judgeRepository ?? throw new ArgumentNullException(nameof(judgeRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));

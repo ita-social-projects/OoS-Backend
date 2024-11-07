@@ -4,11 +4,9 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 
 namespace OutOfSchool.Services.Models;
-public class Judge : IKeyedEntity<Guid>, ISoftDeleted
+public class Judge : IKeyedEntity<Guid>
 {
     public Guid Id { get; set; }
-
-    public bool IsDeleted { get; set; }
 
     [MaxLength(60)]
     public string FirstName { get; set; }
@@ -25,11 +23,9 @@ public class Judge : IKeyedEntity<Guid>, ISoftDeleted
 
     public string Description { get; set; }
 
-    public string CoverImageId { get; set; } // need this?
+    public string CoverImageId { get; set; }
 
     public Guid CompetetiveEventId { get; set; }
 
-    public virtual CompetitiveEvent CompetitiveEvent { get; set; } //  What way is OK
-
-    // public virtual List<CompetitiveEvent> CompetitiveEvents { get; set; } // ?? OK
+    public virtual CompetitiveEvent CompetitiveEvent { get; set; }
 }

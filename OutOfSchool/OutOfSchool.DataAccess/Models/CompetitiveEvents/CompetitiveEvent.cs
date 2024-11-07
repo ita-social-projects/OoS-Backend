@@ -49,7 +49,7 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
     public Guid ChiefJudgeId { get; set; }
 
     [ForeignKey(nameof(ChiefJudgeId))]
-    public Judge ChiefJudge { get; set; } // added TK
+    public virtual Judge ChiefJudge { get; set; } // added TK
 
     //[ForeignKey(nameof(ChiefJudgeId))]
     //public virtual Individual ChiefJudgeId { get; set; }
@@ -95,7 +95,8 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
     [MaxLength(2000)]
     public string PreferentialTermsOfParticipation { get; set; }
 
-    //public virtual List<Individual> Judges { get; set; }
+    // public virtual List<Individual> Judges { get; set; }
+    public virtual ICollection<Judge> Judges { get; set; } // TK - ?? error starting project "Auth Server" // by adding relation FluentApi
 
     public virtual ICollection<Provider> ParticipantsOfTheEvent { get; set; }
 

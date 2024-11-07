@@ -36,6 +36,8 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<Teacher> Teachers { get; set; }
 
+    public DbSet<Judge> Judges { get; set; }
+
     public DbSet<Direction> Directions { get; set; }
 
     public DbSet<SocialGroup> SocialGroups { get; set; }
