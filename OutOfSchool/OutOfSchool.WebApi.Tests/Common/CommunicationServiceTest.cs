@@ -16,6 +16,7 @@ using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Communication.ICommunication;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Tests.Common;
 
 namespace OutOfSchool.WebApi.Tests.Common;
 
@@ -57,23 +58,17 @@ public class CommunicationServiceTest
         var request = new Request
         {
             HttpMethodType = HttpMethodType.Post,
-            Data = new TestRequestData
-            {
-                Content = "test",
-            },
+            Data = new TestRequestData("test"),
             Url = uri,
         };
-        var response = new TestResponse
-        {
-            Content = "OK",
-        };
+        var response = new TestResponse("OK");
         var setup = SetupSendAsync(handler, HttpMethod.Post, uri.ToString());
         ReturnsHttpResponseAsync(setup, response, HttpStatusCode.OK);
 
         // Act
         var result = await communicationService.SendRequest<TestResponse, ErrorResponse>(request);
 
-        result.DoRight(r => { Assert.AreEqual("OK", r.Content); });
+        result.AssertRight(r => { Assert.AreEqual("OK", r.Content); });
     }
 
     [Test]
@@ -86,17 +81,7 @@ public class CommunicationServiceTest
         // Act
         var result = await communicationService.SendRequest<TestResponse, ErrorResponse>(null);
 
-        result.Match<object?>(
-            error =>
-            {
-                Assert.AreEqual(HttpStatusCode.BadRequest, error.HttpStatusCode);
-                return null;
-            },
-            _ =>
-            {
-                Assert.Fail();
-                return null;
-            });
+        result.AssertLeft(error => Assert.AreEqual(HttpStatusCode.BadRequest, error.HttpStatusCode));
     }
 
     [Test]
@@ -114,17 +99,7 @@ public class CommunicationServiceTest
         // Act
         var result = await communicationService.SendRequest<TestResponse, ErrorResponse>(request);
 
-        result.Match<object?>(
-            error =>
-            {
-                Assert.AreEqual(HttpStatusCode.Unauthorized, error.HttpStatusCode);
-                return null;
-            },
-            _ =>
-            {
-                Assert.Fail();
-                return null;
-            });
+        result.AssertLeft(error => Assert.AreEqual(HttpStatusCode.Unauthorized, error.HttpStatusCode));
     }
 
     [Test]
@@ -159,20 +134,13 @@ public class CommunicationServiceTest
         // Act
         var result = await communicationService.SendRequest<TestResponse, TestError>(request, new TestErrorHandler());
 
-        result.Match<object?>(
-            error =>
-            {
-                Assert.IsInstanceOf<TestError>(error);
-                Assert.AreEqual(HttpStatusCode.Unauthorized, error.HttpStatusCode);
-                return null;
-            },
-            _ =>
-            {
-                Assert.Fail();
-                return null;
-            });
+        result.AssertLeft(error =>
+        {
+            Assert.IsInstanceOf<TestError>(error);
+            Assert.AreEqual(HttpStatusCode.Unauthorized, error.HttpStatusCode);
+        });
     }
-    
+
     [Test]
     public async Task SendRequest_WithHttpException_ReturnsErrorResponse()
     {
@@ -189,18 +157,11 @@ public class CommunicationServiceTest
         // Act
         var result = await communicationService.SendRequest<TestResponse, ErrorResponse>(request);
 
-        result.Match<object?>(
-            error =>
-            {
-                Assert.IsInstanceOf<ErrorResponse>(error);
-                Assert.AreEqual(HttpStatusCode.InsufficientStorage, error.HttpStatusCode);
-                return null;
-            },
-            _ =>
-            {
-                Assert.Fail();
-                return null;
-            });
+        result.AssertLeft(error =>
+        {
+            Assert.IsInstanceOf<ErrorResponse>(error);
+            Assert.AreEqual(HttpStatusCode.InsufficientStorage, error.HttpStatusCode);
+        });
     }
 
     private static ISetup<HttpMessageHandler, Task<HttpResponseMessage>> SetupSendAsync(
@@ -231,33 +192,18 @@ public class CommunicationServiceTest
         return moqSetup.ReturnsAsync(responseMessage);
     }
 
-    private class TestRequestData
-    {
-        public string? Content { get; set; }
-    }
+    private record TestRequestData(string? Content);
 
-    private class TestResponse : IResponse
-    {
-        public string? Content { get; set; }
-    }
+    private record TestResponse(string? Content) : IResponse;
 
-    private class TestError : IErrorResponse
-    {
-        public HttpStatusCode HttpStatusCode { get; set; }
-
-        public string Message { get; set; }
-
-        public string Content { get; set; }
-    }
+    private record TestError(HttpStatusCode HttpStatusCode, string? Message = null, string? Content = null)
+        : IErrorResponse;
 
     private class TestErrorHandler : IErrorHandler<TestError>
     {
         public Task<TestError> HandleErrorAsync(CommunicationError errorResponse, string? message = null)
         {
-            return Task.FromResult(new TestError
-            {
-                HttpStatusCode = errorResponse.HttpStatusCode,
-            });
+            return Task.FromResult(new TestError(errorResponse.HttpStatusCode));
         }
     }
 }

@@ -1,15 +1,17 @@
+#nullable enable
+
 using System.Net;
 
 namespace OutOfSchool.Common.Models;
 
 public interface IErrorResponse
 {
-    public HttpStatusCode HttpStatusCode { get; set; }
+    public HttpStatusCode HttpStatusCode { get; init; }
 
-    public string Message { get; set; }
+    public string? Message { get; init; }
 
     /// <summary>
-    /// Gets or sets the raw error content if required.
+    /// Gets the raw error content if required.
     /// </summary>
-    public string Content { get; set; }
+    public string? Content { get; init; }
 }

@@ -5,11 +5,11 @@ namespace OutOfSchool.Common.Models;
 
 public class ErrorResponse : IErrorResponse
 {
-    public HttpStatusCode HttpStatusCode { get; set; }
+    public HttpStatusCode HttpStatusCode { get; init; }
 
-    public string Message { get; set; }
+    public string Message { get; init; }
 
-    public string Content { get; set; }
+    public string Content { get; init; }
 
     public ApiErrorResponse ApiErrorResponse { get; set; }
 
