@@ -144,6 +144,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
     public DbSet<WorkshopDraft> WorkshopDrafts { get; set; }
 
     public DbSet<Image<WorkshopDraft>> WorkshopDraftImages { get; set; }
+    
 
     public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 

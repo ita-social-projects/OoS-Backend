@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using OutOfSchool.AuthorizationServer.Config;
+using OutOfSchool.AuthCommon.Config;
 
 namespace OutOfSchool.AuthorizationServer.KeyManagement;
 

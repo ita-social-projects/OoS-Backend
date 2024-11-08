@@ -1,4 +1,4 @@
-namespace OutOfSchool.AuthorizationServer.Config;
+namespace OutOfSchool.AuthCommon.Config;
 
 public class AuthorizationCertificateConfig
 {

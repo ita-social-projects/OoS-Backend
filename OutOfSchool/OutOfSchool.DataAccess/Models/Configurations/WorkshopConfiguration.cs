@@ -37,5 +37,8 @@ internal class WorkshopConfiguration : BusinessEntityWithContactsConfiguration<W
             .HasForeignKey(x => x.ParentWorkshopId)
             .IsRequired(false) // Optional relationship
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(x => x.Tags)
+            .WithMany(x => x.Workshops);
     }
 }

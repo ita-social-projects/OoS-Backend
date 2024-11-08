@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.IdentityServer.ViewModels.OpenIdDict;
+namespace OutOfSchool.AuthorizationServer.ViewModels;
 
 public class AuthorizeViewModel
 {
