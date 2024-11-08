@@ -122,6 +122,7 @@ public class CommunicationService : ICommunicationService
         CommunicationError response,
         string? message,
         IErrorHandler<TError>? errorHandler)
+        where TError : IErrorResponse
     {
         if (errorHandler != null)
         {
@@ -140,6 +141,7 @@ public class CommunicationService : ICommunicationService
     private static async Task<TError> HandleExceptionAsync<TError>(
         Exception ex,
         IErrorHandler<TError>? errorHandler)
+        where TError : IErrorResponse
     {
         var response = new CommunicationError();
 

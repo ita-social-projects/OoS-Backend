@@ -1,4 +1,4 @@
-namespace OutOfSchool.AuthorizationServer.Config;
+namespace OutOfSchool.AuthCommon.Config;
 
 public class AuthorizationServerConfig
 {
@@ -11,4 +11,6 @@ public class AuthorizationServerConfig
     public AuthorizationCertificateConfig Certificate { get; set; }
 
     public OpenIdClient[] OpenIdClients { get; set; }
+
+    public ExternalLogin ExternalLogin { get; set; }
 }
