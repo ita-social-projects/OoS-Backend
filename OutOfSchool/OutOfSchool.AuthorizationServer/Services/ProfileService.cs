@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using OpenIddict.Abstractions;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
@@ -22,22 +23,18 @@ public class ProfileService : IProfileService
         this.providerAdminRepository = providerAdminRepository;
     }
 
-    public async Task GetProfileDataAsync(ClaimsPrincipal principal)
+    public async Task GetProfileDataAsync(ClaimsIdentity identity)
     {
-        var claims = await GetAdditionalClaimsAsync(principal);
+        var claims = await GetAdditionalClaimsAsync(identity);
         var claimsList = claims.Select(kvp => new Claim(kvp.Key, kvp.Value)).ToList();
 
-        if (claimsList.Any())
-        {
-            var identity = principal.Identity as ClaimsIdentity;
-            identity?.AddClaims(claimsList);
-        }
+        identity.AddClaims(claimsList);
     }
 
-    public async Task<IReadOnlyDictionary<string, string>> GetAdditionalClaimsAsync(ClaimsPrincipal principal)
+    public async Task<IReadOnlyDictionary<string, string>> GetAdditionalClaimsAsync(ClaimsIdentity identity)
     {
-        var nameClaim = principal.Claims.FirstOrDefault(claim => claim.Type == "name");
-        var roleClaim = principal.Claims.FirstOrDefault(claim => claim.Type == "role");
+        var nameClaim = identity.Claims.FirstOrDefault(claim => claim.Type == OpenIddictConstants.Claims.Name);
+        var roleClaim = identity.Claims.FirstOrDefault(claim => claim.Type == OpenIddictConstants.Claims.Role);
 
         var additionalClaims = new Dictionary<string, string>(StringComparer.Ordinal);
 

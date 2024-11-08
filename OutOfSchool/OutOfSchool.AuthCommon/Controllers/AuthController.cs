@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.AuthCommon.Config;
@@ -75,6 +76,7 @@ public class AuthController : Controller
     /// </summary>
     /// <param name="logoutId"> Identifier of cookie captured the current state needed for sign out.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [Route("~/logout")]
     [HttpGet]
     public async Task<IActionResult> Logout(string logoutId)
     {
@@ -103,8 +105,9 @@ public class AuthController : Controller
     /// <param name="returnUrl"> URL used to redirect user back to client.</param>
     /// <param name="providerRegistration"> bool used to redirect on registration page and prepare page for provider registration.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [Route("~/login")]
     [HttpGet]
-    public async Task<IActionResult> Login(string returnUrl = "Login", bool? providerRegistration = null)
+    public async Task<IActionResult> Login(string returnUrl = "login", bool? providerRegistration = null)
     {
         if (providerRegistration ?? GetProviderRegistrationFromUri(returnUrl))
         {
@@ -129,6 +132,7 @@ public class AuthController : Controller
     /// </summary>
     /// <param name="model"> View model that contains credentials for logging in.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [Route("~/login")]
     [HttpPost]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
@@ -207,7 +211,7 @@ public class AuthController : Controller
 
                 if (result.IsLockedOut)
                 {
-                    logger.LogWarning("{Attempting to sign-in is locked out");
+                    logger.LogWarning("Attempting to sign-in is locked out");
 
                     return BadRequest();
                 }
@@ -306,8 +310,9 @@ public class AuthController : Controller
     /// <param name="returnUrl"> URL used to redirect user back to client.</param>
     /// <param name="providerRegistration"> bool used to prepare page for provider registration.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [Route("~/register")]
     [HttpGet]
-    public IActionResult Register(string returnUrl = "Login", bool? providerRegistration = null)
+    public IActionResult Register(string returnUrl = "login", bool? providerRegistration = null)
     {
         return View(new RegisterViewModel
         {
@@ -321,6 +326,7 @@ public class AuthController : Controller
     /// </summary>
     /// <param name="model"> View model that contains credentials for signing in.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [Route("~/register")]
     [HttpPost]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
@@ -439,14 +445,9 @@ public class AuthController : Controller
         }
     }
 
-    public Task<IActionResult> ExternalLogin(string provider, string returnUrl)
-    {
-        throw new NotImplementedException();
-    }
-
     private bool GetProviderRegistrationFromUri(string returnUrl)
     {
-        var parsedQuery = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(returnUrl);
+        var parsedQuery = QueryHelpers.ParseQuery(returnUrl);
         if (parsedQuery.TryGetValue("providerregistration", out var providerRegistration))
         {
             if (bool.TryParse(providerRegistration.FirstOrDefault(), out bool result))

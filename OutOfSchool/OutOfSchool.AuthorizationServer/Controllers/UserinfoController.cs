@@ -71,7 +71,7 @@ public class UserinfoController : Controller
 
         if (User.HasScope(RemovePrefixInScope(OpenIddictConstants.Permissions.Prefixes.Scope + "outofschoolapi")))
         {
-            var additionalClaims = await _profileService.GetAdditionalClaimsAsync(User);
+            var additionalClaims = await _profileService.GetAdditionalClaimsAsync(User.Identities.First());
 
             foreach (var c in additionalClaims)
             {

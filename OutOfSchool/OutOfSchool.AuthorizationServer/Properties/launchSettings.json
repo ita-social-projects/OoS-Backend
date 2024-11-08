@@ -11,7 +11,7 @@
     "OutOfSchool.AuthorizationServer": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "Auth/Login",
+      "launchUrl": "login",
       "applicationUrl": "http://localhost:5443;https://localhost:5444;https://localhost:5002;http://localhost:9001",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

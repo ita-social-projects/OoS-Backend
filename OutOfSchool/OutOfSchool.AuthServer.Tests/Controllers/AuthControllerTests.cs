@@ -448,17 +448,6 @@ public class AuthControllerTests
         Assert.That(errorMessageFromController, Is.EqualTo(error.Description));
         Assert.IsInstanceOf<ViewResult>(result);
     }
-
-    [Test]
-    public void ExternalLogin_ReturnsNotImplementedEx()
-    {
-        // Arrange
-        var authController = this.authController;
-
-        // Assert & Act
-        Assert.ThrowsAsync<NotImplementedException>(() =>
-            authController.ExternalLogin("Provider", "return url"));
-    }
         
     public static IEnumerable<TestCaseData> RegisterViewModelsTestData =>
         new List<TestCaseData>()

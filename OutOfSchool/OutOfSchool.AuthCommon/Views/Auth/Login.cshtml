@@ -2,6 +2,7 @@
 @using OutOfSchool.AuthCommon
 
 @inject IHtmlLocalizer<SharedResource> SharedLocalizer
+@inject SignInManager<User> SignInManager
 
 @model OutOfSchool.AuthCommon.ViewModels.LoginViewModel
 @{
@@ -12,18 +13,6 @@
     <div class="wrapper"> 
         <h1 class="icon_title">@SharedLocalizer["Sign In"].Value.ToUpper()</h1>       
         <div class="icon_wrapper">
-            @* <form asp-controller="Auth" asp-action="ExternalLogin" *@
-            @*       asp-route-returnUrl="@Model.ReturnUrl" method="post"> *@
-            @*     @foreach (var provider in Model.ExternalProviders) *@
-            @*     { *@
-            @*         <button name="provider" *@
-            @*                 type="submit" *@
-            @*                 value="@provider.Name"> *@
-            @*             @provider.Name *@
-            @*         </button> *@
-            @*     } *@
-            @* </form> *@
-
             <form asp-controller="Auth" asp-action="Login" method="post" asp-route-returnUrl="@Model.ReturnUrl">
                 <input type="hidden" asp-for="ReturnUrl"/>
                 <div asp-validation-summary="ModelOnly"></div>
@@ -60,6 +49,44 @@
                     <a class="link" asp-controller="Auth" asp-action="Register" asp-route-returnUrl="@Model.ReturnUrl">@SharedLocalizer["Register"]</a>
                 </div>
             </form>
+        </div>
+        <div>
+            <section>
+                <h4>Use another service to log in.</h4>
+                <hr />
+                @{
+                var loginProviders = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+                if (loginProviders.Count == 0)
+                {
+                <div>
+                    <p>
+                        There are no external authentication services configured. See <a href="http://go.microsoft.com/fwlink/?LinkID=532715">this article</a>
+                        for details on setting up this ASP.NET application to support logging in via external services.
+                    </p>
+                </div>
+                }
+                else
+                {
+                <form asp-controller="ExternalAuth" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" role="form">
+                    <div>
+                        <div>
+                            <label for="role">Select role:</label>
+                            <select id="role" name="role">
+                                <option value="provider">Provider</option>
+                                <option value="parent">Parent</option>
+                            </select>
+                        </div>
+                        <p>
+                            @foreach (var provider in loginProviders)
+                            {
+                                <button type="submit" class="registration_submit registration_button" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.Name</button>
+                            }
+                        </p>
+                    </div>
+                </form>
+                }
+                }
+            </section>
         </div>
     </div>
 </div>
