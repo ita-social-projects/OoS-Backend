@@ -11,6 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Protobuf Include="..\OutOfSchool.GRPC\Protos\ProviderAdmin.proto" GrpcServices="Server" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
         <PackageReference Include="OpenIddict.EntityFrameworkCore" />
         <PackageReference Include="IdentityModel" />

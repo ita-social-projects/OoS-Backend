@@ -8,6 +8,10 @@ using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services.EmployeeOperations;
+using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
@@ -540,7 +544,7 @@ public class EmployeeService : CommunicationService, IEmployeeService
         var result = mapper.Map<FullEmployeeDto>(user);
 
         result.WorkshopTitles = await workshopService.GetWorkshopListByEmployeeId(employeeId).ConfigureAwait(false);
-        
+
         result.AccountStatus = AccountStatusExtensions.Convert(user);
 
         return result;
@@ -614,12 +618,12 @@ public class EmployeeService : CommunicationService, IEmployeeService
 
     private async Task CheckProviderOrEmployeeRights(Guid providerId)
     {
-        await currentUserService.UserHasRights(
-            new ProviderRights(providerId),
-            new ProviderDeputyRights(providerId)).ConfigureAwait(false);
+        await currentUserService
+            .UserHasRights(new ProviderRights(providerId))
+            .ConfigureAwait(false);
     }
 
-    private Expression<Func<EmployeeDto, bool>> PredicateBuild(ProviderAdminSearchFilter filter)
+    private static Expression<Func<EmployeeDto, bool>> PredicateBuild(EmployeeSearchFilter filter)
     {
         var predicate = PredicateBuilder.True<EmployeeDto>();
 

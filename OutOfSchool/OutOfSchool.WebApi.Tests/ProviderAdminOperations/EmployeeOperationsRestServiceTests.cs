@@ -7,6 +7,8 @@ using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Config;
+using OutOfSchool.BusinessLogic.Services.Communication;
+using OutOfSchool.BusinessLogic.Services.EmployeeOperations;
 using OutOfSchool.BusinessLogic.Services.ProviderAdminOperations;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Communication;

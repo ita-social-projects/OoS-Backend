@@ -629,7 +629,7 @@ public class EmployeeService : IEmployeeService
 
         string confirmationLink =
         url is null
-                ? $"{grpcConfig.ProviderAdminConfirmationLink}?userId={user.Id}&token={token}?redirectUrl={externalUrisConfig.Login}"
+                ? $"{grpcConfig.EmployeeConfirmationLink}?userId={user.Id}&token={token}?redirectUrl={externalUrisConfig.Login}"
                 : url.Action(
                     "EmailConfirmation",
                     "Account",

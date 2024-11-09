@@ -9,10 +9,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.AuthCommon.Services;
 using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Extensions;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.EmployeeOperations;
 using OutOfSchool.BusinessLogic.Services.ProviderAdminOperations;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
@@ -132,7 +134,7 @@ public class ProviderAdminServiceDBTest
 
         foreach (var pa in providerAdmins)
         {
-            var user = dbContext.Users.Where(u => u.Id == pa.UserId).Single();
+            var user = dbContext.Users.Single(u => u.Id == pa.UserId);
             var dto = mapper.Map<EmployeeDto>(user);
             dto.AccountStatus = AccountStatusExtensions.Convert(user);
 

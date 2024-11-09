@@ -24,7 +24,7 @@ global using OutOfSchool.BusinessLogic.Services;
 global using OutOfSchool.BusinessLogic.Services.Communication;
 global using OutOfSchool.BusinessLogic.Services.GRPC;
 global using OutOfSchool.BusinessLogic.Services.Images;
-global using OutOfSchool.BusinessLogic.Services.ProviderAdminOperations;
+global using OutOfSchool.BusinessLogic.Services.EmployeeOperations;
 global using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
 global using OutOfSchool.BusinessLogic.Util;
 global using OutOfSchool.Common;

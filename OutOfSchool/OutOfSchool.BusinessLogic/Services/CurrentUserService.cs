@@ -96,7 +96,6 @@ public class CurrentUserService : ICurrentUserService
             var provider = userTypes.OfType<ProviderRights>().FirstOrDefault();
             var providerAdmin = userTypes.OfType<EmployeeRights>().FirstOrDefault();
             var providerAdminWorkshop = userTypes.OfType<EmployeeWorkshopRights>().FirstOrDefault();
-            var providerDeputy = userTypes.OfType<ProviderDeputyRights>().FirstOrDefault();
 
             var result = await Task.WhenAll(
                 new List<Task<bool>>
@@ -105,7 +104,6 @@ public class CurrentUserService : ICurrentUserService
                         UserHasRights(provider),
                         UserHasRights(providerAdmin),
                         UserHasRights(providerAdminWorkshop),
-                        UserHasRights(providerDeputy),
                     }
                     .Select(Execute));
             userHasRights = result.Any(hasRight => hasRight);
@@ -146,7 +144,6 @@ public class CurrentUserService : ICurrentUserService
             EmployeeWorkshopRights providerAdminWorkshop => this.EmployeeHasWorkshopRights(
                 providerAdminWorkshop.providerId, providerAdminWorkshop.workshopId),
             ProviderRights provider => ProviderHasRights(provider.providerId),
-            ProviderDeputyRights providerDeputy => this.EmployeeHasRights(providerDeputy.providerId),
             null => Task.FromResult(false),
             _ => throw new NotImplementedException("Unknown user rights type"),
         };

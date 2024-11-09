@@ -12,6 +12,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.EmployeeOperations;
 using OutOfSchool.BusinessLogic.Services.ProviderAdminOperations;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
@@ -63,7 +64,7 @@ public class EmployeeServiceTest
         };
         badRequestApiErrorResponse = new ApiErrorResponse();
         badRequestApiErrorResponse.AddApiError(
-            ApiErrorsTypes.Common.EmailAlreadyTaken("ProviderAdmin", email));
+            ApiErrorsTypes.Common.EmailAlreadyTaken("Employee", email));
         emailAlreadyTakenErrorResponse = ErrorResponse.BadRequest(badRequestApiErrorResponse);
 
         httpClientFactory = new Mock<IHttpClientFactory>();
