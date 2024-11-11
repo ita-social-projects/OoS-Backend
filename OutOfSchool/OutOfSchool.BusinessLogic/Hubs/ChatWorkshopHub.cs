@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Security.Authentication;
-using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Common;
@@ -132,9 +131,7 @@ public class ChatWorkshopHub : Hub
         try
         {
             // Deserialize from string to Object
-            var chatMessageWorkshopCreateDto = JsonSerializer.Deserialize<ChatMessageWorkshopCreateDto>(
-                chatNewMessage,
-                options: GetJsonSerializerOptions());
+            var chatMessageWorkshopCreateDto = JsonSerializerHelper.Deserialize<ChatMessageWorkshopCreateDto>(chatNewMessage);
 
             var chatRoomExists = await roomService.GetByIdAsync(chatMessageWorkshopCreateDto.ChatRoomId).ConfigureAwait(false) is not null;
 
@@ -188,7 +185,7 @@ public class ChatWorkshopHub : Hub
 
             // Send chatMessage.
             await Clients.Group(createdMessageDto.ChatRoomId.ToString())
-                .SendAsync("ReceiveMessageInChatGroup", JsonSerializer.Serialize(createdMessageDto))
+                .SendAsync("ReceiveMessageInChatGroup", JsonSerializerHelper.Serialize(createdMessageDto))
                 .ConfigureAwait(false);
         }
         catch (AuthenticationException exception)
@@ -203,11 +200,6 @@ public class ChatWorkshopHub : Hub
             var messageForUser = localizer["Server error. Please try again later or contact technical support."];
             await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", messageForUser).ConfigureAwait(false);
         }
-    }
-
-    private static JsonSerializerOptions GetJsonSerializerOptions()
-    {
-        return new JsonSerializerOptions(JsonSerializerDefaults.Web);
     }
 
     private void AddUsersConnectionIdTracking(string userId)
