@@ -115,30 +115,27 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
 
     /// <inheritdoc/>
     public virtual async Task<IEnumerable<TEntity>> GetAllWithDetails(string includeProperties = "")
-    {
-        IQueryable<TEntity> query = dbSet;
-        query = query.IncludeProperties(includeProperties);
-        return await query.ToListAsync();
-    }
+        => await dbSet
+        .IncludeProperties(includeProperties)
+        .ToListAsync();
 
     public virtual async Task<IEnumerable<TEntity>> GetByFilter(
         Expression<Func<TEntity, bool>> whereExpression,
         string includeProperties = "")
-    {
-        var query = this.dbSet.Where(whereExpression);
-        query = query.IncludeProperties(includeProperties);
-        return await query.ToListAsync().ConfigureAwait(false);
-    }
+        => await this.dbSet
+        .Where(whereExpression)
+        .IncludeProperties(includeProperties)
+        .ToListAsync()
+        .ConfigureAwait(false);
 
     /// <inheritdoc/>
     public virtual IQueryable<TEntity> GetByFilterNoTracking(
         Expression<Func<TEntity, bool>> whereExpression,
         string includeProperties = "")
-    {
-        var query = this.dbSet.Where(whereExpression);
-        query = query.IncludeProperties(includeProperties);
-        return query.AsNoTracking();
-    }
+        => this.dbSet
+        .Where(whereExpression)
+        .IncludeProperties(includeProperties)
+        .AsNoTracking();
 
     /// <inheritdoc/>
     public virtual Task<TEntity> GetById(TKey id) => dbSet.FirstOrDefaultAsync(x => x.Id.Equals(id));
