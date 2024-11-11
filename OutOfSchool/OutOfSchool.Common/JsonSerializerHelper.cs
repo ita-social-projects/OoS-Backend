@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace OutOfSchool.BusinessLogic.Util;
+namespace OutOfSchool.Common;
 
 public static class JsonSerializerHelper
 {
@@ -16,6 +16,16 @@ public static class JsonSerializerHelper
         return JsonSerializer.Deserialize<TValue>(json, options);
     }
 
+    public static TValue? Deserialize<TValue>(ref Utf8JsonReader reader, JsonSerializerOptions options = null)
+    {
+        if (options == null)
+        {
+            return JsonSerializer.Deserialize<TValue>(ref reader, options: JsonSerializerOptions);
+        }
+
+        return JsonSerializer.Deserialize<TValue>(ref reader, options);
+    }
+
     public static string Serialize<TValue>(TValue value, JsonSerializerOptions options = null)
     {
         if (options == null)
@@ -24,5 +34,16 @@ public static class JsonSerializerHelper
         }
 
         return JsonSerializer.Serialize(value, options);
+    }
+
+    public static void Serialize<TValue>(Utf8JsonWriter writer, TValue value, JsonSerializerOptions options = null)
+    {
+        if (options == null)
+        {
+            JsonSerializer.Serialize(writer, value, options: JsonSerializerOptions);
+            return;
+        }
+
+        JsonSerializer.Serialize(writer, value, options);
     }
 }
