@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Text.Json;
 
 namespace OutOfSchool.Common.Extensions;
@@ -15,20 +16,14 @@ public static class StreamExtensions
             throw new NotSupportedException("Can't read this stream");
         }
 
-        using (stream)
-        {
-            // Define buffer size
-            Span<byte> buffer = new byte[1024];
+        using var streamReader = new StreamReader(stream);
+        byte[] jsonData = Encoding.UTF8.GetBytes(streamReader.ReadToEnd());
 
-            // Read data from the stream into the buffer
-            int bytesRead = stream.Read(buffer);
+        // Create a Utf8JsonReader with the bytes
+        var reader = new Utf8JsonReader(jsonData, isFinalBlock: true, state: default);
 
-            // Initialize the Utf8JsonReader with the buffer slice containing actual data
-            var reader = new Utf8JsonReader(buffer[..bytesRead], isFinalBlock: true, state: default);
-
-            // Deserialize JSON data using Utf8JsonReader
-            return JsonSerializer.Deserialize<T>(ref reader);
-        }
+        // Deserialize JSON data using Utf8JsonReader
+        return JsonSerializer.Deserialize<T>(ref reader);
     }
 
     public static void SerializeToJsonAndWrite<T>(this Stream stream, T objectToWrite)
