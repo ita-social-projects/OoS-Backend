@@ -4,13 +4,14 @@ namespace OutOfSchool.Common;
 
 public static class JsonSerializerHelper
 {
-    private static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions JsonSerializerOptionsWeb = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions JsonSerializerOptionsGeneral = new JsonSerializerOptions(JsonSerializerDefaults.General);
 
     public static TValue? Deserialize<TValue>(string json, JsonSerializerOptions options = null)
     {
         if (options == null)
         {
-            return JsonSerializer.Deserialize<TValue>(json, options: JsonSerializerOptions);
+            return JsonSerializer.Deserialize<TValue>(json, options: JsonSerializerOptionsWeb);
         }
 
         return JsonSerializer.Deserialize<TValue>(json, options);
@@ -20,7 +21,7 @@ public static class JsonSerializerHelper
     {
         if (options == null)
         {
-            return JsonSerializer.Deserialize<TValue>(ref reader, options: JsonSerializerOptions);
+            return JsonSerializer.Deserialize<TValue>(ref reader, options: JsonSerializerOptionsWeb);
         }
 
         return JsonSerializer.Deserialize<TValue>(ref reader, options);
@@ -30,7 +31,7 @@ public static class JsonSerializerHelper
     {
         if (options == null)
         {
-            return JsonSerializer.Serialize(value, options: JsonSerializerOptions);
+            return JsonSerializer.Serialize(value, options: JsonSerializerOptionsGeneral);
         }
 
         return JsonSerializer.Serialize(value, options);
@@ -40,7 +41,7 @@ public static class JsonSerializerHelper
     {
         if (options == null)
         {
-            JsonSerializer.Serialize(writer, value, options: JsonSerializerOptions);
+            JsonSerializer.Serialize(writer, value, options: JsonSerializerOptionsGeneral);
             return;
         }
 

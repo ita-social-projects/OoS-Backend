@@ -23,7 +23,7 @@ public static class StreamExtensions
         var reader = new Utf8JsonReader(jsonData, isFinalBlock: true, state: default);
 
         // Deserialize JSON data using Utf8JsonReader
-        return JsonSerializer.Deserialize<T>(ref reader);
+        return JsonSerializerHelper.Deserialize<T>(ref reader);
     }
 
     public static void SerializeToJsonAndWrite<T>(this Stream stream, T objectToWrite)
@@ -37,7 +37,7 @@ public static class StreamExtensions
 
         using var jsonTextWriter = new Utf8JsonWriter(stream);
 
-        JsonSerializer.Serialize(jsonTextWriter, objectToWrite);
+        JsonSerializerHelper.Serialize(jsonTextWriter, objectToWrite);
         jsonTextWriter.Flush();
     }
 }
