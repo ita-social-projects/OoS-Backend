@@ -20,6 +20,8 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
     {
     }
 
+    public DbSet<Individual> Individuals { get; set; }
+
     public DbSet<Parent> Parents { get; set; }
 
     public DbSet<Provider> Providers { get; set; }
@@ -179,6 +181,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new UserConfiguration());
         builder.ApplyConfiguration(new WorkshopConfiguration());
         builder.ApplyConfiguration(new WorkshopDescriptionItemConfiguration());
+        builder.ApplyConfiguration(new IndividualConfiguration());
 
         builder.Seed();
         builder.UpdateIdentityTables();

@@ -29,9 +29,9 @@ internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
             .IsRequired()
             .HasMaxLength(Constants.MaxWorkshopShortTitleLength);
 
-        base.Configure(builder);
-
         builder.HasMany(x => x.Tags)
             .WithMany(x => x.Workshops);
+
+        base.Configure(builder);
     }
 }
