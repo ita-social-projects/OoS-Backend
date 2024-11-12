@@ -372,7 +372,7 @@ public class AuthControllerTests
         RegisterViewModel viewResultModel = (RegisterViewModel) ((ViewResult) result).Model;
 
         // Assert
-        Assert.That(viewResultModel.ReturnUrl, Is.EqualTo("Login"));
+        Assert.That(viewResultModel.ReturnUrl, Is.EqualTo("login"));
         Assert.IsInstanceOf<ViewResult>(result);
     }
 

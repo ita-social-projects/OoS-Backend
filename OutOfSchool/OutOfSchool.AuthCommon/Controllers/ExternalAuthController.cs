@@ -77,9 +77,15 @@ public class ExternalAuthController : Controller
     {
         var result = await HttpContext.AuthenticateAsync(OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);
 
-        if (result.Principal is not {Identity.IsAuthenticated: true})
+        if (!result.Succeeded)
         {
-            throw new InvalidOperationException("The external authorization data cannot be used for authentication.");
+            ModelState.AddModelError(string.Empty, "The external authorization data cannot be used for authentication.");
+
+            return this.View("~/Views/Auth/Login.cshtml", new LoginViewModel
+            {
+                ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                ReturnUrl = result.Properties?.RedirectUri ?? "/login",
+            });
         }
 
         var remoteUserId = result.Principal.GetClaim(AuthServerConstants.ExternalAuthUserIdKey);
@@ -110,7 +116,7 @@ public class ExternalAuthController : Controller
         return await externalAuth.Match(
             async error =>
             {
-                logger.LogError("Unexpected error occurred: {Message}", error.Message);
+                logger.LogError("Unexpected error occurred: {Message} - {Content}", error.Message, error.Content);
                 var frontMessage = error switch
                 {
                     ExternalAuthError e => ProcessExternalError(e),
@@ -152,7 +158,8 @@ public class ExternalAuthController : Controller
         };
     }
 
-    private async Task<Either<IErrorResponse, IActionResult>> SignInUserAsync(UserInfoResponse userInfo,
+    private async Task<Either<IErrorResponse, IActionResult>> SignInUserAsync(
+        UserInfoResponse userInfo,
         AuthenticateResult result)
     {
         await using var transaction = await dbContext.Database.BeginTransactionAsync();

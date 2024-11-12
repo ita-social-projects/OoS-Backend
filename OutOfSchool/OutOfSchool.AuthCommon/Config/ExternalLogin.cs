@@ -11,4 +11,6 @@ public class ExternalLogin
     public string ClientSecret { get; set; }
 
     public Parameters Parameters { get; set; }
+
+    public IdServerPaths IdServerPaths { get; set; }
 }
