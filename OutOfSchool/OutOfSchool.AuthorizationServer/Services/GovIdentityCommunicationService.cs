@@ -60,17 +60,18 @@ public class GovIdentityCommunicationService : CommunicationService, IGovIdentit
         return new Request
         {
             HttpMethodType = HttpMethodType.Get,
-            Url = new Uri(authServerConfig.ExternalLogin.IdServerUri, "get-user-info"),
+            Url = new Uri(authServerConfig.ExternalLogin.IdServerUri,
+                authServerConfig.ExternalLogin.IdServerPaths.UserInfo),
             Token = string.Empty,
             Query = new Dictionary<string, string>
             {
+                {"access_token", backchannelToken},
                 {"user_id", remoteUserId},
                 {
                     authServerConfig.ExternalLogin.Parameters.Fields.Key,
                     authServerConfig.ExternalLogin.Parameters.Fields.Value
                 },
-                {"cert", cert},
-                {"access_token", backchannelToken},
+                {"cert", Uri.EscapeDataString(cert)},
             },
         };
     }
@@ -104,7 +105,12 @@ public class GovIdentityCommunicationService : CommunicationService, IGovIdentit
                     {
                         HttpStatusCode = errorResponse.HttpStatusCode,
                         Message = idGovError.Error.ToString(),
-                        Content = idGovError.Message,
+                        Content = string.Equals(
+                            idGovError.Message,
+                            idGovError.Description,
+                            StringComparison.OrdinalIgnoreCase)
+                            ? idGovError.Message
+                            : $"{idGovError.Message} - {idGovError.Description}",
                         ErrorGroup = ExternalAuthErrorGroup.IdGovUa,
                     });
                 }

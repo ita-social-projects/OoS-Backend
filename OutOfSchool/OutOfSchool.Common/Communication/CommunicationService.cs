@@ -1,6 +1,7 @@
 ﻿#nullable enable
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -72,9 +73,16 @@ public class CommunicationService : ICommunicationService
                 .AcceptEncoding
                 .Add(new StringWithQualityHeaderValue("gzip"));
 
-            requestMessage.RequestUri = request.Query != null
-                ? new Uri(QueryHelpers.AddQueryString(request.Url.ToString(), request.Query))
-                : request.Url;
+            var uriBuilder = new UriBuilder(request.Url);
+
+            if (request.Query != null)
+            {
+                var query = string.Join("&", request.Query.Select(
+                    kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
+                uriBuilder.Query = query;
+            }
+
+            requestMessage.RequestUri = uriBuilder.Uri;
 
             if (request.Data != null)
             {
@@ -87,6 +95,8 @@ public class CommunicationService : ICommunicationService
 
             requestMessage.Method = HttpMethodService.GetHttpMethodType(request);
 
+            logger.LogDebug("Sending request to {RequestMessage}", requestMessage);
+
             var response = await httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead)
                 .ConfigureAwait(false);
 
@@ -98,6 +108,7 @@ public class CommunicationService : ICommunicationService
                 {
                     Body = errorBody,
                 };
+                logger.LogDebug("Error body: {Body}", errorBody);
                 logger.LogError("Remote service error: {StatusCode}", response.StatusCode);
                 return await HandleErrorAsync(error, "Remote service error", errorHandler);
             }

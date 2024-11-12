@@ -191,7 +191,7 @@ public static class Startup
                     RedirectUri = new Uri($"{config["Identity:Authority"]}/callback/idgovua"),
                     ProviderName = "IdGovUa",
                     ProviderDisplayName = "id.gov.ua",
-                    Scopes = { "openid", "profile" },
+                    Scopes = { "profile" },
 
                     // Token validation is not supported by id.gov.ua.
                     TokenValidationParameters =
@@ -205,10 +205,10 @@ public static class Startup
                     Configuration = new OpenIddictConfiguration
                     {
                         Issuer = authorizationConfig.ExternalLogin.IdServerUri,
-                        // TODO: Extract path to config
-                        AuthorizationEndpoint = new Uri(authorizationConfig.ExternalLogin.IdServerUri, "oauth2/authorize"),
-                        TokenEndpoint = new Uri(authorizationConfig.ExternalLogin.IdServerUri, "oauth2/get-access-token"),
-                        ResponseTypesSupported = { "code" },
+                        AuthorizationEndpoint = new Uri(authorizationConfig.ExternalLogin.IdServerUri, authorizationConfig.ExternalLogin.IdServerPaths.Authorize),
+                        TokenEndpoint = new Uri(authorizationConfig.ExternalLogin.IdServerUri, authorizationConfig.ExternalLogin.IdServerPaths.Token),
+                        ResponseTypesSupported = { OpenIddictConstants.ResponseTypes.Code },
+                        TokenEndpointAuthMethodsSupported = {OpenIddictConstants.ClientAuthenticationMethods.ClientSecretPost},
                         // TODO: Check what are really supported
                         // ResponseTypesSupported = { "code", "id_token", "token" }
                     },
