@@ -44,11 +44,11 @@ public class StreamExtensionsTest
 
         using var jsonTextWriter = new Utf8JsonWriter(new MemoryStream(bytes));
 
-        JsonSerializer.Serialize(jsonTextWriter, objectToWrite);
+        System.Text.Json.JsonSerializer.Serialize(jsonTextWriter, objectToWrite);
         jsonTextWriter.Flush();
 
         // Act
-        var deserializedObject = new MemoryStream(bytes).ReadAndDeserializeFromJson<TestObject>();
+        var deserializedObject = new MemoryStream(TrimEnd(bytes)).ReadAndDeserializeFromJson<TestObject>();
 
         // Assert
         Assert.AreEqual(objectToWrite, deserializedObject);
@@ -80,7 +80,7 @@ public class StreamExtensionsTest
     public void SerializeToJsonAndWrite_WhenWhenObjectIsValid_ReturnsValidJson()
     {
         // Arrange
-        const string ExpectedJsonString = "{\"Property\":\"test\"}";
+        const string ExpectedJsonString = "{\"property\":\"test\"}";
         const int BufferSize = 1024;
 
         var bytes = new byte[BufferSize];
@@ -93,6 +93,15 @@ public class StreamExtensionsTest
 
         // Assert
         Assert.AreEqual(ExpectedJsonString, jsonString);
+    }
+
+    private static byte[] TrimEnd(byte[] array)
+    {
+        var lastIndex = Array.FindLastIndex(array, b => b != 0);
+
+        Array.Resize(ref array, lastIndex + 1);
+
+        return array;
     }
 
     private sealed record TestObject(string Property);

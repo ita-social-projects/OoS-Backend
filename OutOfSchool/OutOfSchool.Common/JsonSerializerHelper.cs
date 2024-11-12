@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Text.Json;
 
 namespace OutOfSchool.Common;
@@ -6,7 +7,6 @@ namespace OutOfSchool.Common;
 public static class JsonSerializerHelper
 {
     private static readonly JsonSerializerOptions JsonSerializerOptionsWeb = new JsonSerializerOptions(JsonSerializerDefaults.Web);
-    private static readonly JsonSerializerOptions JsonSerializerOptionsGeneral = new JsonSerializerOptions(JsonSerializerDefaults.General);
 
     public static TValue? Deserialize<TValue>(string json, JsonSerializerOptions options = null)
     {
@@ -18,14 +18,14 @@ public static class JsonSerializerHelper
         return JsonSerializer.Deserialize<TValue>(json, options);
     }
 
-    public static TValue? Deserialize<TValue>(ref Utf8JsonReader reader, JsonSerializerOptions options = null)
+    public static TValue? Deserialize<TValue>(Stream stream, JsonSerializerOptions options = null)
     {
         if (options is null)
         {
-            return JsonSerializer.Deserialize<TValue>(ref reader, options: JsonSerializerOptionsWeb);
+            return JsonSerializer.Deserialize<TValue>(stream, options: JsonSerializerOptionsWeb);
         }
 
-        return JsonSerializer.Deserialize<TValue>(ref reader, options);
+        return JsonSerializer.Deserialize<TValue>(stream, options);
     }
 
     public static object? Deserialize(string json, Type type, JsonSerializerOptions options = null)
@@ -42,7 +42,7 @@ public static class JsonSerializerHelper
     {
         if (options is null)
         {
-            return JsonSerializer.Serialize(value, options: JsonSerializerOptionsGeneral);
+            return JsonSerializer.Serialize(value, options: JsonSerializerOptionsWeb);
         }
 
         return JsonSerializer.Serialize(value, options);
@@ -52,7 +52,7 @@ public static class JsonSerializerHelper
     {
         if (options is null)
         {
-            JsonSerializer.Serialize(writer, value, options: JsonSerializerOptionsGeneral);
+            JsonSerializer.Serialize(writer, value, options: JsonSerializerOptionsWeb);
             return;
         }
 
