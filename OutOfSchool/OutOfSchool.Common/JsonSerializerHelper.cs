@@ -10,7 +10,7 @@ public static class JsonSerializerHelper
 
     public static TValue? Deserialize<TValue>(string json, JsonSerializerOptions options = null)
     {
-        if (options == null)
+        if (options is null)
         {
             return JsonSerializer.Deserialize<TValue>(json, options: JsonSerializerOptionsWeb);
         }
@@ -20,7 +20,7 @@ public static class JsonSerializerHelper
 
     public static TValue? Deserialize<TValue>(ref Utf8JsonReader reader, JsonSerializerOptions options = null)
     {
-        if (options == null)
+        if (options is null)
         {
             return JsonSerializer.Deserialize<TValue>(ref reader, options: JsonSerializerOptionsWeb);
         }
@@ -30,7 +30,7 @@ public static class JsonSerializerHelper
 
     public static object? Deserialize(string json, Type type, JsonSerializerOptions options = null)
     {
-        if (options == null)
+        if (options is null)
         {
             return JsonSerializer.Deserialize(json, type, options: JsonSerializerOptionsWeb);
         }
@@ -40,7 +40,7 @@ public static class JsonSerializerHelper
 
     public static string Serialize<TValue>(TValue value, JsonSerializerOptions options = null)
     {
-        if (options == null)
+        if (options is null)
         {
             return JsonSerializer.Serialize(value, options: JsonSerializerOptionsGeneral);
         }
@@ -50,7 +50,7 @@ public static class JsonSerializerHelper
 
     public static void Serialize<TValue>(Utf8JsonWriter writer, TValue value, JsonSerializerOptions options = null)
     {
-        if (options == null)
+        if (options is null)
         {
             JsonSerializer.Serialize(writer, value, options: JsonSerializerOptionsGeneral);
             return;
