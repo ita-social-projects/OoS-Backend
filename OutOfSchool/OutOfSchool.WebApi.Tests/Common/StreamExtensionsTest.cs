@@ -44,7 +44,7 @@ public class StreamExtensionsTest
 
         using var jsonTextWriter = new Utf8JsonWriter(new MemoryStream(bytes));
 
-        System.Text.Json.JsonSerializer.Serialize(jsonTextWriter, objectToWrite);
+        JsonSerializer.Serialize(jsonTextWriter, objectToWrite);
         jsonTextWriter.Flush();
 
         // Act
