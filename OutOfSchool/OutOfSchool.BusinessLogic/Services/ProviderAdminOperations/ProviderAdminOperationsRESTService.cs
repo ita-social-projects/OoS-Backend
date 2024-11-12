@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Models;
 
@@ -61,7 +60,7 @@ public class ProviderAdminOperationsRESTService : CommunicationService, IProvide
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonSerializer.Deserialize<CreateProviderAdminDto>(result.Result.ToString())
+                ? JsonSerializerHelper.Deserialize<CreateProviderAdminDto>(result.Result.ToString())
                 : null);
     }
 }

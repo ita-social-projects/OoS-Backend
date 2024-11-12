@@ -1,7 +1,6 @@
 ﻿using System.Data;
 using System.Linq.Expressions;
 using System.Text;
-using System.Text.Json;
 using AutoMapper;
 using CsvHelper;
 using CsvHelper.Configuration;
@@ -817,7 +816,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                 Message = r.Message,
             })
             .Map(r => r.Result is not null
-            ? JsonSerializer.Deserialize<ActionResult>(r.Result.ToString())
+            ? JsonSerializerHelper.Deserialize<ActionResult>(r.Result.ToString())
             : null);
     }
 

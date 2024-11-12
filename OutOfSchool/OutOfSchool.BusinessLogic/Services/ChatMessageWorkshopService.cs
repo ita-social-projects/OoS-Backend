@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using System.Text.Json;
 using AutoMapper;
 using Microsoft.AspNetCore.SignalR;
 using OutOfSchool.BusinessLogic.Models;
@@ -90,7 +89,7 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
         {
             var chatMessages = await this.GetMessagesForChatRoomDomainModelAsync(chatRoomId, offsetFilter).ConfigureAwait(false);
 
-            return chatMessages.Select(item => mapper.Map<ChatMessageWorkshopDto>(item)).ToList();
+            return chatMessages.Select(mapper.Map<ChatMessageWorkshopDto>).ToList();
         }
         catch (Exception exception)
         {
@@ -114,12 +113,12 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
             if (notReadChatMessages.Count > 0)
             {
                 var chatMessageIds = notReadChatMessages.Select(x => x.Id);
-                var resultMessage = JsonSerializer.Serialize(chatMessageIds);
+                var resultMessage = JsonSerializerHelper.Serialize(chatMessageIds);
 
                 await workshopHub.Clients.Group(chatRoomId.ToString()).SendAsync("ReadChatMessagesByUser", resultMessage).ConfigureAwait(false);
             }
 
-            return chatMessages.Select(item => mapper.Map<ChatMessageWorkshopDto>(item)).ToList();
+            return chatMessages.Select(mapper.Map<ChatMessageWorkshopDto>).ToList();
         }
         catch (Exception exception)
         {

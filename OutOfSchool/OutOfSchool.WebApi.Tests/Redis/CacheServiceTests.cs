@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -9,6 +8,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Common;
 using OutOfSchool.Redis;
 
 namespace OutOfSchool.WebApi.Tests.Redis;
@@ -43,7 +43,7 @@ public class CacheServiceTests
             {"ExpectedKey", "ExpectedValue"},
         };
         distributedCacheMock.Setup(c => c.Get(It.IsAny<string>()))
-            .Returns(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(expected)));
+            .Returns(Encoding.UTF8.GetBytes(JsonSerializerHelper.Serialize(expected)));
 
         // Act
         var result = await cacheService.GetOrAddAsync("Example", () => Task.FromResult(expected));

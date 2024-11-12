@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -75,7 +74,7 @@ public class CommunicationService : ICommunicationService
             {
                 requestMessage.Content =
                     new StringContent(
-                        JsonSerializer.Serialize(request.Data),
+                        JsonSerializerHelper.Serialize(request.Data),
                         Encoding.UTF8,
                         MediaTypeNames.Application.Json);
             }

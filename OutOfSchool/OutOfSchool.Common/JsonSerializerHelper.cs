@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Text.Json;
 
 namespace OutOfSchool.Common;
 
@@ -25,6 +26,16 @@ public static class JsonSerializerHelper
         }
 
         return JsonSerializer.Deserialize<TValue>(ref reader, options);
+    }
+
+    public static object? Deserialize(string json, Type type, JsonSerializerOptions options = null)
+    {
+        if (options == null)
+        {
+            return JsonSerializer.Deserialize(json, type, options: JsonSerializerOptionsWeb);
+        }
+
+        return JsonSerializer.Deserialize(json, type, options);
     }
 
     public static string Serialize<TValue>(TValue value, JsonSerializerOptions options = null)

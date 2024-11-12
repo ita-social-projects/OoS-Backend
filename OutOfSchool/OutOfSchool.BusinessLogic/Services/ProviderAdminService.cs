@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using System.Text.Json;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -171,7 +170,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonSerializer.Deserialize<UpdateProviderAdminDto>(result.Result.ToString())
+                ? JsonSerializerHelper.Deserialize<UpdateProviderAdminDto>(result.Result.ToString())
                 : null);
     }
 
@@ -234,7 +233,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonSerializer.Deserialize<ActionResult>(result.Result.ToString())
+                ? JsonSerializerHelper.Deserialize<ActionResult>(result.Result.ToString())
                 : null);
     }
 
@@ -305,7 +304,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonSerializer.Deserialize<ActionResult>(result.Result.ToString())
+                ? JsonSerializerHelper.Deserialize<ActionResult>(result.Result.ToString())
                 : null);
     }
 
@@ -351,7 +350,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonSerializer.Deserialize<ActionResult>(result.Result.ToString())
+                ? JsonSerializerHelper.Deserialize<ActionResult>(result.Result.ToString())
                 : null);
     }
 
@@ -640,7 +639,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonSerializer.Deserialize<ActionResult>(result.Result.ToString())
+                ? JsonSerializerHelper.Deserialize<ActionResult>(result.Result.ToString())
                 : null);
     }
 
