@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HeaderPropagation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.BackgroundJobs.Config;
@@ -33,6 +34,8 @@ using OutOfSchool.Services.Repository.Api.Files;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Services.Repository.Files;
+using Polly;
+using Polly.Extensions.Http;
 using StackExchange.Redis;
 
 namespace OutOfSchool.WebApi;
@@ -196,15 +199,17 @@ public static class Startup
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
         services.AddHttpClient(configuration["Communication:ClientName"])
-            .AddHttpMessageHandler(handler =>
-                new RetryPolicyDelegatingHandler(
-                    int.Parse(configuration["Communication:MaxNumberOfRetries"])))
             .ConfigurePrimaryHttpMessageHandler(handler =>
                 new HttpClientHandler()
                 {
                     AutomaticDecompression = DecompressionMethods.GZip,
                 })
-            .AddHeaderPropagation();
+            .AddHeaderPropagation()
+            .AddStandardResilienceHandler().Configure(o =>
+            {
+                o.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(configuration.GetValue<int>("Communication:TimeoutInSeconds"));
+                o.Retry.MaxRetryAttempts = configuration.GetValue<int>("Communication:MaxNumberOfRetries");
+            });
 
         services.AddRazorPages();
         services.AddHttpContextAccessor();

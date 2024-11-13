@@ -80,6 +80,7 @@
         <PackageReference Include="Elastic.Apm.EntityFrameworkCore"/>
         <PackageReference Include="Elastic.Apm.Elasticsearch"/>
         <PackageReference Include="Elastic.Apm.StackExchange.Redis"/>
+        <PackageReference Include="Microsoft.Extensions.Http.Resilience"/>
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\OutOfSchool.BackgroundJobs\OutOfSchool.BackgroundJobs.csproj" />
