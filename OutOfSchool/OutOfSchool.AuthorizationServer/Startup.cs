@@ -16,7 +16,6 @@ using OutOfSchool.AuthorizationServer.Extensions;
 using OutOfSchool.AuthorizationServer.External;
 using OutOfSchool.AuthorizationServer.KeyManagement;
 using OutOfSchool.AuthorizationServer.Services;
-using OutOfSchool.Common.Communication;
 using OutOfSchool.EmailSender.Services;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
@@ -209,8 +208,7 @@ public static class Startup
                         TokenEndpoint = new Uri(authorizationConfig.ExternalLogin.IdServerUri, authorizationConfig.ExternalLogin.IdServerPaths.Token),
                         ResponseTypesSupported = { OpenIddictConstants.ResponseTypes.Code },
                         TokenEndpointAuthMethodsSupported = {OpenIddictConstants.ClientAuthenticationMethods.ClientSecretPost},
-                        // TODO: Check what are really supported
-                        // ResponseTypesSupported = { "code", "id_token", "token" }
+                        UserinfoEndpoint = null,
                     },
                 });
                 options.UseSystemNetHttp();

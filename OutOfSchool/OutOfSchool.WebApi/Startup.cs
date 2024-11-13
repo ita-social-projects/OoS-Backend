@@ -36,6 +36,8 @@ using OutOfSchool.Services.Repository.Api.Files;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Services.Repository.Files;
+using Polly;
+using Polly.Extensions.Http;
 using StackExchange.Redis;
 
 namespace OutOfSchool.WebApi;
