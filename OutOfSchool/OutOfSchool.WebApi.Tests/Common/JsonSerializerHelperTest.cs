@@ -106,6 +106,16 @@ public class JsonSerializerHelperTest
     }
 
     [Test]
+    public void Deserialize_WhenJsonFromStreamIsNull_ThrowArgumentNullException()
+    {
+        // Arrange
+        var stream = null as Stream;
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => JsonSerializerHelper.Deserialize<TestObject>(stream));
+    }
+
+    [Test]
     public void Deserialize_WhenJsonFromStringIsValid_WithTypeAndJsonSerializerOptionsIsGeneral_ReturnsUnvalidDeserializedObject()
     {
         // Arrange
@@ -147,7 +157,7 @@ public class JsonSerializerHelperTest
 
     #region
     [Test]
-    public void SerializeToJson_WhenWhenObjectIsValid_WithJsonSerializerOptionsIsGeneral_ReturnsUnvalidJson()
+    public void SerializeToJson_WhenObjectIsValid_WithJsonSerializerOptionsIsGeneral_ReturnsUnvalidJson()
     {
         // Arrange
         var objectToWrite = new TestObject("test");
@@ -160,7 +170,7 @@ public class JsonSerializerHelperTest
     }
 
     [Test]
-    public void SerializeToJson_WhenWhenObjectIsValid_WithJsonSerializerOptionsIsWeb_ReturnsValidJson()
+    public void SerializeToJson_WhenObjectIsValid_WithJsonSerializerOptionsIsWeb_ReturnsValidJson()
     {
         // Arrange
         var objectToWrite = new TestObject("test");
@@ -173,7 +183,7 @@ public class JsonSerializerHelperTest
     }
 
     [Test]
-    public void SerializeToJson_WhenWhenObjectIsValid_WithJsonSerializerOptionsIsNull_ReturnsValidJson()
+    public void SerializeToJson_WhenObjectIsValid_WithJsonSerializerOptionsIsNull_ReturnsValidJson()
     {
         // Arrange
         var objectToWrite = new TestObject("test");
@@ -238,12 +248,22 @@ public class JsonSerializerHelperTest
         // Assert
         Assert.AreEqual(JSONSTRING, result);
     }
+
+    [Test]
+    public void SerializeToJsonWithUtf8JsonWriter_WhenUtf8JsonWriterIsNull_ThrowArgumentNullException()
+    {
+        // Arrange
+        var objectToWrite = new TestObject("test");
+        var jsonTextWriter = null as Utf8JsonWriter;
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => JsonSerializerHelper.Serialize(jsonTextWriter, objectToWrite));
+    }
     #endregion
 
     private static byte[] TrimEnd(byte[] array)
     {
         var lastIndex = Array.FindLastIndex(array, b => b != 0);
-
         Array.Resize(ref array, lastIndex + 1);
 
         return array;

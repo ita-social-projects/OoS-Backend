@@ -20,6 +20,8 @@ public static class JsonSerializerHelper
 
     public static TValue? Deserialize<TValue>(Stream stream, JsonSerializerOptions options = null)
     {
+        ArgumentNullException.ThrowIfNull(stream);
+
         if (options is null)
         {
             return JsonSerializer.Deserialize<TValue>(stream, options: JsonSerializerOptionsWeb);
@@ -50,6 +52,8 @@ public static class JsonSerializerHelper
 
     public static void Serialize<TValue>(Utf8JsonWriter writer, TValue value, JsonSerializerOptions options = null)
     {
+        ArgumentNullException.ThrowIfNull(writer);
+
         if (options is null)
         {
             JsonSerializer.Serialize(writer, value, options: JsonSerializerOptionsWeb);
