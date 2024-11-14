@@ -1,7 +1,6 @@
 using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 using GrpcService;
-using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Achievement;
 using OutOfSchool.BusinessLogic.Models.Application;
@@ -151,21 +150,36 @@ public class MappingProfile : Profile
         CreateMap<Address, AddressInfoDto>()
              .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
 
+        /// <summary>
+        /// The localization is done outside the mapping
+        /// Original code:
+        /// CreateMap<Tag, TagDto>()
+        ///     .ForMember(dest => dest.Name, opt => opt.MapFrom((src, dest, destMember, context) =>
+        ///     context.Items.ContainsKey("Localization") &&
+        ///     context.Items["Localization"] is LocalizationType loc &&
+        ///     loc == LocalizationType.En ? src.NameEn : src.Name))
+        ///     src.Name));
+        /// </summary>
         CreateMap<Tag, TagDto>()
-            .ForMember(dest => dest.Name, opt => opt.MapFrom((src, dest, destMember, context) =>
-            /*context.Items.ContainsKey("Localization") &&
-            context.Items["Localization"] is LocalizationType loc &&
-            loc == LocalizationType.En ? src.NameEn : src.Name))*/
-            src.Name));
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name));
 
         CreateMap<TagCreate, Tag>()
             .ForMember(dest => dest.Workshops, opt => opt.Ignore());
 
+        /// <summary>
+        /// The localization is done outside the mapping
+        /// Original code:
+        /// CreateMap<SocialGroup, SocialGroupDto>()
+        ///     .ForMember(dest => dest.Name, opt => opt.MapFrom((src, dest, destMembet, context) =>
+        ///     context.Items.ContainsKey("Localization") &&
+        ///     context.Items["Localization"] is LocalizationType loc &&
+        ///     loc == LocalizationType.En ? src.NameEn : src.Name))
+        ///     src.Name));
+        /// </summary>
         CreateMap<SocialGroup, SocialGroupDto>()
-            .ForMember(dest => dest.Name, opt => opt.MapFrom((src, dest, destMembet, context) =>
-            context.Items.ContainsKey("Localization") &&
-            context.Items["Localization"] is LocalizationType loc &&
-            loc == LocalizationType.En ? src.NameEn : src.Name));
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name));
+
+        CreateMap<SocialGroup, SocialGroupCreate>();
 
         CreateMap<SocialGroupCreate, SocialGroup>()
             .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())

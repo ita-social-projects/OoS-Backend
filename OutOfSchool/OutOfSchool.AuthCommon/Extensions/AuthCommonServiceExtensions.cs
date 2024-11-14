@@ -29,10 +29,9 @@ public static class AuthCommonServiceExtensions
         var mailConfig = config
             .GetSection(EmailOptions.SectionName)
             .Get<EmailOptions>();
-        services.AddEmailSenderService(
-            isDevelopment,
-            mailConfig.SendGridKey,
-            builder => builder.Bind(config.GetSection(EmailOptions.SectionName)));
+
+        services.AddEmailSender(isDevelopment, mailConfig?.SendGridKey);
+        services.AddEmailSenderService(builder => builder.Bind(config.GetSection(EmailOptions.SectionName)));
 
         services.Configure<ChangesLogConfig>(config.GetSection(ChangesLogConfig.Name));
         services.Configure<HostsConfig>(config.GetSection(HostsConfig.Name));

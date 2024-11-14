@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -39,15 +41,18 @@ public class CommunicationService : ICommunicationService
 
     protected ILogger<CommunicationService> Logger => logger;
 
-    public virtual async Task<Either<ErrorResponse, T>> SendRequest<T>(Request request)
-    where T : IResponse
+    public virtual async Task<Either<TError, T>> SendRequest<T, TError>(
+        Request? request,
+        IErrorHandler<TError>? errorHandler = null)
+        where T : IResponse
+        where TError : IErrorResponse
     {
         if (request is null)
         {
-            return new ErrorResponse
-            {
-                HttpStatusCode = HttpStatusCode.BadRequest,
-            };
+            return await HandleErrorAsync(
+                new CommunicationError(HttpStatusCode.BadRequest),
+                "Request is null",
+                errorHandler);
         }
 
         try
@@ -84,28 +89,65 @@ public class CommunicationService : ICommunicationService
             var response = await httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead)
                 .ConfigureAwait(false);
 
-            await using var stream = await response.Content.ReadAsStreamAsync()
+            if (!response.IsSuccessStatusCode)
+            {
+                // Error response should be small, but still no need to waste time as default handler is ignoring it
+                var errorBody = errorHandler == null ? null : await response.Content.ReadAsStringAsync();
+                var error = new CommunicationError(response.StatusCode)
+                {
+                    Body = errorBody,
+                };
+                logger.LogError("Remote service error: {StatusCode}", response.StatusCode);
+                return await HandleErrorAsync(error, "Remote service error", errorHandler);
+            }
+
+            await using var stream = await response.EnsureSuccessStatusCode().Content.ReadAsStreamAsync()
                 .ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
 
             return stream.ReadAndDeserializeFromJson<T>();
         }
         catch (HttpRequestException ex)
         {
             logger.LogError(ex, "Networking error");
-            return new ErrorResponse
-            {
-                HttpStatusCode = ex.StatusCode ?? HttpStatusCode.BadRequest,
-                Message = ex.Message,
-            };
+            return await HandleExceptionAsync(ex, errorHandler);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Unknown error");
-            return new ErrorResponse
-            {
-                HttpStatusCode = HttpStatusCode.InternalServerError,
-            };
+            return await HandleExceptionAsync(ex, errorHandler);
         }
+    }
+
+    private static async Task<TError> HandleErrorAsync<TError>(
+        CommunicationError response,
+        string? message,
+        IErrorHandler<TError>? errorHandler)
+    {
+        if (errorHandler != null)
+        {
+            return await errorHandler.HandleErrorAsync(response, message);
+        }
+
+        // Use default error handling
+        if (new DefaultErrorHandler() is IErrorHandler<TError> defaultHandler)
+        {
+            return await defaultHandler.HandleErrorAsync(response, message);
+        }
+
+        throw new InvalidOperationException("No error handler provided, and default error handler is not compatible.");
+    }
+
+    private static async Task<TError> HandleExceptionAsync<TError>(
+        Exception ex,
+        IErrorHandler<TError>? errorHandler)
+    {
+        var response = new CommunicationError();
+
+        if (ex is HttpRequestException e)
+        {
+            response.HttpStatusCode = e.StatusCode ?? HttpStatusCode.InternalServerError;
+        }
+
+        return await HandleErrorAsync(response, ex.Message, errorHandler);
     }
 }

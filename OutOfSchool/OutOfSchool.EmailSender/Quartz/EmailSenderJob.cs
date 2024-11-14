@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OutOfSchool.EmailSender.Senders;
 using Quartz;
-using SendGrid;
 using SendGrid.Helpers.Mail;
 
 namespace OutOfSchool.EmailSender.Quartz;
@@ -17,16 +16,16 @@ public class EmailSenderJob : IJob
 {
     private readonly IOptions<EmailOptions> emailOptions;
     private readonly ILogger<EmailSenderJob> logger;
-    private readonly ISendGridClient sendGridClient;
-
+    private readonly IEmailSender emailSender;
+    
     public EmailSenderJob(
         IOptions<EmailOptions> emailOptions,
         ILogger<EmailSenderJob> logger,
-        ISendGridClient sendGridClient)
+        IEmailSender emailSender)
     {
         this.emailOptions = emailOptions;
         this.logger = logger;
-        this.sendGridClient = sendGridClient;
+        this.emailSender = emailSender;
     }
 
     public async Task Execute(IJobExecutionContext context)
@@ -54,7 +53,7 @@ public class EmailSenderJob : IJob
             var htmlContent = dataMap.GetString(EmailSenderStringConstants.HtmlContent);
             var plainContent = dataMap.GetString(EmailSenderStringConstants.PlainContent);
             var expirationTime = DateTimeOffset.ParseExact(
-                dataMap.GetString(EmailSenderStringConstants.ExpirationTime),
+                dataMap.GetString(EmailSenderStringConstants.ExpirationTime) ?? string.Empty,
                 EmailSenderStringConstants.DateTimeStringFormat,
                 CultureInfo.InvariantCulture);
 
@@ -64,9 +63,9 @@ public class EmailSenderJob : IJob
                 return;
             }
 
-            var message = new SendGridMessage()
+            var message = new SendGridMessage
             {
-                From = new EmailAddress()
+                From = new EmailAddress
                 {
                     Email = emailOptions.Value.AddressFrom,
                     Name = emailOptions.Value.NameFrom,
@@ -77,19 +76,10 @@ public class EmailSenderJob : IJob
             };
 
             message.AddTo(new EmailAddress(email));
+            message.AddCustomArg(nameof(expirationTime), expirationTime.ToString());
 
-            var response = await sendGridClient.SendEmailAsync(message).ConfigureAwait(false);
-
-            if (response.StatusCode == HttpStatusCode.TooManyRequests)
-            {
-                throw new JobExecutionException("Email sending rate limit exceeded.");
-            }
-
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception($"Email was not sent with the following error: {await response.Body.ReadAsStringAsync().ConfigureAwait(false)}");
-            }
-
+            await emailSender.SendAsync(message);
+            
             logger.LogInformation("The email sender Quartz job finished.");
         }
         catch (JobExecutionException ex)

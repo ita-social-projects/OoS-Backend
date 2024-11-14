@@ -52,6 +52,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
     /// </summary>
     /// <param name="workshopRepository">Repository for Workshop entity.</param>
+    /// <param name="tagRepository">Repository for Tag entity.</param>
     /// <param name="dateTimeRangeRepository">Repository for DateTimeRange entity.</param>
     /// <param name="teacherService">Teacher service.</param>
     /// <param name="logger">Logger.</param>
@@ -119,17 +120,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         workshop.Provider = await providerRepository.GetById(workshop.ProviderId).ConfigureAwait(false);
         workshop.ProviderOwnership = workshop.Provider.Ownership;
 
-        var tags = new List<TagDto>();
-
-        foreach (var tagId in dto.TagIds)
-        {
-            var tag = await tagService.GetById(tagId);
-            if (tag != null)
-            {
-                var tagDto = mapper.Map<TagDto>(tag);
-                tags.Add(tagDto);
-            }
-        }
+        var tags = (await tagService.GetAll()).Where(tag => dto.TagIds.Contains(tag.Id));
+        workshop.Tags = tags.Select(mapper.Map<Tag>).ToList();
 
         if (dto.Teachers is not null)
         {

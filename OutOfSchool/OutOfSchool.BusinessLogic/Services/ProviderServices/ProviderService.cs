@@ -805,7 +805,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             currentUserService.UserId,
             request.Url);
 
-        var response = await communicationService.SendRequest<ResponseDto>(request).ConfigureAwait(false);
+        var response = await communicationService.SendRequest<ResponseDto, ErrorResponse>(request).ConfigureAwait(false);
 
         return response
             .FlatMap<ResponseDto>(r => r.IsSuccess

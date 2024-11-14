@@ -116,7 +116,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             userId,
             request.Url);
 
-        var response = await SendRequest<ResponseDto>(request)
+        var response = await SendRequest<ResponseDto, ErrorResponse>(request)
             .ConfigureAwait(false);
 
         return response
@@ -267,7 +267,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             userId,
             request.Url);
 
-        var response = await SendRequest<ResponseDto>(request)
+        var response = await SendRequest<ResponseDto, ErrorResponse>(request)
             .ConfigureAwait(false);
 
         return response
@@ -313,7 +313,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             userId,
             request.Url);
 
-        var response = await SendRequest<ResponseDto>(request)
+        var response = await SendRequest<ResponseDto, ErrorResponse>(request)
             .ConfigureAwait(false);
 
         return response
@@ -363,7 +363,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             userId,
             request.Url);
 
-        var response = await SendRequest<ResponseDto>(request)
+        var response = await SendRequest<ResponseDto, ErrorResponse>(request)
             .ConfigureAwait(false);
 
         return response
@@ -427,7 +427,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             userId,
             request.Url);
 
-        var response = await SendRequest<ResponseDto>(request).ConfigureAwait(false);
+        var response = await SendRequest<ResponseDto, ErrorResponse>(request).ConfigureAwait(false);
 
         return response
             .FlatMap<ResponseDto>(r => r.IsSuccess ? r : new ErrorResponse

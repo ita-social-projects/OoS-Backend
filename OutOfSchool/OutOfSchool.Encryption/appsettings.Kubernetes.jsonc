@@ -1,0 +1,39 @@
+{
+  "Serilog": {
+    "Using": [
+      "Serilog.Sinks.Console",
+      "Serilog.Exceptions",
+      "Elastic.CommonSchema.Serilog"
+    ],
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Information",
+        "System": "Warning"
+      }
+    },
+    "Enrich": [
+      "FromLogContext",
+      "FromGlobalLogContext",
+      "WithEcsHttpContext"
+    ],
+    "WriteTo": [
+      {
+        "Name": "Console",
+        "Args": {
+          "formatter": "Elastic.CommonSchema.Serilog.EcsTextFormatter, Elastic.CommonSchema.Serilog"
+        }
+      }
+    ]
+  },
+  "ElasticApm": {
+    "Enabled": true,
+    "CloudProvider": "gcp"
+  },
+  "EUSign": {
+    "CA": {
+        "JsonPath": "/workspace/iit-ca/CAs.Test.json",
+        "CertificatesPath": "/workspace/iit-ca/CACertificates.Test.All.p7b"
+    }
+  }
+}

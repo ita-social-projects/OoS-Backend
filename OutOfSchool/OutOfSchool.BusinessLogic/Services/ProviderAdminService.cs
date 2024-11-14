@@ -158,7 +158,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             userId,
             request.Url);
 
-        var response = await SendRequest<ResponseDto>(request)
+        var response = await SendRequest<ResponseDto, ErrorResponse>(request)
             .ConfigureAwait(false);
 
         return response
@@ -221,7 +221,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             userId,
             request.Url);
 
-        var response = await SendRequest<ResponseDto>(request)
+        var response = await SendRequest<ResponseDto, ErrorResponse>(request)
             .ConfigureAwait(false);
 
         return response
@@ -292,7 +292,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             userId,
             request.Url);
 
-        var response = await SendRequest<ResponseDto>(request)
+        var response = await SendRequest<ResponseDto, ErrorResponse>(request)
             .ConfigureAwait(false);
 
         return response
@@ -338,7 +338,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             Token = token,
         };
 
-        var response = await SendRequest<ResponseDto>(request)
+        var response = await SendRequest<ResponseDto, ErrorResponse>(request)
             .ConfigureAwait(false);
 
         return response
@@ -627,7 +627,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
             userId,
             request.Url);
 
-        var response = await SendRequest<ResponseDto>(request)
+        var response = await SendRequest<ResponseDto, ErrorResponse>(request)
             .ConfigureAwait(false);
 
         return response

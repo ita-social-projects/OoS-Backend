@@ -63,7 +63,7 @@ public class ProviderAdminOperationsRESTServiceTests
         // Arrange
         var providerAdminDto = new CreateProviderAdminDto();
 
-        providerAdminOperationsRESTService.Setup(x => x.SendRequest<ResponseDto>(It.IsAny<Request>()))
+        providerAdminOperationsRESTService.Setup(x => x.SendRequest<ResponseDto, ErrorResponse>(It.IsAny<Request>(), null))
             .ReturnsAsync(new ResponseDto()
             {
                 HttpStatusCode = HttpStatusCode.Created,
@@ -82,7 +82,7 @@ public class ProviderAdminOperationsRESTServiceTests
         // Arrange
         var providerAdminDto = new CreateProviderAdminDto();
 
-        providerAdminOperationsRESTService.Setup(x => x.SendRequest<ResponseDto>(It.IsAny<Request>()))
+        providerAdminOperationsRESTService.Setup(x => x.SendRequest<ResponseDto, ErrorResponse>(It.IsAny<Request>(), null))
             .ReturnsAsync(new ResponseDto()
             {
                 HttpStatusCode = HttpStatusCode.BadRequest,
