@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
@@ -52,6 +52,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.BackgroundJobs", "OutOfSchool.BackgroundJobs\OutOfSchool.BackgroundJobs.csproj", "{A139159B-E506-4727-B218-BD4D83827F73}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.Encryption", "OutOfSchool.Encryption\OutOfSchool.Encryption.csproj", "{BE012E4A-7023-4D71-B485-4019698CF09A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.AikomApiClient", "OutOfSchool.AikomApiClient\OutOfSchool.AikomApiClient.csproj", "{6DD00052-A5E7-4AAC-8FAF-8C04AF6F8A24}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.ExternalFileStore.Impl", "OutOfSchool.ExternalFileStore.Impl\OutOfSchool.ExternalFileStore.Impl.csproj", "{8F72405A-E4A0-434E-868B-DAEA8F1394BA}"
 EndProject
@@ -141,6 +143,10 @@ Global
 		{BE012E4A-7023-4D71-B485-4019698CF09A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE012E4A-7023-4D71-B485-4019698CF09A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BE012E4A-7023-4D71-B485-4019698CF09A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DD00052-A5E7-4AAC-8FAF-8C04AF6F8A24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DD00052-A5E7-4AAC-8FAF-8C04AF6F8A24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DD00052-A5E7-4AAC-8FAF-8C04AF6F8A24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DD00052-A5E7-4AAC-8FAF-8C04AF6F8A24}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8F72405A-E4A0-434E-868B-DAEA8F1394BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8F72405A-E4A0-434E-868B-DAEA8F1394BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F72405A-E4A0-434E-868B-DAEA8F1394BA}.Release|Any CPU.ActiveCfg = Release|Any CPU

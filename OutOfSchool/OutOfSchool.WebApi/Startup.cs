@@ -13,6 +13,8 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
+using OutOfSchool.AikomApiClient.Config;
+using OutOfSchool.AikomApiClient.Extensions;
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Config.SearchString;
@@ -177,6 +179,15 @@ public static class Startup
                 options.UseSystemNetHttp();
                 options.UseAspNetCore();
             });
+
+        var aikomConfiguration = configuration
+            .GetSection(AikomApiClientConfig.Name)
+            .Get<AikomApiClientConfig>();
+        if (aikomConfiguration.Enable)
+        {
+            services.Configure<AikomApiClientConfig>(configuration.GetSection(AikomApiClientConfig.Name));
+            services.AddAikomApiClient(aikomConfiguration);
+        }
 
         services.AddCors(confg =>
             confg.AddPolicy(
