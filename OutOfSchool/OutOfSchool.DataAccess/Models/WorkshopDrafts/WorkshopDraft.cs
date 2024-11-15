@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using OutOfSchool.Services.Enums.WorkshopStatus;
+using OutOfSchool.Services.Models.BaseEntities;
 using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.Services.Models.WorkshopDrafts;
@@ -8,27 +10,27 @@ namespace OutOfSchool.Services.Models.WorkshopDrafts;
 /// Model for storing drafts of workshops before moderation.
 /// Сan be hard deleted from the database if needed.
 /// </summary>
-public class WorkshopDraft : IKeyedEntity<long>, IImageDependentEntity<WorkshopDraft>, IHasEntityImages<WorkshopDraft>
+public class WorkshopDraft :
+    TrackableBaseEntity,
+    IImageDependentEntity<WorkshopDraft>,
+    IHasEntityImages<WorkshopDraft>,
+    IKeyedEntity<Guid>
 {
-    public long Id { get; set; }
-
-    public DateTimeOffset CreatedAt { get; set; }
-
-    public DateTimeOffset? UpdatedAt { get; set; }
+    public Guid Id { get; set; }
 
     public Guid ProviderId { get; set; }
 
-    public Guid CreatedBy { get; set; }
-
-    public Guid? UpdatedBy { get; set; }
-
     public string CoverImageId { get; set; }
+
+    public WorkshopDraftStatus DraftStatus { get; set; }
+
+    public byte[] Version { get; set; }
 
     public WorkshopDraftContent WorkshopDraftContent { get; set; }
 
     public virtual Provider Provider { get; set; }
 
-    public virtual ProviderAdmin ProviderEmployee { get; set; }
+    public virtual List<TeacherDraft> Teachers { get; set; }
 
     public virtual List<Image<WorkshopDraft>> Images { get; set; }
 }

@@ -66,6 +66,7 @@ public static class Startup
                     serverVersion,
                     optionsBuilder =>
                         optionsBuilder
+                            .UseMicrosoftJson()
                             .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
                             .MigrationsAssembly(migrationsAssembly)))
             .AddDbContext<OpenIdDictDbContext>(options => options

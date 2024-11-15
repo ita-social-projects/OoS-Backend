@@ -1,11 +1,11 @@
 ﻿#nullable enable
-using System;
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Util.CustomValidation;
+using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
 
-namespace OutOfSchool.Services.Models.WorkshopDrafts;
-
-public class WorkshopDraftContent
+namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft;
+public class WorkshopDraftContentDto
 {
     required public int MinAge { get; set; }
 
@@ -17,9 +17,13 @@ public class WorkshopDraftContent
 
     required public uint LanguageOfEducationId { get; set; }
 
-    required public List<DateTimeRangeDraft> DateTimeRange { get; set; }
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    [CollectionNotEmpty(ErrorMessage = "At least one description is required")]
+    required public List<DateTimeRangeDraftDto> DateTimeRange { get; set; }
 
-    required public List<WorkshopDescriptionItemDraft> WorkshopDescriptionItems { get; set; }
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    [CollectionNotEmpty(ErrorMessage = "At least one description is required")]
+    required public List<WorkshopDescriptionItemDraftDto> WorkshopDescriptionItems { get; set; }
 
     required public bool IsSelfFinanced { get; set; }
 
@@ -34,8 +38,6 @@ public class WorkshopDraftContent
     required public DateOnly ActiveTo { get; set; }
 
     required public List<Guid> EducationalDisciplinesId { get; set; }
-
-    required public List<long> TagsIds { get; set; }
 
     required public string Title { get; set; }
 
@@ -57,8 +59,6 @@ public class WorkshopDraftContent
 
     required public List<string> Keywords { get; set; }
 
-    required public AddressDraft Address { get; set; }
-
     public List<Guid>? IncludedStudyGroupsIds { get; set; }
 
     public uint? SpecialNeedsId { get; set; }
@@ -68,6 +68,8 @@ public class WorkshopDraftContent
     public string? ShortTitle { get; set; }
 
     public string? CompetitiveSelectionDescription { get; set; }
+
+    public Guid? DefaultTeacherId { get; set; }
 
     public FormOfLearning? FormOfLearning { get; set; }
 

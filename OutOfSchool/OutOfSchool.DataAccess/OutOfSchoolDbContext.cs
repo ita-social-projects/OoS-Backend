@@ -8,8 +8,10 @@ using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Configurations;
 using OutOfSchool.Services.Models.Configurations.Images;
+using OutOfSchool.Services.Models.Configurations.WorkshopDraftConfig;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 
 namespace OutOfSchool.Services;
 
@@ -138,7 +140,9 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<Language> Languages { get; set; }
 
+    public DbSet<WorkshopDraft> WorkshopDrafts { get; set; }
 
+    public DbSet<Image<WorkshopDraft>> WorkshopDraftImages { get; set; }
 
     public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
@@ -198,6 +202,8 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new WorkshopDescriptionItemConfiguration());
         builder.ApplyConfiguration(new StudySubjectConfiguration());
         builder.ApplyConfiguration(new LanguageConfiguration());
+        builder.ApplyConfiguration(new EntityImagesConfiguration<WorkshopDraft>());
+        builder.ApplyConfiguration(new WorkshopDraftConfiguration());
 
         builder.Seed();
         builder.UpdateIdentityTables();

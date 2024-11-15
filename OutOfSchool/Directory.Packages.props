@@ -63,6 +63,7 @@
     <PackageVersion Include="OpenIddict.Quartz" Version="$(OpenIdDictVersion)" />
     <PackageVersion Include="OpenIddict.Validation.AspNetCore" Version="$(OpenIdDictVersion)" />
     <PackageVersion Include="OpenIddict.Validation.SystemNetHttp" Version="$(OpenIdDictVersion)" />
+    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql.Json.Microsoft" Version="8.0.0" />
     <!--Serilog-->
     <PackageVersion Include="Serilog.AspNetCore" Version="6.0.1" />
     <PackageVersion Include="Serilog.Enrichers.GlobalLogContext" Version="1.1.0" />

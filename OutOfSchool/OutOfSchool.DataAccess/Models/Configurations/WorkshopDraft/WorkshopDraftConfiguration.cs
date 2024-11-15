@@ -1,32 +1,37 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using OutOfSchool.Services.Enums.WorkshopStatus;
+using OutOfSchool.Services.Models.Configurations.BaseEntity;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 
-namespace OutOfSchool.Services.Models.Configurations.WorkshopDrafts;
-internal class WorkshopDraftConfiguration : IEntityTypeConfiguration<WorkshopDraft>
+namespace OutOfSchool.Services.Models.Configurations.WorkshopDraftConfig;
+public class WorkshopDraftConfiguration : TrackableBaseEntityConfiguration<WorkshopDraft>
 {
-    public void Configure(EntityTypeBuilder<WorkshopDraft> builder)
+    public override void Configure(EntityTypeBuilder<WorkshopDraft> builder)
     {
-        builder.ToTable("workshop_drafts");
+        builder.HasKey(x => x.Id);
 
-        builder.HasKey(wd => wd.Id);
+        builder.Property(x => x.Id)
+            .ValueGeneratedNever();
 
-        builder.Property(wd => wd.CreatedAt)
+        builder.Property(x => x.ProviderId)
             .IsRequired();
 
-        builder.Property(wd => wd.UpdatedAt);
+        builder.Property(x => x.CoverImageId)
+            .HasColumnType("char(36)");
 
-        builder.Property(wd => wd.CoverImageId)
-            .HasColumnType("CHAR(36)")
-            .IsRequired();
-
-        builder.Property(wd => wd.WorkshopDraftContent)
+        builder.Property(x => x.WorkshopDraftContent)
+            .IsRequired()
             .HasColumnType("json");
 
-        builder.HasOne(wd => wd.Provider)
-            .WithMany(p => p.WorkshopDrafts)
-            .HasForeignKey(wd => wd.ProviderId)
-            .OnDelete(DeleteBehavior.Restrict);
+        builder.Property(x => x.DraftStatus)
+            .HasDefaultValue(WorkshopDraftStatus.Draft);
 
+        builder.Property(x => x.Version)
+            .IsRowVersion();
+
+        builder.HasOne(x => x.Provider)
+               .WithMany(x => x.WorkshopDrafts)
+               .HasForeignKey(x => x.ProviderId);
     }
 }
