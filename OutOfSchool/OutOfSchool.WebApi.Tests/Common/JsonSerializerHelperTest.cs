@@ -11,8 +11,8 @@ namespace OutOfSchool.WebApi.Tests.Common;
 public class JsonSerializerHelperTest
 {
     private const string JSONSTRING = "{\"property\":\"test\"}";
-    private static readonly JsonSerializerOptions JsonSerializerOptionsGeneral = new JsonSerializerOptions(JsonSerializerDefaults.General);
-    private static readonly JsonSerializerOptions JsonSerializerOptionsWeb = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions JsonSerializerOptionsGeneral = new(JsonSerializerDefaults.General);
+    private static readonly JsonSerializerOptions JsonSerializerOptionsWeb = new(JsonSerializerDefaults.Web);
 
     #region
     [Test]
