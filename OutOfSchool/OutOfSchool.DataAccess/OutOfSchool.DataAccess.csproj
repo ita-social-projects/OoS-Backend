@@ -30,6 +30,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.Json.Microsoft" />
   </ItemGroup>
 
   <ItemGroup>
