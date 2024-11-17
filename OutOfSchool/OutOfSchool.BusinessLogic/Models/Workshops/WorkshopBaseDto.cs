@@ -130,7 +130,7 @@ public class WorkshopBaseDto : IValidatableObject
 
     public bool IsSpecial { get; set; } = false;
 
-    public uint SpecialNeedsId { get; set; } = uint.MinValue;
+    public uint SpecialNeedsId { get; set; } = 0;
 
     public bool IsInclusive { get; set; } = false;
 
@@ -143,24 +143,24 @@ public class WorkshopBaseDto : IValidatableObject
     public string PreferentialTermsOfParticipation { get; set; }
 
     [Required]
-    public uint EducationalShiftId { get; set; } = uint.MinValue;
+    public uint EducationalShiftId { get; set; } = 0;
 
     [Required(ErrorMessage = "Language of education is required")]
-    public uint LanguageOfEducationId { get; set; } = uint.MinValue;
+    public uint LanguageOfEducationId { get; set; } = 0;
 
     [Required(ErrorMessage = "Type of age composition is required")]
-    public uint TypeOfAgeCompositionId { get; set; } = uint.MinValue;
+    public uint TypeOfAgeCompositionId { get; set; } = 0;
 
     [Required(ErrorMessage = "Educational disciplines is required")]
     public Guid EducationalDisciplines { get; set; } = Guid.Empty;
 
     [Required(ErrorMessage = "Category is required")]
-    public uint CategoryId { get; set; } = uint.MinValue;
+    public uint CategoryId { get; set; } = 0;
 
     [Required(ErrorMessage = "GropeType is required")]
-    public uint GropeTypeId { get; set; } = uint.MinValue;
+    public uint GropeTypeId { get; set; } = 0;
 
-    public uint CoverageId { get; set; } = uint.MinValue;
+    public uint CoverageId { get; set; } = 0;
 
     public Guid? DefaultTeacherId { get; set; }
 
