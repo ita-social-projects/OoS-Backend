@@ -29,7 +29,7 @@ public class ApplicationControllerTests
     private Mock<IApplicationService> applicationService;
     private Mock<IWorkshopService> workshopService;
     private Mock<IProviderService> providerService;
-    private Mock<IEmployeeService> providerAdminService;
+    private Mock<IEmployeeService> employeeService;
     private Mock<IUserService> userService;
     private Mock<IBlockedProviderParentService> blockedProviderParentService;
 
@@ -51,7 +51,7 @@ public class ApplicationControllerTests
         applicationService = new Mock<IApplicationService>();
         workshopService = new Mock<IWorkshopService>();
         providerService = new Mock<IProviderService>();
-        providerAdminService = new Mock<IEmployeeService>();
+        employeeService = new Mock<IEmployeeService>();
         userService = new Mock<IUserService>();
         blockedProviderParentService = new Mock<IBlockedProviderParentService>();
 
@@ -64,7 +64,7 @@ public class ApplicationControllerTests
         controller = new ApplicationController(
             applicationService.Object,
             providerService.Object,
-            providerAdminService.Object,
+            employeeService.Object,
             workshopService.Object,
             userService.Object,
             blockedProviderParentService.Object)
@@ -346,17 +346,17 @@ public class ApplicationControllerTests
     {
         // Arrange
         var filter = new ApplicationFilter();
-        var emptySearchResult = new SearchResult<ApplicationDto>() { TotalAmount = 0, Entities = new List<ApplicationDto>() };
+        var emptySearchResult = new SearchResult<ApplicationDto> { TotalAmount = 0, Entities = new List<ApplicationDto>() };
 
         providerService.Setup(s => s.GetById(providerId)).ReturnsAsync((ProviderDto)null);
-        providerAdminService.Setup(s => s.GetById(providerId.ToString())).ReturnsAsync((EmployeeProviderRelationDto)null);
+        employeeService.Setup(s => s.GetById(providerId.ToString())).ReturnsAsync((EmployeeProviderRelationDto)null);
 
         // Act
         var result = await controller.GetPendingApplicationsByProviderId(providerId).ConfigureAwait(false);
 
         // Assert
         providerService.VerifyAll();
-        providerAdminService.VerifyAll();
+        employeeService.VerifyAll();
 
         result.Should().NotBeNull();
         result.Should()
@@ -367,20 +367,20 @@ public class ApplicationControllerTests
         result.As<BadRequestObjectResult>()
             .Value
             .Should()
-            .Be($"There is no any provider with given id - {providerId}.");
+            .Be($"There is no any employee or provider with given id - {providerId}.");
     }
 
     [Test]
     public void GetPendingApplicationsByProviderId_WhenProviderHasNoRights_ShouldThrowUnauthorizedAccess()
     {
         // Arrange
-        providerAdminService.Setup(s => s.GetById(providerId.ToString())).ReturnsAsync(new EmployeeProviderRelationDto());
+        employeeService.Setup(s => s.GetById(providerId.ToString())).ReturnsAsync(new EmployeeProviderRelationDto());
 
         applicationService.Setup(s => s.GetAllByEmployee(It.IsAny<string>(), It.IsAny<ApplicationFilter>(), It.IsAny<Guid>(), It.IsAny<bool>()))
             .ThrowsAsync(new UnauthorizedAccessException());
 
         // Act & Assert
-        providerAdminService.Verify(s => s.GetById(providerId.ToString()), Times.Never);
+        employeeService.Verify(s => s.GetById(providerId.ToString()), Times.Never);
         applicationService.Verify(s => s.GetAllByEmployee(It.IsAny<string>(), It.IsAny<ApplicationFilter>(), It.IsAny<Guid>(), It.IsAny<bool>()), Times.Never);
 
         Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await controller.GetPendingApplicationsByProviderId(providerId));

@@ -201,8 +201,8 @@ public static class ModelBuilderExtension
             new PermissionsForRole
             {
                 Id = 4,
-                RoleName = nameof(Role.Provider) + Constants.AdminKeyword,
-                PackedPermissions = PermissionsSeeder.SeedPermissions(nameof(Role.Provider) + Constants.AdminKeyword),
+                RoleName = Role.Employee.ToString(),
+                PackedPermissions = PermissionsSeeder.SeedPermissions(Role.Employee.ToString()),
                 Description = "employee permissions",
             },
             new PermissionsForRole

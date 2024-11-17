@@ -8,7 +8,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators;
 /// <summary>
 /// Contains methods to generate fake <see cref="Employee"/> objects.
 /// </summary>
-public static class ProviderAdminsGenerator
+public static class EmployeesGenerator
 {
     private static readonly Faker<Employee> faker = new Faker<Employee>()
         .RuleFor(x => x.UserId, f => f.Random.Guid().ToString())

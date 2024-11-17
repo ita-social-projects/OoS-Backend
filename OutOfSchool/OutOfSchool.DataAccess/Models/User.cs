@@ -39,4 +39,6 @@ public class User : IdentityUser, IKeyedEntity<string>, ISoftDeleted
 
     // If it's true then user must change his password before the logging into the system
     public bool MustChangePassword { get; set; }
+
+    public virtual Individual? Individual { get; set; }
 }

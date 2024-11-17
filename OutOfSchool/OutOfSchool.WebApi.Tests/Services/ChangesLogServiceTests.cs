@@ -31,7 +31,7 @@ public class ChangesLogServiceTests
     private Mock<IChangesLogRepository> changesLogRepository;
     private Mock<IProviderRepository> providerRepository;
     private Mock<IApplicationRepository> applicationRepository;
-    private Mock<IEntityRepository<long, EmployeeChangesLog>> providerAdminChangesLogRepository;
+    private Mock<IEntityRepository<long, EmployeeChangesLog>> employeeChangesLogRepository;
     private Mock<IEntityAddOnlyRepository<long, ParentBlockedByAdminLog>> parentBlockedByAdminLogRepository;
     private Mock<IValueProjector> valueProjector;
     private Mock<ICurrentUserService> currentUserServiceMock;
@@ -75,7 +75,7 @@ public class ChangesLogServiceTests
         changesLogRepository = new Mock<IChangesLogRepository>(MockBehavior.Strict);
         providerRepository = new Mock<IProviderRepository>(MockBehavior.Strict);
         applicationRepository = new Mock<IApplicationRepository>(MockBehavior.Strict);
-        providerAdminChangesLogRepository = new Mock<IEntityRepository<long, EmployeeChangesLog>>(MockBehavior.Strict);
+        employeeChangesLogRepository = new Mock<IEntityRepository<long, EmployeeChangesLog>>(MockBehavior.Strict);
         parentBlockedByAdminLogRepository = new Mock<IEntityAddOnlyRepository<long, ParentBlockedByAdminLog>>();
         valueProjector = new Mock<IValueProjector>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
@@ -475,7 +475,8 @@ public class ChangesLogServiceTests
     }
 
     [Test]
-    public async Task GetProviderAdminChangesLog_WhenCalled_ReturnsSearchResult(string searchString)
+    [TestCase("search-string")]
+    public async Task GetEmployeeChangesLog_WhenCalled_ReturnsSearchResult(string searchString)
     {
         // Arange
         var changesLogService = GetChangesLogService();
@@ -496,13 +497,12 @@ public class ChangesLogServiceTests
             .AsQueryable()
             .BuildMock();
 
-        mapper.Setup(m => m.Map<ShortUserDto>(user))
-            .Returns(new ShortUserDto { Id = user.Id });
+        mapper.Setup(m => m.Map<ShortUserDto>(user)).Returns(new ShortUserDto { Id = user.Id });
 
-        providerAdminChangesLogRepository
+        employeeChangesLogRepository
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<EmployeeChangesLog, bool>>>()))
             .Returns(Task.FromResult(totalAmount));
-        providerAdminChangesLogRepository
+        employeeChangesLogRepository
             .Setup(repo => repo.Get(
                 request.From,
                 request.Size,
@@ -525,7 +525,7 @@ public class ChangesLogServiceTests
     }
 
     [Test]
-    public async Task GetProviderAdminChangesLog_WhenMinistryAdminCalled_ReturnsSearchResult()
+    public async Task GetEmployeeChangesLog_WhenMinistryAdminCalled_ReturnsSearchResult()
     {
         // Arange
         var institutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4");
@@ -558,10 +558,10 @@ public class ChangesLogServiceTests
         mapper.Setup(m => m.Map<ShortUserDto>(user))
             .Returns(new ShortUserDto { Id = user.Id });
 
-        providerAdminChangesLogRepository
+        employeeChangesLogRepository
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<EmployeeChangesLog, bool>>>()))
             .Returns(Task.FromResult(totalAmount));
-        providerAdminChangesLogRepository
+        employeeChangesLogRepository
             .Setup(repo => repo.Get(
                 request.From,
                 request.Size,
@@ -584,7 +584,7 @@ public class ChangesLogServiceTests
     }
 
     [Test]
-    public async Task GetProviderAdminChangesLog_WhenAreaAdminCalled_ReturnsSearchResult()
+    public async Task GetEmployeeChangesLog_WhenAreaAdminCalled_ReturnsSearchResult()
     {
         // Arange
         var institutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4");
@@ -620,12 +620,12 @@ public class ChangesLogServiceTests
             .AsQueryable()
             .BuildMock();
 
-        providerAdminChangesLogRepository
+        employeeChangesLogRepository
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<EmployeeChangesLog, bool>>>()))
             .Returns(Task.FromResult(totalAmount));
         mapper.Setup(m => m.Map<ShortUserDto>(user))
             .Returns(new ShortUserDto { Id = user.Id });
-        providerAdminChangesLogRepository
+        employeeChangesLogRepository
             .Setup(repo => repo.Get(
                 request.From,
                 request.Size,
@@ -660,7 +660,7 @@ public class ChangesLogServiceTests
             DateTo = DateTime.UtcNow.AddDays(2),
             SearchString = "Test",
         };
- 
+
         var fakeData = new List<ParentBlockedByAdminLog>
         {
             new()
@@ -874,7 +874,7 @@ public class ChangesLogServiceTests
             changesLogRepository.Object,
             providerRepository.Object,
             applicationRepository.Object,
-            providerAdminChangesLogRepository.Object,
+            employeeChangesLogRepository.Object,
             parentBlockedByAdminLogRepository.Object,
             logger.Object,
             mapper.Object,

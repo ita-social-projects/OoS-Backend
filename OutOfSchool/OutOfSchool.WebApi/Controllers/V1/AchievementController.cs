@@ -244,7 +244,7 @@ public class AchievementController : ControllerBase
 
     private async Task<bool> IsUserProvidersOwnerOrAdmin(Guid workshopId)
     {
-        if (!User.IsInRole(nameof(Role.Provider).ToLower()) 
+        if (!User.IsInRole(nameof(Role.Provider).ToLower())
             && !User.IsInRole(nameof(Role.Employee).ToLower()))
         {
             return false;

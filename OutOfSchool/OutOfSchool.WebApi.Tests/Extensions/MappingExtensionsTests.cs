@@ -14,7 +14,8 @@ public class MappingExtensionsTests
     public void Mapping_MappingProfile_ConfigurationIsCorrect()
     {
         // act
-        var configuration = new MapperConfiguration(cfg => MappingExtensions.UseProfile<MappingProfile>(MappingExtensions.UseProfile<CommonProfile>(cfg)));
+        var configuration = new MapperConfiguration(cfg =>
+            MappingExtensions.UseProfile<MappingProfile>(MappingExtensions.UseProfile<CommonProfile>(cfg)));
 
         // assert
         configuration.AssertConfigurationIsValid();
@@ -24,7 +25,8 @@ public class MappingExtensionsTests
     public void Mapping_ElasticProfile_ConfigurationIsCorrect()
     {
         // act
-        var configuration = new MapperConfiguration(cfg => MappingExtensions.UseProfile<ElasticProfile>(MappingExtensions.UseProfile<CommonProfile>(cfg)));
+        var configuration = new MapperConfiguration(cfg =>
+            MappingExtensions.UseProfile<ElasticProfile>(MappingExtensions.UseProfile<CommonProfile>(cfg)));
 
         // assert
         configuration.AssertConfigurationIsValid();

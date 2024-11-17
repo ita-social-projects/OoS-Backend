@@ -170,7 +170,7 @@ public class ProviderAdminServiceDBTest
         user.IsBlocked = true;
         dbContext.Add(user);
 
-        employee = ProviderAdminsGenerator.Generate();
+        employee = EmployeesGenerator.Generate();
         employee.UserId = user.Id;
         employee.ProviderId = provider.Id;
 
@@ -183,7 +183,7 @@ public class ProviderAdminServiceDBTest
         user.LastLogin = DateTimeOffset.Now;
         dbContext.Add(user);
 
-        employee = ProviderAdminsGenerator.Generate();
+        employee = EmployeesGenerator.Generate();
         employee.UserId = user.Id;
         employee.ProviderId = provider.Id;
 
@@ -195,7 +195,7 @@ public class ProviderAdminServiceDBTest
         user.LastLogin = DateTimeOffset.MinValue;
         dbContext.Add(user);
 
-        employee = ProviderAdminsGenerator.Generate();
+        employee = EmployeesGenerator.Generate();
         employee.UserId = user.Id;
         employee.ProviderId = provider.Id;
 
@@ -208,7 +208,7 @@ public class ProviderAdminServiceDBTest
         user.LastLogin = DateTimeOffset.Now;
         dbContext.Add(user);
 
-        employee = ProviderAdminsGenerator.Generate();
+        employee = EmployeesGenerator.Generate();
         employee.UserId = user.Id;
         employee.ProviderId = provider.Id;
 

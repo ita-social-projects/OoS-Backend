@@ -43,17 +43,16 @@ public class ApplicationStatusPermissions : StatusPermissions<ApplicationStatus>
         AllowStatusChange("provider", fromStatus: ApplicationStatus.Pending, toStatus: ApplicationStatus.Approved);
         AllowStatusChange("provider", fromStatus: ApplicationStatus.Pending, toStatus: ApplicationStatus.Completed);
         AllowStatusChange("provider", fromStatus: ApplicationStatus.Pending, toStatus: ApplicationStatus.Rejected);
-
         AllowStatusChange("provider", fromStatus: ApplicationStatus.Pending, toStatus: ApplicationStatus.StudyingForYears);
         AllowStatusChange("provider", fromStatus: ApplicationStatus.Approved, toStatus: ApplicationStatus.StudyingForYears);
         AllowStatusChange("provider", fromStatus: ApplicationStatus.Left, toStatus: ApplicationStatus.Approved);
         AllowStatusChange("provider", fromStatus: ApplicationStatus.Left, toStatus: ApplicationStatus.Completed);
         AllowStatusChange("provider", fromStatus: ApplicationStatus.Left, toStatus: ApplicationStatus.Rejected);
 
-        AllowStatusChange("provider", fromStatus: ApplicationStatus.Pending, toStatus: ApplicationStatus.StudyingForYears);
-        AllowStatusChange("provider", fromStatus: ApplicationStatus.StudyingForYears, toStatus: ApplicationStatus.Approved);
-
-        AllowStatusChange("provider", fromStatus: ApplicationStatus.StudyingForYears, toStatus: ApplicationStatus.Approved);
+        // employee
+        AllowStatusChange("employee", fromStatus: ApplicationStatus.Pending, toStatus: ApplicationStatus.StudyingForYears);
+        AllowStatusChange("employee", fromStatus: ApplicationStatus.StudyingForYears, toStatus: ApplicationStatus.Approved);
+        AllowStatusChange("employee", fromStatus: ApplicationStatus.StudyingForYears, toStatus: ApplicationStatus.Approved);
     }
 
     public void InitCompetitiveSelectionPermissions()
@@ -90,20 +89,19 @@ public class ApplicationStatusPermissions : StatusPermissions<ApplicationStatus>
         AllowStatusChange("provider", fromStatus: ApplicationStatus.AcceptedForSelection, toStatus: ApplicationStatus.Completed);
         AllowStatusChange("provider", fromStatus: ApplicationStatus.AcceptedForSelection, toStatus: ApplicationStatus.Rejected);
         AllowStatusChange("provider", fromStatus: ApplicationStatus.Approved, toStatus: ApplicationStatus.StudyingForYears);
-
         AllowStatusChange("provider", fromStatus: ApplicationStatus.Pending, toStatus: ApplicationStatus.Rejected);
         AllowStatusChange("provider", fromStatus: ApplicationStatus.AcceptedForSelection, toStatus: ApplicationStatus.StudyingForYears);
         AllowStatusChange("provider", fromStatus: ApplicationStatus.Rejected, toStatus: ApplicationStatus.Pending);
         AllowStatusChange("provider", fromStatus: ApplicationStatus.Rejected, toStatus: ApplicationStatus.AcceptedForSelection);
 
-        AllowStatusChange("provider", fromStatus: ApplicationStatus.AcceptedForSelection, toStatus: ApplicationStatus.Pending);
-        AllowStatusChange("provider", fromStatus: ApplicationStatus.Approved, toStatus: ApplicationStatus.Pending);
-        AllowStatusChange("provider", fromStatus: ApplicationStatus.StudyingForYears, toStatus: ApplicationStatus.Pending);
-
-        AllowStatusChange("provider", fromStatus: ApplicationStatus.AcceptedForSelection, toStatus: ApplicationStatus.Pending);
-        AllowStatusChange("provider", fromStatus: ApplicationStatus.Approved, toStatus: ApplicationStatus.Pending);
-        AllowStatusChange("provider", fromStatus: ApplicationStatus.StudyingForYears, toStatus: ApplicationStatus.Pending);
-        AllowStatusChange("provider", fromStatus: ApplicationStatus.AcceptedForSelection, toStatus: ApplicationStatus.StudyingForYears);
+        // employee
+        AllowStatusChange("employee", fromStatus: ApplicationStatus.AcceptedForSelection, toStatus: ApplicationStatus.Pending);
+        AllowStatusChange("employee", fromStatus: ApplicationStatus.Approved, toStatus: ApplicationStatus.Pending);
+        AllowStatusChange("employee", fromStatus: ApplicationStatus.StudyingForYears, toStatus: ApplicationStatus.Pending);
+        AllowStatusChange("employee", fromStatus: ApplicationStatus.AcceptedForSelection, toStatus: ApplicationStatus.Pending);
+        AllowStatusChange("employee", fromStatus: ApplicationStatus.Approved, toStatus: ApplicationStatus.Pending);
+        AllowStatusChange("employee", fromStatus: ApplicationStatus.StudyingForYears, toStatus: ApplicationStatus.Pending);
+        AllowStatusChange("employee", fromStatus: ApplicationStatus.AcceptedForSelection, toStatus: ApplicationStatus.StudyingForYears);
     }
 
     private void InitCommonPermissions()

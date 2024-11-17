@@ -44,15 +44,15 @@ public class EmployeeServiceTests
     {
         fakeMapper = new Mock<IMapper>();
         fakeUserManager = new Mock<UserManager<User>>(
-             new Mock<IUserStore<User>>().Object,
-             new Mock<IOptions<IdentityOptions>>().Object,
-             new Mock<IPasswordHasher<User>>().Object,
-             new IUserValidator<User>[0],
-             new IPasswordValidator<User>[0],
-             new Mock<ILookupNormalizer>().Object,
-             new Mock<IdentityErrorDescriber>().Object,
-             new Mock<IServiceProvider>().Object,
-             new Mock<ILogger<UserManager<User>>>().Object);
+            new Mock<IUserStore<User>>().Object,
+            new Mock<IOptions<IdentityOptions>>().Object,
+            new Mock<IPasswordHasher<User>>().Object,
+            new IUserValidator<User>[0],
+            new IPasswordValidator<User>[0],
+            new Mock<ILookupNormalizer>().Object,
+            new Mock<IdentityErrorDescriber>().Object,
+            new Mock<IServiceProvider>().Object,
+            new Mock<ILogger<UserManager<User>>>().Object);
 
         context = GetContext();
         context.Database.EnsureDeleted();
@@ -107,35 +107,34 @@ public class EmployeeServiceTests
         var workshops = WorkshopGenerator.Generate(3);
         var user = UserGenerator.Generate();
 
-        var createProviderAdminDto = AdminGenerator.GenerateCreateProviderAdminDto();
-        createProviderAdminDto.ManagedWorkshopIds = [workshops[1].Id ];
+        var createEmployeeDto = AdminGenerator.GenerateCreateEmployeeDto();
+        createEmployeeDto.ManagedWorkshopIds = [workshops[1].Id ];
         
-        var providerAdmin = ProviderAdminsGenerator.Generate();
-        providerAdmin.ManagedWorkshops = workshops;
+        var employee = EmployeesGenerator.Generate();
+        employee.ManagedWorkshops = workshops;
         
         IUrlHelper url = fakeUrlHelper.Object;
         var userId = string.Empty;
-        var userRole = "provider";
+        var userRole = "employee";
 
         context.AddRange(workshops);
         await context.SaveChangesAsync();
 
-        fakeMapper.Setup(x => x.Map<User>(createProviderAdminDto)).Returns(user);
+        fakeMapper.Setup(x => x.Map<User>(createEmployeeDto)).Returns(user);
         fakeUserManager.Setup(x => x.CreateAsync(user, It.IsAny<string>()))
             .ReturnsAsync(IdentityResult.Success);
         fakeUserManager.Setup(x => x.AddToRoleAsync(user, userRole))
             .ReturnsAsync(IdentityResult.Success);
-        fakeMapper.Setup(x => x.Map<Employee>(createProviderAdminDto))
-            .Returns(providerAdmin);
+        fakeMapper.Setup(x => x.Map<Employee>(createEmployeeDto))
+            .Returns(employee);
 
         // Act
-        var result = await employeeService
-            .CreateEmployeeAsync(createProviderAdminDto, url, userId);
+        var result = await employeeService.CreateEmployeeAsync(createEmployeeDto, url, userId);
 
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(HttpStatusCode.Created, result.HttpStatusCode);
-        createProviderAdminDto.Should().BeEquivalentTo(result.Result);
+        createEmployeeDto.Should().BeEquivalentTo(result.Result);
     }
 
     [Test]
@@ -143,7 +142,7 @@ public class EmployeeServiceTests
     {
         // Arrange
         var user = UserGenerator.Generate();
-        var createProviderAdminDto = AdminGenerator.GenerateCreateProviderAdminDto();
+        var createProviderAdminDto = AdminGenerator.GenerateCreateEmployeeDto();
         user.Email = createProviderAdminDto.Email;
 
         IUrlHelper url = fakeUrlHelper.Object;
@@ -156,8 +155,7 @@ public class EmployeeServiceTests
 
 
         // Act
-        var result = await employeeService
-            .CreateEmployeeAsync(createProviderAdminDto, url, userId);
+        var result = await employeeService.CreateEmployeeAsync(createProviderAdminDto, url, userId);
 
         // Assert
         Assert.IsNotNull(result);
@@ -191,8 +189,8 @@ public class EmployeeServiceTests
     {
         return new OutOfSchoolDbContext(
             new DbContextOptionsBuilder<OutOfSchoolDbContext>()
-            .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
-            .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-            .Options);
+                .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
+                .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+                .Options);
     }
 }

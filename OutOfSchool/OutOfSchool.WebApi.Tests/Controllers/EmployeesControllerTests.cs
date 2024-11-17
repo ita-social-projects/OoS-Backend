@@ -143,7 +143,9 @@ public class EmployeesControllerTests
             },
         };
 
-        providerAdminService.Setup(x => x.GetWorkshopsThatEmployeeCanManage(It.IsAny<string>())).ReturnsAsync(searchResult);
+        providerAdminService
+            .Setup(x => x.GetWorkshopsThatEmployeeCanManage(It.IsAny<string>()))
+            .ReturnsAsync(searchResult);
 
         // Act
         var result = await employeesController.ManagedWorkshops();
@@ -207,7 +209,7 @@ public class EmployeesControllerTests
                         new Claim[]
                         {
                             new Claim(IdentityResourceClaimsTypes.Sub, userId),
-                            new Claim(IdentityResourceClaimsTypes.Role, Role.Provider.ToString()),
+                            new Claim(IdentityResourceClaimsTypes.Role, Role.Employee.ToString()),
                         },
                         IdentityResourceClaimsTypes.Sub));
 
