@@ -9,13 +9,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.AuthCommon.Services;
 using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Extensions;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.EmployeeOperations;
-using OutOfSchool.BusinessLogic.Services.ProviderAdminOperations;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
@@ -32,15 +30,15 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 namespace OutOfSchool.WebApi.Tests.Services.Database;
 
 [TestFixture]
-public class ProviderAdminServiceDBTest
+public class EmployeeServiceDBTest
 {
     private Mock<IHttpClientFactory> httpClientFactory;
     private Mock<IOptions<AuthorizationServerConfig>> identityServerConfig;
-    private Mock<IOptions<EmployeeConfig>> providerAdminConfig;
+    private Mock<IOptions<EmployeeConfig>> employeeConfig;
     private Mock<IOptions<CommunicationConfig>> communicationConfig;
     private IEntityRepositorySoftDeleted<string, User> userRepository;
     private IMapper mapper;
-    private Mock<IEmployeeOperationsService> providerAdminOperationsService;
+    private Mock<IEmployeeOperationsService> employeeOperationsService;
     private Mock<IWorkshopService> workshopService;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IApiErrorService> apiErrorService;
@@ -75,8 +73,8 @@ public class ProviderAdminServiceDBTest
             });
         identityServerConfig = new Mock<IOptions<AuthorizationServerConfig>>();
         communicationConfig = new Mock<IOptions<CommunicationConfig>>();
-        providerAdminConfig = new Mock<IOptions<EmployeeConfig>>();
-        providerAdminConfig.Setup(x => x.Value)
+        employeeConfig = new Mock<IOptions<EmployeeConfig>>();
+        employeeConfig.Setup(x => x.Value)
             .Returns(new EmployeeConfig()
             {
                 MaxNumberEmployees = 1,
@@ -92,7 +90,7 @@ public class ProviderAdminServiceDBTest
         userRepository = new EntityRepositorySoftDeleted<string, User>(dbContext);
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         var logger = new Mock<ILogger<EmployeeService>>();
-        providerAdminOperationsService = new Mock<IEmployeeOperationsService>();
+        employeeOperationsService = new Mock<IEmployeeOperationsService>();
         workshopService = new Mock<IWorkshopService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         apiErrorService = new Mock<IApiErrorService>();
@@ -101,13 +99,13 @@ public class ProviderAdminServiceDBTest
         employeeService = new EmployeeService(
             httpClientFactory.Object,
             identityServerConfig.Object,
-            providerAdminConfig.Object,
+            employeeConfig.Object,
             communicationConfig.Object,
             providerAdminRepository,
             userRepository,
             mapper,
             logger.Object,
-            providerAdminOperationsService.Object,
+            employeeOperationsService.Object,
             workshopService.Object,
             currentUserServiceMock.Object,
             apiErrorService.Object,

@@ -13,7 +13,6 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.EmployeeOperations;
-using OutOfSchool.BusinessLogic.Services.ProviderAdminOperations;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;

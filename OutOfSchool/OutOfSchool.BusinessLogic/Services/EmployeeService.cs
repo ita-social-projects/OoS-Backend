@@ -8,9 +8,7 @@ using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
-using OutOfSchool.BusinessLogic.Models;
-using OutOfSchool.BusinessLogic.Models.Workshops;
-using OutOfSchool.BusinessLogic.Services.EmployeeOperations;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 

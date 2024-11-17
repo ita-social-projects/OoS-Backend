@@ -7,9 +7,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Config;
-using OutOfSchool.BusinessLogic.Services.Communication;
 using OutOfSchool.BusinessLogic.Services.EmployeeOperations;
-using OutOfSchool.BusinessLogic.Services.ProviderAdminOperations;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Config;
@@ -20,7 +18,7 @@ namespace OutOfSchool.WebApi.Tests.ProviderAdminOperations;
 [TestFixture]
 public class EmployeeOperationsRestServiceTests
 {
-    private Mock<EmployeeOperationsRESTService> providerAdminOperationsRESTService;
+    private Mock<EmployeeOperationsRESTService> _employeeOperationsRestService;
 
     [SetUp]
     public void SetUp()
@@ -49,7 +47,7 @@ public class EmployeeOperationsRestServiceTests
             Authority = new Uri("https://www.test.com"),
         });
 
-        providerAdminOperationsRESTService = new Mock<EmployeeOperationsRESTService>(
+        _employeeOperationsRestService = new Mock<EmployeeOperationsRESTService>(
             logger.Object,
             authConfig.Object,
             httpClientFactory.Object,
@@ -65,14 +63,14 @@ public class EmployeeOperationsRestServiceTests
         // Arrange
         var providerAdminDto = new CreateEmployeeDto();
 
-        providerAdminOperationsRESTService.Setup(x => x.SendRequest<ResponseDto, ErrorResponse>(It.IsAny<Request>(), null))
+        _employeeOperationsRestService.Setup(x => x.SendRequest<ResponseDto, ErrorResponse>(It.IsAny<Request>(), null))
             .ReturnsAsync(new ResponseDto()
             {
                 HttpStatusCode = HttpStatusCode.Created,
             });
 
         // Act
-        var result = await providerAdminOperationsRESTService.Object.CreateEmployeeAsync(It.IsAny<string>(), providerAdminDto, It.IsAny<string>());
+        var result = await _employeeOperationsRestService.Object.CreateEmployeeAsync(It.IsAny<string>(), providerAdminDto, It.IsAny<string>());
 
         // Assert
         Assert.AreEqual(HttpStatusCode.OK, result.Match(left => HttpStatusCode.BadRequest, right => HttpStatusCode.OK));
@@ -84,14 +82,14 @@ public class EmployeeOperationsRestServiceTests
         // Arrange
         var providerAdminDto = new CreateEmployeeDto();
 
-        providerAdminOperationsRESTService.Setup(x => x.SendRequest<ResponseDto, ErrorResponse>(It.IsAny<Request>(), null))
+        _employeeOperationsRestService.Setup(x => x.SendRequest<ResponseDto, ErrorResponse>(It.IsAny<Request>(), null))
             .ReturnsAsync(new ResponseDto()
             {
                 HttpStatusCode = HttpStatusCode.BadRequest,
             });
 
         // Act
-        var result = await providerAdminOperationsRESTService.Object.CreateEmployeeAsync(It.IsAny<string>(), providerAdminDto, It.IsAny<string>());
+        var result = await _employeeOperationsRestService.Object.CreateEmployeeAsync(It.IsAny<string>(), providerAdminDto, It.IsAny<string>());
 
         // Assert
         Assert.AreEqual(HttpStatusCode.BadRequest, result.Match(left => HttpStatusCode.BadRequest, right => HttpStatusCode.OK));
