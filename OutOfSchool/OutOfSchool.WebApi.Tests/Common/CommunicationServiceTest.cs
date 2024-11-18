@@ -3,20 +3,17 @@
 using System;
 using System.Net;
 using System.Net.Http;
-using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using Moq.Language.Flow;
-using Moq.Protected;
 using NUnit.Framework;
 using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Communication.ICommunication;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Tests.Common;
+using static OutOfSchool.Tests.Common.HttpClientTestHelper;
 
 namespace OutOfSchool.WebApi.Tests.Common;
 
@@ -162,34 +159,6 @@ public class CommunicationServiceTest
             Assert.IsInstanceOf<ErrorResponse>(error);
             Assert.AreEqual(HttpStatusCode.InsufficientStorage, error.HttpStatusCode);
         });
-    }
-
-    private static ISetup<HttpMessageHandler, Task<HttpResponseMessage>> SetupSendAsync(
-        Mock<HttpMessageHandler> handler, HttpMethod requestMethod, string requestUrl)
-    {
-        return handler.Protected().Setup<Task<HttpResponseMessage>>("SendAsync",
-            ItExpr.Is<HttpRequestMessage>(r =>
-                r.Method == requestMethod &&
-                r.RequestUri != null &&
-                r.RequestUri.ToString() == requestUrl),
-            ItExpr.IsAny<CancellationToken>());
-    }
-
-    private static IReturnsResult<HttpMessageHandler> ReturnsHttpResponseAsync(
-        ISetup<HttpMessageHandler, Task<HttpResponseMessage>> moqSetup,
-        object? responseBody,
-        HttpStatusCode responseCode)
-    {
-        var serializedResponse = JsonSerializer.Serialize(responseBody);
-        var stringContent = new StringContent(serializedResponse ?? string.Empty);
-
-        var responseMessage = new HttpResponseMessage
-        {
-            StatusCode = responseCode,
-            Content = stringContent,
-        };
-
-        return moqSetup.ReturnsAsync(responseMessage);
     }
 
     private record TestRequestData(string? Content);

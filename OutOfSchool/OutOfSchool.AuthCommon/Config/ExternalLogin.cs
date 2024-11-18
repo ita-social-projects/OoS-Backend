@@ -13,4 +13,6 @@ public class ExternalLogin
     public Parameters Parameters { get; set; }
 
     public IdServerPaths IdServerPaths { get; set; }
+
+    public EUSignServicePaths EUSignServicePaths { get; set; }
 }
