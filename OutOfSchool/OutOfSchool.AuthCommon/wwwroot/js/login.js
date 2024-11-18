@@ -1,4 +1,15 @@
 $(function() {
+    $('#role').val($('.login-role-select--active').data('value'));
+
+    $('.login-role-select__option').on('click', function() {
+        $('.login-role-select__option').removeClass('login-role-select--active');
+        $(this).addClass('login-role-select--active');
+
+        // Update the hidden input with the selected value
+        let selectedValue = $(this).data('value');
+        $('#role').val(selectedValue);
+    });
+
     let check_loginPasswordEye = false;
     const $loginPassword = $("#login_password");
 

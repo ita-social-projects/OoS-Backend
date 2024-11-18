@@ -280,7 +280,8 @@ public class ExternalAuthController : Controller
         }
     }
 
-    private async Task<Either<IErrorResponse, Individual>> GetOrCreateIndividualAsync(UserInfoResponse userInfo,
+    private async Task<Either<IErrorResponse, Individual>> GetOrCreateIndividualAsync(
+        UserInfoResponse userInfo,
         User user)
     {
         try
@@ -334,9 +335,11 @@ public class ExternalAuthController : Controller
                 new(ClaimTypes.Surname, individual.LastName),
                 new(ClaimTypes.Email, userInfo.Email),
                 new(AuthServerConstants.ClaimTypes.Rnkopp, individual.Rnokpp),
-                new(OpenIddictConstants.Claims.Private.ProviderName,
+                new(
+                    OpenIddictConstants.Claims.Private.ProviderName,
                     result.Principal.GetClaim(OpenIddictConstants.Claims.Private.ProviderName)),
-                new(OpenIddictConstants.Claims.Private.RegistrationId,
+                new(
+                    OpenIddictConstants.Claims.Private.RegistrationId,
                     result.Principal.GetClaim(OpenIddictConstants.Claims.Private.ProviderName)),
             };
 
