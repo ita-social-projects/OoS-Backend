@@ -1,0 +1,100 @@
+.login__label {
+    font-family: Innerspace, sans-serif;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 0.8125rem;
+    line-height: 0.9375rem;
+    color: #333333;
+    display: block;
+    text-align: center;
+}
+
+.login-role-select {
+    display: flex;
+    position: relative;
+    margin-top: 8px;
+    overflow: hidden;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.login-role-select__option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 10px;
+    line-height: 100%;
+    color: #272425;
+    background: inherit;
+    outline: none;
+    cursor: pointer;
+    border: 1px solid #e3e3e3;
+    transition: 0.5s ease all;
+    flex: 1;
+}
+
+.login-role-select__icon-small {
+    width: 13px;
+    height: 11px;
+}
+
+.login-role-select__icon-medium {
+    width: 13px;
+    height: 17px;
+}
+
+.login-role-select__option small {
+    display: block;
+    font-size: 10px;
+    color: #666;
+}
+
+.login-role-select__text {
+    font-family: "Open Sans", sans-serif;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 0.8125rem;
+}
+
+.login-role-select__divider {
+    transition: 0.5s ease all;
+    position: absolute;
+    height: 100%;
+    width: 1px;
+    background: #e3e3e3;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.login-role-select--active {
+    border-color: #3849f9;
+    color: #3849f9;
+    background: rgba(56, 73, 249, 0.07);
+}
+
+.login-role-select--active~.login-role-select__divider {
+    background: #3849f9;
+}
+
+.login-role-select__option:not(.login-role-select--active):hover {
+    border-color: #3849f9;
+}
+
+.login-role-select__option:not(.login-role-select--active):hover~.login-role-select__divider {
+    background: #3849f9;
+}
+
+.login-role-select--active span svg path {
+    fill: #3849f9;
+}
+
+.login-role-select__option-left {
+    border-radius: 20px 0 0 20px;
+    border-right: none;
+}
+
+.login-role-select__option-right {
+    border-radius: 0 20px 20px 0;
+    border-left: none;
+}

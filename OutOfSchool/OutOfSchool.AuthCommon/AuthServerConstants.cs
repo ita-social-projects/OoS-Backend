@@ -11,7 +11,7 @@ public static class AuthServerConstants
         public const string Rnkopp = "rnokpp";
         public const string Edrpou = "edrpou";
     }
-    
+
     public static class FeatureManagement
     {
         public const string PasswordLogin = "PasswordLogin";

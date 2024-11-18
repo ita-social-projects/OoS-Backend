@@ -6,6 +6,7 @@
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/_content/auth/css/site.css" asp-append-version="true" type="text/css"/>
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500&display=swap" rel="stylesheet">
+    @await RenderSectionAsync("PageSpecificCss", required: false)
 </head>
 <body>
 <div>
