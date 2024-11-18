@@ -6,6 +6,7 @@ using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Communication.ICommunication;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Models.ExternalAuth;
 
 namespace OutOfSchool.AuthorizationServer.Services;
 

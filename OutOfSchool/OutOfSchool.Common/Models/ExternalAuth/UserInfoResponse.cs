@@ -1,6 +1,4 @@
-using OutOfSchool.Common.Models;
-
-namespace OutOfSchool.AuthCommon.Models;
+namespace OutOfSchool.Common.Models.ExternalAuth;
 
 public class UserInfoResponse : IResponse
 {

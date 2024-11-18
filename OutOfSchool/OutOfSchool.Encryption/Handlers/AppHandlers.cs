@@ -2,8 +2,8 @@
 
 using Asp.Versioning.Builder;
 using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.Common.Models.ExternalAuth;
 using OutOfSchool.Encryption.Constants;
-using OutOfSchool.Encryption.Models;
 using OutOfSchool.Encryption.Services;
 
 namespace OutOfSchool.Encryption.Handlers;

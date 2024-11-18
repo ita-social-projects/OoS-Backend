@@ -1,4 +1,4 @@
-using OutOfSchool.Encryption.Models;
+using OutOfSchool.Common.Models.ExternalAuth;
 
 namespace OutOfSchool.Encryption.Services;
 

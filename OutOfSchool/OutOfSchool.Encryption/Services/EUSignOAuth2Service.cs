@@ -3,6 +3,7 @@ using System.Net;
 using System.Text.Json;
 using EUSignCP;
 using Microsoft.Extensions.Options;
+using OutOfSchool.Common.Models.ExternalAuth;
 using OutOfSchool.Encryption.Config;
 using OutOfSchool.Encryption.Constants;
 using OutOfSchool.Encryption.Models;

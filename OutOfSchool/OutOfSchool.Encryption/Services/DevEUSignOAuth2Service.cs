@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using OutOfSchool.Encryption.Models;
+using OutOfSchool.Common.Models.ExternalAuth;
 
 namespace OutOfSchool.Encryption.Services;
 
