@@ -9,6 +9,7 @@ using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Models;
 using OutOfSchool.AuthCommon.ViewModels;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Models.ExternalAuth;
 
 namespace OutOfSchool.AuthCommon.Controllers;
 
