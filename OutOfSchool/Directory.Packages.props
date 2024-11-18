@@ -84,8 +84,8 @@
     <PackageVersion Include="SkiaSharp" Version="2.88.6" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.6" />
     <!--Feature Management-->
-    <PackageVersion Include="Microsoft.FeatureManagement" Version="2.5.1" />
-    <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="2.5.1" />
+    <PackageVersion Include="Microsoft.FeatureManagement" Version="4.0.0" />
+    <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="4.0.0" />
     <!--Swagger & Versioning-->
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="$(SwaggerVersion)" />
     <PackageVersion Include="Swashbuckle.AspNetCore.Newtonsoft" Version="$(SwaggerVersion)" />

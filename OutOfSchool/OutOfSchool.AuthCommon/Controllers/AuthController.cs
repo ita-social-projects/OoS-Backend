@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
+using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.ViewModels;
 using OutOfSchool.EmailSender.Services;
@@ -26,6 +28,7 @@ public class AuthController : Controller
     private readonly AuthServerConfig identityServerConfig;
     private readonly IRazorViewToStringRenderer renderer;
     private readonly IEmailSenderService emailSender;
+    private readonly IFeatureManager featureManager;
     private string userId;
 
     /// <summary>
@@ -39,6 +42,8 @@ public class AuthController : Controller
     /// <param name="localizer"> Localizer.</param>
     /// <param name="identityServerConfig"> IdentityServer config.</param>
     /// <param name="renderer"> Renderer for Razor page.</param>
+    /// <param name="emailSender">E-mail sender service.</param>
+    /// <param name="featureManager">Feature management service.</param>
     public AuthController(
         UserManager<User> userManager,
         IUserManagerAdditionalService userManagerAdditionalService,
@@ -48,7 +53,8 @@ public class AuthController : Controller
         IStringLocalizer<SharedResource> localizer,
         IOptions<AuthServerConfig> identityServerConfig,
         IRazorViewToStringRenderer renderer,
-        IEmailSenderService emailSender)
+        IEmailSenderService emailSender,
+        IFeatureManager featureManager)
     {
         this.logger = logger;
         this.signInManager = signInManager;
@@ -59,6 +65,7 @@ public class AuthController : Controller
         this.identityServerConfig = identityServerConfig.Value;
         this.renderer = renderer;
         this.emailSender = emailSender;
+        this.featureManager = featureManager;
     }
 
     public override void OnActionExecuting(ActionExecutingContext context)
@@ -235,6 +242,8 @@ public class AuthController : Controller
     /// <param name="returnUrl">URL used to redirect user back to client.</param>
     /// <returns>An <see cref="IActionResult"/> representing the result.</returns>
     [HttpGet]
+    [Obsolete("Change password API is no longer supported. Exists only for testing purposes.")]
+    [FeatureGate(AuthServerConstants.FeatureManagement.PasswordLogin)]
     public IActionResult ChangePasswordLogin(string email, string returnUrl = "Login")
     {
         return View(new ChangePasswordLoginViewModel { Email = email, ReturnUrl = returnUrl });
@@ -246,6 +255,8 @@ public class AuthController : Controller
     /// <param name="model"> View model that contains credentials for logging in.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HttpPost]
+    [Obsolete("Change password API is no longer supported. Exists only for testing purposes.")]
+    [FeatureGate(AuthServerConstants.FeatureManagement.PasswordLogin)]
     public async Task<IActionResult> ChangePasswordLogin(ChangePasswordLoginViewModel model)
     {
         logger.LogDebug("ChangePasswordLogin started");
@@ -312,6 +323,8 @@ public class AuthController : Controller
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [Route("~/register")]
     [HttpGet]
+    [FeatureGate(AuthServerConstants.FeatureManagement.PasswordRegistration)]
+    [Obsolete("Registration API is no longer supported. Exists only for testing purposes.")]
     public IActionResult Register(string returnUrl = "login", bool? providerRegistration = null)
     {
         return View(new RegisterViewModel
@@ -328,6 +341,8 @@ public class AuthController : Controller
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [Route("~/register")]
     [HttpPost]
+    [FeatureGate(AuthServerConstants.FeatureManagement.PasswordRegistration)]
+    [Obsolete("Registration API is no longer supported. Exists only for testing purposes.")]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
         logger.LogDebug("Register started");
@@ -352,6 +367,8 @@ public class AuthController : Controller
             return View("Register", model);
         }
 
+        var isEmailConfirmationEnabled = await featureManager.IsEnabledAsync(AuthServerConstants.FeatureManagement.EmailConfirmation);
+
         var user = new User()
         {
             UserName = model.Email,
@@ -363,6 +380,7 @@ public class AuthController : Controller
             Role = model.Role,
             IsRegistered = false,
             IsBlocked = false,
+            EmailConfirmed = !isEmailConfirmationEnabled,
         };
 
         try
@@ -445,6 +463,7 @@ public class AuthController : Controller
         }
     }
 
+    [Obsolete("Registration API is no longer supported. Exists only for testing purposes.")]
     private bool GetProviderRegistrationFromUri(string returnUrl)
     {
         var parsedQuery = QueryHelpers.ParseQuery(returnUrl);

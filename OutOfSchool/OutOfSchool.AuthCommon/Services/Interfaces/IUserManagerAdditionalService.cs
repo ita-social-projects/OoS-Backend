@@ -3,6 +3,7 @@
 /// <summary>
 /// Contains additional methods for UserManager, including operations with transactions.
 /// </summary>
+[Obsolete("Change password API is no longer supported. Exists only for testing purposes.")]
 public interface IUserManagerAdditionalService
 {
     /// <summary>

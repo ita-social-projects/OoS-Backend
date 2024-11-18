@@ -11,4 +11,13 @@ public static class AuthServerConstants
         public const string Rnkopp = "rnokpp";
         public const string Edrpou = "edrpou";
     }
+
+    public static class FeatureManagement
+    {
+        public const string PasswordLogin = "PasswordLogin";
+        public const string PasswordRegistration = "PasswordRegistration";
+        public const string EmailConfirmation = "EmailConfirmation";
+        public const string EmailManagement = "EmailManagement";
+        public const string PasswordManagement = "PasswordManagement";
+    }
 }

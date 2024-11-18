@@ -194,11 +194,10 @@ public class TokenController : Controller
                 if (result.Principal.HasClaim(OpenIddictConstants.Claims.Private.ProviderName))
                 {
                     // Take claims from external principal
-                    identity.SetClaim(OpenIddictConstants.Claims.Role, result.Principal.GetClaim(ClaimTypes.Role));
+                    identity.SetClaims(OpenIddictConstants.Claims.Role, [result.Principal.GetClaim(ClaimTypes.Role)]);
                     identity.SetClaim(OpenIddictConstants.Claims.FamilyName, result.Principal.GetClaim(ClaimTypes.Surname));
                     identity.SetClaim(OpenIddictConstants.Claims.GivenName, result.Principal.GetClaim(ClaimTypes.GivenName));
                     identity.SetClaim(AuthServerConstants.ClaimTypes.Rnkopp, result.Principal.GetClaim(AuthServerConstants.ClaimTypes.Rnkopp));
-                    identity.SetClaim(OpenIddictConstants.Claims.Role, result.Principal.GetClaim(ClaimTypes.Role));
                     if (result.Principal.HasClaim(AuthServerConstants.ClaimTypes.Edrpou))
                     {
                         identity.SetClaim(AuthServerConstants.ClaimTypes.Edrpou, result.Principal.GetClaim(AuthServerConstants.ClaimTypes.Edrpou));
@@ -207,7 +206,7 @@ public class TokenController : Controller
                 else
                 {
                     identity.SetClaims(OpenIddictConstants.Claims.Role,
-                            (await _userManager.GetRolesAsync(user)).ToImmutableArray());
+                            [..await _userManager.GetRolesAsync(user)]);
                 }
 
                 await _profileService.GetProfileDataAsync(identity);
@@ -309,8 +308,30 @@ public class TokenController : Controller
         identity.SetClaim(OpenIddictConstants.Claims.Subject, await _userManager.GetUserIdAsync(user))
             .SetClaim(OpenIddictConstants.Claims.Email, await _userManager.GetEmailAsync(user))
             .SetClaim(OpenIddictConstants.Claims.Name, await _userManager.GetUserNameAsync(user))
-            .SetClaim(OpenIddictConstants.Claims.PreferredUsername, await _userManager.GetUserNameAsync(user))
-            .SetClaims(OpenIddictConstants.Claims.Role, (await _userManager.GetRolesAsync(user)).ToImmutableArray());
+            .SetClaim(OpenIddictConstants.Claims.PreferredUsername, await _userManager.GetUserNameAsync(user));
+
+        // If flow reaches this point - user is already signed in with claims
+        var signedInIdentity = User.Identity as ClaimsIdentity;
+        // TODO: for now only having this private claim is enough, maybe check value later.
+        if (signedInIdentity.HasClaim(OpenIddictConstants.Claims.Private.ProviderName))
+        {
+            // Take claims from external principal
+            identity.SetClaims(OpenIddictConstants.Claims.Role, [signedInIdentity.GetClaim(ClaimTypes.Role)]);
+            identity.SetClaim(OpenIddictConstants.Claims.FamilyName, signedInIdentity.GetClaim(ClaimTypes.Surname));
+            identity.SetClaim(OpenIddictConstants.Claims.GivenName, signedInIdentity.GetClaim(ClaimTypes.GivenName));
+            identity.SetClaim(AuthServerConstants.ClaimTypes.Rnkopp, signedInIdentity.GetClaim(AuthServerConstants.ClaimTypes.Rnkopp));
+            if (signedInIdentity.HasClaim(AuthServerConstants.ClaimTypes.Edrpou))
+            {
+                identity.SetClaim(AuthServerConstants.ClaimTypes.Edrpou, signedInIdentity.GetClaim(AuthServerConstants.ClaimTypes.Edrpou));
+            }
+        }
+        else
+        {
+            identity.SetClaims(OpenIddictConstants.Claims.Role,
+                [..await _userManager.GetRolesAsync(user)]);
+        }
+
+        await _profileService.GetProfileDataAsync(identity);
 
         // Note: in this sample, the granted scopes match the requested scope
         // but you may want to allow the user to uncheck specific scopes.
