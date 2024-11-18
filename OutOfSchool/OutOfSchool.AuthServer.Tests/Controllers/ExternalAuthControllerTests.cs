@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -41,8 +42,7 @@ public class ExternalAuthControllerTests
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<IGovIdentityCommunicationService> communicationService;
     private OutOfSchoolDbContext dbContext;
-    private Mock<HttpContext> httpContext;
-    private Mock<IServiceProvider> serviceProvider;
+    private HttpContext httpContext;
     private Mock<IAuthenticationService> authenticationService;
     private AuthorizationServerConfig authServerConfig;
     private ExternalAuthController controller;
@@ -84,13 +84,8 @@ public class ExternalAuthControllerTests
             .Setup(localizer => localizer[It.IsAny<string>()])
             .Returns(new LocalizedString("mock", "error"));
 
-        serviceProvider = new Mock<IServiceProvider>();
         authenticationService = new Mock<IAuthenticationService>();
-        serviceProvider.Setup(s => s.GetService(typeof(IAuthenticationService)))
-            .Returns(authenticationService.Object);
-        httpContext = new Mock<HttpContext>();
-        httpContext.Setup(c => c.RequestServices).Returns(serviceProvider.Object);
-
+        httpContext = new DefaultHttpContext();
 
         controller = new ExternalAuthController(
             signInManager.Object,
@@ -102,8 +97,11 @@ public class ExternalAuthControllerTests
             communicationService.Object,
             dbContext
         );
-        controller.ControllerContext.HttpContext = httpContext.Object;
-        controller.TempData = new TempDataDictionary(httpContext.Object, Mock.Of<ITempDataProvider>());
+        controller.ControllerContext.HttpContext = httpContext;
+        controller.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
+        controller.HttpContext.RequestServices = new ServiceCollection()
+            .AddSingleton(authenticationService.Object)
+            .BuildServiceProvider();
         dbContext.Database.EnsureDeleted();
         dbContext.Database.EnsureCreated();
     }
@@ -213,7 +211,7 @@ public class ExternalAuthControllerTests
             OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);
         var authResult = AuthenticateResult.Success(ticket);
         authenticationService.Setup(a =>
-                a.AuthenticateAsync(httpContext.Object, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme))
+                a.AuthenticateAsync(httpContext, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme))
             .ReturnsAsync(authResult);
         communicationService.Setup(c => c.GetUserInfo("test", "secret"))
             .ReturnsAsync(GetUserInfoResponse());
@@ -257,7 +255,7 @@ public class ExternalAuthControllerTests
             RedirectUri = RedirectUrl
         });
         authenticationService.Setup(a =>
-                a.AuthenticateAsync(httpContext.Object, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme))
+                a.AuthenticateAsync(httpContext, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme))
             .ReturnsAsync(authResult);
         signInManager.Setup(s => s.GetExternalAuthenticationSchemesAsync()).ReturnsAsync([
             new AuthenticationScheme("test", "test", typeof(IAuthenticationHandler))
