@@ -19,7 +19,6 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
         <PackageReference Include="Microsoft.IdentityModel.Tokens" />
         <PackageReference Include="MockQueryable.Moq" />
-        <PackageReference Include="Moq" />
         <PackageReference Include="Newtonsoft.Json" />
         <PackageReference Include="StyleCop.Analyzers">
             <PrivateAssets>all</PrivateAssets>

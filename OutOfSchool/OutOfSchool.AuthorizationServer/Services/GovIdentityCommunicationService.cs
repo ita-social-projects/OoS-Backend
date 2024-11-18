@@ -41,7 +41,9 @@ public class GovIdentityCommunicationService : CommunicationService, IGovIdentit
         return new Request
         {
             HttpMethodType = HttpMethodType.Get,
-            Url = new Uri(authServerConfig.ExternalLogin.EUSignServiceUri, "api/v1/certificate"),
+            Url = new Uri(
+                authServerConfig.ExternalLogin.EUSignServiceUri,
+                authServerConfig.ExternalLogin.EUSignServicePaths.Certificate),
         };
     }
 
@@ -50,7 +52,9 @@ public class GovIdentityCommunicationService : CommunicationService, IGovIdentit
         return new Request
         {
             HttpMethodType = HttpMethodType.Post,
-            Url = new Uri(authServerConfig.ExternalLogin.EUSignServiceUri, "api/v1/decrypt"),
+            Url = new Uri(
+                authServerConfig.ExternalLogin.EUSignServiceUri,
+                authServerConfig.ExternalLogin.EUSignServicePaths.Decrypt),
             Data = encryptedUser,
         };
     }
