@@ -20,8 +20,8 @@ using OpenIddict.Client.AspNetCore;
 using OutOfSchool.AuthCommon;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Controllers;
-using OutOfSchool.AuthCommon.Models;
 using OutOfSchool.AuthCommon.Services.Interfaces;
+using OutOfSchool.Common.Models.ExternalAuth;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 

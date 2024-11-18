@@ -11,6 +11,7 @@ using OutOfSchool.AuthCommon.Models;
 using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.AuthorizationServer.Services;
 using OutOfSchool.Common.Config;
+using OutOfSchool.Common.Models.ExternalAuth;
 using OutOfSchool.Tests.Common;
 using static OutOfSchool.Tests.Common.HttpClientTestHelper;
 
