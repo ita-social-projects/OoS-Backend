@@ -186,6 +186,7 @@ public class ExternalAuthControllerTests
 
         // Assert
         userManager.Verify(u => u.CreateAsync(It.IsAny<User>()), Times.Once);
+        userManager.Verify(u => u.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()), Times.Once);
 
         Assert.IsInstanceOf<RedirectResult>(result);
         var viewResult = (RedirectResult) result;

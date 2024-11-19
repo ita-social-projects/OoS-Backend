@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.Options;
+using OutOfSchool.AuthCommon;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Models;
 using OutOfSchool.AuthCommon.Services.Interfaces;
@@ -65,18 +66,19 @@ public class GovIdentityCommunicationService : CommunicationService, IGovIdentit
         return new Request
         {
             HttpMethodType = HttpMethodType.Get,
-            Url = new Uri(authServerConfig.ExternalLogin.IdServerUri,
+            Url = new Uri(
+                authServerConfig.ExternalLogin.IdServerUri,
                 authServerConfig.ExternalLogin.IdServerPaths.UserInfo),
             Token = string.Empty,
             Query = new Dictionary<string, string>
             {
-                {"access_token", backchannelToken},
-                {"user_id", remoteUserId},
+                {AuthServerConstants.ExternalQuery.AccessToken, backchannelToken},
+                {AuthServerConstants.ExternalQuery.UserId, remoteUserId},
                 {
                     authServerConfig.ExternalLogin.Parameters.Fields.Key,
                     authServerConfig.ExternalLogin.Parameters.Fields.Value
                 },
-                {"cert", Uri.EscapeDataString(cert)},
+                {AuthServerConstants.ExternalQuery.Certificate, Uri.EscapeDataString(cert) },
             },
         };
     }
