@@ -12,6 +12,13 @@ public static class AuthServerConstants
         public const string Edrpou = "edrpou";
     }
 
+    public static class ExternalQuery
+    {
+        public const string UserId = "user_id";
+        public const string AccessToken = "access_token";
+        public const string Certificate = "cert";
+    }
+
     public static class FeatureManagement
     {
         public const string PasswordLogin = "PasswordLogin";

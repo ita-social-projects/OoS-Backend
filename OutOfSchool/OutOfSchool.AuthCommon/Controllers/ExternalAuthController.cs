@@ -10,6 +10,7 @@ using OutOfSchool.AuthCommon.Models;
 using OutOfSchool.AuthCommon.ViewModels;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Models.ExternalAuth;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.AuthCommon.Controllers;
 
@@ -166,7 +167,9 @@ public class ExternalAuthController : Controller
         await using var transaction = await dbContext.Database.BeginTransactionAsync();
         try
         {
-            var signIn = await GetOrCreateUserAsync(userInfo)
+            var signIn = await GetOrCreateUserAsync(
+                    userInfo,
+                    result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey])
                 .FlatMapAsync(user => GetOrCreateIndividualAsync(userInfo, user))
                 .FlatMapAsync(individual => BuildClaims(individual, userInfo, result))
                 .FlatMapAsync(claims => SignInWithClaimsAsync(result, claims));
@@ -211,7 +214,7 @@ public class ExternalAuthController : Controller
         }
     }
 
-    private async Task<Either<IErrorResponse, User>> GetOrCreateUserAsync(UserInfoResponse userInfo)
+    private async Task<Either<IErrorResponse, User>> GetOrCreateUserAsync(UserInfoResponse userInfo, string selectedRole)
     {
         try
         {
@@ -237,28 +240,8 @@ public class ExternalAuthController : Controller
             var createResult = await userManager.CreateAsync(user);
             if (createResult.Succeeded)
             {
+                await userManager.AddToRoleAsync(user, selectedRole);
                 return user;
-            }
-
-            if (createResult.Errors.Any(e => e.Code == "DuplicateUserName"))
-            {
-                logger.LogWarning("Similar User already exists");
-
-                // Retry: find the user again
-                var retryUser = await userManager.FindByNameAsync(userInfo.DrfoCode);
-                if (retryUser != null)
-                {
-                    return retryUser;
-                }
-
-                user.Id = Guid.NewGuid().ToString();
-
-                // Retry creating the user once more
-                createResult = await userManager.CreateAsync(user);
-                if (createResult.Succeeded)
-                {
-                    return user;
-                }
             }
 
             var error = string.Join("; ", createResult.Errors.Select(e => e.Description));
@@ -344,7 +327,7 @@ public class ExternalAuthController : Controller
                     result.Principal.GetClaim(OpenIddictConstants.Claims.Private.ProviderName)),
             };
 
-            if (result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey] == "provider")
+            if (Role.Provider.ToString().Equals(result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey], StringComparison.CurrentCultureIgnoreCase))
             {
                 claims.Add(new Claim(AuthServerConstants.ClaimTypes.Edrpou, userInfo.EdrpouCode));
             }
