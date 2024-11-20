@@ -13,6 +13,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
+using OutOfSchool.AikomApiClient;
 using OutOfSchool.AikomApiClient.Config;
 using OutOfSchool.AikomApiClient.Extensions;
 using OutOfSchool.BackgroundJobs.Config;
@@ -167,6 +168,7 @@ public static class Startup
         services.AddLocalization(options => options.ResourcesPath = "Resources");
 
         services.AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+
         services.AddOpenIddict()
             .AddValidation(options =>
             {
@@ -183,11 +185,19 @@ public static class Startup
         var aikomConfiguration = configuration
             .GetSection(AikomApiClientConfig.Name)
             .Get<AikomApiClientConfig>();
-        if (aikomConfiguration.Enable)
-        {
-            services.Configure<AikomApiClientConfig>(configuration.GetSection(AikomApiClientConfig.Name));
-            services.AddAikomApiClient(aikomConfiguration);
-        }
+        services.Configure<AikomApiClientConfig>(configuration.GetSection(AikomApiClientConfig.Name));
+
+        services.AddOpenIddict()
+            .AddClient(options =>
+            {
+                options.AllowClientCredentialsFlow();
+                options.DisableTokenStorage();
+                options.UseSystemNetHttp();
+                options.UseAspNetCore();
+                options.AddAikomOpenIddictClientRegistration(aikomConfiguration);
+            });
+
+        services.AddTransient<IAikomApiService, AikomApiService>();
 
         services.AddCors(confg =>
             confg.AddPolicy(

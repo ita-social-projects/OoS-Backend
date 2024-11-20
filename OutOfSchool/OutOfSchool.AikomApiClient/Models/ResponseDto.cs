@@ -9,5 +9,4 @@ public class ResponseDto
     public int? ErrorCode { get; set; }
 
     public object? Result { get; set; }
-
 }

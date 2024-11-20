@@ -1,21 +1,19 @@
-﻿using System.Text.Json.Serialization;
+﻿namespace OutOfSchool.AikomApiClient.Models;
 
-namespace OutOfSchool.AikomApiClient.Models;
-
-public class SearchUniversityRequest(string edrpou)
+public class SearchUniversityRequest(string edrpou) 
+    : ApiRequest(
+        BusinessProcessKeys.SearchUniversity,
+        new StartVariables
+        {
+            Request = new SearchUniversityRequestData
+            { 
+                Edrpou = edrpou
+            }
+        })
 {
-    [JsonInclude]
-    public readonly string BusinessProcessDefinitionKey = "searchUniversity";
-
-    public StartVariables StartVariables { get; } = new StartVariables(new Request(edrpou));
 }
 
-public class StartVariables(Request request)
+public class SearchUniversityRequestData
 {
-    public Request Request { get; } = request;
-}
-
-public class Request(string edrpou)
-{
-    public string Edrpou { get; } = edrpou;
+    public required string Edrpou { get; set; }
 }

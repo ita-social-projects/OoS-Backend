@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 using OutOfSchool.AikomApiClient.Models;
 using Microsoft.Extensions.Options;
 using OutOfSchool.AikomApiClient.Config;
+using OutOfSchool.AikomApiClient.Extensions;
 
 namespace OutOfSchool.AikomApiClient;
 
@@ -34,54 +35,18 @@ public class AikomApiService : IAikomApiService
         var endpoint = apiUrl + request.BusinessProcessDefinitionKey;
         var (result, exception) = await PostAsync<SearchUniversityRequest, SearchUniversityResponse>(
             endpoint, request).ConfigureAwait(false);
-        
-        if (exception != null)
-        {
-            return new ResponseDto
-            {
-                IsSuccess = false,
-                ErrorMessage = exception.Message,
-            };
-        }
 
-        if (result?.ResultVariables.Response.Error != null)
-        {
-            return new ResponseDto
-            {
-                IsSuccess = false,
-                ErrorMessage = result.ResultVariables.Response.Error.Message,
-                ErrorCode = result.ResultVariables.Response.Error.Code,
-            };
-        }
-        
-        if (result?.ResultVariables.Response.Data != null)
-        {
-            return new ResponseDto
-            {
-                IsSuccess = true,
-                Result = new UniversityDto
-                {
-                    Id = result.ResultVariables.Response.Data.Id,
-                    UniversityFullName = result.ResultVariables.Response.Data.UniversityFullName,
-                    IsBranch = result.ResultVariables.Response.Data.IsBranch,
-                    Edrpou = result.ResultVariables.Response.Data.Edrpou,
-                    Branches = result.ResultVariables.Response.Data.Branches?
-                    .Select(b => new BranchDto
-                    {
-                        BranchId = b.BranchId,
-                        BranchName = b.BranchName,
-                        Edrpou = b.Edrpou,
-                    })
-                    .ToList() ?? []
-                }
-            };
-        }
+        return result.ToResponseDto(exception, data => data.ToDto());
+    }
 
-        return new ResponseDto
-        {
-            IsSuccess = false,
-            ErrorMessage = "Aikom API returned an empty result",
-        };
+    public async Task<ResponseDto> GetUniversity(int id)
+    {
+        var request = new GetUniversityRequest(id);
+        var endpoint = apiUrl + request.BusinessProcessDefinitionKey;
+        var (result, exception) = await PostAsync<GetUniversityRequest, GetUniversityResponse>(
+            endpoint, request).ConfigureAwait(false);
+
+        return result.ToResponseDto(exception, data => data.ToDto());
     }
 
     private async Task<(TResponse?, Exception?)> PostAsync<TRequest, TResponse>(string endpoint, TRequest request)
@@ -101,6 +66,7 @@ public class AikomApiService : IAikomApiService
             using var response = await httpClient.SendAsync(httpRequest).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
             var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
             return (JsonSerializer.Deserialize<TResponse>(responseContent, jsonOptions), null);
         }
         catch (Exception ex)
@@ -112,6 +78,7 @@ public class AikomApiService : IAikomApiService
     private async Task<string> GetAccessTokenAsync()
     {
         var result = await service.AuthenticateWithClientCredentialsAsync(new());
+
         return result.AccessToken;
     }
 }

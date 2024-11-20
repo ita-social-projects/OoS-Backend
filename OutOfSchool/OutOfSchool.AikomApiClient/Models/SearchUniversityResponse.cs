@@ -1,17 +1,10 @@
-﻿using System.Text.Json.Serialization;
+﻿namespace OutOfSchool.AikomApiClient.Models;
 
-namespace OutOfSchool.AikomApiClient.Models;
-
-public class Branch
+public class SearchUniversityResponse : ApiResponse<SearchUniversityResponseData>
 {
-    public required int BranchId { get; set; }
-
-    public required string BranchName { get; set; }
-
-    public string? Edrpou { get; set; }
 }
 
-public class ResponseData
+public class SearchUniversityResponseData
 {
     public required int Id { get; set; }
 
@@ -24,27 +17,11 @@ public class ResponseData
     public List<Branch>? Branches { get; set; }
 }
 
-public class Error
+public class Branch
 {
-    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-    public required int Code { get; set; }
+    public required int BranchId { get; set; }
 
-    public required string Message { get; set; }
-}
+    public required string BranchName { get; set; }
 
-public class Response
-{
-    public ResponseData? Data { get; set; }
-
-    public Error? Error { get; set; }
-}
-
-public class ResultVariables
-{
-    public required Response Response { get; set; }
-}
-
-public class SearchUniversityResponse
-{
-    public required ResultVariables ResultVariables { get; set; }
+    public string? Edrpou { get; set; }
 }

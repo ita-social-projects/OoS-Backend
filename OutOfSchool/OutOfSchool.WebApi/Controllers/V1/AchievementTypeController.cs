@@ -39,7 +39,6 @@ public class AchievementTypeController : Controller
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAll(LocalizationType localization = LocalizationType.Ua)
     {
-        var result = await aikomService.SearchUniversity("87652321").ConfigureAwait(false);
         return Ok(await achievementTypeService.GetAll(localization).ConfigureAwait(false));
     }
 }

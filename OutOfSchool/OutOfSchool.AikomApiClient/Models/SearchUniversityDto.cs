@@ -1,8 +1,8 @@
 ﻿namespace OutOfSchool.AikomApiClient.Models;
 
-public class UniversityDto
+public class SearchUniversityDto
 {
-    public int Id { get; set; }
+    public required int Id { get; set; }
     
     public required string UniversityFullName { get; set; }
 
@@ -15,7 +15,9 @@ public class UniversityDto
 
 public class BranchDto
 {
-    public int BranchId { get; set; }
+    public required int BranchId { get; set; }
+
     public required string BranchName { get; set; }
+    
     public string? Edrpou { get; set; }
 }
