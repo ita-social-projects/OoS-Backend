@@ -58,10 +58,11 @@ public class GovCommunicationServiceTests
                 },
                 Parameters = new Parameters
                 {
-                    Fields = new Fields
+                    UserInfoFields = new UserInfoFields
                     {
                         Key = "key",
-                        Value = "value",
+                        PersonalInfo = ["name"],
+                        BusinessInfo = ["work"]
                     }
                 }
             },

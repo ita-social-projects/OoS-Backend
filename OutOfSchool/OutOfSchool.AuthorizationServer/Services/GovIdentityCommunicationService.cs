@@ -75,8 +75,8 @@ public class GovIdentityCommunicationService : CommunicationService, IGovIdentit
                 {AuthServerConstants.ExternalQuery.AccessToken, backchannelToken},
                 {AuthServerConstants.ExternalQuery.UserId, remoteUserId},
                 {
-                    authServerConfig.ExternalLogin.Parameters.Fields.Key,
-                    authServerConfig.ExternalLogin.Parameters.Fields.Value
+                    authServerConfig.ExternalLogin.Parameters.UserInfoFields.Key,
+                    authServerConfig.ExternalLogin.Parameters.UserInfoFields.EmployeeInfo
                 },
                 {AuthServerConstants.ExternalQuery.Certificate, Uri.EscapeDataString(cert) },
             },
