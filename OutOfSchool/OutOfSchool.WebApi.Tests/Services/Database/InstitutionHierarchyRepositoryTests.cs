@@ -6,6 +6,7 @@ using NUnit.Framework;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
@@ -66,9 +67,9 @@ public class InstitutionHierarchyRepositoryTests
         Assert.AreEqual(createdEntity.Title, retrievedEntity.Title);
     }
 
-    private OutOfSchoolDbContext GetContext() => new OutOfSchoolDbContext(dbContextOptions);
+    private TestOutOfSchoolDbContext GetContext() => new TestOutOfSchoolDbContext(dbContextOptions);
 
-    private IInstitutionHierarchyRepository GetInstitutionHierarchyRepository(OutOfSchoolDbContext dbContext)
+    private IInstitutionHierarchyRepository GetInstitutionHierarchyRepository(TestOutOfSchoolDbContext dbContext)
         => new InstitutionHierarchyRepository(dbContext);
 
     private async Task Seed()

@@ -9,6 +9,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
@@ -168,9 +169,9 @@ public class BlockedProviderParentRepositoryTests
         Assert.False(chatRoom.IsBlockedByProvider);
     }
 
-    private OutOfSchoolDbContext GetContext() => new OutOfSchoolDbContext(dbContextOptions);
+    private TestOutOfSchoolDbContext GetContext() => new TestOutOfSchoolDbContext(dbContextOptions);
 
-    private IBlockedProviderParentRepository GetRepository(OutOfSchoolDbContext dbContext)
+    private IBlockedProviderParentRepository GetRepository(TestOutOfSchoolDbContext dbContext)
         => new BlockedProviderParentRepository(dbContext);
 
     private async Task Seed()

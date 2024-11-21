@@ -9,6 +9,7 @@ using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Configurations;
 using OutOfSchool.Services.Models.Configurations.Images;
 using OutOfSchool.Services.Models.Configurations.WorkshopDraftConfig;
+using OutOfSchool.Services.Models.Configurations.WorkshopDrafts;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Models.WorkshopDrafts;
@@ -204,6 +205,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new LanguageConfiguration());
         builder.ApplyConfiguration(new EntityImagesConfiguration<WorkshopDraft>());
         builder.ApplyConfiguration(new WorkshopDraftConfiguration());
+        builder.ApplyConfiguration(new TeacherDraftConfiguration());
 
         builder.Seed();
         builder.UpdateIdentityTables();

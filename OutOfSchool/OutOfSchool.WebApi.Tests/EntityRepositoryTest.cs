@@ -6,6 +6,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Tests;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests;
 
@@ -16,7 +17,7 @@ public class EntityRepositoryTest
     [Test]
     public void GetById_Id_ReturnEntity()
     {
-        using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
+        using var context = new TestOutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
         {
             var repository = new EntityRepositorySoftDeleted<long, SocialGroup>(context);
 
@@ -99,7 +100,7 @@ public class EntityRepositoryTest
     [Test]
     public async Task Delete_DeleteEntity_DeleteFromDatabaseAsync()
     {
-        using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
+        using var context = new TestOutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
         {
             var repository = new EntityRepositorySoftDeleted<long, SocialGroup>(context);
             SocialGroup socialGroup = new SocialGroup { Id = 1, Name = "sg1" };
@@ -116,7 +117,7 @@ public class EntityRepositoryTest
     [Test]
     public void GetAll_ReturnAllValues()
     {
-        using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
+        using var context = new TestOutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
         {
             var repository = new EntityRepositorySoftDeleted<long, SocialGroup>(context);
 
@@ -131,7 +132,7 @@ public class EntityRepositoryTest
     [Test]
     public void Update_UpatedInfo_UpdateEntityInDatabase()
     {
-        using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
+        using var context = new TestOutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
         {
             var repository = new EntityRepositorySoftDeleted<long, SocialGroup>(context);
 

@@ -20,6 +20,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -44,7 +45,7 @@ public class AchievementServiceTest
                 databaseName: "OutOfSchoolTestDB");
 
         options = builder.Options;
-        context = new OutOfSchoolDbContext(options);
+        context = new TestOutOfSchoolDbContext(options);
 
         achievementRepository = new AchievementRepository(context);
         logger = new Mock<ILogger<AchievementService>>();
@@ -89,7 +90,7 @@ public class AchievementServiceTest
 
     private void SeedDatabase()
     {
-        using var ctx = new OutOfSchoolDbContext(options);
+        using var ctx = new TestOutOfSchoolDbContext(options);
         {
             ctx.Database.EnsureDeleted();
             ctx.Database.EnsureCreated();

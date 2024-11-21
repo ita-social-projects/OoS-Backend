@@ -15,6 +15,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -22,7 +23,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class CompanyInformationServiceTests
 {
     private DbContextOptions<OutOfSchoolDbContext> options;
-    private OutOfSchoolDbContext context;
+    private TestOutOfSchoolDbContext context;
     private ISensitiveEntityRepository<CompanyInformation> repository;
     private ICompanyInformationService service;
     private Mock<ILogger<CompanyInformationService>> logger;
@@ -36,7 +37,7 @@ public class CompanyInformationServiceTests
                 databaseName: "OutOfSchoolTestDB");
 
         options = builder.Options;
-        context = new OutOfSchoolDbContext(options);
+        context = new TestOutOfSchoolDbContext(options);
 
         logger = new Mock<ILogger<CompanyInformationService>>();
         mapper = new Mock<IMapper>();
@@ -192,7 +193,7 @@ public class CompanyInformationServiceTests
 
     private void SeedDatabase()
     {
-        using var dbContext = new OutOfSchoolDbContext(options);
+        using var dbContext = new TestOutOfSchoolDbContext(options);
 
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();

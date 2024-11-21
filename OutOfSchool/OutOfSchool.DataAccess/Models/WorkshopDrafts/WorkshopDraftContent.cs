@@ -1,95 +1,112 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Collections.Generic;
 using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.Services.Models.WorkshopDrafts;
 
+/// <summary>
+///     Will be stored as nested objects in the JSON format of the workshop draft.
+///     This entity is specific to the draft and can be hard-deleted if the draft is removed.
+/// </summary>
 public class WorkshopDraftContent
 {
-    required public int MinAge { get; set; }
+     public int MinAge { get; set; }
 
-    required public int MaxAge { get; set; }
+     public int MaxAge { get; set; }
 
-    required public uint EducationalShiftId { get; set; }
+     public uint EducationalShiftId { get; set; }
 
-    required public bool ShortStay { get; set; }
+     public bool ShortStay { get; set; }
 
-    required public uint LanguageOfEducationId { get; set; }
+     public uint LanguageOfEducationId { get; set; }
 
-    required public List<DateTimeRangeDraft> DateTimeRange { get; set; }
+     public List<DateTimeRangeDraft> DateTimeRange { get; set; } = new ();
 
-    required public List<WorkshopDescriptionItemDraft> WorkshopDescriptionItems { get; set; }
+     public List<WorkshopDescriptionItemDraft> WorkshopDescriptionItems { get; set; } = new();
 
-    required public bool IsSelfFinanced { get; set; }
+     public bool IsSelfFinanced { get; set; }
 
-    required public uint TotalSeats { get; set; }
+     public uint TypeOfAgeCompositionId { get; set; }
 
-    required public uint TypeOfAgeCompositionId { get; set; }
+     public bool CompetitiveSelection { get; set; }
 
-    required public bool CompetitiveSelection { get; set; }
+     public DateOnly ActiveFrom { get; set; }
 
-    required public DateOnly ActiveFrom { get; set; }
+     public DateOnly ActiveTo { get; set; }
 
-    required public DateOnly ActiveTo { get; set; }
+     public List<Guid> EducationalDisciplinesId { get; set; } = new();
 
-    required public List<Guid> EducationalDisciplinesId { get; set; }
+     public List<long> TagsIds { get; set; } = new();
 
-    required public List<long> TagsIds { get; set; }
+     public string Title { get; set; }
 
-    required public string Title { get; set; }
+     public string ProviderTitle { get; set; }
 
-    required public List<long> DirectionIds { get; set; }
+     public string ProviderTitleEn { get; set; }
 
-    required public uint CategoryId { get; set; }
+     public List<long> DirectionIds { get; set; } = new();
 
-    required public uint GroupeTypeId { get; set; }
+     public uint CategoryId { get; set; }
 
-    required public uint CoverageId { get; set; }
+     public uint GroupeTypeId { get; set; }
 
-    required public Guid MemberOfWorkshopId { get; set; }
+     public uint CoverageId { get; set; }
 
-    required public bool IsPaid { get; set; }
+     public Guid MemberOfWorkshopId { get; set; }
 
-    required public bool IsSpecial { get; set; }
+     public bool IsPaid { get; set; }
 
-    required public bool IsInclusive { get; set; }
+     public bool IsSpecial { get; set; }
 
-    required public List<string> Keywords { get; set; }
+     public bool IsInclusive { get; set; }
 
-    required public AddressDraft Address { get; set; }
+     public string Keywords { get; set; }
 
-    public List<Guid>? IncludedStudyGroupsIds { get; set; }
+     public AddressDraft Address { get; set; }
 
-    public uint? SpecialNeedsId { get; set; }
+     public bool WithDisabilityOptions { get; set; }
 
-    public string? AdditionalDescription { get; set; }
+    public string  DisabilityOptionsDesc { get; set; }
 
-    public string? ShortTitle { get; set; }
+    public OwnershipType OwnershipType { get; set; }
 
-    public string? CompetitiveSelectionDescription { get; set; }
+    public uint AvailableSeats { get; set; }
 
-    public FormOfLearning? FormOfLearning { get; set; }
+    public List<Guid> IncludedStudyGroupsIds { get; set; }
 
-    public WorkshopStatus? WorkshopStatus { get; set; }
+    public uint SpecialNeedsId { get; set; }
 
-    public decimal? Price { get; set; }
+    public string AdditionalDescription { get; set; }
+
+    public string ShortTitle { get; set; }
+
+    public string CompetitiveSelectionDescription { get; set; }
+
+    public FormOfLearning FormOfLearning { get; set; }
+
+    public WorkshopStatus WorkshopStatus { get; set; }
+
+    public ProviderLicenseStatus ProviderLicenseStatus { get; set; }
+
+    public decimal Price { get; set; }
 
     public PayRateType? PayRate { get; set; }
 
     public bool? AreThereBenefits { get; set; }
 
-    public string? PreferentialTermsOfParticipation { get; set; }
+    public string PreferentialTermsOfParticipation { get; set; }
 
-    public Guid? InstitutionHierarchyId { get; set; }
+    public Guid InstitutionHierarchyId { get; set; }
 
-    required public string Phone { get; set; }
+    public Guid InstitutionId { get; set; }
 
-    required public string Email { get; set; }
+    public string Phone { get; set; } 
 
-    public string? Website { get; set; }
+    public string Email { get; set; } 
 
-    public string? Facebook { get; set; }
+    public string Website { get; set; } 
 
-    public string? Instagram { get; set; }
+    public string Facebook { get; set; } 
+
+    public string Instagram { get; set; } 
 }

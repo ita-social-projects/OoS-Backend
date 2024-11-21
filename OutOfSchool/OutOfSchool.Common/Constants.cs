@@ -199,4 +199,23 @@ public static class Constants
     /// Maximum number of employees to upload.
     /// </summary>
     public const int MaxNumberOfEmployeesToUpload = 100;
+
+    /// Length constraint for workshop draft description.
+    /// </summary>
+    public const int WorkshopDraftDescriptionMaxLength = 500;
+
+    ///<summary>
+    /// Length constraint for the description draft items.
+    ///</summary>
+    public const int WorkshopDraftDescriptionItemsLength = 200;
+
+    ///<summary>
+    /// Maximum length for disability option descriptions.
+    /// </summary>
+    public const int DisabilityOptionsLength = 200;
+
+    /// <summary>
+    /// Maximum allowed length for a teacher's description.
+    /// </summary>
+    public const int TeacherDescriptionLength = 300;
 }

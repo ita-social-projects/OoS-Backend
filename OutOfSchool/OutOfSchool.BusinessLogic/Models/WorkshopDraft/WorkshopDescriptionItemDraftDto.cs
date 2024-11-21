@@ -5,10 +5,10 @@ namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 public class WorkshopDescriptionItemDraftDto
 {
     [Required]
-    [MaxLength(200)]
+    [MaxLength(Constants.WorkshopDraftDescriptionItemsLength)]
     public string SectionName { get; set; }
 
     [Required]
-    [MaxLength(200)]
+    [MaxLength(Constants.WorkshopDraftDescriptionItemsLength)]
     public string Description { get; set; }
 }

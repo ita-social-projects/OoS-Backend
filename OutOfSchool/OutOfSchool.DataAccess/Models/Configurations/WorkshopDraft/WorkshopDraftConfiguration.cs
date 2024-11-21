@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using OutOfSchool.Services.Common;
 using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models.Configurations.BaseEntity;
 using OutOfSchool.Services.Models.WorkshopDrafts;
@@ -11,18 +12,15 @@ public class WorkshopDraftConfiguration : TrackableBaseEntityConfiguration<Works
     {
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id)
-            .ValueGeneratedNever();
-
         builder.Property(x => x.ProviderId)
             .IsRequired();
 
         builder.Property(x => x.CoverImageId)
-            .HasColumnType("char(36)");
+            .HasColumnType(ModelsConfigurationConstants.Char36Type);
 
         builder.Property(x => x.WorkshopDraftContent)
             .IsRequired()
-            .HasColumnType("json");
+            .HasColumnType(ModelsConfigurationConstants.JsonType);
 
         builder.Property(x => x.DraftStatus)
             .HasDefaultValue(WorkshopDraftStatus.Draft);

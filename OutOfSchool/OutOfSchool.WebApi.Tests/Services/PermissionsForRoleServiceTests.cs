@@ -18,6 +18,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -38,7 +39,7 @@ public class PermissionsForRoleServiceTests
                 databaseName: "OutOfSchoolTestDB");
 
         options = builder.Options;
-        var context = new OutOfSchoolDbContext(options);
+        var context = new TestOutOfSchoolDbContext(options);
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         repository = new EntityRepository<long, PermissionsForRole>(context);
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
@@ -150,7 +151,7 @@ public class PermissionsForRoleServiceTests
     /// </summary>
     private void SeedDatabase()
     {
-        using var context = new OutOfSchoolDbContext(options);
+        using var context = new TestOutOfSchoolDbContext(options);
         {
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();

@@ -6,6 +6,7 @@ using NUnit.Framework;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
 
@@ -29,7 +30,7 @@ public class CodeficatorRepositoryTests
     public async Task GetFullAddressesByPartOfName_WithExistingNamePartAndCategory_ShouldReturnDtos()
     {
         // Arrange
-        using var context = new OutOfSchoolDbContext(dbContextOptions);
+        using var context = new TestOutOfSchoolDbContext(dbContextOptions);
         var repository = new CodeficatorRepository(context);
         var namePart = "Кам*";
         var categories = "MTCXKB";
@@ -48,7 +49,7 @@ public class CodeficatorRepositoryTests
 
     private async Task Seed()
     {
-        using var context = new OutOfSchoolDbContext(dbContextOptions);
+        using var context = new TestOutOfSchoolDbContext(dbContextOptions);
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
         context.AddRange(CATOTTGs());

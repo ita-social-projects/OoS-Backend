@@ -1,17 +1,15 @@
-﻿using OutOfSchool.Services.Enums.WorkshopStatus;
+﻿using OutOfSchool.BusinessLogic.Models.Tag;
+using OutOfSchool.BusinessLogic.Models.WorkshopDraft.AddressDraft;
+using OutOfSchool.Services.Enums.WorkshopStatus;
 
 namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft;
-public class WorkshopDraftResponseDto
+public class WorkshopDraftResponseDto : WorkshopDraftBaseDto
 {
     public Guid Id { get; set; }
-
     public string CoverImageId { get; set; }
-
-    public List<string> ImageIds { get; set; }
-
-    public WorkshopDraftContentDto WorkshopDraftContent { get; set; }
-
-    public WorkshopDraftStatus DraftStatus { get; set; }
-
     public Guid ProviderId { get; set; }
+    public WorkshopDraftStatus DraftStatus { get; set; }
+    public List<string> ImagesIds { get; set; }
+    public List<TagDto>  Tags { get; set; }
+    public AddressDraftResponseDto Address {  get; set; }
 }

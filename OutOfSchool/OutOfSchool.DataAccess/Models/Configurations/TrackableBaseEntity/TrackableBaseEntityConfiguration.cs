@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using OutOfSchool.Services.Common;
 using OutOfSchool.Services.Models.BaseEntities;
 
 namespace OutOfSchool.Services.Models.Configurations.BaseEntity;
@@ -15,13 +16,13 @@ public abstract class TrackableBaseEntityConfiguration<TEntity> : IEntityTypeCon
     {
         builder.Property(e => e.CreatedBy)
             .IsRequired()
-            .HasMaxLength(36);
+            .HasColumnType(ModelsConfigurationConstants.Char36Type);
 
         builder.Property(e => e.CreatedAt)
             .IsRequired();
 
         builder.Property(e => e.ModifiedBy)
-           .HasMaxLength(36);
+            .HasColumnType(ModelsConfigurationConstants.Char36Type);
 
         builder.Property(e => e.ModifiedAt);
     }

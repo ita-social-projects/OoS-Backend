@@ -5,7 +5,13 @@ using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.Services.Models.WorkshopDrafts;
 
-public class TeacherDraft
+/// <summary>
+/// Model for storing drafts before moderation.
+/// Сan be hard deleted from the database if needed.
+/// </summary>
+public class TeacherDraft : 
+    IImageDependentEntity<TeacherDraft>,
+    IKeyedEntity<Guid>
 {
     public Guid Id { get; set; }
 

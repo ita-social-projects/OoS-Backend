@@ -9,6 +9,7 @@ using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
@@ -141,9 +142,9 @@ public class ProviderRepositoryTests
 
     #region private
 
-    private OutOfSchoolDbContext GetContext() => new OutOfSchoolDbContext(dbContextOptions);
+    private TestOutOfSchoolDbContext GetContext() => new TestOutOfSchoolDbContext(dbContextOptions);
 
-    private IProviderRepository GetProviderRepository(OutOfSchoolDbContext dbContext)
+    private IProviderRepository GetProviderRepository(TestOutOfSchoolDbContext dbContext)
         => new ProviderRepository(dbContext);
 
     private async Task Seed()

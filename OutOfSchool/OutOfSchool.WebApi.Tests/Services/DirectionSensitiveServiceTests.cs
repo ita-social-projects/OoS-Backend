@@ -16,6 +16,7 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -40,7 +41,7 @@ public class DirectionSensitiveServiceTests
                 databaseName: "OutOfSchoolTestDB");
 
         options = builder.Options;
-        var context = new OutOfSchoolDbContext(options);
+        var context = new TestOutOfSchoolDbContext(options);
 
         repo = new EntityRepositorySoftDeleted<long, Direction>(context);
         var repositoryWorkshop = new WorkshopRepository(context);
@@ -108,7 +109,7 @@ public class DirectionSensitiveServiceTests
 
     private void SeedDatabase()
     {
-        using var ctx = new OutOfSchoolDbContext(options);
+        using var ctx = new TestOutOfSchoolDbContext(options);
         {
             ctx.Database.EnsureDeleted();
             ctx.Database.EnsureCreated();

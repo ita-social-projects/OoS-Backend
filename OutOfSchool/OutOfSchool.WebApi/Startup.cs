@@ -235,8 +235,10 @@ public static class Startup
         services.AddScoped<ICommunicationService, CommunicationService>();
 
         // Images limits options
-        services.Configure<ImagesLimits<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
         services.Configure<ImagesLimits<WorkshopDraft>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
+        services.Configure<ImagesLimits<TeacherDraft>>(configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));
+
+        services.Configure<ImagesLimits<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
         services.Configure<ImagesLimits<Teacher>>(configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));
         services.Configure<ImagesLimits<Provider>>(configuration.GetSection($"Images:{nameof(Provider)}:Limits"));
 
@@ -244,9 +246,11 @@ public static class Startup
         services.Configure<GcpStorageImagesSourceConfig>(configuration.GetSection(GcpStorageConfigConstants.GcpStorageImagesConfig));
         services.Configure<ExternalImageSourceConfig>(configuration.GetSection(ExternalImageSourceConfig.Name));
         services.Configure<ImageOptions<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
-        services.Configure<ImageOptions<WorkshopDraft>>(configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
         services.Configure<ImageOptions<Teacher>>(configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
         services.Configure<ImageOptions<Provider>>(configuration.GetSection($"Images:{nameof(Provider)}:Specs"));
+
+        services.Configure<ImageOptions<TeacherDraft>>(configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
+        services.Configure<ImageOptions<WorkshopDraft>>(configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
 
         // TODO: Move version check into an extension to reuse code across apps
         var mySQLServerVersion = configuration["MySQLServerVersion"];
@@ -269,7 +273,7 @@ public static class Startup
             });
 
         services.AddTransient<BusinessEntityInterceptor>();
-        services.AddScoped<TrackableEntityInterceptor>();
+        services.AddTransient<TrackableEntityInterceptor>();
         services
             .AddDbContext<OutOfSchoolDbContext>((sp, options) => options
                 .UseLazyLoadingProxies()
@@ -286,7 +290,7 @@ public static class Startup
                     sp.GetRequiredService<TrackableEntityInterceptor>()))
                 .AddCustomDataProtection("WebApi");
 
-        services.AddAutoMapper(typeof(CommonProfile), typeof(MappingProfile), typeof(ElasticProfile));
+        services.AddAutoMapper(typeof(CommonProfile), typeof(MappingProfile), typeof(ElasticProfile), typeof(WorkshopDraftMappingProfile));
 
         // Add Elasticsearch client
         var elasticConfig = configuration
@@ -356,21 +360,33 @@ public static class Startup
         services.AddTransient<IWorkshopServicesCombinerV2, WorkshopServicesCombinerV2>();
         services.AddTransient<IPermissionsForRoleService, PermissionsForRoleService>();
         services.AddScoped<IImageService, ImageService>();
+
         services.AddScoped<IImageValidator<Workshop>, ImageValidator<Workshop>>();
         services.AddScoped<IImageValidator<Teacher>, ImageValidator<Teacher>>();
         services.AddScoped<IImageValidator<Provider>, ImageValidator<Provider>>();
+
+        //Image validator drafts
         services.AddScoped<IImageValidator<WorkshopDraft>, ImageValidator<WorkshopDraft>>();
+        services.AddScoped<IImageValidator<TeacherDraft>, ImageValidator<TeacherDraft>>();
+
         services.AddTransient<ICompanyInformationService, CompanyInformationService>();
 
         services.AddScoped<IImageDependentEntityImagesInteractionService<Workshop>, ImageDependentEntityImagesInteractionService<Workshop>>();
         services.AddScoped<IImageDependentEntityImagesInteractionService<Provider>, ImageDependentEntityImagesInteractionService<Provider>>();
         services.AddScoped<IEntityCoverImageInteractionService<Teacher>, ImageDependentEntityImagesInteractionService<Teacher>>();
+
+        services.AddScoped<IWorkshopDraftService, WorkshopDraftService>();
+
+        // workshop draft images in the external storage
+        services.AddScoped<IEntityCoverImageInteractionService<TeacherDraft>, ImageDependentEntityImagesInteractionService<TeacherDraft>>();
         services.AddScoped<IImageDependentEntityImagesInteractionService<WorkshopDraft>, ImageDependentEntityImagesInteractionService<WorkshopDraft>>();
+
         services.AddTransient<INotificationService, NotificationService>();
         services.AddTransient<IStatisticReportService, StatisticReportService>();
         services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();
         services.AddTransient<ICodeficatorService, CodeficatorService>();
         services.AddTransient<IOperationWithObjectService, OperationWithObjectService>();
+
         services.AddTransient<IPositionService, PositionService>();
         services.AddTransient<IStudySubjectService, StudySubjectService>();
         services.AddTransient<ILanguageService, LanguageService>();

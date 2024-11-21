@@ -24,8 +24,20 @@ public class WorkshopDraftController : ControllerBase
         this.workshopDraftService = workshopDraftService;
     }
 
-    //[HasPermission(Permissions.WorkshopAddNew)]
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopDraftResponseDto))]
+
+    /// <summary>
+    /// Add new workshop draft to the database.
+    /// </summary>
+    /// <param name="workshopDraftDto">Entity to add.</param>
+    /// <returns>Created <see cref="WorkshopDraftCreateDto"/>.</returns>
+    /// <response code="201">Entity was created and returned with Id.</response>
+    /// <response code="400">If the model is invalid, some properties are not set etc.</response>
+    /// <response code="401">If the user is not authorized.</response>
+    /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden.</response>
+    /// <response code="413">If the request break the limits, set in configs.</response>
+    /// <response code="500">If any server error occures.</response>
+    [HasPermission(Permissions.WorkshopAddNew)]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopDraftResultDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -33,31 +45,67 @@ public class WorkshopDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Create([FromForm] WorkshopDraftCreateDto workshopDraft)
+    public async Task<IActionResult> Create([FromForm] WorkshopDraftCreateDto workshopDraftDto)
     {
-        if (workshopDraft == null)
+        if (!ValidateWorkshopDraft(workshopDraftDto, out IActionResult validationResult))
         {
-            return StatusCode(400, "The workshop draft is null.");
+            return validationResult;
         }
 
-        var provider = await providerService.GetById(workshopDraft.ProviderId)
-            .ConfigureAwait(false);
+        var providerValidationResult = await ValidateProvider(workshopDraftDto.ProviderId);
+        if (providerValidationResult != null)
+        {
+            return providerValidationResult;
+        }
 
+        var result = await workshopDraftService.Create(workshopDraftDto);
+
+        return CreatedAtAction(
+            nameof(Create),
+            new { id = result.WorkshopDraft.Id },
+            result);
+    }
+
+    private bool ValidateWorkshopDraft(WorkshopDraftCreateDto draft,
+        out IActionResult validationResult)
+    {
+        validationResult = null;
+
+        if (draft == null)
+        {
+            validationResult = BadRequest("The workshop draft is null.");
+            return false;
+        }
+
+        if (draft.ActiveFrom > draft.ActiveTo)
+        {
+            ModelState.AddModelError("ActiveTo", "'ActiveFrom' must be earlier than 'ActiveTo'.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            validationResult = BadRequest(ModelState);
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task<IActionResult> ValidateProvider(Guid providerId)
+    {
+        var provider = await providerService.GetById(providerId);
         if (provider == null)
         {
-            return StatusCode(400, "The specified provider does not exist.");
+            return BadRequest(new { Message = $"Provider with ID {providerId} not found." });
         }
 
         if (provider.IsBlocked)
         {
-            return StatusCode(403, "Forbidden to update the workshop by the blocked provider.");
+            return StatusCode(
+                StatusCodes.Status403Forbidden,
+                new { Message = $"Provider with ID {providerId} is blocked and cannot create workshop drafts." });
         }
 
-        var result = await workshopDraftService.Create(workshopDraft);
-
-        return CreatedAtAction(
-             nameof(Create),
-             new { id = result.WorkshopDraft.Id, },
-             result);
+        return null;
     }
 }

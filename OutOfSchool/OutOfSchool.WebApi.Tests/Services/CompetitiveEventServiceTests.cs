@@ -19,6 +19,7 @@ using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -26,7 +27,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class CompetitiveEventServiceTests
 {
     private DbContextOptions<OutOfSchoolDbContext> options;
-    private OutOfSchoolDbContext context;
+    private TestOutOfSchoolDbContext context;
     private IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> repo;
     private IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType> accountingTypeOfEventRepository;
     private IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
@@ -48,7 +49,7 @@ public class CompetitiveEventServiceTests
                 databaseName: "OutOfSchoolTestDB");
 
         options = builder.Options;
-        context = new OutOfSchoolDbContext(options);
+        context = new TestOutOfSchoolDbContext(options);
 
         repo = new EntityRepositorySoftDeleted<Guid, CompetitiveEvent>(context);
         accountingTypeOfEventRepository = new EntityRepositorySoftDeleted<int, CompetitiveEventAccountingType>(context);
@@ -308,7 +309,7 @@ public class CompetitiveEventServiceTests
 
     private void SeedDatabase()
     {
-        using var ctx = new OutOfSchoolDbContext(options);
+        using var ctx = new TestOutOfSchoolDbContext(options);
         {
             ctx.Database.EnsureDeleted();
             ctx.Database.EnsureCreated();

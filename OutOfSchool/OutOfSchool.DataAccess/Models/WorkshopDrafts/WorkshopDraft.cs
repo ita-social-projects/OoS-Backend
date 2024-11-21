@@ -26,6 +26,7 @@ public class WorkshopDraft :
 
     public byte[] Version { get; set; }
 
+    // TODO: Ensure that the content matches the new workshop model after the contact model is added.
     public WorkshopDraftContent WorkshopDraftContent { get; set; }
 
     public virtual Provider Provider { get; set; }
