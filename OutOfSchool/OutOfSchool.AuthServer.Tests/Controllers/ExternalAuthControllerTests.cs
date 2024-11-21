@@ -59,7 +59,7 @@ public class ExternalAuthControllerTests
                     AuthType = new AuthType
                     {
                         Key = "key",
-                        Value = "value"
+                        Business = "business",
                     }
                 }
             }

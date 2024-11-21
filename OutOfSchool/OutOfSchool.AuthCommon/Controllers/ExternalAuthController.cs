@@ -66,8 +66,13 @@ public class ExternalAuthController : Controller
 
         var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, returnUrl);
         properties.Items.Add(AuthServerConstants.ExternalAuthSelectedRoleKey, role);
-        properties.Parameters.Add(authServerConfig.ExternalLogin.Parameters.AuthType.Key,
-            authServerConfig.ExternalLogin.Parameters.AuthType.Value);
+        var allowedAuthTypes = role switch
+        {
+            _ when Role.Provider.ToString().Equals(role, StringComparison.OrdinalIgnoreCase) => authServerConfig
+                .ExternalLogin.Parameters.AuthType.Business,
+            _ => authServerConfig.ExternalLogin.Parameters.AuthType.Personal
+        };
+        properties.Parameters.Add(authServerConfig.ExternalLogin.Parameters.AuthType.Key, allowedAuthTypes);
 
         return Challenge(properties, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);
     }
@@ -81,7 +86,8 @@ public class ExternalAuthController : Controller
 
         if (!result.Succeeded)
         {
-            ModelState.AddModelError(string.Empty, "The external authorization data cannot be used for authentication.");
+            ModelState.AddModelError(string.Empty,
+                "The external authorization data cannot be used for authentication.");
 
             return this.View("~/Views/Auth/Login.cshtml", new LoginViewModel
             {
@@ -214,7 +220,8 @@ public class ExternalAuthController : Controller
         }
     }
 
-    private async Task<Either<IErrorResponse, User>> GetOrCreateUserAsync(UserInfoResponse userInfo, string selectedRole)
+    private async Task<Either<IErrorResponse, User>> GetOrCreateUserAsync(UserInfoResponse userInfo,
+        string selectedRole)
     {
         try
         {
@@ -327,7 +334,9 @@ public class ExternalAuthController : Controller
                     result.Principal.GetClaim(OpenIddictConstants.Claims.Private.ProviderName)),
             };
 
-            if (Role.Provider.ToString().Equals(result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey], StringComparison.CurrentCultureIgnoreCase))
+            if (Role.Provider.ToString()
+                .Equals(result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey],
+                    StringComparison.CurrentCultureIgnoreCase))
             {
                 claims.Add(new Claim(AuthServerConstants.ClaimTypes.Edrpou, userInfo.EdrpouCode));
             }
@@ -352,6 +361,7 @@ public class ExternalAuthController : Controller
         var properties = new AuthenticationProperties
         {
             RedirectUri = result.Properties?.RedirectUri ?? "/login",
+            IsPersistent = false,
         };
 
         try
