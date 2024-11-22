@@ -68,12 +68,6 @@ public class PersonalInfoControllerTests
         // Arrange
         var userId = Guid.NewGuid().ToString();
 
-        httpContext.Setup(x => x.User.FindFirst("sub"))
-            .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
-
-        httpContext.Setup(x => x.User.IsInRole("parent"))
-            .Returns(false);
-
         var controller = new PersonalInfoController(
             userService.Object,
             parentService.Object,
@@ -82,9 +76,10 @@ public class PersonalInfoControllerTests
             ControllerContext = new ControllerContext { HttpContext = httpContext.Object },
         };
 
-        parentService.Setup(x => x.GetPersonalInfoByUserId(userId)).ReturnsAsync(new ShortUserDto());
+        userService.Setup(x => x.GetById(userId)).ReturnsAsync(new ShortUserDto());
         currentUserService.Setup(c => c.UserId).Returns(userId);
         currentUserService.Setup(c => c.IsInRole(Role.Parent)).Returns(false);
+        currentUserService.Setup(c => c.UserRole).Returns("provider");
 
         // Act
         var result = await controller.GetPersonalInfo().ConfigureAwait(false) as OkObjectResult;

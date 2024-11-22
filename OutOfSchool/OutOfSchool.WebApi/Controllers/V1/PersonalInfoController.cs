@@ -44,9 +44,13 @@ public class PersonalInfoController : ControllerBase
     {
         var info = currentUserService.IsInRole(Role.Parent)
             ? await parentService.GetPersonalInfoByUserId(currentUserService.UserId)
-            : null;
+            : await userService.GetById(currentUserService.UserId);
 
-        return Ok(info ?? (await userService.GetById(currentUserService.UserId)));
+        if (string.IsNullOrWhiteSpace(info.Role))
+        {
+            info.Role = currentUserService.UserRole;
+        }
+        return Ok(info);
     }
 
 
