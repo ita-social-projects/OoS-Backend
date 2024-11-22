@@ -38,8 +38,5 @@ internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
             .OnDelete(DeleteBehavior.Restrict);
 
         base.Configure(builder);
-
-        builder.HasMany(x => x.Tags)
-            .WithMany(x => x.Workshops);
     }
 }

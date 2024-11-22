@@ -1177,6 +1177,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             createdWorkshop.Teachers = dto.Teachers.Select(mapper.Map<Teacher>).ToList();
         }
 
+        createdWorkshop.Tags = (await tagRepository.GetByFilter(tag => dto.TagIds.Contains(tag.Id))).ToList();
         createdWorkshop.Status = WorkshopStatus.Open;
 
         return createdWorkshop;
