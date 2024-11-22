@@ -180,6 +180,4 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public virtual Address Address { get; set; }
 
     public virtual List<Tag> Tags { get; set; }
-
-    public bool IsBlocked { get; set; } = false;
 }
