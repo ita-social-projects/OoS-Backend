@@ -154,4 +154,6 @@ public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>, ISo
 
     [DataType(DataType.DateTime)]
     public DateTime UpdatedAt { get; set; }
+
+    public virtual ICollection<Position> Positions { get; set; }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
 
@@ -31,4 +32,6 @@ public class Individual : BusinessEntity
     public string? UserId { get; set; }
 
     public virtual User? User { get; set; }
+    
+    public virtual ICollection<Official> Officials { get; set; }
 }

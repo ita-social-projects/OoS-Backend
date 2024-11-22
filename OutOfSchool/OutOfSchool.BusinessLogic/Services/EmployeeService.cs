@@ -116,7 +116,7 @@ public class EmployeeService : CommunicationService, IEmployeeService
     {
         _ = employeeModel ?? throw new ArgumentNullException(nameof(employeeModel));
 
-        Logger.LogDebug("Employee(id): {employeeModel.Id} updating was started. User(id): {UserId}", employeeModel.Id, userId);
+        Logger.LogDebug("Employee(id): {employeeModel_Id} updating was started. User(id): {UserId}", employeeModel.Id, userId);
 
         var hasAccess = await IsAllowedAsync(providerId, userId)
             .ConfigureAwait(true);
@@ -136,7 +136,7 @@ public class EmployeeService : CommunicationService, IEmployeeService
 
         if (employee is null)
         {
-            Logger.LogError("Employee(id) {employeeModel.Id} not found. User(id): {UserId}", employeeModel.Id, userId);
+            Logger.LogError("Employee(id) {employeeModel_Id} not found. User(id): {UserId}", employeeModel.Id, userId);
 
             return new ErrorResponse
             {

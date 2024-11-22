@@ -166,6 +166,11 @@ public static class Constants
     public const int MaxProviderShortTitleLength = 60;
 
     /// <summary>
+    /// Maximum length of position desctiption.
+    /// </summary>
+    public const int MaxPositionDescriptionLength = 500;
+
+    /// <summary>
     /// Maximum length of additional description.
     /// </summary>
     public const int MaxAdditionalDescriptionLength = 500;

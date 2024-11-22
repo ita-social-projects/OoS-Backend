@@ -128,6 +128,10 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<CompetitiveEventRegistrationDeadline> CompetitiveEventRegistrationDeadlines { get; set; }
 
+    public DbSet<Official> Officials { get; set; }
+    
+    public DbSet<Position> Positions { get; set; }
+
     public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
     public int Complete() => this.SaveChanges();
@@ -158,18 +162,21 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new CompetitiveEventRegistrationDeadlineConfiguration());
         builder.ApplyConfiguration(new DateTimeRangeConfiguration());
         builder.ApplyConfiguration(new DirectionConfiguration());
+        builder.ApplyConfiguration(new EmployeeConfiguration());
         builder.ApplyConfiguration(new EntityImagesConfiguration<Provider>());
         builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
         builder.ApplyConfiguration(new FavoriteConfiguration());
+        builder.ApplyConfiguration(new IndividualConfiguration());
         builder.ApplyConfiguration(new InstitutionAdminConfiguration());
         builder.ApplyConfiguration(new InstitutionConfiguration());
         builder.ApplyConfiguration(new InstitutionFieldDescriptionConfiguration());
         builder.ApplyConfiguration(new InstitutionHierarchyConfiguration());
         builder.ApplyConfiguration(new InstitutionStatusConfiguration());
         builder.ApplyConfiguration(new NotificationConfiguration());
+        builder.ApplyConfiguration(new OfficialConfiguration());
         builder.ApplyConfiguration(new OperationWithObjectConfiguration());
         builder.ApplyConfiguration(new ParentConfiguration());
-        builder.ApplyConfiguration(new EmployeeConfiguration());
+        builder.ApplyConfiguration(new PositionConfiguration());
         builder.ApplyConfiguration(new ProviderConfiguration());
         builder.ApplyConfiguration(new ProviderSectionItemConfiguration());
         builder.ApplyConfiguration(new QuartzJobConfiguration());
@@ -181,7 +188,6 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new UserConfiguration());
         builder.ApplyConfiguration(new WorkshopConfiguration());
         builder.ApplyConfiguration(new WorkshopDescriptionItemConfiguration());
-        builder.ApplyConfiguration(new IndividualConfiguration());
 
         builder.Seed();
         builder.UpdateIdentityTables();

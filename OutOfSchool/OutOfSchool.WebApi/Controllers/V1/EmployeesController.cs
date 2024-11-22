@@ -91,7 +91,7 @@ public class EmployeesController : Controller
             error => StatusCode((int)error.HttpStatusCode, new { error.Message, error.ApiErrorResponse }),
             result =>
             {
-                logger.LogInformation("Successfully created Employee(id): {result.UserId} by User(id): {UserId}", result.UserId, userId);
+                logger.LogInformation("Successfully created Employee(id): {result_UserId} by User(id): {UserId}", result.UserId, userId);
                 return Created(string.Empty, result);
             });
     }
