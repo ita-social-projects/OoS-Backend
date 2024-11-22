@@ -8,7 +8,6 @@ using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Common.Communication.ICommunication;
@@ -94,22 +93,19 @@ public class CommunicationService : ICommunicationService
 
             requestMessage.Method = HttpMethodService.GetHttpMethodType(request);
 
-            logger.LogDebug("Sending request to {RequestMessage}", requestMessage);
-
-            var response = await httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead)
+            using var response = await httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead)
                 .ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
                 // Error response should be small, but still no need to waste time as default handler is ignoring it
-                var errorBody = errorHandler == null ? null : await response.Content.ReadAsStringAsync();
+                var errorBody = errorHandler == null ? null : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 var error = new CommunicationError(response.StatusCode)
                 {
                     Body = errorBody,
                 };
-                logger.LogDebug("Error body: {Body}", errorBody);
                 logger.LogError("Remote service error: {StatusCode}", response.StatusCode);
-                return await HandleErrorAsync(error, "Remote service error", errorHandler);
+                return await HandleErrorAsync(error, "Remote service error", errorHandler).ConfigureAwait(false);
             }
 
             await using var stream = await response.EnsureSuccessStatusCode().Content.ReadAsStreamAsync()
@@ -120,12 +116,12 @@ public class CommunicationService : ICommunicationService
         catch (HttpRequestException ex)
         {
             logger.LogError(ex, "Networking error");
-            return await HandleExceptionAsync(ex, errorHandler);
+            return await HandleExceptionAsync(ex, errorHandler).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Unknown error");
-            return await HandleExceptionAsync(ex, errorHandler);
+            return await HandleExceptionAsync(ex, errorHandler).ConfigureAwait(false);
         }
     }
 
