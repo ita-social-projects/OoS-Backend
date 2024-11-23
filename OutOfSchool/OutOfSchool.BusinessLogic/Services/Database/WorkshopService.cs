@@ -1204,7 +1204,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         // If the DefaultTeacherId property of WorkshopBaseDto is incorrect, throw InvalidOperationException.
         if (dto.DefaultTeacherId is not null && !await teacherService.ExistsAsync((Guid)dto.DefaultTeacherId).ConfigureAwait(false))
         {
-            //dto.DefaultTeacherId = default;
             var errorMessage = $"The default Teacher (with id = {dto.DefaultTeacherId}) for the workshop being created was not found.";
             throw new InvalidOperationException(errorMessage);
         }

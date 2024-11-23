@@ -127,12 +127,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
             .ForMember(dest => dest.Applications, opt => opt.Ignore())
             .ForMember(dest => dest.ChatRooms, opt => opt.Ignore())
-            //.ForMember(dest => dest.Images, opt => opt.Ignore())
-            //.ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
-            //.ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
-            //.ForMember(dest => dest.Status, opt => opt.Ignore())
-            //.ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
-            //.ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore())
             .ForMember(dest => dest.Document, opt => opt.Ignore())
             .ForMember(dest => dest.File, opt => opt.Ignore())
             .ForMember(dest => dest.IsSystemProtected, opt => opt.Ignore())
@@ -143,10 +137,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
             .ForMember(dest => dest.Tags, opt => opt.Ignore());
-        //.ForMember(dest => dest.MemberOfWorkshop, opt => opt.Ignore())
-        //.ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore())
-        //.ForMember(dest => dest.ProviderTitle, opt => opt.Ignore())
-        //.ForMember(dest => dest.ProviderTitleEn, opt => opt.Ignore());
 
         CreateMap<WorkshopV2CreateRequestDto, Workshop>()
             .IncludeBase<WorkshopCreateRequestDto, Workshop>()

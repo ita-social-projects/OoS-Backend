@@ -110,16 +110,6 @@ public class WorkshopCreateRequestDto : IValidatableObject
     [Required]
     public Guid ProviderId { get; set; }
 
-    //[Required]
-    //[MaxLength(Constants.MaxProviderFullTitleLength)]
-    //public string ProviderTitle { get; set; } = string.Empty;
-
-    //[MaxLength(Constants.MaxProviderFullTitleLength)]
-    //public string ProviderTitleEn { get; set; } = string.Empty;
-
-    //[EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
-    //public ProviderLicenseStatus ProviderLicenseStatus { get; set; } = ProviderLicenseStatus.NotProvided;
-
     public DateOnly ActiveFrom { get; set; }
 
     public DateOnly ActiveTo { get; set; }
@@ -175,21 +165,6 @@ public class WorkshopCreateRequestDto : IValidatableObject
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<long> TagIds { get; set; } = [];
-
-    //public uint TakenSeats { get; set; } = 0;
-
-    //public float Rating { get; set; }
-
-    //public int NumberOfRatings { get; set; }
-
-    //[EnumDataType(typeof(WorkshopStatus), ErrorMessage = Constants.EnumErrorMessage)]
-    //public WorkshopStatus Status { get; set; } = WorkshopStatus.Open;
-
-    //[EnumDataType(typeof(OwnershipType), ErrorMessage = Constants.EnumErrorMessage)]
-    //public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;
-
-    //[EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]
-    //public ProviderStatus ProviderStatus { get; set; } = ProviderStatus.Pending;
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
