@@ -6,7 +6,7 @@ public class WorkshopDraftResultDto
 {
     public WorkshopDraftResponseDto WorkshopDraft { get; set; }
 
-    public List<TeacherCreateUpdateResultDto> TeacherCreateUpdateResut {  get; set; }
+    public List<TeacherCreateUpdateResultDto> TeachersCreateUpdateResut {  get; set; }
 
     public OperationResult UploadingCoverImgWorkshopResult { get; set; }
 

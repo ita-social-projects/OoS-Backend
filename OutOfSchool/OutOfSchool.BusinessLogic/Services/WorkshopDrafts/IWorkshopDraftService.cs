@@ -8,11 +8,11 @@ namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 public interface IWorkshopDraftService
 {
     /// <summary>
-    /// Creates a new workshop draft based on the provided data.
+    /// Creates a new workshop draft.
     /// This method handles:
     /// - Mapping input data to the draft entity.
     /// - Saving the draft to the database.
-    /// - Uploading associated images (workshop images, cover image).
+    /// - Uploading associated images (workshop images, cover image, teachers images) in the external storage.
     /// - Associating teachers and processing their data.
     /// </summary>
     /// <param name="workshopDraftDto">
@@ -25,6 +25,9 @@ public interface IWorkshopDraftService
     /// </returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown if the provided <paramref name="workshopDraftDto"/> is null.
+    /// </exception>
+    /// <exception cref="InvalidDataException">
+    /// Thrown when the workshop does not contain a list of teachers or the list is empty.
     /// </exception>
     Task<WorkshopDraftResultDto> Create(WorkshopDraftCreateDto workshopDraftDto);
 }

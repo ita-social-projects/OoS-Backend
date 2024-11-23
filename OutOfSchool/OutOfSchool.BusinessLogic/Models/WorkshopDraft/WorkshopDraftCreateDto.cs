@@ -14,7 +14,7 @@ public class WorkshopDraftCreateDto : WorkshopDraftBaseDto
     public List<long> TagsIds { get; set; }
     [Required]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    public AddressDraftBaseDto Address { get; set; }
+    public AddressDraftDto Address { get; set; }
 
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public IFormFile CoverImage { get; set; }
@@ -22,6 +22,6 @@ public class WorkshopDraftCreateDto : WorkshopDraftBaseDto
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public List<IFormFile> ImageFiles { get; set; }
 
-    [RequireDefaultTeacherAttribute]    
-    public List<TeacherDraftCreateDto> Teachers { get; set; }
+    [RequireDefaultTeacher]    
+    public List<TeacherDraftCreateDto> Teachers { get; set; } = new();
 }

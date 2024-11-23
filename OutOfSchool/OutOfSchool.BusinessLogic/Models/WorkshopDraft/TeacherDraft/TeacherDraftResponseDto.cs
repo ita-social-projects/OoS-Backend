@@ -7,5 +7,4 @@ public class TeacherDraftResponseDto : TeacherDraftDto
     public Guid WorkshopDraftId { get; set; }
 
     public string CoverImageId { get; set; }
-
 }

@@ -11,5 +11,5 @@ public class WorkshopDraftResponseDto : WorkshopDraftBaseDto
     public WorkshopDraftStatus DraftStatus { get; set; }
     public List<string> ImagesIds { get; set; }
     public List<TagDto>  Tags { get; set; }
-    public AddressDraftResponseDto Address {  get; set; }
+    public AddressDraftDto Address {  get; set; }
 }

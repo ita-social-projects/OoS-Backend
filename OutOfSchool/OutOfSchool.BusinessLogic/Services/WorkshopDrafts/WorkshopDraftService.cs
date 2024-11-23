@@ -11,9 +11,14 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+using System.Collections.Concurrent;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 
+
+/// <summary>
+/// Implements the interface with CRUD functionality for WorkshopDraft entity.
+/// </summary>
 public class WorkshopDraftService : IWorkshopDraftService
 {
     private readonly ILogger<WorkshopDraftService> logger;
@@ -24,6 +29,16 @@ public class WorkshopDraftService : IWorkshopDraftService
     private readonly IEntityCoverImageInteractionService<TeacherDraft> teacherDraftImagesService;
     private readonly IEntityRepository<long, Tag> tagRepository;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WorkshopDraftService"/> class.
+    /// </summary>
+    /// <param name="logger">Logger for error logging.</param>
+    /// <param name="workshopDraftRepository">Repository for the <see cref="WorkshopDraft"/> entity, handling CRUD operations.</param>
+    /// <param name="mapper">Service for mapping between domain models and DTOs.</param>
+    /// <param name="workshopDraftImagesService">Service for handling images associated with <see cref="WorkshopDraft"/> entities.</param>
+    /// <param name="providerService">Service for handling CRUD operations with the <see cref="Provider"/> entity .</param>
+    /// <param name="teacherDraftImagesService">Service for managing cover images for <see cref="TeacherDraft"/> entities.</param>
+    /// <param name="tagRepository">Repository for the <see cref="Tag"/> entity, used for CRUD operations.</param>
     public WorkshopDraftService(
         ILogger<WorkshopDraftService> logger,
         IWorkshopDraftRepository workshopDraftRepository,
@@ -42,7 +57,7 @@ public class WorkshopDraftService : IWorkshopDraftService
         this.tagRepository = tagRepository ?? throw new ArgumentNullException(nameof(tagRepository));
     }
 
-    /// <inheritdoc/>
+    // <inheritdoc/>
     public async Task<WorkshopDraftResultDto> Create(WorkshopDraftCreateDto workshopDraftDto)
     {
         if (workshopDraftDto == null)
@@ -58,31 +73,39 @@ public class WorkshopDraftService : IWorkshopDraftService
 
         logger.LogInformation("Workshop draft creating was started.");
 
-        var createdDraft = await workshopDraftRepository
+        if (workshopDraftDto.Teachers == null || !workshopDraftDto.Teachers.Any())
+        {
+            throw new InvalidDataException("The workshop must have at least one associated teacher.");
+        }
+
+        // Executes the creation of a workshop draft along with its associated teachers within a database transaction.
+        // The result is the created draft with all its related teachers.
+        var createdDraftWithAssociatedTeachers = await workshopDraftRepository
             .RunInTransaction(() => CreateWorkshopDraft(workshopDraftDto))
             .ConfigureAwait(false);
 
-        var tags = await tagRepository.GetByFilter(x => createdDraft.WorkshopDraftContent.TagsIds.Contains(x.Id))
+        var tags = await tagRepository.GetByFilter(x => createdDraftWithAssociatedTeachers.WorkshopDraftContent.TagsIds.Contains(x.Id))
             .ConfigureAwait(false);
 
-        var (teacherResults, imagesUploadingResult, coverImageUploadingResult) = await UploadWorkshopAndTeacherImagesAsync(
-            createdDraft,
-            workshopDraftDto
-        ).ConfigureAwait(false);
+        // Concurrently uploads images for both teacher drafts and the workshop draft.
+        var (teacherImagesUploadingResults, workshopImagesUploadingResult, workshopCoverImageUploadingResult) = 
+            await UploadWorkshopAndTeacherImagesAsync(createdDraftWithAssociatedTeachers, workshopDraftDto)
+            .ConfigureAwait(false);
 
-        await workshopDraftRepository.SaveChangesAsync().ConfigureAwait(false);
+        await workshopDraftRepository.SaveChangesAsync()
+            .ConfigureAwait(false);
 
-        var createdDraftDto = mapper.Map<WorkshopDraftResponseDto>(createdDraft);
+        var createdDraftDto = mapper.Map<WorkshopDraftResponseDto>(createdDraftWithAssociatedTeachers);
         createdDraftDto.Tags = mapper.Map<List<TagDto>>(tags);
 
-        logger.LogInformation("WorkshopDraft with Id = {Id} created successfully.", createdDraft.Id);
+        logger.LogInformation("WorkshopDraft with Id = {Id} created successfully.", createdDraftWithAssociatedTeachers.Id);
 
         return new WorkshopDraftResultDto
         {
             WorkshopDraft = createdDraftDto,
-            UploadingCoverImgWorkshopResult = coverImageUploadingResult?.OperationResult,
-            UploadingImagesResults = imagesUploadingResult?.MultipleKeyValueOperationResult,
-            TeacherCreateUpdateResut = teacherResults
+            UploadingCoverImgWorkshopResult = workshopCoverImageUploadingResult?.OperationResult,
+            UploadingImagesResults = workshopImagesUploadingResult?.MultipleKeyValueOperationResult,
+            TeachersCreateUpdateResut = teacherImagesUploadingResults
         };
     }
 
@@ -106,78 +129,95 @@ public class WorkshopDraftService : IWorkshopDraftService
 
     // Applicable if images is stored in the external storage
     private async Task<(
-    List<TeacherCreateUpdateResultDto> TeacherResults,
-    MultipleImageUploadingResult ImagesUploadingResult,
-    Result<string> CoverImageUploadingResult)>
+    List<TeacherCreateUpdateResultDto> TeacherImagesUploadingResults,
+    MultipleImageUploadingResult WorkshopImagesUploadingResult,
+    Result<string> WorkshopCoverImageUploadingResult)>
     UploadWorkshopAndTeacherImagesAsync(
-        WorkshopDraft createdDraft,
-        WorkshopDraftCreateDto workshopDraftDto)
+    WorkshopDraft createdDraft,
+    WorkshopDraftCreateDto workshopDraftDto)
     {
+        var teacherUploadImagesTasks = new List<Task>();
+        var teacherUploadImagesResults = new ConcurrentBag<TeacherCreateUpdateResultDto>();
         var semaphore = new SemaphoreSlim(4);
-        var teacherResults = new List<TeacherCreateUpdateResultDto>();
 
-        var teacherTasks = workshopDraftDto.Teachers.Zip(createdDraft.Teachers)
-            .Where(pair => pair.First.CoverImage != null)
-            .Select(async pair =>
-            {
-                await semaphore.WaitAsync();
-                try
-                {
-                    var teacherDto = pair.First;
-                    var teacher = pair.Second;
+        foreach (var (teacherDto, teacher) in workshopDraftDto.Teachers.Zip(createdDraft.Teachers))
+        {
+            teacherUploadImagesTasks.Add(UploadTeacherCoverImageAsync(
+                    teacherDto,
+                    teacher,
+                    teacherUploadImagesResults,
+                    semaphore));
+        }
 
-                    var uploadingResult = await teacherDraftImagesService
-                        .AddCoverImageAsync(teacher, teacherDto.CoverImage)
-                        .ConfigureAwait(false);
+        Task<MultipleImageUploadingResult> workshopImagesUploadingTasks = 
+            Task.FromResult<MultipleImageUploadingResult>(null);
 
-                    if (uploadingResult.Succeeded)
-                    {
-                        teacher.CoverImageId = uploadingResult.Value;
-                    }
+        Task<Result<string>> workshopUploadingCoverImageTask = Task.FromResult<Result<string>>(null);
 
-                    lock (teacherResults)
-                    {
-                        teacherResults.Add(new TeacherCreateUpdateResultDto
-                        {
-                            Teacher = mapper.Map<TeacherDraftResponseDto>(teacher),
-                            UploadingAvatarImageResult = uploadingResult
-                        });
-                    }
-                }
-                finally
-                {
-                    semaphore.Release();
-                }
-            }).ToList();
-
-        Task<MultipleImageUploadingResult> imagesUploadingTask = Task.FromResult<MultipleImageUploadingResult>(null);
         if (workshopDraftDto.ImageFiles?.Count > 0)
         {
             createdDraft.Images = new List<Image<WorkshopDraft>>();
-            imagesUploadingTask = workshopDraftImagesService.AddManyImagesAsync(createdDraft, workshopDraftDto.ImageFiles);
+            workshopImagesUploadingTasks = workshopDraftImagesService.AddManyImagesAsync(
+                createdDraft,
+                workshopDraftDto.ImageFiles);
         }
 
-        Task<Result<string>> uploadingCoverImageTask = Task.FromResult<Result<string>>(null);
         if (workshopDraftDto.CoverImage != null)
         {
-            uploadingCoverImageTask = workshopDraftImagesService.AddCoverImageAsync(createdDraft, workshopDraftDto.CoverImage);
+            workshopUploadingCoverImageTask = workshopDraftImagesService.AddCoverImageAsync(
+                createdDraft,
+                workshopDraftDto.CoverImage);
         }
 
         try
         {
-            await Task.WhenAll(teacherTasks);
-            await Task.WhenAll(imagesUploadingTask, uploadingCoverImageTask);
+            await Task.WhenAll(teacherUploadImagesTasks);
+            await Task.WhenAll(workshopImagesUploadingTasks, workshopUploadingCoverImageTask);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error occurred while uploading images.");
+            logger.LogError(ex,
+                "Error occurred while uploading images for draft with ID {DraftId}.",
+                createdDraft.Id);
             throw;
         }
 
         return (
-            teacherResults,
-            await imagesUploadingTask.ConfigureAwait(false),
-            await uploadingCoverImageTask.ConfigureAwait(false)
-        );
+            teacherUploadImagesResults.ToList(),
+            await workshopImagesUploadingTasks.ConfigureAwait(false),
+            await workshopUploadingCoverImageTask.ConfigureAwait(false));
+    }
+
+    private async Task UploadTeacherCoverImageAsync(
+        TeacherDraftCreateDto teacherDto,
+        TeacherDraft teacher,
+        ConcurrentBag<TeacherCreateUpdateResultDto> teacherResults,
+        SemaphoreSlim semaphore)
+    {
+        await semaphore.WaitAsync();
+        Result<string> uploadingResult = null;
+        try
+        {
+            if(teacherDto.CoverImage!= null)
+            {
+                uploadingResult = await teacherDraftImagesService
+               .AddCoverImageAsync(teacher, teacherDto.CoverImage);
+
+                if (uploadingResult.Succeeded)
+                {
+                    teacher.CoverImageId = uploadingResult.Value;
+                }
+            }
+           
+            teacherResults.Add(new TeacherCreateUpdateResultDto
+            {
+                Teacher = mapper.Map<TeacherDraftResponseDto>(teacher),
+                UploadingAvatarImageResult = uploadingResult
+            });
+        }
+        finally
+        {
+            semaphore.Release();
+        }
     }
 }

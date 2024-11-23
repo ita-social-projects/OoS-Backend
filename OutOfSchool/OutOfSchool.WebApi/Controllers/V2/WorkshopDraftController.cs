@@ -7,6 +7,9 @@ using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V2;
 
+/// <summary>
+/// Controller with CRUD operations for WorkshopDraft entity.
+/// </summary>
 [ApiController]
 [FeatureGate(nameof(Feature.Images))]
 [AspApiVersion(2)]
@@ -15,6 +18,12 @@ public class WorkshopDraftController : ControllerBase
 {
     private readonly IProviderService providerService;
     private readonly IWorkshopDraftService workshopDraftService;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WorkshopDraftController"/> class.
+    /// </summary>
+    /// <param name="providerService">Service for Provider model</param>
+    /// <param name="workshopDraftService">Service for WorkshopDraft model.</param>
 
     public WorkshopDraftController(
         IProviderService providerService,
@@ -47,16 +56,14 @@ public class WorkshopDraftController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Create([FromForm] WorkshopDraftCreateDto workshopDraftDto)
     {
-        if (!ValidateWorkshopDraft(workshopDraftDto, out IActionResult validationResult))
-        {
-            return validationResult;
-        }
-
         var providerValidationResult = await ValidateProvider(workshopDraftDto.ProviderId);
         if (providerValidationResult != null)
         {
             return providerValidationResult;
         }
+
+        // TODO: After implementing the new workshop model, add validation to check if the parent workshop is nested.
+        // A workshop must have only one level of nesting.
 
         var result = await workshopDraftService.Create(workshopDraftDto);
 
@@ -66,37 +73,15 @@ public class WorkshopDraftController : ControllerBase
             result);
     }
 
-    private bool ValidateWorkshopDraft(WorkshopDraftCreateDto draft,
-        out IActionResult validationResult)
-    {
-        validationResult = null;
-
-        if (draft == null)
-        {
-            validationResult = BadRequest("The workshop draft is null.");
-            return false;
-        }
-
-        if (draft.ActiveFrom > draft.ActiveTo)
-        {
-            ModelState.AddModelError("ActiveTo", "'ActiveFrom' must be earlier than 'ActiveTo'.");
-        }
-
-        if (!ModelState.IsValid)
-        {
-            validationResult = BadRequest(ModelState);
-            return false;
-        }
-
-        return true;
-    }
 
     private async Task<IActionResult> ValidateProvider(Guid providerId)
     {
         var provider = await providerService.GetById(providerId);
         if (provider == null)
         {
-            return BadRequest(new { Message = $"Provider with ID {providerId} not found." });
+            return StatusCode(
+                StatusCodes.Status400BadRequest,
+                new { Message = $"Provider with ID {providerId} not found." });
         }
 
         if (provider.IsBlocked)

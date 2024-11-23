@@ -10,11 +10,16 @@ public class WorkshopDraftMappingProfile : Profile
     // TODO: After implementing the new model for Workshops, use the Workshop DTO model instead of the WorkshopDraft DTO.
     public WorkshopDraftMappingProfile()
     {
+        // Nested entities that do not map to a database table
         CreateMap<WorkshopDescriptionItemDraftDto, WorkshopDescriptionItemDraft>()
             .ReverseMap();
 
         CreateMap<DateTimeRangeDraftDto, DateTimeRangeDraft>()
             .ReverseMap();
+
+        CreateMap<AddressDraftDto, AddressDraft>()
+       .ReverseMap();
+
 
         CreateMap<TeacherDraftCreateDto, TeacherDraft>()
             .ForMember(dest => dest.Images, opt => opt.Ignore())
@@ -24,16 +29,9 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.WorkshopDraftId, opt => opt.Ignore())
             .ForMember(dest => dest.Version, opt => opt.Ignore());
 
-        CreateMap<TeacherDraft, TeacherDraftResponseDto>()
-            ;
-
-        CreateMap<AddressDraftBaseDto, AddressDraft>();
-        CreateMap<AddressDraft, AddressDraftResponseDto>();
+        CreateMap<TeacherDraft, TeacherDraftResponseDto>();
 
         CreateMap<WorkshopDraftCreateDto, WorkshopDraftContent>();
-
-        CreateMap<WorkshopDraftContent, WorkshopDraftResponseDto>();
-
         CreateMap<WorkshopDraftCreateDto, WorkshopDraft>()
             .ForPath(dest => dest.WorkshopDraftContent, opt => opt.MapFrom(src => src))
             .ForPath(dest => dest.WorkshopDraftContent.TagsIds, opt => opt.MapFrom(src => src.TagsIds))
@@ -49,6 +47,7 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.Version, opt => opt.Ignore());
 
 
+        CreateMap<WorkshopDraftContent, WorkshopDraftResponseDto>();
         CreateMap<WorkshopDraft, WorkshopDraftResponseDto>()
             .IncludeMembers(src => src.WorkshopDraftContent)
             .ForMember(dest => dest.ImagesIds, opt => opt.MapFrom(

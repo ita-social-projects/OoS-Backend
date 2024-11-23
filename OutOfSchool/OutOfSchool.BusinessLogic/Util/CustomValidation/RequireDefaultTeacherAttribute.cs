@@ -6,11 +6,29 @@ public class RequireDefaultTeacherAttribute : ValidationAttribute
 {
     protected override ValidationResult IsValid(object value, ValidationContext validationContext)
     {
-        if (value is List<TeacherDraftCreateDto> teachers && teachers.Any(t => t.IsDefaultTeacher))
+        if (value is List<TeacherDraftCreateDto> teachers)
         {
-            return ValidationResult.Success;
+            if (!teachers.Any())
+            {
+                return new ValidationResult("The list of teachers cannot be empty. At least one teacher is required.");
+            }
+
+            var defaultTeachersCount = teachers.Count(t => t.IsDefaultTeacher);
+
+            if (defaultTeachersCount == 1)
+            {
+                return ValidationResult.Success;
+            }
+            else if (defaultTeachersCount == 0)
+            {
+                return new ValidationResult("At least one teacher must be marked as default.");
+            }
+            else
+            {
+                return new ValidationResult("Only one teacher can be marked as default.");
+            }
         }
 
-        return new ValidationResult("At least one teacher must be marked as default.");
+        return new ValidationResult("Invalid data format. Expected a list of teachers.");
     }
 }

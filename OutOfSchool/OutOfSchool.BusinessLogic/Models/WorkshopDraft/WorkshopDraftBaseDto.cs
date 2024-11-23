@@ -7,6 +7,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft;
+
+[DateOrder]
 public class WorkshopDraftBaseDto
 {
     [Required(ErrorMessage = "Children's min age is required")]
@@ -103,7 +105,7 @@ public class WorkshopDraftBaseDto
     public OwnershipType OwnershipType { get; set; }
 
     [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
-    public ProviderLicenseStatus? ProviderLicenseStatus { get; set; }
+    public ProviderLicenseStatus ProviderLicenseStatus { get; set; }
     public bool WithDisabilityOptions { get; set; }
 
     [MaxLength(Constants.DisabilityOptionsLength)]

@@ -54,7 +54,6 @@ public class TrackableEntityInterceptor : SaveChangesInterceptor
 
     private void SetProperties(EntityEntry entry)
     {
-        // TODO: Check why the value is not being initialized.
         var userId = currentUser?.UserId ?? string.Empty;
         var utcNow = DateTimeOffset.UtcNow;
 
