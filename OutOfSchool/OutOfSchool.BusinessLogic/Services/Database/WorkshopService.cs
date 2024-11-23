@@ -1201,10 +1201,12 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         dto.Teachers?.ToList().ForEach(e => e.Id = Guid.Empty);
         dto.DateTimeRanges?.ToList().ForEach(e => e.Id = default);
 
-        // If the DefaultTeacherId property of WorkshopBaseDto is incorrect, set it to the default value.
+        // If the DefaultTeacherId property of WorkshopBaseDto is incorrect, throw InvalidOperationException.
         if (dto.DefaultTeacherId is not null && !await teacherService.ExistsAsync((Guid)dto.DefaultTeacherId).ConfigureAwait(false))
         {
-            dto.DefaultTeacherId = default;
+            //dto.DefaultTeacherId = default;
+            var errorMessage = $"The default Teacher (with id = {dto.DefaultTeacherId}) for the workshop being created was not found.";
+            throw new InvalidOperationException(errorMessage);
         }
     }
 }
