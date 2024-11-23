@@ -110,7 +110,7 @@ public class WorkshopServiceTests
         SetupCreate(createdEntity, isMemberOfWorkshopIdExisted);
 
         // Act
-        var result = await workshopService.Create(mapper.Map<WorkshopCreateUpdateDto>(createdEntity)).ConfigureAwait(false);
+        var result = await workshopService.Create(mapper.Map<WorkshopCreateRequestDto>(createdEntity)).ConfigureAwait(false);
 
         // Assert
         workshopRepository.Verify(x => x.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()), Times.Once);
@@ -134,7 +134,7 @@ public class WorkshopServiceTests
         SetupCreate(createdEntity);
 
         // Act
-        var result = await workshopService.Create(mapper.Map<WorkshopCreateUpdateDto>(createdEntity)).ConfigureAwait(false);
+        var result = await workshopService.Create(mapper.Map<WorkshopCreateRequestDto>(createdEntity)).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -160,7 +160,7 @@ public class WorkshopServiceTests
         SetupCreate(createdEntity);
 
         // Act
-        var result = await workshopService.Create(mapper.Map<WorkshopCreateUpdateDto>(createdEntity)).ConfigureAwait(false);
+        var result = await workshopService.Create(mapper.Map<WorkshopCreateRequestDto>(createdEntity)).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -178,7 +178,7 @@ public class WorkshopServiceTests
         SetupCreate(createdEntity);
 
         // Act
-        var result = await workshopService.Create(mapper.Map<WorkshopCreateUpdateDto>(createdEntity)).ConfigureAwait(false);
+        var result = await workshopService.Create(mapper.Map<WorkshopCreateRequestDto>(createdEntity)).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -193,7 +193,7 @@ public class WorkshopServiceTests
         SetupCreate(createdEntity);
 
         // Act and Assert
-        await workshopService.Invoking(w => w.Create(mapper.Map<WorkshopCreateUpdateDto>(createdEntity)))
+        await workshopService.Invoking(w => w.Create(mapper.Map<WorkshopCreateRequestDto>(createdEntity)))
             .Should().ThrowAsync<NullReferenceException>();
     }
 
@@ -214,7 +214,7 @@ public class WorkshopServiceTests
         SetupCreate(createdEntity);
 
         // Act and Assert
-        await workshopService.Invoking(w => w.Create(mapper.Map<WorkshopCreateUpdateDto>(createdEntity)))
+        await workshopService.Invoking(w => w.Create(mapper.Map<WorkshopCreateRequestDto>(createdEntity)))
             .Should().ThrowAsync<InvalidOperationException>();
     }
 
@@ -229,7 +229,7 @@ public class WorkshopServiceTests
         SetupCreate(createdEntity, true);
 
         // Act and Assert
-        await workshopService.Invoking(w => w.Create(mapper.Map<WorkshopCreateUpdateDto>(createdEntity)))
+        await workshopService.Invoking(w => w.Create(mapper.Map<WorkshopCreateRequestDto>(createdEntity)))
             .Should().ThrowAsync<InvalidOperationException>();
     }
     #endregion
@@ -245,7 +245,7 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity, isMemberOfWorkshopIdExisted);
 
         // Act
-        var result = await workshopService.CreateV2(mapper.Map<WorkshopV2Dto>(createdEntity)).ConfigureAwait(false);
+        var result = await workshopService.CreateV2(mapper.Map<WorkshopV2CreateRequestDto>(createdEntity)).ConfigureAwait(false);
 
         // Assert
         workshopRepository.Verify(x => x.RunInTransaction(It.IsAny<Func<Task<(Workshop, MultipleImageUploadingResult, Result<string>)>>>()), Times.Once);
@@ -270,7 +270,9 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity);
 
         // Act
-        var result = await workshopService.CreateV2(mapper.Map<WorkshopV2Dto>(createdEntity)).ConfigureAwait(false);
+        var temp = mapper.Map<WorkshopV2CreateRequestDto>(createdEntity);
+
+        var result = await workshopService.CreateV2(mapper.Map<WorkshopV2CreateRequestDto>(createdEntity)).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -297,7 +299,7 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity);
 
         // Act
-        var result = await workshopService.CreateV2(mapper.Map<WorkshopV2Dto>(createdEntity)).ConfigureAwait(false);
+        var result = await workshopService.CreateV2(mapper.Map<WorkshopV2CreateRequestDto>(createdEntity)).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -315,7 +317,7 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity);
 
         // Act
-        var result = await workshopService.CreateV2(mapper.Map<WorkshopV2Dto>(createdEntity)).ConfigureAwait(false);
+        var result = await workshopService.CreateV2(mapper.Map<WorkshopV2CreateRequestDto>(createdEntity)).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -330,7 +332,7 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity);
 
         // Act and Assert
-        await workshopService.Invoking(w => w.CreateV2(mapper.Map<WorkshopV2Dto>(createdEntity)))
+        await workshopService.Invoking(w => w.CreateV2(mapper.Map<WorkshopV2CreateRequestDto>(createdEntity)))
             .Should().ThrowAsync<NullReferenceException>();
     }
 
@@ -351,7 +353,7 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity);
 
         // Act and Assert
-        await workshopService.Invoking(w => w.CreateV2(mapper.Map<WorkshopV2Dto>(createdEntity)))
+        await workshopService.Invoking(w => w.CreateV2(mapper.Map<WorkshopV2CreateRequestDto>(createdEntity)))
             .Should().ThrowAsync<InvalidOperationException>();
     }
 
@@ -366,7 +368,7 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity, true);
 
         // Act and Assert
-        await workshopService.Invoking(w => w.CreateV2(mapper.Map<WorkshopV2Dto>(createdEntity)))
+        await workshopService.Invoking(w => w.CreateV2(mapper.Map<WorkshopV2CreateRequestDto>(createdEntity)))
             .Should().ThrowAsync<InvalidOperationException>();
     }
 
@@ -376,7 +378,7 @@ public class WorkshopServiceTests
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         SetupCreateV2(createdEntity, true, numberOfImages);
-        var dto = mapper.Map<WorkshopV2Dto>(createdEntity);
+        var dto = mapper.Map<WorkshopV2CreateRequestDto>(createdEntity);
         var file = new Mock<IFormFile>().Object;
         dto.ImageFiles = new List<IFormFile>();
         for (int i = 1; i <= numberOfImages; i++)
@@ -399,7 +401,7 @@ public class WorkshopServiceTests
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         SetupCreateV2(createdEntity, true);
-        var dto = mapper.Map<WorkshopV2Dto>(createdEntity);
+        var dto = mapper.Map<WorkshopV2CreateRequestDto>(createdEntity);
         var file = new Mock<IFormFile>().Object;
 
         // Act
@@ -417,7 +419,7 @@ public class WorkshopServiceTests
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         SetupCreateV2(createdEntity);
-        var dto = mapper.Map<WorkshopV2Dto>(createdEntity);
+        var dto = mapper.Map<WorkshopV2CreateRequestDto>(createdEntity);
         var file = new Mock<IFormFile>().Object;
         dto.CoverImage = file;
 
@@ -435,7 +437,7 @@ public class WorkshopServiceTests
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         SetupCreateV2(createdEntity);
-        var dto = mapper.Map<WorkshopV2Dto>(createdEntity);
+        var dto = mapper.Map<WorkshopV2CreateRequestDto>(createdEntity);
 
         // Act
         var result = await workshopService.CreateV2(dto).ConfigureAwait(false);
@@ -989,7 +991,7 @@ public class WorkshopServiceTests
     #region Setup
     private void SetupCreate(Workshop workshop, bool isMemberOfWorkshopIdExisted = false)
     {
-        var workshopCreateUpdateDto = mapper.Map<WorkshopCreateUpdateDto>(workshop);
+        var workshopCreateUpdateDto = mapper.Map<WorkshopCreateRequestDto>(workshop);
         var workshopDto = mapper.Map<WorkshopDto>(workshop);
 
         if (workshopCreateUpdateDto.AvailableSeats is 0)
@@ -998,11 +1000,11 @@ public class WorkshopServiceTests
             workshopDto.AvailableSeats = uint.MaxValue;
         }
 
-        mapperMock.Setup(m => m.Map<WorkshopCreateUpdateDto>(workshop))
+        mapperMock.Setup(m => m.Map<WorkshopCreateRequestDto>(workshop))
             .Returns(workshopCreateUpdateDto);
         mapperMock.Setup(m => m.Map<WorkshopDto>(workshop))
             .Returns(workshopDto);
-        mapperMock.Setup(m => m.Map<Workshop>(It.IsAny<WorkshopCreateUpdateDto>()))
+        mapperMock.Setup(m => m.Map<Workshop>(It.IsAny<WorkshopCreateRequestDto>()))
             .Returns(mapper.Map<Workshop>(workshopCreateUpdateDto));
 
         providerRepositoryMock.Setup(p => p.GetById(It.IsAny<Guid>()))
@@ -1019,19 +1021,22 @@ public class WorkshopServiceTests
 
     private void SetupCreateV2(Workshop workshop, bool isMemberOfWorkshopIdExisted = false, int numberOfImages = 0)
     {
-        var dto = mapper.Map<WorkshopV2Dto>(workshop);
+        var workshopV2CreateRequestDto = mapper.Map<WorkshopV2CreateRequestDto>(workshop);
+        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
 
-        if (dto.AvailableSeats is 0)
+        if (workshopV2Dto.AvailableSeats is 0)
         {
-            dto.AvailableSeats = uint.MaxValue;
+            workshopV2Dto.AvailableSeats = uint.MaxValue;
         }
 
+        mapperMock.Setup(m => m.Map<WorkshopV2CreateRequestDto>(workshop))
+           .Returns(workshopV2CreateRequestDto);
+        mapperMock.Setup(m => m.Map<Workshop>(It.IsAny<WorkshopV2CreateRequestDto>()))
+            .Returns(mapper.Map<Workshop>(workshopV2CreateRequestDto));
         mapperMock.Setup(m => m.Map<WorkshopV2Dto>(workshop))
-            .Returns(dto);
-        mapperMock.Setup(m => m.Map<WorkshopDto>(workshop))
-            .Returns(dto);
+            .Returns(workshopV2Dto);
         mapperMock.Setup(m => m.Map<Workshop>(It.IsAny<WorkshopV2Dto>()))
-            .Returns(mapper.Map<Workshop>(dto));
+            .Returns(mapper.Map<Workshop>(workshopV2Dto));
 
         if (isMemberOfWorkshopIdExisted)
         {

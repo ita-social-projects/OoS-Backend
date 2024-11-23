@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AutoMapper;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -20,8 +21,11 @@ using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
 
@@ -39,8 +43,8 @@ public class WorkshopControllerTests
     private static List<WorkshopDto> workshops;
     private static List<WorkshopCard> workshopCards;
     private static WorkshopDto workshop;
-    private static WorkshopCreateUpdateDto workshopCreateDto;
     private static WorkshopCreateUpdateDto workshopUpdateDto;
+    private static WorkshopCreateRequestDto workshopCreateRequestDto;
     private static ProviderDto provider;
     private static Mock<IOptions<AppDefaultsConfig>> options;
 
@@ -52,6 +56,7 @@ public class WorkshopControllerTests
     private Mock<IUserService> userServiceMoq;
     private Mock<ILogger<WorkshopController>> loggerMoq;
     private Mock<HttpContext> httpContextMoq;
+    private IMapper mapper;
 
     private string userId;
     private List<WorkshopBaseCard> workshopBaseCards;
@@ -67,17 +72,19 @@ public class WorkshopControllerTests
             .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
         httpContextMoq.Setup(x => x.User.IsInRole("provider"))
             .Returns(true);
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
 
         workshops = WorkshopDtoGenerator.Generate(5);
         workshop = WorkshopDtoGenerator.Generate();
-        workshopCreateDto = WorkshopCreateUpdateDtoGenerator.Generate();
         workshopUpdateDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        workshopCreateRequestDto = mapper.Map<WorkshopCreateRequestDto>(WorkshopGenerator.Generate());
         provider = ProviderDtoGenerator.Generate();
         workshopCards = WorkshopCardGenerator.Generate(5);
         workshopBaseCards = WorkshopBaseCardGenerator.Generate(5);
         workshopShortEntitiesList = ShortEntityDtoGenerator.Generate(10);
         workshopProviderViewCardList = WorkshopProviderViewCardGenerator.Generate(5);
 
+        workshopCreateRequestDto.ProviderId = provider.Id;
         var config = new AppDefaultsConfig();
         config.City = "Київ";
         options = new Mock<IOptions<AppDefaultsConfig>>();
@@ -630,8 +637,6 @@ public class WorkshopControllerTests
     public async Task CreateWorkshop_WhenModelIsValid_ShouldReturnCreatedAtActionResult()
     {
         // Arrange
-        workshopCreateDto.ProviderId = provider.Id;
-
         providerServiceMoq.Setup(x => x.GetProviderIdForWorkshopById(It.IsAny<Guid>()))
             .ReturnsAsync(provider.Id).Verifiable(Times.Never);
         providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>()))
@@ -640,11 +645,11 @@ public class WorkshopControllerTests
             .ReturnsAsync(false).Verifiable(Times.Once);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
             .ReturnsAsync(provider).Verifiable(Times.Exactly(2));
-        workshopServiceMoq.Setup(x => x.Create(workshopCreateDto))
+        workshopServiceMoq.Setup(x => x.Create(workshopCreateRequestDto))
             .ReturnsAsync(workshop).Verifiable(Times.Once);
 
         // Act
-        var result = await controller.Create(workshopCreateDto).ConfigureAwait(false) as CreatedAtActionResult;
+        var result = await controller.Create(workshopCreateRequestDto).ConfigureAwait(false) as CreatedAtActionResult;
 
         // Assert
         providerServiceMoq.VerifyAll();
@@ -658,7 +663,7 @@ public class WorkshopControllerTests
     public async Task CreateWorkshop_WhenDtoIsNull_ShouldReturnBadRequestObjectResult()
     {
         // Arrange
-        var workshopCreateDto = (WorkshopCreateUpdateDto)null;
+        var workshopCreateDto = (WorkshopCreateRequestDto)null;
 
         providerServiceMoq.Setup(x => x.GetProviderIdForWorkshopById(It.IsAny<Guid>()))
             .ReturnsAsync(provider.Id).Verifiable(Times.Never);
@@ -668,7 +673,7 @@ public class WorkshopControllerTests
             .ReturnsAsync(false).Verifiable(Times.Never);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
             .ReturnsAsync(provider).Verifiable(Times.Never);
-        workshopServiceMoq.Setup(x => x.Create(It.IsAny<WorkshopCreateUpdateDto>()))
+        workshopServiceMoq.Setup(x => x.Create(It.IsAny<WorkshopCreateRequestDto>()))
             .ReturnsAsync(workshop).Verifiable(Times.Never);
 
         // Act
@@ -694,11 +699,11 @@ public class WorkshopControllerTests
             .ReturnsAsync(false).Verifiable(Times.Never);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
             .ReturnsAsync(provider).Verifiable(Times.Never);
-        workshopServiceMoq.Setup(x => x.Create(It.IsAny<WorkshopCreateUpdateDto>()))
+        workshopServiceMoq.Setup(x => x.Create(It.IsAny<WorkshopCreateRequestDto>()))
             .ReturnsAsync(workshop).Verifiable(Times.Never);
 
         // Act
-        var result = await controller.Create(workshopCreateDto) as ObjectResult;
+        var result = await controller.Create(workshopCreateRequestDto) as ObjectResult;
 
         // Assert
         providerServiceMoq.VerifyAll();
@@ -720,11 +725,11 @@ public class WorkshopControllerTests
             .ReturnsAsync(true).Verifiable(Times.Once);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
             .ReturnsAsync(provider).Verifiable(Times.Never);
-        workshopServiceMoq.Setup(x => x.Create(It.IsAny<WorkshopCreateUpdateDto>()))
+        workshopServiceMoq.Setup(x => x.Create(It.IsAny<WorkshopCreateRequestDto>()))
             .ReturnsAsync(workshop).Verifiable(Times.Never);
 
         // Act
-        var result = await controller.Create(workshopCreateDto) as ObjectResult;
+        var result = await controller.Create(workshopCreateRequestDto) as ObjectResult;
 
         // Assert
         providerServiceMoq.VerifyAll();
@@ -748,11 +753,11 @@ public class WorkshopControllerTests
             .ReturnsAsync(false).Verifiable(Times.Once);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
             .ReturnsAsync(provider).Verifiable(Times.Never);
-        workshopServiceMoq.Setup(x => x.Create(workshopCreateDto))
+        workshopServiceMoq.Setup(x => x.Create(workshopCreateRequestDto))
             .ReturnsAsync(workshop).Verifiable(Times.Never);
 
         // Act
-        var result = await controller.Create(workshopCreateDto).ConfigureAwait(false) as BadRequestObjectResult;
+        var result = await controller.Create(workshopCreateRequestDto).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert
         providerServiceMoq.VerifyAll();
@@ -776,11 +781,11 @@ public class WorkshopControllerTests
             .ReturnsAsync(false).Verifiable(Times.Once);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
             .ReturnsAsync(notAuthorProvider).Verifiable(Times.Once);
-        workshopServiceMoq.Setup(x => x.Create(workshopCreateDto))
+        workshopServiceMoq.Setup(x => x.Create(workshopCreateRequestDto))
             .ReturnsAsync(workshop).Verifiable(Times.Never);
 
         // Act
-        var result = await controller.Create(workshopCreateDto) as ObjectResult;
+        var result = await controller.Create(workshopCreateRequestDto) as ObjectResult;
 
         // Assert
         providerServiceMoq.VerifyAll();
@@ -794,8 +799,6 @@ public class WorkshopControllerTests
     public async Task CreateWorkshop_WhenModelHasInvalidMemberOfWorkshopId_ShouldReturnBadRequestObjectResult()
     {
         // Arrange
-        workshopCreateDto.ProviderId = provider.Id;
-
         providerServiceMoq.Setup(x => x.GetProviderIdForWorkshopById(It.IsAny<Guid>()))
             .ReturnsAsync(provider.Id).Verifiable(Times.Never);
         providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>()))
@@ -804,11 +807,11 @@ public class WorkshopControllerTests
             .ReturnsAsync(false).Verifiable(Times.Once);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
             .ReturnsAsync(provider).Verifiable(Times.Once);
-        workshopServiceMoq.Setup(x => x.Create(workshopCreateDto)).
+        workshopServiceMoq.Setup(x => x.Create(workshopCreateRequestDto)).
             ThrowsAsync(new InvalidOperationException(It.IsAny<string>())).Verifiable(Times.Once);
 
         // Act
-        var result = await controller.Create(workshopCreateDto).ConfigureAwait(false) as BadRequestObjectResult;
+        var result = await controller.Create(workshopCreateRequestDto).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert
         providerServiceMoq.VerifyAll();
@@ -822,7 +825,6 @@ public class WorkshopControllerTests
     public async Task CreateWorkshop_WhenUserProvidersOwnerOrAdmin_ShouldCallGiveAssistantAccessToWorkshopOnce()
     {
         // Arrange
-        workshopCreateDto.ProviderId = provider.Id;
         var workshopReturnedDto = WorkshopDtoGenerator.Generate();
         workshopReturnedDto.Id = Guid.Empty;
         workshopReturnedDto.ProviderId = provider.Id;
@@ -835,7 +837,7 @@ public class WorkshopControllerTests
             .ReturnsAsync(false).Verifiable(Times.Once);
         providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
             .ReturnsAsync((ProviderDto)null).Verifiable(Times.Exactly(2));
-        workshopServiceMoq.Setup(x => x.Create(workshopCreateDto))
+        workshopServiceMoq.Setup(x => x.Create(workshopCreateRequestDto))
             .ReturnsAsync(workshopReturnedDto).Verifiable(Times.Once);
 
         int n = 0;
@@ -845,7 +847,7 @@ public class WorkshopControllerTests
             .Verifiable(Times.Once);
 
         // Act
-        var result = await controller.Create(workshopCreateDto).ConfigureAwait(false) as CreatedAtActionResult;
+        var result = await controller.Create(workshopCreateRequestDto).ConfigureAwait(false) as CreatedAtActionResult;
 
         // Assert
         providerAdminService.VerifyAll();
@@ -1053,7 +1055,7 @@ public class WorkshopControllerTests
         var result = await controller.UpdateStatus(workShopStatusDto) as ObjectResult;
 
         // Assert
-        workshopServiceMoq.Verify(x => x.Create(workshopCreateDto), Times.Never);
+        workshopServiceMoq.Verify(x => x.Create(workshopCreateRequestDto), Times.Never);
         Assert.IsNotNull(result);
         Assert.AreEqual(Forbidden, result.StatusCode);
     }

@@ -8,6 +8,8 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
@@ -15,6 +17,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -24,6 +27,7 @@ public class WorkshopServicesCombinerV2Tests
     private Mock<IWorkshopService> workshopService;
     private Mock<IElasticsearchSynchronizationService> elasticsearchSynchronizationService;
     private IWorkshopServicesCombinerV2 service;
+    private IMapper mapper;
 
     [SetUp]
     public void SetUp()
@@ -39,7 +43,7 @@ public class WorkshopServicesCombinerV2Tests
         var regionAdminService = new Mock<IRegionAdminService>();
         var codeficatorService = new Mock<ICodeficatorService>();
         var esProvider = new Mock<IElasticsearchProvider<WorkshopES, WorkshopFilterES>>();
-        var mapper = new Mock<IMapper>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
 
         service = new WorkshopServicesCombinerV2(
             workshopService.Object,
@@ -53,7 +57,7 @@ public class WorkshopServicesCombinerV2Tests
             regionAdminService.Object,
             codeficatorService.Object,
             esProvider.Object,
-            mapper.Object);
+            mapper);
     }
 
     #region Create
@@ -61,14 +65,16 @@ public class WorkshopServicesCombinerV2Tests
     public async Task Create_WithValidDto_ShouldReturnSucceededResult()
     {
         // Arrange
-        var newWorkshopV2Dto = WorkshopV2DtoGenerator.Generate();
-        newWorkshopV2Dto.AvailableSeats = 8;
+        var createdWorkshop = WorkshopGenerator.Generate();
+        var workshopV2CreateRequestDto = mapper.Map<WorkshopV2CreateRequestDto>(createdWorkshop);
+        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(createdWorkshop);
+        workshopV2Dto.AvailableSeats = 8;
         var workshopResultDto = new WorkshopResultDto()
         {
-            Workshop = newWorkshopV2Dto,
+            Workshop = workshopV2Dto,
         };
 
-        workshopService.Setup(x => x.CreateV2(newWorkshopV2Dto))
+        workshopService.Setup(x => x.CreateV2(workshopV2CreateRequestDto))
             .ReturnsAsync(workshopResultDto).Verifiable(Times.Once);
         elasticsearchSynchronizationService.Setup(
             x => x.AddNewRecordToElasticsearchSynchronizationTable(
@@ -78,7 +84,7 @@ public class WorkshopServicesCombinerV2Tests
             .Returns(Task.CompletedTask).Verifiable(Times.Once);
 
         // Act
-        var result = await service.Create(newWorkshopV2Dto).ConfigureAwait(false);
+        var result = await service.Create(workshopV2CreateRequestDto).ConfigureAwait(false);
 
         // Assert
         workshopService.VerifyAll();
@@ -91,8 +97,8 @@ public class WorkshopServicesCombinerV2Tests
     public void Create_WithNotExistWorkshop_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        var newWorkshopBaseDto = (WorkshopV2Dto)null;
-        workshopService.Setup(x => x.CreateV2(newWorkshopBaseDto))
+        var workshopV2CreateRequestDto = (WorkshopV2CreateRequestDto)null;
+        workshopService.Setup(x => x.CreateV2(workshopV2CreateRequestDto))
             .ThrowsAsync(new ArgumentNullException()).Verifiable(Times.Once);
         elasticsearchSynchronizationService.Setup(
             x => x.AddNewRecordToElasticsearchSynchronizationTable(
@@ -101,7 +107,7 @@ public class WorkshopServicesCombinerV2Tests
                 ElasticsearchSyncOperation.Create)).Verifiable(Times.Never);
 
         // Act and Assert
-        Assert.ThrowsAsync<ArgumentNullException>(async () => await service.Create(newWorkshopBaseDto));
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await service.Create(workshopV2CreateRequestDto));
         workshopService.VerifyAll();
         elasticsearchSynchronizationService.VerifyAll();
     }

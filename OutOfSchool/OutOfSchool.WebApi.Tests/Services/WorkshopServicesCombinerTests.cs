@@ -114,33 +114,35 @@ public class WorkshopServicesCombinerTests
     public async Task Create_WithValidDto_ShouldReturnSucceededResult()
     {
         // Arrange
-        var newWorkshopBaseDto = WorkshopDtoGenerator.Generate();
-        newWorkshopBaseDto.AvailableSeats = 10;
+        var createdWorkshop = WorkshopGenerator.Generate();
+        var workshopCreateRequestDto = mapper.Map<WorkshopCreateRequestDto>(createdWorkshop);
+        var workshopDto = mapper.Map<WorkshopDto>(createdWorkshop);
+        workshopDto.AvailableSeats = 10;
 
-        workshopService.Setup(x => x.Create(newWorkshopBaseDto))
-            .ReturnsAsync(newWorkshopBaseDto).Verifiable(Times.Once);
+        workshopService.Setup(x => x.Create(workshopCreateRequestDto))
+            .ReturnsAsync(workshopDto).Verifiable(Times.Once);
         elasticsearchSynchronizationService.Setup(
             x => x.AddNewRecordToElasticsearchSynchronizationTable(
                 ElasticsearchSyncEntity.Workshop,
-                newWorkshopBaseDto.Id,
+                workshopDto.Id,
                 ElasticsearchSyncOperation.Create)).Verifiable(Times.Once);
 
         // Act
-        var result = await service.Create(newWorkshopBaseDto).ConfigureAwait(false);
+        var result = await service.Create(workshopCreateRequestDto).ConfigureAwait(false);
 
         // Assert
         workshopService.VerifyAll();
         elasticsearchSynchronizationService.VerifyAll();
         Assert.IsNotNull(result);
-        Assert.AreEqual(newWorkshopBaseDto, result);
+        Assert.AreEqual(workshopDto, result);
     }
 
     [Test]
     public void Create_WithNotExistedWorkshop_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        var newWorkshopBaseDto = (WorkshopCreateUpdateDto)null;
-        workshopService.Setup(x => x.Create(newWorkshopBaseDto))
+        var workshopCreateRequestDto = (WorkshopCreateRequestDto)null;
+        workshopService.Setup(x => x.Create(workshopCreateRequestDto))
             .ThrowsAsync(new ArgumentNullException()).Verifiable(Times.Once);
         elasticsearchSynchronizationService.Setup(
             x => x.AddNewRecordToElasticsearchSynchronizationTable(
@@ -149,7 +151,7 @@ public class WorkshopServicesCombinerTests
                 ElasticsearchSyncOperation.Create)).Verifiable(Times.Never);
 
         // Act and Assert
-        Assert.ThrowsAsync<ArgumentNullException>(async () => await service.Create(newWorkshopBaseDto));
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await service.Create(workshopCreateRequestDto));
         workshopService.VerifyAll();
         elasticsearchSynchronizationService.VerifyAll();
     }
