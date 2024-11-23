@@ -90,11 +90,7 @@ public class WorkshopCreateRequestDto : IValidatableObject
 
     public Guid? InstitutionId { get; set; }
 
-    //public string Institution { get; set; }
-
     public Guid? InstitutionHierarchyId { get; set; }
-
-    //public string InstitutionHierarchy { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public TeacherDTO DefaultTeacher { get; set; }
