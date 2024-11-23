@@ -110,7 +110,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentNullException">If <see cref="WorkshopCreateUpdateDto"/> is null.</exception>
-    public async Task<WorkshopDto> Create(WorkshopCreateUpdateDto dto)
+    public async Task<WorkshopDto> Create(WorkshopCreateRequestDto dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
@@ -133,7 +133,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <exception cref="ArgumentNullException">If <see cref="WorkshopDto"/> is null.</exception>
     /// <exception cref="InvalidOperationException">If unreal to map teachers.</exception>
     /// <exception cref="DbUpdateException">If unreal to update entity.</exception>
-    public async Task<WorkshopResultDto> CreateV2(WorkshopV2Dto dto)
+    public async Task<WorkshopResultDto> CreateV2(WorkshopV2CreateRequestDto dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
@@ -1141,7 +1141,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         }
     }
 
-    private async Task<Workshop> CheckDtoAndPrepareCreatedWorkshop(WorkshopCreateUpdateDto dto)
+    private async Task<Workshop> CheckDtoAndPrepareCreatedWorkshop(WorkshopCreateRequestDto dto)
     {
         if (dto.MemberOfWorkshopId.HasValue && !await Exists((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false))
         {
@@ -1158,7 +1158,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         dto.AvailableSeats = dto.AvailableSeats.GetMaxValueIfNullOrZero();
         Workshop createdWorkshop;
 
-        if (dto is WorkshopV2Dto v2Dto)
+        if (dto is WorkshopV2CreateRequestDto v2Dto)
         {
             createdWorkshop = mapper.Map<Workshop>(v2Dto);
         }
@@ -1183,7 +1183,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         return createdWorkshop;
     }
 
-    private async Task SetIdsToDefaultValue(WorkshopCreateUpdateDto dto)
+    private async Task SetIdsToDefaultValue(WorkshopCreateRequestDto dto)
     {
         dto.Id = Guid.Empty;
 
@@ -1197,15 +1197,9 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             dto.DefaultTeacher.Id = Guid.Empty;
         }
 
-        if (dto.MemberOfWorkshop is not null)
-        {
-            dto.MemberOfWorkshop.Id = Guid.Empty;
-        }
-
         dto.WorkshopDescriptionItems?.ToList().ForEach(e => e.Id = Guid.Empty);
         dto.Teachers?.ToList().ForEach(e => e.Id = Guid.Empty);
         dto.DateTimeRanges?.ToList().ForEach(e => e.Id = default);
-        dto.IncludedStudyGroups?.ToList().ForEach(e => e.Id = Guid.Empty);
 
         // If the DefaultTeacherId property of WorkshopBaseDto is incorrect, set it to the default value.
         if (dto.DefaultTeacherId is not null && !await teacherService.ExistsAsync((Guid)dto.DefaultTeacherId).ConfigureAwait(false))

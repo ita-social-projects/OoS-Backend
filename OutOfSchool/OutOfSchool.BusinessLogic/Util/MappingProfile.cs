@@ -97,6 +97,62 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProviderTitle, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderTitleEn, opt => opt.Ignore());
 
+        CreateSoftDeletedMap<WorkshopCreateRequestDto, Workshop>()
+            .ForMember(
+                dest => dest.Keywords,
+                opt => opt.MapFrom(src => string.Join(Constants.MappingSeparator, src.Keywords.Distinct())))
+            .ForMember(dest => dest.DateTimeRanges, opt => opt.MapFrom((dto, entity, dest, ctx) =>
+            {
+                var dateTimeRanges = ctx.Mapper.Map<List<DateTimeRange>>(dto.DateTimeRanges);
+                if (dest is { } && dest.Any())
+                {
+                    var dtoTimeRangesHs =
+                        new HashSet<DateTimeRange>(dateTimeRanges, new DateTimeRangeComparerWithoutFK());
+                    foreach (var destDateTimeRange in dest)
+                    {
+                        if (dtoTimeRangesHs.Remove(destDateTimeRange))
+                        {
+                            dtoTimeRangesHs.Add(destDateTimeRange);
+                        }
+                    }
+
+                    return dtoTimeRangesHs.ToList();
+                }
+
+                return dateTimeRanges;
+            }))
+
+            .ForMember(dest => dest.Teachers, opt => opt.Ignore())
+            .ForMember(dest => dest.Provider, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
+            .ForMember(dest => dest.Applications, opt => opt.Ignore())
+            .ForMember(dest => dest.ChatRooms, opt => opt.Ignore())
+            //.ForMember(dest => dest.Images, opt => opt.Ignore())
+            //.ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+            //.ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
+            //.ForMember(dest => dest.Status, opt => opt.Ignore())
+            //.ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
+            //.ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore())
+            .ForMember(dest => dest.Document, opt => opt.Ignore())
+            .ForMember(dest => dest.File, opt => opt.Ignore())
+            .ForMember(dest => dest.IsSystemProtected, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
+            .ForMember(dest => dest.Tags, opt => opt.Ignore());
+        //.ForMember(dest => dest.MemberOfWorkshop, opt => opt.Ignore())
+        //.ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore())
+        //.ForMember(dest => dest.ProviderTitle, opt => opt.Ignore())
+        //.ForMember(dest => dest.ProviderTitleEn, opt => opt.Ignore());
+
+        CreateMap<WorkshopV2CreateRequestDto, Workshop>()
+            .IncludeBase<WorkshopCreateRequestDto, Workshop>()
+            .ForMember(dest => dest.Images, opt => opt.Ignore())
+            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore());
+
         CreateMap<Workshop, WorkshopDto>()
             .IncludeBase<Workshop, WorkshopBaseDto>()
             .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats()))

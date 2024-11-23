@@ -15,7 +15,7 @@ public interface IWorkshopServicesCombiner
     /// </summary>
     /// <param name="dto">Entity to add.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopCreateUpdateDto"/>.</returns>
-    Task<WorkshopDto> Create(WorkshopCreateUpdateDto dto);
+    Task<WorkshopDto> Create(WorkshopCreateRequestDto dto);
 
     /// <summary>
     /// Get all workshop cards (Id, Title) with the specified provider's Id.

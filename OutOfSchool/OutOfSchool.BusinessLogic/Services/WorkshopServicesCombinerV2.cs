@@ -39,7 +39,7 @@ public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopSer
     {
     }
 
-    public async Task<WorkshopResultDto> Create(WorkshopV2Dto dto)
+    public async Task<WorkshopResultDto> Create(WorkshopV2CreateRequestDto dto)
     {
         var creationResult = await workshopService.CreateV2(dto).ConfigureAwait(false);
 

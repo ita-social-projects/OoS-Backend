@@ -56,7 +56,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopDto> Create(WorkshopCreateUpdateDto dto)
+    public async Task<WorkshopDto> Create(WorkshopCreateRequestDto dto)
     {
         var workshop = await workshopService.Create(dto).ConfigureAwait(false);
 

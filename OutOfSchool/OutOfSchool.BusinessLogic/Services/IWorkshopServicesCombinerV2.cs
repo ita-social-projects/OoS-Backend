@@ -10,7 +10,7 @@ public interface IWorkshopServicesCombinerV2 : IWorkshopServicesCombiner
     /// </summary>
     /// <param name="dto">Entity to add.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopResultDto"/>.</returns>
-    new Task<WorkshopResultDto> Create(WorkshopV2Dto dto);
+    Task<WorkshopResultDto> Create(WorkshopV2CreateRequestDto dto);
 
     /// <summary>
     /// Update existing entity in the database.
@@ -22,7 +22,7 @@ public interface IWorkshopServicesCombinerV2 : IWorkshopServicesCombiner
     /// contains the updated <see cref="WorkshopResultDto"/>.
     /// If the operation fails, the <see cref="Result{WorkshopResultDto}.OperationResult"/> property
     /// contains error information.</returns>
-    new Task<Result<WorkshopResultDto>> Update(WorkshopV2Dto dto);
+    Task<Result<WorkshopResultDto>> Update(WorkshopV2Dto dto);
 
     /// <summary>
     ///  Delete entity.

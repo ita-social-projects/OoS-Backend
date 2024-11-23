@@ -159,7 +159,7 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Create([FromForm] WorkshopV2Dto dto)
+    public async Task<IActionResult> Create([FromForm] WorkshopV2CreateRequestDto dto)
     {
         if (dto == null)
         {

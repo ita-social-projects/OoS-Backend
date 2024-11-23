@@ -13,14 +13,14 @@ public interface IWorkshopService
     /// </summary>
     /// <param name="dto">Entity to add.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopDto"/>.</returns>
-    Task<WorkshopDto> Create(WorkshopCreateUpdateDto dto);
+    Task<WorkshopDto> Create(WorkshopCreateRequestDto dto);
 
     /// <summary>
     /// Add entity to the database.
     /// </summary>
     /// <param name="dto">Entity to add.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopResultDto"/>.</returns>
-    Task<WorkshopResultDto> CreateV2(WorkshopV2Dto dto);
+    Task<WorkshopResultDto> CreateV2(WorkshopV2CreateRequestDto dto);
 
     /// <summary>
     /// Check if entity is exists by it's key.

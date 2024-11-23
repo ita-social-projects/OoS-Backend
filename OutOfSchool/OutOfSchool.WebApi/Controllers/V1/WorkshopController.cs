@@ -270,7 +270,7 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] WorkshopCreateUpdateDto dto)
+    public async Task<IActionResult> Create([FromBody] WorkshopCreateRequestDto dto)
     {
         if (dto == null)
         {
