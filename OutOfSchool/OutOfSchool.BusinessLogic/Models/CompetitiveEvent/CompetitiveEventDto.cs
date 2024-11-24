@@ -40,6 +40,8 @@ public class CompetitiveEventDto
 
     public Guid ChiefJudgeId { get; set; }
 
+    //public JudgeDto ChiefJudge { get; set; }
+
     public List<CompetitiveEventDescriptionItemDto> CompetitiveEventDescriptionItems { get; set; }
 
     [MaxLength(2000)]

@@ -11,6 +11,6 @@ internal class CompetitiveEventConfiguration : IEntityTypeConfiguration<Competit
     {
         builder.ConfigureKeyedSoftDeleted<Guid, CompetitiveEvent>();
 
-        builder.HasOne(x => x.ChiefJudge).WithOne(x => x.CompetitiveEvent);
+        //builder.HasOne(x => x.ChiefJudge).WithOne(x => x.CompetitiveEvent);
     }
 }

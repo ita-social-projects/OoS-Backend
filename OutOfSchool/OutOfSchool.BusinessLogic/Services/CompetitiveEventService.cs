@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
+//using Elastic.Clients.Elasticsearch;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
+using OutOfSchool.BusinessLogic.Models.Judge;
+//using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Base.Api;
 
@@ -19,13 +22,13 @@ public class CompetitiveEventService : ICompetitiveEventService
 
     public CompetitiveEventService(
         IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> competitiveEventRepository,
-        // IEntityRepository<Guid, Judge> judgeRepository,
+        IEntityRepository<Guid, Judge> judgeRepository, // ????
         ILogger<CompetitiveEventService> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper)
     {
         this.competitiveEventRepository = competitiveEventRepository ?? throw new ArgumentNullException(nameof(competitiveEventRepository));
-        // this.judgeRepository = judgeRepository ?? throw new ArgumentNullException(nameof(judgeRepository));
+        this.judgeRepository = judgeRepository ?? throw new ArgumentNullException(nameof(judgeRepository)); // ????
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -51,7 +54,12 @@ public class CompetitiveEventService : ICompetitiveEventService
     {
         logger.LogTrace("CompetitiveEvent creating was started.");
 
+        ArgumentNullException.ThrowIfNull(dto);
+
         var competitiveEvent = mapper.Map<CompetitiveEvent>(dto);
+
+        competitiveEvent.Judges = dto.Judges?.Select(dtoJudges => mapper.Map<Judge>(dtoJudges)).ToList();
+       // competitiveEvent.ChiefJudge = mapper.Map<Judge>(dto.ChiefJudge); //
 
         var newCompetitiveEvent = await competitiveEventRepository.Create(competitiveEvent).ConfigureAwait(false);
 
@@ -76,7 +84,10 @@ public class CompetitiveEventService : ICompetitiveEventService
             throw new DbUpdateConcurrencyException(message);
         }
 
+        await ChangeJudges(competitiveEvent, dto.Judges ?? new List<JudgeDto>()).ConfigureAwait(false);
+
         mapper.Map(dto, competitiveEvent);
+
         competitiveEvent = await competitiveEventRepository.Update(competitiveEvent).ConfigureAwait(false);
 
         logger.LogTrace($"CompetitiveEvent with Id = {competitiveEvent?.Id} updated succesfully.");
@@ -103,6 +114,40 @@ public class CompetitiveEventService : ICompetitiveEventService
             throw new ArgumentOutOfRangeException(
                 nameof(id),
                 localizer[$"CompetitiveEvent with Id = {id} doesn't exist in the system"]);
+        }
+    }
+
+    private async Task ChangeJudges(CompetitiveEvent currentCompetitiveEvent, List<JudgeDto> judgeDtoList)
+    {
+        var deletedIds = currentCompetitiveEvent.Judges
+            .Select(x => x.Id)
+            .Except(judgeDtoList.Select(x => x.Id))
+            .ToList();
+
+        // First way (by judge), may be not the best
+        var judgeToDelete = currentCompetitiveEvent.Judges
+            .Where(judge => deletedIds.Contains(judge.Id))
+            .ToList();
+
+        var deleteTasks = judgeToDelete
+            .Select(deletedJudge => judgeRepository.Delete(deletedJudge));
+
+        await Task.WhenAll(deleteTasks).ConfigureAwait(false);
+
+        foreach (var judgeDto in judgeDtoList)
+        {
+            var foundJudge = currentCompetitiveEvent.Judges.FirstOrDefault(j => j.Id == judgeDto.Id);
+            if (foundJudge != null)
+            {
+                var updatedJudge = mapper.Map<Judge>(judgeDto);
+                await judgeRepository.Update(updatedJudge).ConfigureAwait(false);
+            }
+            else
+            {
+                var newJudge = mapper.Map<Judge>(judgeDto);
+                newJudge.CompetetiveEventId = currentCompetitiveEvent.Id;
+                await judgeRepository.Create(newJudge).ConfigureAwait(false);
+            }
         }
     }
 }

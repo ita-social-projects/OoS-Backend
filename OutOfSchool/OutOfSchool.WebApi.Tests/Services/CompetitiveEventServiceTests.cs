@@ -14,6 +14,7 @@ using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -22,11 +23,12 @@ using OutOfSchool.Tests.Common;
 namespace OutOfSchool.WebApi.Tests.Services;
 
 [TestFixture]
-public class CompetitiveEventServiceTests
+public class CompetitiveEventServiceTests // Integration test ?
 {
     private DbContextOptions<OutOfSchoolDbContext> options;
     private OutOfSchoolDbContext context;
     private IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> repo;
+    private IEntityRepository<Guid, Judge> repoJudge; // I need it if I use in Mock ?
     private Mock<ILogger<CompetitiveEventService>> logger;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private IMapper mapper;
@@ -50,8 +52,13 @@ public class CompetitiveEventServiceTests
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         logger = new Mock<ILogger<CompetitiveEventService>>();
 
+        //
+       // repoJudge = new Mock<IEntityRepository<Guid, Judge>>();  // if I do not
+        repoJudge = new EntityRepository<Guid, Judge>(context);  // ???
+
         service = new CompetitiveEventService(
             repo,
+            repoJudge,  // need change??
             logger.Object,
             localizer.Object,
             mapper);

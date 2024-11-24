@@ -48,8 +48,8 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
 
     public Guid ChiefJudgeId { get; set; }
 
-    [ForeignKey(nameof(ChiefJudgeId))]
-    public virtual Judge ChiefJudge { get; set; } // added TK
+    //[ForeignKey(nameof(ChiefJudgeId))]
+    //public virtual Judge ChiefJudge { get; set; } // added TK
 
     //[ForeignKey(nameof(ChiefJudgeId))]
     //public virtual Individual ChiefJudgeId { get; set; }
