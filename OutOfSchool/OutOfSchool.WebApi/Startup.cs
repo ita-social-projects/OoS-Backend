@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HeaderPropagation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.BackgroundJobs.Config;
@@ -115,11 +116,20 @@ public static class Startup
             .RequireHost($"*:{app.Configuration.GetValue<int>("ApplicationPorts:HealthPort")}")
             .WithMetadata(new AllowAnonymousAttribute());
 
+        app.MapHealthChecks("/healthz/active", new HealthCheckOptions
+            {
+                Predicate = healthCheck => healthCheck.Name == "Liveness",
+                ResponseWriter = async (context, _) =>
+                {
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsync("{\"status\":\"Healthy\"}");
+                },
+            })
+            .WithMetadata(new AllowAnonymousAttribute());
+
         app.MapControllers();
         app.MapHub<ChatWorkshopHub>(Constants.PathToChatHub);
         app.MapHub<NotificationHub>(Constants.PathToNotificationHub);
-
-        app.MapHealthChecks("/healthz/active");
     }
 
     public static async Task AddApplicationServices(this WebApplicationBuilder builder)
@@ -545,9 +555,10 @@ public static class Startup
         services.AddSingleton<IMultiLayerCacheService, MultiLayerCache>();
 
         services.AddHealthChecks()
+            .AddCheck("Liveness", () => HealthCheckResult.Healthy())
             .AddDbContextCheck<OutOfSchoolDbContext>(
                 "Database",
-                tags: new[] { "readiness" });
+                tags: ["readiness"]);
 
         Func<HeaderPropagationContext, StringValues> defaultHeaderDelegate = context =>
             StringValues.IsNullOrEmpty(context.HeaderValue) ? Guid.NewGuid().ToString() : context.HeaderValue;
