@@ -37,9 +37,6 @@ internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
             .IsRequired(false) // Optional relationship
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasMany(x => x.Tags)
-            .WithMany(x => x.Workshops);
-
         base.Configure(builder);
     }
 }
