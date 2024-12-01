@@ -105,12 +105,12 @@ public class WorkshopDraftService : IWorkshopDraftService
         var createdDraftDto = mapper.Map<WorkshopDraftResponseDto>(createdDraftWithAssociatedTeachers);
         createdDraftDto.Tags = mapper.Map<List<TagDto>>(tags);
 
-        logger.LogInformation("WorkshopDraft with Id = {Id} created successfully.", createdDraftWithAssociatedTeachers.Id);
+        logger.LogInformation("WorkshopDraft created successfully.");
 
         return new WorkshopDraftResultDto
         {
             WorkshopDraft = createdDraftDto,
-            UploadingCoverImgWorkshopResult = uploadImagesResult.WorkshopCoverImageUploadingResult?.OperationResult,
+            UploadingCoverImgWorkshopResult = uploadImagesResult.WorkshopCoverImageUploadingResult,
             UploadingImagesResults = uploadImagesResult.WorkshopImagesUploadingResult?.MultipleKeyValueOperationResult,
             TeachersCreateUpdateResut = uploadImagesResult.TeacherImagesUploadingResults
         };
@@ -189,8 +189,8 @@ public class WorkshopDraftService : IWorkshopDraftService
         return new UploadImagesResult()
         {
             TeacherImagesUploadingResults = teacherUploadImagesResults.ToList(),
-            WorkshopCoverImageUploadingResult = workshopUploadingCoverImageTask.Result,
-            WorkshopImagesUploadingResult = workshopImagesUploadingTasks.Result
+            WorkshopCoverImageUploadingResult = GetImagesUploadTaskResult(workshopUploadingCoverImageTask, createdDraft.Id)?.OperationResult,
+            WorkshopImagesUploadingResult = GetImagesUploadTaskResult(workshopImagesUploadingTasks, createdDraft.Id)
         };
     }
 
@@ -208,22 +208,44 @@ public class WorkshopDraftService : IWorkshopDraftService
             {
                 uploadingResult = await teacherDraftImagesService
                .AddCoverImageAsync(teacher, teacherDto.CoverImage);
-
-                if (uploadingResult.Succeeded)
-                {
-                    teacher.CoverImageId = uploadingResult.Value;
-                }
             }
           
             teacherResults.Add(new TeacherCreateUpdateResultDto
             {
                 Teacher = mapper.Map<TeacherDraftResponseDto>(teacher),
-                UploadingCoverImageResult = uploadingResult
+                UploadingCoverImageResult = uploadingResult?.OperationResult
             });
         }
         finally
         {
             semaphore.Release();
         }
+    }
+
+    private T GetImagesUploadTaskResult<T>(Task<T> task, Guid draftId) where T : class
+    {
+        if (task == null)
+        {
+            return null;
+        }
+
+        if (!task.IsCompletedSuccessfully)
+        {
+            if (task.IsFaulted)
+            {
+                logger.LogError(
+                    task.Exception,
+                    "Images upload task for workshop draft with ID {DraftId} failed due to an exception.",
+                    draftId);
+            }
+            else
+            {
+                logger.LogError(
+                    "Images upload task for workshop draft with ID {DraftId} did not complete successfully.",
+                    draftId);
+            }
+            return null;
+        }
+        return task.Result;
     }
 }

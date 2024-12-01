@@ -21,5 +21,5 @@ public class UploadImagesResult
     /// <summary>
     /// Result of uploading the workshop cover image.
     /// </summary>
-    public Result<string> WorkshopCoverImageUploadingResult { get; set; }
+    public OperationResult WorkshopCoverImageUploadingResult { get; set; }
 }
