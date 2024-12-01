@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.Tag;
@@ -28,6 +29,7 @@ public class WorkshopDraftService : IWorkshopDraftService
     private readonly IProviderService providerService;
     private readonly IEntityCoverImageInteractionService<TeacherDraft> teacherDraftImagesService;
     private readonly IEntityRepository<long, Tag> tagRepository;
+    private readonly int maxParallelUploads;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopDraftService"/> class.
@@ -39,6 +41,7 @@ public class WorkshopDraftService : IWorkshopDraftService
     /// <param name="providerService">Service for handling CRUD operations with the <see cref="Provider"/> entity .</param>
     /// <param name="teacherDraftImagesService">Service for managing cover images for <see cref="TeacherDraft"/> entities.</param>
     /// <param name="tagRepository">Repository for the <see cref="Tag"/> entity, used for CRUD operations.</param>
+    /// <param name="options">Provides configuration settings for upload concurrency.</param>
     public WorkshopDraftService(
         ILogger<WorkshopDraftService> logger,
         IWorkshopDraftRepository workshopDraftRepository,
@@ -46,7 +49,8 @@ public class WorkshopDraftService : IWorkshopDraftService
         IImageDependentEntityImagesInteractionService<WorkshopDraft> workshopDraftImagesService,
         IProviderService providerService,
         IEntityCoverImageInteractionService<TeacherDraft> teacherDraftImagesService,
-        IEntityRepository<long, Tag> tagRepository)
+        IEntityRepository<long, Tag> tagRepository,
+        IOptions<UploadConcurrencySettings> options)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.workshopDraftRepository = workshopDraftRepository ?? throw new ArgumentNullException(nameof(workshopDraftRepository));
@@ -55,6 +59,7 @@ public class WorkshopDraftService : IWorkshopDraftService
         this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
         this.teacherDraftImagesService = teacherDraftImagesService ?? throw new ArgumentNullException(nameof(teacherDraftImagesService));
         this.tagRepository = tagRepository ?? throw new ArgumentNullException(nameof(tagRepository));
+        this.maxParallelUploads = options.Value.MaxParallelImageUploads;
     }
 
     // <inheritdoc/>
@@ -84,13 +89,15 @@ public class WorkshopDraftService : IWorkshopDraftService
             .RunInTransaction(() => CreateWorkshopDraft(workshopDraftDto))
             .ConfigureAwait(false);
 
-        var tags = await tagRepository.GetByFilter(x => createdDraftWithAssociatedTeachers.WorkshopDraftContent.TagsIds.Contains(x.Id))
+        var tags = await tagRepository.GetByFilter(
+            x => createdDraftWithAssociatedTeachers.WorkshopDraftContent.TagsIds.Contains(x.Id))
             .ConfigureAwait(false);
 
         // Concurrently uploads images for both teacher drafts and the workshop draft.
-        var (teacherImagesUploadingResults, workshopImagesUploadingResult, workshopCoverImageUploadingResult) = 
-            await UploadWorkshopAndTeacherImagesAsync(createdDraftWithAssociatedTeachers, workshopDraftDto)
-            .ConfigureAwait(false);
+        var uploadImagesResult = await UploadWorkshopAndTeacherImagesAsync(
+            createdDraftWithAssociatedTeachers,
+            workshopDraftDto)
+           .ConfigureAwait(false);
 
         await workshopDraftRepository.SaveChangesAsync()
             .ConfigureAwait(false);
@@ -103,9 +110,9 @@ public class WorkshopDraftService : IWorkshopDraftService
         return new WorkshopDraftResultDto
         {
             WorkshopDraft = createdDraftDto,
-            UploadingCoverImgWorkshopResult = workshopCoverImageUploadingResult?.OperationResult,
-            UploadingImagesResults = workshopImagesUploadingResult?.MultipleKeyValueOperationResult,
-            TeachersCreateUpdateResut = teacherImagesUploadingResults
+            UploadingCoverImgWorkshopResult = uploadImagesResult.WorkshopCoverImageUploadingResult?.OperationResult,
+            UploadingImagesResults = uploadImagesResult.WorkshopImagesUploadingResult?.MultipleKeyValueOperationResult,
+            TeachersCreateUpdateResut = uploadImagesResult.TeacherImagesUploadingResults
         };
     }
 
@@ -128,17 +135,14 @@ public class WorkshopDraftService : IWorkshopDraftService
 
 
     // Applicable if images is stored in the external storage
-    private async Task<(
-    List<TeacherCreateUpdateResultDto> TeacherImagesUploadingResults,
-    MultipleImageUploadingResult WorkshopImagesUploadingResult,
-    Result<string> WorkshopCoverImageUploadingResult)>
+    private async Task<UploadImagesResult>
     UploadWorkshopAndTeacherImagesAsync(
     WorkshopDraft createdDraft,
     WorkshopDraftCreateDto workshopDraftDto)
     {
         var teacherUploadImagesTasks = new List<Task>();
         var teacherUploadImagesResults = new ConcurrentBag<TeacherCreateUpdateResultDto>();
-        var semaphore = new SemaphoreSlim(4);
+        var semaphore = new SemaphoreSlim(maxParallelUploads);
 
         foreach (var (teacherDto, teacher) in workshopDraftDto.Teachers.Zip(createdDraft.Teachers))
         {
@@ -182,10 +186,12 @@ public class WorkshopDraftService : IWorkshopDraftService
             throw;
         }
 
-        return (
-            teacherUploadImagesResults.ToList(),
-            await workshopImagesUploadingTasks.ConfigureAwait(false),
-            await workshopUploadingCoverImageTask.ConfigureAwait(false));
+        return new UploadImagesResult()
+        {
+            TeacherImagesUploadingResults = teacherUploadImagesResults.ToList(),
+            WorkshopCoverImageUploadingResult = workshopUploadingCoverImageTask.Result,
+            WorkshopImagesUploadingResult = workshopImagesUploadingTasks.Result
+        };
     }
 
     private async Task UploadTeacherCoverImageAsync(
@@ -208,11 +214,11 @@ public class WorkshopDraftService : IWorkshopDraftService
                     teacher.CoverImageId = uploadingResult.Value;
                 }
             }
-           
+          
             teacherResults.Add(new TeacherCreateUpdateResultDto
             {
                 Teacher = mapper.Map<TeacherDraftResponseDto>(teacher),
-                UploadingAvatarImageResult = uploadingResult
+                UploadingCoverImageResult = uploadingResult
             });
         }
         finally

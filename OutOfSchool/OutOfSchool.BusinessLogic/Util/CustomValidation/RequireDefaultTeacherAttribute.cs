@@ -2,6 +2,8 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.BusinessLogic.Util.CustomValidation;
+
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 public class RequireDefaultTeacherAttribute : ValidationAttribute
 {
     protected override ValidationResult IsValid(object value, ValidationContext validationContext)

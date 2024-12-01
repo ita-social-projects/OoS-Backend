@@ -5,5 +5,5 @@ namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDraft;
 public class TeacherCreateUpdateResultDto
 {
     public TeacherDraftResponseDto Teacher {  get; set; }
-    public Result<string> UploadingAvatarImageResult { get; set; }
+    public Result<string> UploadingCoverImageResult { get; set; }
 }

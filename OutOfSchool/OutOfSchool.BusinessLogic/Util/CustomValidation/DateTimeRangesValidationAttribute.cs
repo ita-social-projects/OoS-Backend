@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 namespace OutOfSchool.BusinessLogic.Util.CustomValidation;
 public class DateTimeRangeValidator
 {
-    public IEnumerable<ValidationResult> Validate(DateTimeRangeDraftDto range)
+    public  IEnumerable<ValidationResult> Validate(DateTimeRangeDraftDto range)
     {
         if (range.StartTime > range.EndTime)
         {

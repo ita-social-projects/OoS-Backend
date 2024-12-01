@@ -237,6 +237,7 @@ public static class Startup
         // Images limits options
         services.Configure<ImagesLimits<WorkshopDraft>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
         services.Configure<ImagesLimits<TeacherDraft>>(configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));
+        services.Configure<UploadConcurrencySettings>(configuration.GetSection(nameof(UploadConcurrencySettings)));
 
         services.Configure<ImagesLimits<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
         services.Configure<ImagesLimits<Teacher>>(configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));
