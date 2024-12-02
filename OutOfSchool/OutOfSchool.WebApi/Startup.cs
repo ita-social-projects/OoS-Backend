@@ -17,6 +17,7 @@ using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Config.SearchString;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.BusinessLogic.Services.DraftStorage;
 using OutOfSchool.BusinessLogic.Services.Elasticsearch;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
@@ -546,6 +547,8 @@ public static class Startup
 
         services.AddSingleton<ICacheService, CacheService>();
         services.AddSingleton<IMultiLayerCacheService, MultiLayerCache>();
+        services.AddSingleton<IReadWriteCacheService, CacheService>();
+        services.AddSingleton(typeof(IDraftStorageService<>), typeof(DraftStorageService<>));
 
         services.AddHealthChecks()
             .AddCheck("Liveness", () => HealthCheckResult.Healthy())

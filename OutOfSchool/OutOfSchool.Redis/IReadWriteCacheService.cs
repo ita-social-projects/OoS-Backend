@@ -12,4 +12,6 @@ public interface IReadWriteCacheService
         string value,
         TimeSpan? absoluteExpirationRelativeToNowInterval = null,
         TimeSpan? slidingExpirationInterval = null);
+
+    Task RemoveAsync(string key);
 }
