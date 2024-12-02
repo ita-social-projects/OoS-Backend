@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace OutOfSchool.Redis;
 
-public class CacheService : ICacheService, IDisposable
+public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
 {
     private readonly ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim();
     private readonly IDistributedCache cache;
@@ -18,7 +18,6 @@ public class CacheService : ICacheService, IDisposable
     private readonly bool isEnabled = false;
 
     private readonly object lockObject = new object();
-    
     private bool isDisposed;
 
     public CacheService(
@@ -106,6 +105,57 @@ public class CacheService : ICacheService, IDisposable
                 cacheLock.ExitWriteLock();
             }
         });
+
+    public async Task<string> ReadAsync(string key)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        string returnValue = string.Empty;
+
+        await ExecuteRedisMethod(() =>
+        {
+            cacheLock.EnterReadLock();
+            try
+            {
+                returnValue = cache.GetString(key) ?? string.Empty;
+            }
+            finally
+            {
+                cacheLock.ExitReadLock();
+            }
+        });
+
+        return returnValue;
+    }
+
+    public async Task WriteAsync(
+        string key, 
+        string value, 
+        TimeSpan? absoluteExpirationRelativeToNowInterval = null, 
+        TimeSpan? slidingExpirationInterval = null)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentException.ThrowIfNullOrEmpty(value);
+
+        await ExecuteRedisMethod(() =>
+        {
+            cacheLock.EnterWriteLock();
+            try
+            {
+                var options = new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? redisConfig!.AbsoluteExpirationRelativeToNowInterval,
+                    SlidingExpiration = slidingExpirationInterval ?? redisConfig!.SlidingExpirationInterval,
+                };
+
+                cache.SetString(key, value, options);
+            }
+            finally
+            {
+                cacheLock.ExitWriteLock();
+            }
+        });
+    }
 
     public void Dispose()
     {
