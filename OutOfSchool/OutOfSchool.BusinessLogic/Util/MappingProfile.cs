@@ -146,7 +146,9 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.MemberOfWorkshop, opt => opt.Ignore())
             .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore())
-            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore());
+            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
+            .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
+            .ForMember(dest => dest.ActiveTo, opt => opt.Ignore());
 
         CreateMap<Workshop, WorkshopCreateRequestDto>()
             .ForMember(
