@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
+#nullable enable
+
 namespace OutOfSchool.BusinessLogic.Services.DraftStorage;
 
 /// <summary>

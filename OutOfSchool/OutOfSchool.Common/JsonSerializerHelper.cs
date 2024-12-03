@@ -2,6 +2,8 @@
 using System.IO;
 using System.Text.Json;
 
+#nullable enable
+
 namespace OutOfSchool.Common;
 
 public static class JsonSerializerHelper
@@ -15,7 +17,7 @@ public static class JsonSerializerHelper
     /// <returns>A <typeparamref name="TValue"/> representation of the JSON value.</returns>
     /// <param name="json">JSON text to parse.</param>
     /// <param name="options">Options to control the behavior during parsing.</param>
-    public static TValue? Deserialize<TValue>(string json, JsonSerializerOptions options = null)
+    public static TValue? Deserialize<TValue>(string json, JsonSerializerOptions? options = null)
     {
         return JsonSerializer.Deserialize<TValue>(json, options ?? JsonSerializerOptionsWeb);
     }
@@ -31,7 +33,7 @@ public static class JsonSerializerHelper
     /// <exception cref="System.ArgumentNullException">
     /// <paramref name="stream"/> is <see langword="null"/>.
     /// </exception>
-    public static TValue? Deserialize<TValue>(Stream stream, JsonSerializerOptions options = null)
+    public static TValue? Deserialize<TValue>(Stream stream, JsonSerializerOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(stream);
 
@@ -45,7 +47,7 @@ public static class JsonSerializerHelper
     /// <param name="json">JSON text to parse.</param>
     /// <param name="returnType">The type of the object to convert to and return.</param>
     /// <param name="options">Options to control the behavior during parsing.</param>
-    public static object? Deserialize(string json, Type returnType, JsonSerializerOptions options = null)
+    public static object? Deserialize(string json, Type returnType, JsonSerializerOptions? options = null)
     {
         return JsonSerializer.Deserialize(json, returnType, options ?? JsonSerializerOptionsWeb);
     }
@@ -57,7 +59,7 @@ public static class JsonSerializerHelper
     /// <returns>A <see cref="string"/> representation of the value.</returns>
     /// <param name="value">The value to convert.</param>
     /// <param name="options">Options to control the conversion behavior.</param>
-    public static string Serialize<TValue>(TValue value, JsonSerializerOptions options = null)
+    public static string Serialize<TValue>(TValue value, JsonSerializerOptions? options = null)
     {
         return JsonSerializer.Serialize(value, options ?? JsonSerializerOptionsWeb);
     }
@@ -72,7 +74,7 @@ public static class JsonSerializerHelper
     /// <exception cref="ArgumentNullException">
     ///   <paramref name="writer"/> is <see langword="null"/>.
     /// </exception>
-    public static void Serialize<TValue>(Utf8JsonWriter writer, TValue value, JsonSerializerOptions options = null)
+    public static void Serialize<TValue>(Utf8JsonWriter writer, TValue value, JsonSerializerOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(writer);
 

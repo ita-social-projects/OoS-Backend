@@ -1,4 +1,6 @@
-﻿namespace OutOfSchool.BusinessLogic.Services.DraftStorage;
+﻿#nullable enable
+
+namespace OutOfSchool.BusinessLogic.Services.DraftStorage;
 
 public interface IDraftStorageService<T>
 {
