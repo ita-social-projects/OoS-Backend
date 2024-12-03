@@ -94,17 +94,22 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
     }
 
     public Task RemoveAsync(string key)
-        => ExecuteRedisMethod(async () => {
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        return ExecuteRedisMethod(() =>
+        {
             cacheLock.EnterWriteLock();
             try
             {
-                await cache.RemoveAsync(key);
+                cache.Remove(key);
             }
             finally
             {
                 cacheLock.ExitWriteLock();
             }
         });
+    }
 
     public async Task<string> ReadAsync(string key)
     {
