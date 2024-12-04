@@ -206,7 +206,7 @@ public static class Startup
             })
 
             .AddJsonOptions(options =>
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
         services.AddHttpClient(configuration["Communication:ClientName"])
             .AddHttpMessageHandler(handler =>
