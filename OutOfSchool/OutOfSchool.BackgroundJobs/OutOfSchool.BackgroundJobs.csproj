@@ -5,6 +5,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <NuGetAuditMode>direct</NuGetAuditMode>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\OutOfSchool.BusinessLogic\OutOfSchool.BusinessLogic.csproj" />
     <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />

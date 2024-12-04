@@ -1,6 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <NuGetAuditMode>direct</NuGetAuditMode>
+  </PropertyGroup>
+  
+  <PropertyGroup>
     <PackageId>email</PackageId>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>

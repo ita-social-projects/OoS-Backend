@@ -4,6 +4,11 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <NuGetAuditMode>direct</NuGetAuditMode>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Elastic.Clients.Elasticsearch" />
     <PackageReference Include="Elastic.Transport" />
