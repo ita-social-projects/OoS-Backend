@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
+      <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
