@@ -2,14 +2,10 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
+        <NuGetAuditMode>direct</NuGetAuditMode>
         <UserSecretsId>23768b69-757e-4a20-894f-dcf7181971ca</UserSecretsId>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-    <PropertyGroup>
-      <TargetFramework>net8.0</TargetFramework>
-      <NuGetAuditMode>direct</NuGetAuditMode>
     </PropertyGroup>
 
     <ItemGroup>

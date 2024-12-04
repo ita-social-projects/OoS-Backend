@@ -1,7 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <ImplicitUsings>enable</ImplicitUsings>
-    </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <NuGetAuditMode>direct</NuGetAuditMode>
+  </PropertyGroup>  
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
 
     <PropertyGroup>
         <NoWarn>$(NoWarn);1591</NoWarn>
@@ -13,11 +18,6 @@
     <PropertyGroup>
         <AnalysisLevel>latest</AnalysisLevel>
     </PropertyGroup>
-
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <NuGetAuditMode>direct</NuGetAuditMode>
-  </PropertyGroup>
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />

@@ -1,14 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+      <TargetFramework>net8.0</TargetFramework>
+      <NuGetAuditMode>direct</NuGetAuditMode>
+    </PropertyGroup>    
+    
     <PropertyGroup>
         <PackageId>auth</PackageId>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    </PropertyGroup>
-
-    <PropertyGroup>
-      <TargetFramework>net8.0</TargetFramework>
-      <NuGetAuditMode>direct</NuGetAuditMode>
     </PropertyGroup>
 
     <ItemGroup>

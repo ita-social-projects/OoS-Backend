@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <IsPackable>false</IsPackable>
         <TargetFramework>net8.0</TargetFramework>
         <NuGetAuditMode>direct</NuGetAuditMode>
+        <IsPackable>false</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
