@@ -6,9 +6,6 @@
     <Nullable>enable</Nullable>
     <UserSecretsId>f3a869f2-8ab9-41e0-9336-d88036505f44</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <NuGetAuditMode>direct</NuGetAuditMode>
   </PropertyGroup>
