@@ -42,10 +42,10 @@ public class ValidationService : IValidationService
             return false;
         }
 
-        var providersAdmins = await employeeRepository.GetByFilter(p => p.ManagedWorkshops.Any(w => w.Id == workshopId)
+        var employees = await employeeRepository.GetByFilter(p => p.ManagedWorkshops.Any(w => w.Id == workshopId)
                                                                         && p.UserId == userId).ConfigureAwait(false);
 
-        return providersAdmins.Any();
+        return employees.Any();
     }
 
     /// <inheritdoc/>>

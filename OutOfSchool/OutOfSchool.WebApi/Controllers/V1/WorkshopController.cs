@@ -309,7 +309,7 @@ public class WorkshopController : ControllerBase
             if (!await IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false))
             {
                 var userId = User.FindFirst("sub")?.Value;
-                await employeeService.GiveAssistantAccessToWorkshop(userId, workshop.Id).ConfigureAwait(false);
+                await employeeService.GiveEmployeeAccessToWorkshop(userId, workshop.Id).ConfigureAwait(false);
             }
 
             return CreatedAtAction(

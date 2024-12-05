@@ -68,11 +68,8 @@ public class CurrentUserService : ICurrentUserService
         Role.Employee => IsInRole("employee"),
         _ => throw new NotImplementedException("Role not handled"),
     };
-
+    
     public bool IsEmployeeOrProvider() => IsInRole(Role.Provider) || IsInRole(Role.Employee);
-
-    public bool isProvider() => IsInRole(Role.Provider);
-    public bool isEmployee() => IsInRole(Role.Employee);
 
     public bool IsAdmin() => IsInRole(Role.TechAdmin) || IsInRole(Role.MinistryAdmin) || IsInRole(Role.RegionAdmin) ||
                              IsInRole(Role.AreaAdmin);
@@ -263,7 +260,7 @@ public class CurrentUserService : ICurrentUserService
 
     private async Task<bool> EmployeeHasRights(Guid providerId)
     {
-        if (!this.isEmployee())
+        if (!IsInRole(Role.Employee))
         {
             return false;
         }
@@ -293,7 +290,7 @@ public class CurrentUserService : ICurrentUserService
 
     private async Task<bool> EmployeeHasWorkshopRights(Guid providerId, Guid workshopId)
     {
-        if (!this.isEmployee())
+        if (!IsInRole(Role.Employee))
         {
             return false;
         }

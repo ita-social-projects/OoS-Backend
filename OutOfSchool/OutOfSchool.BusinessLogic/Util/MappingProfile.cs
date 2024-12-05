@@ -124,7 +124,7 @@ public class MappingProfile : Profile
 
             .ForMember(dest => dest.Teachers, opt => opt.Ignore())
             .ForMember(dest => dest.Provider, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore())
+            .ForMember(dest => dest.Employees, opt => opt.Ignore())
             .ForMember(dest => dest.Applications, opt => opt.Ignore())
             .ForMember(dest => dest.ChatRooms, opt => opt.Ignore())
             .ForMember(dest => dest.Document, opt => opt.Ignore())

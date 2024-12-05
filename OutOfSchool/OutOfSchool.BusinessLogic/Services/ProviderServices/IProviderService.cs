@@ -29,9 +29,9 @@ public interface IProviderService
     /// Get entity by User id.
     /// </summary>
     /// <param name="id">Key of the User entity in the table.</param>
-    /// <param name="isDeputyOrAdmin">Is user a deputy or delegated provider admin.</param>
+    /// <param name="isEmployee">Is user a deputy or delegated provider admin.</param>
     /// <returns>Provider.</returns>
-    Task<ProviderDto> GetByUserId(string id, bool isDeputyOrAdmin = false);
+    Task<ProviderDto> GetByUserId(string id, bool isEmployee = false);
 
     /// <summary>
     /// Get provider's status.

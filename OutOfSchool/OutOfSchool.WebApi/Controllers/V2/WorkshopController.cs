@@ -25,7 +25,7 @@ public class WorkshopController : ControllerBase
     private readonly IProviderService providerService;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly ILogger<WorkshopController> logger;
-    private readonly IProviderAdminService providerAdminService;
+    private readonly IEmployeeService employeeService;
     private readonly IUserService userService;
 
     private readonly AppDefaultsConfig options;
@@ -37,7 +37,7 @@ public class WorkshopController : ControllerBase
     /// <param name="providerService">Service for Provider model.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
-    /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
+    /// <param name="employeeService">Service for ProviderAdmin model.</param>
     /// <param name="userService">Service for operations with users.</param>
     /// <param name="options">Application default values.</param>
     public WorkshopController(
@@ -45,7 +45,7 @@ public class WorkshopController : ControllerBase
         IProviderService providerService,
         IStringLocalizer<SharedResource> localizer,
         ILogger<WorkshopController> logger,
-        IProviderAdminService providerAdminService,
+        IEmployeeService employeeService,
         IUserService userService,
         IOptions<AppDefaultsConfig> options)
     {
@@ -53,7 +53,7 @@ public class WorkshopController : ControllerBase
         this.combinedWorkshopService = combinedWorkshopService;
         this.providerService = providerService;
         this.logger = logger;
-        this.providerAdminService = providerAdminService;
+        this.employeeService = employeeService;
         this.userService = userService;
         this.options = options.Value;
     }
@@ -197,7 +197,7 @@ public class WorkshopController : ControllerBase
             if (!await IsUserProvidersOwnerOrAdmin(creationResult.Workshop.ProviderId, creationResult.Workshop.Id).ConfigureAwait(false))
             {
                 var userId = User.FindFirst("sub")?.Value;
-                await providerAdminService.GiveAssistantAccessToWorkshop(userId, creationResult.Workshop.Id).ConfigureAwait(false);
+                await employeeService.GiveEmployeeAccessToWorkshop(userId, creationResult.Workshop.Id).ConfigureAwait(false);
             }
 
             return CreatedAtAction(
@@ -343,8 +343,8 @@ public class WorkshopController : ControllerBase
             }
             else
             {
-                var isUserRelatedAdmin = await providerAdminService
-                    .CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId)
+                var isUserRelatedAdmin = await employeeService
+                    .CheckUserIsRelatedEmployee(userId, providerId, workshopId)
                     .ConfigureAwait(false);
 
                 if (!isUserRelatedAdmin)

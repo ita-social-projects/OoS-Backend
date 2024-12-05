@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
 
@@ -27,6 +28,7 @@ public class ChatWorkshopHub : Hub
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IEmployeeRepository employeeRepository;
     private readonly IBlockedProviderParentService blockedProviderParentService;
+    private readonly ICurrentUser currentUser;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatWorkshopHub"/> class.
@@ -48,7 +50,8 @@ public class ChatWorkshopHub : Hub
         IParentRepository parentRepository,
         IStringLocalizer<SharedResource> localizer,
         IEmployeeRepository employeeRepository,
-        IBlockedProviderParentService blockedProviderParentService)
+        IBlockedProviderParentService blockedProviderParentService,
+        ICurrentUser currentUser)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.messageService = chatMessageService ?? throw new ArgumentNullException(nameof(chatMessageService));
@@ -59,6 +62,7 @@ public class ChatWorkshopHub : Hub
         this.localizer = localizer;
         this.employeeRepository = employeeRepository;
         this.blockedProviderParentService = blockedProviderParentService;
+        this.currentUser = currentUser;
     }
 
     public override async Task OnConnectedAsync()
@@ -246,9 +250,9 @@ public class ChatWorkshopHub : Hub
         var userRole = GettingUserProperties.GetUserRole(Context.User);
         LogErrorThrowExceptionIfPropertyIsNull(userRole, nameof(userRole));
 
-        bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
+        bool userRoleIsProvider = currentUser.IsInRole(Role.Provider.ToString());
 
-        bool userRoleIsEmployee = userRole.Equals(Role.Employee.ToString(), StringComparison.OrdinalIgnoreCase);
+        bool userRoleIsEmployee = currentUser.IsInRole(Role.Employee.ToString());
 
         var workshop = await workshopRepository.GetById(workshopId);
 

@@ -293,12 +293,12 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     }
 
     /// <inheritdoc/>
-    public async Task<ProviderDto> GetByUserId(string id, bool isDeputyOrAdmin = false)
+    public async Task<ProviderDto> GetByUserId(string id, bool isEmployee = false)
     {
         logger.LogInformation("Getting Provider by UserId started. Looking UserId is {Id}", id);
         Provider provider = default;
 
-        if (isDeputyOrAdmin)
+        if (isEmployee)
         {
             var employees = await employeeRepository.GetByFilter(p => p.UserId == id).ConfigureAwait(false);
             var employee = employees.FirstOrDefault();

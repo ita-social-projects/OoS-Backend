@@ -55,12 +55,6 @@ public class ProfileService : IProfileService
     // get's list of permissions for current user's role from db
     private async Task<string> GetPermissionsForUser(User userFromLogin, string roleName)
     {
-        if (userFromLogin.Role == nameof(Role.Provider).ToLower() && userFromLogin.IsDerived)
-        {
-            // Employee set of permissions in DB excludes not allowed actions
-            roleName += Constants.AdminKeyword;
-        }
-
         var permissionsForUser = (await permissionsForRolesRepository
                 .GetByFilter(p => p.RoleName == roleName))
             .FirstOrDefault()?.PackedPermissions;

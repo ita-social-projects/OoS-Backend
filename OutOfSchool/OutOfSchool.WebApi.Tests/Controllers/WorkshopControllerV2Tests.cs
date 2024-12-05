@@ -45,7 +45,7 @@ public class WorkshopControllerV2Tests
     private WorkshopController controller;
     private Mock<IWorkshopServicesCombinerV2> workshopServiceMoq;
     private Mock<IProviderServiceV2> providerServiceMoq;
-    private Mock<IProviderAdminService> providerAdminService;
+    private Mock<IEmployeeService> employeeService;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<IUserService> userServiceMoq;
     private Mock<ILogger<WorkshopController>> loggerMoq;
@@ -95,7 +95,7 @@ public class WorkshopControllerV2Tests
     {
         workshopServiceMoq = new Mock<IWorkshopServicesCombinerV2>();
         providerServiceMoq = new Mock<IProviderServiceV2>();
-        providerAdminService = new Mock<IProviderAdminService>();
+        employeeService = new Mock<IEmployeeService>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         userServiceMoq = new Mock<IUserService>();
         loggerMoq = new Mock<ILogger<WorkshopController>>();
@@ -105,7 +105,7 @@ public class WorkshopControllerV2Tests
             providerServiceMoq.Object,
             localizer.Object,
             loggerMoq.Object,
-            providerAdminService.Object,
+            employeeService.Object,
             userServiceMoq.Object,
             options.Object)
         {
@@ -318,16 +318,16 @@ public class WorkshopControllerV2Tests
                     .ReturnsAsync(workshopResultDto).Verifiable(Times.Once);
 
         int n = 0;
-        providerAdminService.Setup(x => x.CheckUserIsRelatedProviderAdmin(userId, provider.Id, Guid.Empty))
+        employeeService.Setup(x => x.CheckUserIsRelatedEmployee(userId, provider.Id, Guid.Empty))
             .ReturnsAsync(() => n++ <= 0).Verifiable(Times.Exactly(2));
-        providerAdminService.Setup(x => x.GiveAssistantAccessToWorkshop(userId, workshopResultDto.Workshop.Id))
+        employeeService.Setup(x => x.GiveEmployeeAccessToWorkshop(userId, workshopResultDto.Workshop.Id))
             .Verifiable(Times.Once);
 
         // Act
         var result = await controller.Create(workshopV2CreateRequestDto).ConfigureAwait(false) as CreatedAtActionResult;
 
         // Assert
-        providerAdminService.VerifyAll();
+        employeeService.VerifyAll();
         providerServiceMoq.VerifyAll();
         workshopServiceMoq.VerifyAll();
         userServiceMoq.VerifyAll();
