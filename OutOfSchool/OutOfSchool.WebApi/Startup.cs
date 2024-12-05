@@ -1,4 +1,3 @@
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Asp.Versioning.ApiExplorer;
 using AutoMapper;
@@ -207,7 +206,7 @@ public static class Startup
             })
 
             .AddJsonOptions(options =>
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
         services.AddHttpClient(configuration["Communication:ClientName"])
             .AddHttpMessageHandler(handler =>

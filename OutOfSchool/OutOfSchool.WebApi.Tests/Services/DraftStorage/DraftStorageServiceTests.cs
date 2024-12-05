@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
-using AutoMapper;
 using Bogus;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Models.Workshops.Drafts;
 using OutOfSchool.BusinessLogic.Services.DraftStorage;
 using OutOfSchool.Common;
@@ -61,7 +59,7 @@ public class DraftStorageServiceTests
         // Arrange
         var workshopDraft = default(WorkshopMainRequiredPropertiesDto);
         readWriteCacheServiceMock.Setup(c => c.ReadAsync(cacheKey))
-            .Returns(() => Task.FromResult(JsonSerializerHelper.Serialize(workshopDraft)))
+            .Returns(() => Task.FromResult(string.Empty))
             .Verifiable(Times.Once);
 
         // Act
