@@ -33,7 +33,7 @@ public abstract class DraftStorageController<T> : ControllerBase
 
         await draftStorageService.CreateAsync(GettingUserProperties.GetUserId(User), draftDto).ConfigureAwait(false);
 
-        return Ok($"{typeof(T).Name} is stored ({JsonSerializerHelper.Serialize(draftDto)})");
+        return Ok($"{typeof(T).Name} is stored");
     }
 
     /// <summary>Restores the entity draft.</summary>

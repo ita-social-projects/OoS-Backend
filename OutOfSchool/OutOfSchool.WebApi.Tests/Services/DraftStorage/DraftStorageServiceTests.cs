@@ -8,7 +8,6 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models.Workshops.Drafts;
 using OutOfSchool.BusinessLogic.Services.DraftStorage;
 using OutOfSchool.Common;
-using OutOfSchool.Common.Enums;
 using OutOfSchool.Redis;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -125,30 +124,8 @@ public class DraftStorageServiceTests
         readWriteCacheServiceMock.VerifyAll();
     }
 
-    private static WorkshopMainRequiredPropertiesDto GetWorkshopFakeDraft()
-    {
-        var workshopFacker = new Faker<WorkshopMainRequiredPropertiesDto>()
-            .RuleFor(w => w.Id, f => f.Random.Guid())
-            .RuleFor(w => w.Title, f => f.Name.FullName())
-            .RuleFor(w => w.ShortTitle, f => f.Name.LastName())
-            .RuleFor(w => w.Phone, f => f.Phone.PhoneNumber())
-            .RuleFor(w => w.Email, f => f.Internet.Email())
-            .RuleFor(w => w.MinAge, f => f.Random.Int(5, 9))
-            .RuleFor(w => w.MaxAge, f => f.Random.Int(10, 13))
-            .RuleFor(w => w.IsPaid, f => f.Random.Bool())
-            .RuleFor(w => w.Price, f => f.Random.Decimal())
-            .RuleFor(w => w.AvailableSeats, f => f.Random.UInt(0, 13))
-            .RuleFor(w => w.CompetitiveSelection, f => true)
-            .RuleFor(w => w.CompetitiveSelectionDescription, f => f.Lorem.Paragraph())
-            .RuleFor(w => w.ProviderId, f => f.Random.Guid());
-
-        var workshop = workshopFacker.Generate();
-        workshop.FormOfLearning = FormOfLearning.Mixed;
-        workshop.PayRate = PayRateType.Classes;
-        workshop.DateTimeRanges = DateTimeRangeDtoGenerator.Generate(4);
-
-        return workshopFacker.Generate();
-    }
+    private static WorkshopMainRequiredPropertiesDto GetWorkshopFakeDraft() =>
+        WorkshopMainRequiredPropertiesDtoGenerator.Generate();
 
     private static string GetCacheKey(string key, Type type)
     {
