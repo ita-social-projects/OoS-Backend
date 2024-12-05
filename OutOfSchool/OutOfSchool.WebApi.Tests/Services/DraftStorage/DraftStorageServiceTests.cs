@@ -98,7 +98,6 @@ public class DraftStorageServiceTests
             .Returns(() => Task.FromResult(workshopJsonString))
             .Verifiable(Times.Once);
         readWriteCacheServiceMock.Setup(c => c.RemoveAsync(cacheKey))
-            .Returns(() => Task.FromResult(workshopJsonString))
             .Verifiable(Times.Once);
 
         // Act
@@ -115,7 +114,7 @@ public class DraftStorageServiceTests
         readWriteCacheServiceMock.Setup(c => c.ReadAsync(cacheKey))
             .Returns(() => Task.FromResult(string.Empty)).Verifiable(Times.Once);
         readWriteCacheServiceMock.Setup(c => c.RemoveAsync(cacheKey))
-            .Returns(() => Task.FromResult(string.Empty)).Verifiable(Times.Never);
+            .Verifiable(Times.Never);
 
         // Act
         await draftStorageService.RemoveAsync(key).ConfigureAwait(false);

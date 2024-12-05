@@ -14,7 +14,7 @@ namespace OutOfSchool.BusinessLogic.Models.Workshops.Drafts;
 [JsonDerivedType(typeof(WorkshopRequiredPropertiesDto), typeDiscriminator: "withOtherRequiredProperties")]
 [JsonDerivedType(typeof(WorkshopDescriptionDto), typeDiscriminator: "withDescription")]
 [JsonDerivedType(typeof(WorkshopContactsDto), typeDiscriminator: "withContacts")]
-[JsonDerivedType(typeof(WorkshopStaffDto), typeDiscriminator: "withStaff")]
+[JsonDerivedType(typeof(WorkshopCreateRequestDto), typeDiscriminator: "withStaff")]
 public class WorkshopMainRequiredPropertiesDto : IValidatableObject
 {
     public Guid Id { get; set; }
