@@ -15,6 +15,10 @@ using OutOfSchool.BusinessLogic.Models.Notifications;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.ProvidersInfo;
 using OutOfSchool.BusinessLogic.Models.SocialGroup;
+
+
+
+
 using OutOfSchool.BusinessLogic.Models.StatisticReports;
 using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Models.Tag;
@@ -407,8 +411,8 @@ public class MappingProfile : Profile
         CreateMap<Judge, JudgeDto>()
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
-        CreateMap<JudgeDto, Judge>() 
-          .ForMember(dest => dest.CompetetiveEventId, opt => opt.Ignore())
+        CreateMap<JudgeDto, Judge>()
+          .ForMember(dest => dest.CompetitiveEventId, opt => opt.Ignore())
           .ForMember(dest => dest.CompetitiveEvent, opt => opt.Ignore())
           .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
@@ -797,11 +801,20 @@ public class MappingProfile : Profile
         CreateMap<WorkshopFilter, WorkshopFilterWithSettlements>()
             .ForMember(dest => dest.SettlementsIds, opt => opt.Ignore());
 
-        CreateMap<CompetitiveEvent, CompetitiveEventDto>().ReverseMap();
+        //CreateMap<CompetitiveEvent, CompetitiveEventDto>().ReverseMap(); //it was before change
+        CreateMap<CompetitiveEvent, CompetitiveEventDto>();
+        CreateMap<CompetitiveEventDto, CompetitiveEvent>().ForMember(dest => dest.ChiefJudgeId, opt => opt.Ignore());
 
-        CreateMap<CompetitiveEventAccountingType, CompetitiveEventAccountingTypeDto>().ReverseMap();
+        CreateMap<CompetitiveEventCreateDto, CompetitiveEvent>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore())
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
+            
+       CreateMap<CompetitiveEventAccountingType, CompetitiveEventAccountingTypeDto>().ReverseMap();
+      //  CreateMap<CompetitiveEventAccountingType, CompetitiveEventAccountingTypeDto>(); // ok?
 
         CreateMap<CompetitiveEventCoverage, CompetitiveEventCoverageDto>().ReverseMap();
+        //CreateMap<CompetitiveEventCoverage, CompetitiveEventCoverageDto>().ReverseMap(); need delete map?
 
         CreateMap<CompetitiveEventDescriptionItem, CompetitiveEventDescriptionItemDto>().ReverseMap();
 

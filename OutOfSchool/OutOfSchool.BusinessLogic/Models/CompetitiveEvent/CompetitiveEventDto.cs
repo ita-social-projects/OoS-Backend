@@ -32,13 +32,13 @@ public class CompetitiveEventDto
 
     public DateTimeOffset RegistrationEndTime { get; set; }
 
-    public Guid ParentId { get; set; }
+    public Guid? ParentId { get; set; } = null;
 
     public Guid BuildingHoldingId { get; set; }
 
     public Guid ChildParticipantId { get; set; }
 
-    public Guid ChiefJudgeId { get; set; }
+    // public Guid ChiefJudgeId { get; set; }
 
     //public JudgeDto ChiefJudge { get; set; }
 
@@ -58,6 +58,7 @@ public class CompetitiveEventDto
 
     [Required]
     public List<CompetitiveEventAccountingTypeDto> AccountingTypeOfEvent { get; set; }
+    //public List<Guid> AccountingTypeOfEvent { get; set; }
 
     [MaxLength(2000)]
     public string Description { get; set; }
@@ -73,6 +74,8 @@ public class CompetitiveEventDto
 
     public Guid VenueId { get; set; }
 
+    public string VenueName { get; set; }
+
     [MaxLength(2000)]
     public string PreferentialTermsOfParticipation { get; set; }
 
@@ -81,8 +84,11 @@ public class CompetitiveEventDto
     public List<JudgeDto> Judges { get; set; }
 
     public List<ProviderDto> ParticipantsOfTheEvent { get; set; }
+    //public List<Guid> ParticipantsOfTheEvent { get; set; }// ?????
 
     public bool AreThereBenefits { get; set; }
+
+    public string Benefits { get; set; }
 
     public uint Rating { get; set; }
 
@@ -105,6 +111,7 @@ public class CompetitiveEventDto
     public int MaximumAge { get; set; }
 
     public List<CompetitiveEventCoverageDto> Coverage { get; set; }
+    //public List<Guid> Coverage { get; set; } -- for createdto
 
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
     public int Price { get; set; } = default;

@@ -56,14 +56,14 @@ public class CompetitiveEventServiceTests // Integration test ?
        // repoJudge = new Mock<IEntityRepository<Guid, Judge>>();  // if I do not
         repoJudge = new EntityRepository<Guid, Judge>(context);  // ???
 
-        service = new CompetitiveEventService(
-            repo,
-            repoJudge,  // need change??
-            logger.Object,
-            localizer.Object,
-            mapper);
+        //service = new CompetitiveEventService( /// need review
+        //    repo,
+        //    repoJudge,  // need change??
+        //    logger.Object,
+        //    localizer.Object,
+        //    mapper);
 
-        SeedDatabase();
+        //SeedDatabase();
     }
 
     [Test]

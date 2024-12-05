@@ -19,38 +19,44 @@ public class CompetitiveEventService : ICompetitiveEventService
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
     private readonly IEntityRepository<Guid, Judge> judgeRepository;
+    private readonly IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType > accountingTypeOfEventRepository;
 
     public CompetitiveEventService(
         IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> competitiveEventRepository,
-        IEntityRepository<Guid, Judge> judgeRepository, // ????
+        IEntityRepository<Guid, Judge> judgeRepository,
+        IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType> accountingTypeOfEventRepository,
         ILogger<CompetitiveEventService> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper)
     {
         this.competitiveEventRepository = competitiveEventRepository ?? throw new ArgumentNullException(nameof(competitiveEventRepository));
         this.judgeRepository = judgeRepository ?? throw new ArgumentNullException(nameof(judgeRepository)); // ????
+        this.accountingTypeOfEventRepository = accountingTypeOfEventRepository ?? throw new ArgumentException(nameof(accountingTypeOfEventRepository)); 
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
-    public async Task<CompetitiveEventDto> GetById(Guid id)
+    public async Task<CompetitiveEventDto?> GetById(Guid id)
     {
         logger.LogTrace($"Getting CompetitiveEvent by Id started. Looking Id = {id}.");
 
-        var competitiveEvent = (await competitiveEventRepository.GetById(id).ConfigureAwait(false))
-            ?? throw new ArgumentOutOfRangeException(
-                nameof(id),
-                localizer[$"CompetitiveEvent with Id = {id} doesn't exist in the system."]);
+        var competitiveEvent = (await competitiveEventRepository.GetById(id).ConfigureAwait(false));
 
-        logger.LogTrace($"Successfully got a CompetitiveEvent with Id = {id}.");
-
+        if (competitiveEvent is null)
+        {
+            logger.LogTrace($"CompetitiveEvent with Id = {id} doesn't exist in the system.");
+        }
+        else
+        {
+            logger.LogTrace($"Successfully got a CompetitiveEvent with Id = {id}.");
+        }
         return mapper.Map<CompetitiveEventDto>(competitiveEvent);
     }
 
     /// <inheritdoc/>
-    public async Task<CompetitiveEventDto> Create(CompetitiveEventDto dto)
+    public async Task<CompetitiveEventDto> Create(CompetitiveEventDto dto) // must leave one of them 
     {
         logger.LogTrace("CompetitiveEvent creating was started.");
 
@@ -59,7 +65,7 @@ public class CompetitiveEventService : ICompetitiveEventService
         var competitiveEvent = mapper.Map<CompetitiveEvent>(dto);
 
         competitiveEvent.Judges = dto.Judges?.Select(dtoJudges => mapper.Map<Judge>(dtoJudges)).ToList();
-       // competitiveEvent.ChiefJudge = mapper.Map<Judge>(dto.ChiefJudge); //
+        // competitiveEvent.ChiefJudge = mapper.Map<Judge>(dto.ChiefJudge); //
 
         var newCompetitiveEvent = await competitiveEventRepository.Create(competitiveEvent).ConfigureAwait(false);
 
@@ -67,6 +73,23 @@ public class CompetitiveEventService : ICompetitiveEventService
 
         return mapper.Map<CompetitiveEventDto>(newCompetitiveEvent);
     }
+    public async Task<CompetitiveEventDto> Create(CompetitiveEventCreateDto dto) // must leave one of them 
+    {
+        logger.LogTrace("CompetitiveEvent creating was started.");
+
+        ArgumentNullException.ThrowIfNull(dto);
+
+        var competitiveEvent = mapper.Map<CompetitiveEvent>(dto);
+
+        competitiveEvent.Judges = dto.Judges?.Select(dtoJudges => mapper.Map<Judge>(dtoJudges)).ToList();
+
+        var newCompetitiveEvent = await competitiveEventRepository.Create(competitiveEvent).ConfigureAwait(false);
+
+        logger.LogTrace($"CompetitiveEvent with Id = {newCompetitiveEvent?.Id} created successfully.");
+
+        return mapper.Map<CompetitiveEventDto>(newCompetitiveEvent);
+    }
+
 
     /// <inheritdoc/>
     public async Task<CompetitiveEventDto> Update(CompetitiveEventDto dto)
@@ -85,6 +108,9 @@ public class CompetitiveEventService : ICompetitiveEventService
         }
 
         await ChangeJudges(competitiveEvent, dto.Judges ?? new List<JudgeDto>()).ConfigureAwait(false);
+
+        await ChangeAccountingTypesOfEvent(competitiveEvent, 
+            dto.AccountingTypeOfEvent ?? new List<CompetitiveEventAccountingTypeDto>()).ConfigureAwait(false);
 
         mapper.Map(dto, competitiveEvent);
 
@@ -124,29 +150,67 @@ public class CompetitiveEventService : ICompetitiveEventService
             .Except(judgeDtoList.Select(x => x.Id))
             .ToList();
 
-        // First way (by judge), may be not the best
-        var judgeToDelete = currentCompetitiveEvent.Judges
-            .Where(judge => deletedIds.Contains(judge.Id))
-            .ToList();
+        if (deletedIds.Count > 0)
+        {
+            var judgeToDelete = currentCompetitiveEvent.Judges
+                .Where(judge => deletedIds.Contains(judge.Id))
+                .ToList();
 
-        var deleteTasks = judgeToDelete
-            .Select(deletedJudge => judgeRepository.Delete(deletedJudge));
+            var deleteTasks = judgeToDelete
+                .Select(deletedJudge => judgeRepository.Delete(deletedJudge));
 
-        await Task.WhenAll(deleteTasks).ConfigureAwait(false);
+            await Task.WhenAll(deleteTasks).ConfigureAwait(false);
+        }
 
         foreach (var judgeDto in judgeDtoList)
         {
             var foundJudge = currentCompetitiveEvent.Judges.FirstOrDefault(j => j.Id == judgeDto.Id);
             if (foundJudge != null)
             {
-                var updatedJudge = mapper.Map<Judge>(judgeDto);
-                await judgeRepository.Update(updatedJudge).ConfigureAwait(false);
+                mapper.Map(judgeDto, foundJudge);
+
+                await judgeRepository.Update(foundJudge).ConfigureAwait(false); // exception
             }
             else
             {
                 var newJudge = mapper.Map<Judge>(judgeDto);
-                newJudge.CompetetiveEventId = currentCompetitiveEvent.Id;
+                newJudge.CompetitiveEventId = currentCompetitiveEvent.Id;
                 await judgeRepository.Create(newJudge).ConfigureAwait(false);
+            }
+        }
+    }
+    private async Task ChangeAccountingTypesOfEvent(CompetitiveEvent currentCompetitiveEvent, List<CompetitiveEventAccountingTypeDto> accTypesDtoList)
+    {
+        var deletedIds = currentCompetitiveEvent.AccountingTypeOfEvent
+            .Select(x => x.Id)
+            .Except(accTypesDtoList.Select(x => x.Id))
+            .ToList();
+
+        if (deletedIds.Count > 0)
+        {
+            var accTypeToDelete = currentCompetitiveEvent.AccountingTypeOfEvent
+                .Where(a => deletedIds.Contains(a.Id))
+                .ToList();
+
+            var deleteTasks = accTypeToDelete
+                .Select(deletedAccType => accountingTypeOfEventRepository.Delete(deletedAccType));
+
+            await Task.WhenAll(deleteTasks).ConfigureAwait(false);
+        }
+
+        foreach (var accType in accTypesDtoList)
+        {
+            var foundAccType = currentCompetitiveEvent.AccountingTypeOfEvent.FirstOrDefault(a => a.Id == accType.Id);
+            if (foundAccType != null)
+            {
+                mapper.Map(accType, foundAccType);
+                await accountingTypeOfEventRepository.Update(foundAccType).ConfigureAwait(false); // exception ?
+            }
+            else
+            {
+                var newAccType = mapper.Map<CompetitiveEventAccountingType>(accType);
+                
+                await accountingTypeOfEventRepository.Create(newAccType).ConfigureAwait(false);
             }
         }
     }

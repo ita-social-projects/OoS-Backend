@@ -33,10 +33,12 @@ public class JudgeDto
     [DataType(DataType.Date)]
     public DateTime DateOfBirth { get; set; }
 
+    public bool IsChiefJudge { get; set; }
+
     [MaxLength(300)]
     public string Description { get; set; } = string.Empty;
 
-    public string CoverImageId { get; set; }
+    public string CoverImageId { get; set; } = string.Empty;
 
     public Guid CompetetiveEventId { get; set; }
 }

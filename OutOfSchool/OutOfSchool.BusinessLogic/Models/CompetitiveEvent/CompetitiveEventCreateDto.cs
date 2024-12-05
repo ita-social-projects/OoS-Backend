@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using OutOfSchool.BusinessLogic.Models.Judge;
+using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
-
-namespace OutOfSchool.Services.Models.CompetitiveEvents;
-
-public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
+using System.ComponentModel.DataAnnotations;
+namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
+public class CompetitiveEventCreateDto
 {
     public Guid Id { get; set; }
 
@@ -25,33 +22,20 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
     public string ShortTitle { get; set; }
 
     [Required]
+    [EnumDataType(typeof(CompetitiveEventStates), ErrorMessage = Constants.EnumErrorMessage)]
     public CompetitiveEventStates State { get; set; } = CompetitiveEventStates.Draft;
 
     public DateTimeOffset RegistrationStartTime { get; set; }
 
     public DateTimeOffset RegistrationEndTime { get; set; }
 
-    public Guid ParentId { get; set; }
-
-    [ForeignKey(nameof(ParentId))]
-    public virtual CompetitiveEvent Parent { get; set; }
+    public Guid? ParentId { get; set; } = null;
 
     public Guid BuildingHoldingId { get; set; }
 
-    // [ForeignKey(nameof(BuildingHoldingId))]
-    // public Building BuildingHolding { get; set; }
-
     public Guid ChildParticipantId { get; set; }
 
-    // [ForeignKey(nameof(ChildParticipantId))]
-    // public virtual Individual ChildParticipant { get; set; }
-
-    //public Guid ChiefJudgeId { get; set; }
-
-    // [ForeignKey(nameof(ChiefJudgeId))]
-    // public virtual Individual ChiefJudgeId { get; set; }
-
-    public virtual ICollection<CompetitiveEventDescriptionItem> CompetitiveEventDescriptionItems { get; set; }
+    public List<CompetitiveEventDescriptionItemDto> CompetitiveEventDescriptionItems { get; set; }
 
     [MaxLength(2000)]
     public string AdditionalDescription { get; set; }
@@ -66,8 +50,8 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
     public uint NumberOfSeats { get; set; } = uint.MaxValue;
 
     [Required]
-    public virtual CompetitiveEventAccountingType AccountingTypeOfEvent { get; set; }
-    //public virtual ICollection<CompetitiveEventAccountingType> AccountingTypeOfEvent { get; set; }
+    //public List<Guid> AccountingTypeOfEvent { get; set; }
+    public List<CompetitiveEventAccountingTypeDto> AccountingTypeOfEvent { get; set; }
 
     [MaxLength(2000)]
     public string Description { get; set; }
@@ -78,25 +62,19 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
     [Required]
     public Guid OrganizerOfTheEventId { get; set; }
 
-    [ForeignKey(nameof(OrganizerOfTheEventId))]
-    public virtual Provider OrganizerOfTheEvent { get; set; }
-
+    [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning PlannedFormatOfClasses { get; set; }
 
     public Guid VenueId { get; set; }
 
     public string VenueName { get; set; }
 
-    //[ForeignKey(nameof(VenueId))]
-    //public virtual Premises Venue { get; set; }
-
     [MaxLength(2000)]
     public string PreferentialTermsOfParticipation { get; set; }
 
-    // public virtual List<Individual> Judges { get; set; }
-    public virtual ICollection<Judge> Judges { get; set; }
+    public List<JudgeDto> Judges { get; set; }
 
-    public virtual ICollection<Provider> ParticipantsOfTheEvent { get; set; }
+    public List<Guid> ParticipantsOfTheEvent { get; set; } //  guid ?
 
     public bool AreThereBenefits { get; set; }
 
@@ -113,9 +91,6 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
 
     public long CategoryId { get; set; }
 
-    [ForeignKey(nameof(CategoryId))]
-    public virtual Direction Category { get; set; }
-
     [MaxLength(250)]
     public string Subcategory { get; set; }
 
@@ -125,12 +100,11 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
     [Range(0, 120, ErrorMessage = "Max age should be a number from 0 to 120")]
     public int MaximumAge { get; set; }
 
-    public virtual ICollection<CompetitiveEventCoverage> Coverage { get; set; }
+    public List<Guid> Coverage { get; set; }
 
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
     public int Price { get; set; } = default;
 
     public bool CompetitiveSelection { get; set; }
-
     public uint NumberOfOccupiedSeats { get; set; }
 }

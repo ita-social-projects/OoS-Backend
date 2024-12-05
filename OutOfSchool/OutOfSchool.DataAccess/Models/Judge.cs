@@ -21,11 +21,13 @@ public class Judge : IKeyedEntity<Guid>
 
     public DateTime DateOfBirth { get; set; }
 
+    public bool IsChiefJudge { get; set; }
+
     public string Description { get; set; }
 
     public string CoverImageId { get; set; }
 
-    public Guid CompetetiveEventId { get; set; }
+    public Guid CompetitiveEventId { get; set; }
 
     public virtual CompetitiveEvent CompetitiveEvent { get; set; }
 }
