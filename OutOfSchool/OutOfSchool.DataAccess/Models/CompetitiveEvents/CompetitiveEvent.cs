@@ -46,7 +46,7 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
     //[ForeignKey(nameof(ChildParticipantId))]
     //public virtual Individual ChildParticipant { get; set; }
 
-    public Guid ChiefJudgeId { get; set; }
+    //public Guid ChiefJudgeId { get; set; }
 
     //[ForeignKey(nameof(ChiefJudgeId))]
     //public virtual Individual ChiefJudgeId { get; set; }
@@ -66,7 +66,9 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
     public uint NumberOfSeats { get; set; } = uint.MaxValue;
 
     [Required]
-    public virtual ICollection<CompetitiveEventAccountingType> AccountingTypeOfEvent { get; set; }
+    public int AccountingTypeOfEventId;
+    public virtual CompetitiveEventAccountingType AccountingTypeOfEvent { get; set; }
+    // public virtual ICollection<CompetitiveEventAccountingType> AccountingTypeOfEvent { get; set; }
 
     [MaxLength(2000)]
     public string Description { get; set; }
@@ -84,17 +86,23 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
 
     public Guid VenueId { get; set; }
 
+    [MaxLength(200)]
+    public string VenueName { get; set; }
     //[ForeignKey(nameof(VenueId))]
     //public virtual Premises Venue { get; set; }
 
     [MaxLength(2000)]
     public string PreferentialTermsOfParticipation { get; set; }
 
+    public virtual ICollection<Judge> Judges { get; set; }
     //public virtual List<Individual> Judges { get; set; }
 
     public virtual ICollection<Provider> ParticipantsOfTheEvent { get; set; }
-
+    
     public bool AreThereBenefits { get; set; }
+
+    [MaxLength(2000)]
+    public string Benefits {  get; set; }
 
     public uint Rating { get; set; }
 

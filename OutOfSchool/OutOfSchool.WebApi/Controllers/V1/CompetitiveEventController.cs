@@ -31,11 +31,17 @@ public class CompetitiveEventController : ControllerBase
     /// <returns>CompetitiveEvent.</returns>
     [HasPermission(Permissions.CompetitiveEventRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompetitiveEventDto))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        return Ok(await service.GetById(id).ConfigureAwait(false));
+        var competitiveEvent = await service.GetById(id).ConfigureAwait(false);
+
+        if (competitiveEvent == null)
+            return NoContent(); // $"Competitive event with ID {id} not found."
+        
+        return Ok(competitiveEvent);
     }
 
     /// <summary>
@@ -51,8 +57,16 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CompetitiveEventDto dto)
+    public async Task<IActionResult> Create([FromBody] CompetitiveEventCreateDto dto)
     {
+        if (dto == null)
+        {
+            return BadRequest("The request body is empty.");
+        }
+        if (!AreJudgesValid(dto.Judges))
+        {
+            return BadRequest("A competitive event can have no more than one chief judge.");
+        }
         var competitiveEvent = await service.Create(dto).ConfigureAwait(false);
 
         return CreatedAtAction(
@@ -60,6 +74,8 @@ public class CompetitiveEventController : ControllerBase
             new { id = competitiveEvent.Id, },
             competitiveEvent);
     }
+
+
 
     /// <summary>
     /// Update info about a CompetitiveEvent in the database.
@@ -96,5 +112,14 @@ public class CompetitiveEventController : ControllerBase
         await service.Delete(id).ConfigureAwait(false);
 
         return NoContent();
+    }
+    private bool AreJudgesValid(IEnumerable<JudgeDto> judges)
+    {
+        if (judges != null && judges.Count() > 0)
+        {
+            var chiefJudgeCount = judges.Count(j => j.IsChiefJudge);
+            return chiefJudgeCount <= 1;
+        }
+        return true;
     }
 }

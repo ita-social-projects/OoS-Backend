@@ -1,11 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-using OutOfSchool.BusinessLogic.Models.Providers;
+﻿//using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
-
-public class CompetitiveEventDto
+public class CompetitiveEventCreateDto
 {
     public Guid Id { get; set; }
 
@@ -30,13 +29,11 @@ public class CompetitiveEventDto
 
     public DateTimeOffset RegistrationEndTime { get; set; }
 
-    public Guid ParentId { get; set; }
+    public Guid? ParentId { get; set; } = null;
 
     public Guid BuildingHoldingId { get; set; }
 
     public Guid ChildParticipantId { get; set; }
-
-    //public Guid ChiefJudgeId { get; set; }
 
     public List<CompetitiveEventDescriptionItemDto> CompetitiveEventDescriptionItems { get; set; }
 
@@ -53,9 +50,9 @@ public class CompetitiveEventDto
     public uint NumberOfSeats { get; set; } = uint.MaxValue;
 
     [Required]
+    //public List<Guid> AccountingTypeOfEvent { get; set; }
     public int AccountingTypeOfEventId { get; set; }
-    //public List<CompetitiveEventAccountingTypeDto> AccountingTypeOfEvent { get; set; }
-    
+
     [MaxLength(2000)]
     public string Description { get; set; }
 
@@ -69,17 +66,15 @@ public class CompetitiveEventDto
     public FormOfLearning PlannedFormatOfClasses { get; set; }
 
     public Guid VenueId { get; set; }
-    
-    [MaxLength(2000)]
+
     public string VenueName { get; set; }
 
     [MaxLength(2000)]
     public string PreferentialTermsOfParticipation { get; set; }
 
-    public virtual List<JudgeDto> Judges { get; set; }
-    //public virtual List<Individual> Judges { get; set; }
+    public List<JudgeDto> Judges { get; set; }
 
-    public List<ProviderDto> ParticipantsOfTheEvent { get; set; }
+    public List<Guid> ParticipantsOfTheEvent { get; set; } //  guid ?
 
     public bool AreThereBenefits { get; set; }
 
@@ -106,12 +101,11 @@ public class CompetitiveEventDto
     [Range(0, 120, ErrorMessage = "Max age should be a number from 0 to 120")]
     public int MaximumAge { get; set; }
 
-    public List<CompetitiveEventCoverageDto> Coverage { get; set; }
+    public List<Guid> Coverage { get; set; }
 
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
     public int Price { get; set; } = default;
 
     public bool CompetitiveSelection { get; set; }
-
     public uint NumberOfOccupiedSeats { get; set; }
 }
