@@ -20,7 +20,7 @@ public abstract class DraftStorageController<T> : ControllerBase
     /// <summary>Stores the entity draft.</summary>
     /// <param name="draftDto">The entity draft dto for type T.</param>
     /// <returns>
-    /// Information about the stored entity of type T in the cache.
+    /// Information about the result of storing an entity of type T in the cache.
     /// </returns>
     [HttpPost]
     [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
@@ -33,7 +33,7 @@ public abstract class DraftStorageController<T> : ControllerBase
 
         await draftStorageService.CreateAsync(GettingUserProperties.GetUserId(User), draftDto).ConfigureAwait(false);
 
-        return Ok($"{typeof(T).Name} is stored");
+        return Ok($"{draftDto.GetType().Name} is stored");
     }
 
     /// <summary>Restores the entity draft.</summary>
@@ -59,4 +59,3 @@ public abstract class DraftStorageController<T> : ControllerBase
         return NoContent();
     }
 }
-
