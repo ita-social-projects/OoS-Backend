@@ -65,7 +65,7 @@ public class WorkshopDraftStorageControllerTests
         // Arrange
         draftStorageService.Setup(ds => ds.CreateAsync(key, derivedDtoDraft))
             .Verifiable(Times.Once);
-        var resultValue = $"{baseDtoDraft.GetType().Name} is stored";
+        var resultValue = $"{derivedDtoDraft.GetType().Name} is stored";
 
         // Act
         var result = await controller.StoreDraft(derivedDtoDraft).ConfigureAwait(false);
