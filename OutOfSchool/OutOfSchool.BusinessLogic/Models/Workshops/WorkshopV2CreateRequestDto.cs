@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
-public class WorkshopV2CreateRequestDto : WorkshopCreateRequestDto/*, IHasRating*/
+public class WorkshopV2CreateRequestDto : WorkshopCreateRequestDto
 {
     [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;
