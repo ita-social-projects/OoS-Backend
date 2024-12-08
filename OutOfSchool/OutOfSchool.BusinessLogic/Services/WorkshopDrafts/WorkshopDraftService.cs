@@ -231,19 +231,10 @@ public class WorkshopDraftService : IWorkshopDraftService
 
         if (!task.IsCompletedSuccessfully)
         {
-            if (task.IsFaulted)
-            {
-                logger.LogError(
-                    task.Exception,
-                    "Images upload task for workshop draft with ID {DraftId} failed due to an exception.",
-                    draftId);
-            }
-            else
-            {
-                logger.LogError(
-                    "Images upload task for workshop draft with ID {DraftId} did not complete successfully.",
-                    draftId);
-            }
+            logger.LogError(
+                     task.Exception,
+                     "Images upload task for workshop draft with ID {DraftId} failed due to an exception.",
+                     draftId);
             return null;
         }
         return task.Result;
