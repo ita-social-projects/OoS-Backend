@@ -13,6 +13,7 @@ public class CompetitiveEventService : ICompetitiveEventService
 {
     private readonly IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> competitiveEventRepository;
     private readonly IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType> accountingTypeOfEventRepository;
+    private readonly IEntityRepositorySoftDeleted<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
     private readonly IEntityRepository<Guid, Judge> judgeRepository;
     private readonly ILogger<CompetitiveEventService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
@@ -22,6 +23,7 @@ public class CompetitiveEventService : ICompetitiveEventService
         IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> competitiveEventRepository,
         IEntityRepository<Guid, Judge> judgeRepository,
         IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType> accountingTypeOfEventRepository,
+        IEntityRepositorySoftDeleted<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository,
         ILogger<CompetitiveEventService> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper)
@@ -29,6 +31,7 @@ public class CompetitiveEventService : ICompetitiveEventService
         this.competitiveEventRepository = competitiveEventRepository ?? throw new ArgumentNullException(nameof(competitiveEventRepository));
         this.judgeRepository = judgeRepository ?? throw new ArgumentNullException(nameof(judgeRepository));
         this.accountingTypeOfEventRepository = accountingTypeOfEventRepository ?? throw new ArgumentException(nameof(accountingTypeOfEventRepository));
+        this.descriptionItemRepository = descriptionItemRepository ?? throw new ArgumentException(nameof(accountingTypeOfEventRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -71,13 +74,13 @@ public class CompetitiveEventService : ICompetitiveEventService
     }
 
     /// <inheritdoc/>
-    public async Task<CompetitiveEventDto> Update(CompetitiveEventDto dto)
+    public async Task<CompetitiveEventDto> Update(CompetitiveEventUpdateDto dto)
     {
         logger.LogTrace($"Updating CompetitiveEvent with Id = {dto?.Id} started.");
 
         ArgumentNullException.ThrowIfNull(dto);
 
-        var competitiveEvent = await competitiveEventRepository.GetById(dto.Id).ConfigureAwait(false);
+        var competitiveEvent = await competitiveEventRepository.GetByIdWithDetails(dto.Id, "Judges,CompetitiveEventDescriptionItems").ConfigureAwait(false);
 
         if (competitiveEvent is null)
         {
@@ -88,8 +91,8 @@ public class CompetitiveEventService : ICompetitiveEventService
 
         await ChangeJudges(competitiveEvent, dto.Judges ?? new List<JudgeDto>()).ConfigureAwait(false);
 
-        // await ChangeAccountingTypesOfEvent(competitiveEvent,
-        // dto.AccountingTypeOfEvent ?? new List<CompetitiveEventAccountingTypeDto>()).ConfigureAwait(false);
+        await ChangeCompetitiveEventDescriptionItems(competitiveEvent,
+            dto.CompetitiveEventDescriptionItems ?? new List<CompetitiveEventDescriptionItemDto>()).ConfigureAwait(false);
 
         mapper.Map(dto, competitiveEvent);
         competitiveEvent = await competitiveEventRepository.Update(competitiveEvent).ConfigureAwait(false);
@@ -146,13 +149,50 @@ public class CompetitiveEventService : ICompetitiveEventService
             if (foundJudge != null)
             {
                 mapper.Map(judgeDto, foundJudge);
-                await judgeRepository.Update(foundJudge).ConfigureAwait(false);
+                await judgeRepository.Update(foundJudge).ConfigureAwait(false); // Debug !!!!
             }
             else 
             {
                 var newJudge = mapper.Map<Judge>(judgeDto);
                 newJudge.CompetitiveEventId = currentCompetitiveEvent.Id;
                 await judgeRepository.Create(newJudge).ConfigureAwait(false);
+            }
+        }
+    }
+    private async Task ChangeCompetitiveEventDescriptionItems(CompetitiveEvent currentCompetitiveEvent, List<CompetitiveEventDescriptionItemDto> descriptionItemsDtoList)
+    {
+        var deletedIds = currentCompetitiveEvent.CompetitiveEventDescriptionItems
+            .Where(x => !x.IsDeleted)
+            .Select(x => x.Id)
+            .Except(descriptionItemsDtoList.Select(x => x.Id))
+            .ToList();
+
+        if (deletedIds.Count > 0)
+        {
+            var descItemsToDelete = currentCompetitiveEvent.CompetitiveEventDescriptionItems
+                .Where(descItem => deletedIds.Contains(descItem.Id))
+                .ToList();
+
+            var deleteTasks = descItemsToDelete
+                .Select(deletedDescItem => descriptionItemRepository.Delete(deletedDescItem));
+
+            await Task.WhenAll(deleteTasks).ConfigureAwait(false);
+        }
+
+        foreach (var descItemDto in descriptionItemsDtoList)
+        {
+            var foundDescItem = currentCompetitiveEvent.CompetitiveEventDescriptionItems
+                .FirstOrDefault(d => d.Id == descItemDto.Id);
+            if (foundDescItem != null)
+            {
+                mapper.Map(descItemDto, foundDescItem);
+                await descriptionItemRepository.Update(foundDescItem).ConfigureAwait(false); // Debug
+            }
+            else
+            {
+                var newDescItem = mapper.Map<CompetitiveEventDescriptionItem>(descItemDto);
+                newDescItem.CompetitiveEventId = currentCompetitiveEvent.Id;
+                await descriptionItemRepository.Create(newDescItem).ConfigureAwait(false);
             }
         }
     }

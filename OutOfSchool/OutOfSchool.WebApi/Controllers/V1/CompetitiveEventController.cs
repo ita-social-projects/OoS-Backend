@@ -90,7 +90,7 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update([FromBody] CompetitiveEventDto dto)
+    public async Task<IActionResult> Update([FromBody] CompetitiveEventUpdateDto dto)
     {
         return Ok(await service.Update(dto).ConfigureAwait(false));
     }

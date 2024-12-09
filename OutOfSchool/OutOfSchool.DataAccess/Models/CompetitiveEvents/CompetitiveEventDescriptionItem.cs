@@ -17,7 +17,7 @@ public class CompetitiveEventDescriptionItem : IKeyedEntity<Guid>, ISoftDeleted
     [MaxLength(2000)]
     public string Description { get; set; }
 
-    public Guid CompetitiveEventId { get; set; }
+    public Guid? CompetitiveEventId { get; set; }
 
     public virtual CompetitiveEvent CompetitiveEvent { get; set; }
 }

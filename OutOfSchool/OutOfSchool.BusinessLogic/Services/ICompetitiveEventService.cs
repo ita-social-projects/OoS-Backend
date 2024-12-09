@@ -26,7 +26,7 @@ public interface ICompetitiveEventService
     /// </summary>
     /// <param name="dto">CompetitiveEvent entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<CompetitiveEventDto> Update(CompetitiveEventDto dto);
+    Task<CompetitiveEventDto> Update(CompetitiveEventUpdateDto dto);
 
     /// <summary>
     ///  Delete entity.

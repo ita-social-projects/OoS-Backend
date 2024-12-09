@@ -31,17 +31,17 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
 
     public DateTimeOffset RegistrationEndTime { get; set; }
 
-    public Guid ParentId { get; set; }
+    public Guid? ParentId { get; set; } = null; // ?
 
     [ForeignKey(nameof(ParentId))]
     public virtual CompetitiveEvent Parent { get; set; }
 
-    public Guid BuildingHoldingId { get; set; }
+    public Guid? BuildingHoldingId { get; set; }
 
     //[ForeignKey(nameof(BuildingHoldingId))]
     //public Building BuildingHolding { get; set; }
 
-    public Guid ChildParticipantId { get; set; }
+    public Guid? ChildParticipantId { get; set; }
 
     //[ForeignKey(nameof(ChildParticipantId))]
     //public virtual Individual ChildParticipant { get; set; }
@@ -66,9 +66,9 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
     public uint NumberOfSeats { get; set; } = uint.MaxValue;
 
     [Required]
-    public int AccountingTypeOfEventId;
-    public virtual CompetitiveEventAccountingType AccountingTypeOfEvent { get; set; }
-    // public virtual ICollection<CompetitiveEventAccountingType> AccountingTypeOfEvent { get; set; }
+    public int CompetitiveEventAccountingTypeId { get; set;}
+
+    public virtual CompetitiveEventAccountingType CompetitiveEventAccountingType { get; set; }
 
     [MaxLength(2000)]
     public string Description { get; set; }
@@ -76,15 +76,14 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
     [MaxLength(2000)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
-    [Required]
-    public Guid OrganizerOfTheEventId { get; set; }
+    public Guid? OrganizerOfTheEventId { get; set; }
 
     [ForeignKey(nameof(OrganizerOfTheEventId))]
     public virtual Provider OrganizerOfTheEvent { get; set; }
 
     public FormOfLearning PlannedFormatOfClasses { get; set; }
 
-    public Guid VenueId { get; set; }
+    public Guid? VenueId { get; set; }
 
     [MaxLength(200)]
     public string VenueName { get; set; }
@@ -95,7 +94,6 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
     public string PreferentialTermsOfParticipation { get; set; }
 
     public virtual ICollection<Judge> Judges { get; set; }
-    //public virtual List<Individual> Judges { get; set; }
 
     public virtual ICollection<Provider> ParticipantsOfTheEvent { get; set; }
     

@@ -6,10 +6,6 @@ using System.ComponentModel.DataAnnotations;
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 public class CompetitiveEventCreateDto
 {
-    public Guid Id { get; set; }
-
-    public bool IsDeleted { get; set; }
-
     [DataType(DataType.Text)]
     [MaxLength(250)]
     [MinLength(1)]
@@ -31,9 +27,9 @@ public class CompetitiveEventCreateDto
 
     public Guid? ParentId { get; set; } = null;
 
-    public Guid BuildingHoldingId { get; set; }
+    public Guid? BuildingHoldingId { get; set; }
 
-    public Guid ChildParticipantId { get; set; }
+    public Guid? ChildParticipantId { get; set; }
 
     public List<CompetitiveEventDescriptionItemDto> CompetitiveEventDescriptionItems { get; set; }
 
@@ -50,8 +46,7 @@ public class CompetitiveEventCreateDto
     public uint NumberOfSeats { get; set; } = uint.MaxValue;
 
     [Required]
-    //public List<Guid> AccountingTypeOfEvent { get; set; }
-    public int AccountingTypeOfEventId { get; set; }
+    public int CompetitiveEventAccountingTypeId { get; set; }
 
     [MaxLength(2000)]
     public string Description { get; set; }
@@ -59,13 +54,12 @@ public class CompetitiveEventCreateDto
     [MaxLength(2000)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
-    [Required]
-    public Guid OrganizerOfTheEventId { get; set; }
+    public Guid? OrganizerOfTheEventId { get; set; }
 
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning PlannedFormatOfClasses { get; set; }
 
-    public Guid VenueId { get; set; }
+    public Guid? VenueId { get; set; }
 
     public string VenueName { get; set; }
 
@@ -74,7 +68,7 @@ public class CompetitiveEventCreateDto
 
     public List<JudgeDto> Judges { get; set; }
 
-    public List<Guid> ParticipantsOfTheEvent { get; set; } //  guid ?
+    public List<Guid> ParticipantsOfTheEvent { get; set; } = new List<Guid>();
 
     public bool AreThereBenefits { get; set; }
 

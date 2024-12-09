@@ -812,42 +812,38 @@ public class MappingProfile : Profile
 
         CreateMap<Judge, JudgeDto>()
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty))
-            .ForMember(dest => dest.CompetetiveEventId, opt => opt.MapFrom(src => src.CompetitiveEventId));// ??
+            .ForMember(dest => dest.CompetetiveEventId, opt => opt.MapFrom(src => src.CompetitiveEventId));
 
         CreateMap<JudgeDto, Judge>()
-        .ForMember(dest => dest.CompetitiveEventId, opt => opt.Ignore()) // ??
-        .ForMember(dest => dest.CompetitiveEvent, opt => opt.Ignore()) // ??
+        .ForMember(dest => dest.CompetitiveEventId, opt => opt.Ignore()) 
+        .ForMember(dest => dest.CompetitiveEvent, opt => opt.Ignore())
         .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
-        /* for me as ex
-         *     CreateSoftDeletedMap<TeacherDTO, Teacher>()
-            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
-            .ForMember(dest => dest.WorkshopId, opt => opt.Ignore())
-            .ForMember(dest => dest.Images, opt => opt.Ignore())
-            .ForMember(dest => dest.Workshop, opt => opt.Ignore())
-            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
+        CreateMap<CompetitiveEvent, CompetitiveEventDto>()
+            .ForMember(dest => dest.Judges, opt => opt.MapFrom(src => src.Judges));
 
-        CreateMap<Teacher, TeacherDTO>()
-            .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
-            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
-         */
+        CreateSoftDeletedMap<CompetitiveEventCreateDto, CompetitiveEvent>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CompetitiveEventAccountingType, opt => opt.Ignore())
+            .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore())
+            .ForMember(dest => dest.Parent, opt => opt.Ignore())
+            .ForMember(dest => dest.OrganizerOfTheEvent, opt => opt.Ignore())
+            .ForMember(dest => dest.Category, opt => opt.Ignore())
+            .ForMember(dest => dest.Coverage, opt => opt.Ignore());
 
-        CreateMap<CompetitiveEvent, CompetitiveEventDto>().ReverseMap();
-        //CreateMap<CompetitiveEvent, CompetitiveEventDto>()
-        //    .ForMember(dest => dest.Judges, opt => opt.MapFrom(src => src.Judges));
-        //CreateSoftDeletedMap<CompetitiveEventDto, CompetitiveEvent>()
-        //    .ForMember(dest => dest.AccountingTypeOfEvent, opt => opt.Ignore());
-
-        //CreateSoftDeletedMap<CompetitiveEventCreateDto, CompetitiveEvent>()
-        //    .ForMember(dest => dest.Id, opt => opt.Ignore())
-        //    .ForMember(dest => dest.AccountingTypeOfEvent, opt => opt.Ignore())
-        //    .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore());
+        CreateSoftDeletedMap<CompetitiveEventUpdateDto, CompetitiveEvent>()
+            .IncludeBase<CompetitiveEventCreateDto, CompetitiveEvent>()
+            .ForMember(dest => dest.Judges, opt => opt.Ignore())
+            .ForMember(dest => dest.CompetitiveEventDescriptionItems, opt => opt.Ignore());
 
         CreateMap<CompetitiveEventAccountingType, CompetitiveEventAccountingTypeDto>().ReverseMap();
 
         CreateMap<CompetitiveEventCoverage, CompetitiveEventCoverageDto>().ReverseMap();
 
-        CreateMap<CompetitiveEventDescriptionItem, CompetitiveEventDescriptionItemDto>().ReverseMap();
+        CreateMap<CompetitiveEventDescriptionItem, CompetitiveEventDescriptionItemDto>();
+        CreateSoftDeletedMap<CompetitiveEventDescriptionItemDto, CompetitiveEventDescriptionItem>()
+            .ForMember(dest => dest.CompetitiveEventId, opt => opt.Ignore())
+            .ForMember(dest => dest.CompetitiveEvent, opt => opt.Ignore());
 
         CreateMap<CompetitiveEventRegistrationDeadline, CompetitiveEventRegistrationDeadlineDto>().ReverseMap();
 
