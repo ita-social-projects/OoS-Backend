@@ -68,8 +68,6 @@ public class CurrentUserService : ICurrentUserService
         Role.Employee => IsInRole("employee"),
         _ => throw new NotImplementedException("Role not handled"),
     };
-    
-    public bool IsEmployee() => IsInRole(Role.Employee);
 
     public bool IsAdmin() => IsInRole(Role.TechAdmin) || IsInRole(Role.MinistryAdmin) || IsInRole(Role.RegionAdmin) ||
                              IsInRole(Role.AreaAdmin);
@@ -196,7 +194,7 @@ public class CurrentUserService : ICurrentUserService
 
     private async Task<bool> ProviderHasRights(Guid providerId)
     {
-        if (!IsInRole(Role.Provider) || this.IsEmployee())
+        if (!IsInRole(Role.Provider))
         {
             return false;
         }
@@ -226,9 +224,10 @@ public class CurrentUserService : ICurrentUserService
         return result;
     }
 
+    // TODO: Need to check which method should stay after ProviderAdmin -> Employee refactoring.
     private async Task<bool> ProviderAdminHasRights(string providerAdminId)
     {
-        if (!this.IsEmployee() || UserId != providerAdminId)
+        if (!this.IsInRole(Role.Employee) || UserId != providerAdminId)
         {
             return false;
         }
@@ -258,6 +257,7 @@ public class CurrentUserService : ICurrentUserService
         return result;
     }
 
+    // TODO: Need to check which method should stay after ProviderAdmin -> Employee refactoring.
     private async Task<bool> EmployeeHasRights(Guid providerId)
     {
         if (!IsInRole(Role.Employee))

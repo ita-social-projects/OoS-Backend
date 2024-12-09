@@ -17,12 +17,6 @@ public interface ICurrentUserService : ICurrentUser
     public bool IsInRole(Role role);
 
     /// <summary>
-    /// Check if user has <see cref="Role.Employee"/>.
-    /// </summary>
-    /// <returns>A <see cref="bool"/> with value true if user has role <see cref="Role.Employee"/></returns>
-    public bool IsEmployee();
-
-    /// <summary>
     /// Check if user is an admin.
     /// </summary>
     /// <returns>A <see cref="bool"/> with value true if user is in any admin role, false otherwise.</returns>
