@@ -252,7 +252,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
     public async Task<int> GetCountByParentId(Guid id)
     {
         logger.LogInformation("Getting Applications count by Parent Id started. Looking Parent Id = {Id}", id);
-        if (!currentUserService.IsInRole(Role.Provider) && !currentUserService.IsEmployeeOrProvider())
+        if (!currentUserService.IsInRole(Role.Provider) && !currentUserService.IsEmployee())
         {
             throw new UnauthorizedAccessException("User has no rights to perform operation");
         }
