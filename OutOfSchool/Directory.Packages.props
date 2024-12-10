@@ -9,6 +9,7 @@
     <AutoMapVersion>12.0.1</AutoMapVersion>
     <ElasticApmVersion>1.28.6</ElasticApmVersion>
     <VersioningVersion>8.1.0</VersioningVersion>
+    <FeatureManagementVersion>4.0.0</FeatureManagementVersion>
   </PropertyGroup>
   <ItemGroup>
     <!--Basic Microsoft Packages-->
@@ -84,8 +85,8 @@
     <PackageVersion Include="SkiaSharp" Version="2.88.6" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.6" />
     <!--Feature Management-->
-    <PackageVersion Include="Microsoft.FeatureManagement" Version="4.0.0" />
-    <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="4.0.0" />
+    <PackageVersion Include="Microsoft.FeatureManagement" Version="$(FeatureManagementVersion)" />
+    <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="$(FeatureManagementVersion)" />
     <!--Swagger & Versioning-->
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="$(SwaggerVersion)" />
     <PackageVersion Include="Swashbuckle.AspNetCore.Newtonsoft" Version="$(SwaggerVersion)" />
