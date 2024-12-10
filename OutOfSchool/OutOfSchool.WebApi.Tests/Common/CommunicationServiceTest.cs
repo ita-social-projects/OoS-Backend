@@ -13,7 +13,6 @@ using OutOfSchool.Common.Communication.ICommunication;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Tests.Common;
-using static OutOfSchool.Tests.Common.HttpClientTestHelper;
 
 namespace OutOfSchool.WebApi.Tests.Common;
 
@@ -59,8 +58,8 @@ public class CommunicationServiceTest
             Url = uri,
         };
         var response = new TestResponse("OK");
-        var setup = SetupSendAsync(handler, HttpMethod.Post, uri.ToString());
-        ReturnsHttpResponseAsync(setup, response, HttpStatusCode.OK);
+        handler.SetupSendAsync(HttpMethod.Post, uri.ToString())
+            .ReturnsHttpResponseAsync(response, HttpStatusCode.OK);
 
         // Act
         var result = await communicationService.SendRequest<TestResponse, ErrorResponse>(request);
@@ -72,8 +71,8 @@ public class CommunicationServiceTest
     public async Task SendRequest_WithEmptyRequest_ReturnsErrorResponse()
     {
         // Arrange
-        var setup = SetupSendAsync(handler, HttpMethod.Get, uri.ToString());
-        ReturnsHttpResponseAsync(setup, null, HttpStatusCode.OK);
+        handler.SetupSendAsync(HttpMethod.Get, uri.ToString())
+            .ReturnsHttpResponseAsync(null, HttpStatusCode.OK);
 
         // Act
         var result = await communicationService.SendRequest<TestResponse, ErrorResponse>(null);
@@ -90,8 +89,8 @@ public class CommunicationServiceTest
             HttpMethodType = HttpMethodType.Get,
             Url = uri,
         };
-        var setup = SetupSendAsync(handler, HttpMethod.Get, uri.ToString());
-        ReturnsHttpResponseAsync(setup, null, HttpStatusCode.Unauthorized);
+        handler.SetupSendAsync(HttpMethod.Get, uri.ToString())
+            .ReturnsHttpResponseAsync(null, HttpStatusCode.Unauthorized);
 
         // Act
         var result = await communicationService.SendRequest<TestResponse, ErrorResponse>(request);
@@ -108,8 +107,8 @@ public class CommunicationServiceTest
             HttpMethodType = HttpMethodType.Get,
             Url = uri,
         };
-        var setup = SetupSendAsync(handler, HttpMethod.Get, uri.ToString());
-        ReturnsHttpResponseAsync(setup, null, HttpStatusCode.Unauthorized);
+        handler.SetupSendAsync(HttpMethod.Get, uri.ToString())
+            .ReturnsHttpResponseAsync(null, HttpStatusCode.Unauthorized);
 
         // Act
         Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -125,8 +124,8 @@ public class CommunicationServiceTest
             HttpMethodType = HttpMethodType.Get,
             Url = uri,
         };
-        var setup = SetupSendAsync(handler, HttpMethod.Get, uri.ToString());
-        ReturnsHttpResponseAsync(setup, null, HttpStatusCode.Unauthorized);
+        handler.SetupSendAsync(HttpMethod.Get, uri.ToString())
+            .ReturnsHttpResponseAsync(null, HttpStatusCode.Unauthorized);
 
         // Act
         var result = await communicationService.SendRequest<TestResponse, TestError>(request, new TestErrorHandler());
@@ -148,8 +147,8 @@ public class CommunicationServiceTest
             Token = "secret",
             Url = uri,
         };
-        var setup = SetupSendAsync(handler, HttpMethod.Get, uri.ToString());
-        setup.Throws(new HttpRequestException(null, null, HttpStatusCode.InsufficientStorage));
+        handler.SetupSendAsync(HttpMethod.Get, uri.ToString())
+            .Throws(new HttpRequestException(null, null, HttpStatusCode.InsufficientStorage));
 
         // Act
         var result = await communicationService.SendRequest<TestResponse, ErrorResponse>(request);

@@ -96,21 +96,20 @@ public class GovCommunicationServiceTests
         {
             CertBase64 = "cert",
         };
-        var certSetup = SetupSendAsync(handler, HttpMethod.Get,
-            new Uri(eUSignServiceUri, "api/v1/certificate").ToString());
-        ReturnsHttpResponseAsync(certSetup, certResponse, HttpStatusCode.OK);
+        handler.SetupSendAsync(HttpMethod.Get,
+            new Uri(eUSignServiceUri, "api/v1/certificate").ToString())
+            .ReturnsHttpResponseAsync(certResponse, HttpStatusCode.OK);
 
         var infoResponse = new EnvelopedUserInfoResponse
         {
             EncryptedUserInfo = "serialized_info",
         };
 
-        var infoSetup = SetupSendAsync(handler, HttpMethod.Get, new Uri(idServerUri, "/userinfo").ToString(), true);
-        ReturnsHttpResponseAsync(infoSetup, infoResponse, HttpStatusCode.OK);
+        handler.SetupSendAsync(HttpMethod.Get, new Uri(idServerUri, "/userinfo").ToString(), true)
+            .ReturnsHttpResponseAsync(infoResponse, HttpStatusCode.OK);
 
-        var decryptSetup =
-            SetupSendAsync(handler, HttpMethod.Post, new Uri(eUSignServiceUri, "api/v1/decrypt").ToString());
-        ReturnsHttpResponseAsync(decryptSetup, expected, HttpStatusCode.OK);
+        handler.SetupSendAsync(HttpMethod.Post, new Uri(eUSignServiceUri, "api/v1/decrypt").ToString())
+            .ReturnsHttpResponseAsync(expected, HttpStatusCode.OK);
 
         // Act
         var userInfo = await communicationService.GetUserInfo(remoteUserId, remoteToken);
@@ -125,9 +124,9 @@ public class GovCommunicationServiceTests
         // Arrange
         var remoteUserId = "123";
         var remoteToken = "secret";
-        var certSetup = SetupSendAsync(handler, HttpMethod.Get,
-            new Uri(eUSignServiceUri, "api/v1/certificate").ToString());
-        ReturnsHttpResponseAsync(certSetup, null, HttpStatusCode.InternalServerError);
+        handler.SetupSendAsync(HttpMethod.Get,
+            new Uri(eUSignServiceUri, "api/v1/certificate").ToString())
+            .ReturnsHttpResponseAsync(null, HttpStatusCode.InternalServerError);
 
         // Act
         var userInfo = await communicationService.GetUserInfo(remoteUserId, remoteToken);
@@ -152,17 +151,17 @@ public class GovCommunicationServiceTests
         {
             CertBase64 = "cert",
         };
-        var certSetup = SetupSendAsync(handler, HttpMethod.Get,
-            new Uri(eUSignServiceUri, "api/v1/certificate").ToString());
-        ReturnsHttpResponseAsync(certSetup, certResponse, HttpStatusCode.OK);
+        handler.SetupSendAsync(HttpMethod.Get,
+            new Uri(eUSignServiceUri, "api/v1/certificate").ToString())
+            .ReturnsHttpResponseAsync(certResponse, HttpStatusCode.OK);
 
         var errorResponse = new IdGovErrorResponse
         {
             Error = 1,
         };
         
-        var infoSetup = SetupSendAsync(handler, HttpMethod.Get, new Uri(idServerUri, "/userinfo").ToString(), true);
-        ReturnsHttpResponseAsync(infoSetup, errorResponse, HttpStatusCode.Unauthorized);
+        handler.SetupSendAsync(HttpMethod.Get, new Uri(idServerUri, "/userinfo").ToString(), true)
+            .ReturnsHttpResponseAsync(errorResponse, HttpStatusCode.Unauthorized);
 
         // Act
         var userInfo = await communicationService.GetUserInfo(remoteUserId, remoteToken);
@@ -190,21 +189,20 @@ public class GovCommunicationServiceTests
         {
             CertBase64 = "cert",
         };
-        var certSetup = SetupSendAsync(handler, HttpMethod.Get,
-            new Uri(eUSignServiceUri, "api/v1/certificate").ToString());
-        ReturnsHttpResponseAsync(certSetup, certResponse, HttpStatusCode.OK);
+        handler.SetupSendAsync(HttpMethod.Get,
+            new Uri(eUSignServiceUri, "api/v1/certificate").ToString())
+            .ReturnsHttpResponseAsync(certResponse, HttpStatusCode.OK);
 
         var infoResponse = new EnvelopedUserInfoResponse
         {
             EncryptedUserInfo = "serialized_info",
         };
 
-        var infoSetup = SetupSendAsync(handler, HttpMethod.Get, new Uri(idServerUri, "/userinfo").ToString(), true);
-        ReturnsHttpResponseAsync(infoSetup, infoResponse, HttpStatusCode.OK);
+        handler.SetupSendAsync(HttpMethod.Get, new Uri(idServerUri, "/userinfo").ToString(), true)
+            .ReturnsHttpResponseAsync(infoResponse, HttpStatusCode.OK);
 
-        var decryptSetup =
-            SetupSendAsync(handler, HttpMethod.Post, new Uri(eUSignServiceUri, "api/v1/decrypt").ToString());
-        ReturnsHttpResponseAsync(decryptSetup, null, HttpStatusCode.InternalServerError);
+        handler.SetupSendAsync(HttpMethod.Post, new Uri(eUSignServiceUri, "api/v1/decrypt").ToString())
+            .ReturnsHttpResponseAsync(null, HttpStatusCode.InternalServerError);
 
         // Act
         var userInfo = await communicationService.GetUserInfo(remoteUserId, remoteToken);
