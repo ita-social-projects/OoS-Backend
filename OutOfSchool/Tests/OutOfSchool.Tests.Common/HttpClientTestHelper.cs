@@ -15,7 +15,7 @@ namespace OutOfSchool.Tests.Common;
 public static class HttpClientTestHelper
 {
     public static ISetup<HttpMessageHandler, Task<HttpResponseMessage>> SetupSendAsync(
-        Mock<HttpMessageHandler> handler, HttpMethod requestMethod, string requestUrl, bool contains = false)
+        this Mock<HttpMessageHandler> handler, HttpMethod requestMethod, string requestUrl, bool contains = false)
     {
         return handler.Protected().Setup<Task<HttpResponseMessage>>("SendAsync",
             ItExpr.Is<HttpRequestMessage>(r =>
@@ -26,7 +26,7 @@ public static class HttpClientTestHelper
     }
 
     public static IReturnsResult<HttpMessageHandler> ReturnsHttpResponseAsync(
-        ISetup<HttpMessageHandler, Task<HttpResponseMessage>> moqSetup,
+        this ISetup<HttpMessageHandler, Task<HttpResponseMessage>> moqSetup,
         object? responseBody,
         HttpStatusCode responseCode)
     {
