@@ -29,11 +29,5 @@
   "ElasticApm": {
     "Enabled": true,
     "CloudProvider": "gcp"
-  },
-  "EUSign": {
-    "CA": {
-        "JsonPath": "/workspace/iit-ca/CAs.Test.json",
-        "CertificatesPath": "/workspace/iit-ca/CACertificates.Test.All.p7b"
-    }
   }
 }

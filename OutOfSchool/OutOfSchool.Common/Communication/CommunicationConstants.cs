@@ -43,6 +43,4 @@ public static class CommunicationConstants
     public const string BlockRegionAdmin = "regionadmin/block/";
 
     public const string ReinviteRegionAdmin = "regionadmin/reinvite/";
-
-    public const int BufferSize = 1024;
 }

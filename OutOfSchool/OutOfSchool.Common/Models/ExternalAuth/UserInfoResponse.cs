@@ -1,6 +1,6 @@
-namespace OutOfSchool.Encryption.Models;
+namespace OutOfSchool.Common.Models.ExternalAuth;
 
-public class UserInfoResponse
+public class UserInfoResponse : IResponse
 {
     public string Issuer { get; set; }
 
@@ -39,4 +39,6 @@ public class UserInfoResponse
     public string EdrpouCode { get; set; }
 
     public string DrfoCode { get; set; }
+    
+    public string Unzr { get; set; }
 }

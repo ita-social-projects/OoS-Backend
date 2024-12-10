@@ -20,6 +20,7 @@
         <Protobuf Include="..\OutOfSchool.GRPC\Protos\ProviderAdmin.proto" GrpcServices="Server" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
         <PackageReference Include="OpenIddict.EntityFrameworkCore" />
+        <PackageReference Include="OpenIddict.Client.AspNetCore" />
         <PackageReference Include="IdentityModel" />
         <PackageReference Include="Grpc.AspNetCore" />
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />

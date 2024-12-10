@@ -1,8 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Text.Json;
 using EUSignCP;
 using Microsoft.Extensions.Options;
+using OutOfSchool.Common;
+using OutOfSchool.Common.Models.ExternalAuth;
 using OutOfSchool.Encryption.Config;
 using OutOfSchool.Encryption.Constants;
 using OutOfSchool.Encryption.Models;
@@ -15,7 +16,6 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
     private readonly EUSignConfig eUSignConfig;
     private readonly ILogger<EUSignOAuth2Service> logger;
     private readonly IIoOperationsService ioOperationsService;
-    private readonly JsonSerializerOptions jsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
     // ReSharper disable once InconsistentNaming
     [SuppressMessage(
@@ -107,7 +107,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
                 out _);
 
             using var userInfoStream = ioOperationsService.GetMemoryStreamFromBytes(developedUserInfo);
-            return JsonSerializer.Deserialize<UserInfoResponse>(userInfoStream, jsonSerializerOptions);
+            return JsonSerializerHelper.Deserialize<UserInfoResponse>(userInfoStream);
         }
         catch (Exception ex)
         {
@@ -237,7 +237,7 @@ public class EUSignOAuth2Service : IEUSignOAuth2Service
 
         using var fsCAs = ioOperationsService.GetFileStreamFromPath(eUSignConfig.CA.JsonPath, FileMode.OpenOrCreate);
 
-        CAs = JsonSerializer.Deserialize<CASettings[]>(fsCAs, jsonSerializerOptions);
+        CAs = JsonSerializerHelper.Deserialize<CASettings[]>(fsCAs);
 
         foreach (var ca in CAs)
         {

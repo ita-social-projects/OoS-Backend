@@ -29,7 +29,6 @@
     <!--MVC-->
     <!-- TODO: Isn't AspNetCore.Mvc.Core included by default for a Web project?-->
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.1" />
     <PackageVersion Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.HeaderPropagation" Version="8.0.1" />
     <!--Entity Framework-->
@@ -89,7 +88,6 @@
     <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="$(FeatureManagementVersion)" />
     <!--Swagger & Versioning-->
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="$(SwaggerVersion)" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.Newtonsoft" Version="$(SwaggerVersion)" />
     <PackageVersion Include="Asp.Versioning.Mvc" Version="$(VersioningVersion)" />
     <PackageVersion Include="Asp.Versioning.Http" Version="$(VersioningVersion)" />
     <PackageVersion Include="Asp.Versioning.Mvc.ApiExplorer" Version="$(VersioningVersion)" />

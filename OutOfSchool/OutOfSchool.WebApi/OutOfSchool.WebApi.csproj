@@ -33,7 +33,6 @@
         </PackageReference>
         <PackageReference Include="H3Lib" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
         <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
             <PrivateAssets>all</PrivateAssets>

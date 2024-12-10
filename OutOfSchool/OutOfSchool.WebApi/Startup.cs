@@ -205,7 +205,6 @@ public static class Startup
                         Duration = cacheProfilesConfig.PublicDurationInSeconds,
                     });
             })
-
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 

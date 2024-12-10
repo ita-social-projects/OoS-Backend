@@ -1,10 +1,10 @@
 api = "0.9"
 
 [buildpack]
-description = "A buildpack to add a layer of C IIT libraries for encryption service"
-id = "outofschool/iit"
+description = "A buildpack to add a layer of CA configuration for encryption service"
+id = "outofschool/cert"
 version = "0.0.1"
-name = "Buildpack for IIT"
+name = "Buildpack for External CAs"
 
 [[buildpack.licenses]]
 type = "MIT"

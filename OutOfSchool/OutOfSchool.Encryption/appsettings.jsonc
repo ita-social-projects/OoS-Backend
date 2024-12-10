@@ -20,7 +20,7 @@
   },
   "ElasticApm": {
     "Enabled": false,
-    "ServerUrl":  "https://eck-stack-eck-apm-server-apm-http:8200/",
+    "ServerUrl": "https://eck-stack-eck-apm-server-apm-http:8200/",
     "SecretToken":  "replace_me",
     "ServiceName": "Encryption",
     "ServiceVersion": "replace_me",
