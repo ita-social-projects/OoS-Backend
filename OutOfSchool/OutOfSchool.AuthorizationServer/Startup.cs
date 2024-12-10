@@ -215,6 +215,14 @@ public static class Startup
                 });
         });
 
+        services.AddHttpClient(config["Communication:ClientName"])
+            .ConfigurePrimaryHttpMessageHandler(handler =>
+                new HttpClientHandler()
+                {
+                    AutomaticDecompression = DecompressionMethods.GZip,
+                });
+
+        services.Configure<CommunicationConfig>(config.GetSection(CommunicationConfig.Name));
         services.AddHostedService<Worker>(); // TODO: Move to Quartz
         services.AddProxy();
         services.AddAuthCommon(config, builder.Environment.IsDevelopment());

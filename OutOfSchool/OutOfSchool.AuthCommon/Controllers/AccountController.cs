@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Extensions;
 using OutOfSchool.AuthCommon.ViewModels;
@@ -43,6 +44,8 @@ public class AccountController : Controller
 
     [HttpGet]
     [Authorize]
+    [FeatureGate(AuthServerConstants.FeatureManagement.EmailManagement)]
+    [Obsolete("Change email API is no longer supported. Exists only for testing purposes.")]
     public IActionResult ChangeEmail(string returnUrl = "Login")
     {
         return View("Email/ChangeEmail", new ChangeEmailViewModel() { ReturnUrl = returnUrl });
@@ -50,6 +53,8 @@ public class AccountController : Controller
 
     [HttpPost]
     [Authorize]
+    [FeatureGate(AuthServerConstants.FeatureManagement.EmailManagement)]
+    [Obsolete("Change email API is no longer supported. Exists only for testing purposes.")]
     public async Task<IActionResult> ChangeEmail(ChangeEmailViewModel model)
     {
         var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
@@ -113,6 +118,8 @@ public class AccountController : Controller
     }
 
     [HttpGet]
+    [FeatureGate(AuthServerConstants.FeatureManagement.EmailManagement)]
+    [Obsolete("Change email API is no longer supported. Exists only for testing purposes.")]
     public async Task<IActionResult> ConfirmChangeEmail(string userId, string email, string token)
     {
         var path = $"{HttpContext.Request.Path.Value}[{HttpContext.Request.Method}]";
@@ -180,6 +187,8 @@ public class AccountController : Controller
 
     [HttpGet]
     [Authorize]
+    [FeatureGate(AuthServerConstants.FeatureManagement.EmailConfirmation)]
+    [Obsolete("Confirm email API is no longer supported. Exists only for testing purposes.")]
     public async Task<IActionResult> ReSendEmailConfirmation()
     {
         var user = await userManager.FindByEmailAsync(User.Identity.Name);
@@ -193,6 +202,8 @@ public class AccountController : Controller
     }
 
     [HttpGet]
+    [FeatureGate(AuthServerConstants.FeatureManagement.EmailConfirmation)]
+    [Obsolete("Confirm email API is no longer supported. Exists only for testing purposes.")]
     public async Task<IActionResult> EmailConfirmation(string email, string token)
     {
         var path = $"{HttpContext.Request.Path.Value}[{HttpContext.Request.Method}]";
@@ -244,12 +255,16 @@ public class AccountController : Controller
     }
 
     [HttpGet]
+    [FeatureGate(AuthServerConstants.FeatureManagement.PasswordManagement)]
+    [Obsolete("Forgot password API is no longer supported. Exists only for testing purposes.")]
     public IActionResult ForgotPassword(string returnUrl = "Login")
     {
         return View("Password/ForgotPassword", new ForgotPasswordViewModel() { ReturnUrl = returnUrl });
     }
 
     [HttpPost]
+    [FeatureGate(AuthServerConstants.FeatureManagement.PasswordManagement)]
+    [Obsolete("Forgot password API is no longer supported. Exists only for testing purposes.")]
     public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
     {
         var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
@@ -306,6 +321,8 @@ public class AccountController : Controller
     }
 
     [HttpGet]
+    [FeatureGate(AuthServerConstants.FeatureManagement.PasswordManagement)]
+    [Obsolete("Reset password API is no longer supported. Exists only for testing purposes.")]
     public async Task<IActionResult> ResetPassword(string token = null, string email = null)
     {
         var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
@@ -343,6 +360,8 @@ public class AccountController : Controller
     }
 
     [HttpPost]
+    [FeatureGate(AuthServerConstants.FeatureManagement.PasswordManagement)]
+    [Obsolete("Reset password API is no longer supported. Exists only for testing purposes.")]
     public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
     {
         var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
@@ -389,6 +408,8 @@ public class AccountController : Controller
 
     [HttpGet]
     [Authorize]
+    [FeatureGate(AuthServerConstants.FeatureManagement.PasswordManagement)]
+    [Obsolete("Change password API is no longer supported. Exists only for testing purposes.")]
     public IActionResult ChangePassword(string returnUrl = "Login")
     {
         return View("Password/ChangePassword", new ChangePasswordViewModel() { ReturnUrl = returnUrl });
@@ -396,6 +417,8 @@ public class AccountController : Controller
 
     [HttpPost]
     [Authorize]
+    [FeatureGate(AuthServerConstants.FeatureManagement.PasswordManagement)]
+    [Obsolete("Change password API is no longer supported. Exists only for testing purposes.")]
     public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
     {
         var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
@@ -443,6 +466,7 @@ public class AccountController : Controller
         return await userService.LogOutUserById(userId);
     }
 
+    [Obsolete("Confirm email API is no longer supported. Exists only for testing purposes.")]
     private async Task<IActionResult> SendConfirmEmailProcess(string action, User user, string razorTemplate, object passedData)
     {
         logger.LogDebug("{0} started. User(id): {1}", ControllerContext.ActionDescriptor.ActionName, user.Id);

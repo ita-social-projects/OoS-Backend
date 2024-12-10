@@ -588,7 +588,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.LockoutEnabled, m => m.Ignore())
             .ForMember(dest => dest.AccessFailedCount, m => m.Ignore())
             .ForMember(dest => dest.MustChangePassword, m => m.Ignore())
-            .ForMember(dest => dest.Individual, opt => opt.Ignore());
+            .ForMember(dest => dest.Individual, m => m.Ignore());
 
         CreateMap<InstitutionAdmin, MinistryAdminDto>()
             .IncludeBase<IHasUser, BaseUserDto>()

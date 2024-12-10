@@ -2,6 +2,7 @@
 
 namespace OutOfSchool.AuthCommon.Services;
 
+[Obsolete("Change password API is no longer supported. Exists only for testing purposes.")]
 public class UserManagerAdditionalService : IUserManagerAdditionalService
 {
     private readonly ILogger<UserManagerAdditionalService> logger;

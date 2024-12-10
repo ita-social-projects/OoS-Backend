@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Bogus;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -11,6 +10,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.FeatureManagement;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.AuthCommon;
@@ -20,7 +20,6 @@ using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.AuthCommon.ViewModels;
 using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Services;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
@@ -40,6 +39,7 @@ public class AuthControllerTests
     private static Mock<IOptions<AuthServerConfig>> fakeIdentityServerConfig;
     private Mock<IEmailSenderService> fakeEmailSender;
     private Mock<IRazorViewToStringRenderer> fakeRenderer;
+    private Mock<IFeatureManager> fakeFeatureManager;
 
     [OneTimeSetUp]
     public void OneTimeSetup()
@@ -62,6 +62,7 @@ public class AuthControllerTests
         fakeLocalizer = new Mock<IStringLocalizer<SharedResource>>();
         fakeEmailSender = new Mock<IEmailSenderService>();
         fakeRenderer = new Mock<IRazorViewToStringRenderer>();
+        fakeFeatureManager = new Mock<IFeatureManager>();
 
         fakeLocalizer
             .Setup(localizer => localizer[It.IsAny<string>()])
@@ -75,7 +76,8 @@ public class AuthControllerTests
             fakeLocalizer.Object,
             fakeIdentityServerConfig.Object,
             fakeRenderer.Object,
-            fakeEmailSender.Object);
+            fakeEmailSender.Object,
+            fakeFeatureManager.Object);
     }
 
     [Test]
@@ -447,17 +449,6 @@ public class AuthControllerTests
         // Assert
         Assert.That(errorMessageFromController, Is.EqualTo(error.Description));
         Assert.IsInstanceOf<ViewResult>(result);
-    }
-
-    [Test]
-    public void ExternalLogin_ReturnsNotImplementedEx()
-    {
-        // Arrange
-        var authController = this.authController;
-
-        // Assert & Act
-        Assert.ThrowsAsync<NotImplementedException>(() =>
-            authController.ExternalLogin("Provider", "return url"));
     }
         
     public static IEnumerable<TestCaseData> RegisterViewModelsTestData =>

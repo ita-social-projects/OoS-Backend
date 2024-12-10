@@ -160,7 +160,7 @@ public class TokenController : Controller
                 }
 
                 principal.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
-                await _profileService.GetProfileDataAsync(principal);
+                await _profileService.GetProfileDataAsync(principal.Identities.First());
 
                 foreach (var claim in principal.Claims)
                 {
@@ -253,7 +253,7 @@ public class TokenController : Controller
         }
 
         principal.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
-        await _profileService.GetProfileDataAsync(principal);
+        await _profileService.GetProfileDataAsync(principal.Identities.First());
         foreach (var claim in principal.Claims)
         {
             claim.SetDestinations(GetDestinations(claim, principal));
