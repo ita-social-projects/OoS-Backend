@@ -44,7 +44,7 @@ public static class QuartzExtension
                             Database = options.Database,
                         });
                 });
-                s.UseJsonSerializer();
+                s.UseSystemTextJsonSerializer();
                 s.UseClustering();
             });
 

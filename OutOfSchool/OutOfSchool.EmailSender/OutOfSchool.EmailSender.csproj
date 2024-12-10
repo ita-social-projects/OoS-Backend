@@ -10,6 +10,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="Quartz.AspNetCore" />
+    <PackageReference Include="SendGrid" />
     <PackageReference Include="SendGrid.Extensions.DependencyInjection" />
   </ItemGroup>
 </Project>

@@ -24,6 +24,8 @@
         <PackageReference Include="Grpc.AspNetCore" />
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
         <PackageReference Include="FluentValidation.AspNetCore" />
+        <PackageReference Include="Microsoft.FeatureManagement" />
+        <PackageReference Include="Microsoft.FeatureManagement.AspNetCore" />
     </ItemGroup>
 
     <ItemGroup>

@@ -22,6 +22,7 @@
     <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="8.10.0" />
     <!-- Needed for EUSign Library -->
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="8.0.0" />
     <!--MVC-->
@@ -41,8 +42,8 @@
     <PackageVersion Include="MockQueryable.EntityFrameworkCore" Version="7.0.1" />
     <PackageVersion Include="OneOf" Version="3.0.263" />
     <!--MySQL-->
-    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.0" />
-    <PackageVersion Include="MySql.Data" Version="8.3.0" />
+    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
+    <PackageVersion Include="MySql.Data" Version="8.4.0" />
     <PackageVersion Include="Google.Protobuf" Version="3.25.2" />
     <!--Elasticsearch-->
     <PackageVersion Include="Elastic.Clients.Elasticsearch" Version="8.15.6" />
@@ -78,13 +79,13 @@
     <PackageVersion Include="Quartz.AspNetCore" Version="$(QuartzVersion)" />
     <PackageVersion Include="Quartz.Extensions.DependencyInjection" Version="$(QuartzVersion)" />
     <PackageVersion Include="Quartz.Plugins.TimeZoneConverter" Version="$(QuartzVersion)" />
-    <PackageVersion Include="Quartz.Serialization.Json" Version="$(QuartzVersion)" />
+    <PackageVersion Include="Quartz.Serialization.SystemTextJson" Version="$(QuartzVersion)" />
     <!--Image processing-->
     <PackageVersion Include="SkiaSharp" Version="2.88.6" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.6" />
     <!--Feature Management-->
-    <PackageVersion Include="Microsoft.FeatureManagement" Version="2.5.1" />
-    <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="2.5.1" />
+    <PackageVersion Include="Microsoft.FeatureManagement" Version="4.0.0" />
+    <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="4.0.0" />
     <!--Swagger & Versioning-->
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="$(SwaggerVersion)" />
     <PackageVersion Include="Swashbuckle.AspNetCore.Newtonsoft" Version="$(SwaggerVersion)" />
@@ -95,9 +96,10 @@
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="$(EFCoreVersion)" />
     <!--Helper libs-->
     <PackageVersion Include="LazyCache.AspNetCore" Version="2.4.0" />
+    <PackageVersion Include="SendGrid" Version="9.29.3" />
     <PackageVersion Include="SendGrid.Extensions.DependencyInjection" Version="1.0.1" />
     <PackageVersion Include="CsvHelper" Version="30.0.1" />
-    <PackageVersion Include="Google.Cloud.Storage.V1" Version="3.7.0" />
+    <PackageVersion Include="Google.Cloud.Storage.V1" Version="4.10.0" />
     <PackageVersion Include="H3Lib" Version="3.7.2" />
     <PackageVersion Include="Ardalis.SmartEnum" Version="2.1.0" />
     <PackageVersion Include="NetEscapades.AspNetCore.SecurityHeaders" Version="0.18.0" />

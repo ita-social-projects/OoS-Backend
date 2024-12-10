@@ -14,6 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration
     .AddJsonFile("appsettings.jsonc", false, true)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.jsonc", true, true)
+    .AddUserSecrets<Program>()
     .AddEnvironmentVariables();
 
 builder.Host.UseSerilog((ctx, lc) => lc

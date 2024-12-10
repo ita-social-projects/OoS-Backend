@@ -39,6 +39,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="appsettings.jsonc" />
     <Content Include="appsettings.jsonc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

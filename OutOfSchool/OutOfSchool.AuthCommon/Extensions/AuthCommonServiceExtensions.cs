@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
+using Microsoft.FeatureManagement;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Config.ExternalUriModels;
 using OutOfSchool.AuthCommon.Services;
@@ -72,5 +73,8 @@ public static class AuthCommonServiceExtensions
 
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
         services.AddGrpc();
+        
+        // Using default FeatureManagement key
+        services.AddFeatureManagement();
     }
 }

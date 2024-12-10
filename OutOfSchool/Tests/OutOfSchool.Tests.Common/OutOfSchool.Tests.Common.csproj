@@ -4,6 +4,7 @@
     <NuGetAuditMode>direct</NuGetAuditMode>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Moq" />
     <PackageReference Include="Bogus" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="NUnit" />

@@ -18,9 +18,4 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="NetEscapades.AspNetCore.SecurityHeaders" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Content Remove="stylecop.json" />
-    <AdditionalFiles Include="stylecop.json" />
-  </ItemGroup>
 </Project>
