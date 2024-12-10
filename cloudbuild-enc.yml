@@ -10,10 +10,13 @@ steps:
     - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --buildpack=gcr.io/paketo-buildpacks/environment-variables
     - --buildpack=file://./buildpacks/iit
+    - --buildpack=file://./buildpacks/cert
     - --extension=file://./buildpacks/unzip
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.Encryption/
     - --env=BPE_AppDefaults__Version=$SHORT_SHA
     - --env=BP_IIT_URL=${_IIT_URL}
+    - --env=BP_CA_JSON_URL=${_CA_JSON_URL}
+    - --env=BP_CA_P7B_URL=${_CA_P7B_URL}
     - --publish
 options:
   logging: CLOUD_LOGGING_ONLY

@@ -25,7 +25,13 @@ if [[ "${iit_version}" == "${cached_iit_version}" ]]; then
 else
     topic "Downloading and extracting IIT libraries"
     rm -rf "${iit_layer}/lib"
-    curl -s -o "./iit.zip" $BP_IIT_URL
+    curl --silent --show-error --fail -o "./iit.zip" $BP_IIT_URL
+    if [ $? -ne 0 ]
+    then
+        echo "Failed to download libraries"
+        # Fail build
+        exit 100
+    fi
     unzip -j -o "./iit.zip" 'Modules/Linux/64/*' -d "${iit_layer}/lib"
     rm "./iit.zip"
 
@@ -38,6 +44,8 @@ else
     # echo -n "$iit_layer" > "${iit_env_dir}/LD_LIBRARY_PATH.default"
     # echo -n ":" > "${iit_env_dir}/LD_LIBRARY_PATH.delim"
 fi
+
+topic "Finalizing layer"
 
 cat > "${iit_layer}.toml" <<EOL
 [types]

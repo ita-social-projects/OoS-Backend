@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+function topic() {
+    echo "-----> $*"
+}
+
+topic "External CAs Buildpack"
+
+cas_json="CAs.All.json"
+cas_p7b="CACertificates.All.p7b"
+
+layers_dir="$CNB_LAYERS_DIR"
+
+cas_layer="${CNB_LAYERS_DIR}/ext_ca"
+
+cas_json_path="$cas_layer/$cas_json"
+cas_p7b_path="$cas_layer/$cas_p7b"
+
+mkdir -p "${cas_layer}"
+
+topic "Downloading External CAs"
+
+curl --silent --show-error --fail -o $cas_json_path $BP_CA_JSON_URL
+if [ $? -ne 0 ]
+then
+    echo "Failed to download JSON"
+    # Fail build
+    exit 100
+fi
+chmod g+w $cas_json_path
+
+curl --silent --show-error --fail -o $cas_p7b_path $BP_CA_P7B_URL
+if [ $? -ne 0 ]
+then
+    echo "Failed to download P7B"
+    # Fail build
+    exit 100
+fi
+chmod g+w $cas_p7b_path
+
+topic "Writing environment variables"
+
+cas_env_dir=${cas_layer}/env.launch
+mkdir -p "$cas_env_dir"
+echo -n "$cas_json_path" > "${cas_env_dir}/EUSign__CA__JsonPath"
+echo -n "$cas_p7b_path" > "${cas_env_dir}/EUSign__CA__CertificatesPath"
+
+topic "Finalizing layer"
+
+cat > "${cas_layer}.toml" <<EOL
+[types]
+launch = true
+EOL
