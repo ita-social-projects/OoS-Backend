@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 

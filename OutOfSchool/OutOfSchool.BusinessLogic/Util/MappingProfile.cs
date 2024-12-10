@@ -841,7 +841,7 @@ public class MappingProfile : Profile
         CreateMap<CompetitiveEventCoverage, CompetitiveEventCoverageDto>().ReverseMap();
 
         CreateMap<CompetitiveEventDescriptionItem, CompetitiveEventDescriptionItemDto>();
-        CreateSoftDeletedMap<CompetitiveEventDescriptionItemDto, CompetitiveEventDescriptionItem>()
+        CreateMap<CompetitiveEventDescriptionItemDto, CompetitiveEventDescriptionItem>()
             .ForMember(dest => dest.CompetitiveEventId, opt => opt.Ignore())
             .ForMember(dest => dest.CompetitiveEvent, opt => opt.Ignore());
 

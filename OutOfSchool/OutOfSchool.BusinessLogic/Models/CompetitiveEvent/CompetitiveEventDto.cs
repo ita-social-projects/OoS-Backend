@@ -90,7 +90,7 @@ public class CompetitiveEventDto
     [MaxLength(2000)]
     public string DescriptionOfOptionsForPeopleWithDisabilities { get; set; }
 
-    public long CategoryId { get; set; }
+    public long? CategoryId { get; set; }
 
     [MaxLength(250)]
     public string Subcategory { get; set; }

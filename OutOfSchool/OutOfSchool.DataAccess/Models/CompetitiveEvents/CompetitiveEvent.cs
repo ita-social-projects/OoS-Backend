@@ -111,7 +111,7 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
     [MaxLength(2000)]
     public string DescriptionOfOptionsForPeopleWithDisabilities { get; set; }
 
-    public long CategoryId { get; set; }
+    public long? CategoryId { get; set; }
 
     [ForeignKey(nameof(CategoryId))]
     public virtual Direction Category { get; set; }

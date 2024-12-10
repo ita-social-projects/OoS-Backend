@@ -13,7 +13,7 @@ public class CompetitiveEventService : ICompetitiveEventService
 {
     private readonly IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> competitiveEventRepository;
     private readonly IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType> accountingTypeOfEventRepository;
-    private readonly IEntityRepositorySoftDeleted<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
+    private readonly IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
     private readonly IEntityRepository<Guid, Judge> judgeRepository;
     private readonly ILogger<CompetitiveEventService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
@@ -23,7 +23,7 @@ public class CompetitiveEventService : ICompetitiveEventService
         IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> competitiveEventRepository,
         IEntityRepository<Guid, Judge> judgeRepository,
         IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType> accountingTypeOfEventRepository,
-        IEntityRepositorySoftDeleted<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository,
+        IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository,
         ILogger<CompetitiveEventService> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper)
@@ -107,7 +107,7 @@ public class CompetitiveEventService : ICompetitiveEventService
     {
         logger.LogTrace($"Deleting CompetitiveEvent with Id = {id} started.");
 
-        var entity = new CompetitiveEvent() { Id = id };
+        var entity = await competitiveEventRepository.GetById(id);
 
         try
         {
@@ -149,7 +149,7 @@ public class CompetitiveEventService : ICompetitiveEventService
             if (foundJudge != null)
             {
                 mapper.Map(judgeDto, foundJudge);
-                await judgeRepository.Update(foundJudge).ConfigureAwait(false); // Debug !!!!
+                await judgeRepository.Update(foundJudge).ConfigureAwait(false);
             }
             else 
             {
@@ -162,7 +162,6 @@ public class CompetitiveEventService : ICompetitiveEventService
     private async Task ChangeCompetitiveEventDescriptionItems(CompetitiveEvent currentCompetitiveEvent, List<CompetitiveEventDescriptionItemDto> descriptionItemsDtoList)
     {
         var deletedIds = currentCompetitiveEvent.CompetitiveEventDescriptionItems
-            .Where(x => !x.IsDeleted)
             .Select(x => x.Id)
             .Except(descriptionItemsDtoList.Select(x => x.Id))
             .ToList();
@@ -186,7 +185,7 @@ public class CompetitiveEventService : ICompetitiveEventService
             if (foundDescItem != null)
             {
                 mapper.Map(descItemDto, foundDescItem);
-                await descriptionItemRepository.Update(foundDescItem).ConfigureAwait(false); // Debug
+                await descriptionItemRepository.Update(foundDescItem).ConfigureAwait(false);
             }
             else
             {

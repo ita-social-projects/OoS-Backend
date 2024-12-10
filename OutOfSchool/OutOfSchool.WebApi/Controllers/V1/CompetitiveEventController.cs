@@ -1,7 +1,10 @@
 ﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -11,6 +14,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 public class CompetitiveEventController : ControllerBase
 {
     private readonly ICompetitiveEventService service;
+    private readonly IUserService userService; // need this?
     private readonly IStringLocalizer<SharedResource> localizer;
 
     /// <summary>
@@ -18,9 +22,10 @@ public class CompetitiveEventController : ControllerBase
     /// </summary>
     /// <param name="service">Service for CompetitiveEvent model.</param>
     /// <param name="localizer">Localizer.</param>
-    public CompetitiveEventController(ICompetitiveEventService service, IStringLocalizer<SharedResource> localizer)
+    public CompetitiveEventController(ICompetitiveEventService service, IUserService userService, IStringLocalizer<SharedResource> localizer)
     {
         this.service = service;
+        this.userService = userService;
         this.localizer = localizer;
     }
 
@@ -101,7 +106,7 @@ public class CompetitiveEventController : ControllerBase
     /// <param name="id">CompetitiveEvent id.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.CompetitiveEventRemove)]
-    [Authorize]
+    [Authorize] 
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -109,6 +114,13 @@ public class CompetitiveEventController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
+        var competitiveEvent = await service.GetById(id).ConfigureAwait(false);
+
+        if (competitiveEvent is null)
+        {
+            return NoContent();
+        }
+
         await service.Delete(id).ConfigureAwait(false);
 
         return NoContent();
@@ -122,4 +134,11 @@ public class CompetitiveEventController : ControllerBase
         }
         return true;
     }
+    //private async Task<bool> IsCurrentUserBlocked() // need smth like that?
+    //{
+    //    var userId = GettingUserProperties.GetUserId(User);
+
+    //    return await userService.IsBlocked(userId);
+    //}
+
 }

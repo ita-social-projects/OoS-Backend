@@ -3,11 +3,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models.CompetitiveEvents;
 
-public class CompetitiveEventDescriptionItem : IKeyedEntity<Guid>, ISoftDeleted
+public class CompetitiveEventDescriptionItem : IKeyedEntity<Guid>
 {
     public Guid Id { get; set; }
 
-    public bool IsDeleted { get; set; }
+    //public bool IsDeleted { get; set; }
 
     [Required(ErrorMessage = "Description heading is required")]
     [MaxLength(200)]

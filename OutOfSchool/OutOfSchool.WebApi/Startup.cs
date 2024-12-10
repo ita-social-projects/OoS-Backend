@@ -339,6 +339,8 @@ public static class Startup
         services.AddSingleton<ISendGridAccessibilityService, SendGridAccessibilityService>();
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
 
+        services.AddTransient<ICompetitiveEventAccountingTypeService, CompetitiveEventAccountingTypeService>();
+
         services.AddTransient<IInstitutionHierarchyService, InstitutionHierarchyService>();
         services.AddTransient<IInstitutionService, InstitutionService>();
         services.AddTransient<IInstitutionFieldDescriptionService, InstitutionFieldDescriptionService>();

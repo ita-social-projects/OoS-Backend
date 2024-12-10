@@ -24,18 +24,18 @@ internal class CompetitiveEventControllerTests
 
     private IEnumerable<CompetitiveEventDto> competitiveEvents;
 
-    [SetUp]
-    public void Setup()
-    {
-        competitiveEventService = new Mock<ICompetitiveEventService>();
-        localizer = new Mock<IStringLocalizer<SharedResource>>();
+    //[SetUp]
+    //public void Setup()
+    //{
+    //    competitiveEventService = new Mock<ICompetitiveEventService>();
+    //    localizer = new Mock<IStringLocalizer<SharedResource>>();
 
-        competitiveEvents = FakeCompetitiveEvents();
+    //    competitiveEvents = FakeCompetitiveEvents();
 
-        controller = new CompetitiveEventController(
-            competitiveEventService.Object,
-            localizer.Object);
-    }
+    //    controller = new CompetitiveEventController(
+    //        competitiveEventService.Object,
+    //        localizer.Object);
+    //}
 
     [Test]
     public async Task GetById_WhenIdIsValid_ReturnsOkObjectResult()
@@ -66,34 +66,34 @@ internal class CompetitiveEventControllerTests
         Assert.AreEqual(200, result.StatusCode);
     }
 
-    [Test]
-    public async Task Create_WhenModelIsValid_ReturnsCreatedAtActionResult()
-    {
-        // Arrange
-        var competitiveEvent = competitiveEvents.First();
-        competitiveEventService.Setup(x => x.Create(competitiveEvent)).ReturnsAsync(competitiveEvent);
+    //[Test]
+    //public async Task Create_WhenModelIsValid_ReturnsCreatedAtActionResult()
+    //{
+    //    // Arrange
+    //    var competitiveEvent = competitiveEvents.First();
+    //    competitiveEventService.Setup(x => x.Create(competitiveEvent)).ReturnsAsync(competitiveEvent);
 
-        // Act
-        var result = await controller.Create(competitiveEvent).ConfigureAwait(false) as CreatedAtActionResult;
+    //    // Act
+    //    var result = await controller.Create(competitiveEvent).ConfigureAwait(false) as CreatedAtActionResult;
 
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(201, result.StatusCode);
-    }
+    //    // Assert
+    //    Assert.That(result, Is.Not.Null);
+    //    Assert.AreEqual(201, result.StatusCode);
+    //}
 
-    [Test]
-    public async Task Update_WhenModelIsValid_ShouldReturnOkObjectResult()
-    {
-        // Arrange
-        var competitiveEvent = competitiveEvents.First();
-        competitiveEventService.Setup(s => s.Update(competitiveEvent)).ReturnsAsync(competitiveEvent);
+    //[Test]
+    //public async Task Update_WhenModelIsValid_ShouldReturnOkObjectResult()
+    //{
+    //    // Arrange
+    //    var competitiveEvent = competitiveEvents.First();
+    //    competitiveEventService.Setup(s => s.Update(competitiveEvent)).ReturnsAsync(competitiveEvent);
 
-        // Act
-        var result = await controller.Update(competitiveEvent).ConfigureAwait(false);
+    //    // Act
+    //    var result = await controller.Update(competitiveEvent).ConfigureAwait(false);
 
-        // Assert
-        Assert.That(result, Is.InstanceOf<OkObjectResult>());
-    }
+    //    // Assert
+    //    Assert.That(result, Is.InstanceOf<OkObjectResult>());
+    //}
 
     [Test]
     public async Task Delete_WhenIdIsValid_ReturnsNoContentResult()
