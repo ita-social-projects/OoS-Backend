@@ -114,7 +114,7 @@ public class AuthController : Controller
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [Route("~/login")]
     [HttpGet]
-    public async Task<IActionResult> Login(string returnUrl = "login", bool? providerRegistration = null)
+    public async Task<IActionResult> Login(string returnUrl = AuthServerConstants.LoginPath, bool? providerRegistration = null)
     {
         if (providerRegistration ?? GetProviderRegistrationFromUri(returnUrl))
         {
@@ -244,7 +244,7 @@ public class AuthController : Controller
     [HttpGet]
     [Obsolete("Change password API is no longer supported. Exists only for testing purposes.")]
     [FeatureGate(AuthServerConstants.FeatureManagement.PasswordLogin)]
-    public IActionResult ChangePasswordLogin(string email, string returnUrl = "Login")
+    public IActionResult ChangePasswordLogin(string email, string returnUrl = AuthServerConstants.LoginPath)
     {
         return View(new ChangePasswordLoginViewModel { Email = email, ReturnUrl = returnUrl });
     }
@@ -325,7 +325,7 @@ public class AuthController : Controller
     [HttpGet]
     [FeatureGate(AuthServerConstants.FeatureManagement.PasswordRegistration)]
     [Obsolete("Registration API is no longer supported. Exists only for testing purposes.")]
-    public IActionResult Register(string returnUrl = "login", bool? providerRegistration = null)
+    public IActionResult Register(string returnUrl = AuthServerConstants.LoginPath, bool? providerRegistration = null)
     {
         return View(new RegisterViewModel
         {

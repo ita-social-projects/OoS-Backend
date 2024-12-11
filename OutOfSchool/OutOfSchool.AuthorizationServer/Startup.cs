@@ -88,7 +88,7 @@ public static class Startup
         services.AddIdentity<User, IdentityRole>(options =>
             {
                 options.User.RequireUniqueEmail = false;
-                options.User.AllowedUserNameCharacters = "абвгдеєжзиіклмнопрстуфхцчшщюяАБВГДЕЄЖЗИІКЛМНОПРСТУФХЦЧШЩЮЯabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+                options.User.AllowedUserNameCharacters = AuthServerConstants.AllowedUserNameCharacters;
                 options.SignIn.RequireConfirmedAccount = false;
                 options.SignIn.RequireConfirmedEmail = false;
                 options.SignIn.RequireConfirmedPhoneNumber = false;
@@ -100,8 +100,8 @@ public static class Startup
         services.ConfigureApplicationCookie(c =>
         {
             c.Cookie.Name = "OpenIdDict.Cookie";
-            c.LoginPath = "/login";
-            c.LogoutPath = "/logout";
+            c.LoginPath = $"/{AuthServerConstants.LoginPath}";
+            c.LogoutPath = $"/{AuthServerConstants.LogoutPath}";
             c.ExpireTimeSpan = TimeSpan.FromDays(Convert.ToInt32(expireDaysStr));
         });
 
@@ -170,6 +170,7 @@ public static class Startup
                     options.AddEphemeralEncryptionKey()
                         .AddEphemeralSigningKey();
                     aspNetCoreBuilder.DisableTransportSecurityRequirement();
+                    options.DisableAccessTokenEncryption();
                 }
                 else
                 {
@@ -178,8 +179,6 @@ public static class Startup
                     options.AddSigningCertificate(certificate)
                         .AddEncryptionCertificate(certificate);
                 }
-
-                options.DisableAccessTokenEncryption(); //TODO: Maybe do encrypt? :)
             })
             .AddClient(options =>
             {
@@ -191,7 +190,7 @@ public static class Startup
                     RedirectUri = new Uri($"{config["Identity:Authority"]}/callback/idgovua"),
                     ProviderName = "IdGovUa",
                     ProviderDisplayName = "id.gov.ua",
-                    Scopes = { "profile" },
+                    Scopes = { OpenIddictConstants.Scopes.Profile },
 
                     // Token validation is not supported by id.gov.ua.
                     TokenValidationParameters =
@@ -213,19 +212,30 @@ public static class Startup
                     },
                 });
                 options.UseSystemNetHttp();
-                options.UseAspNetCore()
-                    .EnableRedirectionEndpointPassthrough()
-                    .EnablePostLogoutRedirectionEndpointPassthrough()
-                    //TODO: make development only
-                    .DisableTransportSecurityRequirement();
+                
                 options
                     .AllowClientCredentialsFlow()
                     .AllowAuthorizationCodeFlow()
                     .AllowRefreshTokenFlow()
-                    .AddEventHandler(ExtractUserIdFromTokenResponseHandler.Descriptor)
-                    //TODO: make development only
-                    .AddDevelopmentSigningCertificate()
-                    .AddEphemeralEncryptionKey();
+                    .AddEventHandler(ExtractUserIdFromTokenResponseHandler.Descriptor);
+
+                var aspNetCoreBuilder = options.UseAspNetCore()
+                    .EnableRedirectionEndpointPassthrough()
+                    .EnablePostLogoutRedirectionEndpointPassthrough();
+
+                if (builder.Environment.IsDevelopment())
+                {
+                    options.AddDevelopmentSigningCertificate()
+                        .AddEphemeralEncryptionKey();
+                    aspNetCoreBuilder.DisableTransportSecurityRequirement();
+                }
+                else
+                {
+                    var certificate = ExternalCertificate.LoadCertificates(authorizationConfig.Certificate);
+                    // TODO: create two different certificates after testing this
+                    options.AddSigningCertificate(certificate)
+                        .AddEncryptionCertificate(certificate);
+                }
             })
             .AddValidation(options =>
             {
