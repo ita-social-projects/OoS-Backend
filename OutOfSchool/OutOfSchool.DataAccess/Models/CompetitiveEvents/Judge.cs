@@ -1,8 +1,7 @@
 ﻿using System;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models.CompetitiveEvents;
 
-namespace OutOfSchool.Services.Models;
+namespace OutOfSchool.Services.Models.CompetitiveEvents;
 public class Judge : IKeyedEntity<Guid>
 {
     public Guid Id { get; set; }

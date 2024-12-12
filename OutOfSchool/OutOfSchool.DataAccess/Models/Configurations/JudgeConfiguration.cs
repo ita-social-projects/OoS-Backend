@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Common;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 
 namespace OutOfSchool.Services.Models.Configurations;
 internal class JudgeConfiguration : IEntityTypeConfiguration<Judge>

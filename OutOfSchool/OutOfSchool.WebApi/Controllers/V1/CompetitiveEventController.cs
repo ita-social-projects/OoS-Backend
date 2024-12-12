@@ -1,10 +1,7 @@
 ﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
-using OutOfSchool.BusinessLogic.Services.ProviderServices;
-using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -14,7 +11,6 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 public class CompetitiveEventController : ControllerBase
 {
     private readonly ICompetitiveEventService service;
-    private readonly IUserService userService; // need this?
     private readonly IStringLocalizer<SharedResource> localizer;
 
     /// <summary>
@@ -22,10 +18,9 @@ public class CompetitiveEventController : ControllerBase
     /// </summary>
     /// <param name="service">Service for CompetitiveEvent model.</param>
     /// <param name="localizer">Localizer.</param>
-    public CompetitiveEventController(ICompetitiveEventService service, IUserService userService, IStringLocalizer<SharedResource> localizer)
+    public CompetitiveEventController(ICompetitiveEventService service,/* IUserService userService,*/ IStringLocalizer<SharedResource> localizer)
     {
         this.service = service;
-        this.userService = userService;
         this.localizer = localizer;
     }
 
@@ -134,11 +129,4 @@ public class CompetitiveEventController : ControllerBase
         }
         return true;
     }
-    //private async Task<bool> IsCurrentUserBlocked() // need smth like that?
-    //{
-    //    var userId = GettingUserProperties.GetUserId(User);
-
-    //    return await userService.IsBlocked(userId);
-    //}
-
 }

@@ -115,7 +115,7 @@ public class CompetitiveEventService : ICompetitiveEventService
 
             logger.LogTrace($"CompetitiveEvent with Id = {id} succesfully deleted.");
         }
-        catch (DbUpdateConcurrencyException)
+        catch (Exception) // DbUpdateConcurrencyException
         {
             logger.LogError("Deleting failed. CompetitiveEvent with Id = {Id} doesn't exist in the system", id);
             throw new ArgumentOutOfRangeException(

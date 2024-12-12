@@ -27,12 +27,17 @@ public class CompetitiveEventServiceTests
     private DbContextOptions<OutOfSchoolDbContext> options;
     private OutOfSchoolDbContext context;
     private IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> repo;
+    private IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType> accountingTypeOfEventRepository;
+    private IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
+    private IEntityRepository<Guid, Judge> judgeRepository;
+
     private Mock<ILogger<CompetitiveEventService>> logger;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private IMapper mapper;
 
     private CompetitiveEventService service;
     private Guid firstId;
+    private Guid firstJudgeId;
 
     [SetUp]
     public void SetUp()
@@ -45,16 +50,22 @@ public class CompetitiveEventServiceTests
         context = new OutOfSchoolDbContext(options);
 
         repo = new EntityRepositorySoftDeleted<Guid, CompetitiveEvent>(context);
+        accountingTypeOfEventRepository = new EntityRepositorySoftDeleted<int, CompetitiveEventAccountingType>(context);
+        descriptionItemRepository = new EntityRepository<Guid, CompetitiveEventDescriptionItem>(context);
+        judgeRepository = new EntityRepository<Guid, Judge>(context);
 
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         logger = new Mock<ILogger<CompetitiveEventService>>();
 
-        //service = new CompetitiveEventService( // TK, it is commented temporary 
-        //    repo,
-        //    logger.Object,
-        //    localizer.Object,
-        //    mapper);
+        service = new CompetitiveEventService(
+            repo,
+            judgeRepository,
+            accountingTypeOfEventRepository,
+            descriptionItemRepository,
+            logger.Object,
+            localizer.Object,
+            mapper);
 
         SeedDatabase();
     }
@@ -79,127 +90,117 @@ public class CompetitiveEventServiceTests
     }
 
     [Test]
-    public void GetById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException()
+    public async Task GetById_WhenIdIsInvalid_ReturnsNull()
     {
         // Arrange
         var id = Guid.NewGuid();
 
-        // Act and Assert
-        Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-            async () => await service.GetById(id).ConfigureAwait(false));
+        // Act
+        var result = await service.GetById(id).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNull(result, "Expected null for invalid ID.");
     }
 
-    //[Test] //need to rewrite because added CompetitiveEventCreateDto
-    //public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
-    //{
-    //    // Arrange
-    //    var input = new CompetitiveEventDto()
-    //    {
-    //        Id = Guid.NewGuid(),
-    //        Title = "Test",
-    //        ShortTitle = "TestShort",
-    //        Description = "Test",
-    //        State = CompetitiveEventStates.Draft,
-    //        ScheduledStartTime = DateTime.UtcNow,
-    //        ScheduledEndTime = DateTime.UtcNow,
-    //        NumberOfSeats = 10,
-    //        OrganizerOfTheEventId = Guid.NewGuid(),
-    //        AccountingTypeOfEventId = 1,
-    //    };
+    [Test]
+    public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity() // need more checks (Judge)???/
+    {
+        // Arrange
+        var input = new CompetitiveEventCreateDto()
+        {
+            Title = "Test",
+            ShortTitle = "TestShort",
+            Description = "Test",
+            State = CompetitiveEventStates.Draft,
+            ScheduledStartTime = DateTime.UtcNow,
+            ScheduledEndTime = DateTime.UtcNow,
+            NumberOfSeats = 10,
+            OrganizerOfTheEventId = Guid.NewGuid(),
+            CompetitiveEventAccountingTypeId = 1,
 
-    //    // Act
-    //    var countBeforeCreating = await repo.Count().ConfigureAwait(false);
+            Judges = new List<JudgeDto>
+            {
+                new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge 1" },
+                new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge 2" }
+            }
+        };
+        // Act
+        var countBeforeCreating = await repo.Count().ConfigureAwait(false);
 
-    //    var result = await service.Create(input).ConfigureAwait(false);
+        var result = await service.Create(input).ConfigureAwait(false);
 
-    //    var countAfterCreating = await repo.Count().ConfigureAwait(false);
+        var countAfterCreating = await repo.Count().ConfigureAwait(false);
 
-    //    // Assert
-    //    Assert.AreEqual(input.Title, result.Title);
-    //    Assert.That(countBeforeCreating, Is.EqualTo(countAfterCreating - 1));
-    //}
+        // Assert
+        Assert.AreEqual(input.Title, result.Title);
+        Assert.That(countBeforeCreating, Is.EqualTo(countAfterCreating - 1));
+    }
 
-    //[Test] // need to rewrite because added CompetitiveEventCreateDto 
-    //public void Create_NotUniqueEntity_ReturnsArgumentException()
-    //{
-    //    // Arrange
-    //    var input = new CompetitiveEventDto()
-    //    {
-    //        Id = firstId,
-    //        Title = "Test",
-    //        ShortTitle = "TestShort",
-    //        Description = "Test",
-    //        State = CompetitiveEventStates.Draft,
-    //        ScheduledStartTime = DateTime.UtcNow,
-    //        ScheduledEndTime = DateTime.UtcNow,
-    //        NumberOfSeats = 10,
-    //        OrganizerOfTheEventId = Guid.NewGuid(),
-    //        CompetitiveEventAccountingTypeId = 1,
-    //    };
+    [Test]
+    public void Update_WhenDtoIsNull_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        CompetitiveEventUpdateDto dto = null;
 
-    //    // Act and Assert
-    //    Assert.ThrowsAsync<ArgumentException>(
-    //        async () => await service.Create(input).ConfigureAwait(false));
-    //}
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentNullException>(
+            async () => await service.Update(dto).ConfigureAwait(false));
+    }
 
-    //[Test]
-    //public void Update_WhenDtoIsNull_ShouldThrowArgumentNullException()
-    //{
-    //    // Arrange
-    //    CompetitiveEventDto dto = null;
+    [Test]
+    public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
+    {
+        // Arrange
+        var changedDto = new CompetitiveEventUpdateDto()
+        {
+            Id = Guid.NewGuid(),
+            Title = "Test",
+            ShortTitle = "TestShort",
+            Description = "Test",
+            State = CompetitiveEventStates.Draft,
+            ScheduledStartTime = DateTime.UtcNow,
+            ScheduledEndTime = DateTime.UtcNow,
+            NumberOfSeats = 10,
+            OrganizerOfTheEventId = Guid.NewGuid(),
+            CompetitiveEventAccountingTypeId = 1,
+        };
 
-    //    // Act and Assert
-    //    Assert.ThrowsAsync<ArgumentNullException>(
-    //        async () => await service.Update(dto).ConfigureAwait(false));
-    //}
+        // Act and Assert
+        Assert.ThrowsAsync<DbUpdateConcurrencyException>(
+            async () => await service.Update(changedDto).ConfigureAwait(false));
+    }
 
-    //[Test]
-    //public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
-    //{
-    //    // Arrange
-    //    var changedDto = new CompetitiveEventDto()
-    //    {
-    //        Id = Guid.NewGuid(),
-    //        Title = "Test",
-    //        ShortTitle = "TestShort",
-    //        Description = "Test",
-    //        State = CompetitiveEventStates.Draft,
-    //        ScheduledStartTime = DateTime.UtcNow,
-    //        ScheduledEndTime = DateTime.UtcNow,
-    //        NumberOfSeats = 10,
-    //        OrganizerOfTheEventId = Guid.NewGuid(),
-    //        CompetitiveEventAccountingTypeId = 1,
-    //    };
+    [Test]
+    public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
+    {
+        // Arrange
+        var input = new CompetitiveEventUpdateDto()
+        {
+            Id = firstId,
+            Title = "TestNew",
+            ShortTitle = "TestShort",
+            Description = "Test",
+            State = CompetitiveEventStates.Draft,
+            ScheduledStartTime = DateTime.UtcNow,
+            ScheduledEndTime = DateTime.UtcNow,
+            NumberOfSeats = 10,
+            OrganizerOfTheEventId = Guid.NewGuid(),
+            CompetitiveEventAccountingTypeId = 1,
+            Judges = new List<JudgeDto>
+            {
+                new JudgeDto { Id = firstJudgeId, FirstName = "Judge C" },
+                new JudgeDto { FirstName = "Judge D" }
+            }
+        };
 
-    //    // Act and Assert
-    //    Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-    //        async () => await service.Update(changedDto).ConfigureAwait(false));
-    //}
+        // Act
+        var result = await service.Update(input).ConfigureAwait(false);
 
-    //[Test]
-    //public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
-    //{
-    //    // Arrange
-    //    var input = new CompetitiveEventDto()
-    //    {
-    //        Id = firstId,
-    //        Title = "TestNew",
-    //        ShortTitle = "TestShort",
-    //        Description = "Test",
-    //        State = CompetitiveEventStates.Draft,
-    //        ScheduledStartTime = DateTime.UtcNow,
-    //        ScheduledEndTime = DateTime.UtcNow,
-    //        NumberOfSeats = 10,
-    //        OrganizerOfTheEventId = Guid.NewGuid(),
-    //        CompetitiveEventAccountingTypeId = 1,
-    //    };
-
-    //    // Act
-    //    var result = await service.Update(input).ConfigureAwait(false);
-
-    //    // Assert
-    //    Assert.That(input.Title, Is.EqualTo(result.Title));
-    //}
+        // Assert
+        Assert.That(input.Title, Is.EqualTo(result.Title), "CompetitiveEvent's title was not updated correctly.");
+        Assert.That(input.Judges[0].FirstName, Is.EqualTo(result.Judges[0].FirstName), "First Judge's name was not updated correctly.");
+        Assert.That(input.Judges[1].FirstName, Is.EqualTo(result.Judges[1].FirstName), "New judge (Judge D) was not added correctly.");
+    }
 
     [Test]
     public async Task Delete_WhenIdIsValid_DeletesEntity()
@@ -234,6 +235,7 @@ public class CompetitiveEventServiceTests
             ctx.Database.EnsureCreated();
 
             firstId = Guid.NewGuid();
+            firstJudgeId = Guid.NewGuid();
 
             var competitiveEvents = new List<CompetitiveEvent>()
             {
@@ -249,6 +251,10 @@ public class CompetitiveEventServiceTests
                     NumberOfSeats = 10,
                     OrganizerOfTheEventId = Guid.NewGuid(),
                     CompetitiveEventAccountingType = new CompetitiveEventAccountingType(),
+                    Judges = new List<Judge>
+                    {
+                        new Judge { Id = firstJudgeId, FirstName = "Judge A" },
+                    }
                 },
                 new CompetitiveEvent
                 {

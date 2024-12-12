@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.HttpResults;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
@@ -10,7 +11,9 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.Services.Models.CompetitiveEvents;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Controllers.V1;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
@@ -21,21 +24,28 @@ internal class CompetitiveEventControllerTests
     private CompetitiveEventController controller;
     private Mock<ICompetitiveEventService> competitiveEventService;
     private Mock<IStringLocalizer<SharedResource>> localizer;
-
     private IEnumerable<CompetitiveEventDto> competitiveEvents;
+    IMapper mapper;
+    
+    [OneTimeSetUp]
+    public void OneTimeSetup()
+    {
+        this.mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>(); // is it enough?
+    }
 
-    //[SetUp]
-    //public void Setup()
-    //{
-    //    competitiveEventService = new Mock<ICompetitiveEventService>();
-    //    localizer = new Mock<IStringLocalizer<SharedResource>>();
+    [SetUp]
+    public void Setup()
+    {
+        competitiveEventService = new Mock<ICompetitiveEventService>();
+        localizer = new Mock<IStringLocalizer<SharedResource>>();
 
-    //    competitiveEvents = FakeCompetitiveEvents();
+        competitiveEvents = FakeCompetitiveEvents();
 
-    //    controller = new CompetitiveEventController(
-    //        competitiveEventService.Object,
-    //        localizer.Object);
-    //}
+        controller = new CompetitiveEventController(
+            competitiveEventService.Object,
+            localizer.Object);
+
+    }
 
     [Test]
     public async Task GetById_WhenIdIsValid_ReturnsOkObjectResult()
@@ -49,51 +59,119 @@ internal class CompetitiveEventControllerTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(200, result.StatusCode);
+        Assert.AreEqual((int)HttpStatusCode.OK, result.StatusCode);
     }
 
     [Test]
-    public async Task GetById_WhenIdIsInvalid_ReturnsNull()
+    public async Task GetById_WhenIdIsInvalid_ReturnsNoContent()
     {
         // Arrange
         var id = Guid.NewGuid();
         competitiveEventService.Setup(x => x.GetById(id)).ReturnsAsync(competitiveEvents.SingleOrDefault(x => x.Id == id));
 
-        var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
+        // Act
+        var result = await controller.GetById(id).ConfigureAwait(false) as NoContentResult;
 
-        //// Act and Assert
+        // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(200, result.StatusCode);
+        Assert.AreEqual((int)HttpStatusCode.NoContent, result.StatusCode);
     }
 
-    //[Test]
-    //public async Task Create_WhenModelIsValid_ReturnsCreatedAtActionResult()
-    //{
-    //    // Arrange
-    //    var competitiveEvent = competitiveEvents.First();
-    //    competitiveEventService.Setup(x => x.Create(competitiveEvent)).ReturnsAsync(competitiveEvent);
+    [Test]
+    public async Task Create_WhenModelIsValid_ReturnsCreatedAtActionResult()
+    {
+        // Arrange
+        var inputDto = new CompetitiveEventCreateDto()
+        {
+            Title = "New Event",
+            ScheduledStartTime = DateTime.UtcNow,
+            ScheduledEndTime = DateTime.UtcNow.AddHours(1),
+            Judges = new List<JudgeDto>()
+            { 
+                new JudgeDto()
+                {
+                    FirstName ="Judge A"
+                },
+                new JudgeDto()
+                {
+                    FirstName ="Judge B"
+                },
+            }
+        };
+        competitiveEventService.Setup(x => x.Create(It.IsAny<CompetitiveEventCreateDto>()))
+            .ReturnsAsync(
+            new CompetitiveEventDto()
+            {
+                Id = Guid.NewGuid(),
+                Title = inputDto.Title,
+                ScheduledStartTime = inputDto.ScheduledStartTime,
+                ScheduledEndTime = inputDto.ScheduledEndTime,
+                Judges = inputDto.Judges,
+            });
 
-    //    // Act
-    //    var result = await controller.Create(competitiveEvent).ConfigureAwait(false) as CreatedAtActionResult;
+        // Act
+        var result = await controller.Create(inputDto).ConfigureAwait(false) as CreatedAtActionResult;
 
-    //    // Assert
-    //    Assert.That(result, Is.Not.Null);
-    //    Assert.AreEqual(201, result.StatusCode);
-    //}
+        // Assert
+        var competitiveEventResult = result.Value as CompetitiveEventDto;
+        Assert.That(result, Is.Not.Null);
 
-    //[Test]
-    //public async Task Update_WhenModelIsValid_ShouldReturnOkObjectResult()
-    //{
-    //    // Arrange
-    //    var competitiveEvent = competitiveEvents.First();
-    //    competitiveEventService.Setup(s => s.Update(competitiveEvent)).ReturnsAsync(competitiveEvent);
+        Assert.AreEqual(inputDto.Title, competitiveEventResult.Title);
+        Assert.AreEqual(inputDto.ScheduledStartTime, competitiveEventResult.ScheduledStartTime);
+        Assert.AreEqual(inputDto.ScheduledEndTime, competitiveEventResult.ScheduledEndTime);
 
-    //    // Act
-    //    var result = await controller.Update(competitiveEvent).ConfigureAwait(false);
+        // var expectedDto = mapper.Map<CompetitiveEventDto>(inputDto); // does not work mapping
+        // AssertCompetitiveEventPropertiesAreEqual(expectedDto, competitiveEventResult);
 
-    //    // Assert
-    //    Assert.That(result, Is.InstanceOf<OkObjectResult>());
-    //}
+        AssertJudgesAreEqual(inputDto.Judges, competitiveEventResult.Judges);
+
+        Assert.AreEqual((int)HttpStatusCode.Created, result.StatusCode);
+    }
+
+    [Test]
+    public async Task Update_WhenValidDto_ReturnsOkObjectResult()
+    {
+        // Arrange
+        var competitiveEvent = competitiveEvents.First();
+        var inputDto = new CompetitiveEventUpdateDto()
+        {
+            Id = competitiveEvent.Id,
+            Title = "Updated Title",
+            ScheduledStartTime = DateTime.UtcNow.AddHours(1),
+            ScheduledEndTime = DateTime.UtcNow.AddHours(2),
+            Judges = new List<JudgeDto>
+            {
+                new JudgeDto { FirstName = "Judge A", LastName = "LastName A" },
+                new JudgeDto { FirstName = "Judge B", LastName = "LastName B" }
+            }
+        };
+        competitiveEventService.Setup(s => s.Update(inputDto)).ReturnsAsync(new CompetitiveEventDto
+        {
+            Id = inputDto.Id,
+            Title = inputDto.Title,
+            ScheduledStartTime = inputDto.ScheduledStartTime,
+            ScheduledEndTime = inputDto.ScheduledEndTime,
+            Judges = inputDto.Judges
+        });
+
+        // Act
+        var result = await controller.Update(inputDto).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<OkObjectResult>(), "Expected OkObjectResult");
+
+        var competitiveEventResult = (result as OkObjectResult).Value as CompetitiveEventDto;
+        Assert.That(competitiveEventResult, Is.Not.Null);
+
+        Assert.AreEqual(inputDto.Title, competitiveEventResult.Title);
+        Assert.AreEqual(inputDto.ScheduledStartTime, competitiveEventResult.ScheduledStartTime);
+        Assert.AreEqual(inputDto.ScheduledEndTime, competitiveEventResult.ScheduledEndTime);
+
+        // var expectedDto = mapper.Map<CompetitiveEventDto>(inputDto); // does not work mapping : could not find needed map
+
+        //AssertCompetitiveEventPropertiesAreEqual(expectedDto, competitiveEventResult);
+        AssertJudgesAreEqual(inputDto.Judges, competitiveEventResult.Judges);
+    }
 
     [Test]
     public async Task Delete_WhenIdIsValid_ReturnsNoContentResult()
@@ -109,6 +187,25 @@ internal class CompetitiveEventControllerTests
         Assert.IsInstanceOf<NoContentResult>(response);
     }
 
+    private void AssertCompetitiveEventPropertiesAreEqual(CompetitiveEventDto expected, CompetitiveEventDto actual)
+    {
+        Assert.That(actual, Is.Not.Null, "CompetitiveEventDto should not be null");
+        Assert.AreEqual(expected.Title, actual.Title, "Title mismatch");
+        Assert.AreEqual(expected.ScheduledStartTime, actual.ScheduledStartTime, "ScheduledStartTime mismatch");
+        Assert.AreEqual(expected.ScheduledEndTime, actual.ScheduledEndTime, "ScheduledEndTime mismatch");
+    }
+
+    private void AssertJudgesAreEqual(List<JudgeDto> expectedJudges, List<JudgeDto> actualJudges)
+    {
+        Assert.That(actualJudges, Is.Not.Null, "Judges list should not be null");
+        Assert.AreEqual(expectedJudges.Count, actualJudges.Count, "Judges count should match");
+
+        for (int i = 0; i < expectedJudges.Count; i++)
+        {
+            Assert.AreEqual(expectedJudges[i].FirstName, actualJudges[i].FirstName, $"Judge #{i + 1} FirstName mismatch");
+            Assert.AreEqual(expectedJudges[i].LastName, actualJudges[i].LastName, $"Judge #{i + 1} LastName mismatch");
+        }
+    }
     private IEnumerable<CompetitiveEventDto> FakeCompetitiveEvents()
     {
         return new List<CompetitiveEventDto>()
@@ -118,18 +215,33 @@ internal class CompetitiveEventControllerTests
                 Id = Guid.NewGuid(),
                 Title = "Test1",
                 Description = "Test1",
+                Judges = new List<JudgeDto>
+                {
+                    new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge A", LastName = "LastName A" },
+                    new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge B", LastName = "LastName B" }
+                }
             },
             new CompetitiveEventDto
             {
                 Id = Guid.NewGuid(),
                 Title = "Test2",
                 Description = "Test2",
+                Judges = new List<JudgeDto>
+                {
+                    new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge C", LastName = "LastName C" },
+                    new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge D", LastName = "LastName D" },
+                    new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge E", LastName = "LastName E" },
+                }
             },
             new CompetitiveEventDto
             {
                 Id = Guid.NewGuid(),
                 Title = "Test3",
                 Description = "Test3",
+                Judges = new List<JudgeDto>
+                {
+                    new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge F", LastName = "LastName F" },
+                }
             },
         };
     }
