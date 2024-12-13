@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -103,7 +104,7 @@ public class CompetitiveEventServiceTests
     }
 
     [Test]
-    public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity() // need more checks (Judge)???/
+    public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
     {
         // Arrange
         var input = new CompetitiveEventCreateDto()
@@ -200,6 +201,80 @@ public class CompetitiveEventServiceTests
         Assert.That(input.Title, Is.EqualTo(result.Title), "CompetitiveEvent's title was not updated correctly.");
         Assert.That(input.Judges[0].FirstName, Is.EqualTo(result.Judges[0].FirstName), "First Judge's name was not updated correctly.");
         Assert.That(input.Judges[1].FirstName, Is.EqualTo(result.Judges[1].FirstName), "New judge (Judge D) was not added correctly.");
+    }
+
+    [Test]
+    public async Task Update_WhenDescriptionItemsAreUpdated_UpdatesCorrectly()
+    {
+        // Arrange
+        Guid firstDescItemId = Guid.NewGuid();
+        var initialDescriptionItems = new List<CompetitiveEventDescriptionItem>
+        {
+            new CompetitiveEventDescriptionItem { Id = firstDescItemId, SectionName = "Old Section 1", Description = "Old Description 1" },
+            new CompetitiveEventDescriptionItem { Id = Guid.NewGuid(), SectionName = "Old Section 2", Description = "Old Description 2" },
+        };
+
+        Guid eventId = Guid.NewGuid();
+        var competitiveEvent = new CompetitiveEvent
+        {
+            Id = eventId,
+            Title = "Test Event",
+            ShortTitle = "Test Event Short",
+            CompetitiveEventDescriptionItems = initialDescriptionItems,
+        };
+
+        context.CompetitiveEvents.Add(competitiveEvent);
+        await context.SaveChangesAsync();
+
+        var updateDto = new CompetitiveEventUpdateDto
+        {
+            Id = eventId,
+            Title = "Updated Test Event",
+            ShortTitle = "Updated Test Event Short",
+            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>
+        {
+            // Update an existing item
+            new CompetitiveEventDescriptionItemDto
+            {
+                Id = initialDescriptionItems[1].Id,
+                SectionName = "Updated Section 2",
+                Description = "Updated Description 2"
+            },
+            // Add a new item
+            new CompetitiveEventDescriptionItemDto
+            {
+                Id = Guid.NewGuid(),
+                SectionName = "New Section 3",
+                Description = "New Description 3"
+            }
+        }
+        };
+
+        // Act
+        var result = await service.Update(updateDto);
+
+        // Assert
+        Assert.AreEqual(updateDto.Title, result.Title);
+
+        var updatedEvent = await context.CompetitiveEvents
+            .Include(e => e.CompetitiveEventDescriptionItems)
+            .FirstAsync(e => e.Id == eventId);
+
+        Assert.AreEqual(2, updatedEvent.CompetitiveEventDescriptionItems.Count);
+
+        // Verify updated item
+        var updatedItem = updatedEvent.CompetitiveEventDescriptionItems
+            .First(d => d.Id == initialDescriptionItems[0].Id);
+        Assert.AreEqual("Updated Description 2", updatedItem.Description);
+
+        // Verify new item
+        var newItem = updatedEvent.CompetitiveEventDescriptionItems
+            .First(d => d.Description == "New Description 3");
+        Assert.IsNotNull(newItem);
+
+        // Verify deleted item
+        Assert.IsFalse(updatedEvent.CompetitiveEventDescriptionItems
+            .Any(d => d.Id == firstDescItemId));
     }
 
     [Test]

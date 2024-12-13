@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
+using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -32,10 +33,16 @@ public class CompetitiveEventAccountingTypeController : Controller
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CompetitiveEventAccountingTypeDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAll(LocalizationType localization = LocalizationType.Ua)
     {
-        return Ok(await accountingTypeService.GetAll(localization).ConfigureAwait(false));
+        var competitiveEventAccountingTypes = await accountingTypeService.GetAll(localization).ConfigureAwait(false);
+        if (!competitiveEventAccountingTypes.Any())
+        {
+            return NoContent();
+        }
+        return Ok(competitiveEventAccountingTypes);
     }
 }

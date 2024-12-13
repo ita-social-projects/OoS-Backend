@@ -92,6 +92,14 @@ public class CompetitiveEventController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] CompetitiveEventUpdateDto dto)
     {
+        if (dto == null)
+        {
+            return BadRequest("The request body is empty.");
+        }
+        if (!AreJudgesValid(dto.Judges))
+        {
+            return BadRequest("A competitive event can have no more than one chief judge.");
+        }
         return Ok(await service.Update(dto).ConfigureAwait(false));
     }
 

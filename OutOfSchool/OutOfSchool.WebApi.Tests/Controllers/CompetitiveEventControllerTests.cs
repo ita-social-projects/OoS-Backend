@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
@@ -11,9 +10,7 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
-using OutOfSchool.Tests.Common;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Controllers.V1;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
@@ -25,13 +22,6 @@ internal class CompetitiveEventControllerTests
     private Mock<ICompetitiveEventService> competitiveEventService;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private IEnumerable<CompetitiveEventDto> competitiveEvents;
-    IMapper mapper;
-    
-    [OneTimeSetUp]
-    public void OneTimeSetup()
-    {
-        this.mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>(); // is it enough?
-    }
 
     [SetUp]
     public void Setup()
@@ -44,7 +34,6 @@ internal class CompetitiveEventControllerTests
         controller = new CompetitiveEventController(
             competitiveEventService.Object,
             localizer.Object);
-
     }
 
     [Test]
@@ -90,11 +79,14 @@ internal class CompetitiveEventControllerTests
             { 
                 new JudgeDto()
                 {
-                    FirstName ="Judge A"
+                    FirstName ="Judge A",
+                    Description = "Description A",
+                    IsChiefJudge = true,
                 },
                 new JudgeDto()
                 {
-                    FirstName ="Judge B"
+                    FirstName ="Judge B",
+                    Description = "Description B"
                 },
             }
         };
@@ -116,16 +108,46 @@ internal class CompetitiveEventControllerTests
         var competitiveEventResult = result.Value as CompetitiveEventDto;
         Assert.That(result, Is.Not.Null);
 
-        Assert.AreEqual(inputDto.Title, competitiveEventResult.Title);
-        Assert.AreEqual(inputDto.ScheduledStartTime, competitiveEventResult.ScheduledStartTime);
-        Assert.AreEqual(inputDto.ScheduledEndTime, competitiveEventResult.ScheduledEndTime);
-
-        // var expectedDto = mapper.Map<CompetitiveEventDto>(inputDto); // does not work mapping
-        // AssertCompetitiveEventPropertiesAreEqual(expectedDto, competitiveEventResult);
-
+        AssertCompetitiveEventPropertiesAreEqual(inputDto, competitiveEventResult);
         AssertJudgesAreEqual(inputDto.Judges, competitiveEventResult.Judges);
 
         Assert.AreEqual((int)HttpStatusCode.Created, result.StatusCode);
+    }
+
+    [Test]
+    public async Task Create_WhenDtoIsNull_ReturnsBadRequest()
+    {
+        // Act
+        var result = await controller.Create(null);
+
+        // Assert
+        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        var badRequestResult = result as BadRequestObjectResult;
+        Assert.IsNotNull(badRequestResult);
+        Assert.AreEqual("The request body is empty.", badRequestResult.Value);
+    }
+       
+    [Test]
+    public async Task Create_WhenJudgesAreInvalid_ReturnsBadRequest()
+    {
+        // Arrange
+        var invalidDto = new CompetitiveEventCreateDto
+        {
+            Judges = new List<JudgeDto>
+            {
+                new JudgeDto { IsChiefJudge = true },
+                new JudgeDto { IsChiefJudge = true },
+            },
+        };
+
+        // Act
+        var result = await controller.Create(invalidDto);
+
+        // Assert
+        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        var badRequestResult = result as BadRequestObjectResult;
+        Assert.IsNotNull(badRequestResult);
+        Assert.AreEqual("A competitive event can have no more than one chief judge.", badRequestResult.Value);
     }
 
     [Test]
@@ -141,8 +163,8 @@ internal class CompetitiveEventControllerTests
             ScheduledEndTime = DateTime.UtcNow.AddHours(2),
             Judges = new List<JudgeDto>
             {
-                new JudgeDto { FirstName = "Judge A", LastName = "LastName A" },
-                new JudgeDto { FirstName = "Judge B", LastName = "LastName B" }
+                new JudgeDto { FirstName = "Judge A", LastName = "LastName A", Gender = Gender.Male },
+                new JudgeDto { FirstName = "Judge B", LastName = "LastName B", Gender = Gender.Female }
             }
         };
         competitiveEventService.Setup(s => s.Update(inputDto)).ReturnsAsync(new CompetitiveEventDto
@@ -163,13 +185,7 @@ internal class CompetitiveEventControllerTests
         var competitiveEventResult = (result as OkObjectResult).Value as CompetitiveEventDto;
         Assert.That(competitiveEventResult, Is.Not.Null);
 
-        Assert.AreEqual(inputDto.Title, competitiveEventResult.Title);
-        Assert.AreEqual(inputDto.ScheduledStartTime, competitiveEventResult.ScheduledStartTime);
-        Assert.AreEqual(inputDto.ScheduledEndTime, competitiveEventResult.ScheduledEndTime);
-
-        // var expectedDto = mapper.Map<CompetitiveEventDto>(inputDto); // does not work mapping : could not find needed map
-
-        //AssertCompetitiveEventPropertiesAreEqual(expectedDto, competitiveEventResult);
+        AssertCompetitiveEventPropertiesAreEqual(inputDto, competitiveEventResult);
         AssertJudgesAreEqual(inputDto.Judges, competitiveEventResult.Judges);
     }
 
@@ -187,7 +203,25 @@ internal class CompetitiveEventControllerTests
         Assert.IsInstanceOf<NoContentResult>(response);
     }
 
-    private void AssertCompetitiveEventPropertiesAreEqual(CompetitiveEventDto expected, CompetitiveEventDto actual)
+    [Test]
+    public async Task Delete_WhenEntityExists_DeletesEntityAndReturnsNoContent()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var existingEvent = new CompetitiveEventDto { Id = id, Title = "Test Event" };
+
+        competitiveEventService.Setup(s => s.GetById(id)).ReturnsAsync(existingEvent);
+        competitiveEventService.Setup(s => s.Delete(id)).Returns(Task.CompletedTask);
+
+        // Act
+        var result = await controller.Delete(id);
+
+        // Assert
+        Assert.IsInstanceOf<NoContentResult>(result);
+        competitiveEventService.Verify(s => s.Delete(id), Times.Once);
+    }
+    
+    private void AssertCompetitiveEventPropertiesAreEqual(CompetitiveEventCreateDto expected, CompetitiveEventDto actual)
     {
         Assert.That(actual, Is.Not.Null, "CompetitiveEventDto should not be null");
         Assert.AreEqual(expected.Title, actual.Title, "Title mismatch");
@@ -204,8 +238,12 @@ internal class CompetitiveEventControllerTests
         {
             Assert.AreEqual(expectedJudges[i].FirstName, actualJudges[i].FirstName, $"Judge #{i + 1} FirstName mismatch");
             Assert.AreEqual(expectedJudges[i].LastName, actualJudges[i].LastName, $"Judge #{i + 1} LastName mismatch");
+            Assert.AreEqual(expectedJudges[i].Gender, actualJudges[i].Gender, $"Judge #{i + 1} Gender mismatch");
+            Assert.AreEqual(expectedJudges[i].MiddleName, actualJudges[i].MiddleName, $"Judge #{i + 1} MiddleName mismatch");
+            Assert.AreEqual(expectedJudges[i].Description, actualJudges[i].Description, $"Judge #{i + 1} Description mismatch");
         }
     }
+   
     private IEnumerable<CompetitiveEventDto> FakeCompetitiveEvents()
     {
         return new List<CompetitiveEventDto>()
@@ -217,8 +255,8 @@ internal class CompetitiveEventControllerTests
                 Description = "Test1",
                 Judges = new List<JudgeDto>
                 {
-                    new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge A", LastName = "LastName A" },
-                    new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge B", LastName = "LastName B" }
+                    new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge A", MiddleName="A", LastName = "LastName A", Gender = Gender.Male },
+                    new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge B", MiddleName = "B", LastName = "LastName B", Gender = Gender.Female }
                 }
             },
             new CompetitiveEventDto
@@ -228,9 +266,9 @@ internal class CompetitiveEventControllerTests
                 Description = "Test2",
                 Judges = new List<JudgeDto>
                 {
-                    new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge C", LastName = "LastName C" },
-                    new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge D", LastName = "LastName D" },
-                    new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge E", LastName = "LastName E" },
+                    new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge C", LastName = "LastName C", Gender = Gender.Male },
+                    new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge D", LastName = "LastName D", Gender = Gender.Female },
+                    new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge E", LastName = "LastName E", Gender = Gender.Male },
                 }
             },
             new CompetitiveEventDto
@@ -240,7 +278,7 @@ internal class CompetitiveEventControllerTests
                 Description = "Test3",
                 Judges = new List<JudgeDto>
                 {
-                    new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge F", LastName = "LastName F" },
+                    new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge F", LastName = "LastName F", Description= "Description F" },
                 }
             },
         };
