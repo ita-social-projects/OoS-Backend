@@ -126,6 +126,8 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<CompetitiveEventRegistrationDeadline> CompetitiveEventRegistrationDeadlines { get; set; }
 
+    public DbSet<ContactsForward> ContactsForwards { get; set; }
+
     public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
     public int Complete() => this.SaveChanges();

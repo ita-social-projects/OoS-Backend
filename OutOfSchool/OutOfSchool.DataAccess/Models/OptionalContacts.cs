@@ -1,12 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace OutOfSchool.Services.Models;
 
 /// <summary>
 /// This is just a helper class, not a real DB entity.
 /// </summary>
-public class OptionalContacts
+public class OptionalContacts:IKeyedEntity<Guid>
 {
+    public Guid Id { get; set; }
+
     public List<SocialNetworkContact> SocialNetworkContacts { get; set; }
 
     public List<Email> Emails { get; set; }
