@@ -136,6 +136,11 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         this.searchStringService = searchStringService ?? throw new ArgumentNullException(nameof(searchStringService));
     }
 
+    public async Task<Provider> GetProviderByUserIdAsync(Guid providerId)
+    {     
+        return await providerRepository.GetProviderByUserIdAsync(providerId);
+    }
+
     private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
 
     /// <inheritdoc/>

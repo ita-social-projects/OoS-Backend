@@ -94,4 +94,6 @@ public interface IProviderService
     /// <param name="id">Key in the table.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     Task<bool> Exists(Guid id);
+
+    Task<Provider> GetProviderByUserIdAsync(Guid providerId);
 }

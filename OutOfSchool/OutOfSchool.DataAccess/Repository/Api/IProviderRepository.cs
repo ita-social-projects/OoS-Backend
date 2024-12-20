@@ -19,4 +19,6 @@ public interface IProviderRepository : ISensitiveEntityRepositorySoftDeleted<Pro
     Task<List<int>> CheckExistsByEdrpous(Dictionary<int, string> edrpous);
 
     Task<List<int>> CheckExistsByEmails(Dictionary<int, string> emails);
+
+    Task<Provider> GetProviderByUserIdAsync(Guid providerId);
 }
