@@ -27,8 +27,10 @@ public class PositionController : ControllerBase
     public IActionResult CurrentProviderId() => Ok(GetProviderId());
 
     /// <summary>
-    /// Create a new position for the current provider.
+    /// Creates a new position for the current provider.
     /// </summary>
+    /// <param name="createDto">The position data to create.</param>
+    /// <returns>The created position.</returns>
     [HttpPost]  
     public async Task<ActionResult<PositionDto>> Create([FromBody] PositionCreateDto createDto)
     {
@@ -42,8 +44,9 @@ public class PositionController : ControllerBase
     }
 
     /// <summary>
-    /// Get all positions for current provider.
+    /// Retrieves all positions for the current provider.
     /// </summary>
+    /// <returns>List of positions.</returns>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<PositionDto>>> GetAll()
     {
@@ -61,8 +64,10 @@ public class PositionController : ControllerBase
     }
 
     /// <summary>
-    /// Get a specific position by ID.
+    /// Retrieves a specific position by its ID.
     /// </summary>
+    /// <param name="id">The ID of the position.</param>
+    /// <returns>The position details.</returns>
     [HttpGet("{id}")]
     public async Task<ActionResult<PositionDto>> GetById(Guid id)
     {
@@ -78,8 +83,11 @@ public class PositionController : ControllerBase
     }
 
     /// <summary>
-    /// Update an existing position.
+    /// Updates an existing position.
     /// </summary>
+    /// <param name="id">The ID of the position to update.</param>
+    /// <param name="updateDto">The updated position data.</param>
+    /// <returns>The updated position.</returns>    
     [HttpPut("{id}")]
     public async Task<ActionResult<PositionDto>> Update(Guid id, [FromBody] PositionUpdateDto updateDto)
     {
@@ -96,8 +104,10 @@ public class PositionController : ControllerBase
     }
 
     /// <summary>
-    /// Delete a position.
+    /// Deletes a specific position.
     /// </summary>
+    /// <param name="id">The ID of the position to delete.</param>
+    /// <returns>No content if successful.</returns>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
