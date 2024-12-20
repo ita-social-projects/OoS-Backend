@@ -12,11 +12,23 @@ namespace OutOfSchool.Services.Repository;
 public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>, IProviderRepository
 {
     private readonly OutOfSchoolDbContext db;
+    private readonly DbSet<Provider> providersdbSet;
 
     public ProviderRepository(OutOfSchoolDbContext dbContext)
         : base(dbContext)
     {
-        db = dbContext;
+        this.db = dbContext;
+        this.providersdbSet = dbContext.Set<Provider>();
+    }
+    // [AH]
+    public async Task<Provider> GetProviderByUserIdAsync(Guid providerId)
+    {
+        var provider = await providersdbSet.FirstOrDefaultAsync(x => x.UserId == providerId.ToString());
+        if (provider == null)
+        {
+            throw new KeyNotFoundException($"Provider with ID {providerId} not found.");
+        }
+        return provider;
     }
 
     /// <summary>

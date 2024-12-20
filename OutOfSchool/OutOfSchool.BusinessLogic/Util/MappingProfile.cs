@@ -11,6 +11,7 @@ using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.Geocoding;
 using OutOfSchool.BusinessLogic.Models.Notifications;
+using OutOfSchool.BusinessLogic.Models.Position;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.Exported;
 using OutOfSchool.BusinessLogic.Models.SocialGroup;
@@ -817,6 +818,36 @@ public class MappingProfile : Profile
         CreateMap<CompetitiveEventDescriptionItem, CompetitiveEventDescriptionItemDto>().ReverseMap();
 
         CreateMap<CompetitiveEventRegistrationDeadline, CompetitiveEventRegistrationDeadlineDto>().ReverseMap();
+
+        CreateMap<PositionCreateDto, Position>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
+                .ForMember(dest => dest.IsSystemProtected, opt => opt.Ignore())
+                .ForMember(dest => dest.Document, opt => opt.Ignore())
+                .ForMember(dest => dest.File, opt => opt.Ignore())
+                .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
+                .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
+                .ForMember(dest => dest.IsBlocked, opt => opt.Ignore());
+
+        CreateMap<PositionUpdateDto, Position>()
+               .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
+                .ForMember(dest => dest.IsSystemProtected, opt => opt.Ignore())
+                .ForMember(dest => dest.Document, opt => opt.Ignore())
+                .ForMember(dest => dest.File, opt => opt.Ignore())
+                .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
+                .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
+                .ForMember(dest => dest.IsBlocked, opt => opt.Ignore());                
+
+        CreateMap<Position, PositionDto>();
     }
 
     public IMappingExpression<TSource, TDestination> CreateSoftDeletedMap<TSource, TDestination>()
