@@ -19,17 +19,7 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
     {
         this.db = dbContext;
         this.providersdbSet = dbContext.Set<Provider>();
-    }
-    // [AH]
-    public async Task<Provider> GetProviderByUserIdAsync(Guid providerId)
-    {
-        var provider = await providersdbSet.FirstOrDefaultAsync(x => x.UserId == providerId.ToString());
-        if (provider == null)
-        {
-            throw new KeyNotFoundException($"Provider with ID {providerId} not found.");
-        }
-        return provider;
-    }
+    }    
 
     /// <summary>
     /// Checks entity elements for uniqueness.

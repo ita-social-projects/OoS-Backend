@@ -21,10 +21,7 @@ public class PositionController : ControllerBase
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));        
         this.userService = userService ?? throw new ArgumentNullException( nameof(userService));
     }
-
-    [HttpGet]
-    [Route("CurrentProviderId")]
-    public IActionResult CurrentProviderId() => Ok(GetProviderId());
+    
 
     /// <summary>
     /// Creates a new position for the current provider.
@@ -34,13 +31,20 @@ public class PositionController : ControllerBase
     [HttpPost]  
     public async Task<ActionResult<PositionDto>> Create([FromBody] PositionCreateDto createDto)
     {
-        if (createDto == null)
+        try
         {
-            return BadRequest();
+            if (createDto == null)
+            {
+                return BadRequest();
+            }
+            var providerOwnerId = GetProviderOwnerId();
+            var createdPosition = await positionService.CreateAsync(createDto, providerOwnerId);
+            return CreatedAtAction(nameof(GetById), new { id = createdPosition.Id }, createdPosition);
         }
-        var providerId = GetProviderId();
-        var createdPosition = await positionService.CreateAsync(createDto, providerId);
-        return CreatedAtAction(nameof(GetById), new { id = createdPosition.Id }, createdPosition);
+        catch (Exception ex) 
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     /// <summary>
@@ -52,8 +56,8 @@ public class PositionController : ControllerBase
     {
         try 
         {
-            var providerId = GetProviderId();
-            var positions = await positionService.GetAllAsync(providerId);
+            var providerOwnerId = GetProviderOwnerId();
+            var positions = await positionService.GetAllAsync(providerOwnerId);
             return Ok(positions);
         }
         catch (Exception ex)
@@ -93,8 +97,8 @@ public class PositionController : ControllerBase
     {
         try 
         {
-            var providerId = GetProviderId();
-            var updatedPosition = await positionService.UpdateAsync(id, updateDto, providerId); // positionId, dto, user who owns position Provider
+            var providerOwnerId = GetProviderOwnerId();
+            var updatedPosition = await positionService.UpdateAsync(id, updateDto, providerOwnerId); // positionId, dto, user who owns position Provider
             return Ok(updatedPosition);
         }
         catch (Exception ex)
@@ -113,8 +117,8 @@ public class PositionController : ControllerBase
     {
         try
         {
-            var providerId = GetProviderId();
-            await positionService.DeleteAsync(id, providerId);
+            var providerOwnerId = GetProviderOwnerId();
+            await positionService.DeleteAsync(id, providerOwnerId);
             return NoContent();
         }
         catch (Exception ex)
@@ -125,7 +129,7 @@ public class PositionController : ControllerBase
     }
 
     // Method to extract provider user ID
-    private Guid GetProviderId()
+    private Guid GetProviderOwnerId()
     {
         var justId = currentUserService.UserId;
         if (currentUserService.IsInRole(Role.Provider))

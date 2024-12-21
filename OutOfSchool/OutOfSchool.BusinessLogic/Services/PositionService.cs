@@ -2,35 +2,42 @@
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.BusinessLogic.Models.Position;
 using Newtonsoft.Json;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 
 namespace OutOfSchool.BusinessLogic.Services;
 public class PositionService : IPositionService
 {
-    private readonly IPositionRepository _positionRepository;  
-    private readonly IProviderRepository _providerRepository;
-    private readonly ILogger<SocialGroupService> _logger;
+    private readonly IPositionRepository _positionRepository;      
+    private IProviderService _providerService;
+    private readonly ILogger<Position> _logger;
     private readonly IMapper _mapper;    
 
-    public PositionService(ILogger<SocialGroupService> logger, IMapper mapper, 
+    public PositionService(ILogger<Position> logger, IMapper mapper, 
         IPositionRepository positionRepository,
-        IProviderRepository providerRepository)
+        IProviderService providerService)
     {
         this._logger = logger;
         this._mapper = mapper;    
         this._positionRepository = positionRepository;        
-        this._providerRepository = providerRepository;
+        this._providerService = providerService;
     }
 
     public async Task<PositionDto> CreateAsync(PositionCreateDto createDto, Guid providerId)
     {
         // Check if the provider exists using the provider repository
-        var provider = await _providerRepository.GetProviderByUserIdAsync(providerId);
-
-        var position = _mapper.Map<Position>(createDto);       
-        position.ProviderId = provider.Id; // Linking provider userId to position
-                
-        try
+        var provider = await _providerService.GetByUserId(providerId.ToString());
+        
+        if (provider == null)
         {
+            _logger.LogError($"Position with ID {provider.Id} not found.");
+            throw new ArgumentException($"Provider with ID {provider.Id} does not exist.");
+        }
+
+        try
+        {            
+            var position = _mapper.Map<Position>(createDto);
+            position.ProviderId = provider.Id; // link position to provider id
+
             _logger.LogInformation($"Creating position: {JsonConvert.SerializeObject(position)}");
 
             var createdPosition = await _positionRepository.CreateAsync(position);
@@ -53,7 +60,7 @@ public class PositionService : IPositionService
     public async Task<PositionDto> GetByIdAsync(Guid id)
     {
         var position = await _positionRepository.GetByIdAsync(id);
-        if (position == null)
+        if (position == null || position.IsDeleted)
         {
             _logger.LogError($"Position with ID {id} not found.");
             throw new KeyNotFoundException($"Position with ID {id} not found.");
@@ -74,14 +81,23 @@ public class PositionService : IPositionService
         return _mapper.Map<PositionDto>(updatedPosition);
     }
 
-    public async Task DeleteAsync(Guid id, Guid providerId)
+    public async Task DeleteAsync(Guid id, Guid providerOwnerId)
     {
         var position = await _positionRepository.GetByIdAsync(id);
-        if (position == null || position.ProviderId != providerId)
+
+        if (position == null || position.IsDeleted)
         {
+            _logger.LogError($"Position with ID {id} not found.");
+            throw new KeyNotFoundException($"Position with ID {id} not found or it was deleted.");
+        }
+
+        if (position.CreatedBy != providerOwnerId.ToString())
+        {
+            _logger.LogError($"Unauthorized deletion attempt for position {id} by provider id {providerOwnerId}");
             throw new UnauthorizedAccessException("You do not have permission to delete this position.");
         }
 
+        _logger.LogInformation($"Deleting position {id} for provider {providerOwnerId}");
         await _positionRepository.DeleteAsync(position);
     }   
 }
