@@ -12,6 +12,7 @@ using OutOfSchool.Services.Enums;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using System.Linq;
+using OutOfSchool.BusinessLogic.Models.Providers;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 [TestFixture]
@@ -69,8 +70,8 @@ public class PositionControllerTests
         currentUserService.Setup(s => s.IsInRole(Role.Provider)).Returns(true);
 
         // provider service should return the provider with id we created
-        providerService.Setup(s => s.GetProviderByUserIdAsync(It.IsAny<Guid>()))
-        .ReturnsAsync(new Provider { Id = providerId });
+        providerService.Setup(s => s.GetById(It.IsAny<Guid>()))
+        .ReturnsAsync(new ProviderDto{ Id = providerId });
 
         positionService.Setup(s => s.CreateAsync(positionCreateDto, providerId))
        .ReturnsAsync(positionDto);
@@ -118,8 +119,8 @@ public class PositionControllerTests
         currentUserService.Setup(s => s.UserId).Returns(providerId.ToString());
         currentUserService.Setup(s => s.IsInRole(Role.Provider)).Returns(true);
 
-        providerService.Setup(s => s.GetProviderByUserIdAsync(It.IsAny<Guid>()))
-        .ReturnsAsync(new Provider { Id = providerId });
+        providerService.Setup(s => s.GetById(It.IsAny<Guid>()))
+                .ReturnsAsync(new ProviderDto { Id = providerId });
 
         positionService.Setup(s => s.UpdateAsync(positionId, positionUpdateDto, providerId))
             .ReturnsAsync(positionDto);        
