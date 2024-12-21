@@ -7,7 +7,6 @@ using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using System.Threading.Tasks;
 using System;
 using OutOfSchool.BusinessLogic.Models.Position;
-using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Enums;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
