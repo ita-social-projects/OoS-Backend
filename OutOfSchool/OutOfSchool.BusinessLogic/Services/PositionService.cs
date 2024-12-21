@@ -85,7 +85,7 @@ public class PositionService : IPositionService
     {
         var position = await _entityRepositoryBase.GetById(id);
 
-        if (position == null || position.IsDeleted)
+        if (position == null || position.IsDeleted == true)
         {
             _logger.LogError($"Position with ID {id} not found.");
             throw new KeyNotFoundException($"Position with ID {id} not found or it was deleted.");

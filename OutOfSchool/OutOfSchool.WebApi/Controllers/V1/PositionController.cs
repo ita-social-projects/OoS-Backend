@@ -5,7 +5,7 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize]
+[Authorize(Roles = "provider")]
 [ApiController]
 public class PositionController : ControllerBase
 {
@@ -120,6 +120,14 @@ public class PositionController : ControllerBase
             var providerOwnerId = GetProviderOwnerId();
             await positionService.DeleteAsync(id, providerOwnerId);
             return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message); 
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid(ex.Message);
         }
         catch (Exception ex)
         {

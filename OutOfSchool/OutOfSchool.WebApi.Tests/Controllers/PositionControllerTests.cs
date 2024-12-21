@@ -139,6 +139,45 @@ public class PositionControllerTests
         Assert.AreEqual(positionDto.FullName, updatedPosition.FullName);
     }
 
+    [Test]
+    public async Task DeletePosition_WhichDeleted_ShouldReturnNotFound()
+    {
+        // Arrange
+        currentUserService.Setup(s => s.UserId).Returns(providerId.ToString());
+        currentUserService.Setup(s => s.IsInRole(Role.Provider)).Returns(true);
+
+        var deletedPosition = positionDto;
+        deletedPosition.IsDeleted = true;
+
+        positionService
+            .Setup(s => s.DeleteAsync(deletedPosition.Id, providerId))
+            .ThrowsAsync(new KeyNotFoundException($"Position with ID {deletedPosition.Id} not found or it was deleted."));
+
+        // Act
+        var result = await controller.Delete(deletedPosition.Id);
+
+        // Assert
+        Assert.IsInstanceOf<NotFoundObjectResult>(result);
+        var objectResult = result as NotFoundObjectResult;
+        Assert.IsNotNull(objectResult); // Ensure the cast succeeded
+        Assert.AreEqual($"Position with ID {deletedPosition.Id} not found or it was deleted.", objectResult.Value);
+    }
+
+    [Test]
+    public async Task DeletePosition_WithValidInput_ShoudReturnNoContent()
+    {
+        // Arrange
+        currentUserService.Setup(s => s.UserId).Returns(providerId.ToString());
+        currentUserService.Setup(s => s.IsInRole(Role.Provider)).Returns(true);
+
+        // Act 
+        var result = await controller.Delete(positionDto.Id);
+        
+        // Act
+        Assert.IsInstanceOf<NoContentResult>(result); // Verify the result type
+    }
+
+
     private PositionUpdateDto FakePositionUpdateDto(Guid providerId, PositionDto oldPosition)
     {        
         return new PositionUpdateDto
