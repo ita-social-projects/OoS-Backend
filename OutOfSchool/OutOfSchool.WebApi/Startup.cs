@@ -373,8 +373,7 @@ public static class Startup
                 : new WorkshopServiceStrategy(sp.GetRequiredService<IWorkshopService>(), sp.GetRequiredService<ILogger<WorkshopServiceStrategy>>());
         });
 
-        // entities repositories
-        services.AddTransient(typeof(IPositionRepository), typeof(PositionRepository));
+        // entities repositories        
         services.AddTransient(typeof(IEntityAddOnlyRepository<,>), typeof(EntityRepository<,>));
         services.AddTransient(typeof(IEntityRepository<,>), typeof(EntityRepository<,>));
         services.AddTransient(typeof(ISensitiveEntityRepository<>), typeof(SensitiveEntityRepository<>));

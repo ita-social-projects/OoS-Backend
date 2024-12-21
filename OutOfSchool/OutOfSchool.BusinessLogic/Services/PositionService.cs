@@ -1,24 +1,24 @@
 ﻿using AutoMapper;
-using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.BusinessLogic.Models.Position;
 using Newtonsoft.Json;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 public class PositionService : IPositionService
-{
-    private readonly IPositionRepository _positionRepository;      
+{    
+    private readonly IEntityRepository<Guid, Position> _entityRepositoryBase;
     private IProviderService _providerService;
     private readonly ILogger<Position> _logger;
     private readonly IMapper _mapper;    
 
-    public PositionService(ILogger<Position> logger, IMapper mapper, 
-        IPositionRepository positionRepository,
+    public PositionService(ILogger<Position> logger, IMapper mapper,
+        IEntityRepository<Guid, Position> entityRepositoryBase,
         IProviderService providerService)
     {
         this._logger = logger;
         this._mapper = mapper;    
-        this._positionRepository = positionRepository;        
+        this._entityRepositoryBase = entityRepositoryBase; 
         this._providerService = providerService;
     }
 
@@ -40,7 +40,7 @@ public class PositionService : IPositionService
 
             _logger.LogInformation($"Creating position: {JsonConvert.SerializeObject(position)}");
 
-            var createdPosition = await _positionRepository.CreateAsync(position);
+            var createdPosition = await _entityRepositoryBase.Create(position);
             return _mapper.Map<PositionDto>(createdPosition);
         }
         catch (Exception ex)
@@ -53,14 +53,14 @@ public class PositionService : IPositionService
 
     public async Task<IEnumerable<PositionDto>> GetAllAsync(Guid providerId)
     {                
-        var positions = await _positionRepository.GetAllAsync(providerId);        
+        var positions = await _entityRepositoryBase.GetByFilter(x=> x.CreatedBy == providerId.ToString());        
         return positions.Select(p => _mapper.Map<PositionDto>(p));
     }
 
     public async Task<PositionDto> GetByIdAsync(Guid id)
     {
-        var position = await _positionRepository.GetByIdAsync(id);
-        if (position == null || position.IsDeleted)
+        var position = await _entityRepositoryBase.GetById(id);
+        if (position == null)
         {
             _logger.LogError($"Position with ID {id} not found.");
             throw new KeyNotFoundException($"Position with ID {id} not found.");
@@ -70,20 +70,20 @@ public class PositionService : IPositionService
 
     public async Task<PositionDto> UpdateAsync(Guid id, PositionUpdateDto updateDto, Guid providerId)
     {
-        var existingPosition = await _positionRepository.GetByIdAsync(id);
+        var existingPosition = await _entityRepositoryBase.GetById(id);
         if (existingPosition == null || existingPosition.CreatedBy != providerId.ToString())
         {
             throw new UnauthorizedAccessException("You do not have permission to update this position.");
         }
 
         _mapper.Map(updateDto, existingPosition);
-        var updatedPosition = await _positionRepository.UpdateAsync(existingPosition);
+        var updatedPosition = await _entityRepositoryBase.Update(existingPosition);
         return _mapper.Map<PositionDto>(updatedPosition);
     }
 
     public async Task DeleteAsync(Guid id, Guid providerOwnerId)
     {
-        var position = await _positionRepository.GetByIdAsync(id);
+        var position = await _entityRepositoryBase.GetById(id);
 
         if (position == null || position.IsDeleted)
         {
@@ -98,6 +98,6 @@ public class PositionService : IPositionService
         }
 
         _logger.LogInformation($"Deleting position {id} for provider {providerOwnerId}");
-        await _positionRepository.DeleteAsync(position);
+        await _entityRepositoryBase.Delete(position);
     }   
 }
