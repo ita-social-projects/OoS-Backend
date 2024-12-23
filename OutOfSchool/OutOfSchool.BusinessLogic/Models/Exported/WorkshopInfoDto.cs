@@ -1,17 +1,17 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
-using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Common.Validators;
 
-namespace OutOfSchool.BusinessLogic.Models.ProvidersInfo;
+namespace OutOfSchool.BusinessLogic.Models.Exported;
 
-public class WorkshopInfoDto : WorkshopInfoBaseDto, IHasRating
+public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
 {
+    public Guid ProviderId { get; set; }
+
+    public Guid? ParentWorkshopId { get; set; }
+
     public uint TakenSeats { get; set; } = 0;
 
     public float Rating { get; set; }
@@ -25,6 +25,11 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IHasRating
     [MinLength(1)]
     [MaxLength(60)]
     public string Title { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Workshop short title is required")]
+    [MinLength(Constants.MinWorkshopShortTitleLength)]
+    [MaxLength(Constants.MaxWorkshopShortTitleLength)]
+    public string ShortTitle { get; set; } = string.Empty;
 
     [DataType(DataType.PhoneNumber)]
     [Required(ErrorMessage = "Phone number is required")]
@@ -58,46 +63,97 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IHasRating
     public int MaxAge { get; set; }
 
     [Required]
-    [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<DateTimeRangeDto> DateTimeRanges { get; set; }
 
-    [Column(TypeName = "decimal(18,2)")]
+    public bool IsPaid { get; set; } = false;
+
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
     public decimal? Price { get; set; } = default;
 
     [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
     public PayRateType? PayRate { get; set; } = PayRateType.Classes;
 
+    [Required(ErrorMessage = "Form of learning is required")]
+    [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
+    public FormOfLearning FormOfLearning { get; set; }
+
     public uint AvailableSeats { get; set; } = uint.MaxValue;
 
     public bool CompetitiveSelection { get; set; }
 
-    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    [MaxLength(500)]
+    public string CompetitiveSelectionDescription { get; set; }
+
     [CollectionNotEmpty(ErrorMessage = "At least one description is required")]
-    public IEnumerable<WorkshopDescriptionItemDto> WorkshopDescriptionItems { get; set; }
+    public IEnumerable<WorkshopDescriptionItemInfo> WorkshopDescriptionItems { get; set; }
 
     public bool WithDisabilityOptions { get; set; } = default;
 
     [MaxLength(200)]
     public string DisabilityOptionsDesc { get; set; } = string.Empty;
 
-    public Guid? InstitutionId { get; set; }
-
     public string Institution { get; set; }
-
-    public Guid? InstitutionHierarchyId { get; set; }
 
     public string InstitutionHierarchy { get; set; }
 
-    public List<long> DirectionIds { get; set; }
+    public TeacherInfoDto DefaultTeacher { get; set; }
 
-    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    public List<string> Directions { get; set; }
+
     public IEnumerable<string> Keywords { get; set; } = default;
 
     [Required]
-    [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public AddressInfoDto Address { get; set; }
 
     public List<TeacherInfoDto> Teachers { get; set; }
 
+    public DateOnly ActiveFrom { get; set; }
+
+    public DateOnly ActiveTo { get; set; }
+
+    public bool ShortStay { get; set; } = false;
+
+    public bool IsSelfFinanced { get; set; } = false;
+
+    public bool IsSpecial { get; set; } = false;
+
+    public bool IsInclusive { get; set; } = false;
+    
+    [Required(ErrorMessage = "Workshop type is required")]
+    [EnumDataType(typeof(WorkshopType), ErrorMessage = Constants.EnumErrorMessage)]
+    public WorkshopType WorkshopType { get; set; }
+    
+    [EnumDataType(typeof(SpecialNeedsType), ErrorMessage = Constants.EnumErrorMessage)]
+    public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;
+
+    // TODO: Need to implement
+    public string LanguageOfEducation { get; set; } = "українська";
+
+    [MaxLength(256)]
+    public string CoverImageId { get; set; } = string.Empty;
+
+    public IList<string> ImageIds { get; set; }
+
+    public List<string> Tags { get; set; }
+    
+    public Guid? DefaultTeacherId { get; set; }
+    
+    [MaxLength(500)]
+    public string EnrollmentProcedureDescription { get; set; }
+
+    public bool AreThereBenefits { get; set; } = default;
+
+    [MaxLength(500)]
+    public string PreferentialTermsOfParticipation { get; set; }
+
+    [Required]
+    [EnumDataType(typeof(EducationalShift), ErrorMessage = Constants.EnumErrorMessage)]
+    public EducationalShift EducationalShift { get; set; } = EducationalShift.First;
+
+    [Required(ErrorMessage = "Type of age composition is required")]
+    [EnumDataType(typeof(AgeComposition), ErrorMessage = Constants.EnumErrorMessage)]
+    public AgeComposition AgeComposition { get; set; } = AgeComposition.SameAge;
+
+    [EnumDataType(typeof(Coverage), ErrorMessage = Constants.EnumErrorMessage)]
+    public Coverage Coverage { get; set; } = Coverage.School;
 }

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.BusinessLogic.Models.ProvidersInfo;
+namespace OutOfSchool.BusinessLogic.Models.Exported;
 
 public class TeacherInfoDto
 {

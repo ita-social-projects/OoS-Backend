@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
-using OutOfSchool.BusinessLogic.Models.ProvidersInfo;
+using OutOfSchool.BusinessLogic.Models.Exported;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
@@ -17,18 +17,18 @@ using OutOfSchool.WebApi.Controllers.V1;
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
 [TestFixture]
-public class ExternalExportProviderControllerTests
+public class ExternalExportControllerTests
 {
-    private ExternalExportProviderController controller;
-    private Mock<IExternalExportProviderService> mockExternalProviderService;
+    private ExternalExportController controller;
+    private Mock<IExternalExportService> mockExternalProviderService;
     private IMapper mapper;
 
     [SetUp]
     public void Setup()
     {
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
-        mockExternalProviderService = new Mock<IExternalExportProviderService>();
-        controller = new ExternalExportProviderController(mockExternalProviderService.Object);
+        mockExternalProviderService = new Mock<IExternalExportService>();
+        controller = new ExternalExportController(mockExternalProviderService.Object);
     }
 
     [Test]
@@ -38,11 +38,11 @@ public class ExternalExportProviderControllerTests
         var fakeProviders = ProvidersGenerator.Generate(5).WithWorkshops();
 
         _ = mockExternalProviderService
-            .Setup(x => x.GetProvidersWithWorkshops(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
+            .Setup(x => x.GetProviders(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
             .ReturnsAsync(new SearchResult<ProviderInfoBaseDto> { TotalAmount = fakeProviders.Count, Entities = mapper.Map<List<ProviderInfoBaseDto>>(fakeProviders) });
 
         // Act
-        var actionResult = await controller.GetByFilter(DateTime.UtcNow, new OffsetFilter { Size = 10 });
+        var actionResult = await controller.GetProvidersByFilter(DateTime.UtcNow, new OffsetFilter { Size = 10 });
 
         // Assert
         Assert.IsInstanceOf<OkObjectResult>(actionResult);
@@ -57,11 +57,11 @@ public class ExternalExportProviderControllerTests
     {
         // Arrange
         mockExternalProviderService
-            .Setup(x => x.GetProvidersWithWorkshops(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
+            .Setup(x => x.GetProviders(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
             .ReturnsAsync(new SearchResult<ProviderInfoBaseDto> { Entities = new List<ProviderInfoBaseDto>() });
 
         // Act
-        var actionResult = await controller.GetByFilter(DateTime.UtcNow, new OffsetFilter { Size = 10 });
+        var actionResult = await controller.GetProvidersByFilter(DateTime.UtcNow, new OffsetFilter { Size = 10 });
 
         // Assert
         Assert.IsInstanceOf<NoContentResult>(actionResult);
@@ -72,10 +72,10 @@ public class ExternalExportProviderControllerTests
     {
         // Arrange
         mockExternalProviderService
-            .Setup(x => x.GetProvidersWithWorkshops(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
+            .Setup(x => x.GetProviders(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
             .ThrowsAsync(new Exception("Simulated exception"));
         // Act
-        var actionResult = await controller.GetByFilter(DateTime.UtcNow, new OffsetFilter { Size = 10 });
+        var actionResult = await controller.GetProvidersByFilter(DateTime.UtcNow, new OffsetFilter { Size = 10 });
 
         // Assert
         Assert.IsInstanceOf<ObjectResult>(actionResult);

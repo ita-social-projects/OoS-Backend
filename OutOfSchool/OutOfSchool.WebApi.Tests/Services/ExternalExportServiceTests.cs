@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
-using OutOfSchool.BusinessLogic.Models.ProvidersInfo;
+using OutOfSchool.BusinessLogic.Models.Exported;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Util;
@@ -23,14 +23,14 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 [TestFixture]
-public class ExternalExportProviderServiceTests
+public class ExternalExportServiceTests
 {
-    private ExternalExportProviderService externalExportProviderService;
+    private ExternalExportService externalExportService;
     private Mock<IProviderRepository> mockProviderRepository;
     private Mock<IWorkshopRepository> mockWorkshopRepository;
     private Mock<IAverageRatingService> mockAverageRatingService;
     private IMapper mockMapper;
-    private Mock<ILogger<ExternalExportProviderService>> mockLogger;
+    private Mock<ILogger<ExternalExportService>> mockLogger;
 
     [SetUp]
     public void Setup()
@@ -39,9 +39,9 @@ public class ExternalExportProviderServiceTests
         mockWorkshopRepository = new Mock<IWorkshopRepository>();
         mockAverageRatingService = new Mock<IAverageRatingService>();
         mockMapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
-        mockLogger = new Mock<ILogger<ExternalExportProviderService>>();
+        mockLogger = new Mock<ILogger<ExternalExportService>>();
 
-        externalExportProviderService = new ExternalExportProviderService(
+        externalExportService = new ExternalExportService(
             mockProviderRepository.Object,
             mockWorkshopRepository.Object,
             mockAverageRatingService.Object,
@@ -50,7 +50,7 @@ public class ExternalExportProviderServiceTests
     }
 
     [Test]
-    public async Task GetProvidersWithWorkshops_ReturnsEmptySearchResult()
+    public async Task GetProviders_ReturnsEmptySearchResult()
     {
         // Arrange
         var updatedAfter = DateTime.UtcNow;
@@ -63,11 +63,11 @@ public class ExternalExportProviderServiceTests
             .ReturnsAsync(fakeProviders);
 
         mockWorkshopRepository
-            .Setup(x => x.GetAllWithDeleted(It.IsAny<Expression<Func<Workshop, bool>>>()))
+            .Setup(x => x.GetAllWithDeleted(updatedAfter, 0, 10))
             .ReturnsAsync(fakeWorkshops);
 
         // Act
-        var result = await externalExportProviderService.GetProvidersWithWorkshops(updatedAfter, offsetFilter);
+        var result = await externalExportService.GetProviders(updatedAfter, offsetFilter);
 
         // Assert
         Assert.IsNotNull(result);
@@ -76,7 +76,7 @@ public class ExternalExportProviderServiceTests
     }
 
     [Test]
-    public async Task GetProvidersWithWorkshops_ReturnsSearchResultWithWorkshops()
+    public async Task GetProviders_ReturnsSearchResultData()
     {
         // Arrange
         var updatedAfter = DateTime.UtcNow;
@@ -92,11 +92,11 @@ public class ExternalExportProviderServiceTests
         mockProviderRepository.Setup(x => x.CountWithDeleted(It.IsAny<DateTime>())).ReturnsAsync(5);
 
         mockWorkshopRepository
-            .Setup(x => x.GetAllWithDeleted(It.IsAny<Expression<Func<Workshop, bool>>>()))
+            .Setup(x => x.GetAllWithDeleted(updatedAfter, 0, 10))
             .ReturnsAsync(fakeWorkshops);
 
         // Act
-        var result = await externalExportProviderService.GetProvidersWithWorkshops(updatedAfter, offsetFilter);
+        var result = await externalExportService.GetProviders(updatedAfter, offsetFilter);
 
         // Assert
         Assert.IsNotNull(result);
@@ -106,7 +106,7 @@ public class ExternalExportProviderServiceTests
     }
 
     [Test]
-    public async Task GetProvidersWithWorkshops_ExceptionInGetAllUpdatedProviders_ReturnsEmptySearchResult()
+    public async Task GetProviders_ExceptionInGetProviders_ReturnsEmptySearchResult()
     {
         // Arrange
         var updatedAfter = DateTime.UtcNow;
@@ -115,7 +115,7 @@ public class ExternalExportProviderServiceTests
             .ThrowsAsync(new Exception("Simulated exception"));
 
         // Act
-        var result = await externalExportProviderService.GetProvidersWithWorkshops(DateTime.Now, new OffsetFilter());
+        var result = await externalExportService.GetProviders(DateTime.Now, new OffsetFilter());
 
         // Assert
         Assert.NotNull(result);
@@ -129,11 +129,11 @@ public class ExternalExportProviderServiceTests
         // Arrange
         var updatedAfter = DateTime.UtcNow;
         var offsetFilter = new OffsetFilter { Size = 10 };
-        mockWorkshopRepository.Setup(repo => repo.GetAllWithDeleted(It.IsAny<Expression<Func<Workshop, bool>>>()))
+        mockWorkshopRepository.Setup(repo => repo.GetAllWithDeleted(updatedAfter, 0, 10))
            .ThrowsAsync(new Exception("Simulated exception"));
 
         // Act
-        var result = await externalExportProviderService.GetProvidersWithWorkshops(updatedAfter, offsetFilter);
+        var result = await externalExportService.GetProviders(updatedAfter, offsetFilter);
 
         // Assert
         Assert.NotNull(result);
@@ -151,7 +151,7 @@ public class ExternalExportProviderServiceTests
         .ReturnsAsync((List<Provider>)null);
 
         // Act
-        var result = await externalExportProviderService.GetProvidersWithWorkshops(DateTime.Now, new OffsetFilter());
+        var result = await externalExportService.GetProviders(DateTime.Now, new OffsetFilter());
 
         // Assert
         Assert.NotNull(result);
@@ -164,7 +164,7 @@ public class ExternalExportProviderServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportProviderService(null, Mock.Of<IWorkshopRepository>(), Mock.Of<IAverageRatingService>(), Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportProviderService>>()));
+            new ExternalExportService(null, Mock.Of<IWorkshopRepository>(), Mock.Of<IAverageRatingService>(), Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
     }
 
     [Test]
@@ -172,7 +172,7 @@ public class ExternalExportProviderServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportProviderService(Mock.Of<IProviderRepository>(), null, Mock.Of<IAverageRatingService>(), Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportProviderService>>()));
+            new ExternalExportService(Mock.Of<IProviderRepository>(), null, Mock.Of<IAverageRatingService>(), Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
     }
 
     [Test]
@@ -180,7 +180,7 @@ public class ExternalExportProviderServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportProviderService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IAverageRatingService>(), null, Mock.Of<ILogger<ExternalExportProviderService>>()));
+            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IAverageRatingService>(), null, Mock.Of<ILogger<ExternalExportService>>()));
     }
 
     [Test]
@@ -188,7 +188,7 @@ public class ExternalExportProviderServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportProviderService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IAverageRatingService>(), Mock.Of<IMapper>(), null));
+            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IAverageRatingService>(), Mock.Of<IMapper>(), null));
     }
 
     [Test]
@@ -196,7 +196,7 @@ public class ExternalExportProviderServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportProviderService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportProviderService>>()));
+            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
     }
 
     [Test]
@@ -224,16 +224,16 @@ public class ExternalExportProviderServiceTests
             var providerRepository = new ProviderRepository(dbContext);
             var workshopRepository = new WorkshopRepository(dbContext);
 
-            var externalExportProviderService = new ExternalExportProviderService(
+            var externalExportProviderService = new ExternalExportService(
                 providerRepository,
                 workshopRepository,
                 new Mock<IAverageRatingService>().Object,
                 mockMapper,
-                new Mock<ILogger<ExternalExportProviderService>>().Object
+                new Mock<ILogger<ExternalExportService>>().Object
             );
 
             // Act
-            var result = await externalExportProviderService.GetProvidersWithWorkshops(updatedAfter, offsetFilter);
+            var result = await externalExportProviderService.GetProviders(updatedAfter, offsetFilter);
 
             // Assert
             Assert.IsNotNull(result);

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 
@@ -130,12 +131,13 @@ public class WorkshopBaseDto : IValidatableObject
 
     public bool IsSpecial { get; set; } = false;
 
-    public uint SpecialNeedsId { get; set; } = 0;
+    [EnumDataType(typeof(SpecialNeedsType), ErrorMessage = Constants.EnumErrorMessage)]
+    public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;
 
     public bool IsInclusive { get; set; } = false;
 
     [MaxLength(500)]
-    public string AdditionalDescription { get; set; }
+    public string EnrollmentProcedureDescription { get; set; }
 
     public bool AreThereBenefits { get; set; } = default;
 
@@ -143,31 +145,29 @@ public class WorkshopBaseDto : IValidatableObject
     public string PreferentialTermsOfParticipation { get; set; }
 
     [Required]
-    public uint EducationalShiftId { get; set; } = 0;
+    [EnumDataType(typeof(EducationalShift), ErrorMessage = Constants.EnumErrorMessage)]
+    public EducationalShift EducationalShift { get; set; } = EducationalShift.First;
 
     [Required(ErrorMessage = "Language of education is required")]
-    public uint LanguageOfEducationId { get; set; } = 0;
+    public uint LanguageOfEducationId { get; set; } = 1;
 
     [Required(ErrorMessage = "Type of age composition is required")]
-    public uint TypeOfAgeCompositionId { get; set; } = 0;
+    [EnumDataType(typeof(AgeComposition), ErrorMessage = Constants.EnumErrorMessage)]
+    public AgeComposition AgeComposition { get; set; } = AgeComposition.SameAge;
 
-    [Required(ErrorMessage = "Educational disciplines is required")]
-    public Guid EducationalDisciplines { get; set; } = Guid.Empty;
-
-    [Required(ErrorMessage = "Category is required")]
-    public uint CategoryId { get; set; } = 0;
-
-    [Required(ErrorMessage = "GropeType is required")]
-    public uint GropeTypeId { get; set; } = 0;
-
-    public uint CoverageId { get; set; } = 0;
+    [EnumDataType(typeof(Coverage), ErrorMessage = Constants.EnumErrorMessage)]
+    public Coverage Coverage { get; set; } = Coverage.School;
+    
+    [Required(ErrorMessage = "Workshop type is required")]
+    [EnumDataType(typeof(WorkshopType), ErrorMessage = Constants.EnumErrorMessage)]
+    public WorkshopType WorkshopType { get; set; } = WorkshopType.None;
 
     public Guid? DefaultTeacherId { get; set; }
 
-    public Guid? MemberOfWorkshopId { get; set; }
+    public Guid? ParentWorkshopId { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    public WorkshopBaseDto MemberOfWorkshop { get; set; }
+    public WorkshopBaseDto ParentWorkshop { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public virtual ICollection<WorkshopBaseDto> IncludedStudyGroups { get; set; } // Navigation property to included study groups

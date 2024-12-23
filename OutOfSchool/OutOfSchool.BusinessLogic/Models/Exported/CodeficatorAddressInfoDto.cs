@@ -1,4 +1,4 @@
-﻿namespace OutOfSchool.BusinessLogic.Models.ProvidersInfo;
+﻿namespace OutOfSchool.BusinessLogic.Models.Exported;
 
 public class CodeficatorAddressInfoDto
 {

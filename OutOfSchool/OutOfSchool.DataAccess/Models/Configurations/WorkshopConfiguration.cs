@@ -31,9 +31,9 @@ internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
             .OnDelete(DeleteBehavior.Cascade);
 
         // Self-referencing one-to-many relationship configuration
-        builder.HasOne(x => x.MemberOfWorkshop)
+        builder.HasOne(x => x.ParentWorkshop)
             .WithMany(x => x.IncludedStudyGroups)
-            .HasForeignKey(x => x.MemberOfWorkshopId)
+            .HasForeignKey(x => x.ParentWorkshopId)
             .IsRequired(false) // Optional relationship
             .OnDelete(DeleteBehavior.Restrict);
 

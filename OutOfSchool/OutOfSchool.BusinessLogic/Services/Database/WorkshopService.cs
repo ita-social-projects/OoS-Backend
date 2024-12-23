@@ -1133,15 +1133,15 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
     private async Task<Workshop> CheckDtoAndPrepareCreatedWorkshop(WorkshopCreateRequestDto dto)
     {
-        if (dto.MemberOfWorkshopId.HasValue && !await Exists((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false))
+        if (dto.ParentWorkshopId.HasValue && !await Exists((Guid)dto.ParentWorkshopId).ConfigureAwait(false))
         {
-            var errorMessage = $"The main workshop (with id = {dto.MemberOfWorkshopId}) for the workshop being created was not found.";
+            var errorMessage = $"The main workshop (with id = {dto.ParentWorkshopId}) for the workshop being created was not found.";
             throw new InvalidOperationException(errorMessage);
         }
 
-        if (dto.MemberOfWorkshopId.HasValue && (await workshopRepository.GetById((Guid)dto.MemberOfWorkshopId).ConfigureAwait(false)).MemberOfWorkshopId.HasValue)
+        if (dto.ParentWorkshopId.HasValue && (await workshopRepository.GetById((Guid)dto.ParentWorkshopId).ConfigureAwait(false)).ParentWorkshopId.HasValue)
         {
-            var errorMessage = $"The main workshop (with ID = {dto.MemberOfWorkshopId}) for the workshop being created is a member of another workshop, so it cannot be the main workshop.";
+            var errorMessage = $"The main workshop (with ID = {dto.ParentWorkshopId}) for the workshop being created is a member of another workshop, so it cannot be the main workshop.";
             throw new InvalidOperationException(errorMessage);
         }
 

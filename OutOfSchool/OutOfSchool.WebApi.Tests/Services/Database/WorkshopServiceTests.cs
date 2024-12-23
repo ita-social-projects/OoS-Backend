@@ -210,7 +210,7 @@ public class WorkshopServiceTests
     {
         // Arrange
         var createdEntity = WorkshopGenerator.Generate();
-        createdEntity.MemberOfWorkshopId = Guid.NewGuid();
+        createdEntity.ParentWorkshopId = Guid.NewGuid();
         SetupCreate(createdEntity);
 
         // Act and Assert
@@ -224,8 +224,8 @@ public class WorkshopServiceTests
         // Arrange
         var createdEntity = WorkshopGenerator.Generate();
         var guid = Guid.NewGuid();
-        createdEntity.MemberOfWorkshopId = guid;
-        createdEntity.MemberOfWorkshop = WorkshopGenerator.Generate().WithId(guid);
+        createdEntity.ParentWorkshopId = guid;
+        createdEntity.ParentWorkshop = WorkshopGenerator.Generate().WithId(guid);
         SetupCreate(createdEntity, true);
 
         // Act and Assert
@@ -349,7 +349,7 @@ public class WorkshopServiceTests
     {
         // Arrange
         var createdEntity = WorkshopGenerator.Generate();
-        createdEntity.MemberOfWorkshopId = Guid.NewGuid();
+        createdEntity.ParentWorkshopId = Guid.NewGuid();
         SetupCreateV2(createdEntity);
 
         // Act and Assert
@@ -363,8 +363,8 @@ public class WorkshopServiceTests
         // Arrange
         var createdEntity = WorkshopGenerator.Generate();
         var guid = Guid.NewGuid();
-        createdEntity.MemberOfWorkshopId = guid;
-        createdEntity.MemberOfWorkshop = WorkshopGenerator.Generate().WithId(guid);
+        createdEntity.ParentWorkshopId = guid;
+        createdEntity.ParentWorkshop = WorkshopGenerator.Generate().WithId(guid);
         SetupCreateV2(createdEntity, true);
 
         // Act and Assert

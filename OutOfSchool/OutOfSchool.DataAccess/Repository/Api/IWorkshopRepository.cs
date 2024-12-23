@@ -44,5 +44,7 @@ public interface IWorkshopRepository : IEntityRepositorySoftDeleted<Guid, Worksh
     /// <exception cref="InvalidOperationException">It can throw exception when method get workshopId but Workshop doesn't exist.</exception>
     Task<uint> GetAvailableSeats(Guid workshopId);
 
-    Task<List<Workshop>> GetAllWithDeleted(Expression<Func<Workshop, bool>> whereExpression);
+    Task<List<Workshop>> GetAllWithDeleted(DateTime updatedAfter, int from, int size);
+    
+    Task<int> CountWithDeleted(DateTime updatedAfter);
 }

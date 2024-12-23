@@ -335,7 +335,7 @@ public static class Startup
         services.AddTransient<IWorkshopServicesCombiner, WorkshopServicesCombiner>();
         services.AddTransient<IChangesLogService, ChangesLogService>();
         services.AddTransient<IValueProjector, ValueProjector>();
-        services.AddTransient<IExternalExportProviderService, ExternalExportProviderService>();
+        services.AddTransient<IExternalExportService, ExternalExportService>();
         services.AddSingleton<ISendGridAccessibilityService, SendGridAccessibilityService>();
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
 
