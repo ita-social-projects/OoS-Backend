@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.BusinessLogic.Models.Position;
 
-public class PositionCreateDto
+public class PositionCreateUpdateDto
 {
     [Required]
     [MaxLength(30)]

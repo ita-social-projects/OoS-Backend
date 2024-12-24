@@ -135,7 +135,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.searchStringService = searchStringService ?? throw new ArgumentNullException(nameof(searchStringService));
     }
-    
+
     private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
 
     /// <inheritdoc/>

@@ -21,8 +21,8 @@ public class PositionControllerTests
     private Mock<IProviderService> providerService;   
 
     private PositionDto positionDto;
-    private PositionCreateDto positionCreateDto;
-    private PositionUpdateDto positionUpdateDto;
+    private PositionCreateUpdateDto positionCreateDto;
+    private PositionCreateUpdateDto positionUpdateDto;
 
     private Guid providerId;
 
@@ -66,7 +66,7 @@ public class PositionControllerTests
         providerService.Setup(s => s.GetById(It.IsAny<Guid>()))
         .ReturnsAsync(new ProviderDto{ Id = providerId });
 
-        positionService.Setup(s => s.CreateAsync(positionCreateDto, providerId))
+        positionService.Setup(s => s.CreateAsync(positionCreateDto))
        .ReturnsAsync(positionDto);
 
         // Act
@@ -101,7 +101,7 @@ public class PositionControllerTests
         providerService.Setup(s => s.GetById(It.IsAny<Guid>()))
                 .ReturnsAsync(new ProviderDto { Id = providerId });
 
-        positionService.Setup(s => s.UpdateAsync(positionId, positionUpdateDto, providerId))
+        positionService.Setup(s => s.UpdateAsync(positionId, positionUpdateDto))
             .ReturnsAsync(positionDto);        
 
         // Act
@@ -130,7 +130,7 @@ public class PositionControllerTests
         deletedPosition.IsDeleted = true;
 
         positionService
-            .Setup(s => s.DeleteAsync(deletedPosition.Id, providerId))
+            .Setup(s => s.DeleteAsync(deletedPosition.Id))
             .ThrowsAsync(new KeyNotFoundException($"Position with ID {deletedPosition.Id} not found or it was deleted."));
 
         // Act
@@ -158,9 +158,9 @@ public class PositionControllerTests
     }
 
 
-    private PositionUpdateDto FakePositionUpdateDto(Guid providerId, PositionDto oldPosition)
+    private PositionCreateUpdateDto FakePositionUpdateDto(Guid providerId, PositionDto oldPosition)
     {        
-        return new PositionUpdateDto
+        return new PositionCreateUpdateDto
         {             
             FullName = "Hello",
             Language = oldPosition.Language,
@@ -176,7 +176,7 @@ public class PositionControllerTests
         };
     }
 
-    private PositionDto FakePositionDto(Guid providerId, PositionCreateDto positionCreateDto)
+    private PositionDto FakePositionDto(Guid providerId, PositionCreateUpdateDto positionCreateDto)
     {
         return new PositionDto()
         {
@@ -200,9 +200,9 @@ public class PositionControllerTests
         };
     }
 
-    private PositionCreateDto FakePositionCreateDto()
+    private PositionCreateUpdateDto FakePositionCreateDto()
     {
-        return new PositionCreateDto()
+        return new PositionCreateUpdateDto()
         {
             Language = "AnyLanguage",
             Description = "Description",

@@ -35,5 +35,9 @@ public class PositionDto // for get method
 
     public DateTime? UpdatedAt { get; set; }
 
+    public DateOnly ActiveFrom { get; set; }
+
+    public DateOnly ActiveTo { get; set; }
+
     public bool IsDeleted { get; set; }
 }

@@ -17,7 +17,7 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
         : base(dbContext)
     {
         this.db = dbContext;        
-    }    
+    }
 
     /// <summary>
     /// Checks entity elements for uniqueness.
