@@ -56,15 +56,10 @@ public class ExternalExportServiceTests
         var updatedAfter = DateTime.UtcNow;
         var offsetFilter = new OffsetFilter { Size = 10 };
         var fakeProviders = ProvidersGenerator.Generate(0);
-        var fakeWorkshops = WorkshopGenerator.Generate(0);
 
         mockProviderRepository
             .Setup(x => x.GetAllWithDeleted(updatedAfter, offsetFilter.From, offsetFilter.Size))
             .ReturnsAsync(fakeProviders);
-
-        mockWorkshopRepository
-            .Setup(x => x.GetAllWithDeleted(updatedAfter, 0, 10))
-            .ReturnsAsync(fakeWorkshops);
 
         // Act
         var result = await externalExportService.GetProviders(updatedAfter, offsetFilter);
@@ -83,17 +78,12 @@ public class ExternalExportServiceTests
         var offsetFilter = new OffsetFilter { Size = 10 };
 
         var fakeProviders = ProvidersGenerator.Generate(5);
-        var fakeWorkshops = WorkshopGenerator.Generate(3);
 
         mockProviderRepository
             .Setup(x => x.GetAllWithDeleted(It.IsAny<DateTime>(), offsetFilter.From, offsetFilter.Size))
             .ReturnsAsync(fakeProviders);
 
         mockProviderRepository.Setup(x => x.CountWithDeleted(It.IsAny<DateTime>())).ReturnsAsync(5);
-
-        mockWorkshopRepository
-            .Setup(x => x.GetAllWithDeleted(updatedAfter, 0, 10))
-            .ReturnsAsync(fakeWorkshops);
 
         // Act
         var result = await externalExportService.GetProviders(updatedAfter, offsetFilter);
@@ -124,25 +114,7 @@ public class ExternalExportServiceTests
     }
 
     [Test]
-    public async Task GetProvidersWithWorkshops_ExceptionInGetWorkshopListByProviderId_ReturnsEmptySearchResult()
-    {
-        // Arrange
-        var updatedAfter = DateTime.UtcNow;
-        var offsetFilter = new OffsetFilter { Size = 10 };
-        mockWorkshopRepository.Setup(repo => repo.GetAllWithDeleted(updatedAfter, 0, 10))
-           .ThrowsAsync(new Exception("Simulated exception"));
-
-        // Act
-        var result = await externalExportService.GetProviders(updatedAfter, offsetFilter);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.AreEqual(0, result?.TotalAmount ?? 0); 
-        Assert.IsEmpty(result?.Entities ?? Enumerable.Empty<ProviderInfoBaseDto>());
-    }
-
-    [Test]
-    public async Task GetProvidersWithWorkshops_ProvidersIsNull_ReturnsEmptySearchResult()
+    public async Task GetProviders_ProvidersIsNull_ReturnsEmptySearchResult()
     {
         // Arrange
         var updatedAfter = DateTime.UtcNow;
@@ -157,6 +129,88 @@ public class ExternalExportServiceTests
         Assert.NotNull(result);
         Assert.AreEqual(0, result?.TotalAmount ?? 0);
         Assert.IsEmpty(result?.Entities ?? Enumerable.Empty<ProviderInfoBaseDto>());
+    }
+    
+    [Test]
+    public async Task GetWorkshops_ReturnsEmptySearchResult()
+    {
+        // Arrange
+        var updatedAfter = DateTime.UtcNow;
+        var offsetFilter = new OffsetFilter { Size = 10 };
+        var fakeWorkshops = WorkshopGenerator.Generate(0);
+
+        mockWorkshopRepository
+            .Setup(x => x.GetAllWithDeleted(updatedAfter, 0, 10))
+            .ReturnsAsync(fakeWorkshops);
+
+        // Act
+        var result = await externalExportService.GetWorkshops(updatedAfter, offsetFilter);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(0, result.TotalAmount);
+        Assert.AreEqual(0, result.Entities.Count);
+    }
+
+    [Test]
+    public async Task GetWorkshops_ReturnsSearchResultData()
+    {
+        // Arrange
+        var updatedAfter = DateTime.UtcNow;
+        var offsetFilter = new OffsetFilter { Size = 10 };
+
+        var fakeWorkshops = WorkshopGenerator.Generate(3);
+
+        mockWorkshopRepository
+            .Setup(x => x.GetAllWithDeleted(updatedAfter, 0, 10))
+            .ReturnsAsync(fakeWorkshops);
+        
+        mockWorkshopRepository.Setup(x => x.CountWithDeleted(It.IsAny<DateTime>())).ReturnsAsync(3);
+
+        // Act
+        var result = await externalExportService.GetWorkshops(updatedAfter, offsetFilter);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(fakeWorkshops.Count, result.TotalAmount);
+        Assert.AreEqual(fakeWorkshops.Count, result.Entities.Count);
+        mockWorkshopRepository.Verify(x => x.CountWithDeleted(updatedAfter), Times.Once);
+    }
+
+    [Test]
+    public async Task GetWorkshops_ExceptionInGetWorkshops_ReturnsEmptySearchResult()
+    {
+        // Arrange
+        var updatedAfter = DateTime.UtcNow;
+        var offsetFilter = new OffsetFilter { Size = 10 };
+        mockWorkshopRepository.Setup(repo => repo.GetAllWithDeleted(updatedAfter, offsetFilter.From,  offsetFilter.Size))
+            .ThrowsAsync(new Exception("Simulated exception"));
+
+        // Act
+        var result = await externalExportService.GetWorkshops(DateTime.Now, new OffsetFilter());
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.AreEqual(0, result?.TotalAmount ?? 0); 
+        Assert.IsEmpty(result?.Entities ?? Enumerable.Empty<WorkshopInfoBaseDto>());
+    }
+
+    [Test]
+    public async Task GetWorkshops_ProvidersIsNull_ReturnsEmptySearchResult()
+    {
+        // Arrange
+        var updatedAfter = DateTime.UtcNow;
+        var offsetFilter = new OffsetFilter { Size = 10 };
+        mockWorkshopRepository.Setup(repo => repo.GetAllWithDeleted(updatedAfter, offsetFilter.From, offsetFilter.Size))
+        .ReturnsAsync((List<Workshop>)null);
+
+        // Act
+        var result = await externalExportService.GetWorkshops(DateTime.Now, new OffsetFilter());
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.AreEqual(0, result?.TotalAmount ?? 0);
+        Assert.IsEmpty(result?.Entities ?? Enumerable.Empty<WorkshopInfoBaseDto>());
     }
 
     [Test]
@@ -212,21 +266,18 @@ public class ExternalExportServiceTests
             var updatedAfter = default(DateTime);
             var offsetFilter = new OffsetFilter { Size = 10 }; 
             var fakeProviders = ProvidersGenerator.Generate(5);
-            var fakeWorkshops = WorkshopGenerator.Generate(3);
 
             fakeProviders[0].IsDeleted = true;
             fakeProviders[2].IsDeleted = true;
 
             dbContext.Providers.AddRange(fakeProviders);
-            dbContext.Workshops.AddRange(fakeWorkshops);
             dbContext.SaveChanges();
 
             var providerRepository = new ProviderRepository(dbContext);
-            var workshopRepository = new WorkshopRepository(dbContext);
 
             var externalExportProviderService = new ExternalExportService(
                 providerRepository,
-                workshopRepository,
+                new Mock<IWorkshopRepository>().Object,
                 new Mock<IAverageRatingService>().Object,
                 mockMapper,
                 new Mock<ILogger<ExternalExportService>>().Object
@@ -239,6 +290,47 @@ public class ExternalExportServiceTests
             Assert.IsNotNull(result);
             Assert.AreEqual(fakeProviders.Count - 2, result.TotalAmount);
             Assert.AreEqual(fakeProviders.Count - 2, result.Entities.Count);
+            Assert.IsTrue(result.Entities.All(provider => !provider.IsDeleted));
+        }
+    }
+    
+    [Test]
+    public async Task GetAllUpdatedWorkshops_DefaultUpdatedAfter_ReturnsNonDeletedWorkshops()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
+            .UseInMemoryDatabase(databaseName: "InMemoryTestDatabase")
+            .Options;
+
+        using (var dbContext = new OutOfSchoolDbContext(options))
+        {
+            var updatedAfter = default(DateTime);
+            var offsetFilter = new OffsetFilter { Size = 10 }; 
+            var fakeWorkshops = WorkshopGenerator.Generate(3);
+
+            fakeWorkshops[0].IsDeleted = true;
+            fakeWorkshops[2].IsDeleted = true;
+
+            dbContext.Workshops.AddRange(fakeWorkshops);
+            dbContext.SaveChanges();
+
+            var workshopRepository = new WorkshopRepository(dbContext);
+
+            var externalExportProviderService = new ExternalExportService(
+                new Mock<IProviderRepository>().Object,
+                workshopRepository,
+                new Mock<IAverageRatingService>().Object,
+                mockMapper,
+                new Mock<ILogger<ExternalExportService>>().Object
+            );
+
+            // Act
+            var result = await externalExportProviderService.GetWorkshops(updatedAfter, offsetFilter);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(fakeWorkshops.Count - 2, result.TotalAmount);
+            Assert.AreEqual(fakeWorkshops.Count - 2, result.Entities.Count);
             Assert.IsTrue(result.Entities.All(provider => !provider.IsDeleted));
         }
     }

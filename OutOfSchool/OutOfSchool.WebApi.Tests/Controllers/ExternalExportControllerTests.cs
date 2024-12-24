@@ -20,66 +20,121 @@ namespace OutOfSchool.WebApi.Tests.Controllers;
 public class ExternalExportControllerTests
 {
     private ExternalExportController controller;
-    private Mock<IExternalExportService> mockExternalProviderService;
+    private Mock<IExternalExportService> mockExternalExportService;
     private IMapper mapper;
 
     [SetUp]
     public void Setup()
     {
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
-        mockExternalProviderService = new Mock<IExternalExportService>();
-        controller = new ExternalExportController(mockExternalProviderService.Object);
+        mockExternalExportService = new Mock<IExternalExportService>();
+        controller = new ExternalExportController(mockExternalExportService.Object);
     }
 
     [Test]
-    public async Task GetByFilter_ReturnsOkWithResults()
+    public async Task GetProviderByFilter_ReturnsOkWithResults()
     {
         // Arrange
         var fakeProviders = ProvidersGenerator.Generate(5).WithWorkshops();
 
-        _ = mockExternalProviderService
+        _ = mockExternalExportService
             .Setup(x => x.GetProviders(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
-            .ReturnsAsync(new SearchResult<ProviderInfoBaseDto> { TotalAmount = fakeProviders.Count, Entities = mapper.Map<List<ProviderInfoBaseDto>>(fakeProviders) });
+            .ReturnsAsync(new SearchResult<ProviderInfoBaseDto>
+                {TotalAmount = fakeProviders.Count, Entities = mapper.Map<List<ProviderInfoBaseDto>>(fakeProviders)});
 
         // Act
-        var actionResult = await controller.GetProvidersByFilter(DateTime.UtcNow, new OffsetFilter { Size = 10 });
+        var actionResult = await controller.GetProvidersByFilter(DateTime.UtcNow, new OffsetFilter {Size = 10});
 
         // Assert
         Assert.IsInstanceOf<OkObjectResult>(actionResult);
-        var okObjectResult = (OkObjectResult)actionResult;
+        var okObjectResult = (OkObjectResult) actionResult;
         Assert.IsInstanceOf<SearchResult<ProviderInfoBaseDto>>(okObjectResult.Value);
-        var result = (SearchResult<ProviderInfoBaseDto>)okObjectResult.Value;
+        var result = (SearchResult<ProviderInfoBaseDto>) okObjectResult.Value;
         Assert.AreEqual(fakeProviders.Count, result.Entities.Count);
     }
 
     [Test]
-    public async Task GetByFilter_ReturnsNoContent()
+    public async Task GetProviderByFilter_ReturnsNoContent()
     {
         // Arrange
-        mockExternalProviderService
+        mockExternalExportService
             .Setup(x => x.GetProviders(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
-            .ReturnsAsync(new SearchResult<ProviderInfoBaseDto> { Entities = new List<ProviderInfoBaseDto>() });
+            .ReturnsAsync(new SearchResult<ProviderInfoBaseDto> {Entities = new List<ProviderInfoBaseDto>()});
 
         // Act
-        var actionResult = await controller.GetProvidersByFilter(DateTime.UtcNow, new OffsetFilter { Size = 10 });
+        var actionResult = await controller.GetProvidersByFilter(DateTime.UtcNow, new OffsetFilter {Size = 10});
 
         // Assert
         Assert.IsInstanceOf<NoContentResult>(actionResult);
     }
 
     [Test]
-    public async Task GetByFilter_ExceptionInService_ReturnsInternalServerError()
+    public async Task GetProviderByFilter_ExceptionInService_ReturnsInternalServerError()
     {
         // Arrange
-        mockExternalProviderService
+        mockExternalExportService
             .Setup(x => x.GetProviders(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
             .ThrowsAsync(new Exception("Simulated exception"));
         // Act
-        var actionResult = await controller.GetProvidersByFilter(DateTime.UtcNow, new OffsetFilter { Size = 10 });
+        var actionResult = await controller.GetProvidersByFilter(DateTime.UtcNow, new OffsetFilter {Size = 10});
 
         // Assert
         Assert.IsInstanceOf<ObjectResult>(actionResult);
-        var objectResult = (ObjectResult)actionResult;
+        var objectResult = (ObjectResult) actionResult;
+        Assert.AreEqual(500, objectResult.StatusCode);
+        Assert.AreEqual("An error occurred: Simulated exception", objectResult.Value);
+    }
+
+    [Test]
+    public async Task GetWorkshopByFilter_ReturnsOkWithResults()
+    {
+        // Arrange
+        var fakeWorkshops = WorkshopGenerator.Generate(5);
+
+        _ = mockExternalExportService
+            .Setup(x => x.GetWorkshops(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
+            .ReturnsAsync(new SearchResult<WorkshopInfoBaseDto>
+                {TotalAmount = fakeWorkshops.Count, Entities = mapper.Map<List<WorkshopInfoBaseDto>>(fakeWorkshops)});
+
+        // Act
+        var actionResult = await controller.GetWorkshopsByFilter(DateTime.UtcNow, new OffsetFilter {Size = 10});
+
+        // Assert
+        Assert.IsInstanceOf<OkObjectResult>(actionResult);
+        var okObjectResult = (OkObjectResult) actionResult;
+        Assert.IsInstanceOf<SearchResult<WorkshopInfoBaseDto>>(okObjectResult.Value);
+        var result = (SearchResult<WorkshopInfoBaseDto>) okObjectResult.Value;
+        Assert.AreEqual(fakeWorkshops.Count, result.Entities.Count);
+    }
+
+    [Test]
+    public async Task GetWorkshopByFilter_ReturnsNoContent()
+    {
+        // Arrange
+        mockExternalExportService
+            .Setup(x => x.GetWorkshops(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
+            .ReturnsAsync(new SearchResult<WorkshopInfoBaseDto> {Entities = new List<WorkshopInfoBaseDto>()});
+
+        // Act
+        var actionResult = await controller.GetWorkshopsByFilter(DateTime.UtcNow, new OffsetFilter {Size = 10});
+
+        // Assert
+        Assert.IsInstanceOf<NoContentResult>(actionResult);
+    }
+
+    [Test]
+    public async Task GetWorkshopByFilter_ExceptionInService_ReturnsInternalServerError()
+    {
+        // Arrange
+        mockExternalExportService
+            .Setup(x => x.GetWorkshops(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
+            .ThrowsAsync(new Exception("Simulated exception"));
+        // Act
+        var actionResult = await controller.GetWorkshopsByFilter(DateTime.UtcNow, new OffsetFilter {Size = 10});
+
+        // Assert
+        Assert.IsInstanceOf<ObjectResult>(actionResult);
+        var objectResult = (ObjectResult) actionResult;
         Assert.AreEqual(500, objectResult.StatusCode);
         Assert.AreEqual("An error occurred: Simulated exception", objectResult.Value);
     }
