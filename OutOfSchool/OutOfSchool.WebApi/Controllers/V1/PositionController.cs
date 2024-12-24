@@ -1,34 +1,28 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.Position;
-using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
-[Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(Roles = "provider")]
+[Route("api/v{version:apiVersion}/[controller]/[action]")]
 [ApiController]
 public class PositionController : ControllerBase
 {
     private readonly IPositionService positionService;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IUserService userService;
-    private readonly IProviderService providerService;
+    private readonly ICurrentUserService currentUserService;    
 
-    public PositionController(IPositionService positionService, ICurrentUserService currentUserService, IUserService userService, IProviderService providerService)
+    public PositionController(IPositionService positionService, ICurrentUserService currentUserService)
     {
-        this.positionService = positionService ?? throw new ArgumentNullException(nameof(positionService));
-        this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
-        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));        
-        this.userService = userService ?? throw new ArgumentNullException( nameof(userService));
+        this.positionService = positionService ?? throw new ArgumentNullException(nameof(positionService));        
+        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));                
     }
-    
-
+          
     /// <summary>
     /// Creates a new position for the current provider.
     /// </summary>
     /// <param name="createDto">The position data to create.</param>
     /// <returns>The created position.</returns>
-    [HttpPost]  
+    [HttpPost]
+    [HasPermission(Permissions.PositionAddNew)]
     public async Task<ActionResult<PositionDto>> Create([FromBody] PositionCreateDto createDto)
     {
         try
@@ -52,6 +46,7 @@ public class PositionController : ControllerBase
     /// </summary>
     /// <returns>List of positions.</returns>
     [HttpGet]
+    [HasPermission(Permissions.PositionRead)]
     public async Task<ActionResult<IEnumerable<PositionDto>>> GetAll()
     {
         try 
@@ -73,6 +68,7 @@ public class PositionController : ControllerBase
     /// <param name="id">The ID of the position.</param>
     /// <returns>The position details.</returns>
     [HttpGet("{id}")]
+    [HasPermission(Permissions.PositionRead)]
     public async Task<ActionResult<PositionDto>> GetById(Guid id)
     {
         try 
@@ -93,6 +89,7 @@ public class PositionController : ControllerBase
     /// <param name="updateDto">The updated position data.</param>
     /// <returns>The updated position.</returns>    
     [HttpPut("{id}")]
+    [HasPermission(Permissions.PositionEdit)]
     public async Task<ActionResult<PositionDto>> Update(Guid id, [FromBody] PositionUpdateDto updateDto)
     {
         try 
@@ -113,6 +110,7 @@ public class PositionController : ControllerBase
     /// <param name="id">The ID of the position to delete.</param>
     /// <returns>No content if successful.</returns>
     [HttpDelete("{id}")]
+    [HasPermission(Permissions.PositionEdit)]
     public async Task<IActionResult> Delete(Guid id)
     {
         try
@@ -138,8 +136,8 @@ public class PositionController : ControllerBase
 
     // Method to extract provider user ID
     private Guid GetProviderOwnerId()
-    {
-        var justId = currentUserService.UserId;
+    {   
+        var role = currentUserService.UserRole;
         if (currentUserService.IsInRole(Role.Provider))
         {
             var id = currentUserService.UserId;

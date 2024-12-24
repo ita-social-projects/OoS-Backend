@@ -12,13 +12,11 @@ namespace OutOfSchool.Services.Repository;
 public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>, IProviderRepository
 {
     private readonly OutOfSchoolDbContext db;
-    private readonly DbSet<Provider> providersdbSet;
 
     public ProviderRepository(OutOfSchoolDbContext dbContext)
         : base(dbContext)
     {
-        this.db = dbContext;
-        this.providersdbSet = dbContext.Set<Provider>();
+        this.db = dbContext;        
     }    
 
     /// <summary>

@@ -9,8 +9,6 @@ using System;
 using OutOfSchool.BusinessLogic.Models.Position;
 using OutOfSchool.Services.Enums;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Authorization;
-using System.Linq;
 using OutOfSchool.BusinessLogic.Models.Providers;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
@@ -20,8 +18,7 @@ public class PositionControllerTests
     private PositionController controller;
     private Mock<IPositionService> positionService;
     private Mock<ICurrentUserService> currentUserService;
-    private Mock<IProviderService> providerService;
-    private Mock<IUserService> userService;
+    private Mock<IProviderService> providerService;   
 
     private PositionDto positionDto;
     private PositionCreateDto positionCreateDto;
@@ -34,14 +31,11 @@ public class PositionControllerTests
     {
         positionService = new Mock<IPositionService>();
         currentUserService = new Mock<ICurrentUserService>();
-        providerService = new Mock<IProviderService>();
-        userService = new Mock<IUserService>();
+        providerService = new Mock<IProviderService>();        
 
         controller = new PositionController(
             positionService.Object,
-            currentUserService.Object,
-            userService.Object,
-            providerService.Object
+            currentUserService.Object            
         );
         
         providerId = Guid.NewGuid();
@@ -95,21 +89,7 @@ public class PositionControllerTests
         // Assert
         Assert.That(result, Is.Not.Null);
     }
-
-    [Test]
-    public void Controller_ShouldHaveAuthorizeAttribute()
-    {
-        // Arrange
-        var controllerType = typeof(PositionController);
-
-        // Act
-        var authorizeAttribute = controllerType.GetCustomAttributes(typeof(AuthorizeAttribute), true);
-
-        // Assert
-        Assert.IsNotNull(authorizeAttribute);
-        Assert.IsTrue(authorizeAttribute.Any());
-    }
-
+    
     [Test]
     public async Task UpdatePosition_WithValidInput_ShouldReturnUpdatedPosition()
     {
@@ -237,10 +217,5 @@ public class PositionControllerTests
             Tariff = 2.0f,
             ClassifierType = "type",            
         };
-    }
-
-    private IEnumerable<PositionDto> FakePositions()
-    {        
-        return new List<PositionDto>() { positionDto, positionDto, positionDto };
-    }
+    }    
 }
