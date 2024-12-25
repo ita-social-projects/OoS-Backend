@@ -1039,14 +1039,14 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             var errorMessage = "The number of entries to upload should be greater than 0.";
             logger.LogError(errorMessage);
             throw new InvalidOperationException(errorMessage);
-        };
+        }
 
         if (data.Length > Constants.MaxNumberOfEmployeesToUpload)
         {
             var errorMessage = $"The number of entries should not exceed {Constants.MaxNumberOfEmployeesToUpload}.";
             logger.LogError("The number of entries should not exceed {MaxNumberOfEmployeesToUpload}.", Constants.MaxNumberOfEmployeesToUpload);
             throw new InvalidOperationException(errorMessage);
-        };
+        }
 
         var uploadEmployeesRnokpps = data.Select(e => e.Rnokpp).ToList();
 
@@ -1056,7 +1056,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             var errorMessage = $"The Rnokpp property values are not unique.";
             logger.LogError(errorMessage);
             throw new InvalidOperationException(errorMessage);
-        };
+        }
         #endregion
 
         #region Transaction for loading employees into DB
@@ -1095,12 +1095,11 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             //Cycle for filling the database with new employees
             foreach (var key in uploadDictionary.Keys)
             {
-                if (existingOfficialsForProvider.Contains(key))
+                // If this Employee already exists and occupies the same Position
+                if (existingOfficialsForProvider.Contains(key)
+                    && existingOfficialsForProvider[key].Select(o => o.Position.FullName).Contains(uploadDictionary[key].AssignedRole))
                 {
-                    if (existingOfficialsForProvider[key].Select(o => o.Position.FullName).Contains(uploadDictionary[key].AssignedRole))
-                    {
-                        continue; // If this Employee already exists and occupies the same Position
-                    }
+                        continue;
                 }
 
                 // Create a new Position if it doesn't exist
