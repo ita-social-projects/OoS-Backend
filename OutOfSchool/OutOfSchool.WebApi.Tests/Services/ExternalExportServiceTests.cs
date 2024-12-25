@@ -96,7 +96,7 @@ public class ExternalExportServiceTests
     }
 
     [Test]
-    public async Task GetProviders_ExceptionInGetProviders_ReturnsEmptySearchResult()
+    public void GetProviders_ExceptionInGetProviders_ReturnsEmptySearchResult()
     {
         // Arrange
         var updatedAfter = DateTime.UtcNow;
@@ -104,13 +104,8 @@ public class ExternalExportServiceTests
         mockProviderRepository.Setup(repo => repo.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Expression<Func<Provider,bool>>>(), null, false))
             .Throws(new Exception("Simulated exception"));
 
-        // Act
-        var result = await externalExportService.GetProviders(updatedAfter, new OffsetFilter());
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.AreEqual(0, result?.TotalAmount ?? 0); 
-        Assert.IsEmpty(result?.Entities ?? Enumerable.Empty<ProviderInfoBaseDto>());
+        // Act & Assert
+        Assert.CatchAsync<Exception>(() => externalExportService.GetProviders(updatedAfter, new OffsetFilter()));
     }
     
     [Test]
@@ -166,7 +161,7 @@ public class ExternalExportServiceTests
     }
 
     [Test]
-    public async Task GetWorkshops_ExceptionInGetWorkshops_ReturnsEmptySearchResult()
+    public void GetWorkshops_ExceptionInGetWorkshops_ReturnsEmptySearchResult()
     {
         // Arrange
         var updatedAfter = DateTime.UtcNow;
@@ -174,13 +169,8 @@ public class ExternalExportServiceTests
         mockWorkshopRepository.Setup(repo => repo.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Expression<Func<Workshop,bool>>>(), null, false))
             .Throws(new Exception("Simulated exception"));
 
-        // Act
-        var result = await externalExportService.GetWorkshops(DateTime.Now, new OffsetFilter());
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.AreEqual(0, result?.TotalAmount ?? 0); 
-        Assert.IsEmpty(result?.Entities ?? Enumerable.Empty<WorkshopInfoBaseDto>());
+        // Act & Assert
+        Assert.CatchAsync<Exception>(() => externalExportService.GetWorkshops(updatedAfter, new OffsetFilter()));
     }
 
     [Test]
