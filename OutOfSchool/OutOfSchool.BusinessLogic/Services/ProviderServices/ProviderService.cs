@@ -536,6 +536,84 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         return providerRepository.Any(x => x.Id == id);
     }
 
+    public async Task UploadEmployeesForProvider(Guid id, UploadEmployeeDto[] data)
+    {
+        CheckListOfEmployeesForUploading(data);
+
+        // Dictionary for uploading employees
+        var uploadDictionary = new Dictionary<Guid, UploadEmployeeDto>();
+        var existingIndividuals = (await individualRepository.GetByFilter(i => data.Select(e => e.Rnokpp).Contains(i.Rnokpp))
+                                                                          .ConfigureAwait(false))
+                                                                          .Select(i => new { i.Rnokpp, i.Id })
+                                                                          .ToDictionary(e => e.Rnokpp);
+
+        async Task UploadEmployeesIntoDb()
+        {
+            // Circle to add an individual to DB and populate the Dictionary for uploading employees
+            foreach (var employee in data)
+            {
+                if (existingIndividuals.Keys.Contains(employee.Rnokpp))
+                {
+                    uploadDictionary.Add(existingIndividuals[employee.Rnokpp].Id, employee);
+                }
+                else // Add an Individual to DB if it has not already existed in DB
+                {
+                    var newIndividual = await individualRepository.Create(mapper.Map<Individual>(employee));
+                    uploadDictionary.Add(newIndividual.Id, employee);
+                }
+            }
+
+            // Get dictionary (Lookup) with keys - IndividualId and values - Officials
+            var existingOfficialsForProvider = (await officialRepository.GetByFilter(o =>
+                                                                                     o.Position.ProviderId == id
+                                                                                     && uploadDictionary.Keys.Contains(o.IndividualId)
+                                                                                     && (o.DismissalOrder == null || o.DismissalOrder == string.Empty)
+                                                                                     , includeProperties: "Position")
+                                                                                     .ConfigureAwait(false))
+                                                                                     .ToLookup(o => o.IndividualId, o => o);
+
+            //Cycle for filling the database with new employees
+            foreach (var key in uploadDictionary.Keys)
+            {
+                // If this Employee already exists and occupies the same Position
+                if (existingOfficialsForProvider.Contains(key)
+                    && existingOfficialsForProvider[key].Select(o => o.Position.FullName).Contains(uploadDictionary[key].AssignedRole))
+                {
+                    continue;
+                }
+
+                // Create a new Position if it doesn't exist
+                var position = (await positionRepository.GetByFilter(
+                                                                     p => p.ProviderId == id
+                                                                     && p.FullName == uploadDictionary[key].AssignedRole
+                                                                     ).ConfigureAwait(false))
+                                                                     .FirstOrDefault();
+
+                position ??= await positionRepository.Create(
+                        new Position
+                        {
+                            ProviderId = id,
+                            FullName = uploadDictionary[key].AssignedRole
+                        })
+                        .ConfigureAwait(false);
+
+                // Create a new Official
+                await officialRepository.Create(
+                    new Official()
+                    {
+                        IndividualId = key,
+                        PositionId = position.Id
+                    })
+                    .ConfigureAwait(false);
+            }
+        }
+
+        await providerRepository
+            .RunInTransaction(UploadEmployeesIntoDb).ConfigureAwait(false);
+
+        logger.LogInformation("Upload employees for provider finished successfully.");
+    }
+
     private async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
     {
         var recipientIds = new List<string>();
@@ -1027,9 +1105,8 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         return providersWithTheSameEdrpouIpn.Any();
     }
 
-    public async Task UploadEmployeesForProvider(Guid id, UploadEmployeeDto[] data)
+    private void CheckListOfEmployeesForUploading(UploadEmployeeDto[] data)
     {
-        #region Check the list of employees for uploading
         _ = data ?? throw new ArgumentNullException(nameof(data));
 
         logger.LogInformation("Upload employees for provider was started.");
@@ -1057,81 +1134,5 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             logger.LogError(errorMessage);
             throw new InvalidOperationException(errorMessage);
         }
-        #endregion
-
-        #region Transaction for loading employees into DB
-        // Dictionary for uploading employees
-        var uploadDictionary = new Dictionary<Guid, UploadEmployeeDto>();
-        var existingIndividuals = (await individualRepository.GetByFilter(i => data.Select(e => e.Rnokpp).Contains(i.Rnokpp))
-                                                                          .ConfigureAwait(false))
-                                                                          .Select(i => new { i.Rnokpp, i.Id })
-                                                                          .ToDictionary(e => e.Rnokpp);
-
-        async Task UploadEmployeesIntoDb()
-        {
-            // Circle to add an individual to DB and populate the Dictionary for uploading employees
-            foreach (var employee in data)
-            {
-                if (existingIndividuals.Keys.Contains(employee.Rnokpp))
-                {
-                    uploadDictionary.Add(existingIndividuals[employee.Rnokpp].Id, employee);
-                }
-                else // Add an Individual to DB if it has not already existed in DB
-                {
-                    var newIndividual = await individualRepository.Create(mapper.Map<Individual>(employee));
-                    uploadDictionary.Add(newIndividual.Id, employee);
-                }
-            }
-
-            // Get dictionary (Lookup) with keys - IndividualId and values - Officials
-            var existingOfficialsForProvider = (await officialRepository.GetByFilter(o =>
-                                                                                     o.Position.ProviderId == id
-                                                                                     && uploadDictionary.Keys.Contains(o.IndividualId)
-                                                                                     && (o.DismissalOrder == null || o.DismissalOrder == string.Empty)
-                                                                                     , includeProperties: "Position")
-                                                                                     .ConfigureAwait(false))
-                                                                                     .ToLookup(o => o.IndividualId, o => o);
-
-            //Cycle for filling the database with new employees
-            foreach (var key in uploadDictionary.Keys)
-            {
-                // If this Employee already exists and occupies the same Position
-                if (existingOfficialsForProvider.Contains(key)
-                    && existingOfficialsForProvider[key].Select(o => o.Position.FullName).Contains(uploadDictionary[key].AssignedRole))
-                {
-                        continue;
-                }
-
-                // Create a new Position if it doesn't exist
-                var position = (await positionRepository.GetByFilter(
-                                                                     p => p.ProviderId == id
-                                                                     && p.FullName == uploadDictionary[key].AssignedRole
-                                                                     ).ConfigureAwait(false))
-                                                                     .FirstOrDefault();
-
-                position ??= await positionRepository.Create(
-                        new Position
-                        {
-                            ProviderId = id,
-                            FullName = uploadDictionary[key].AssignedRole
-                        })
-                        .ConfigureAwait(false);
-
-                // Create a new Official
-                await officialRepository.Create(
-                    new Official()
-                    {
-                        IndividualId = key,
-                        PositionId = position.Id
-                    })
-                    .ConfigureAwait(false);
-            }
-        }
-
-        await providerRepository
-            .RunInTransaction(UploadEmployeesIntoDb).ConfigureAwait(false);
-
-        logger.LogInformation("Upload employees for provider finished successfully.");
-        #endregion
     }
 }
