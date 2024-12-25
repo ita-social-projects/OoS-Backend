@@ -233,7 +233,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
 
         CreateMap<Address, AddressInfoDto>()
-             .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
+             .ForMember(dest => dest.CodeficatorAddress, opt => opt.MapFrom(src => src.CATOTTG));
 
         /// <summary>
         /// The localization is done outside the mapping
@@ -391,7 +391,7 @@ public class MappingProfile : Profile
                 opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price))
             .ForMember(dest => dest.PayRate, opt => opt.MapFrom(src => src.PayRate))
-            .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats()))
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
             .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Select(x => x.Name)))
             .ForMember(dest => dest.LanguageOfEducation, opt => opt.Ignore())
@@ -402,6 +402,8 @@ public class MappingProfile : Profile
 
         CreateMap<Provider, ProviderInfoDto>()
             .IncludeBase<Provider, ProviderInfoBaseDto>()
+            .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.Name))
+            .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.Institution.Title))
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());

@@ -96,26 +96,4 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
 
         return await Task.FromResult(workshop).ConfigureAwait(false);
     }
-
-    public Task<List<Workshop>> GetAllWithDeleted(DateTime updatedAfter, int from, int size)
-    {
-        IQueryable<Workshop> query = dbSet;
-
-        query = updatedAfter == default
-            ? query.Where(workshop => !workshop.IsDeleted)
-            : query.Where(workshop => workshop.UpdatedAt > updatedAfter || workshop.DeleteDate > updatedAfter);
-
-        return query.Skip(from).Take(size).ToListAsync();
-    }
-
-    public Task<int> CountWithDeleted(DateTime updatedAfter)
-    {
-        IQueryable<Workshop> query = dbSet;
-
-        query = updatedAfter == default
-            ? query.Where(workshop => !workshop.IsDeleted)
-            : query.Where(workshop => workshop.UpdatedAt > updatedAfter || workshop.DeleteDate > updatedAfter);
-
-        return query.CountAsync();
-    }
 }

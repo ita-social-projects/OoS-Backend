@@ -70,7 +70,7 @@ public class ProviderInfoDto : ProviderInfoBaseDto, IExternalRatingInfo
     [MaxLength(Constants.MaxProviderFounderLength)]
     public string Founder { get; set; } = string.Empty;
 
-    public ProviderTypeDto Type { get; set; }
+    public string Type { get; set; }
 
     [Required]
     [EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]
@@ -91,7 +91,7 @@ public class ProviderInfoDto : ProviderInfoBaseDto, IExternalRatingInfo
 
     public AddressInfoDto ActualAddress { get; set; }
 
-    public InstitutionDto Institution { get; set; }
+    public string Institution { get; set; }
 
     [Required]
     [EnumDataType(typeof(InstitutionType), ErrorMessage = Constants.EnumErrorMessage)]

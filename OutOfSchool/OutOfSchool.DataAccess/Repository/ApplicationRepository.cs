@@ -7,6 +7,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
+using OutOfSchool.Services.Util;
 
 namespace OutOfSchool.Services.Repository;
 
@@ -97,5 +98,21 @@ public class ApplicationRepository : EntityRepositorySoftDeleted<Guid, Applicati
             dbContext.Applications.RemoveRange(applicationsToDelete);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
+    }
+
+    public Task<List<WorkshopTakenSeats>> CountTakenSeatsForWorkshops(List<Guid> workshopIds)
+    {
+        return dbSet
+            .Where(x =>
+                (x.Status == ApplicationStatus.Approved || x.Status == ApplicationStatus.StudyingForYears)
+                && !x.IsDeleted
+                && x.Child != null
+                && !x.Child.IsDeleted
+                && x.Parent != null
+                && !x.Parent.IsDeleted
+                && workshopIds.Contains(x.WorkshopId))
+            .GroupBy(a => a.WorkshopId)
+            .Select(g => new WorkshopTakenSeats(g.Key, g.Count()))
+            .ToListAsync();
     }
 }
