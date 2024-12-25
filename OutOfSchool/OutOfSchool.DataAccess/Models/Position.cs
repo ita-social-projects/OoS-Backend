@@ -29,13 +29,13 @@ public class Position : BusinessEntity
     [Required(ErrorMessage = "FullName is required.")]
     [MaxLength(Constants.NameMaxLength)]
     public string FullName { get; set; }
-    
+
     [MaxLength(Constants.NameMaxLength)]
     public string ShortName { get; set; }
 
     [Required(ErrorMessage = "GenitiveName is required.")]
     [MaxLength(Constants.NameMaxLength)]
-    public string GenitiveName { get; set; }
+    public string GenitiveName { get; set; } = string.Empty;
 
     public bool IsTeachingPosition { get; set; }
 
@@ -47,7 +47,7 @@ public class Position : BusinessEntity
 
     [Required(ErrorMessage = "ClassifierType is required.")]
     [MaxLength(60)]
-    public string ClassifierType { get; set; }
+    public string ClassifierType { get; set; } = string.Empty;
 
     public virtual ICollection<Official> Officials { get; set; }
 }

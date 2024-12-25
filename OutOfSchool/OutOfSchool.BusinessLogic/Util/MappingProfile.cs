@@ -10,6 +10,7 @@ using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.Geocoding;
+using OutOfSchool.BusinessLogic.Models.Individual;
 using OutOfSchool.BusinessLogic.Models.Notifications;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.Exported;
@@ -815,6 +816,30 @@ public class MappingProfile : Profile
         CreateMap<CompetitiveEventDescriptionItem, CompetitiveEventDescriptionItemDto>().ReverseMap();
 
         CreateMap<CompetitiveEventRegistrationDeadline, CompetitiveEventRegistrationDeadlineDto>().ReverseMap();
+
+        CreateSoftDeletedMap<UploadEmployeeDto, Individual>()
+                    .ForMember(dest => dest.Id, opt => opt.Ignore())
+                    .ForMember(dest => dest.IsRegistered, opt => opt.Ignore())
+                    .ForMember(dest => dest.ExternalRegistryId, opt => opt.Ignore())
+                    .ForMember(dest => dest.Gender, opt => opt.Ignore())
+                    .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                    .ForMember(dest => dest.User, opt => opt.Ignore())
+                    .ForMember(dest => dest.Officials, opt => opt.Ignore())
+                    .ForMember(dest => dest.Document, opt => opt.Ignore())
+                    .ForMember(dest => dest.File, opt => opt.Ignore())
+                    .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
+                    .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
+                    .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
+                    .ForMember(dest => dest.IsSystemProtected, opt => opt.Ignore())
+                    .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+                    .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
+                    .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
+                    .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                    .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+                    .ForMember(dest => dest.DeleteDate, opt => opt.Ignore());
+
+        CreateMap<Individual, UploadEmployeeDto>()
+                    .ForMember(dest => dest.AssignedRole, opt => opt.Ignore());
     }
 
     public IMappingExpression<TSource, TDestination> CreateSoftDeletedMap<TSource, TDestination>()

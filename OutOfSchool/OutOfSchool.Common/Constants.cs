@@ -184,4 +184,19 @@ public static class Constants
     /// Maximum length of keywords.
     /// </summary>
     public const int MaxKeywordsLength = 200;
+
+    /// <summary>
+    /// Maximum length of first name, middle name, and last name for Individual.
+    /// </summary>
+    public const int MaxIndividualNameLength = 50;
+
+    /// <summary>
+    /// Minimum length of first name, middle name, and last name for Individual.
+    /// </summary>
+    public const int MinIndividualNameLength = 2;
+
+    /// <summary>
+    /// Maximum number of employees to upload.
+    /// </summary>
+    public const int MaxNumberOfEmployeesToUpload = 100;
 }

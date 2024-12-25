@@ -75,6 +75,9 @@ public class ProviderServiceTests
         providerAdminRepositoryMock = new Mock<IEmployeeRepository>();
         usersRepositoryMock = CreateUsersRepositoryMock(fakeUser);
         var addressRepo = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
+        var individualRepo = new Mock<IEntityRepositorySoftDeleted<Guid, Individual>>();
+        var officialRepo = new Mock<IEntityRepositorySoftDeleted<Guid, Official>>();
+        var positionRepo = new Mock<IEntityRepositorySoftDeleted<Guid, Position>>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderService>>();
         var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
@@ -106,7 +109,9 @@ public class ProviderServiceTests
             localizer.Object,
             mapper,
             addressRepo.Object,
-            workshopServicesCombiner.Object,
+            individualRepo.Object,
+            officialRepo.Object,
+            positionRepo.Object, workshopServicesCombiner.Object,
             providerAdminRepositoryMock.Object,
             providerImagesService.Object,
             changesLogService.Object,
