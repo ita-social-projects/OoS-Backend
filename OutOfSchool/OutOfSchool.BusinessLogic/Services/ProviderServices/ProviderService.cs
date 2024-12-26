@@ -592,9 +592,9 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                                                                      ).ConfigureAwait(false))
                                                                      .FirstOrDefault();
 
-                if (position is null)
+                if (position == default)
                 {
-                    await positionRepository.Create(
+                    position = await positionRepository.Create(
                             new Position
                             {
                                 ProviderId = id,
