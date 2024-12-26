@@ -102,5 +102,5 @@ public interface IProviderService
     /// <param name="id">Id of provider that requests upload.</param>
     /// <param name="uploadEployees">List of employees to upload.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task UploadEmployeesForProvider(Guid id, UploadEmployeeDto[] data);
+    Task<UploadEmployeeResponseDto> UploadEmployeesForProvider(Guid id, UploadEmployeeRequestDto[] data);
 }

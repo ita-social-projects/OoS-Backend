@@ -536,12 +536,14 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         return providerRepository.Any(x => x.Id == id);
     }
 
-    public async Task UploadEmployeesForProvider(Guid id, UploadEmployeeDto[] data)
+    public async Task<UploadEmployeeResponseDto> UploadEmployeesForProvider(Guid id, UploadEmployeeRequestDto[] data)
     {
         CheckListOfEmployeesForUploading(data);
 
+        var result = new UploadEmployeeResponseDto();
+
         // Dictionary for uploading employees
-        var uploadDictionary = new Dictionary<Guid, UploadEmployeeDto>();
+        var uploadDictionary = new Dictionary<Guid, UploadEmployeeRequestDto>();
         var existingIndividuals = (await individualRepository.GetByFilter(i => data.Select(e => e.Rnokpp).Contains(i.Rnokpp))
                                                                           .ConfigureAwait(false))
                                                                           .Select(i => new { i.Rnokpp, i.Id })
@@ -560,6 +562,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                 {
                     var newIndividual = await individualRepository.Create(mapper.Map<Individual>(employee));
                     uploadDictionary.Add(newIndividual.Id, employee);
+                    result.CountOfCreatedIndividuals++;
                 }
             }
 
@@ -589,13 +592,16 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                                                                      ).ConfigureAwait(false))
                                                                      .FirstOrDefault();
 
-                position ??= await positionRepository.Create(
-                        new Position
-                        {
-                            ProviderId = id,
-                            FullName = uploadDictionary[key].AssignedRole
-                        })
-                        .ConfigureAwait(false);
+                if (position == default)
+                {
+                    await positionRepository.Create(
+                            new Position
+                            {
+                                ProviderId = id,
+                                FullName = uploadDictionary[key].AssignedRole
+                            }).ConfigureAwait(false);
+                    result.CountOfCreatedPositions++;
+                }
 
                 // Create a new Official
                 await officialRepository.Create(
@@ -603,15 +609,16 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                     {
                         IndividualId = key,
                         PositionId = position.Id
-                    })
-                    .ConfigureAwait(false);
+                    }).ConfigureAwait(false);
+                result.CountOfCreatedOfficials++;
             }
         }
 
-        await providerRepository
-            .RunInTransaction(UploadEmployeesIntoDb).ConfigureAwait(false);
+        await providerRepository.RunInTransaction(UploadEmployeesIntoDb).ConfigureAwait(false);
 
         logger.LogInformation("Upload employees for provider finished successfully.");
+
+        return result;
     }
 
     private async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
@@ -1105,7 +1112,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         return providersWithTheSameEdrpouIpn.Any();
     }
 
-    private void CheckListOfEmployeesForUploading(UploadEmployeeDto[] data)
+    private void CheckListOfEmployeesForUploading(UploadEmployeeRequestDto[] data)
     {
         _ = data ?? throw new ArgumentNullException(nameof(data));
 

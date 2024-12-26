@@ -15,6 +15,7 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Individual;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
@@ -1157,6 +1158,62 @@ public class ProviderServiceTests
             { nameof(Provider.Status), ProviderStatus.Approved.ToString() },
             { nameof(Provider.LicenseStatus), ProviderLicenseStatus.Approved.ToString() },
         };
+    }
+
+    #endregion
+
+    #region UploadEmployeesForProvider
+
+    [Test]
+    public void UploadEmployeesForProvider_WhenUploadEmployeeArrayIsNull_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var dto = (UploadEmployeeRequestDto[])null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await providerService.UploadEmployeesForProvider(id, dto)
+                                                                    .ConfigureAwait(false));
+    }
+
+    [Test]
+    public void UploadEmployeesForProvider_WhenUploadEmployeeArrayLengthEqualsZero_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var dto = new UploadEmployeeRequestDto[0];
+
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await providerService.UploadEmployeesForProvider(id, dto)
+                                                                        .ConfigureAwait(false));
+    }
+
+    [Test]
+    public void UploadEmployeesForProvider_WhenUploadEmployeeArrayLengthGreaterThanMaxNumberOfEmployeesToUpload_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        const int MaxNumberOfEmployeesToUpload = 100;
+        var id = Guid.NewGuid();
+        var dto = new UploadEmployeeRequestDto[MaxNumberOfEmployeesToUpload + 1];
+
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await providerService.UploadEmployeesForProvider(id, dto)
+                                                                        .ConfigureAwait(false));
+    }
+
+    [Test]
+    public void UploadEmployeesForProvider_WhenRnokppValuesAreNotUnique_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var employee1 = UploadEmployeeDtoGenerator.Generate();
+        var employee2 = UploadEmployeeDtoGenerator.Generate();
+        employee2.Rnokpp = employee1.Rnokpp;
+        var dto = new UploadEmployeeRequestDto[] { employee1, employee1 };
+
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await providerService.UploadEmployeesForProvider(id, dto)
+                                                                        .ConfigureAwait(false));
     }
 
     #endregion

@@ -226,7 +226,7 @@ public class ProviderController : ControllerBase
     /// </summary>
     /// <param name="id">id of Provider.</param>
     /// <param name="uploadEployees">Array with employees to upload.</param>
-    /// <returns>Dictionary with unsaved employees.</returns>
+    /// <returns>A <see cref="UploadEmployeeResponseDto"/> representing the result of the upload employees operation.</returns>
     [HasPermission(Permissions.ProviderEdit)]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -234,7 +234,7 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut("{id}/employees/upload")]
-    public async Task<IActionResult> Upload(Guid id, [FromBody] UploadEmployeeDto[] uploadEployees)
+    public async Task<IActionResult> Upload(Guid id, [FromBody] UploadEmployeeRequestDto[] uploadEployees)
     {
         ArgumentNullException.ThrowIfNull(uploadEployees);
 
@@ -245,8 +245,17 @@ public class ProviderController : ControllerBase
 
         try
         {
-            await providerService.UploadEmployeesForProvider(id, uploadEployees).ConfigureAwait(false);
-            return Ok("Success! Employees has been uploaded into the database.");
+            var result = await providerService.UploadEmployeesForProvider(id, uploadEployees).ConfigureAwait(false);
+
+            //if (result.CountOfCreatedIndividuals == 0
+            //    && result.CountOfCreatedOfficials == 0
+            //    && result.CountOfCreatedPositions == 0)
+            //{
+            //    return Ok("There is nothing to upload. All employees are already in the DB!");
+            //}
+
+            //return Ok($"Success! Employees has been uploaded into the DB. Uploaded - {result.CountOfCreatedIndividuals} individuals, {result.CountOfCreatedOfficials} officials and {result.CountOfCreatedPositions} positions.");
+            return Ok(result);
         }
         catch (InvalidOperationException ex)
         {

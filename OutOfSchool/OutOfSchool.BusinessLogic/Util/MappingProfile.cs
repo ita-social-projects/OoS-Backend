@@ -817,7 +817,7 @@ public class MappingProfile : Profile
 
         CreateMap<CompetitiveEventRegistrationDeadline, CompetitiveEventRegistrationDeadlineDto>().ReverseMap();
 
-        CreateSoftDeletedMap<UploadEmployeeDto, Individual>()
+        CreateSoftDeletedMap<UploadEmployeeRequestDto, Individual>()
                     .ForMember(dest => dest.Id, opt => opt.Ignore())
                     .ForMember(dest => dest.IsRegistered, opt => opt.Ignore())
                     .ForMember(dest => dest.ExternalRegistryId, opt => opt.Ignore())
@@ -838,7 +838,7 @@ public class MappingProfile : Profile
                     .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
                     .ForMember(dest => dest.DeleteDate, opt => opt.Ignore());
 
-        CreateMap<Individual, UploadEmployeeDto>()
+        CreateMap<Individual, UploadEmployeeRequestDto>()
                     .ForMember(dest => dest.AssignedRole, opt => opt.Ignore());
     }
 

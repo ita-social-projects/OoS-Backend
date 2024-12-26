@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.BusinessLogic.Models.Individual;
 
-public class UploadEmployeeDto
+public class UploadEmployeeRequestDto
 {
     [Required(ErrorMessage = "FirstName is required")]
     [MinLength(Constants.MinIndividualNameLength)]
