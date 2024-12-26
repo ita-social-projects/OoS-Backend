@@ -554,7 +554,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             // Circle to add an individual to DB and populate the Dictionary for uploading employees
             foreach (var employee in data)
             {
-                if (existingIndividuals.Keys.Contains(employee.Rnokpp))
+                if (existingIndividuals.ContainsKey(employee.Rnokpp))
                 {
                     uploadDictionary.Add(existingIndividuals[employee.Rnokpp].Id, employee);
                 }
@@ -592,7 +592,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                                                                      ).ConfigureAwait(false))
                                                                      .FirstOrDefault();
 
-                if (position == default)
+                if (position is null)
                 {
                     await positionRepository.Create(
                             new Position
