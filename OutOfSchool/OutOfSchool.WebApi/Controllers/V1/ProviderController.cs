@@ -245,17 +245,9 @@ public class ProviderController : ControllerBase
 
         try
         {
-            var result = await providerService.UploadEmployeesForProvider(id, uploadEployees).ConfigureAwait(false);
+            _ = await providerService.UploadEmployeesForProvider(id, uploadEployees).ConfigureAwait(false);
 
-            //if (result.CountOfCreatedIndividuals == 0
-            //    && result.CountOfCreatedOfficials == 0
-            //    && result.CountOfCreatedPositions == 0)
-            //{
-            //    return Ok("There is nothing to upload. All employees are already in the DB!");
-            //}
-
-            //return Ok($"Success! Employees has been uploaded into the DB. Uploaded - {result.CountOfCreatedIndividuals} individuals, {result.CountOfCreatedOfficials} officials and {result.CountOfCreatedPositions} positions.");
-            return Ok(result);
+            return Ok($"Success! Employees has been uploaded into the DB.");
         }
         catch (InvalidOperationException ex)
         {
