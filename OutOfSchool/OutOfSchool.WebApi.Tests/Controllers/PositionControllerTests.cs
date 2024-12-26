@@ -10,6 +10,7 @@ using OutOfSchool.BusinessLogic.Models.Position;
 using OutOfSchool.Services.Enums;
 using System.Collections.Generic;
 using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 [TestFixture]
@@ -18,7 +19,7 @@ public class PositionControllerTests
     private PositionController controller;
     private Mock<IPositionService> positionService;
     private Mock<ICurrentUserService> currentUserService;
-    private Mock<IProviderService> providerService;   
+    private Mock<IProviderService> providerService;     
 
     private PositionDto positionDto;
     private PositionCreateUpdateDto positionCreateDto;
@@ -34,24 +35,23 @@ public class PositionControllerTests
         providerService = new Mock<IProviderService>();        
 
         controller = new PositionController(
-            positionService.Object,
-            currentUserService.Object            
+            positionService.Object   
         );
         
         providerId = Guid.NewGuid();
         positionCreateDto = FakePositionCreateDto();
         positionDto = FakePositionDto(providerId, positionCreateDto);
-        positionUpdateDto = FakePositionUpdateDto(providerId, positionDto);
+        positionUpdateDto = FakePositionUpdateDto(providerId, positionDto);       
     }
 
     [Test]
     public async Task CreatePosition_WhenPositionCreateDtoIsNull_ShouldReturnBadRequest()
     {
         // Act
-        var result = await controller.Create(null).ConfigureAwait(false);
+        var result = await controller.Create(providerId, null).ConfigureAwait(false);
 
         // Assert
-        Assert.IsInstanceOf<BadRequestResult>(result.Result);
+        Assert.IsInstanceOf<BadRequestResult>(result);
     }
 
     [Test]
@@ -66,28 +66,31 @@ public class PositionControllerTests
         providerService.Setup(s => s.GetById(It.IsAny<Guid>()))
         .ReturnsAsync(new ProviderDto{ Id = providerId });
 
-        positionService.Setup(s => s.CreateAsync(positionCreateDto))
+        positionService.Setup(s => s.CreateAsync(positionCreateDto, providerId))
        .ReturnsAsync(positionDto);
 
         // Act
-        var result = await controller.Create(positionCreateDto);
+        var result = await controller.Create(providerId, positionCreateDto);
 
         // Assert
-        Assert.IsInstanceOf<CreatedAtActionResult>(result.Result);
+        Assert.IsInstanceOf<CreatedAtActionResult>(result);
     }
 
     [Test]
-    public async Task GetPositionOfCurrentProvider_WithValidInput_ReturnsPositionList()
+    public async Task GetPosition_WithValidInput_ReturnsPositionList()
     {
         // Arrange
-        currentUserService.Setup(s => s.UserId).Returns(providerId.ToString());
-        currentUserService.Setup(s => s.IsInRole(Role.Provider)).Returns(true);
+        currentUserService.Setup(s => s.UserId).Returns(providerId.ToString());        
+        positionService.Setup(a => a.GetByFilter(providerId, It.IsAny<PositionsFilter>())).ReturnsAsync(SearchResult());
 
         // Act
-        var result = await controller.GetAll();
-
+        var result = await controller.GetByFilter(providerId, It.IsAny<PositionsFilter>()).ConfigureAwait(false) as OkObjectResult; ;
+        var resultValue = result.Value as SearchResult<PositionDto>;
+        
         // Assert
         Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(10, resultValue.TotalAmount);
+        Assert.AreEqual(6, resultValue.Entities.Count);
     }
     
     [Test]
@@ -95,21 +98,20 @@ public class PositionControllerTests
     {
         // Arrange        
         var positionId = positionDto.Id;
-        currentUserService.Setup(s => s.UserId).Returns(providerId.ToString());
-        currentUserService.Setup(s => s.IsInRole(Role.Provider)).Returns(true);
+        currentUserService.Setup(s => s.UserId).Returns(providerId.ToString());        
 
         providerService.Setup(s => s.GetById(It.IsAny<Guid>()))
                 .ReturnsAsync(new ProviderDto { Id = providerId });
 
-        positionService.Setup(s => s.UpdateAsync(positionId, positionUpdateDto))
+        positionService.Setup(s => s.UpdateAsync(positionId, positionUpdateDto, providerId))
             .ReturnsAsync(positionDto);        
 
         // Act
-        var result = await controller.Update(positionId, positionUpdateDto);
+        var result = await controller.Update(positionId, positionUpdateDto, providerId);
 
         // Assert
-        Assert.IsInstanceOf<ActionResult<PositionDto>>(result); // Ensure it's ActionResult<PositionDto>
-        var okResult = result.Result as OkObjectResult;         // Extract the OkObjectResult
+        Assert.IsInstanceOf<IActionResult>(result);             // Ensure it's IActionResult
+        var okResult = result as OkObjectResult;                // Extract the OkObjectResult
         Assert.IsNotNull(okResult);                             // Ensure the result is not null
         Assert.AreEqual(200, okResult.StatusCode);              // Check that the status code is 200 (OK)
         Assert.IsInstanceOf<PositionDto>(okResult.Value);       // Ensure the returned value is PositionDto
@@ -120,43 +122,53 @@ public class PositionControllerTests
     }
 
     [Test]
-    public async Task DeletePosition_WhichDeleted_ShouldReturnNotFound()
+    public async Task DeletePosition_WhichDeleted_ShouldReturnBadRequest()
     {
         // Arrange
         currentUserService.Setup(s => s.UserId).Returns(providerId.ToString());
-        currentUserService.Setup(s => s.IsInRole(Role.Provider)).Returns(true);
 
         var deletedPosition = positionDto;
         deletedPosition.IsDeleted = true;
 
         positionService
-            .Setup(s => s.DeleteAsync(deletedPosition.Id))
+            .Setup(s => s.DeleteAsync(deletedPosition.Id, providerId))
             .ThrowsAsync(new KeyNotFoundException($"Position with ID {deletedPosition.Id} not found or it was deleted."));
 
         // Act
-        var result = await controller.Delete(deletedPosition.Id);
+        var result = await controller.Delete(deletedPosition.Id, providerId);
 
         // Assert
-        Assert.IsInstanceOf<NotFoundObjectResult>(result);
-        var objectResult = result as NotFoundObjectResult;
-        Assert.IsNotNull(objectResult); // Ensure the cast succeeded
-        Assert.AreEqual($"Position with ID {deletedPosition.Id} not found or it was deleted.", objectResult.Value);
+        var badRequestResult = result as BadRequestObjectResult;
+        Assert.IsNotNull(badRequestResult, "Expected BadRequestObjectResult.");
+        Assert.AreEqual($"Position with ID {deletedPosition.Id} not found or it was deleted.", badRequestResult.Value);
     }
 
     [Test]
     public async Task DeletePosition_WithValidInput_ShoudReturnNoContent()
-    {
-        // Arrange
-        currentUserService.Setup(s => s.UserId).Returns(providerId.ToString());
-        currentUserService.Setup(s => s.IsInRole(Role.Provider)).Returns(true);
-
+    {        
         // Act 
-        var result = await controller.Delete(positionDto.Id);
+        var result = await controller.Delete(positionDto.Id, providerId);
         
         // Act
         Assert.IsInstanceOf<NoContentResult>(result); // Verify the result type
     }
 
+    private static SearchResult<PositionDto> SearchResult()
+    {
+        return new SearchResult<PositionDto>
+        {
+            TotalAmount = 10,
+            Entities = new List<PositionDto>()
+            {
+                new PositionDto(),
+                new PositionDto(),
+                new PositionDto(),
+                new PositionDto(),
+                new PositionDto(),
+                new PositionDto(),
+            },
+        };
+    }
 
     private PositionCreateUpdateDto FakePositionUpdateDto(Guid providerId, PositionDto oldPosition)
     {        

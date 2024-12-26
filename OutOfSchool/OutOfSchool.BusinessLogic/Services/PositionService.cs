@@ -15,8 +15,7 @@ public class PositionService : IPositionService
     private IProviderService _providerService;
     private readonly ILogger<Position> _logger;
     private readonly IMapper _mapper;    
-    private readonly ICurrentUserService _currentUserService;
-    private readonly Guid currentUserId;
+    private readonly ICurrentUserService _currentUserService;    
 
     public PositionService(ILogger<Position> logger, IMapper mapper,
                            IEntityRepository<Guid, Position> entityRepositoryBase,
@@ -27,9 +26,7 @@ public class PositionService : IPositionService
         this._mapper = mapper;    
         this._entityRepositoryBase = entityRepositoryBase; 
         this._providerService = providerService;
-        this._currentUserService = currentUserService;
-
-        currentUserId = GetCurrentUserId();
+        this._currentUserService = currentUserService;        
     }
 
     public async Task<PositionDto> CreateAsync(PositionCreateUpdateDto createDto, Guid providerId)
@@ -37,25 +34,16 @@ public class PositionService : IPositionService
         // Check if the provider has rights to create a new position
         await _currentUserService.UserHasRights(new ProviderRights(providerId));
 
-        // Get provider to use it`s data in a new position
-        var provider = await _providerService.GetByUserId(currentUserId.ToString());                
+        // Get provider by current user id to use it`s data in a new position
+        var provider = await _providerService.GetByUserId(_currentUserService.UserId.ToString());                
 
-        try
-        {            
-            var position = _mapper.Map<Position>(createDto);
-            position.ProviderId = provider.Id; // link position to provider positionId
+        var position = _mapper.Map<Position>(createDto);
+        position.ProviderId = provider.Id; // link position to provider positionId
 
-            _logger.LogInformation($"Creating position: {JsonConvert.SerializeObject(position)}");
+        _logger.LogInformation($"Creating position: {JsonConvert.SerializeObject(position)}");
 
-            var createdPosition = await _entityRepositoryBase.Create(position);
-            return _mapper.Map<PositionDto>(createdPosition);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError($"Can`t create a new object: {ex}");
-        }
-        
-        return null;
+        var createdPosition = await _entityRepositoryBase.Create(position);
+        return _mapper.Map<PositionDto>(createdPosition);                       
     }
 
     public async Task<SearchResult<PositionDto>> GetByFilter(Guid providerId, PositionsFilter filter)
@@ -81,11 +69,12 @@ public class PositionService : IPositionService
         int count = await _entityRepositoryBase.Count(predicate).ConfigureAwait(false);
 
         // Define sorting
+        // For entries with the same FullName, sort by CreatedAt in descending order (latest dates come first)
         var orderBy = new Dictionary<Expression<Func<Position, object>>, SortDirection>
-    {
-        { p => p.FullName, SortDirection.Ascending },
-        { p => p.CreatedAt, SortDirection.Ascending }
-    };
+        {
+            { p => p.FullName, SortDirection.Ascending },
+            { p => p.CreatedAt, SortDirection.Descending }
+        };
 
         var positions = await _entityRepositoryBase
             .Get(
@@ -111,18 +100,15 @@ public class PositionService : IPositionService
         return result;
     }
 
-
     public async Task<PositionDto> GetByIdAsync(Guid positionId, Guid providerId)
-    {
-        await _currentUserService.UserHasRights(new ProviderRights(providerId));
-
-        var position = await _entityRepositoryBase.GetById(positionId);
+    {        
+        var position = await _entityRepositoryBase.GetByFilter(x => x.Id == positionId && !x.IsDeleted).ConfigureAwait(false);
         if (position == null)
         {
             _logger.LogError($"Position with positionId {positionId} not found.");
             throw new KeyNotFoundException($"Position with positionId {positionId} not found.");
         }
-        return _mapper.Map<PositionDto>(position);
+        return _mapper.Map<PositionDto>(position.SingleOrDefault());
     }
 
     public async Task<PositionDto> UpdateAsync(Guid positionId, PositionCreateUpdateDto updateDto, Guid providerId)
@@ -148,14 +134,7 @@ public class PositionService : IPositionService
             throw new KeyNotFoundException($"Position with positionId {positionId} not found or it was deleted.");
         }        
 
-        _logger.LogInformation($"Deleting position {positionId} for provider {currentUserId}");
+        _logger.LogInformation($"Deleting position {positionId} for provider {providerId}");
         await _entityRepositoryBase.Delete(position);
-    }
-
-    // Method to current user positionId
-    private Guid GetCurrentUserId()
-    {              
-        var positionId = _currentUserService.UserId;
-        return Guid.Parse(positionId);                
-    }
+    }    
 }

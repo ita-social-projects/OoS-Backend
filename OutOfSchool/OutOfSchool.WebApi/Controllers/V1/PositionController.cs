@@ -3,16 +3,16 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Position;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
-[Authorize]
 [Route("api/v{version:apiVersion}/providers/{providerId}/positions/[action]")]
+[Authorize(Roles = "provider")]
 [ApiController]
 public class PositionController : ControllerBase
 {
-    private readonly IPositionService positionService;  
+    private readonly IPositionService positionService;
 
     public PositionController(IPositionService positionService)
     {
-        this.positionService = positionService ?? throw new ArgumentNullException(nameof(positionService));                
+        this.positionService = positionService ?? throw new ArgumentNullException(nameof(positionService));
     }
 
     /// <summary>
@@ -22,17 +22,28 @@ public class PositionController : ControllerBase
     /// <param name="providerId">The ID of the provider.</param>
     /// <returns>The created position.</returns>
     [HttpPost]  
-    //[HasPermission(Permissions.PositionAddNew)]
-    public async Task<ActionResult<PositionDto>> Create(Guid providerId, [FromBody] PositionCreateUpdateDto createDto)
+    [HasPermission(Permissions.PositionAddNew)]
+    public async Task<IActionResult> Create(Guid providerId, [FromBody] PositionCreateUpdateDto createDto)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         try
         {
             if (createDto == null)
             {
                 return BadRequest();
             }            
-            var createdPosition = await positionService.CreateAsync(createDto, providerId);
-            return CreatedAtAction(nameof(GetById), new { id = createdPosition.Id }, createdPosition);
+            
+            var createdPosition = await positionService.CreateAsync(createDto, providerId).ConfigureAwait(false);
+
+            return CreatedAtAction(
+            nameof(GetById),
+            new { positionId = createdPosition.Id, providerId = providerId },
+            createdPosition
+);
         }
         catch (Exception ex) 
         {
@@ -41,14 +52,14 @@ public class PositionController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all positions for the provider.
+    /// Retrieves all positions for the provider with filters.
     /// </summary>
     /// <param name="providerId">The ID of provider.</param>
     /// <param name="filter">Pamrameters to filter the position</param>
     /// <returns><see cref="SearchResult{PositionDto}"/>.</returns>
     [HttpGet]
-    //[HasPermission(Permissions.PositionRead)]
-    public async Task<IActionResult> GetAll(Guid providerId, [FromQuery] PositionsFilter filter)
+    [HasPermission(Permissions.PositionRead)]
+    public async Task<IActionResult> GetByFilter(Guid providerId, [FromQuery] PositionsFilter filter)
     {                
         var positions = await positionService.GetByFilter(providerId, filter);
         return this.SearchResultToOkOrNoContent(positions);
@@ -61,18 +72,10 @@ public class PositionController : ControllerBase
     /// <param name="providerId">The ID of the provider.</param>
     /// <returns>The position details.</returns>
     [HttpGet("{positionId}")]
-    //[HasPermission(Permissions.PositionRead)]
-    public async Task<ActionResult<PositionDto>> GetById(Guid positionId, Guid providerId)
-    {
-        try 
-        {
-            var position = await positionService.GetByIdAsync(positionId, providerId);
-            return Ok(position);
-        }        
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+    [HasPermission(Permissions.PositionRead)]
+    public async Task<IActionResult> GetById(Guid positionId, Guid providerId)
+    {        
+        return Ok(await positionService.GetByIdAsync(positionId, providerId).ConfigureAwait(false));       
     }
 
     /// <summary>
@@ -83,8 +86,8 @@ public class PositionController : ControllerBase
     /// <param name="providerId">The ID of the provider.</param>
     /// <returns>The updated position.</returns>    
     [HttpPut("{positionId}")]
-    //[HasPermission(Permissions.PositionEdit)]
-    public async Task<ActionResult<PositionDto>> Update(Guid positionId, [FromBody] PositionCreateUpdateDto updateDto, Guid providerId)
+    [HasPermission(Permissions.PositionEdit)]
+    public async Task<IActionResult> Update(Guid positionId, [FromBody] PositionCreateUpdateDto updateDto, Guid providerId)
     {
         try 
         {          
@@ -104,7 +107,7 @@ public class PositionController : ControllerBase
     /// <param name="providerId">The ID of the provider.</param>
     /// <returns>No content if successful.</returns>
     [HttpDelete("{positionId}")]
-    //[HasPermission(Permissions.PositionEdit)]
+    [HasPermission(Permissions.PositionRemove)]
     public async Task<IActionResult> Delete(Guid positionId, Guid providerId)
     {
         try
