@@ -226,7 +226,7 @@ public class ProviderController : ControllerBase
     /// </summary>
     /// <param name="id">id of Provider.</param>
     /// <param name="uploadEployees">Array with employees to upload.</param>
-    /// <returns>A <see cref="UploadEmployeeResponseDto"/> representing the result of the upload employees operation.</returns>
+    /// <returns>A <see cref="UploadEmployeeResponse"/> representing the result of the upload employees operation.</returns>
     [HasPermission(Permissions.ProviderEdit)]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
