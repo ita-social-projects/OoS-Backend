@@ -63,7 +63,7 @@ public class PositionService : IPositionService
             predicate = predicate.And(p => p.FullName.Contains(filter.SearchString, StringComparison.OrdinalIgnoreCase));
         }
 
-        // Filter out deleted positions
+        // Filter out deleted positions and take only positions for given provider
         predicate = predicate.And(p => !p.IsDeleted)
                              .And(p => p.ProviderId == providerId);
 
