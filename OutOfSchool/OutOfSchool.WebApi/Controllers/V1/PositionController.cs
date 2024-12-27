@@ -22,7 +22,7 @@ public class PositionController : ControllerBase
     /// <param name="providerId">The ID of the provider.</param>
     /// <returns>The created position.</returns>
     [HttpPost]  
-    //[HasPermission(Permissions.PositionAddNew)]
+    [HasPermission(Permissions.PositionAddNew)]
     public async Task<IActionResult> Create(Guid providerId, [FromBody] PositionCreateUpdateDto createDto)
     {
         if (!ModelState.IsValid)
@@ -58,7 +58,7 @@ public class PositionController : ControllerBase
     /// <param name="filter">Pamrameters to filter the position</param>
     /// <returns><see cref="SearchResult{PositionDto}"/>.</returns>
     [HttpGet]
-    //[HasPermission(Permissions.PositionRead)]
+    [HasPermission(Permissions.PositionRead)]
     public async Task<IActionResult> GetByFilter(Guid providerId, [FromQuery] PositionsFilter filter)
     {                
         var positions = await positionService.GetByFilter(providerId, filter);
@@ -74,7 +74,7 @@ public class PositionController : ControllerBase
     /// <param name="positionId">The ID of the position to get.</param>
     /// <returns>The position details.</returns>
     [HttpGet("{positionId}")]
-    //[HasPermission(Permissions.PositionRead)]
+    [HasPermission(Permissions.PositionRead)]
     public async Task<IActionResult> GetById(Guid providerId, Guid positionId)
     {
         try 
@@ -96,7 +96,7 @@ public class PositionController : ControllerBase
     /// <param name="positionId">The ID of the position to update.</param>
     /// <returns>The updated position.</returns>    
     [HttpPut("{positionId}")]
-    //[HasPermission(Permissions.PositionEdit)]
+    [HasPermission(Permissions.PositionEdit)]
     public async Task<IActionResult> Update([FromBody] PositionCreateUpdateDto updateDto, Guid providerId, Guid positionId)
     {
         try 
@@ -121,7 +121,7 @@ public class PositionController : ControllerBase
     /// <param name="positionId">The ID of the position to delete.</param>
     /// <returns>No content if successful.</returns>
     [HttpDelete("{positionId}")]
-    //[HasPermission(Permissions.PositionRemove)]
+    [HasPermission(Permissions.PositionRemove)]
     public async Task<IActionResult> Delete(Guid providerId, Guid positionId)
     {
         try
