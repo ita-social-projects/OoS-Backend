@@ -107,7 +107,7 @@ public class PositionControllerTests
             .ReturnsAsync(positionDto);        
 
         // Act
-        var result = await controller.Update(positionId, positionUpdateDto, providerId);
+        var result = await controller.Update(positionUpdateDto, providerId, positionId);
 
         // Assert
         Assert.IsInstanceOf<IActionResult>(result);             // Ensure it's IActionResult
@@ -135,12 +135,12 @@ public class PositionControllerTests
             .ThrowsAsync(new KeyNotFoundException($"Position with ID {deletedPosition.Id} not found or it was deleted."));
 
         // Act
-        var result = await controller.Delete(deletedPosition.Id, providerId);
+        var result = await controller.Delete(providerId, deletedPosition.Id);
 
         // Assert
-        var badRequestResult = result as BadRequestObjectResult;
-        Assert.IsNotNull(badRequestResult, "Expected BadRequestObjectResult.");
-        Assert.AreEqual($"Position with ID {deletedPosition.Id} not found or it was deleted.", badRequestResult.Value);
+        var notFoundResult = result as NotFoundObjectResult;
+        Assert.IsNotNull(notFoundResult, "Expected NotFoundObjectResult.");
+        Assert.AreEqual($"Position with ID {deletedPosition.Id} not found or it was deleted.", notFoundResult.Value);
     }
 
     [Test]
