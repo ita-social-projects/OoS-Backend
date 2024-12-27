@@ -69,32 +69,44 @@ public class PositionController : ControllerBase
 
     /// <summary>
     /// Retrieves a specific position by its ID.
-    /// </summary>
-    /// <param name="positionId">The ID of the position to get.</param>
+    /// </summary>    
     /// <param name="providerId">The ID of the provider.</param>
+    /// <param name="positionId">The ID of the position to get.</param>
     /// <returns>The position details.</returns>
     [HttpGet("{positionId}")]
     //[HasPermission(Permissions.PositionRead)]
-    public async Task<IActionResult> GetById(Guid positionId, Guid providerId)
-    {        
-        return Ok(await positionService.GetByIdAsync(positionId, providerId).ConfigureAwait(false));       
+    public async Task<IActionResult> GetById(Guid providerId, Guid positionId)
+    {
+        try 
+        {
+            var position = await positionService.GetByIdAsync(positionId, providerId).ConfigureAwait(false);
+            return Ok(position);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }                
     }
 
     /// <summary>
     /// Updates an existing position.
-    /// </summary>
-    /// <param name="positionId">The ID of the position to update.</param>
+    /// </summary>    
     /// <param name="updateDto">The updated position data.</param>
     /// <param name="providerId">The ID of the provider.</param>
+    /// <param name="positionId">The ID of the position to update.</param>
     /// <returns>The updated position.</returns>    
     [HttpPut("{positionId}")]
     //[HasPermission(Permissions.PositionEdit)]
-    public async Task<IActionResult> Update(Guid positionId, [FromBody] PositionCreateUpdateDto updateDto, Guid providerId)
+    public async Task<IActionResult> Update([FromBody] PositionCreateUpdateDto updateDto, Guid providerId, Guid positionId)
     {
         try 
         {          
             var updatedPosition = await positionService.UpdateAsync(positionId, updateDto, providerId);
             return Ok(updatedPosition);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
         }
         catch (Exception ex)
         {
@@ -104,22 +116,26 @@ public class PositionController : ControllerBase
 
     /// <summary>
     /// Deletes a specific position.
-    /// </summary>
-    /// <param name="positionId">The ID of the position to delete.</param>
+    /// </summary>    
     /// <param name="providerId">The ID of the provider.</param>
+    /// <param name="positionId">The ID of the position to delete.</param>
     /// <returns>No content if successful.</returns>
     [HttpDelete("{positionId}")]
     //[HasPermission(Permissions.PositionRemove)]
-    public async Task<IActionResult> Delete(Guid positionId, Guid providerId)
+    public async Task<IActionResult> Delete(Guid providerId, Guid positionId)
     {
         try
-        {            
+        {
             await positionService.DeleteAsync(positionId, providerId);
             return NoContent();
-        }        
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
-        }
+        }        
     }
 }
