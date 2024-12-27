@@ -64,7 +64,8 @@ public class PositionService : IPositionService
         }
 
         // Filter out deleted positions
-        predicate = predicate.And(p => !p.IsDeleted);
+        predicate = predicate.And(p => !p.IsDeleted)
+                             .And(p => p.ProviderId == providerId);
 
         // Define sorting
         var sortPredicate = SortExpressionBuild(filter);
@@ -97,7 +98,9 @@ public class PositionService : IPositionService
 
     public async Task<PositionDto> GetByIdAsync(Guid positionId, Guid providerId)
     {
-        var position = await _entityRepositoryBase.GetByFilter(x => x.Id == positionId && !x.IsDeleted).ConfigureAwait(false);
+        var position = await _entityRepositoryBase.GetByFilter(
+        x => x.Id == positionId && x.ProviderId == providerId && !x.IsDeleted).ConfigureAwait(false);
+
         if (position == null)
         {
             _logger.LogError($"Position with positionId {positionId} not found.");
@@ -110,10 +113,11 @@ public class PositionService : IPositionService
     {
         await _currentUserService.UserHasRights(new ProviderRights(providerId));
 
-        var existingPosition = await _entityRepositoryBase.GetById(positionId);
+        var existingPosition = await _entityRepositoryBase.GetByFilter(
+        x => x.Id == positionId && x.ProviderId == providerId && !x.IsDeleted).ConfigureAwait(false);
 
-        _mapper.Map(updateDto, existingPosition);
-        var updatedPosition = await _entityRepositoryBase.Update(existingPosition);
+        _mapper.Map(updateDto, existingPosition.SingleOrDefault());
+        var updatedPosition = await _entityRepositoryBase.Update(existingPosition.SingleOrDefault());
         return _mapper.Map<PositionDto>(updatedPosition);
     }
 
@@ -121,16 +125,17 @@ public class PositionService : IPositionService
     {
         await _currentUserService.UserHasRights(new ProviderRights(providerId));
 
-        var position = await _entityRepositoryBase.GetById(positionId);
+        var position = await _entityRepositoryBase.GetByFilter(
+                x => x.Id == positionId && x.ProviderId == providerId && !x.IsDeleted).ConfigureAwait(false);
 
-        if (position == null || position.IsDeleted == true)
+        if (position == null || position.Single().IsDeleted == true)
         {
             _logger.LogError($"Position with positionId {positionId} not found.");
             throw new KeyNotFoundException($"Position with positionId {positionId} not found or it was deleted.");
         }
 
         _logger.LogInformation($"Deleting position {positionId} for provider {providerId}");
-        await _entityRepositoryBase.Delete(position);
+        await _entityRepositoryBase.Delete(position.SingleOrDefault());
     }
 
     private static Dictionary<Expression<Func<Position, object>>, SortDirection> SortExpressionBuild(

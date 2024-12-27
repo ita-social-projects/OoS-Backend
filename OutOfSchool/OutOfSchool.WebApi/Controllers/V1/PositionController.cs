@@ -22,7 +22,7 @@ public class PositionController : ControllerBase
     /// <param name="providerId">The ID of the provider.</param>
     /// <returns>The created position.</returns>
     [HttpPost]  
-    [HasPermission(Permissions.PositionAddNew)]
+    //[HasPermission(Permissions.PositionAddNew)]
     public async Task<IActionResult> Create(Guid providerId, [FromBody] PositionCreateUpdateDto createDto)
     {
         if (!ModelState.IsValid)
@@ -58,11 +58,13 @@ public class PositionController : ControllerBase
     /// <param name="filter">Pamrameters to filter the position</param>
     /// <returns><see cref="SearchResult{PositionDto}"/>.</returns>
     [HttpGet]
-    [HasPermission(Permissions.PositionRead)]
+    //[HasPermission(Permissions.PositionRead)]
     public async Task<IActionResult> GetByFilter(Guid providerId, [FromQuery] PositionsFilter filter)
     {                
         var positions = await positionService.GetByFilter(providerId, filter);
-        return this.SearchResultToOkOrNoContent(positions);
+        return positions.TotalAmount == 0 ? 
+            this.Ok("There is no records for given provider") : 
+            this.SearchResultToOkOrNoContent(positions);
     }
 
     /// <summary>
@@ -72,7 +74,7 @@ public class PositionController : ControllerBase
     /// <param name="providerId">The ID of the provider.</param>
     /// <returns>The position details.</returns>
     [HttpGet("{positionId}")]
-    [HasPermission(Permissions.PositionRead)]
+    //[HasPermission(Permissions.PositionRead)]
     public async Task<IActionResult> GetById(Guid positionId, Guid providerId)
     {        
         return Ok(await positionService.GetByIdAsync(positionId, providerId).ConfigureAwait(false));       
@@ -86,7 +88,7 @@ public class PositionController : ControllerBase
     /// <param name="providerId">The ID of the provider.</param>
     /// <returns>The updated position.</returns>    
     [HttpPut("{positionId}")]
-    [HasPermission(Permissions.PositionEdit)]
+    //[HasPermission(Permissions.PositionEdit)]
     public async Task<IActionResult> Update(Guid positionId, [FromBody] PositionCreateUpdateDto updateDto, Guid providerId)
     {
         try 
@@ -107,7 +109,7 @@ public class PositionController : ControllerBase
     /// <param name="providerId">The ID of the provider.</param>
     /// <returns>No content if successful.</returns>
     [HttpDelete("{positionId}")]
-    [HasPermission(Permissions.PositionRemove)]
+    //[HasPermission(Permissions.PositionRemove)]
     public async Task<IActionResult> Delete(Guid positionId, Guid providerId)
     {
         try
