@@ -1243,6 +1243,9 @@ public class ProviderServiceTests
         var result = await providerService.UploadEmployeesForProvider(id, FakeUploadEmployees).ConfigureAwait(false);
 
         // Assert
+        individualRepositoryMock.VerifyAll();
+        officialRepositoryMock.VerifyAll();
+        positionRepositoryMock.VerifyAll();
         result.Should().NotBeNull();
         result.Should().BeEquivalentTo(expectedResult);
     }
@@ -1269,6 +1272,9 @@ public class ProviderServiceTests
         var result = await providerService.UploadEmployeesForProvider(id, FakeUploadEmployees).ConfigureAwait(false);
 
         // Assert
+        individualRepositoryMock.VerifyAll();
+        officialRepositoryMock.VerifyAll();
+        positionRepositoryMock.VerifyAll();
         result.Should().NotBeNull();
         result.Should().BeEquivalentTo(expectedResult);
     }
