@@ -321,7 +321,7 @@ public class ProviderControllerTests
     }
 
     [Test]
-    public void Upload_WhenModelIsValid_ThrowsArgumentNullException()
+    public void Upload_WhenModelIsNull_ThrowsArgumentNullException()
     {
         // Arrange
         var id = Guid.NewGuid();
@@ -332,6 +332,32 @@ public class ProviderControllerTests
 
         // Act & Assert
         Assert.ThrowsAsync<ArgumentNullException>(async () => await providerController.Upload(id, data).ConfigureAwait(false));
+        providerService.VerifyAll();
+    }
+
+    [Test]
+    [TestCase(4)]
+    [TestCase(10)]
+    public async Task Upload_WhenServisThrowsException_ThrowsInvalidOperationException(int entitiesCount)
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var data = UploadEmployeeDtoGenerator.Generate(entitiesCount).ToArray();
+        var errorMessage = "Error message";
+        providerService.Setup(ps => ps.UploadEmployeesForProvider(It.IsAny<Guid>(), It.IsAny<UploadEmployeeRequestDto[]>()))
+            .ThrowsAsync(new InvalidOperationException(errorMessage))
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await providerController.Upload(id, data)
+           .ConfigureAwait(false);
+
+        // Assert
+        result.Should()
+              .BeOfType<BadRequestObjectResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status400BadRequest);
         providerService.VerifyAll();
     }
 
