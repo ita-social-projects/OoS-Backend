@@ -3,7 +3,7 @@
 namespace OutOfSchool.BusinessLogic.Models.StudySubjects;
 public class StudySubjectCreateUpdateDto
 {
-    public Guid? Id { get; set; }
+    public Guid Id { get; set; }
 
     /// <summary>
     /// Name in Ukrainian
@@ -24,7 +24,7 @@ public class StudySubjectCreateUpdateDto
     /// Language of instruction (allows multiple selection)
     /// </summary>
     [Required(ErrorMessage = "The language of instruction is required.")]
-    public List<Language> Languages { get; set; }
+    public List<long> LanguageIds { get; set; }
 
     /// <summary>
     /// Primary language of the subject

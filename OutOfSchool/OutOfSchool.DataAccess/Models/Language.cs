@@ -26,5 +26,7 @@ public class Language : IKeyedEntity<long>
     public string Title { get; set; }
 
     public virtual List<StudySubject> StudySubjects { get; set; }
+
+    public virtual List<StudySubjectLanguage> StudySubjectLanguages { get; set; }
 }
 

@@ -6,7 +6,8 @@ using OutOfSchool.Services.Repository.Base.Api;
 namespace OutOfSchool.BusinessLogic.Services;
 public class StudySubjectService : IStudySubjectService
 {
-    private readonly IEntityRepositorySoftDeleted<Guid, StudySubject> repository;
+    private readonly IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository;
+    private readonly IEntityRepository<long, StudySubjectLanguage> studySubjectLanguageRepository;
     private readonly ILogger<StudySubjectService> logger;
     private readonly IMapper mapper;
 
@@ -18,11 +19,13 @@ public class StudySubjectService : IStudySubjectService
     /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
     public StudySubjectService(
-        IEntityRepositorySoftDeleted<Guid, StudySubject> repository,
+        IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository,
+        IEntityRepository<long, StudySubjectLanguage> studySubjectLanguageRepository,
         ILogger<StudySubjectService> logger,
         IMapper mapper)
     {
-        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        this.studySubjectRepository = studySubjectRepository ?? throw new ArgumentNullException(nameof(studySubjectRepository));
+        this.studySubjectLanguageRepository = studySubjectLanguageRepository ?? throw new ArgumentNullException(nameof(studySubjectLanguageRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
@@ -40,9 +43,27 @@ public class StudySubjectService : IStudySubjectService
 
         var studySubject = mapper.Map<StudySubject>(dto);
 
-        var newStudySubject = await repository.Create(studySubject).ConfigureAwait(false);
+        var newStudySubject = await studySubjectRepository.Create(studySubject).ConfigureAwait(false);
+        await studySubjectRepository.SaveChangesAsync().ConfigureAwait(false);
 
         logger.LogDebug($"StudySubject with Id = {newStudySubject?.Id} created successfully.");
+
+        if (dto.LanguageIds != null && dto.LanguageIds.Any())
+        {
+            var studySubjectLanguages = dto.LanguageIds.Select(id => new StudySubjectLanguage
+            {
+                LanguageId = id,
+                StudySubjectId = newStudySubject.Id
+            }).ToList();
+
+            foreach (var studySubjectLanguage in studySubjectLanguages)
+            {
+                await studySubjectLanguageRepository.Create(studySubjectLanguage).ConfigureAwait(false);
+                await studySubjectLanguageRepository.SaveChangesAsync().ConfigureAwait(false);
+            }
+        }
+
+        logger.LogInformation("StudySubjectLanguages table updated succesfully.");
 
         return mapper.Map<StudySubjectCreateUpdateDto>(newStudySubject);
     }
@@ -52,7 +73,7 @@ public class StudySubjectService : IStudySubjectService
     {
         logger.LogInformation($"Deleting StudySubject with Id = {id} started.");
 
-        var entity = await repository.GetById(id).ConfigureAwait(false);
+        var entity = await studySubjectRepository.GetById(id).ConfigureAwait(false);
 
         if (entity is null || entity.IsDeleted)
         {
@@ -62,7 +83,8 @@ public class StudySubjectService : IStudySubjectService
 
         try
         {
-            await repository.Delete(entity).ConfigureAwait(false);
+            await studySubjectRepository.Delete(entity).ConfigureAwait(false);
+            await studySubjectRepository.SaveChangesAsync().ConfigureAwait(false);
             logger.LogInformation($"StudySubject with Id = {id} successfully deleted.");
         }
         catch (DbUpdateConcurrencyException)
@@ -83,18 +105,19 @@ public class StudySubjectService : IStudySubjectService
         if (!string.IsNullOrEmpty(filter.SearchString))
         {
             predicate = predicate
-                .And(s => s.NameInUkrainian.Contains(filter.SearchString) 
+                .And(s => s.NameInUkrainian.Contains(filter.SearchString)
                 || s.NameInInstructionLanguage.Contains(filter.SearchString));
         }
 
         predicate = predicate.And(s => !s.IsDeleted);
 
-        var subjects = await repository
+        var subjects = await studySubjectRepository
             .Get(
                 skip: filter.From,
                 take: filter.Size,
                 whereExpression: predicate
-            ).ToListAsync()
+            ).AsNoTracking()
+            .ToListAsync()
             .ConfigureAwait(false);
 
         logger.LogInformation(!subjects.Any()
@@ -109,9 +132,10 @@ public class StudySubjectService : IStudySubjectService
     {
         logger.LogInformation($"Getting StudySubject by Id started. Looking Id = {id}.");
 
-        var subject = await repository.GetById(id).ConfigureAwait(false);
+        var studySubject = await studySubjectRepository.GetById(id)
+            .ConfigureAwait(false);
 
-        if (subject == null || subject.IsDeleted)
+        if (studySubject == null || studySubject.IsDeleted)
         {
             throw new ArgumentException(
                 nameof(id),
@@ -120,7 +144,7 @@ public class StudySubjectService : IStudySubjectService
 
         logger.LogInformation($"Got a StudySubject with Id = {id}.");
 
-        return mapper.Map<StudySubjectDto>(subject);
+        return mapper.Map<StudySubjectDto>(studySubject);
     }
 
     /// <inheritdoc/>
@@ -134,10 +158,49 @@ public class StudySubjectService : IStudySubjectService
             throw new ArgumentException("Dto is null.", nameof(dto));
         }
 
+        var studySubject = await studySubjectRepository.GetById(dto.Id).ConfigureAwait(false);
+
+        if (studySubject == null || studySubject.IsDeleted)
+        {
+            throw new ArgumentException(
+            nameof(dto.Id),
+                paramName: $"There are no recors in StudySubjects table with such id - {dto.Id}, or such StudySubject was deleted.");
+        }
+
+        mapper.Map(dto, studySubject);
+
+        if (dto.LanguageIds != null)
+        {
+            var existingLanguages = studySubject.StudySubjectLanguages.ToList();
+            var languagesToRemove = existingLanguages.Where(x => !dto.LanguageIds.Contains(x.LanguageId)).ToList();
+
+            foreach (var language in languagesToRemove)
+            {
+                await studySubjectLanguageRepository.Delete(language).ConfigureAwait(false);
+                await studySubjectLanguageRepository.SaveChangesAsync().ConfigureAwait(false);
+            }
+
+            var newLanguageIds = dto.LanguageIds.Except(existingLanguages.Select(x => x.LanguageId)).ToList();
+            foreach (var languageId in newLanguageIds)
+            {
+                var newLanguage = new StudySubjectLanguage
+                {
+                    LanguageId = languageId,
+                    StudySubjectId = studySubject.Id
+                };
+                await studySubjectLanguageRepository.Create(newLanguage).ConfigureAwait(false);
+                await studySubjectLanguageRepository.SaveChangesAsync().ConfigureAwait(false);
+            }
+        }
+
+        logger.LogInformation("StudySubjectLanguages table updated succesfully.");
+
         try
         {
-            var updatedStudySubject = await repository.Update(mapper.Map<StudySubject>(dto))
+            var updatedStudySubject = await studySubjectRepository.Update(studySubject)
                 .ConfigureAwait(false);
+            await studySubjectRepository.SaveChangesAsync().ConfigureAwait(false);
+
             logger.LogInformation($"StudySubject updated succesfully.");
 
             return mapper.Map<StudySubjectCreateUpdateDto>(updatedStudySubject);
