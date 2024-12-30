@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.StudySubjects;
@@ -17,7 +16,6 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 public class StudySubjectController : ControllerBase
 {
     private readonly IStudySubjectService _studySubjectService;
-    private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly IProviderService _providerService;
     private readonly IEmployeeService _employeeService;
     private readonly IWorkshopService _workshopService;
@@ -26,19 +24,16 @@ public class StudySubjectController : ControllerBase
     /// Initializes a new instance of the <see cref="StudySubjectController"/> class.
     /// </summary>
     /// <param name="studySubjectService">Service for StudySubject model.</param>
-    /// <param name="localizer">Localizer.</param>
     /// <param name="providerService">Service for Provider.</param>
     /// <param name="workshopService"></param>
     /// <param name="employeeService"></param>
     public StudySubjectController(
         IStudySubjectService studySubjectService,
-        IStringLocalizer<SharedResource> localizer,
         IProviderService providerService,
         IWorkshopService workshopService,
         IEmployeeService employeeService)
     {
         _providerService = providerService;
-        _localizer = localizer;
         _studySubjectService = studySubjectService;
         _workshopService = workshopService;
         _employeeService = employeeService;
@@ -72,7 +67,7 @@ public class StudySubjectController : ControllerBase
     /// <returns>StudySubject.</returns>
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StudySubjectDto))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
@@ -97,6 +92,9 @@ public class StudySubjectController : ControllerBase
     [HasPermission(Permissions.WorkshopEdit)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] StudySubjectCreateUpdateDto dto)
@@ -159,6 +157,8 @@ public class StudySubjectController : ControllerBase
     [HasPermission(Permissions.WorkshopEdit)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StudySubjectDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] StudySubjectCreateUpdateDto dto)
@@ -193,6 +193,8 @@ public class StudySubjectController : ControllerBase
     [Authorize]
     [HasPermission(Permissions.WorkshopEdit)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)

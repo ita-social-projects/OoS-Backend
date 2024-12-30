@@ -821,6 +821,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore());
 
         CreateMap<StudySubject, StudySubjectDto>();
+
+        CreateMap<Language, LanguageDto>().ReverseMap();
     }
 
     public IMappingExpression<TSource, TDestination> CreateSoftDeletedMap<TSource, TDestination>()
