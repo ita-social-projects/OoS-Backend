@@ -11,11 +11,11 @@ public class StudySubjectLanguageConfiguration : IEntityTypeConfiguration<StudyS
         builder.HasOne(x => x.StudySubject)
             .WithMany(x => x.StudySubjectLanguages)
             .HasForeignKey(x => x.StudySubjectId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.Language)
             .WithMany(x => x.StudySubjectLanguages)
             .HasForeignKey(x => x.LanguageId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

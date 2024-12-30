@@ -48,7 +48,7 @@ public class StudySubjectController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
-    public async Task<IActionResult> Get(SearchStringFilter filter = null)
+    public async Task<IActionResult> Get([FromQuery] SearchStringFilter filter = null)
     {
         var studySubjects = await _studySubjectService.GetByFilter(filter).ConfigureAwait(false);
 
@@ -123,13 +123,13 @@ public class StudySubjectController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.WorkshopId).ConfigureAwait(false);
+        //var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.WorkshopId).ConfigureAwait(false);
 
-        if (!userHasRights)
-        {
-            return StatusCode(403, "Forbidden to create study subjects for another providers");
-        }
-        
+        //if (!userHasRights)
+        //{
+        //    return StatusCode(403, "Forbidden to create study subjects for another providers");
+        //}
+
         try
         {
             dto.Id = Guid.Empty;
@@ -175,12 +175,12 @@ public class StudySubjectController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.WorkshopId).ConfigureAwait(false);
+        //var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.WorkshopId).ConfigureAwait(false);
 
-        if (!userHasRights)
-        {
-            return StatusCode(403, "Forbidden to create study subjects for another providers");
-        }
+        //if (!userHasRights)
+        //{
+        //    return StatusCode(403, "Forbidden to create study subjects for another providers");
+        //}
 
         return Ok(await _studySubjectService.Update(dto).ConfigureAwait(false));
     }
@@ -217,12 +217,12 @@ public class StudySubjectController : ControllerBase
             return StatusCode(403, "It is forbidden to add study subjects to workshops at blocked providers");
         }
 
-        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.WorkshopId).ConfigureAwait(false);
+        //var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.WorkshopId).ConfigureAwait(false);
 
-        if (!userHasRights)
-        {
-            return StatusCode(403, "Forbidden to create study subjects for another providers");
-        }
+        //if (!userHasRights)
+        //{
+        //    return StatusCode(403, "Forbidden to create study subjects for another providers");
+        //}
 
         try
         {
