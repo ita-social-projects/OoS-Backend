@@ -7,25 +7,26 @@ namespace OutOfSchool.BusinessLogic.Services;
 public class StudySubjectService : IStudySubjectService
 {
     private readonly IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository;
-    private readonly IEntityRepository<long, StudySubjectLanguage> studySubjectLanguageRepository;
+    private readonly IEntityRepository<long, Language> languageRepository;
     private readonly ILogger<StudySubjectService> logger;
     private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StudySubjectService"/> class.
     /// </summary>
-    /// <param name="repository">Repository.</param>
+    /// <param name="studySubjectRepository">Repository for StudySubject.</param>
+    /// /// <param name="languageRepository">Repository for Language.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
     public StudySubjectService(
         IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository,
-        IEntityRepository<long, StudySubjectLanguage> studySubjectLanguageRepository,
+        IEntityRepository<long, Language> languageRepository,
         ILogger<StudySubjectService> logger,
         IMapper mapper)
     {
         this.studySubjectRepository = studySubjectRepository ?? throw new ArgumentNullException(nameof(studySubjectRepository));
-        this.studySubjectLanguageRepository = studySubjectLanguageRepository ?? throw new ArgumentNullException(nameof(studySubjectLanguageRepository));
+        this.languageRepository = languageRepository ?? throw new ArgumentNullException(nameof(languageRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
@@ -41,27 +42,13 @@ public class StudySubjectService : IStudySubjectService
             throw new ArgumentException("Dto is null.", nameof(dto));
         }
 
+        await CheckIfLanguagesIdsAreCorrect(dto);
+
         var studySubject = mapper.Map<StudySubject>(dto);
 
         var newStudySubject = await studySubjectRepository.Create(studySubject).ConfigureAwait(false);
-        await studySubjectRepository.SaveChangesAsync().ConfigureAwait(false);
 
         logger.LogDebug($"StudySubject with Id = {newStudySubject?.Id} created successfully.");
-
-        if (dto.LanguageIds != null && dto.LanguageIds.Any())
-        {
-            var studySubjectLanguages = dto.LanguageIds.Select(id => new StudySubjectLanguage
-            {
-                LanguageId = id,
-                StudySubjectId = newStudySubject.Id
-            }).ToList();
-
-            foreach (var studySubjectLanguage in studySubjectLanguages)
-            {
-                await studySubjectLanguageRepository.Create(studySubjectLanguage).ConfigureAwait(false);
-                await studySubjectLanguageRepository.SaveChangesAsync().ConfigureAwait(false);
-            }
-        }
 
         logger.LogInformation("StudySubjectLanguages table updated succesfully.");
 
@@ -84,7 +71,6 @@ public class StudySubjectService : IStudySubjectService
         try
         {
             await studySubjectRepository.Delete(entity).ConfigureAwait(false);
-            await studySubjectRepository.SaveChangesAsync().ConfigureAwait(false);
             logger.LogInformation($"StudySubject with Id = {id} successfully deleted.");
         }
         catch (DbUpdateConcurrencyException)
@@ -158,6 +144,8 @@ public class StudySubjectService : IStudySubjectService
             throw new ArgumentException("Dto is null.", nameof(dto));
         }
 
+        await CheckIfLanguagesIdsAreCorrect(dto);
+
         var studySubject = await studySubjectRepository.GetById(dto.Id).ConfigureAwait(false);
 
         if (studySubject == null || studySubject.IsDeleted)
@@ -168,30 +156,6 @@ public class StudySubjectService : IStudySubjectService
         }
 
         mapper.Map(dto, studySubject);
-
-        if (dto.LanguageIds != null)
-        {
-            var existingLanguages = studySubject.StudySubjectLanguages.ToList();
-            var languagesToRemove = existingLanguages.Where(x => !dto.LanguageIds.Contains(x.LanguageId)).ToList();
-
-            foreach (var language in languagesToRemove)
-            {
-                await studySubjectLanguageRepository.Delete(language).ConfigureAwait(false);
-                await studySubjectLanguageRepository.SaveChangesAsync().ConfigureAwait(false);
-            }
-
-            var newLanguageIds = dto.LanguageIds.Except(existingLanguages.Select(x => x.LanguageId)).ToList();
-            foreach (var languageId in newLanguageIds)
-            {
-                var newLanguage = new StudySubjectLanguage
-                {
-                    LanguageId = languageId,
-                    StudySubjectId = studySubject.Id
-                };
-                await studySubjectLanguageRepository.Create(newLanguage).ConfigureAwait(false);
-                await studySubjectLanguageRepository.SaveChangesAsync().ConfigureAwait(false);
-            }
-        }
 
         logger.LogInformation("StudySubjectLanguages table updated succesfully.");
 
@@ -209,6 +173,26 @@ public class StudySubjectService : IStudySubjectService
         {
             logger.LogError($"Updating failed. StudySubject to update was not found.");
             throw;
+        }
+    }
+
+    private async Task CheckIfLanguagesIdsAreCorrect(StudySubjectCreateUpdateDto dto)
+    {
+        var existingLanguages = await languageRepository.GetAll().ConfigureAwait(false);
+        var existingLanguageIds = existingLanguages.Select(x => x.Id).ToHashSet();
+
+        if (dto.LanguageIds.Where(id => !existingLanguageIds.Contains(id)).ToList().Any() || !existingLanguageIds.Contains(dto.PrimaryLanguageId))
+        {
+            logger.LogInformation("Operation failed, dto contains non-existing language ids.");
+            throw new ArgumentException("Dto contains non-existing language ids.", nameof(dto));
+        }
+
+        var ukrainianLanguageId = existingLanguages.Where(x => x.Code.ToLower() == "uk").FirstOrDefault().Id;
+
+        if (dto.IsPrimaryLanguageUkrainian && ukrainianLanguageId != dto.PrimaryLanguageId)
+        {
+            logger.LogInformation("Operation failed, dto's property IsPrimaryLanguageUkrainian is not accurate.");
+            throw new ArgumentException("Dto's property IsPrimaryLanguageUkrainian is not accurate.", nameof(dto));
         }
     }
 }

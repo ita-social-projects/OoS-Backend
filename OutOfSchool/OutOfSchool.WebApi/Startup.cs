@@ -360,6 +360,7 @@ public static class Startup
         services.AddTransient<ICodeficatorService, CodeficatorService>();
         services.AddTransient<IOperationWithObjectService, OperationWithObjectService>();
         services.AddTransient<IStudySubjectService, StudySubjectService>();
+        services.AddTransient<ILanguageService, LanguageService>();
 
         services.AddTransient<IGRPCCommonService, GRPCCommonService>();
         services.AddTransient<IWorkshopStrategy>(sp =>

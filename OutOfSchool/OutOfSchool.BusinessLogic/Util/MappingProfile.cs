@@ -820,11 +820,13 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.StudySubjectLanguages,
-                opt => opt.MapFrom(src => src.LanguageIds.Select(id => new StudySubjectLanguage { LanguageId = id })));
+                opt => opt.MapFrom(src => src.LanguageIds.Select(id => new StudySubjectLanguage { LanguageId = id })))
+            .ReverseMap();
 
         CreateMap<StudySubject, StudySubjectDto>()
             .ForMember(dest => dest.LanguageIds,
-                opt => opt.MapFrom(src => src.StudySubjectLanguages.Select(x => x.LanguageId)));
+                opt => opt.MapFrom(src => src.StudySubjectLanguages.Select(x => x.LanguageId)))
+            .ReverseMap();
 
         CreateMap<Language, LanguageDto>().ReverseMap();
     }

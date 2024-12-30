@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.BusinessLogic.Models.StudySubjects;
-public class StudySubjectCreateUpdateDto
+public class StudySubjectCreateUpdateDto : IValidatableObject
 {
     public Guid Id { get; set; }
 
@@ -37,4 +37,28 @@ public class StudySubjectCreateUpdateDto
     /// </summary>
     [Required(ErrorMessage = "The workshop's id is required.")]
     public Guid WorkshopId { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (PrimaryLanguageId <= 0)
+        {
+            yield return new ValidationResult("PrimaryLanguageId cannot be smaller than one.", new[] { nameof(PrimaryLanguageId) });
+        }
+
+        if (LanguageIds == null || !LanguageIds.Any())
+        {
+            yield return new ValidationResult("LanguageIds cannot be null or empty.", new[] { nameof(LanguageIds) });
+        }
+        else
+        {
+            if (!LanguageIds.Contains(PrimaryLanguageId))
+                yield return new ValidationResult("LanguageIds must contain PrimaryLanguageId.", new[] { nameof(LanguageIds) });
+
+            if (LanguageIds.Count() != LanguageIds.Distinct().Count())
+                yield return new ValidationResult("LanguageIds cannot contain duplicates.", new[] { nameof(LanguageIds) });
+
+            if (LanguageIds.Any(id => id <= 0))
+                yield return new ValidationResult("LanguageIds cannot contain values smaller than 1.", new[] { nameof(LanguageIds) });
+        }
+    }
 }
