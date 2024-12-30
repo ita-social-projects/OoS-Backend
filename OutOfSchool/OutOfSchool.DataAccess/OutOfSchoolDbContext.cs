@@ -132,6 +132,10 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
     
     public DbSet<Position> Positions { get; set; }
 
+    public DbSet<StudySubject> StudySubjects { get; set; }
+
+    public DbSet<Language> Languages { get; set; }
+
     public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
     public int Complete() => this.SaveChanges();

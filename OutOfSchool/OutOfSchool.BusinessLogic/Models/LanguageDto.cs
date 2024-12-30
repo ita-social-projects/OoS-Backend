@@ -1,14 +1,9 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.Services.Models;
-
-/// <summary>
-/// Represents a language used in the educational system.
-/// </summary>
-public class Language : IKeyedEntity<long>
+namespace OutOfSchool.BusinessLogic.Models;
+public class LanguageDto
 {
-    public long Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// ISO code of the language
@@ -24,7 +19,4 @@ public class Language : IKeyedEntity<long>
     [MinLength(1, ErrorMessage = "The title must be at least 1 character.")]
     [MaxLength(50, ErrorMessage = "The title of instruction can't exceed 50 characters.")]
     public string Title { get; set; }
-
-    public virtual List<StudySubject> StudySubjects { get; set; }
 }
-

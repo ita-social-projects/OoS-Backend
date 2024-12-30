@@ -1,0 +1,39 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using OutOfSchool.Services.Models.Configurations.Base;
+using System.Collections.Generic;
+
+namespace OutOfSchool.Services.Models.Configurations;
+public class StudySubjectConfiguration : BusinessEntityConfiguration<StudySubject>
+{
+    public override void Configure(EntityTypeBuilder<StudySubject> builder)
+    {
+        builder.Property(x => x.NameInUkrainian)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        builder.Property(x => x.NameInInstructionLanguage)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        builder.Property(x => x.IsPrimaryLanguageUkrainian)
+            .IsRequired();
+
+        builder.HasMany(x => x.Languages)
+            .WithMany(x => x.StudySubjects)
+            .UsingEntity<Dictionary<string, object>>(
+            "StudySubjectLanguage",
+            j => j.HasOne<Language>().WithMany().HasForeignKey("LanguageId"),
+            j => j.HasOne<StudySubject>().WithMany().HasForeignKey("StudySubjectId"));
+
+        builder.HasOne(x => x.PrimaryLanguage)
+            .WithMany(x => x.StudySubjects)
+            .HasForeignKey(x => x.PrimaryLanguageId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.Workshop) 
+            .WithMany(x => x.StudySubjects)
+            .HasForeignKey(x => x.WorkshopId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+}
