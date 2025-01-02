@@ -1,13 +1,16 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.Tag;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDraft;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDrafts;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
@@ -27,6 +30,9 @@ public class WorkshopDraftService : IWorkshopDraftService
     private readonly IMapper mapper;
     private readonly IImageDependentEntityImagesInteractionService<WorkshopDraft> workshopDraftImagesService;
     private readonly IProviderService providerService;
+    private readonly ICurrentUserService currentUserService;
+    private readonly IEmployeeService employeeService;
+    private readonly IWorkshopServicesCombinerV2 workshopServicesCombinerV2;
     private readonly IEntityCoverImageInteractionService<TeacherDraft> teacherDraftImagesService;
     private readonly IEntityRepository<long, Tag> tagRepository;
     private readonly int maxParallelUploads;
@@ -41,31 +47,40 @@ public class WorkshopDraftService : IWorkshopDraftService
     /// <param name="providerService">Service for handling CRUD operations with the <see cref="Provider"/> entity .</param>
     /// <param name="teacherDraftImagesService">Service for managing cover images for <see cref="TeacherDraft"/> entities.</param>
     /// <param name="tagRepository">Repository for the <see cref="Tag"/> entity, used for CRUD operations.</param>
-    /// <param name="options">Provides configuration settings for upload concurrency.</param>
+    /// <param name="options">Provides configuration settings for upload concurrency.</param>    
+    /// <param name="workshopServicesCombinerV2">Service for managing workshops.</param>
+    /// <param name="employeeService">Service for managing employees.</param>
+    /// <param name="currentUserService">Service for managing current user.</param>
     public WorkshopDraftService(
         ILogger<WorkshopDraftService> logger,
         IWorkshopDraftRepository workshopDraftRepository,
         IMapper mapper,
         IImageDependentEntityImagesInteractionService<WorkshopDraft> workshopDraftImagesService,
         IProviderService providerService,
+        ICurrentUserService currentUserService,
         IEntityCoverImageInteractionService<TeacherDraft> teacherDraftImagesService,
         IEntityRepository<long, Tag> tagRepository,
-        IOptions<UploadConcurrencySettings> options)
+        IOptions<UploadConcurrencySettings> options,
+        IEmployeeService employeeService,
+        IWorkshopServicesCombinerV2 workshopServicesCombinerV2)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.workshopDraftRepository = workshopDraftRepository ?? throw new ArgumentNullException(nameof(workshopDraftRepository));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.workshopDraftImagesService = workshopDraftImagesService ?? throw new ArgumentNullException(nameof(workshopDraftImagesService));
         this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
+        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.teacherDraftImagesService = teacherDraftImagesService ?? throw new ArgumentNullException(nameof(teacherDraftImagesService));
         this.tagRepository = tagRepository ?? throw new ArgumentNullException(nameof(tagRepository));
         this.maxParallelUploads = options.Value.MaxParallelImageUploads;
+        this.employeeService = employeeService ?? throw new ArgumentNullException(nameof(employeeService));
+        this.workshopServicesCombinerV2 = workshopServicesCombinerV2 ?? throw new ArgumentNullException(nameof(workshopServicesCombinerV2));
     }
 
     // <inheritdoc/>
-    public async Task<WorkshopDraftResultDto> Create(WorkshopDraftCreateDto workshopDraftDto)
+    public async Task<WorkshopDraftResultDto> Create(WorkshopV2Dto workshopV2Dto)
     {
-        if (workshopDraftDto == null)
+        if (workshopV2Dto == null)
         {
             logger.LogError(
                 "ArgumentNullException: While executing the method '{MethodName}'," +
@@ -73,30 +88,49 @@ public class WorkshopDraftService : IWorkshopDraftService
                 nameof(Create),
                 nameof(WorkshopDraftCreateDto));
 
-            throw new ArgumentNullException(nameof(workshopDraftDto));
+            throw new ArgumentNullException(nameof(workshopV2Dto));
         }
 
         logger.LogInformation("Workshop draft creating was started.");
 
-        if (workshopDraftDto.Teachers == null || !workshopDraftDto.Teachers.Any())
+        if (workshopV2Dto.Teachers == null || !workshopV2Dto.Teachers.Any())
         {
-            throw new InvalidDataException("The workshop must have at least one associated teacher.");
+            throw new ArgumentException("The workshop must have at least one associated teacher.");
         }
+
+        if (!await CanUserEditProviderWorkshops(workshopV2Dto.ProviderId))
+        {
+            throw new UnauthorizedAccessException("User has no rights to perform operation.");
+        }
+
+        if (workshopV2Dto.Id != Guid.Empty)
+        {
+            var existingWorkshop = await workshopServicesCombinerV2.GetById(workshopV2Dto.Id, true);
+
+            if (existingWorkshop == null) 
+            { 
+                workshopV2Dto.Id = Guid.Empty;
+            }
+            else
+            {
+                await CanUserEditProviderWorkshops(existingWorkshop.ProviderId);
+            }            
+        }       
 
         // Executes the creation of a workshop draft along with its associated teachers within a database transaction.
         // The result is the created draft with all its related teachers.
         var createdDraftWithAssociatedTeachers = await workshopDraftRepository
-            .RunInTransaction(() => CreateWorkshopDraft(workshopDraftDto))
+            .RunInTransaction(() => CreateWorkshopDraft(workshopV2Dto))
             .ConfigureAwait(false);
 
         var tags = await tagRepository.GetByFilter(
-            x => createdDraftWithAssociatedTeachers.WorkshopDraftContent.TagsIds.Contains(x.Id))
+            x => createdDraftWithAssociatedTeachers.WorkshopDraftContent.TagIds.Contains(x.Id))
             .ConfigureAwait(false);
 
         // Concurrently uploads images for both teacher drafts and the workshop draft.
         var uploadImagesResult = await UploadWorkshopAndTeacherImagesAsync(
             createdDraftWithAssociatedTeachers,
-            workshopDraftDto)
+            workshopV2Dto)
            .ConfigureAwait(false);
 
         await workshopDraftRepository.SaveChangesAsync()
@@ -112,15 +146,231 @@ public class WorkshopDraftService : IWorkshopDraftService
             WorkshopDraft = createdDraftDto,
             UploadingCoverImgWorkshopResult = uploadImagesResult.WorkshopCoverImageUploadingResult,
             UploadingImagesResults = uploadImagesResult.WorkshopImagesUploadingResult?.MultipleKeyValueOperationResult,
-            TeachersCreateUpdateResut = uploadImagesResult.TeacherImagesUploadingResults
+            TeachersCreateUpdateResult = uploadImagesResult.TeacherImagesUploadingResults
         };
     }
 
-    private async Task<WorkshopDraft> CreateWorkshopDraft(WorkshopDraftCreateDto workshopDto)
+    // <inheritdoc/>
+    public async Task<WorkshopDraftResultDto> Update(WorkshopDraftUpdateDto workshopDraftUpdateDto)
     {
-        var workshopDraft = mapper.Map<WorkshopDraft>(workshopDto);
+        if (workshopDraftUpdateDto == null || 
+            workshopDraftUpdateDto.WorkshopV2Dto == null)
+        {
+            throw new ArgumentNullException(nameof(workshopDraftUpdateDto));
+        }
 
-        var providerDto = await providerService.GetById(workshopDto.ProviderId);
+        logger.LogInformation("Updating WorkshopDraft started. WorkshopDraft Id = {Id}.", workshopDraftUpdateDto.Id);
+
+        if (workshopDraftUpdateDto.WorkshopV2Dto.Teachers == null || 
+            !workshopDraftUpdateDto.WorkshopV2Dto.Teachers.Any())
+        {
+            throw new ArgumentException("The workshop must have at least one associated teacher.");
+        }
+
+        async Task<(WorkshopDraft updatedDraft, ImageChangingResult coverImageResult,
+            MultipleImageChangingResult imagesResult, List<TeacherCreateUpdateResultDto> teachersResult)> UpdateDraftWithDependencies()
+        {
+            var workshopDraft = await GetWorkshopDraftById(workshopDraftUpdateDto.Id);            
+
+            if (!await CanUserEditProviderWorkshops(workshopDraft.ProviderId) ||
+                !await CanUserEditProviderWorkshops(workshopDraftUpdateDto.WorkshopV2Dto.ProviderId))
+            {
+                throw new UnauthorizedAccessException("User has no rights to perform operation.");
+            }
+
+            if (workshopDraftUpdateDto.WorkshopV2Dto.Id != Guid.Empty)
+            {
+                var existingWorkshop = await workshopServicesCombinerV2.GetById(workshopDraftUpdateDto.WorkshopV2Dto.Id, true);
+
+                if (existingWorkshop == null)
+                {
+                    workshopDraftUpdateDto.WorkshopV2Dto.Id = Guid.Empty;
+                }
+                else
+                {
+                    await CanUserEditProviderWorkshops(existingWorkshop.ProviderId);
+                }
+            }
+
+            if (workshopDraft.DraftStatus == WorkshopDraftStatus.PendingModeration)
+            {
+                throw new ArgumentException("This WorkshopDraft can`t be updated.");
+            }
+
+            mapper.Map(workshopDraftUpdateDto.WorkshopV2Dto, workshopDraft);
+
+            var coverImageResult = await workshopDraftImagesService.ChangeCoverImageAsync(
+                workshopDraft,
+                workshopDraftUpdateDto.WorkshopV2Dto.CoverImageId,
+                workshopDraftUpdateDto.WorkshopV2Dto.CoverImage);
+
+            var imagesResult = await workshopDraftImagesService.ChangeImagesAsync(
+                workshopDraft,
+                workshopDraftUpdateDto.WorkshopV2Dto.ImageIds,
+                workshopDraftUpdateDto.WorkshopV2Dto.ImageFiles);
+
+            var teacherCreateUpdateResult = new List<TeacherCreateUpdateResultDto>();
+
+            foreach (var (teacher, teacherDTO) in workshopDraft.Teachers.Zip(workshopDraftUpdateDto.WorkshopV2Dto.Teachers))
+            {
+                var teacherImageResult = await teacherDraftImagesService.ChangeCoverImageAsync(
+                    teacher,
+                    teacherDTO.CoverImageId,
+                    teacherDTO.CoverImage);
+
+                teacherCreateUpdateResult.Add(new TeacherCreateUpdateResultDto()
+                {
+                    Teacher = mapper.Map<TeacherDraftResponseDto>(teacher),
+                    UploadingCoverImageResult = teacherImageResult?.UploadingResult?.OperationResult
+                });                
+            }
+
+            await workshopDraftRepository.Update(workshopDraft);
+            logger.LogInformation("WorkshopDraft was successfully updated. Draft Id = {DraftId}.", workshopDraftUpdateDto.Id);
+
+            return (workshopDraft, coverImageResult, imagesResult, teacherCreateUpdateResult);
+        }
+
+        var (updatedDraft, coverImageResult, imagesResult, teacherCreateUpdateResult) = await workshopDraftRepository
+            .RunInTransaction(UpdateDraftWithDependencies).ConfigureAwait(false);
+
+        return new WorkshopDraftResultDto()
+        {
+            WorkshopDraft = mapper.Map<WorkshopDraftResponseDto>(updatedDraft),
+            UploadingCoverImgWorkshopResult = coverImageResult?.UploadingResult?.OperationResult,
+            UploadingImagesResults = imagesResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult,
+            TeachersCreateUpdateResult = teacherCreateUpdateResult
+        };
+    }
+
+    // <inheritdoc/>
+    public async Task Delete(Guid id)
+    {
+        logger.LogInformation("Deleting WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
+
+        var workshopDraft = await GetWorkshopDraftById(id);
+
+        if (!await CanUserEditProviderWorkshops(workshopDraft.ProviderId))
+        {
+            throw new UnauthorizedAccessException("User has no rights to perform operation.");
+        }
+
+        if (workshopDraft.DraftStatus == WorkshopDraftStatus.PendingModeration)
+        {
+            throw new ArgumentException("This WorkshopDraft can`t be deleted.");
+        }
+
+        await workshopDraftRepository.Delete(workshopDraft);
+        logger.LogInformation("WorkshopDraft was successfully deleted. Draft Id = {DraftId}.", id);
+    }
+
+    // <inheritdoc/>
+    public async Task SendForModeration(Guid id)
+    {
+        logger.LogInformation("Sending WorkshopDraft for moderation started. WorkshopDraft Id = {Id}.", id);
+
+        var workshopDraft = await GetWorkshopDraftById(id);
+
+        if (!await CanUserEditProviderWorkshops(workshopDraft.ProviderId))
+        {
+            throw new UnauthorizedAccessException("User has no rights to perform operation.");
+        }
+
+        if (workshopDraft.DraftStatus == WorkshopDraftStatus.PendingModeration)
+        {
+            throw new ArgumentException("This WorkshopDraft can`t be sent for moderation.");
+        }
+
+        workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
+
+        await workshopDraftRepository.Update(workshopDraft);
+        logger.LogInformation("Draft was successfully sent for moderation. Draft Id = {DraftId}.", id);        
+    }
+
+    // <inheritdoc/>
+    public async Task Approve(Guid id)
+    {
+        logger.LogInformation("Approving WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
+                
+        var workshopDraft = await GetWorkshopDraftById(id);
+
+        if (!await CanUserEditProviderWorkshops(workshopDraft.ProviderId))
+        {
+            throw new UnauthorizedAccessException("User has no rights to perform operation.");
+        }
+
+        if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration)
+        {
+            throw new ArgumentException("This WorkshopDraft can`t be approved.");
+        }
+
+        //TODO: Add image loading later
+
+        if (workshopDraft.WorkshopId == null)
+        {
+            var workshopV2CreateRequestDto = mapper.Map<WorkshopV2CreateRequestDto>(workshopDraft);
+
+            await workshopServicesCombinerV2.Create(workshopV2CreateRequestDto);
+        }
+        else
+        {
+            var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshopDraft);
+
+            await workshopServicesCombinerV2.Update(workshopV2Dto);
+        }
+
+        await workshopDraftRepository.Delete(workshopDraft);
+
+        logger.LogInformation("Draft was successfully approved and deleted. Draft Id = {DraftId}.", id);   
+    }
+
+    // <inheritdoc/>
+    public async Task Reject(Guid id, string rejectionMessage)
+    {
+        logger.LogInformation("Rejecting WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
+
+        var workshopDraft = await GetWorkshopDraftById(id);
+
+        if (!await CanUserEditProviderWorkshops(workshopDraft.ProviderId))
+        {
+            throw new UnauthorizedAccessException("User has no rights to perform operation.");
+        }
+
+        if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration)
+        {
+            throw new ArgumentException("This WorkshopDraft can`t be rejected.");
+        }
+
+        workshopDraft.DraftStatus = WorkshopDraftStatus.Rejected;
+        workshopDraft.RejectionMessage = rejectionMessage;
+        
+        await workshopDraftRepository.Update(workshopDraft);
+        logger.LogInformation("Draft was successfully rejected. Draft Id = {DraftId}.", id);        
+    }
+
+    private async Task<WorkshopDraft> GetWorkshopDraftById(Guid id)
+    {
+        logger.LogInformation("Getting WorkshopDraft by Id started. Looking Id = {Id}.", id);
+
+        var workshopDraft = await workshopDraftRepository.GetById(id);
+
+        if (workshopDraft == null)
+        {
+            throw new ArgumentException(
+            nameof(id),
+                paramName: $"There are no recors in workshopDrafts table with such id - {id}.");
+        }
+
+        logger.LogInformation("Got a WorkshopDraft with Id = {Id}.", id);
+
+        return workshopDraft;
+    }
+
+    private async Task<WorkshopDraft> CreateWorkshopDraft(WorkshopV2Dto workshopV2Dto)
+    {
+        var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
+
+        var providerDto = await providerService.GetById(workshopV2Dto.ProviderId);
         var provider = mapper.Map<Provider>(providerDto);
 
         workshopDraft.WorkshopDraftContent.ProviderLicenseStatus = provider.LicenseStatus;
@@ -133,18 +383,16 @@ public class WorkshopDraftService : IWorkshopDraftService
         return createdDraft;
     }
 
-
     // Applicable if images is stored in the external storage
-    private async Task<UploadImagesResult>
-    UploadWorkshopAndTeacherImagesAsync(
-    WorkshopDraft createdDraft,
-    WorkshopDraftCreateDto workshopDraftDto)
+    private async Task<UploadImagesResult> UploadWorkshopAndTeacherImagesAsync(
+        WorkshopDraft createdDraft,
+        WorkshopV2Dto workshopV2Dto)
     {
         var teacherUploadImagesTasks = new List<Task>();
         var teacherUploadImagesResults = new ConcurrentBag<TeacherCreateUpdateResultDto>();
         var semaphore = new SemaphoreSlim(maxParallelUploads);
 
-        foreach (var (teacherDto, teacher) in workshopDraftDto.Teachers.Zip(createdDraft.Teachers))
+        foreach (var (teacherDto, teacher) in workshopV2Dto.Teachers.Zip(createdDraft.Teachers))
         {
             teacherUploadImagesTasks.Add(UploadTeacherCoverImageAsync(
                     teacherDto,
@@ -153,24 +401,24 @@ public class WorkshopDraftService : IWorkshopDraftService
                     semaphore));
         }
 
-        Task<MultipleImageUploadingResult> workshopImagesUploadingTasks = 
+        Task<MultipleImageUploadingResult> workshopImagesUploadingTasks =
             Task.FromResult<MultipleImageUploadingResult>(null);
 
         Task<Result<string>> workshopUploadingCoverImageTask = Task.FromResult<Result<string>>(null);
 
-        if (workshopDraftDto.ImageFiles?.Count > 0)
+        if (workshopV2Dto.ImageFiles?.Count > 0)
         {
             createdDraft.Images = new List<Image<WorkshopDraft>>();
             workshopImagesUploadingTasks = workshopDraftImagesService.AddManyImagesAsync(
                 createdDraft,
-                workshopDraftDto.ImageFiles);
+                workshopV2Dto.ImageFiles);
         }
 
-        if (workshopDraftDto.CoverImage != null)
+        if (workshopV2Dto.CoverImage != null)
         {
             workshopUploadingCoverImageTask = workshopDraftImagesService.AddCoverImageAsync(
                 createdDraft,
-                workshopDraftDto.CoverImage);
+                workshopV2Dto.CoverImage);
         }
 
         try
@@ -195,7 +443,7 @@ public class WorkshopDraftService : IWorkshopDraftService
     }
 
     private async Task UploadTeacherCoverImageAsync(
-        TeacherDraftCreateDto teacherDto,
+        TeacherDTO teacherDto,
         TeacherDraft teacher,
         ConcurrentBag<TeacherCreateUpdateResultDto> teacherResults,
         SemaphoreSlim semaphore)
@@ -204,12 +452,12 @@ public class WorkshopDraftService : IWorkshopDraftService
         Result<string> uploadingResult = null;
         try
         {
-            if(teacherDto.CoverImage!= null)
+            if (teacherDto.CoverImage != null)
             {
                 uploadingResult = await teacherDraftImagesService
-               .AddCoverImageAsync(teacher, teacherDto.CoverImage);
+                    .AddCoverImageAsync(teacher, teacherDto.CoverImage);
             }
-          
+
             teacherResults.Add(new TeacherCreateUpdateResultDto
             {
                 Teacher = mapper.Map<TeacherDraftResponseDto>(teacher),
@@ -238,5 +486,22 @@ public class WorkshopDraftService : IWorkshopDraftService
             return null;
         }
         return task.Result;
+    }
+       
+    private async Task<bool> CanUserEditProviderWorkshops(Guid providerId)
+    {
+        var userId = currentUserService.UserId;
+
+        var provider = await providerService.GetById(providerId);
+
+        if (provider.UserId == userId)
+        {
+            return true;
+        }
+
+        var employees = await employeeService.GetRelatedEmployees(provider.UserId);
+        var employeesIds = employees.Select(emp => emp.Id);
+
+        return employeesIds.Contains(userId);
     }
 }

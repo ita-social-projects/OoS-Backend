@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.AddressDraft;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDrafts;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 
 namespace OutOfSchool.BusinessLogic.Util.Mapping;
@@ -18,7 +20,7 @@ public class WorkshopDraftMappingProfile : Profile
             .ReverseMap();
 
         CreateMap<AddressDraftDto, AddressDraft>()
-       .ReverseMap();
+            .ReverseMap();
 
 
         CreateMap<TeacherDraftCreateDto, TeacherDraft>()
@@ -34,7 +36,7 @@ public class WorkshopDraftMappingProfile : Profile
         CreateMap<WorkshopDraftCreateDto, WorkshopDraftContent>();
         CreateMap<WorkshopDraftCreateDto, WorkshopDraft>()
             .ForPath(dest => dest.WorkshopDraftContent, opt => opt.MapFrom(src => src))
-            .ForPath(dest => dest.WorkshopDraftContent.TagsIds, opt => opt.MapFrom(src => src.TagsIds))
+            .ForPath(dest => dest.WorkshopDraftContent.TagIds, opt => opt.MapFrom(src => src.TagsIds))
             .ForMember(dest => dest.Images, opt => opt.Ignore())
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.Provider, opt => opt.Ignore())
@@ -47,11 +49,51 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.Version, opt => opt.Ignore());
 
 
-        CreateMap<WorkshopDraftContent, WorkshopDraftResponseDto>();
+        CreateMap<WorkshopDraftContent, WorkshopDraftResponseDto>()
+            .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => string.Join(Constants.MappingSeparator, src.Keywords)));
+
         CreateMap<WorkshopDraft, WorkshopDraftResponseDto>()
             .IncludeMembers(src => src.WorkshopDraftContent)
             .ForMember(dest => dest.ImagesIds, opt => opt.MapFrom(
                 src => src.Images.Select(x => x.ExternalStorageId)
                 .ToList()));
+
+        CreateMap<WorkshopV2Dto, WorkshopDraftContent>();
+        CreateMap<WorkshopV2Dto, WorkshopDraft>()
+            .ForPath(dest => dest.WorkshopDraftContent, opt => opt.MapFrom(src => src))
+            .ForPath(dest => dest.WorkshopDraftContent.TagIds, opt => opt.MapFrom(src => src.Tags.Select(t => t.Id).Concat(src.TagIds)))
+            .ForMember(dest => dest.Images, opt => opt.Ignore())
+            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+            .ForMember(dest => dest.Provider, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.ModifiedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.DraftStatus, opt => opt.Ignore())
+            .ForMember(dest => dest.Version, opt => opt.Ignore())
+            .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(src => src.Id == Guid.Empty ? (Guid?) null : src.Id));
+
+        CreateMap<WorkshopDraftContent, WorkshopV2Dto>();
+        CreateMap<WorkshopDraft, WorkshopV2Dto>()
+            .IncludeMembers(src => src.WorkshopDraftContent)
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.WorkshopId));
+
+        CreateMap<WorkshopDraftContent, WorkshopV2CreateRequestDto>();
+        CreateMap<WorkshopDraft, WorkshopV2CreateRequestDto>()
+            .IncludeMembers(src => src.WorkshopDraftContent)
+            .ForMember(dest => dest.Id, opt => opt.Ignore());
+
+        CreateMap<DateTimeRangeDraft, DateTimeRangeDto>()
+            .ReverseMap();
+
+        CreateMap<WorkshopDescriptionItemDraft, WorkshopDescriptionItemDto>()
+            .ReverseMap();
+
+        CreateMap<AddressDraft, AddressDto>()
+            .ReverseMap();
+
+        CreateMap<TeacherDraft, TeacherDTO>()
+            .ReverseMap();
     }
 }

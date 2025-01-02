@@ -17,7 +17,7 @@ public class WorkshopDraftResultDto
     /// List of results for teacher creation or update operations.
     /// Each entry represents the outcome for an individual teacher.
     /// </summary>
-    public List<TeacherCreateUpdateResultDto> TeachersCreateUpdateResut { get; set; }
+    public List<TeacherCreateUpdateResultDto> TeachersCreateUpdateResult { get; set; }
 
     /// <summary>
     /// The result of uploading the cover image for the workshop draft.

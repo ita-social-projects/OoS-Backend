@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
+using OutOfSchool.Services.Common.Exceptions;
 using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V2;
@@ -37,7 +39,7 @@ public class WorkshopDraftController : ControllerBase
     /// <summary>
     /// Add new workshop draft to the database.
     /// </summary>
-    /// <param name="workshopDraftDto">Entity to add.</param>
+    /// <param name="workshopV2Dto">Entity to add.</param>
     /// <returns>Created <see cref="WorkshopDraftCreateDto"/>.</returns>
     /// <response code="201">Entity was created and returned with Id.</response>
     /// <response code="400">If the model is invalid, some properties are not set etc.</response>
@@ -54,9 +56,9 @@ public class WorkshopDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Create([FromForm] WorkshopDraftCreateDto workshopDraftDto)
+    public async Task<IActionResult> Create([FromForm] WorkshopV2Dto workshopV2Dto)
     {
-        var providerValidationResult = await ValidateProvider(workshopDraftDto.ProviderId);
+        var providerValidationResult = await ValidateProvider(workshopV2Dto.ProviderId);
         if (providerValidationResult != null)
         {
             return providerValidationResult;
@@ -65,14 +67,151 @@ public class WorkshopDraftController : ControllerBase
         // TODO: After implementing the new workshop model, add validation to check if the parent workshop is nested.
         // A workshop must have only one level of nesting.
 
-        var result = await workshopDraftService.Create(workshopDraftDto);
+        var result = await workshopDraftService.Create(workshopV2Dto);
 
         return CreatedAtAction(
             nameof(Create),
             new { id = result.WorkshopDraft.Id },
             result);
     }
+    
+    [HasPermission(Permissions.WorkshopEdit)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDraftResultDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status413PayloadTooLarge)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPut]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Update([FromForm] WorkshopDraftUpdateDto workshopDraftUpdateDto)
+    {
+        var providerValidationResult = await ValidateProvider(workshopDraftUpdateDto.WorkshopV2Dto.ProviderId);
+        if (providerValidationResult != null)
+        {
+            return providerValidationResult;
+        }
 
+        try
+        {
+            var result = await workshopDraftService.Update(workshopDraftUpdateDto);
+            return Ok(result);
+        }
+        catch (EntityDeletedConflictException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+
+        }
+        catch (EntityModifiedConflictException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+        }
+    }
+
+    [HasPermission(Permissions.WorkshopRemove)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        try
+        {
+            await workshopDraftService.Delete(id);
+            return NoContent();
+        }
+        catch (EntityDeletedConflictException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+
+        }
+        catch (EntityModifiedConflictException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+        }
+    }
+
+    [HasPermission(Permissions.WorkshopEdit)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPut("{id}")]
+    public async Task<IActionResult> SendForModeration(Guid id)
+    {
+        try
+        {
+            await workshopDraftService.SendForModeration(id);
+            return Ok();
+        }
+        catch (EntityDeletedConflictException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+
+        }
+        catch (EntityModifiedConflictException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+        }
+    }
+
+    [HasPermission(Permissions.WorkshopApprove)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Reject(Guid id, [FromBody] string rejectionMessage)
+    {
+        if (string.IsNullOrWhiteSpace(rejectionMessage))
+        {
+            return BadRequest("RejectionMessage can`t be empty");
+        }
+
+        try
+        {
+            await workshopDraftService.Reject(id, rejectionMessage);
+            return Ok();
+        }
+        catch (EntityDeletedConflictException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+
+        }
+        catch (EntityModifiedConflictException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+        }
+    }
+
+    [HasPermission(Permissions.WorkshopApprove)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Approve(Guid id)
+    {
+        try
+        {
+            await workshopDraftService.Approve(id);
+            return Ok();
+        }
+        catch (EntityDeletedConflictException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+
+        }
+        catch (EntityModifiedConflictException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+        }
+    }
 
     private async Task<IActionResult> ValidateProvider(Guid providerId)
     {
