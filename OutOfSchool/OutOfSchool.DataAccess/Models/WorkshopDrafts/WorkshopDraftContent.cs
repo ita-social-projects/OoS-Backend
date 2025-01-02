@@ -20,7 +20,7 @@ public class WorkshopDraftContent
 
     public uint LanguageOfEducationId { get; set; }
 
-    public List<DateTimeRangeDraft> DateTimeRange { get; set; } = new ();
+    public List<DateTimeRangeDraft> DateTimeRanges { get; set; } = new ();
 
     public List<WorkshopDescriptionItemDraft> WorkshopDescriptionItems { get; set; } = new();
 
@@ -36,7 +36,7 @@ public class WorkshopDraftContent
 
     public List<Guid> EducationalDisciplinesId { get; set; } = new();
 
-    public List<long> TagsIds { get; set; } = new();
+    public List<long> TagIds { get; set; } = new();
 
     public string Title { get; set; }
 
@@ -52,7 +52,7 @@ public class WorkshopDraftContent
 
     public uint CoverageId { get; set; }
 
-    public Guid MemberOfWorkshopId { get; set; }
+    public Guid? MemberOfWorkshopId { get; set; }
 
     public bool IsPaid { get; set; }
 
@@ -60,7 +60,7 @@ public class WorkshopDraftContent
 
     public bool IsInclusive { get; set; }
 
-    public string Keywords { get; set; }
+    public IEnumerable<string> Keywords { get; set; }
 
     public AddressDraft Address { get; set; }
 
@@ -96,9 +96,9 @@ public class WorkshopDraftContent
 
     public string PreferentialTermsOfParticipation { get; set; }
 
-    public Guid InstitutionHierarchyId { get; set; }
+    public Guid? InstitutionHierarchyId { get; set; }
 
-    public Guid InstitutionId { get; set; }
+    public Guid? InstitutionId { get; set; }
 
     public string Phone { get; set; } 
 

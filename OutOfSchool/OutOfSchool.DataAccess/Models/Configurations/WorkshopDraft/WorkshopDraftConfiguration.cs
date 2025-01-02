@@ -31,5 +31,10 @@ public class WorkshopDraftConfiguration : TrackableBaseEntityConfiguration<Works
         builder.HasOne(x => x.Provider)
                .WithMany(x => x.WorkshopDrafts)
                .HasForeignKey(x => x.ProviderId);
+
+        builder.HasOne(x => x.Workshop)
+               .WithOne()
+               .HasForeignKey<WorkshopDraft>(x => x.WorkshopId)
+               .IsRequired(false);
     }
 }

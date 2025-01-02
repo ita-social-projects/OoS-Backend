@@ -210,6 +210,11 @@ public static class Constants
     public const int WorkshopDraftDescriptionItemsLength = 200;
 
     ///<summary>
+    /// Length constraint for the rejection messages.
+    ///</summary>
+    public const int WorkshopDraftMaxRejectionMessageLength = 200;
+
+    ///<summary>
     /// Maximum length for disability option descriptions.
     /// </summary>
     public const int DisabilityOptionsLength = 200;
