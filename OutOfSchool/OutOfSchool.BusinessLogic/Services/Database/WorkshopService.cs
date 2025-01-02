@@ -1056,11 +1056,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         await Task.WhenAll(deleteTasks).ConfigureAwait(false);
 
-        foreach (var deletedId in deletedIds)
-        {
-            await teacherService.Delete(deletedId).ConfigureAwait(false);
-        }
-
         foreach (var teacherDto in teacherDtoList)
         {
             if (currentWorkshop.Teachers.Select(x => x.Id).Contains(teacherDto.Id))
