@@ -123,9 +123,7 @@ public class StudySubjectService : IStudySubjectService
 
         if (studySubject == null || studySubject.IsDeleted)
         {
-            throw new ArgumentException(
-                nameof(id),
-                paramName: $"There are no recors in StudySubjects table with such id - {id}, or such StudySubject was deleted.");
+            throw new KeyNotFoundException($"There are no recors in StudySubjects table with such id - {id}, or such StudySubject was deleted.");
         }
 
         logger.LogInformation($"Got a StudySubject with Id = {id}.");
@@ -150,9 +148,7 @@ public class StudySubjectService : IStudySubjectService
 
         if (studySubject == null || studySubject.IsDeleted)
         {
-            throw new ArgumentException(
-            nameof(dto.Id),
-                paramName: $"There are no recors in StudySubjects table with such id - {dto.Id}, or such StudySubject was deleted.");
+            throw new KeyNotFoundException($"There are no recors in StudySubjects table with such id - {dto.Id}, or such StudySubject was deleted.");
         }
 
         mapper.Map(dto, studySubject);
@@ -183,7 +179,7 @@ public class StudySubjectService : IStudySubjectService
 
         if (dto.LanguageIds.Where(id => !existingLanguageIds.Contains(id)).ToList().Any() || !existingLanguageIds.Contains(dto.PrimaryLanguageId))
         {
-            logger.LogInformation("Operation failed, dto contains non-existing language ids.");
+            logger.LogDebug("Operation failed, dto contains non-existing language ids.");
             throw new ArgumentException("Dto contains non-existing language ids.", nameof(dto));
         }
 
@@ -191,7 +187,7 @@ public class StudySubjectService : IStudySubjectService
 
         if (dto.IsPrimaryLanguageUkrainian && ukrainianLanguageId != dto.PrimaryLanguageId)
         {
-            logger.LogInformation("Operation failed, dto's property IsPrimaryLanguageUkrainian is not accurate.");
+            logger.LogDebug("Operation failed, dto's property IsPrimaryLanguageUkrainian is not accurate.");
             throw new ArgumentException("Dto's property IsPrimaryLanguageUkrainian is not accurate.", nameof(dto));
         }
     }

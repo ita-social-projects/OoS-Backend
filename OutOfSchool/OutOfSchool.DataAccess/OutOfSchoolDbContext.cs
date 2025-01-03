@@ -194,6 +194,9 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new UserConfiguration());
         builder.ApplyConfiguration(new WorkshopConfiguration());
         builder.ApplyConfiguration(new WorkshopDescriptionItemConfiguration());
+        builder.ApplyConfiguration(new StudySubjectConfiguration());
+        builder.ApplyConfiguration(new LanguageConfiguration());
+        builder.ApplyConfiguration(new StudySubjectLanguageConfiguration());
 
         builder.Seed();
         builder.UpdateIdentityTables();
