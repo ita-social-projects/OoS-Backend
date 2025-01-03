@@ -1054,20 +1054,20 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     {
         _ = data ?? throw new ArgumentNullException(nameof(data));
 
-        logger.LogInformation("Upload employees for provider was started.");
+        logger.LogDebug("Upload employees for provider was started.");
 
         if (data.Length == 0)
         {
             var errorMessage = "The number of entries to upload should be greater than 0.";
             logger.LogError(errorMessage);
-            throw new InvalidOperationException(errorMessage);
+            throw new ArgumentOutOfRangeException(errorMessage);
         }
 
         if (data.Length > Constants.MaxNumberOfEmployeesToUpload)
         {
             var errorMessage = $"The number of entries should not exceed {Constants.MaxNumberOfEmployeesToUpload}.";
             logger.LogError("The number of entries should not exceed {MaxNumberOfEmployeesToUpload}.", Constants.MaxNumberOfEmployeesToUpload);
-            throw new InvalidOperationException(errorMessage);
+            throw new ArgumentOutOfRangeException(errorMessage);
         }
 
         var uploadEmployeesRnokpps = data.Select(e => e.Rnokpp).ToList();
@@ -1086,12 +1086,15 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     {
         // Dictionary for uploading employees
         var uploadDictionary = new Dictionary<Guid, UploadEmployeeRequestDto>();
-        var existingIndividuals = (await individualRepository.GetByFilter(i => data.Select(e => e.Rnokpp).Contains(i.Rnokpp))
+        // Create a list of Rnokpps.
+        // The number of members in this list is limited by a constant - MaxNumberOfEmployeesToUpload.
+        var listOfRnokpps = data.Select(e => e.Rnokpp).ToList();
+        var existingIndividuals = (await individualRepository.GetByFilter(i => listOfRnokpps.Contains(i.Rnokpp))
                                                                           .ConfigureAwait(false))
                                                                           .Select(i => new { i.Rnokpp, i.Id })
                                                                           .ToDictionary(e => e.Rnokpp);
-        
-        // Circle to add individuals to DB and populate the Dictionary for uploading employees
+
+        // Loop to add individuals to DB and populate the Dictionary for uploading employees
         foreach (var employee in data)
         {
             if (existingIndividuals.ContainsKey(employee.Rnokpp))
@@ -1122,7 +1125,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                                                                                  .ConfigureAwait(false))
                                                                                  .ToLookup(o => o.IndividualId, o => o);
 
-        //Cycle for filling the DB with new employees on certain positions.
+        //Loop for filling the DB with new employees on certain positions.
         foreach (var key in uploadDictionary.Keys)
         {
             // If this Employee already exists and occupies the same Position
@@ -1143,10 +1146,10 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             {
                 position = await positionRepository.Create(
                 new Position
-                        {
-                            ProviderId = providerId,
-                            FullName = uploadDictionary[key].AssignedRole
-                        }).ConfigureAwait(false);
+                {
+                    ProviderId = providerId,
+                    FullName = uploadDictionary[key].AssignedRole
+                }).ConfigureAwait(false);
                 uploadResponse.CountOfCreatedPositions++;
             }
 

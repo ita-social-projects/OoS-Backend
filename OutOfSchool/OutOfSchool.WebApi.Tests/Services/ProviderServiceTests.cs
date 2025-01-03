@@ -1189,7 +1189,7 @@ public class ProviderServiceTests
         var data = new UploadEmployeeRequestDto[0];
 
         // Act & Assert
-        Assert.ThrowsAsync<InvalidOperationException>(async () => await providerService.UploadEmployeesForProvider(id, data)
+        Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await providerService.UploadEmployeesForProvider(id, data)
                                                                         .ConfigureAwait(false));
     }
 
@@ -1202,7 +1202,7 @@ public class ProviderServiceTests
         var data = new UploadEmployeeRequestDto[MaxNumberOfEmployeesToUpload + 1];
 
         // Act & Assert
-        Assert.ThrowsAsync<InvalidOperationException>(async () => await providerService.UploadEmployeesForProvider(id, data)
+        Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await providerService.UploadEmployeesForProvider(id, data)
                                                                         .ConfigureAwait(false));
     }
 

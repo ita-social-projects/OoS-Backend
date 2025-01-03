@@ -249,6 +249,12 @@ public class ProviderController : ControllerBase
 
             return Ok($"Success! Employees has been uploaded into the DB.");
         }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            var errorMessage = $"Unable to upload a list of employees for provider: {ex.Message}";
+            logger.LogError(ex, errorMessage);
+            return BadRequest(errorMessage);
+        }
         catch (InvalidOperationException ex)
         {
             var errorMessage = $"Unable to upload a list of employees for provider: {ex.Message}";
