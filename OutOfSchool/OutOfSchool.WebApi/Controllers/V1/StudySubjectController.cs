@@ -123,12 +123,12 @@ public class StudySubjectController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        //var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.WorkshopId).ConfigureAwait(false);
+        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.WorkshopId).ConfigureAwait(false);
 
-        //if (!userHasRights)
-        //{
-        //    return StatusCode(403, "Forbidden to create study subjects for another providers");
-        //}
+        if (!userHasRights)
+        {
+            return StatusCode(403, "Forbidden to create study subjects for another providers");
+        }
 
         try
         {
@@ -163,6 +163,18 @@ public class StudySubjectController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] StudySubjectCreateUpdateDto dto)
     {
+        if (dto is null)
+        {
+            return BadRequest("StudySubject dto is null.");
+        }
+
+        var isWorkshopExists = await _workshopService.Exists(dto.WorkshopId).ConfigureAwait(false);
+
+        if (!isWorkshopExists)
+        {
+            return NotFound("There's no such workshop in the database.");
+        }
+
         var providerId = await _providerService.GetProviderIdForWorkshopById(dto.WorkshopId).ConfigureAwait(false);
 
         if (await _providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false)
@@ -175,12 +187,12 @@ public class StudySubjectController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        //var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.WorkshopId).ConfigureAwait(false);
+        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.WorkshopId).ConfigureAwait(false);
 
-        //if (!userHasRights)
-        //{
-        //    return StatusCode(403, "Forbidden to create study subjects for another providers");
-        //}
+        if (!userHasRights)
+        {
+            return StatusCode(403, "Forbidden to create study subjects for another providers");
+        }
 
         return Ok(await _studySubjectService.Update(dto).ConfigureAwait(false));
     }
@@ -217,12 +229,12 @@ public class StudySubjectController : ControllerBase
             return StatusCode(403, "It is forbidden to add study subjects to workshops at blocked providers");
         }
 
-        //var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.WorkshopId).ConfigureAwait(false);
+        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.WorkshopId).ConfigureAwait(false);
 
-        //if (!userHasRights)
-        //{
-        //    return StatusCode(403, "Forbidden to create study subjects for another providers");
-        //}
+        if (!userHasRights)
+        {
+            return StatusCode(403, "Forbidden to create study subjects for another providers");
+        }
 
         try
         {
