@@ -4,10 +4,11 @@ using OutOfSchool.Services.Models.Configurations.Base;
 
 namespace OutOfSchool.Services.Models.Configurations;
 
-internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
+internal class WorkshopConfiguration : BusinessEntityWithContactsConfiguration<Workshop>
 {
     public override void Configure(EntityTypeBuilder<Workshop> builder)
     {
+        base.Configure(builder);
         builder.HasMany(x => x.Employees)
             .WithMany(x => x.ManagedWorkshops);
 
@@ -36,7 +37,5 @@ internal class WorkshopConfiguration : BusinessEntityConfiguration<Workshop>
             .HasForeignKey(x => x.ParentWorkshopId)
             .IsRequired(false) // Optional relationship
             .OnDelete(DeleteBehavior.Restrict);
-
-        base.Configure(builder);
     }
 }

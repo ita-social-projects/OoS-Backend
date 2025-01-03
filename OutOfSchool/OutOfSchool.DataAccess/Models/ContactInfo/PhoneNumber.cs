@@ -3,16 +3,14 @@ using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Validators;
 
-namespace OutOfSchool.Services.Models;
+namespace OutOfSchool.Services.Models.ContactInfo;
 
-public class PhoneNumber : IKeyedEntity<Guid>
+public class PhoneNumber
 {
-    public Guid Id { get; set; }
+    public string Type { get; set; } = null!;
 
     [DataType(DataType.PhoneNumber)]
-    [Required(ErrorMessage = "Phone number is required")]
     [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
-    [MaxLength(Constants.MaxPhoneNumberLengthWithPlusSign)]
-    public string Number { get; set; }
+    public string Number { get; set; } = null!;
 }

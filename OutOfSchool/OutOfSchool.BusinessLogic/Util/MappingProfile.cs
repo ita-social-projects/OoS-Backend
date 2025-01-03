@@ -54,6 +54,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore());
 
         CreateSoftDeletedMap<WorkshopBaseDto, Workshop>()
+            .Apply(this.IgnoreContactsFromDto)
             .ForMember(
                 dest => dest.Keywords,
                 opt => opt.MapFrom(src => string.Join(Constants.MappingSeparator, src.Keywords.Distinct())))
@@ -927,4 +928,11 @@ public class MappingProfile : Profile
         => mappings
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
         ;
+
+    private IMappingExpression<TSource, TDestination> IgnoreContactsFromDto<TSource, TDestination>(
+        IMappingExpression<TSource, TDestination> mappings)
+        where TSource : class, IHasContactsDto<TDestination>
+        where TDestination : BusinessEntity, IHasContacts
+        => mappings
+            .ForMember(dest => dest.Contacts, opt => opt.Ignore());
 }

@@ -7,6 +7,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Models.ChatWorkshop;
+using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;
 
@@ -15,7 +16,7 @@ namespace OutOfSchool.Services.Models;
 // TODO:
 // - Add educational disciplines (many ED to 1 workshop)
 // - Add language
-public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEntityImages<Workshop>
+public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEntityImages<Workshop>, IHasContacts
 {
     #region Required fields
 
@@ -190,5 +191,11 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public virtual Address Address { get; set; }
 
     public virtual List<Tag> Tags { get; set; }
+    #endregion
+    
+    #region Owned entities
+
+    public List<Contacts> Contacts { get; set; } = [];
+
     #endregion
 }

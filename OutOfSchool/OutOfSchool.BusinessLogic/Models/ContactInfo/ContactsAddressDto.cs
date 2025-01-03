@@ -1,13 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 
-namespace OutOfSchool.BusinessLogic.Models;
+namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 
-// TODO: This entity will stay until we fully move everything to unified contacts
-public class AddressDto
+public class ContactsAddressDto
 {
-    public long Id { get; set; }
-
     [Required(ErrorMessage = "Street is required")]
     [MaxLength(60)]
     public string Street { get; set; } = string.Empty;
@@ -45,7 +42,7 @@ public class AddressDto
             return false;
         }
 
-        if (obj is not AddressDto address)
+        if (obj is not ContactsAddressDto address)
         {
             return false;
         }

@@ -291,7 +291,7 @@ public static class Startup
                     sp.GetRequiredService<TrackableEntityInterceptor>()))
                 .AddCustomDataProtection("WebApi");
 
-        services.AddAutoMapper(typeof(CommonProfile), typeof(MappingProfile), typeof(ElasticProfile), typeof(WorkshopDraftMappingProfile), typeof(ExternalExportMappingProfile));
+        services.AddAutoMapper(typeof(CommonProfile), typeof(MappingProfile), typeof(ElasticProfile), typeof(WorkshopDraftMappingProfile), typeof(ExternalExportMappingProfile), typeof(ContactsProfile));
 
         // Add Elasticsearch client
         var elasticConfig = configuration
@@ -458,6 +458,7 @@ public static class Startup
         services.AddTransient(s => s.GetService<IHttpContextAccessor>()?.HttpContext?.User);
         services.AddTransient<ICurrentUser, CurrentUserAccessor>();
         services.AddTransient<ICurrentUserService, CurrentUserService>();
+        services.AddTransient(typeof(IContactsService<,>), typeof(ContactsService<,>));
 
         services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
 
