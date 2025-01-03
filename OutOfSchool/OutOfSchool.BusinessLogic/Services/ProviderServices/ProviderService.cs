@@ -1116,21 +1116,21 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                                                          Guid providerId,
                                                          UploadEmployeeResponse uploadResponse)
     {
-        // Get a dictionary (Lookup) with keys - IndividualId and values ​​- Officials for a certain Provider.
+        // Get a dictionary (Lookup) with keys - IndividualId and values ​​- Official.Position.FullName for a certain Provider.
         var existingOfficialsForProvider = (await officialRepository.GetByFilter(o =>
                                                                                  o.Position.ProviderId == providerId
                                                                                  && uploadDictionary.Keys.Contains(o.IndividualId)
                                                                                  && (o.DismissalOrder == null || o.DismissalOrder == string.Empty)
                                                                                  , includeProperties: "Position")
                                                                                  .ConfigureAwait(false))
-                                                                                 .ToLookup(o => o.IndividualId, o => o);
+                                                                                 .ToLookup(o => o.IndividualId, o => o?.Position?.FullName);
 
         //Loop for filling the DB with new employees on certain positions.
         foreach (var key in uploadDictionary.Keys)
         {
             // If this Employee already exists and occupies the same Position
             if (existingOfficialsForProvider.Contains(key)
-                && existingOfficialsForProvider[key].Select(o => o.Position.FullName).Contains(uploadDictionary[key].AssignedRole))
+                && existingOfficialsForProvider[key].Contains(uploadDictionary[key].AssignedRole))
             {
                 continue;
             }
