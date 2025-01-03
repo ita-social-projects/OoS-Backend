@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
 using OutOfSchool.BusinessLogic.Models.Position;
-using Newtonsoft.Json;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.Common.Models;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Services.Enums;
 using System.Linq.Expressions;
@@ -31,24 +29,23 @@ public class PositionService : IPositionService
 
     public async Task<PositionDto> CreateAsync(PositionCreateUpdateDto createDto, Guid providerId)
     {
-        // Check if the provider has rights to create a new position
-        await _currentUserService.UserHasRights(new ProviderRights(providerId));
+        // Check if the provider has rights to create a new position        
+        await _providerService.HasProviderRights(providerId);
 
         // Get provider by current user id to use it`s data in a new position
         var provider = await _providerService.GetByUserId(_currentUserService.UserId.ToString());
 
         var position = _mapper.Map<Position>(createDto);
         position.ProviderId = provider.Id; // link position to provider positionId
-
-        _logger.LogInformation($"Creating position: {JsonConvert.SerializeObject(position)}");
-
+        
         var createdPosition = await _entityRepositoryBase.Create(position);
+        _logger.LogDebug($"Created position with id: {position.Id}");
         return _mapper.Map<PositionDto>(createdPosition);
     }
 
     public async Task<SearchResult<PositionDto>> GetByFilter(Guid providerId, PositionsFilter filter)
     {
-        await _currentUserService.UserHasRights(new ProviderRights(providerId));
+        await _providerService.HasProviderRights(providerId);
 
         _logger.LogInformation("Getting all Positions started (by filter)");
 
@@ -70,8 +67,8 @@ public class PositionService : IPositionService
         // Define sorting
         var sortPredicate = SortExpressionBuild(filter);
         
-        int count = await _entityRepositoryBase.Count(predicate).ConfigureAwait(false);             
-
+        int count = await _entityRepositoryBase.Count(predicate).ConfigureAwait(false);
+       
         var positions = await _entityRepositoryBase
             .Get(
                 skip: filter.From,
@@ -98,7 +95,7 @@ public class PositionService : IPositionService
 
     public async Task<PositionDto> GetByIdAsync(Guid positionId, Guid providerId)
     {
-        await _currentUserService.UserHasRights(new ProviderRights(providerId));
+        await _providerService.HasProviderRights(providerId);
         var position = await GetPositionAsync(positionId, providerId);
         
         return _mapper.Map<PositionDto>(position);
@@ -106,7 +103,7 @@ public class PositionService : IPositionService
 
     public async Task<PositionDto> UpdateAsync(Guid positionId, PositionCreateUpdateDto updateDto, Guid providerId)
     {
-        await _currentUserService.UserHasRights(new ProviderRights(providerId));
+        await _providerService.HasProviderRights(providerId);
         var existingPosition = await GetPositionAsync(positionId, providerId);
         _mapper.Map(updateDto, existingPosition);
         
@@ -117,7 +114,7 @@ public class PositionService : IPositionService
 
     public async Task DeleteAsync(Guid positionId, Guid providerId)
     {
-        await _currentUserService.UserHasRights(new ProviderRights(providerId));
+        await _providerService.HasProviderRights(providerId);
 
         var position = await GetPositionAsync(positionId, providerId);
 

@@ -7,7 +7,6 @@ using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using System.Threading.Tasks;
 using System;
 using OutOfSchool.BusinessLogic.Models.Position;
-using OutOfSchool.Services.Enums;
 using System.Collections.Generic;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models;
@@ -55,14 +54,39 @@ public class PositionControllerTests
     }
 
     [Test]
+    public async Task Create_WithInvalidModelState_ReturnsBadRequest()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+        PositionCreateUpdateDto createDto = positionCreateDto;
+        createDto.FullName = null;
+        controller.ModelState.AddModelError("FullName", "FullName is required");
+
+        // Act
+        var result = await controller.Create(providerId, createDto).ConfigureAwait(false);
+        
+        // Assert
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>(), "Result should be a BadRequestObjectResult.");
+        var badRequestResult = result as BadRequestObjectResult;
+        Assert.That(badRequestResult, Is.Not.Null, "BadRequestObjectResult should not be null.");
+
+        // Assert that the error message in the ModelState matches expectations
+        var modelState = badRequestResult.Value as SerializableError;
+        Assert.That(modelState, Is.Not.Null, "ModelState should be serializable.");
+
+        // Check the error message for "FullName"
+        Assert.That(modelState.ContainsKey("FullName"), "ModelState should contain an error for 'FullName'.");
+        var fullNameErrors = modelState["FullName"] as string[];
+        Assert.That(fullNameErrors, Is.Not.Null, "Errors for 'FullName' should not be null.");
+        Assert.That(fullNameErrors[0], Is.EqualTo("FullName is required"), "Error message should match expected value.");
+    }
+
+    [Test]
     public async Task CreatePosition_WithValidPositionCreateDto_ShouldReturnCreatedAtAction()
     {
-        // Arrange                        
-        // current service should return the id we created
-        currentUserService.Setup(s => s.UserId).Returns(providerId.ToString());
-        currentUserService.Setup(s => s.IsInRole(Role.Provider)).Returns(true);
-
-        // provider service should return the provider with id we created
+        // Arrange                                
+        currentUserService.Setup(s => s.UserId).Returns(providerId.ToString());        
+        
         providerService.Setup(s => s.GetById(It.IsAny<Guid>()))
         .ReturnsAsync(new ProviderDto{ Id = providerId });
 
@@ -91,6 +115,73 @@ public class PositionControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(10, resultValue.TotalAmount);
         Assert.AreEqual(6, resultValue.Entities.Count);
+    }
+
+    [Test]
+    public async Task GetPositionByFilter_WithWrongSearchString_ShouldReturnMessage()
+    {
+        // Arrange        
+        string searchString = "hello";
+        currentUserService.Setup(s => s.UserId).Returns(providerId.ToString());
+        PositionsFilter filter = new PositionsFilter();
+        filter.SearchString = searchString;
+        
+        positionService
+        .Setup(a => a.GetByFilter(providerId, filter))
+        .ReturnsAsync(new SearchResult<PositionDto>
+        {
+            TotalAmount = 0,
+            Entities = new List<PositionDto>()
+        });
+
+        // Act
+        var result = await controller.GetByFilter(providerId, filter);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<OkObjectResult>(), "Result should be OkObjectResult.");
+        var okResult = result as OkObjectResult;
+
+        Assert.That(okResult.Value, Is.EqualTo("There is no records for given provider"));
+    }
+
+    [Test]
+    public async Task GetPositionsByFilter_WhenNoRecords_ReturnsMessage()
+    {
+        // Arrange
+        Guid providerWithNoRecordId = new Guid();
+        currentUserService.Setup(s => s.UserId).Returns(providerWithNoRecordId.ToString());        
+        
+        positionService.Setup(a => a.GetByFilter(providerWithNoRecordId, It.IsAny<PositionsFilter>()))
+            .ReturnsAsync(new SearchResult<PositionDto> { TotalAmount = 0, Entities = new List<PositionDto>() });
+
+        // Act
+        var result = await controller.GetByFilter(providerWithNoRecordId, It.IsAny<PositionsFilter>()).ConfigureAwait(false) as OkObjectResult; ;
+        var resultValue = result.Value as SearchResult<PositionDto>;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual("There is no records for given provider", result.Value);
+    }
+
+    [Test]
+    public async Task GetPositionById_WithDeletedPositionId_ReturnsMessage()
+    {  
+        // Arrange        
+        var deletedPosition = positionDto;
+        deletedPosition.IsDeleted = true;
+
+        currentUserService.Setup(s => s.UserId).Returns(providerId.ToString());
+        positionService.Setup(a => a.GetByIdAsync(deletedPosition.Id, providerId))
+            .ThrowsAsync(new KeyNotFoundException($"Position with positionId {deletedPosition.Id} not found or it was deleted."));;
+
+        // Act
+        var result = await controller.GetById(providerId, deletedPosition.Id);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        var notFoundResult = result as NotFoundObjectResult;
+        Assert.That(notFoundResult, Is.Not.Null);
+        Assert.AreEqual($"Position with positionId {deletedPosition.Id} not found or it was deleted.", notFoundResult.Value);
     }
     
     [Test]

@@ -94,4 +94,11 @@ public interface IProviderService
     /// <param name="id">Key in the table.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     Task<bool> Exists(Guid id);
+
+    /// <summary>
+    /// Checks whether the current user has Provider rights for the specified provider.
+    /// </summary>
+    /// <param name="providerId">The unique identifier of the provider.</param>
+    /// <returns>A task that represents the asynchronous operation. Contains true if the user has Provider rights; otherwise, false.</returns>
+    Task<bool> HasProviderRights(Guid providerId);
 }

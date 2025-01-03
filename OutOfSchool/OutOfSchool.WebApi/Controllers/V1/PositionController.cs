@@ -43,7 +43,7 @@ public class PositionController : ControllerBase
             nameof(GetById),
             new { positionId = createdPosition.Id, providerId = providerId },
             createdPosition
-);
+            );
         }
         catch (Exception ex) 
         {
