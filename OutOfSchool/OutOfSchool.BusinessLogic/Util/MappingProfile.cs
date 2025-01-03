@@ -96,7 +96,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.MemberOfWorkshop, opt => opt.Ignore())
             .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderTitle, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderTitleEn, opt => opt.Ignore());
+            .ForMember(dest => dest.ProviderTitleEn, opt => opt.Ignore())
+            .ForMember(dest => dest.StudySubjects, opt => opt.Ignore());
 
         CreateSoftDeletedMap<WorkshopCreateRequestDto, Workshop>()
             .ForMember(
@@ -149,7 +150,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Images, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
-            .ForMember(dest => dest.ActiveTo, opt => opt.Ignore());
+            .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
+            .ForMember(dest => dest.StudySubjects, opt => opt.Ignore());
 
         CreateMap<Workshop, WorkshopCreateRequestDto>()
             .ForMember(
@@ -819,6 +821,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
             .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
+            .ForMember(dest => dest.PrimaryLanguage, opt => opt.Ignore())
+            .ForMember(dest => dest.Workshop, opt => opt.Ignore())
             .ForMember(dest => dest.StudySubjectLanguages,
                 opt => opt.MapFrom(src => src.LanguageIds.Select(id => new StudySubjectLanguage { LanguageId = id })))
             .ReverseMap();
