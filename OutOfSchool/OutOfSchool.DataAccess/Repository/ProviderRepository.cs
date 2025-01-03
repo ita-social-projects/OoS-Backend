@@ -84,28 +84,6 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
          .SingleOrDefaultAsync(provider => !provider.IsDeleted && provider.Id == id);
     }
 
-    public Task<List<Provider>> GetAllWithDeleted(DateTime updatedAfter, int from, int size)
-    {
-        IQueryable<Provider> query = db.Providers;
-
-        query = updatedAfter == default
-            ? query.Where(provider => !provider.IsDeleted)
-            : query.Where(provider => provider.UpdatedAt > updatedAfter || provider.Workshops.Any(w => w.UpdatedAt > updatedAfter));
-
-        return query.Skip(from).Take(size).ToListAsync();
-    }
-
-    public Task<int> CountWithDeleted(DateTime updatedAfter)
-    {
-        IQueryable<Provider> query = dbSet;
-
-        query = updatedAfter == default
-        ? query.Where(provider => !provider.IsDeleted)
-        : query.Where(provider => provider.UpdatedAt > updatedAfter || provider.Workshops.Any(w => w.UpdatedAt > updatedAfter));
-
-        return query.CountAsync();
-    }
-
     public async Task<List<int>> CheckExistsByEdrpous(Dictionary<int, string> edrpous)
     {
         var existingEdrpouIpn = await db.Providers

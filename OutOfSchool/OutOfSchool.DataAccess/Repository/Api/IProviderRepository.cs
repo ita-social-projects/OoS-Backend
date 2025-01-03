@@ -12,10 +12,6 @@ public interface IProviderRepository : ISensitiveEntityRepositorySoftDeleted<Pro
 
     Task<Provider> GetWithNavigations(Guid id);
 
-    Task<List<Provider>> GetAllWithDeleted(DateTime updatedAfter, int from, int size);
-
-    Task<int> CountWithDeleted(DateTime updatedAfter);
-
     Task<List<int>> CheckExistsByEdrpous(Dictionary<int, string> edrpous);
 
     Task<List<int>> CheckExistsByEmails(Dictionary<int, string> emails);

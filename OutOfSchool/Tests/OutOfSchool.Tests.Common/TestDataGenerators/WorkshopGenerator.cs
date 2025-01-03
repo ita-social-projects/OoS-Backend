@@ -31,7 +31,7 @@ public static class WorkshopGenerator
         .RuleFor(x => x.FormOfLearning, f => f.PickRandom<FormOfLearning>())
         .RuleFor(x => x.ActiveFrom, (f, w) => f.Date.BetweenDateOnly(DateOnly.FromDateTime(DateTime.Now.AddDays(-30)), DateOnly.FromDateTime(DateTime.Now)))
         .RuleFor(x => x.ActiveTo, f => f.Date.BetweenDateOnly(DateOnly.FromDateTime(DateTime.Now), DateOnly.FromDateTime(DateTime.Now.AddDays(300))))
-        .RuleFor(x => x.AdditionalDescription, f => f.Lorem.Sentence(3))
+        .RuleFor(x => x.EnrollmentProcedureDescription, f => f.Lorem.Sentence(3))
         .RuleFor(x => x.AreThereBenefits, _ => true)
         .RuleFor(x => x.PreferentialTermsOfParticipation, f => f.Lorem.Sentences(3))
         .RuleFor(x => x.CompetitiveSelection, _ => true)

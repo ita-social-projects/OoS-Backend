@@ -1,15 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
-using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.BusinessLogic.Models.ProvidersInfo;
+namespace OutOfSchool.BusinessLogic.Models.Exported;
 
-public class ProviderInfoDto : ProviderInfoBaseDto, IHasRating
+public class ProviderInfoDto : ProviderInfoBaseDto, IExternalRatingInfo
 {
     [Required]
     [EnumDataType(typeof(OwnershipType), ErrorMessage = Constants.EnumErrorMessage)]
@@ -26,6 +23,14 @@ public class ProviderInfoDto : ProviderInfoBaseDto, IHasRating
     [MaxLength(60)]
     [MinLength(1)]
     public string ShortTitle { get; set; }
+    
+    [DataType(DataType.Text)]
+    [MaxLength(Constants.MaxProviderFullTitleLength)]
+    public string FullTitleEn { get; set; } = string.Empty;
+
+    [DataType(DataType.Text)]
+    [MaxLength(Constants.MaxProviderShortTitleLength)]
+    public string ShortTitleEn { get; set; } = string.Empty;
 
     [DataType(DataType.Url)]
     [MaxLength(Constants.MaxUnifiedUrlLength)]
@@ -55,10 +60,6 @@ public class ProviderInfoDto : ProviderInfoBaseDto, IHasRating
     [Required(ErrorMessage = "The name of the director is required")]
     public string Director { get; set; } = string.Empty;
 
-    [DataType(DataType.Date)]
-    [Required(ErrorMessage = "The date of birth is required")]
-    public DateTime? DirectorDateOfBirth { get; set; } = default;
-
     [DataType(DataType.PhoneNumber)]
     [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
@@ -69,14 +70,16 @@ public class ProviderInfoDto : ProviderInfoBaseDto, IHasRating
     [MaxLength(Constants.MaxProviderFounderLength)]
     public string Founder { get; set; } = string.Empty;
 
-    public ProviderTypeDto Type { get; set; }
+    public string Type { get; set; }
 
     [Required]
     [EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderStatus Status { get; set; } = ProviderStatus.Pending;
 
-    [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
-    public ProviderLicenseStatus LicenseStatus { get; set; }
+    [MaxLength(256)]
+    public string CoverImageId { get; set; } = string.Empty;
+    
+    public IList<string> ImageIds { get; set; }
 
     public bool IsBlocked { get; set; }
 
@@ -88,12 +91,11 @@ public class ProviderInfoDto : ProviderInfoBaseDto, IHasRating
 
     public AddressInfoDto ActualAddress { get; set; }
 
-    public InstitutionDto Institution { get; set; }
+    public string Institution { get; set; }
 
     [Required]
     [EnumDataType(typeof(InstitutionType), ErrorMessage = Constants.EnumErrorMessage)]
     public InstitutionType InstitutionType { get; set; }
 
-    [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IEnumerable<ProviderSectionItemInfoDto> ProviderSectionItems { get; set; }
 }

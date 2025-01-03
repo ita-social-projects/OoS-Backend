@@ -1,11 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.BusinessLogic.Models.ProvidersInfo;
+namespace OutOfSchool.BusinessLogic.Models.Exported;
 
 public class ProviderSectionItemInfoDto
 {
-    public Guid Id { get; set; }
-
     [MaxLength(200)]
     public string SectionName { get; set; }
 

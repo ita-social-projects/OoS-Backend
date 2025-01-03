@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common.Enums.Workshop;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops.Drafts;
 
@@ -13,28 +14,26 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
     [Required(ErrorMessage = "Property IsSpecial is required")]
     public bool IsSpecial { get; set; } = false;
 
-    public uint SpecialNeedsId { get; set; } = 0;
+    [EnumDataType(typeof(SpecialNeedsType), ErrorMessage = Constants.EnumErrorMessage)]
+    public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;
 
     [Required(ErrorMessage = "Property IsInclusive is required")]
     public bool IsInclusive { get; set; } = false;
 
     [Required(ErrorMessage = "Educational shift is required")]
-    public uint EducationalShiftId { get; set; } = 0;
+    [EnumDataType(typeof(EducationalShift), ErrorMessage = Constants.EnumErrorMessage)]
+    public EducationalShift EducationalShift { get; set; } = EducationalShift.First;
 
     [Required(ErrorMessage = "Language of education is required")]
     public uint LanguageOfEducationId { get; set; } = 0;
 
     [Required(ErrorMessage = "Type of age composition is required")]
-    public uint TypeOfAgeCompositionId { get; set; } = 0;
+    [EnumDataType(typeof(AgeComposition), ErrorMessage = Constants.EnumErrorMessage)]
+    public AgeComposition AgeComposition { get; set; } = AgeComposition.SameAge;
 
-    [Required(ErrorMessage = "Educational disciplines is required")]
-    public Guid EducationalDisciplines { get; set; } = Guid.Empty;
+    [Required(ErrorMessage = "Workshop type is required")]
+    [EnumDataType(typeof(WorkshopType), ErrorMessage = Constants.EnumErrorMessage)]
+    public WorkshopType WorkshopType { get; set; }
 
-    [Required(ErrorMessage = "Category is required")]
-    public uint CategoryId { get; set; } = 0;
-
-    [Required(ErrorMessage = "GropeType is required")]
-    public uint GropeTypeId { get; set; } = 0;
-
-    public Guid? MemberOfWorkshopId { get; set; }
+    public Guid? ParentWorkshopId { get; set; }
 }

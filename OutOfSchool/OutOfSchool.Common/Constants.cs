@@ -173,7 +173,7 @@ public static class Constants
     /// <summary>
     /// Maximum length of additional description.
     /// </summary>
-    public const int MaxAdditionalDescriptionLength = 500;
+    public const int EnrollmentProcedureDescription = 500;
 
     /// <summary>
     /// Maximum length of preferential terms of participation.
