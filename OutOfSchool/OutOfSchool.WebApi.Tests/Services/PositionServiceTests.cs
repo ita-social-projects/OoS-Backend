@@ -17,6 +17,8 @@ using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.Common.Models;
 namespace OutOfSchool.WebApi.Tests.Services;
 
 [TestFixture]
@@ -49,9 +51,123 @@ public class PositionServiceTests
             _mockProviderService.Object,
             _mockCurrentUserService.Object);
     }
-    #region Get
+    #region GetByFilter
     [Test]
-    public async Task GetById_InValid_ReturnsMessage()
+    public async Task GetByFilter_ValidFilter_ReturnsFilteredPositions()
+    {
+        // Arrange
+        var positions = Positions(); // Use predefined mock positions
+        var mockData = positions.AsQueryable().BuildMock();
+        var filter = new PositionsFilter
+        {
+            SearchString = "jdcdkc", // Matches FullName of one position
+            From = 0,
+            Size = 10,
+            OrderByFullName = true,
+            OrderByCreatedAt = true
+        };
+
+        _mockRepository.Setup(r => r.Count(It.IsAny<Expression<Func<Position, bool>>>()))
+            .ReturnsAsync(mockData.Count());
+
+        _mockRepository.Setup(repo => repo.Get(
+                filter.From,
+                filter.Size,
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Position, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Position, dynamic>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(mockData);
+         
+        _mockProviderService.Setup(s => s.HasProviderRights(providerId)).Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _service.GetByFilter(providerId, filter);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(positions.Count, result.TotalAmount);
+        Assert.AreEqual(1, result.Entities.Count); // Only one position matches the filter
+        Assert.AreEqual("jdcdkc", result.Entities.First().FullName);
+    }
+
+    [Test]
+    public async Task GetByFilter_NoResultsMatchFilter_ReturnsEmptyResult()
+    {
+        // Arrange
+        var filter = new PositionsFilter
+        {
+            SearchString = "NonExistent",
+            From = 0,
+            Size = 5
+        };
+
+        List<Position> positionsEmpty = new List<Position>();
+
+        _mockCurrentUserService
+            .Setup(s => s.UserHasRights(It.IsAny<ProviderRights>()))
+            .Returns(Task.CompletedTask);
+
+        _mockRepository
+            .Setup(r => r.Count(It.IsAny<Expression<Func<Position, bool>>>()))
+            .ReturnsAsync(0);
+
+        _mockRepository.Setup(repo => repo.Get(
+                filter.From,
+                filter.Size,
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Position, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Position, dynamic>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(positionsEmpty.AsQueryable().BuildMock()); 
+
+        // Act
+        var result = await _service.GetByFilter(providerId, filter);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(0, result.TotalAmount);
+        Assert.IsEmpty(result.Entities);
+    }
+
+    [Test]
+    public async Task GetByFilter_FilterByProviderId_ReturnsOnlyMatchingResults()
+    {
+        // Arrange
+        var filter = new PositionsFilter();
+
+        var mockPositions = Positions().Where(p => p.ProviderId == providerId).ToList();
+
+        _mockCurrentUserService
+            .Setup(s => s.UserHasRights(It.IsAny<ProviderRights>()))
+            .Returns(Task.CompletedTask);
+
+        _mockRepository
+            .Setup(r => r.Count(It.IsAny<Expression<Func<Position, bool>>>()))
+            .ReturnsAsync(mockPositions.Count);
+
+        _mockRepository.Setup(repo => repo.Get(
+                filter.From,
+                filter.Size,
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Position, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Position, dynamic>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(mockPositions.AsQueryable().BuildMock());
+
+        // Act
+        var result = await _service.GetByFilter(providerId, filter);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(mockPositions.Count, result.TotalAmount);
+        Assert.IsTrue(result.Entities.All(e => e.ProviderId == providerId));
+    }
+    #endregion
+
+    #region GetById
+    [Test]
+    public async Task GetById_WithInvalidPosition_ReturnsMessage()
     {
         // Arrange 
         var data = Positions().AsQueryable().BuildMock();
@@ -115,10 +231,67 @@ public class PositionServiceTests
         var result = await _service.CreateAsync(dto, providerId);
 
         // Assert
-        Assert.IsNotNull(result);
+        Assert.IsNotNull(result);         
 
         // Verify that the method was called with the expected arguments
         _mockProviderService.Verify(s => s.GetByUserId(It.IsAny<string>(), false), Times.Once);
+    }
+
+    [Test]
+    public async Task CreatePosition_ProviderNotFound_ThrowsException()
+    {
+        // Arrange
+        var createDto = new PositionCreateUpdateDto
+        {
+            FullName = "Test Position",
+            Description = "Description for test position"
+        };
+
+        _mockCurrentUserService
+            .Setup(r => r.UserId).Returns(providerId.ToString());
+       
+        _mockProviderService
+            .Setup(s => s.HasProviderRights(It.IsAny<Guid>()))
+            .Returns(Task.CompletedTask);
+
+        _mockProviderService
+            .Setup(s => s.GetByUserId(It.IsAny<string>(), false))
+            .ThrowsAsync(new Exception("Provider not found"));
+
+        // Act & Assert
+        var exception = Assert.ThrowsAsync<Exception>(async () =>
+        {
+            await _service.CreateAsync(createDto, providerId);
+        });
+
+        Assert.AreEqual("Provider not found", exception.Message);
+        _mockProviderService.Verify(s => s.HasProviderRights(It.IsAny<Guid>()), Times.Once);
+        _mockProviderService.Verify(s => s.GetByUserId(It.IsAny<string>(), false), Times.Once);
+    }
+
+    [Test]
+    public async Task CreateAsync_UnauthorizedAccess_ThrowsUnauthorizedAccessException()
+    {
+        // Arrange
+        var createDto = new PositionCreateUpdateDto
+        {
+            // Populate the create DTO with test data
+            FullName = "Test Position",
+            Description = "Description for test position"
+        };
+
+        _mockProviderService
+            .Setup(s => s.HasProviderRights(It.IsAny<Guid>()))
+            .ThrowsAsync(new UnauthorizedAccessException("User does not have the necessary rights"));
+
+        // Act & Assert
+        var exception = Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+        {
+            await _service.CreateAsync(createDto, providerId);
+        });
+
+        Assert.AreEqual("User does not have the necessary rights", exception.Message);
+        _mockProviderService.Verify(s => s.HasProviderRights(It.IsAny<Guid>()), Times.Once);
     }
     #endregion
 
