@@ -183,7 +183,14 @@ public class StudySubjectService : IStudySubjectService
             throw new ArgumentException("Dto contains non-existing language ids.", nameof(dto));
         }
 
-        var ukrainianLanguageId = existingLanguages.Where(x => x.Code.ToLower() == "uk").FirstOrDefault().Id;
+        var ukrainianLanguage = existingLanguages.FirstOrDefault(x => x.Code.Equals("uk", StringComparison.OrdinalIgnoreCase));
+        if (ukrainianLanguage == null)
+        {
+            logger.LogDebug("Operation failed, Ukrainian language is not found in the database.");
+            throw new ArgumentException("Ukrainian language is not found in the database.");
+        }
+
+        var ukrainianLanguageId = ukrainianLanguage.Id;
 
         if (dto.IsPrimaryLanguageUkrainian && ukrainianLanguageId != dto.PrimaryLanguageId)
         {
