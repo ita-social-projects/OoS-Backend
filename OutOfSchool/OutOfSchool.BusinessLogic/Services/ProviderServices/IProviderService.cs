@@ -98,7 +98,7 @@ public interface IProviderService
     /// <summary>
     /// Checks whether the current user has Provider rights for the specified provider.
     /// </summary>
-    /// <param name="providerId">The unique identifier of the provider.</param>
-    /// <returns>A task that represents the asynchronous operation. Contains true if the user has Provider rights; otherwise, false.</returns>
-    Task<bool> HasProviderRights(Guid providerId);
+    /// <param name="providerId">The unique identifier of the provider.</param>    
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task HasProviderRights(Guid providerId);
 }

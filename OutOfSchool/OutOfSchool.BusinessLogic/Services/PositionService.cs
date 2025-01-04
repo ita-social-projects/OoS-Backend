@@ -45,7 +45,7 @@ public class PositionService : IPositionService
 
     public async Task<SearchResult<PositionDto>> GetByFilter(Guid providerId, PositionsFilter filter)
     {
-        await _providerService.HasProviderRights(providerId);
+        await _providerService.HasProviderRights(providerId);        
 
         _logger.LogInformation("Getting all Positions started (by filter)");
 
@@ -149,11 +149,11 @@ public class PositionService : IPositionService
         PositionsFilter filter)
     {
         var sortExpression = new Dictionary<Expression<Func<Position, object>>, SortDirection>();
-
-        if (filter.OrderByFullName)
-        {
-            sortExpression.Add(a => a.FullName, SortDirection.Ascending);
-        }
+        
+        sortExpression.Add(
+           a => a.FullName,
+           filter.OrderByFullName ? SortDirection.Ascending : SortDirection.Descending
+       );
 
         sortExpression.Add(a => a.CreatedAt, filter.OrderByCreatedAt ?
             SortDirection.Ascending :
