@@ -4,9 +4,11 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
+using OutOfSchool.Services.Util;
 
 namespace OutOfSchool.Services.Repository;
 
@@ -95,5 +97,29 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
         await dbContext.SaveChangesAsync().ConfigureAwait(false);
 
         return await Task.FromResult(workshop).ConfigureAwait(false);
+    }
+
+    public Task<List<WorkshopPendingApplications>> AmountOfPendingApplications(List<Guid> workshopIds)
+    {
+        return dbSet
+            .Where(x => x.Applications
+                .Any(a => a.Status == ApplicationStatus.Pending
+                    && !a.IsDeleted
+                    && a.Child != null
+                    && !a.Child.IsDeleted
+                    && a.Parent != null
+                    && !a.Parent.IsDeleted
+                    && workshopIds.Contains(a.WorkshopId)))
+            .SelectMany(x => x.Applications
+                .Where(a => a.Status == ApplicationStatus.Pending
+                    && !a.IsDeleted
+                    && a.Child != null
+                    && !a.Child.IsDeleted
+                    && a.Parent != null
+                    && !a.Parent.IsDeleted
+                    && workshopIds.Contains(a.WorkshopId))
+                .GroupBy(a => a.WorkshopId)
+                .Select(g => new WorkshopPendingApplications(g.Key, g.Count())))
+            .ToListAsync();
     }
 }

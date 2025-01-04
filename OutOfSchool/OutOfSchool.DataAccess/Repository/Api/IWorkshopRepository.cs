@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Services.Util;
 
 namespace OutOfSchool.Services.Repository.Api;
 
@@ -43,4 +44,6 @@ public interface IWorkshopRepository : IEntityRepositorySoftDeleted<Guid, Worksh
     /// <returns>Amount of available seats for the specified workshop.</returns>
     /// <exception cref="InvalidOperationException">It can throw exception when method get workshopId but Workshop doesn't exist.</exception>
     Task<uint> GetAvailableSeats(Guid workshopId);
+
+    Task<List<WorkshopPendingApplications>> AmountOfPendingApplications(List<Guid> workshopIds);
 }
