@@ -458,10 +458,11 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProviderLicenseStatus, opt =>
                 opt.MapFrom(src => src.Provider.LicenseStatus));
 
+        //analyze usage of WorkshopProviderViewCard
         _ = CreateMap<Workshop, WorkshopProviderViewCard>()
             .IncludeBase<Workshop, WorkshopBaseCard>()
-            .ForMember(dest => dest.AmountOfPendingApplications, opt => opt.MapFrom(src => src.Applications.AmountOfPendingApplications()))
-            .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats()))
+            .ForMember(dest => dest.AmountOfPendingApplications, opt => opt.Ignore())
+            .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats())) //ignore TakenSeats
             .ForMember(dest => dest.UnreadMessages, opt => opt.Ignore());
 
         CreateMap<Child, ChildDto>()

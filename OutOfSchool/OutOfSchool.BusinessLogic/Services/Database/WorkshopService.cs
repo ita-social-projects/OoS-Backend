@@ -300,6 +300,9 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         var workshopProviderViewCards = mapper.Map<List<WorkshopProviderViewCard>>(workshops);
 
+        //Fill Pending Applications method
+        await FillPendingApplications(workshopProviderViewCards).ConfigureAwait(false);
+
         var workshopsIds = workshops.Select(x => x.Id).ToList();
 
         var query = chatrooms
@@ -1196,6 +1199,17 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         {
             var errorMessage = $"The default Teacher (with id = {dto.DefaultTeacherId}) for the workshop being created was not found.";
             throw new InvalidOperationException(errorMessage);
+        }
+    }
+
+    private async Task FillPendingApplications(List<WorkshopProviderViewCard> viewCards)
+    {
+        var ids = viewCards.Select(w => w.WorkshopId).ToList();
+        var pendingApplicationsList = await workshopRepository.AmountOfPendingApplications(ids).ConfigureAwait(false);
+        foreach (var card in viewCards)
+        {
+            var pendingApplications = pendingApplicationsList?.SingleOrDefault(w => w.WorkshopId == card.WorkshopId)?.PendingApplications;
+            card.AmountOfPendingApplications = pendingApplications ?? 0;
         }
     }
 }
