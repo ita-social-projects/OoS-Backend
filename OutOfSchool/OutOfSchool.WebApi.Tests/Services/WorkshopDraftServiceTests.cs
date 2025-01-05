@@ -325,4 +325,69 @@ public class WorkshopDraftServiceTests
         workshopServiceCombinerV2Moq.VerifyAll();
     }
     #endregion
+
+    #region Reject
+    [Test]
+    public async Task Reject_WhenWorkshopIdIsNotNull_ShouldTryToUpdateWorkshopDraft()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
+        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+        var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
+        workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
+
+        var providerDto = mapper.Map<ProviderDto>(workshop.Provider);
+        providerDto.UserId = userId;
+
+        var rejectionMessage = "rejectionMessage";
+
+        currentUserServiceMoq.Setup(x => x.UserId)
+            .Returns(userId).Verifiable(Times.Once);
+        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
+            .ReturnsAsync(providerDto).Verifiable(Times.Once);
+        workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
+            .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
+        workshopDraftRepoMoq.Setup(x => x.Update(It.IsAny<WorkshopDraft>()))
+            .Verifiable(Times.Once);
+
+        // Act
+        await service.Reject(workshop.Id, rejectionMessage).ConfigureAwait(false);
+
+        // Assert
+        workshopDraftRepoMoq.VerifyAll();
+        currentUserServiceMoq.VerifyAll();
+        providerServiceMoq.VerifyAll();
+    }
+
+    [Test]
+    public async Task Reject_WhenWorkshopHasWrongStatus_ShouldThrowArgumentException()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
+        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+        var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
+        workshopDraft.DraftStatus = WorkshopDraftStatus.Draft;
+
+        var providerDto = mapper.Map<ProviderDto>(workshop.Provider);
+        providerDto.UserId = userId;
+
+        var rejectionMessage = "rejectionMessage";
+
+        currentUserServiceMoq.Setup(x => x.UserId)
+            .Returns(userId).Verifiable(Times.Once);
+        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
+            .ReturnsAsync(providerDto).Verifiable(Times.Once);
+        workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
+            .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
+        workshopDraftRepoMoq.Setup(x => x.Update(It.IsAny<WorkshopDraft>()))
+            .Verifiable(Times.Never);
+
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentException>(async () => await service.Reject(workshop.Id, rejectionMessage));
+
+        workshopDraftRepoMoq.VerifyAll();
+        currentUserServiceMoq.VerifyAll();
+        providerServiceMoq.VerifyAll();
+    }
+    #endregion
 }

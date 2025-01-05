@@ -79,7 +79,7 @@ public class WorkshopDraftControllerTests
         };
     }
 
-    #region CreateWorkshopDraft
+    #region Create
     [Test]
     public async Task CreateWorkshopDraft_WhenModelIsValid_ShouldReturnCreatedAtActionResult()
     {
@@ -99,4 +99,114 @@ public class WorkshopDraftControllerTests
         Assert.AreEqual(Create, result.StatusCode);
     }
     #endregion    
+
+    #region Update
+    [Test]
+    public async Task Update_WhenModelIsValid_ShouldReturnOkResult()
+    {
+        // Arrange        
+        var workshopDraftUpdateDto = new WorkshopDraftUpdateDto()
+        {
+            Id = Guid.NewGuid(),
+            WorkshopV2Dto = workshopV2Dto,
+        };
+
+        workshopDraftServiceMoq.Setup(x => x.Update(workshopDraftUpdateDto))
+            .ReturnsAsync(workshopDraftResultDto).Verifiable(Times.Once);
+        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
+            .ReturnsAsync(provider).Verifiable(Times.Once);
+
+        // Act
+        var result = await controller.Update(workshopDraftUpdateDto).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert        
+        providerServiceMoq.VerifyAll();
+        workshopDraftServiceMoq.VerifyAll();
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(Ok, result.StatusCode);
+    }
+    #endregion 
+
+    #region Delete
+    [Test]
+    public async Task Delete_WhenModelIsValid_ShouldReturnNoContent()
+    {
+        // Arrange  
+        workshopDraftServiceMoq.Setup(x => x.Delete(workshopV2Dto.Id))
+            .Returns(Task.CompletedTask).Verifiable(Times.Once);
+
+        // Act
+        var result = await controller.Delete(workshopV2Dto.Id).ConfigureAwait(false) as NoContentResult;
+
+        // Assert    
+        workshopDraftServiceMoq.VerifyAll();
+        Assert.AreEqual(NoContent, result.StatusCode);
+    }
+    #endregion 
+
+    #region SendForModeration
+    [Test]
+    public async Task SendForModeration_WhenModelIsValid_ShouldReturnOk()
+    {
+        // Arrange  
+        workshopDraftServiceMoq.Setup(x => x.SendForModeration(workshopV2Dto.Id))
+            .Returns(Task.CompletedTask).Verifiable(Times.Once);
+
+        // Act
+        var result = await controller.SendForModeration(workshopV2Dto.Id).ConfigureAwait(false) as OkResult;
+
+        // Assert        
+        workshopDraftServiceMoq.VerifyAll();
+        Assert.AreEqual(Ok, result.StatusCode);
+    }
+    #endregion
+
+    #region Reject
+    [Test]
+    public async Task Reject_WhenModelIsValid_ShouldReturnOk()
+    {
+        // Arrange  
+        var rejectionMessage = "I don`t like it";
+        
+        workshopDraftServiceMoq.Setup(x => x.Reject(workshopV2Dto.Id, rejectionMessage))
+            .Returns(Task.CompletedTask).Verifiable(Times.Once);
+
+        // Act
+        var result = await controller.Reject(workshopV2Dto.Id, rejectionMessage).ConfigureAwait(false) as OkResult;
+
+        // Assert        
+        workshopDraftServiceMoq.VerifyAll();
+        Assert.AreEqual(Ok, result.StatusCode);
+    }
+
+    [Test]
+    public async Task Reject_WhenRejectionMessageIsEmpty_ShouldReturnBadRequest()
+    {
+        // Arrange        
+        var rejectionMessage = string.Empty;
+
+        // Act
+        var result = await controller.Reject(workshopV2Dto.Id, rejectionMessage).ConfigureAwait(false) as BadRequestObjectResult;
+
+        // Assert             
+        Assert.AreEqual(BadRequest, result.StatusCode);
+    }
+    #endregion 
+
+    #region Approve
+    [Test]
+    public async Task Approve_WhenModelIsValid_ShouldReturnOk()
+    {
+        // Arrange  
+        workshopDraftServiceMoq.Setup(x => x.Approve(workshopV2Dto.Id))
+            .Returns(Task.CompletedTask).Verifiable(Times.Once);
+
+        // Act
+        var result = await controller.Approve(workshopV2Dto.Id).ConfigureAwait(false) as OkResult;
+
+        // Assert        
+        workshopDraftServiceMoq.VerifyAll();
+        Assert.AreEqual(Ok, result.StatusCode);
+    }
+    #endregion 
 }
