@@ -554,7 +554,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
         await providerRepository.RunInTransaction(UploadEmployeesIntoDb).ConfigureAwait(false);
 
-        logger.LogInformation("Upload employees for provider finished successfully.");
+        logger.LogDebug("Upload employees for provider finished successfully.");
 
         return uploadResponse;
     }
