@@ -121,8 +121,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         // TODO: after refactoring the DTOs for the Workshop entities, this method needs to be replaced with the correct mapping
         await SetIdsToDefaultValue(dto); // This method sets the dto properties with Id to the default value.
         var createdWorkshop = await CheckDtoAndPrepareCreatedWorkshop(dto);
-        
-        contactsService.ProcessCreate(createdWorkshop, dto);
 
         Func<Task<Workshop>> operation = async () =>
             await workshopRepository.Create(createdWorkshop).ConfigureAwait(false);
@@ -146,8 +144,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         // TODO: after refactoring the DTOs for the Workshop entities, this method needs to be replaced with the correct mapping
         await SetIdsToDefaultValue(dto); // This method sets the properties with the Id to the default value.
         var createdWorkshop = await CheckDtoAndPrepareCreatedWorkshop(dto);
-        
-        contactsService.ProcessCreate(createdWorkshop, dto);
 
         async Task<(Workshop createdWorkshop, MultipleImageUploadingResult imagesUploadResult, Result<string>
             coverImageUploadResult)> CreateWorkshopAndDependencies()
@@ -361,7 +357,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? []).ConfigureAwait(false);
             
-            contactsService.ProcessUpdate(currentWorkshop, dto);
+            contactsService.PrepareUpdatedContacts(currentWorkshop, dto);
 
             if (!dto.TagIds.IsNullOrEmpty())
             {
@@ -487,7 +483,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? []).ConfigureAwait(false);
             
-            contactsService.ProcessUpdate(currentWorkshop, dto);
+            contactsService.PrepareUpdatedContacts(currentWorkshop, dto);
 
             dto.AvailableSeats = dto.AvailableSeats.GetMaxValueIfNullOrZero();
 
@@ -1175,6 +1171,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         createdWorkshop.Tags = (await tagRepository.GetByFilter(tag => dto.TagIds.Contains(tag.Id))).ToList();
         createdWorkshop.Status = WorkshopStatus.Open;
+        
+        contactsService.PrepareNewContacts(createdWorkshop, dto);
 
         return createdWorkshop;
     }

@@ -13,7 +13,6 @@ public class ContactsAddress
 
     public double Longitude { get; set; }
 
-    // parameter r means size (resolution) of hexagon
     public ulong GeoHash { get; set; } = default;
 
     [Required(ErrorMessage = "CATOTTGId is required")]

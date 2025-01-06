@@ -5,8 +5,8 @@ namespace OutOfSchool.Services.Models.ContactInfo;
 
 public class Email
 {
-    public string Type { get; set; } = null!;
+    public string Type { get; set; }
 
     [DataType(DataType.EmailAddress)]
-    public string Address { get; set; } = null!;
+    public string Address { get; set; }
 }

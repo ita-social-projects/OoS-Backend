@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
+using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 
-public class ContactsAddressDto
+public class ContactsAddressDto : IContentComparable<ContactsAddress>
 {
     [Required(ErrorMessage = "Street is required")]
     [MaxLength(60)]
@@ -37,11 +38,6 @@ public class ContactsAddressDto
 
     public override bool Equals(object obj)
     {
-        if (obj == null)
-        {
-            return false;
-        }
-
         if (obj is not ContactsAddressDto address)
         {
             return false;
@@ -50,5 +46,13 @@ public class ContactsAddressDto
         return CATOTTGId == address.CATOTTGId &&
                string.Equals(Street, address.Street, StringComparison.OrdinalIgnoreCase) &&
                string.Equals(BuildingNumber, address.BuildingNumber, StringComparison.OrdinalIgnoreCase);
+    }
+    
+    public bool ContentEquals(ContactsAddress other)
+    {
+        return CATOTTGId == other.CATOTTGId &&
+               string.Equals(Street, other.Street, StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(BuildingNumber, other.BuildingNumber,
+                   StringComparison.OrdinalIgnoreCase);
     }
 }
