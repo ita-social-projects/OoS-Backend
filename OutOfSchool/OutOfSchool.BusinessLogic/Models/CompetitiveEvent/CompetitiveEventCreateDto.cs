@@ -1,5 +1,4 @@
-﻿//using OutOfSchool.Common.Enums;
-using OutOfSchool.Common.Enums;
+﻿using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using System.ComponentModel.DataAnnotations;
 
@@ -25,7 +24,7 @@ public class CompetitiveEventCreateDto
 
     public DateTimeOffset RegistrationEndTime { get; set; }
 
-    public Guid? ParentId { get; set; } = null;
+    public Guid? ParentId { get; set; }
 
     public Guid? BuildingHoldingId { get; set; }
 

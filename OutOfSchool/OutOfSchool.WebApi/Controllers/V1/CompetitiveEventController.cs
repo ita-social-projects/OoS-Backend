@@ -39,7 +39,7 @@ public class CompetitiveEventController : ControllerBase
         var competitiveEvent = await service.GetById(id).ConfigureAwait(false);
 
         if (competitiveEvent == null)
-            return NoContent(); // $"Competitive event with ID {id} not found."
+            return NoContent(); // Competitive event with ID {id} not found
         
         return Ok(competitiveEvent);
     }
@@ -88,6 +88,7 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] CompetitiveEventUpdateDto dto)
@@ -96,11 +97,27 @@ public class CompetitiveEventController : ControllerBase
         {
             return BadRequest("The request body is empty.");
         }
+
+        dto.Judges ??= new List<JudgeDto>();
+        dto.CompetitiveEventDescriptionItems ??= new List<CompetitiveEventDescriptionItemDto>();
+
         if (!AreJudgesValid(dto.Judges))
         {
             return BadRequest("A competitive event can have no more than one chief judge.");
         }
-        return Ok(await service.Update(dto).ConfigureAwait(false));
+        try
+        {
+            return Ok(await service.Update(dto).ConfigureAwait(false));
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            // For other unexpected exceptions
+            return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred. {ex.Message}");
+        }
     }
 
     /// <summary>
