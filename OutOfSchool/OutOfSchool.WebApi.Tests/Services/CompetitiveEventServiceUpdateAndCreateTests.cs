@@ -191,16 +191,20 @@ class CompetitiveEventServiceUpdateAndCreateTests
     }
 
     [Test]
-    public async Task Update_WhenDescriptionItemsAreUpdated_UpdatesCorrectly()
+    public async Task Update_WhenDescriptionItemsAndJudgesAreUpdated_UpdatesCorrectly()
     {
         // Arrange
         var eventId = Guid.NewGuid();
         var existingDescriptionItemId = Guid.NewGuid();
         var newDescriptionItemId = Guid.NewGuid();
-        var mustBeDeletedId = Guid.NewGuid();
+        var mustBeDeletedDescItemId = Guid.NewGuid();
 
-        var competitiveEvent = CreateCompetitiveEvent(eventId, existingDescriptionItemId, mustBeDeletedId);
-        var updateDto = CreateUpdateDto(eventId, existingDescriptionItemId, newDescriptionItemId);
+        var existingJudgeId = Guid.NewGuid();
+        var newJudgeId = Guid.NewGuid();
+        var mustBeDeletedJudgeId = Guid.NewGuid();
+
+        var competitiveEvent = CreateCompetitiveEvent(eventId, existingDescriptionItemId, mustBeDeletedDescItemId, existingJudgeId, mustBeDeletedJudgeId);
+        var updateDto = CreateUpdateDto(eventId, existingDescriptionItemId, newDescriptionItemId, existingJudgeId, newJudgeId);
 
         SetupMocksForUpdateTest(competitiveEvent, eventId);
 
@@ -208,16 +212,27 @@ class CompetitiveEventServiceUpdateAndCreateTests
         var result = await service.Update(updateDto);
 
         // Assert
-        AssertValidUpdateResult(result, mustBeDeletedId);
+        AssertValidUpdateResult(result, mustBeDeletedDescItemId);
     }
-
-    private CompetitiveEvent CreateCompetitiveEvent(Guid eventId, Guid existingDescriptionItemId, Guid mustBeDeletedId)
+    private CompetitiveEvent CreateCompetitiveEvent(Guid eventId, Guid existingDescriptionItemId, Guid mustBeDeletedDescItemId, Guid existingJudgeId, Guid mustBeDeletedJudgeId)
     {
         return new CompetitiveEvent
         {
             Id = eventId,
             Title = "Existing Event",
-            Judges = new List<Judge>(),
+            Judges = new List<Judge>()
+            {
+                new Judge
+                {
+                    Id = existingJudgeId,
+                    FirstName = "Old Judge's FirstName",
+                },
+                new Judge
+                {
+                    Id = mustBeDeletedJudgeId,
+                    FirstName = "Must delted Judge's FirstName",
+                },
+            },
             CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItem>
             {
                 new CompetitiveEventDescriptionItem
@@ -228,7 +243,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
                 },
                 new CompetitiveEventDescriptionItem
                 {
-                    Id = mustBeDeletedId,
+                    Id = mustBeDeletedDescItemId,
                     Description = "Must deleted Description",
                     SectionName = "Must deleted Section"
                 }
@@ -236,13 +251,25 @@ class CompetitiveEventServiceUpdateAndCreateTests
         };
     }
 
-    private CompetitiveEventUpdateDto CreateUpdateDto(Guid eventId, Guid existingDescriptionItemId, Guid newDescriptionItemId)
+    private CompetitiveEventUpdateDto CreateUpdateDto(Guid eventId, Guid existingDescriptionItemId, Guid newDescriptionItemId, Guid existingJudgeId, Guid newJudgeId)
     {
         return new CompetitiveEventUpdateDto
         {
             Id = eventId,
             Title = "Updated Event",
-            Judges = new List<JudgeDto>(),
+            Judges = new List<JudgeDto>()
+            {
+                new JudgeDto
+                {
+                    Id = existingJudgeId,
+                    FirstName = "Updated Judge's FirstName",
+                },
+                new JudgeDto
+                {
+                    Id = newJudgeId,
+                    FirstName = "New Judge's FirstName",
+                },
+            },
             CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>
             {
                 new CompetitiveEventDescriptionItemDto
@@ -292,6 +319,15 @@ class CompetitiveEventServiceUpdateAndCreateTests
                 SectionName = dto.SectionName,
                 CompetitiveEventId = Guid.Empty
             });
+
+        mockMapper
+          .Setup(m => m.Map<Judge>(It.IsAny<JudgeDto>()))
+          .Returns<JudgeDto>(dto => new Judge
+          {
+              Id = dto.Id,
+              FirstName = dto.FirstName,
+              CompetitiveEventId = Guid.Empty
+          });
     }
 
     private void AssertValidUpdateResult(CompetitiveEventDto result, Guid mustBeDeletedId)

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
@@ -16,7 +18,7 @@ using OutOfSchool.WebApi.Controllers.V1;
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
 [TestFixture]
-internal class CompetitiveEventControllerTests
+public class CompetitiveEventControllerTests
 {
     private CompetitiveEventController controller;
     private Mock<ICompetitiveEventService> competitiveEventService;
@@ -131,24 +133,16 @@ internal class CompetitiveEventControllerTests
     public async Task Create_WhenJudgesAreInvalid_ReturnsBadRequest()
     {
         // Arrange
-        var invalidDto = new CompetitiveEventCreateDto
-        {
-            Judges = new List<JudgeDto>
-            {
-                new JudgeDto { IsChiefJudge = true },
-                new JudgeDto { IsChiefJudge = true },
-            },
-        };
+        CompetitiveEventCreateDto invalidDto = FakeInvalidCreateDto();
 
         // Act
         var result = await controller.Create(invalidDto);
 
         // Assert
-        Assert.IsInstanceOf<BadRequestObjectResult>(result);
-        var badRequestResult = result as BadRequestObjectResult;
-        Assert.IsNotNull(badRequestResult);
-        Assert.AreEqual("A competitive event can have no more than one chief judge.", badRequestResult.Value);
+        AssertBadRequestWithMessage(result, "A competitive event can have no more than one chief judge.");
     }
+
+
 
     [Test]
     public async Task Update_WhenValidDto_ReturnsOkObjectResult()
@@ -190,6 +184,83 @@ internal class CompetitiveEventControllerTests
     }
 
     [Test]
+    public async Task Update_WhenDtoIsNull_ReturnsBadRequest()
+    {
+        // Act
+        var result = await controller.Update(null);
+
+        // Assert
+        AssertBadRequestWithMessage(result, "The request body is empty.");
+
+    }
+
+    [Test]
+    public async Task Update_WhenJudgesAreInvalid_ReturnBadRequest()
+    {
+        // Arrange
+        var invalidUpdateDto = FakeInvalidCreateDto();
+
+        // Act
+        var result = await controller.Update(invalidUpdateDto);
+
+        // Assert
+        AssertBadRequestWithMessage(result, "A competitive event can have no more than one chief judge.");
+    }
+
+    [Test]
+    public async Task Update_WhenIdNotFound_ThrowsDbUpdateConcurrencyException_ReturnsNotFound()
+    {
+        // Arrange
+        var nonExistentId = Guid.NewGuid();
+        var inputDto = new CompetitiveEventUpdateDto
+        {
+            Id = nonExistentId,
+            Title = "Non-existent Event",
+            ScheduledStartTime = DateTime.UtcNow.AddHours(1),
+            ScheduledEndTime = DateTime.UtcNow.AddHours(2),
+            Judges = new List<JudgeDto> { new JudgeDto { FirstName = "Judge A", IsChiefJudge = true } }
+        };
+
+        competitiveEventService.Setup(s => s.Update(inputDto))
+            .ThrowsAsync(new DbUpdateConcurrencyException($"Event with ID {nonExistentId} not found."));
+
+        // Act
+        var result = await controller.Update(inputDto);
+
+        // Assert
+        Assert.IsInstanceOf<NotFoundObjectResult>(result);
+        var notFoundResult = result as NotFoundObjectResult;
+        Assert.IsNotNull(notFoundResult);
+        Assert.AreEqual($"Event with ID {nonExistentId} not found.", notFoundResult.Value);
+    }
+
+    [Test]
+    public async Task Update_WhenUnexpectedErrorOccurs_ReturnsInternalServerError()
+    {
+        // Arrange
+        var inputDto = new CompetitiveEventUpdateDto
+        {
+            Id = Guid.NewGuid(),
+            Title = "Test Event",
+            ScheduledStartTime = DateTime.UtcNow.AddHours(1),
+            ScheduledEndTime = DateTime.UtcNow.AddHours(2),
+            Judges = new List<JudgeDto> { new JudgeDto { FirstName = "Judge A", IsChiefJudge = true } }
+        };
+
+        competitiveEventService.Setup(s => s.Update(inputDto))
+            .ThrowsAsync(new Exception("Unexpected error"));
+
+        // Act
+        var result = await controller.Update(inputDto);
+
+        // Assert
+        Assert.IsInstanceOf<ObjectResult>(result);
+        var objectResult = result as ObjectResult;
+        Assert.IsNotNull(objectResult);
+        Assert.AreEqual(StatusCodes.Status500InternalServerError, objectResult.StatusCode);
+        Assert.AreEqual("An unexpected error occurred. Unexpected error", objectResult.Value);
+    }
+    [Test]
     public async Task Delete_WhenIdIsValid_ReturnsNoContentResult()
     {
         // Arrange
@@ -220,7 +291,14 @@ internal class CompetitiveEventControllerTests
         Assert.IsInstanceOf<NoContentResult>(result);
         competitiveEventService.Verify(s => s.Delete(id), Times.Once);
     }
-    
+
+    private void AssertBadRequestWithMessage(IActionResult result, string message)
+    {
+        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        var badRequestResult = result as BadRequestObjectResult;
+        Assert.IsNotNull(badRequestResult);
+        Assert.AreEqual(message, badRequestResult.Value);
+    }
     private void AssertCompetitiveEventPropertiesAreEqual(CompetitiveEventCreateDto expected, CompetitiveEventDto actual)
     {
         Assert.That(actual, Is.Not.Null, "CompetitiveEventDto should not be null");
@@ -243,7 +321,21 @@ internal class CompetitiveEventControllerTests
             Assert.AreEqual(expectedJudges[i].Description, actualJudges[i].Description, $"Judge #{i + 1} Description mismatch");
         }
     }
-   
+
+    private static CompetitiveEventUpdateDto FakeInvalidCreateDto()
+    {
+        return new CompetitiveEventUpdateDto
+        {
+            Title = "Title",
+            ShortTitle = "Short Title",
+            AdditionalDescription = "Additional Description",
+            Judges = new List<JudgeDto>
+            {
+                new JudgeDto { IsChiefJudge = true },
+                new JudgeDto { IsChiefJudge = true },
+            },
+        };
+    }
     private IEnumerable<CompetitiveEventDto> FakeCompetitiveEvents()
     {
         return new List<CompetitiveEventDto>()
@@ -253,6 +345,12 @@ internal class CompetitiveEventControllerTests
                 Id = Guid.NewGuid(),
                 Title = "Test1",
                 Description = "Test1",
+                RegistrationStartTime = DateTime.UtcNow,
+                RegistrationEndTime = DateTime.UtcNow.AddHours(1),
+                MaximumAge = 20,
+                MinimumAge = 10,
+                AreThereBenefits = true,
+                Benefits = "Some benefits",
                 Judges = new List<JudgeDto>
                 {
                     new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge A", MiddleName="A", LastName = "LastName A", Gender = Gender.Male },

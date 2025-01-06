@@ -137,52 +137,8 @@ public class CompetitiveEventService : ICompetitiveEventService
     {
         try
         {
-            var judgesToDelete = currentCompetitiveEvent.Judges
-                 .Where(judge => !judgeDtoList.Exists(j => j.Id == judge.Id))
-                 .ToList();
-
-            if (judgesToDelete.Count > 0)
-            {
-                foreach (var deletedJudge in judgesToDelete)
-                {
-                    if (deletedJudge != null)
-                    {
-                        try
-                        {
-                            await judgeRepository.Delete(deletedJudge).ConfigureAwait(false);
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.LogError(ex, $"Failed to delete judge with ID: {deletedJudge.Id}");
-                            throw;
-                        }
-                    }
-                }
-            }
-
-            foreach (var judgeDto in judgeDtoList)
-            {
-                try
-                {
-                    var foundJudge = currentCompetitiveEvent.Judges.FirstOrDefault(j => j.Id == judgeDto.Id);
-                    if (foundJudge != null)
-                    {
-                        mapper.Map(judgeDto, foundJudge);
-                        await judgeRepository.Update(foundJudge).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        var newJudge = mapper.Map<Judge>(judgeDto);
-                        newJudge.CompetitiveEventId = currentCompetitiveEvent.Id;
-                        await judgeRepository.Create(newJudge).ConfigureAwait(false);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, $"Failed to process judge DTO with ID: {judgeDto.Id}");
-                    throw;
-                }
-            }
+            await DeleteObsoleteJudgesAsync(currentCompetitiveEvent, judgeDtoList).ConfigureAwait(false);
+            await UpdateOrAppendJudgesAsync(currentCompetitiveEvent, judgeDtoList).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -190,60 +146,119 @@ public class CompetitiveEventService : ICompetitiveEventService
             throw;
         }
     }
-    private async Task ChangeCompetitiveEventDescriptionItems(CompetitiveEvent currentCompetitiveEvent, List<CompetitiveEventDescriptionItemDto> descriptionItemsDtoList)
-    {
-        try {
-            var descItemsToDelete1 = currentCompetitiveEvent.CompetitiveEventDescriptionItems
-                .Where(descItem => !descriptionItemsDtoList.Exists(item => item.Id == descItem.Id))
-                .ToList();
-            if (descItemsToDelete1.Count > 0)
-            {
-                foreach (var descItem in descItemsToDelete1)
-                {
-                    if (descItem != null)
-                    {
-                        try
-                        {
-                            await descriptionItemRepository.Delete(descItem).ConfigureAwait(false);
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.LogError(ex, $"Failed to delete description item with ID: {descItem.Id}");
-                            throw;
-                        }
-                    }
-                }
-            }
 
-            foreach (var descItemDto in descriptionItemsDtoList)
+    private async Task DeleteObsoleteJudgesAsync(CompetitiveEvent currentCompetitiveEvent, List<JudgeDto> judgeDtoList)
+    {
+        var judgesToDelete = currentCompetitiveEvent.Judges
+             .Where(judge => !judgeDtoList.Exists(j => j.Id == judge.Id))
+             .ToList();
+
+        foreach (var deletedJudge in judgesToDelete)
+        {
+            if (deletedJudge != null)
             {
                 try
                 {
-                    var foundDescItem = currentCompetitiveEvent.CompetitiveEventDescriptionItems
-                        .FirstOrDefault(d => d.Id == descItemDto.Id);
-                    if (foundDescItem != null)
-                    {
-                        mapper.Map(descItemDto, foundDescItem);
-                        await descriptionItemRepository.Update(foundDescItem).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        var newDescItem = mapper.Map<CompetitiveEventDescriptionItem>(descItemDto);
-                        newDescItem.CompetitiveEventId = currentCompetitiveEvent.Id;
-                        await descriptionItemRepository.Create(newDescItem).ConfigureAwait(false);
-                    }
+                    await judgeRepository.Delete(deletedJudge).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, $"Failed to process description item with ID: {descItemDto.Id}");
+                    logger.LogError(ex, $"Failed to delete judge with ID: {deletedJudge.Id}");
                     throw;
                 }
             }
+        }
+    }
+
+    private async Task UpdateOrAppendJudgesAsync(CompetitiveEvent currentCompetitiveEvent, List<JudgeDto> judgeDtoList)
+    {
+        foreach (var judgeDto in judgeDtoList)
+        {
+            try
+            {
+                var foundJudge = currentCompetitiveEvent.Judges.FirstOrDefault(j => j.Id == judgeDto.Id);
+                if (foundJudge != null)
+                {
+                    mapper.Map(judgeDto, foundJudge);
+                    await judgeRepository.Update(foundJudge).ConfigureAwait(false);
+                }
+                else
+                {
+                    var newJudge = mapper.Map<Judge>(judgeDto);
+                    newJudge.CompetitiveEventId = currentCompetitiveEvent.Id;
+                    await judgeRepository.Create(newJudge).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Failed to process judge DTO with ID: {judgeDto.Id}");
+                throw;
+            }
+        }
+    }
+
+    private async Task ChangeCompetitiveEventDescriptionItems(CompetitiveEvent currentCompetitiveEvent, List<CompetitiveEventDescriptionItemDto> descriptionItemsDtoList)
+    {
+        try
+        {
+            await RemoveDescriptionItemsAsync(currentCompetitiveEvent, descriptionItemsDtoList).ConfigureAwait(false);
+            await UpsertDescriptionItemsAsync(currentCompetitiveEvent, descriptionItemsDtoList).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "An error occurred while updating the description items.");
             throw;
+        }
+    }
+
+    private async Task RemoveDescriptionItemsAsync(CompetitiveEvent currentCompetitiveEvent, List<CompetitiveEventDescriptionItemDto> descriptionItemsDtoList)
+    {
+        var descItemsToDelete = currentCompetitiveEvent.CompetitiveEventDescriptionItems
+            .Where(descItem => !descriptionItemsDtoList.Exists(item => item.Id == descItem.Id))
+            .ToList();
+
+        foreach (var descItem in descItemsToDelete)
+        {
+            if (descItem == null) continue;
+
+            try
+            {
+                await descriptionItemRepository.Delete(descItem).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Failed to delete description item with ID: {descItem.Id}");
+                throw;
+            }
+        }
+    }
+
+    private async Task UpsertDescriptionItemsAsync(CompetitiveEvent currentCompetitiveEvent, List<CompetitiveEventDescriptionItemDto> descriptionItemsDtoList)
+    {
+        foreach (var descItemDto in descriptionItemsDtoList)
+        {
+            try
+            {
+                var foundDescItem = currentCompetitiveEvent.CompetitiveEventDescriptionItems
+                    .FirstOrDefault(d => d.Id == descItemDto.Id);
+
+                if (foundDescItem != null)
+                {
+                    mapper.Map(descItemDto, foundDescItem);
+                    await descriptionItemRepository.Update(foundDescItem).ConfigureAwait(false);
+                }
+                else
+                {
+                    var newDescItem = mapper.Map<CompetitiveEventDescriptionItem>(descItemDto);
+                    newDescItem.CompetitiveEventId = currentCompetitiveEvent.Id;
+                    await descriptionItemRepository.Create(newDescItem).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Failed to process description item with ID: {descItemDto.Id}");
+                throw;
+            }
         }
     }
 }

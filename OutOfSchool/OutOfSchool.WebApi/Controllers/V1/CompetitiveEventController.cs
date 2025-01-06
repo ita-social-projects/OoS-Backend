@@ -145,7 +145,8 @@ public class CompetitiveEventController : ControllerBase
 
         return NoContent();
     }
-    private bool AreJudgesValid(IEnumerable<JudgeDto> judges)
+
+    private static bool AreJudgesValid(IEnumerable<JudgeDto> judges)
     {
         if (judges != null && judges.Count() > 0)
         {

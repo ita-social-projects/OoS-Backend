@@ -139,7 +139,7 @@ public class CompetitiveEventServiceTests
     }
    
     [Test]
-    public void Update_WhenDtoIsNull_ShouldThrowArgumentNullException()
+    public void Update_WhenDtoIsNull_ThrowsArgumentNullException()
     {
         // Arrange
         CompetitiveEventUpdateDto dto = null;
