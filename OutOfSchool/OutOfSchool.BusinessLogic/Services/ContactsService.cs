@@ -5,20 +5,30 @@ using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
+/// <inheritdoc/>
 public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<TEntity, TDto>
     where TEntity : BusinessEntity, IHasContacts
     where TDto : IHasContactsDto<TEntity>
 {
-    public void PrepareNewContacts(TEntity existingEntity, TDto dto)
+    /// <inheritdoc/>
+    public void PrepareNewContacts(TEntity entity, TDto dto)
     {
-        existingEntity.Contacts = mapper.Map<List<Contacts>>(dto.Contacts);
+        // TODO: During transition leave it as optional and if it is empty - do nothing.
+        if (!dto.Contacts.IsNullOrEmpty())
+        {
+            ValidateDefaultCount(dto);
+        }
+
+        entity.Contacts = mapper.Map<List<Contacts>>(dto.Contacts);
     }
 
-    public void PrepareUpdatedContacts([NotNull] TEntity existingEntity, [NotNull] TDto dto)
+    /// <inheritdoc/>
+    public void PrepareUpdatedContacts([NotNull] TEntity entity, [NotNull] TDto dto)
     {
-        if (existingEntity.Contacts.IsNullOrEmpty())
+        if (entity.Contacts.IsNullOrEmpty())
         {
-            existingEntity.Contacts = mapper.Map<List<Contacts>>(dto.Contacts);
+            ValidateDefaultCount(dto);
+            entity.Contacts = mapper.Map<List<Contacts>>(dto.Contacts);
             return;
         }
 
@@ -28,35 +38,38 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
             return;
         }
 
-        existingEntity.Contacts.RemoveAll(e => !dto.Contacts.Any(n =>
+        ValidateDefaultCount(dto);
+
+        entity.Contacts.RemoveAll(e => !dto.Contacts.Any(n =>
             n.ContentEquals(e)
         ));
 
         foreach (var contactDto in dto.Contacts)
         {
-            var existingContact = existingEntity.Contacts.FirstOrDefault(e =>
+            var existing = entity.Contacts.FirstOrDefault(e =>
                 contactDto.ContentEquals(e));
 
-            if (existingContact != null)
+            if (existing != null)
             {
-                existingContact.Title = contactDto.Title;
-                mapper.Map(contactDto.Address, existingContact.Address);
+                existing.Title = contactDto.Title;
+                existing.IsDefault = contactDto.IsDefault;
+                mapper.Map(contactDto.Address, existing.Address);
 
                 this.UpdateContactsInfo(
-                    existingContact.Phones,
+                    existing.Phones,
                     contactDto.Phones);
 
                 this.UpdateContactsInfo(
-                    existingContact.Emails,
+                    existing.Emails,
                     contactDto.Emails);
 
                 this.UpdateContactsInfo(
-                    existingContact.SocialNetworks,
+                    existing.SocialNetworks,
                     contactDto.SocialNetworks);
             }
             else
             {
-                existingEntity.Contacts.Add(mapper.Map<Contacts>(contactDto));
+                entity.Contacts.Add(mapper.Map<Contacts>(contactDto));
             }
         }
     }
@@ -83,6 +96,23 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
             {
                 existingInfo.Add(mapper.Map<TContactEntity>(info));
             }
+        }
+    }
+
+    private static void ValidateDefaultCount(TDto dto)
+    {
+        var defaultCount = dto.Contacts.Count(c => c.IsDefault);
+        switch (defaultCount)
+        {
+            case 0:
+                // If no default, set the first contact to default
+                dto.Contacts[0].IsDefault = true;
+                break;
+            case > 1:
+                throw new InvalidOperationException($"Exactly one Contact must be default, but found {defaultCount}.");
+            case 1:
+                // Exactly one is okay, do nothing special
+                break;
         }
     }
 }

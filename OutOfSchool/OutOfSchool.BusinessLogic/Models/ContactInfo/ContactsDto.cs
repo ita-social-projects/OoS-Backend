@@ -7,6 +7,8 @@ namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 public class ContactsDto : IContentComparable<Contacts>
 {
     public string Title { get; set; }
+    
+    public bool IsDefault { get; set; }
 
     public ContactsAddressDto Address { get; set; }
 
