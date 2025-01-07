@@ -148,7 +148,7 @@ public class StudySubjectServiceTests
         {
             Id = Guid.NewGuid(),
             IsPrimaryLanguageUkrainian = true,
-            LanguageIds = new List<long> { 2 },
+            Languages = new List<long> { 2 },
             NameInInstructionLanguage = "ім'я",
             NameInUkrainian = "ім'я",
             PrimaryLanguageId = 2,
@@ -172,7 +172,7 @@ public class StudySubjectServiceTests
         {
             Id = Guid.NewGuid(),
             IsPrimaryLanguageUkrainian = true,
-            LanguageIds = new List<long> { 99 },
+            Languages = new List<long> { 99 },
             NameInInstructionLanguage = "ім'я",
             NameInUkrainian = "ім'я",
             PrimaryLanguageId = 77,
@@ -209,7 +209,7 @@ public class StudySubjectServiceTests
         {
             Id = Guid.Empty,
             IsPrimaryLanguageUkrainian = true,
-            LanguageIds = new List<long> { 2 },
+            Languages = new List<long> { 2 },
             NameInInstructionLanguage = "ім'я",
             NameInUkrainian = "ім'я",
             PrimaryLanguageId = 2,
@@ -232,7 +232,7 @@ public class StudySubjectServiceTests
         {
             Id = new Guid("eb49a87c-7042-45e9-a76b-79ebd98b6b16"),
             IsPrimaryLanguageUkrainian = true,
-            LanguageIds = new List<long> { 2 },
+            Languages = new List<long> { 2 },
             NameInInstructionLanguage = "ім'я",
             NameInUkrainian = "ім'я",
             PrimaryLanguageId = 2,

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models;
 
@@ -18,15 +17,11 @@ public class Language : IKeyedEntity<long>
     public string Code { get; set; }
 
     /// <summary>
-    /// Title of the language
+    /// Name of the language
     /// </summary>
-    [Required(ErrorMessage = "The title is required.")]
-    [MinLength(1, ErrorMessage = "The title must be at least 1 character.")]
-    [MaxLength(50, ErrorMessage = "The title of instruction can't exceed 50 characters.")]
-    public string Title { get; set; }
-
-    public virtual List<StudySubject> StudySubjects { get; set; }
-
-    public virtual List<StudySubjectLanguage> StudySubjectLanguages { get; set; }
+    [Required(ErrorMessage = "The name is required.")]
+    [MinLength(1, ErrorMessage = "The name must be at least 1 character.")]
+    [MaxLength(50, ErrorMessage = "The name of instruction can't exceed 50 characters.")]
+    public string Name { get; set; }
 }
 

@@ -24,41 +24,24 @@ public class StudySubjectCreateUpdateDto : IValidatableObject
     /// Language of instruction (allows multiple selection)
     /// </summary>
     [Required(ErrorMessage = "The language of instruction is required.")]
-    public List<long> LanguageIds { get; set; }
-
-    /// <summary>
-    /// Primary language of the subject
-    /// </summary>
-    [Required(ErrorMessage = "Primary language's id is required.")]
-    public int PrimaryLanguageId { get; set; }
-
-    /// <summary>
-    /// Id of the related workshop
-    /// </summary>
-    [Required(ErrorMessage = "The workshop's id is required.")]
-    public Guid WorkshopId { get; set; }
+    public List<StudySubjectCreateUpdateLanguage> Languages { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (PrimaryLanguageId <= 0)
+        if (Languages == null || !Languages.Any())
         {
-            yield return new ValidationResult("PrimaryLanguageId cannot be smaller than one.", new[] { nameof(PrimaryLanguageId) });
-        }
-
-        if (LanguageIds == null || !LanguageIds.Any())
-        {
-            yield return new ValidationResult("LanguageIds cannot be null or empty.", new[] { nameof(LanguageIds) });
+            yield return new ValidationResult("Languages cannot be null or empty.", new[] { nameof(Languages) });
         }
         else
         {
-            if (!LanguageIds.Contains(PrimaryLanguageId))
-                yield return new ValidationResult("LanguageIds must contain PrimaryLanguageId.", new[] { nameof(LanguageIds) });
+            if (Languages.Count(l => l.IsPrimary) != 1)
+                yield return new ValidationResult("Languages must contain primary language.", new[] { nameof(Languages) });
 
-            if (LanguageIds.Count() != LanguageIds.Distinct().Count())
-                yield return new ValidationResult("LanguageIds cannot contain duplicates.", new[] { nameof(LanguageIds) });
+            if (Languages.Count() != Languages.Distinct().Count())
+                yield return new ValidationResult("Languages cannot contain duplicates.", new[] { nameof(Languages) });
 
-            if (LanguageIds.Any(id => id <= 0))
-                yield return new ValidationResult("LanguageIds cannot contain values smaller than 1.", new[] { nameof(LanguageIds) });
+            if (Languages.Any(l => l.Id <= 0))
+                yield return new ValidationResult("Languages cannot contain values smaller than 1.", new[] { nameof(Languages) });
         }
     }
 }

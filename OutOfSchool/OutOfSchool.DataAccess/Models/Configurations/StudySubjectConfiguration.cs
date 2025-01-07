@@ -19,13 +19,13 @@ public class StudySubjectConfiguration : BusinessEntityConfiguration<StudySubjec
             .IsRequired();
 
         builder.HasOne(x => x.PrimaryLanguage)
-            .WithMany(x => x.StudySubjects)
+            .WithMany()
             .HasForeignKey(x => x.PrimaryLanguageId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(x => x.Workshop)
-            .WithMany(x => x.StudySubjects)
-            .HasForeignKey(x => x.WorkshopId)
-            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasMany(x => x.Languages)
+            .WithMany();
+
+        base.Configure(builder);
     }
 }

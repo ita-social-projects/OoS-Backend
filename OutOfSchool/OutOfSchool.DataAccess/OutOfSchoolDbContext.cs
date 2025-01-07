@@ -136,8 +136,6 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<Language> Languages { get; set; }
 
-    public DbSet<StudySubjectLanguage> StudySubjectLanguages { get; set; }
-
     public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
     public int Complete() => this.SaveChanges();
@@ -196,7 +194,6 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new WorkshopDescriptionItemConfiguration());
         builder.ApplyConfiguration(new StudySubjectConfiguration());
         builder.ApplyConfiguration(new LanguageConfiguration());
-        builder.ApplyConfiguration(new StudySubjectLanguageConfiguration());
 
         builder.Seed();
         builder.UpdateIdentityTables();

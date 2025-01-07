@@ -47,7 +47,7 @@ public class LanguageControllerTests
             {
                 Id = 1,
                 Code = "en",
-                Title = "English"
+                Name = "English"
             }
         };
         service.Setup(s => s.GetAll()).ReturnsAsync(list);

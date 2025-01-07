@@ -190,7 +190,5 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public virtual Address Address { get; set; }
 
     public virtual List<Tag> Tags { get; set; }
-
-    public virtual List<StudySubject> StudySubjects { get; set; }
     #endregion
 }

@@ -177,7 +177,7 @@ public class StudySubjectService : IStudySubjectService
         var existingLanguages = await languageRepository.GetAll().ConfigureAwait(false);
         var existingLanguageIds = existingLanguages.Select(x => x.Id).ToHashSet();
 
-        if (dto.LanguageIds.Where(id => !existingLanguageIds.Contains(id)).ToList().Any() || !existingLanguageIds.Contains(dto.PrimaryLanguageId))
+        if (dto.Languages.Where(id => !existingLanguageIds.Contains(id)).ToList().Any() || !existingLanguageIds.Contains(dto.PrimaryLanguageId))
         {
             logger.LogDebug("Operation failed, dto contains non-existing language ids.");
             throw new ArgumentException("Dto contains non-existing language ids.", nameof(dto));

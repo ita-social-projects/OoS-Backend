@@ -15,7 +15,7 @@ public class LanguageConfiguration : IEntityTypeConfiguration<Language>
         builder.HasIndex(x => x.Code)
             .IsUnique();
 
-        builder.Property(x => x.Title)
+        builder.Property(x => x.Name)
             .IsRequired()
             .HasMaxLength(50);
     }

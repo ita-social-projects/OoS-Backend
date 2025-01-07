@@ -96,8 +96,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ParentWorkshop, opt => opt.Ignore())
             .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderTitle, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderTitleEn, opt => opt.Ignore())
-            .ForMember(dest => dest.StudySubjects, opt => opt.Ignore());
+            .ForMember(dest => dest.ProviderTitleEn, opt => opt.Ignore());
 
         CreateSoftDeletedMap<WorkshopCreateRequestDto, Workshop>()
             .ForMember(
@@ -150,8 +149,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Images, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
-            .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
-            .ForMember(dest => dest.StudySubjects, opt => opt.Ignore());
+            .ForMember(dest => dest.ActiveTo, opt => opt.Ignore());
 
         CreateMap<Workshop, WorkshopCreateRequestDto>()
             .ForMember(
@@ -837,16 +835,16 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.PrimaryLanguage, opt => opt.Ignore())
             .ForMember(dest => dest.Workshop, opt => opt.Ignore())
-            .ForMember(dest => dest.StudySubjectLanguages,
-                opt => opt.MapFrom(src => src.LanguageIds.Select(id => new StudySubjectLanguage { LanguageId = id })))
-            .ReverseMap();
+            .ForMember(dest => dest.PrimaryLanguageId,
+                opt => opt.MapFrom(src => src.Languages.FirstOrDefault(l => l.IsPrimary).Id))
+            .ForMember(dest => dest.Languages,
+                opt => opt.MapFrom(src => src.Languages.Select(l => new Language { Id = l.Id })));
 
         CreateMap<StudySubject, StudySubjectDto>()
             .ForMember(dest => dest.LanguageIds,
-                opt => opt.MapFrom(src => src.StudySubjectLanguages.Select(x => x.LanguageId)))
-            .ReverseMap();
+                opt => opt.MapFrom(src => src.Languages.Select(x => x.Id)));
 
-        CreateMap<Language, LanguageDto>().ReverseMap();
+        CreateMap<Language, LanguageDto>();
     }
 
     public IMappingExpression<TSource, TDestination> CreateSoftDeletedMap<TSource, TDestination>()

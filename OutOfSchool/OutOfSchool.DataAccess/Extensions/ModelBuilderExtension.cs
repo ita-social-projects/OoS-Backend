@@ -434,13 +434,13 @@ public static class ModelBuilderExtension
         builder.Entity<Language>().HasData(
             new Language {
                 Id = 1,
-                Title = "English",
+                Name = "English",
                 Code = "en",
             },
             new Language
             {
                 Id = 2,
-                Title = "Українська",
+                Name = "Українська",
                 Code = "uk",
 
             });

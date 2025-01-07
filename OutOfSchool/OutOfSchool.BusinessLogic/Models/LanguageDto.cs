@@ -9,7 +9,7 @@ public class LanguageDto
     public string Code { get; set; }
 
     /// <summary>
-    /// Title of the language
+    /// Name of the language
     /// </summary>
-    public string Title { get; set; }
+    public string Name { get; set; }
 }

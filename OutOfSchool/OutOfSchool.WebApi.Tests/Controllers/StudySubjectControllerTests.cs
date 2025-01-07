@@ -558,7 +558,7 @@ public class StudySubjectControllerTests
         {
             Id = Guid.NewGuid(),
             IsPrimaryLanguageUkrainian = true,
-            LanguageIds = new List<long> { 1, 2 },
+            Languages = new List<long> { 1, 2 },
             NameInInstructionLanguage = "тест",
             NameInUkrainian = "тест",
             PrimaryLanguageId = 1,
@@ -572,7 +572,7 @@ public class StudySubjectControllerTests
         {
             Id = Guid.NewGuid(),
             IsPrimaryLanguageUkrainian = true,
-            LanguageIds = new List<long> { 1, 2 },
+            Languages = new List<long> { 1, 2 },
             NameInInstructionLanguage = null,
             NameInUkrainian = null,
             PrimaryLanguageId = 1,

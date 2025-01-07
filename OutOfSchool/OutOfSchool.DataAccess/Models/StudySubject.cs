@@ -36,7 +36,7 @@ public class StudySubject : BusinessEntity
     /// Language of instruction (allows multiple selection)
     /// </summary>
     [Required(ErrorMessage = "The language of instruction is required.")]
-    public virtual List<StudySubjectLanguage> StudySubjectLanguages { get; set; }
+    public virtual List<Language> Languages { get; set; }
 
     /// <summary>
     /// Primary language of the subject
