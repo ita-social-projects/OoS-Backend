@@ -1162,6 +1162,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                 }).ConfigureAwait(false);
             uploadResponse.CountOfCreatedOfficials++;
         }
+    }
 
     public async Task HasProviderRights(Guid providerId)
     {
