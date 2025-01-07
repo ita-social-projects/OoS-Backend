@@ -2,6 +2,7 @@
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.StudySubjects;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
@@ -9,6 +10,7 @@ public class StudySubjectService : IStudySubjectService
 {
     private readonly IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository;
     private readonly IEntityRepository<long, Language> languageRepository;
+    private readonly IProviderService providerService;
     private readonly ILogger<StudySubjectService> logger;
     private readonly IMapper mapper;
 
@@ -16,25 +18,30 @@ public class StudySubjectService : IStudySubjectService
     /// Initializes a new instance of the <see cref="StudySubjectService"/> class.
     /// </summary>
     /// <param name="studySubjectRepository">Repository for StudySubject.</param>
-    /// /// <param name="languageRepository">Repository for Language.</param>
+    /// <param name="languageRepository">Repository for Language.</param>
+    /// <param name="providerService">Provider service.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
     public StudySubjectService(
         IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository,
         IEntityRepository<long, Language> languageRepository,
+        IProviderService providerService,
         ILogger<StudySubjectService> logger,
         IMapper mapper)
     {
         this.studySubjectRepository = studySubjectRepository ?? throw new ArgumentNullException(nameof(studySubjectRepository));
         this.languageRepository = languageRepository ?? throw new ArgumentNullException(nameof(languageRepository));
+        this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
-    public async Task<StudySubjectDto> Create(StudySubjectCreateUpdateDto dto)
+    public async Task<StudySubjectDto> Create(StudySubjectCreateUpdateDto dto, Guid providerId)
     {
+        await providerService.HasProviderRights(providerId).ConfigureAwait(false);
+        
         logger.LogDebug("StudySubject creating was started");
 
         if (dto is null)
@@ -46,7 +53,6 @@ public class StudySubjectService : IStudySubjectService
         await CheckIfPrimaryLanguageIdIsCorrect(dto);
 
         var studySubject = mapper.Map<StudySubject>(dto);
-
         var newStudySubject = await studySubjectRepository.Create(studySubject).ConfigureAwait(false);
 
         logger.LogDebug("StudySubject with Id = {Id} created successfully.", newStudySubject?.Id);
@@ -55,8 +61,10 @@ public class StudySubjectService : IStudySubjectService
     }
 
     /// <inheritdoc/>
-    public async Task<Result<StudySubjectDto>> Delete(Guid id)
+    public async Task<Result<StudySubjectDto>> Delete(Guid id, Guid providerId)
     {
+        await providerService.HasProviderRights(providerId).ConfigureAwait(false);
+
         logger.LogDebug("Deleting StudySubject with Id = {Id} started", id);
 
         var studySubject = await studySubjectRepository.GetById(id).ConfigureAwait(false);
@@ -90,8 +98,10 @@ public class StudySubjectService : IStudySubjectService
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<StudySubjectDto>> GetByFilter(SearchStringFilter filter)
+    public async Task<SearchResult<StudySubjectDto>> GetByFilter(Guid providerId, SearchStringFilter filter)
     {
+        await providerService.HasProviderRights(providerId).ConfigureAwait(false);
+
         logger.LogDebug("Getting all StudySubjects by filter started");
 
         filter ??= new SearchStringFilter();
@@ -130,8 +140,10 @@ public class StudySubjectService : IStudySubjectService
     }
 
     /// <inheritdoc/>
-    public async Task<StudySubjectDto> GetById(Guid id)
+    public async Task<StudySubjectDto> GetById(Guid id, Guid providerId)
     {
+        await providerService.HasProviderRights(providerId).ConfigureAwait(false);
+
         logger.LogDebug("Getting StudySubject by Id started. Looking Id = {Id}", id);
 
         var studySubject = await studySubjectRepository.GetById(id)
@@ -149,8 +161,10 @@ public class StudySubjectService : IStudySubjectService
     }
 
     /// <inheritdoc/>
-    public async Task<Result<StudySubjectDto>> Update(StudySubjectCreateUpdateDto dto)
+    public async Task<Result<StudySubjectDto>> Update(StudySubjectCreateUpdateDto dto, Guid providerId)
     {
+        await providerService.HasProviderRights(providerId).ConfigureAwait(false);
+
         logger.LogDebug("Updating StudySubject started");
 
         if (dto is null)
