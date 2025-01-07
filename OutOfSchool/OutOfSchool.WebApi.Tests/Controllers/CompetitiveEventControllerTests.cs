@@ -322,27 +322,6 @@ public class CompetitiveEventControllerTests
                 Assert.Fail($"Property '{property.Name}' is missing in the target object");
             }
         }
-
-        //Assert.AreEqual(expected.Title, actual.Title, "Title mismatch");
-        //Assert.AreEqual(expected.ScheduledStartTime, actual.ScheduledStartTime, "ScheduledStartTime mismatch");
-        //Assert.AreEqual(expected.ScheduledEndTime, actual.ScheduledEndTime, "ScheduledEndTime mismatch");
-        //Assert.AreEqual(expected.RegistrationStartTime, actual.RegistrationStartTime, "RegistrationStartTime mismatch");
-        //Assert.AreEqual(expected.RegistrationEndTime, actual.RegistrationEndTime, "RegistrationEndTime mismatch");
-        //Assert.AreEqual(expected.Description, actual.Description, "Description mismatch");
-        //Assert.AreEqual(expected.DescriptionOfTheEnrollmentProcedure, actual.DescriptionOfTheEnrollmentProcedure, "DescriptionOfTheEnrollmentProcedure mismatch");
-        //Assert.AreEqual(expected.AreThereBenefits, actual.AreThereBenefits, "AreThereBenefits mismatch");
-        //Assert.AreEqual(expected.Benefits, actual.Benefits, "Benefits mismatch");
-        //Assert.AreEqual(expected.NumberOfSeats, actual.NumberOfSeats, "NumberOfSeats mismatch");
-        //Assert.AreEqual(expected.NumberOfOccupiedSeats, actual.NumberOfOccupiedSeats, "NumberOfOccupiedSeats mismatch");
-        //Assert.AreEqual(expected.Rating, actual.Rating, "Rating mismatch");
-        //Assert.AreEqual(expected.MinimumAge, actual.MinimumAge, "MinimumAge mismatch");
-        //Assert.AreEqual(expected.MaximumAge, actual.MaximumAge, "MaximumAge mismatch");
-        //Assert.AreEqual(expected.Rating, actual.Rating, "Rating mismatch");
-        //Assert.AreEqual(expected.NumberOfRatings, actual.NumberOfRatings, "NumberOfRating mismatch");
-        //Assert.AreEqual(expected.VenueName, actual.VenueName, "VenueName mismatch");
-        //Assert.AreEqual(expected.OptionsForPeopleWithDisabilities, actual.OptionsForPeopleWithDisabilities, "OptionsForPeopleWithDisabilities mismatch");
-        //Assert.AreEqual(expected.DescriptionOfOptionsForPeopleWithDisabilities, actual.DescriptionOfOptionsForPeopleWithDisabilities, "DescriptionOfOptionsForPeopleWithDisabilities mismatch");
-
     }
 
     private void AssertJudgesAreEqual(List<JudgeDto> expectedJudges, List<JudgeDto> actualJudges)
