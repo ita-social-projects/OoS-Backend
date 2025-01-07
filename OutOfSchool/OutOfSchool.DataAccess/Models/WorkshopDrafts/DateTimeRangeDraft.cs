@@ -10,9 +10,9 @@ namespace OutOfSchool.Services.Models.WorkshopDrafts;
 /// </summary>
 public class DateTimeRangeDraft
 {
-    public TimeSpan StartTime { get; set; }
+    public TimeOnly StartTime { get; set; }
 
-    public TimeSpan EndTime { get; set; }
+    public TimeOnly EndTime { get; set; }
 
-    public List<DaysBitMask> Workdays { get; set; }
+    public HashSet<DaysBitMask> Workdays { get; set; }
 }

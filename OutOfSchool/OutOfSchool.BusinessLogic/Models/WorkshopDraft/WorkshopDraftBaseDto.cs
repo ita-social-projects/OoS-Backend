@@ -34,7 +34,7 @@ public class WorkshopDraftBaseDto
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     [CollectionNotEmpty(ErrorMessage = "At least one value in the DateTime range is required.")]
     [CollectionValidation(typeof(DateTimeRangeValidator), nameof(DateTimeRangeValidator.Validate))]
-    public List<DateTimeRangeDraftDto> DateTimeRange { get; set; }
+    public List<DateTimeRangeDraftDto> DateTimeRanges { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     [CollectionNotEmpty(ErrorMessage = "At least one description is required.")]

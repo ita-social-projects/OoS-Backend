@@ -21,11 +21,5 @@ public class DateTimeRangeValidator
         {
             yield return new ValidationResult("Workdays are required and cannot contain 'None'.");
         }
-
-        var daysHs = new HashSet<DaysBitMask>();
-        if (!range.Workdays.TrueForAll(daysHs.Add))
-        {
-            yield return new ValidationResult("Workdays contain duplicate values.");
-        }
     }
 }

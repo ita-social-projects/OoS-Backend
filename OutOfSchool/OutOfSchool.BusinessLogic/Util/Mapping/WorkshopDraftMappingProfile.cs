@@ -16,7 +16,7 @@ public class WorkshopDraftMappingProfile : Profile
         CreateMap<WorkshopDescriptionItemDraftDto, WorkshopDescriptionItemDraft>()
             .ReverseMap();
 
-        CreateMap<DateTimeRangeDraftDto, DateTimeRangeDraft>()
+        CreateMap<DateTimeRangeDraftDto, DateTimeRangeDraft>()            
             .ReverseMap();
 
         CreateMap<AddressDraftDto, AddressDraft>()
@@ -84,8 +84,15 @@ public class WorkshopDraftMappingProfile : Profile
             .IncludeMembers(src => src.WorkshopDraftContent)
             .ForMember(dest => dest.Id, opt => opt.Ignore());
 
+        CreateMap<DateTimeRangeDraft, DateTimeRangeDto>();
+
+        CreateMap<DateTimeRangeDto, DateTimeRangeDraft>()
+            .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => TimeOnly.FromTimeSpan(src.StartTime)))
+            .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => TimeOnly.FromTimeSpan(src.EndTime)));
+
         CreateMap<DateTimeRangeDraft, DateTimeRangeDto>()
-            .ReverseMap();
+            .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.StartTime.ToTimeSpan()))
+            .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.EndTime.ToTimeSpan()));
 
         CreateMap<WorkshopDescriptionItemDraft, WorkshopDescriptionItemDto>()
             .ReverseMap();
