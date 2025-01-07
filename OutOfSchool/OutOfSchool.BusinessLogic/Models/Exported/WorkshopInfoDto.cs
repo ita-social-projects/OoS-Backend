@@ -12,7 +12,7 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
 
     public Guid? ParentWorkshopId { get; set; }
 
-    public uint TakenSeats { get; set; } = 0;
+    public int TakenSeats { get; set; } = 0;
 
     public float Rating { get; set; }
 

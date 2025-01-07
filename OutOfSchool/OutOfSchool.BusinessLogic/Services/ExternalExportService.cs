@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
+using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Exported;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
@@ -8,8 +9,15 @@ namespace OutOfSchool.BusinessLogic.Services;
 
 public class ExternalExportService : IExternalExportService
 {
+    private const string ProviderIncludes =
+        "ProviderSectionItems,Images,Institution,ActualAddress,ActualAddress.CATOTTG.Parent.Parent.Parent.Parent,LegalAddress,LegalAddress.CATOTTG.Parent.Parent.Parent.Parent,Type";
+
+    private const string WorkshopIncludes =
+        "WorkshopDescriptionItems,Tags,Address,Address.CATOTTG.Parent.Parent.Parent.Parent,Images,DateTimeRanges,Teachers,InstitutionHierarchy,InstitutionHierarchy.Institution,InstitutionHierarchy.Directions,DefaultTeacher";
+
     private readonly IProviderRepository providerRepository;
     private readonly IWorkshopRepository workshopRepository;
+    private readonly IApplicationRepository applicationRepository;
     private readonly IAverageRatingService averageRatingService;
     private readonly IMapper mapper;
     private readonly ILogger<ExternalExportService> logger;
@@ -17,12 +25,15 @@ public class ExternalExportService : IExternalExportService
     public ExternalExportService(
         IProviderRepository providerRepository,
         IWorkshopRepository workshopRepository,
+        IApplicationRepository applicationRepository,
         IAverageRatingService averageRatingService,
         IMapper mapper,
         ILogger<ExternalExportService> logger)
     {
         this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
         this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
+        this.applicationRepository =
+            applicationRepository ?? throw new ArgumentNullException(nameof(applicationRepository));
         this.averageRatingService =
             averageRatingService ?? throw new ArgumentNullException(nameof(averageRatingService));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -34,17 +45,21 @@ public class ExternalExportService : IExternalExportService
     {
         try
         {
-            logger.LogInformation("Getting all updated providers started");
+            logger.LogDebug("Getting all updated providers started");
             offsetFilter ??= new OffsetFilter();
-            var providers = await providerRepository
-                .GetAllWithDeleted(updatedAfter, offsetFilter.From, offsetFilter.Size)
-                .ConfigureAwait(false);
 
-            if (providers == null)
-            {
-                logger.LogError("Failed to retrieve updated providers. The provider list is null");
-                return new SearchResult<ProviderInfoBaseDto>();
-            }
+            Expression<Func<Provider, bool>> filterExpression = updatedAfter == default
+                ? provider => !provider.IsDeleted
+                : provider => provider.UpdatedAt > updatedAfter ||
+                              provider.Workshops.Any(w => w.UpdatedAt > updatedAfter);
+
+            var providers = await providerRepository.Get(
+                    offsetFilter.From,
+                    offsetFilter.Size,
+                    ProviderIncludes,
+                    filterExpression)
+                .ToListAsync()
+                .ConfigureAwait(false);
 
             var providersDto = providers
                 .Select(MapToInfoProviderDto)
@@ -52,7 +67,7 @@ public class ExternalExportService : IExternalExportService
 
             await FillRatingsForType(providersDto).ConfigureAwait(false);
 
-            var count = await providerRepository.CountWithDeleted(updatedAfter);
+            var count = await providerRepository.Count(filterExpression);
 
             var searchResult = new SearchResult<ProviderInfoBaseDto>
             {
@@ -65,7 +80,7 @@ public class ExternalExportService : IExternalExportService
         catch (Exception ex)
         {
             logger.LogError(ex, "An unexpected error occurred while processing providers");
-            return new SearchResult<ProviderInfoBaseDto>();
+            throw;
         }
     }
 
@@ -73,24 +88,27 @@ public class ExternalExportService : IExternalExportService
     {
         try
         {
-            logger.LogInformation("Getting all updated providers started");
+            logger.LogDebug("Getting all updated providers started");
             offsetFilter ??= new OffsetFilter();
 
-            var workshops = await workshopRepository
-                .GetAllWithDeleted(updatedAfter, offsetFilter.From, offsetFilter.Size)
-                .ConfigureAwait(false);
+            Expression<Func<Workshop, bool>> filterExpression = updatedAfter == default
+                ? workshop => !workshop.IsDeleted
+                : workshop => workshop.UpdatedAt > updatedAfter || workshop.DeleteDate > updatedAfter;
 
-            if (workshops == null)
-            {
-                logger.LogError("Failed to retrieve updated workshops. The workshop list is null");
-                return new SearchResult<WorkshopInfoBaseDto>();
-            }
+            var workshops = await workshopRepository.Get(
+                    offsetFilter.From,
+                    offsetFilter.Size,
+                    WorkshopIncludes,
+                    filterExpression)
+                .ToListAsync()
+                .ConfigureAwait(false);
 
             var workshopsDto = workshops.Select(MapToInfoWorkshopDto).ToList();
 
-            await FillRatingsForType(workshopsDto);
+            await FillRatingsForType(workshopsDto).ConfigureAwait(false);
+            await FillTakenSeats(workshopsDto).ConfigureAwait(false);
 
-            var count = await workshopRepository.CountWithDeleted(updatedAfter);
+            var count = await workshopRepository.Count(filterExpression).ConfigureAwait(false);
 
             return new SearchResult<WorkshopInfoBaseDto>
             {
@@ -101,7 +119,7 @@ public class ExternalExportService : IExternalExportService
         catch (Exception ex)
         {
             logger.LogError(ex, "An unexpected error occurred while processing workshops");
-            return new SearchResult<WorkshopInfoBaseDto>();
+            throw;
         }
     }
 
@@ -132,6 +150,18 @@ public class ExternalExportService : IExternalExportService
             var averageRatingsForProvider = averageRatings?.SingleOrDefault(r => r.EntityId == dto.Id);
             dto.Rating = averageRatingsForProvider?.Rate ?? 0;
             dto.NumberOfRatings = averageRatingsForProvider?.RateQuantity ?? 0;
+        }
+    }
+
+    private async Task FillTakenSeats(List<WorkshopInfoBaseDto> dtos)
+    {
+        var fullDtos = dtos.OfType<WorkshopInfoDto>().ToList();
+        var ids = fullDtos.Select(w => w.Id).ToList();
+        var takenSeats = await applicationRepository.CountTakenSeatsForWorkshops(ids).ConfigureAwait(false);
+        foreach (var dto in fullDtos)
+        {
+            var takenSeat = takenSeats?.SingleOrDefault(w => w.WorkshopId == dto.Id)?.TakenSeats;
+            dto.TakenSeats = takenSeat ?? 0;
         }
     }
 }

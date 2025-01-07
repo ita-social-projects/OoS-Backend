@@ -12,6 +12,7 @@ using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.Geocoding;
 using OutOfSchool.BusinessLogic.Models.Individual;
 using OutOfSchool.BusinessLogic.Models.Notifications;
+using OutOfSchool.BusinessLogic.Models.Position;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.Exported;
 using OutOfSchool.BusinessLogic.Models.SocialGroup;
@@ -234,7 +235,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
 
         CreateMap<Address, AddressInfoDto>()
-             .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
+             .ForMember(dest => dest.CodeficatorAddress, opt => opt.MapFrom(src => src.CATOTTG));
 
         /// <summary>
         /// The localization is done outside the mapping
@@ -392,7 +393,7 @@ public class MappingProfile : Profile
                 opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price))
             .ForMember(dest => dest.PayRate, opt => opt.MapFrom(src => src.PayRate))
-            .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats()))
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
             .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Select(x => x.Name)))
             .ForMember(dest => dest.LanguageOfEducation, opt => opt.Ignore())
@@ -403,6 +404,8 @@ public class MappingProfile : Profile
 
         CreateMap<Provider, ProviderInfoDto>()
             .IncludeBase<Provider, ProviderInfoBaseDto>()
+            .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.Name))
+            .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.Institution.Title))
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
@@ -840,6 +843,28 @@ public class MappingProfile : Profile
 
         CreateMap<Individual, UploadEmployeeRequestDto>()
                     .ForMember(dest => dest.AssignedRole, opt => opt.Ignore());
+
+        CreateMap<PositionCreateUpdateDto, Position>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
+                .ForMember(dest => dest.IsSystemProtected, opt => opt.Ignore())
+                .ForMember(dest => dest.Document, opt => opt.Ignore())
+                .ForMember(dest => dest.File, opt => opt.Ignore())
+                .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
+                .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
+                .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
+                .ForMember(dest => dest.Officials, opt => opt.Ignore())
+                .ForMember(dest => dest.Provider, opt => opt.Ignore())
+                .ForMember(dest => dest.ProviderId, opt => opt.Ignore())
+                .ForMember(dest => dest.ContactId, opt => opt.Ignore())
+                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());        
+        
+        CreateMap<Position, PositionDto>();
     }
 
     public IMappingExpression<TSource, TDestination> CreateSoftDeletedMap<TSource, TDestination>()
