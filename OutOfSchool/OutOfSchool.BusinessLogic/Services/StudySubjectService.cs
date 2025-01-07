@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.StudySubjects;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -32,58 +33,66 @@ public class StudySubjectService : IStudySubjectService
     }
 
     /// <inheritdoc/>
-    public async Task<StudySubjectCreateUpdateDto> Create(StudySubjectCreateUpdateDto dto)
+    public async Task<StudySubjectDto> Create(StudySubjectCreateUpdateDto dto)
     {
-        logger.LogInformation("StudySubject creating was started.");
+        logger.LogDebug("StudySubject creating was started");
 
         if (dto is null)
         {
-            logger.LogInformation("Creating failed, dto is null.");
-            throw new ArgumentException("Dto is null.", nameof(dto));
+            logger.LogError("Creating failed, dto is null");
+            return null;
         }
 
-        await CheckIfLanguagesIdsAreCorrect(dto);
+        await CheckIfPrimaryLanguageIdIsCorrect(dto);
 
         var studySubject = mapper.Map<StudySubject>(dto);
 
         var newStudySubject = await studySubjectRepository.Create(studySubject).ConfigureAwait(false);
 
-        logger.LogDebug($"StudySubject with Id = {newStudySubject?.Id} created successfully.");
+        logger.LogDebug("StudySubject with Id = {Id} created successfully.", newStudySubject?.Id);
 
-        logger.LogInformation("StudySubjectLanguages table updated succesfully.");
-
-        return mapper.Map<StudySubjectCreateUpdateDto>(newStudySubject);
+        return mapper.Map<StudySubjectDto>(newStudySubject);
     }
 
     /// <inheritdoc/>
-    public async Task Delete(Guid id)
+    public async Task<Result<StudySubjectDto>> Delete(Guid id)
     {
-        logger.LogInformation($"Deleting StudySubject with Id = {id} started.");
+        logger.LogDebug("Deleting StudySubject with Id = {Id} started", id);
 
-        var entity = await studySubjectRepository.GetById(id).ConfigureAwait(false);
+        var studySubject = await studySubjectRepository.GetById(id).ConfigureAwait(false);
 
-        if (entity is null || entity.IsDeleted)
+        if (studySubject is null)
         {
-            logger.LogWarning($"StudySubject with Id = {id} was not found.");
-            throw new KeyNotFoundException($"StudySubject with Id = {id} does not exist or it was deleted.");
+            logger.LogWarning("StudySubject with Id = {Id} was not found", id);
+            return Result<StudySubjectDto>.Failed(new OperationError
+            {
+                Code = "404",
+                Description = $"StudySubject with Id = {id} was not found"
+            });
         }
 
         try
         {
-            await studySubjectRepository.Delete(entity).ConfigureAwait(false);
-            logger.LogInformation($"StudySubject with Id = {id} successfully deleted.");
+            await studySubjectRepository.Delete(studySubject).ConfigureAwait(false);
+            logger.LogDebug("StudySubject with Id = {Id} successfully deleted", id);
+
+            return Result<StudySubjectDto>.Success(mapper.Map<StudySubjectDto>(studySubject));
         }
         catch (DbUpdateConcurrencyException)
         {
-            logger.LogError($"Deleting StudySubject with Id = {id} failed.");
-            throw;
+            logger.LogError("Deleting StudySubject with Id = {Id} failed", id);
+            return Result<StudySubjectDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = $"Deleting StudySubject with Id = {id} failed"
+            });
         }
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<StudySubjectDto>> GetByFilter(SearchStringFilter filter)
+    public async Task<SearchResult<StudySubjectDto>> GetByFilter(SearchStringFilter filter)
     {
-        logger.LogInformation("Getting all StudySubjects by filter started.");
+        logger.LogDebug("Getting all StudySubjects by filter started");
 
         filter ??= new SearchStringFilter();
         var predicate = PredicateBuilder.True<StudySubject>();
@@ -97,105 +106,136 @@ public class StudySubjectService : IStudySubjectService
 
         predicate = predicate.And(s => !s.IsDeleted);
 
-        var subjects = await studySubjectRepository
+        int count = await studySubjectRepository.Count(predicate).ConfigureAwait(false);
+
+        var studySubjects = await studySubjectRepository
             .Get(
                 skip: filter.From,
                 take: filter.Size,
+                includeProperties: "Languages",
                 whereExpression: predicate
             ).AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
 
-        logger.LogInformation(!subjects.Any()
-            ? "StudySubject table is empty."
-            : $"All {subjects.Count()} records were successfully received from the StudySubject table");
+        logger.LogDebug("{Count} records were successfully received from the StudySubjects table", studySubjects.Count());
 
-        return subjects.Select(mapper.Map<StudySubjectDto>).ToList();
+        var result = new SearchResult<StudySubjectDto>
+        {
+            Entities = mapper.Map<List<StudySubjectDto>>(studySubjects),
+            TotalAmount = count
+        };
+
+        return result;
     }
 
     /// <inheritdoc/>
     public async Task<StudySubjectDto> GetById(Guid id)
     {
-        logger.LogInformation($"Getting StudySubject by Id started. Looking Id = {id}.");
+        logger.LogDebug("Getting StudySubject by Id started. Looking Id = {Id}", id);
 
         var studySubject = await studySubjectRepository.GetById(id)
             .ConfigureAwait(false);
 
-        if (studySubject == null || studySubject.IsDeleted)
+        if (studySubject == null)
         {
-            throw new KeyNotFoundException($"There are no recors in StudySubjects table with such id - {id}, or such StudySubject was deleted.");
+            return null;
         }
 
-        logger.LogInformation($"Got a StudySubject with Id = {id}.");
+        logger.LogDebug("Got a StudySubject with Id = {Id}", id);
 
         return mapper.Map<StudySubjectDto>(studySubject);
     }
 
     /// <inheritdoc/>
-    public async Task<StudySubjectCreateUpdateDto> Update(StudySubjectCreateUpdateDto dto)
+    public async Task<Result<StudySubjectDto>> Update(StudySubjectCreateUpdateDto dto)
     {
-        logger.LogInformation($"Updating StudySubject started.");
+        logger.LogDebug("Updating StudySubject started");
 
         if (dto is null)
         {
-            logger.LogInformation("Updating failed, dto is null.");
-            throw new ArgumentException("Dto is null.", nameof(dto));
+            logger.LogError("Updating failed, dto is null.");
+            return Result<StudySubjectDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = "Dto is null"
+            });
         }
 
-        await CheckIfLanguagesIdsAreCorrect(dto);
+        await CheckIfPrimaryLanguageIdIsCorrect(dto);
 
         var studySubject = await studySubjectRepository.GetById(dto.Id).ConfigureAwait(false);
 
-        if (studySubject == null || studySubject.IsDeleted)
+        if (studySubject == null)
         {
-            throw new KeyNotFoundException($"There are no recors in StudySubjects table with such id - {dto.Id}, or such StudySubject was deleted.");
+            logger.LogWarning("There are no recors in StudySubjects table with such id - {Id}", dto.Id);
+            return Result<StudySubjectDto>.Failed(new OperationError
+            {
+                Code = "404",
+                Description = $"There are no recors in StudySubjects table with such id - {dto.Id}",
+            });
         }
 
         mapper.Map(dto, studySubject);
-
-        logger.LogInformation("StudySubjectLanguages table updated succesfully.");
 
         try
         {
             var updatedStudySubject = await studySubjectRepository.Update(studySubject)
                 .ConfigureAwait(false);
-            await studySubjectRepository.SaveChangesAsync().ConfigureAwait(false);
 
-            logger.LogInformation($"StudySubject updated succesfully.");
+            logger.LogDebug("StudySubject updated succesfully");
 
-            return mapper.Map<StudySubjectCreateUpdateDto>(updatedStudySubject);
+            return Result<StudySubjectDto>.Success(mapper.Map<StudySubjectDto>(updatedStudySubject));
         }
         catch (DbUpdateConcurrencyException)
         {
-            logger.LogError($"Updating failed. StudySubject to update was not found.");
-            throw;
+            logger.LogError("Updating failed. StudySubject to update was not found");
+            return Result<StudySubjectDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = "Updating failed. StudySubject to update was not found",
+            });
         }
     }
 
-    private async Task CheckIfLanguagesIdsAreCorrect(StudySubjectCreateUpdateDto dto)
+    private async Task CheckIfPrimaryLanguageIdIsCorrect(StudySubjectCreateUpdateDto dto)
     {
-        var existingLanguages = await languageRepository.GetAll().ConfigureAwait(false);
-        var existingLanguageIds = existingLanguages.Select(x => x.Id).ToHashSet();
-
-        if (dto.Languages.Where(id => !existingLanguageIds.Contains(id)).ToList().Any() || !existingLanguageIds.Contains(dto.PrimaryLanguageId))
+        if (dto.IsPrimaryLanguageUkrainian)
         {
-            logger.LogDebug("Operation failed, dto contains non-existing language ids.");
-            throw new ArgumentException("Dto contains non-existing language ids.", nameof(dto));
-        }
+            var query = await languageRepository
+                .GetByFilter(x => x.Code.Equals("uk", StringComparison.OrdinalIgnoreCase)).ConfigureAwait(false);
+            var ukrainianLanguage = query.FirstOrDefault();
 
-        var ukrainianLanguage = existingLanguages.FirstOrDefault(x => x.Code.Equals("uk", StringComparison.OrdinalIgnoreCase));
-        if (ukrainianLanguage == null)
-        {
-            logger.LogDebug("Operation failed, Ukrainian language is not found in the database.");
-            throw new ArgumentException("Ukrainian language is not found in the database.");
-        }
+            if (ukrainianLanguage == null)
+            {
+                logger.LogWarning("Operation failed, Ukrainian language is not found in the database");
+                throw new ArgumentException("Ukrainian language is not found in the database.");
+            }
 
-        var ukrainianLanguageId = ukrainianLanguage.Id;
+            var ukrainianLanguageId = ukrainianLanguage.Id;
+            var primaryLanguage = dto.Languages.FirstOrDefault(l => l.IsPrimary);
 
-        if (dto.IsPrimaryLanguageUkrainian && ukrainianLanguageId != dto.PrimaryLanguageId)
-        {
-            logger.LogDebug("Operation failed, dto's property IsPrimaryLanguageUkrainian is not accurate.");
-            throw new ArgumentException("Dto's property IsPrimaryLanguageUkrainian is not accurate.", nameof(dto));
+            if (primaryLanguage == null || ukrainianLanguageId != primaryLanguage.Id)
+            {
+                foreach (var language in dto.Languages)
+                {
+                    language.IsPrimary = language.Id == ukrainianLanguage.Id;
+                }
+
+                if (!dto.Languages.Any(l => l.Id == ukrainianLanguageId))
+                {
+                    dto.Languages.Add(new StudySubjectCreateUpdateLanguage
+                    {
+                        Id = ukrainianLanguageId,
+                        IsPrimary = true
+                    });
+                    logger.LogDebug("Ukrainian language was added to dto as the primary language");
+                }
+                else
+                {
+                    logger.LogDebug("Ukrainian language was set in dto as the primary language");
+                }
+            }
         }
     }
 }

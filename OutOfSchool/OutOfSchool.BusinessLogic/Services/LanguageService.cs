@@ -28,14 +28,12 @@ public class LanguageService : ILanguageService
     /// <inheritdoc/>
     public async Task<IEnumerable<LanguageDto>> GetAll()
     {
-        logger.LogInformation("Getting all languages started.");
+        logger.LogDebug("Getting all languages started");
 
         var languages = await repository.GetAll().ConfigureAwait(false);
 
-        logger.LogInformation(!languages.Any()
-            ? "Languages table is empty."
-            : $"All {languages.Count()} records were successfully received from the Languages table.");
+        logger.LogDebug("{Count} records were successfully received from the Languages table", languages.Count());
 
-        return languages.Select(mapper.Map<LanguageDto>).ToList();
+        return mapper.Map<List<LanguageDto>>(languages);
     }
 }
