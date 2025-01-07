@@ -12,7 +12,6 @@ namespace OutOfSchool.BusinessLogic.Services;
 public class CompetitiveEventService : ICompetitiveEventService
 {
     private readonly IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> competitiveEventRepository;
-    private readonly IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType> accountingTypeOfEventRepository;
     private readonly IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
     private readonly IEntityRepository<Guid, Judge> judgeRepository;
     private readonly ILogger<CompetitiveEventService> logger;
@@ -22,7 +21,6 @@ public class CompetitiveEventService : ICompetitiveEventService
     public CompetitiveEventService(
         IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> competitiveEventRepository,
         IEntityRepository<Guid, Judge> judgeRepository,
-        IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType> accountingTypeOfEventRepository,
         IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository,
         ILogger<CompetitiveEventService> logger,
         IStringLocalizer<SharedResource> localizer,
@@ -30,8 +28,7 @@ public class CompetitiveEventService : ICompetitiveEventService
     {
         this.competitiveEventRepository = competitiveEventRepository ?? throw new ArgumentNullException(nameof(competitiveEventRepository));
         this.judgeRepository = judgeRepository ?? throw new ArgumentNullException(nameof(judgeRepository));
-        this.accountingTypeOfEventRepository = accountingTypeOfEventRepository ?? throw new ArgumentException(nameof(accountingTypeOfEventRepository));
-        this.descriptionItemRepository = descriptionItemRepository ?? throw new ArgumentException(nameof(accountingTypeOfEventRepository));
+        this.descriptionItemRepository = descriptionItemRepository ?? throw new ArgumentException(nameof(descriptionItemRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -45,10 +42,10 @@ public class CompetitiveEventService : ICompetitiveEventService
         var competitiveEvent = (await competitiveEventRepository.GetById(id).ConfigureAwait(false));
 
         string logMessage = competitiveEvent is null
-            ? $"CompetitiveEvent with Id = {id} doesn't exist in the system."
-            : $"Successfully got a CompetitiveEvent with Id = {id}.";
+            ? "CompetitiveEvent with Id = {id} doesn't exist in the system."
+            : "Successfully got a CompetitiveEvent with Id = {id}.";
 
-        logger.LogTrace(logMessage);
+        logger.LogTrace(logMessage, id);
 
         return mapper.Map<CompetitiveEventDto>(competitiveEvent);
     }
@@ -68,7 +65,7 @@ public class CompetitiveEventService : ICompetitiveEventService
 
             var newCompetitiveEvent = await competitiveEventRepository.Create(competitiveEvent).ConfigureAwait(false);
 
-            logger.LogTrace($"CompetitiveEvent with Id = {newCompetitiveEvent?.Id} created successfully.");
+            logger.LogTrace("CompetitiveEvent with Id = {newCompetitiveEventId} created successfully.", newCompetitiveEvent?.Id);
 
             return mapper.Map<CompetitiveEventDto>(newCompetitiveEvent);
         }).ConfigureAwait(false);
@@ -77,7 +74,7 @@ public class CompetitiveEventService : ICompetitiveEventService
     /// <inheritdoc/>
     public async Task<CompetitiveEventDto> Update(CompetitiveEventUpdateDto dto)
     {
-        logger.LogTrace($"Updating CompetitiveEvent with Id = {dto?.Id} started.");
+        logger.LogTrace("Updating CompetitiveEvent with Id = {dtoId} started.", dto?.Id);
 
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -99,7 +96,7 @@ public class CompetitiveEventService : ICompetitiveEventService
             mapper.Map(dto, competitiveEvent);
             competitiveEvent = await competitiveEventRepository.Update(competitiveEvent).ConfigureAwait(false);
 
-            logger.LogTrace($"CompetitiveEvent with Id = {competitiveEvent?.Id} updated succesfully.");
+            logger.LogTrace("CompetitiveEvent with Id = {competitiveEventId} updated succesfully.", competitiveEvent?.Id);
 
             return competitiveEvent;
         }
@@ -114,7 +111,7 @@ public class CompetitiveEventService : ICompetitiveEventService
     /// <inheritdoc/>
     public async Task Delete(Guid id)
     {
-        logger.LogTrace($"Deleting CompetitiveEvent with Id = {id} started.");
+        logger.LogTrace("Deleting CompetitiveEvent with Id = {id} started.", id);
 
         var entity = await competitiveEventRepository.GetById(id);
 
@@ -124,9 +121,9 @@ public class CompetitiveEventService : ICompetitiveEventService
 
             logger.LogTrace($"CompetitiveEvent with Id = {id} succesfully deleted.");
         }
-        catch (Exception) // DbUpdateConcurrencyException
+        catch (Exception ex) // DbUpdateConcurrencyException
         {
-            logger.LogError("Deleting failed. CompetitiveEvent with Id = {Id} doesn't exist in the system", id);
+            logger.LogError(ex, "Deleting failed. CompetitiveEvent with Id = {Id} doesn't exist in the system", id);
             throw new ArgumentOutOfRangeException(
                 nameof(id),
                 localizer[$"CompetitiveEvent with Id = {id} doesn't exist in the system"]);
@@ -163,7 +160,7 @@ public class CompetitiveEventService : ICompetitiveEventService
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, $"Failed to delete judge with ID: {deletedJudge.Id}");
+                    logger.LogError(ex, "Failed to delete judge with ID: {JudgeId}", deletedJudge.Id);
                     throw;
                 }
             }
@@ -191,7 +188,8 @@ public class CompetitiveEventService : ICompetitiveEventService
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to process judge DTO with ID: {judgeDto.Id}");
+                logger.LogError(ex, "Failed to process judge DTO with ID: {judgeId}", judgeDto.Id);
+
                 throw;
             }
         }
@@ -227,7 +225,7 @@ public class CompetitiveEventService : ICompetitiveEventService
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to delete description item with ID: {descItem.Id}");
+                logger.LogError(ex, "Failed to delete description item with ID: {descItemId}", descItem.Id);
                 throw;
             }
         }
@@ -256,7 +254,7 @@ public class CompetitiveEventService : ICompetitiveEventService
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to process description item with ID: {descItemDto.Id}");
+                logger.LogError(ex, "Failed to process description item with ID: {descItemDtoId}", descItemDto.Id);
                 throw;
             }
         }

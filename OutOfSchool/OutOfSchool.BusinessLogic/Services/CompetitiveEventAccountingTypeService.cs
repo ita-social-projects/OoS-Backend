@@ -22,13 +22,13 @@ public class CompetitiveEventAccountingTypeService : ICompetitiveEventAccounting
     /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
     public CompetitiveEventAccountingTypeService(
-        IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType> repository,
+        IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType> accountingTypeRepository,
         ILogger<CompetitiveEventAccountingType> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper)
     {
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
-        this.accountingTypeRepository = repository ?? throw new ArgumentNullException(nameof(accountingTypeRepository));
+        this.accountingTypeRepository = accountingTypeRepository ?? throw new ArgumentNullException(nameof(accountingTypeRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
@@ -36,7 +36,7 @@ public class CompetitiveEventAccountingTypeService : ICompetitiveEventAccounting
     /// <inheritdoc/>
     public async Task<IEnumerable<CompetitiveEventAccountingTypeDto>> GetAll(LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogInformation($"Getting all CompetitiveEvent Accounting Types, {localization} localization, started.");
+        logger.LogInformation("Getting all CompetitiveEvent Accounting Types, {Localization} localization, started.", localization);
 
         var accountingTypes = await accountingTypeRepository.GetAll().ConfigureAwait(false);
         var achievementTypesLocalized = accountingTypes.Select(x =>
@@ -46,9 +46,10 @@ public class CompetitiveEventAccountingTypeService : ICompetitiveEventAccounting
                 Title = localization == LocalizationType.En ? x.TitleEn : x.Title,
             });
 
-        logger.LogInformation(accountingTypes.Any() ? 
-            $"All {accountingTypes.Count()} records were successfully received from the CompetitiveEvent Accounting Types table." 
-            : "CompetitiveEvent Accounting Type table is empty.");
+        string logMessage = accountingTypes.Any() ?
+             "All {Count} records were successfully received from the CompetitiveEvent Accounting Types table."
+            : "CompetitiveEvent Accounting Type table is empty.";
+        logger.LogInformation(logMessage, accountingTypes.Count());
 
         return mapper.Map<List<CompetitiveEventAccountingTypeDto>>(achievementTypesLocalized);
     }

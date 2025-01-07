@@ -148,7 +148,7 @@ public class CompetitiveEventController : ControllerBase
 
     private static bool AreJudgesValid(IEnumerable<JudgeDto> judges)
     {
-        if (judges != null && judges.Count() > 0)
+        if (judges != null && judges.Any())
         {
             var chiefJudgeCount = judges.Count(j => j.IsChiefJudge);
             return chiefJudgeCount <= 1;

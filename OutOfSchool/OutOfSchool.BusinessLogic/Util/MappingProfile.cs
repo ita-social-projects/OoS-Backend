@@ -836,7 +836,7 @@ public class MappingProfile : Profile
             .IncludeBase<CompetitiveEventCreateDto, CompetitiveEvent>()
             .ForMember(dest => dest.Judges, opt => opt.Ignore())
             .ForMember(dest => dest.CompetitiveEventDescriptionItems, opt => opt.Ignore())
-            .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore()); ;
+            .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore());
 
         CreateMap<CompetitiveEventAccountingType, CompetitiveEventAccountingTypeDto>().ReverseMap();
 

@@ -21,7 +21,6 @@ class CompetitiveEventServiceUpdateAndCreateTests
 {
     private Mock<IEntityRepositorySoftDeleted<Guid, CompetitiveEvent>> mockCompetitiveEventRepository;
     private Mock<IEntityRepository<Guid, Judge>> mockJudgeRepository;
-    private Mock<IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType>> mockAccountingTypeRepository;
     private Mock<IEntityRepository<Guid, CompetitiveEventDescriptionItem>> mockDescriptionItemRepository;
     private Mock<ILogger<CompetitiveEventService>> mockLogger;
     private Mock<IStringLocalizer<SharedResource>> mockLocalizer;
@@ -34,7 +33,6 @@ class CompetitiveEventServiceUpdateAndCreateTests
     {
         mockCompetitiveEventRepository = new Mock<IEntityRepositorySoftDeleted<Guid, CompetitiveEvent>>();
         mockJudgeRepository = new Mock<IEntityRepository<Guid, Judge>>();
-        mockAccountingTypeRepository = new Mock<IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType>>();
         mockDescriptionItemRepository = new Mock<IEntityRepository<Guid, CompetitiveEventDescriptionItem>>();
         mockLogger = new Mock<ILogger<CompetitiveEventService>>();
         mockLocalizer = new Mock<IStringLocalizer<SharedResource>>();
@@ -43,7 +41,6 @@ class CompetitiveEventServiceUpdateAndCreateTests
         service = new CompetitiveEventService(
             mockCompetitiveEventRepository.Object,
             mockJudgeRepository.Object,
-            mockAccountingTypeRepository.Object,
             mockDescriptionItemRepository.Object,
             mockLogger.Object,
             mockLocalizer.Object,

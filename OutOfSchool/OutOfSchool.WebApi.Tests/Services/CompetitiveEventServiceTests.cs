@@ -62,7 +62,7 @@ public class CompetitiveEventServiceTests
         service = new CompetitiveEventService(
             repo,
             judgeRepository,
-            accountingTypeOfEventRepository,
+           // accountingTypeOfEventRepository,
             descriptionItemRepository,
             logger.Object,
             localizer.Object,

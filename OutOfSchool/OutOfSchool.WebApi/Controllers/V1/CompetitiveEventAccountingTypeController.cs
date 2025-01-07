@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
-using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -11,7 +10,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 [ApiController]
 [AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
-public class CompetitiveEventAccountingTypeController : Controller
+public class CompetitiveEventAccountingTypeController : ControllerBase
 {
     private readonly ICompetitiveEventAccountingTypeService accountingTypeService;
 
