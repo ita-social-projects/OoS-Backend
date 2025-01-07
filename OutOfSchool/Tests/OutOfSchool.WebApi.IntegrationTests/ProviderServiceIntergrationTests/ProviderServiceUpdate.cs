@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -57,6 +58,9 @@ public class ProviderServiceUpdate
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderService>>();
         var addressRepository = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
+        var individualRepository = new Mock<IEntityRepositorySoftDeleted<Guid, Individual>>();
+        var officialRepository = new Mock<IEntityRepositorySoftDeleted<Guid, Official>>();
+        var positionRepository = new Mock<IEntityRepositorySoftDeleted<Guid, Position>>();
         var providerRepository = new ProviderRepository(GetContext());
         var providerAdminRepository = new Mock<IEmployeeRepository>();
         var userRepository = new Mock<IEntityRepositorySoftDeleted<string, User>>();
@@ -86,6 +90,9 @@ public class ProviderServiceUpdate
             localizer.Object,
             this.mapper,
             addressRepository.Object,
+            individualRepository.Object,
+            officialRepository.Object,
+            positionRepository.Object,
             workshopServicesCombiner.Object,
             providerAdminRepository.Object,
             providerImagesService.Object,

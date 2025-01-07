@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Individual;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 
@@ -218,5 +219,47 @@ public class ProviderController : ControllerBase
         }
 
         return Ok(provider);
+    }
+
+    /// <summary>
+    /// Upload the list of employees for Provider .
+    /// </summary>
+    /// <param name="id">id of Provider.</param>
+    /// <param name="uploadEployees">Array with employees to upload.</param>
+    /// <returns>A <see cref="UploadEmployeeResponse"/> representing the result of the upload employees operation.</returns>
+    [HasPermission(Permissions.ProviderEdit)]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPut("{id}/employees/upload")]
+    public async Task<IActionResult> Upload(Guid id, [FromBody] UploadEmployeeRequestDto[] uploadEployees)
+    {
+        ArgumentNullException.ThrowIfNull(uploadEployees);
+
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            _ = await providerService.UploadEmployeesForProvider(id, uploadEployees).ConfigureAwait(false);
+
+            return Ok($"Success! Employees has been uploaded into the DB.");
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            var errorMessage = $"Unable to upload a list of employees for provider: {ex.Message}";
+            logger.LogError(ex, errorMessage);
+            return BadRequest(errorMessage);
+        }
+        catch (InvalidOperationException ex)
+        {
+            var errorMessage = $"Unable to upload a list of employees for provider: {ex.Message}";
+            logger.LogError(ex, errorMessage);
+            return BadRequest(errorMessage);
+        }
     }
 }

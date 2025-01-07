@@ -83,6 +83,9 @@ public class ProviderServiceTests
         providerAdminRepositoryMock = new Mock<IEmployeeRepository>();
         usersRepositoryMock = ProviderTestsHelper.CreateUsersRepositoryMock(fakeUser);
         var addressRepo = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
+        var individualRepo = new Mock<IEntityRepositorySoftDeleted<Guid, Individual>>();
+        var officialRepo = new Mock<IEntityRepositorySoftDeleted<Guid, Official>>();
+        var positionRepo = new Mock<IEntityRepositorySoftDeleted<Guid, Position>>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderService>>();
         var providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
@@ -113,6 +116,9 @@ public class ProviderServiceTests
             localizer.Object,
             mapper,
             addressRepo.Object,
+            individualRepo.Object,
+            officialRepo.Object,
+            positionRepo.Object,
             workshopServicesCombinerMock.Object,
             providerAdminRepositoryMock.Object,
             providerImagesService.Object,
@@ -1399,7 +1405,7 @@ public class ProviderServiceTests
             existingProvider.Id, It.IsAny<IEnumerable<string>>(), It.IsAny<Dictionary<string, string>>(), null));
 
         // Act
-        providerService.SendNotification(existingProvider, notificationAction, 
+        providerService.SendNotification(existingProvider, notificationAction,
             It.IsAny<bool>(), It.IsAny<bool>());
 
         // Assert

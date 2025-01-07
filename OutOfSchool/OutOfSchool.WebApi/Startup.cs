@@ -359,6 +359,7 @@ public static class Startup
         services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();
         services.AddTransient<ICodeficatorService, CodeficatorService>();
         services.AddTransient<IOperationWithObjectService, OperationWithObjectService>();
+        services.AddTransient<IPositionService, PositionService>();
         services.AddTransient<IStudySubjectService, StudySubjectService>();
         services.AddTransient<ILanguageService, LanguageService>();
 

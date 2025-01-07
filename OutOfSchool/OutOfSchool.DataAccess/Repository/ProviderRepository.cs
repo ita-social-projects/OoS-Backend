@@ -16,7 +16,7 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
     public ProviderRepository(OutOfSchoolDbContext dbContext)
         : base(dbContext)
     {
-        db = dbContext;
+        this.db = dbContext;        
     }
 
     /// <summary>

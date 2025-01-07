@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using FluentAssertions;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -15,6 +16,7 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Individual;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
@@ -59,6 +61,9 @@ public class ProviderServiceTests
     private Mock<IAreaAdminRepository> areaAdminRepositoryMock;
     private Mock<IUserService> userServiceMock;
     private Mock<ICommunicationService> communicationService;
+    private Mock<IEntityRepositorySoftDeleted<Guid, Individual>> individualRepositoryMock;
+    private Mock<IEntityRepositorySoftDeleted<Guid, Official>> officialRepositoryMock;
+    private Mock<IEntityRepositorySoftDeleted<Guid, Position>> positionRepositoryMock;
 
     private List<Provider> fakeProviders;
     private User fakeUser;
@@ -93,6 +98,9 @@ public class ProviderServiceTests
         areaAdminRepositoryMock = new Mock<IAreaAdminRepository>();
         userServiceMock = new Mock<IUserService>();
         communicationService = new Mock<ICommunicationService>();
+        individualRepositoryMock = new Mock<IEntityRepositorySoftDeleted<Guid, Individual>>();
+        officialRepositoryMock = new Mock<IEntityRepositorySoftDeleted<Guid, Official>>();
+        positionRepositoryMock = new Mock<IEntityRepositorySoftDeleted<Guid, Position>>();
 
         var authorizationServerConfig = Options.Create(new AuthorizationServerConfig { Authority = new Uri("http://test.com") });
 
@@ -106,6 +114,9 @@ public class ProviderServiceTests
             localizer.Object,
             mapper,
             addressRepo.Object,
+            individualRepositoryMock.Object,
+            officialRepositoryMock.Object,
+            positionRepositoryMock.Object,
             workshopServicesCombiner.Object,
             providerAdminRepositoryMock.Object,
             providerImagesService.Object,
@@ -1155,6 +1166,211 @@ public class ProviderServiceTests
     }
 
     #endregion
+
+    #region UploadEmployeesForProvider
+
+    [Test]
+    public void UploadEmployeesForProvider_WhenUploadEmployeeArrayIsNull_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var data = (UploadEmployeeRequestDto[])null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await providerService.UploadEmployeesForProvider(id, data)
+                                                                    .ConfigureAwait(false));
+    }
+
+    [Test]
+    public void UploadEmployeesForProvider_WhenUploadEmployeeArrayLengthEqualsZero_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var data = new UploadEmployeeRequestDto[0];
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await providerService.UploadEmployeesForProvider(id, data)
+                                                                        .ConfigureAwait(false));
+    }
+
+    [Test]
+    public void UploadEmployeesForProvider_WhenUploadEmployeeArrayLengthGreaterThanMaxNumberOfEmployeesToUpload_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        int MaxNumberOfEmployeesToUpload = Constants.MaxNumberOfEmployeesToUpload;
+        var id = Guid.NewGuid();
+        var data = new UploadEmployeeRequestDto[MaxNumberOfEmployeesToUpload + 1];
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await providerService.UploadEmployeesForProvider(id, data)
+                                                                        .ConfigureAwait(false));
+    }
+
+    [Test]
+    public void UploadEmployeesForProvider_WhenRnokppValuesAreNotUnique_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var employee1 = UploadEmployeeDtoGenerator.Generate();
+        var employee2 = UploadEmployeeDtoGenerator.Generate();
+        employee2.Rnokpp = employee1.Rnokpp;
+        var data = new UploadEmployeeRequestDto[] { employee1, employee2 };
+
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await providerService.UploadEmployeesForProvider(id, data)
+                                                                        .ConfigureAwait(false));
+    }
+
+    [Test]
+    [TestCase(4, true)]
+    [TestCase(10, true)]
+    public async Task UploadEmployeesForProvider_WhenAllDataIsValidAndWithNewPositions_ShouldReturnResult(int entitiesCount, bool isNewPositionCreating)
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        SetupUploadEmployeesForProvider(out UploadEmployeeRequestDto[] FakeUploadEmployees,
+                                        id,
+                                        isNewPositionCreating,
+                                        entitiesCount);
+        var expectedResult = new UploadEmployeeResponse
+        {
+            CountOfCreatedIndividuals = 1,
+            CountOfCreatedOfficials = entitiesCount - 1,
+            CountOfCreatedPositions = entitiesCount - 1
+        };
+
+        // Act
+        var result = await providerService.UploadEmployeesForProvider(id, FakeUploadEmployees).ConfigureAwait(false);
+
+        // Assert
+        individualRepositoryMock.VerifyAll();
+        officialRepositoryMock.VerifyAll();
+        positionRepositoryMock.VerifyAll();
+        result.Should().NotBeNull();
+        result.Should().BeEquivalentTo(expectedResult);
+    }
+
+    [Test]
+    [TestCase(4, false)]
+    [TestCase(10, false)]
+    public async Task UploadEmployeesForProvider_WhenAllDataIsValidAndWithoutNewPositions_ShouldReturnResult(int entitiesCount, bool isNewPositionCreating)
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        SetupUploadEmployeesForProvider(out UploadEmployeeRequestDto[] FakeUploadEmployees,
+                                        id,
+                                        isNewPositionCreating,
+                                        entitiesCount);
+        var expectedResult = new UploadEmployeeResponse
+        {
+            CountOfCreatedIndividuals = 1,
+            CountOfCreatedOfficials = entitiesCount - 1,
+            CountOfCreatedPositions = 0
+        };
+
+        // Act
+        var result = await providerService.UploadEmployeesForProvider(id, FakeUploadEmployees).ConfigureAwait(false);
+
+        // Assert
+        individualRepositoryMock.VerifyAll();
+        officialRepositoryMock.VerifyAll();
+        positionRepositoryMock.VerifyAll();
+        result.Should().NotBeNull();
+        result.Should().BeEquivalentTo(expectedResult);
+    }
+
+    #endregion
+
+    private void SetupUploadEmployeesForProvider(out UploadEmployeeRequestDto[] FakeUploadEmployees,
+                                                 Guid providerId,
+                                                 bool isNewPositionCreating,
+                                                 int entitiesCount)
+    {
+        FakeUploadEmployees = UploadEmployeeDtoGenerator.Generate(entitiesCount).ToArray();
+        var FakeIndividuals = GetFakeUploadIndividuals(FakeUploadEmployees, out Individual createdIndividual);
+        var FakePositions = GetFakeUploadPositions(entitiesCount, providerId, FakeUploadEmployees[0].AssignedRole);
+        var FakeOfficials = GetFakeUploadOfficials(entitiesCount,
+                                                   FakePositions.ToArray()[0],
+                                                   FakeIndividuals.ToArray()[0].Id);
+
+        individualRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Individual, bool>>>(), string.Empty))
+            .Returns(Task.FromResult(FakeIndividuals))
+            .Verifiable(Times.Once)
+            ;
+        individualRepositoryMock.Setup(r => r.Create(It.IsAny<Individual>()))
+            .Returns(Task.FromResult(createdIndividual))
+            .Verifiable(Times.Once)
+            ;
+        officialRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Official, bool>>>(), "Position"))
+            .Returns(Task.FromResult(FakeOfficials))
+            .Verifiable(Times.Once)
+            ;
+
+        if (isNewPositionCreating)
+        {
+            positionRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Position, bool>>>(), string.Empty))
+                .Returns(Task.FromResult(new Position[] { default } as IEnumerable<Position>))
+                .Verifiable(Times.Exactly(entitiesCount - 1))
+                ;
+            positionRepositoryMock.Setup(r => r.Create(It.IsAny<Position>()))
+                .Returns(Task.FromResult(PositionGenerator.Generate()))
+                .Verifiable(Times.Exactly(entitiesCount - 1))
+                ;
+        }
+        else
+        {
+            positionRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Position, bool>>>(), string.Empty))
+                .Returns(Task.FromResult(FakePositions))
+                .Verifiable(Times.Exactly(entitiesCount - 1))
+                ;
+            positionRepositoryMock.Setup(r => r.Create(It.IsAny<Position>()))
+                .Returns(Task.FromResult(PositionGenerator.Generate()))
+                .Verifiable(Times.Never)
+                ;
+        }
+
+        officialRepositoryMock.Setup(r => r.Create(It.IsAny<Official>()))
+            .Returns(Task.FromResult(It.IsAny<Official>()))
+            .Verifiable(Times.Exactly(entitiesCount - 1))
+            ;
+
+        providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task>>()))
+            .Returns((Func<Task> f) => f.Invoke())
+            .Verifiable(Times.Once)
+            ;
+    }
+
+    private static IEnumerable<Individual> GetFakeUploadIndividuals(UploadEmployeeRequestDto[] data,
+                                                                    out Individual createdIndividual)
+    {
+        var mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        var list = data.Select(mapper.Map<Individual>).ToList();
+        list.ForEach(i => i.Id = Guid.NewGuid());
+        int number = data.Length - 1;
+        createdIndividual = list[number];
+        list.RemoveAt(number);
+
+        return list;
+    }
+
+    private static IEnumerable<Official> GetFakeUploadOfficials(int count, Position position, Guid individualId)
+    {
+        var list = OfficialGenerator.Generate(count);
+        list[0].PositionId = position.Id;
+        list[0].IndividualId = individualId;
+        list[0].Position = position;
+
+        return list;
+    }
+
+    private static IEnumerable<Position> GetFakeUploadPositions(int count, Guid providerId, string assignedRole)
+    {
+        var list = PositionGenerator.Generate(count);
+        list.ForEach((o) => { o.ProviderId = providerId; });
+        list[0].FullName = assignedRole;
+
+        return list;
+    }
 
     private static Mock<IEntityRepositorySoftDeleted<string, User>> CreateUsersRepositoryMock(User fakeUser)
     {

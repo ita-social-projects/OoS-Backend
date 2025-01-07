@@ -195,4 +195,15 @@ public enum Permissions : short
     [Display(GroupName = "CompetitiveEvent", Name = "Remove", Description = "Can remove CompetitiveEvent data")]
     CompetitiveEventRemove = 153,
     #endregion
+
+    #region Position control permissions #16
+    [Display(GroupName = "Position", Name = "Read", Description = "Can read Position")]
+    PositionRead = 160,
+    [Display(GroupName = "Position", Name = "Edit", Description = "Can edit Position item")]
+    PositionEdit = 161,
+    [Display(GroupName = "Position", Name = "Add new", Description = "Can add a new Position item")]
+    PositionAddNew = 162,
+    [Display(GroupName = "Position", Name = "Remove", Description = "Can remove Position data")]
+    PositionRemove = 163,
+    #endregion
 }
