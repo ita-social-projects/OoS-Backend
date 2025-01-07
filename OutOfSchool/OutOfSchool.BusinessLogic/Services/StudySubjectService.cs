@@ -139,6 +139,7 @@ public class StudySubjectService : IStudySubjectService
 
         if (studySubject == null)
         {
+            logger.LogError("Getting by id failed, dto is null");
             return null;
         }
 
@@ -154,7 +155,7 @@ public class StudySubjectService : IStudySubjectService
 
         if (dto is null)
         {
-            logger.LogError("Updating failed, dto is null.");
+            logger.LogError("Updating failed, dto is null");
             return Result<StudySubjectDto>.Failed(new OperationError
             {
                 Code = "400",
