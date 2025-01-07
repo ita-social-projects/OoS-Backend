@@ -72,26 +72,7 @@ public class CompetitiveEventControllerTests
     public async Task Create_WhenModelIsValid_ReturnsCreatedAtActionResult()
     {
         // Arrange
-        var inputDto = new CompetitiveEventCreateDto()
-        {
-            Title = "New Event",
-            ScheduledStartTime = DateTime.UtcNow,
-            ScheduledEndTime = DateTime.UtcNow.AddHours(1),
-            Judges = new List<JudgeDto>()
-            { 
-                new JudgeDto()
-                {
-                    FirstName ="Judge A",
-                    Description = "Description A",
-                    IsChiefJudge = true,
-                },
-                new JudgeDto()
-                {
-                    FirstName ="Judge B",
-                    Description = "Description B"
-                },
-            }
-        };
+        CompetitiveEventCreateDto inputDto = FakeCompetitiveEventCreateDto();
         competitiveEventService.Setup(x => x.Create(It.IsAny<CompetitiveEventCreateDto>()))
             .ReturnsAsync(
             new CompetitiveEventDto()
@@ -100,6 +81,21 @@ public class CompetitiveEventControllerTests
                 Title = inputDto.Title,
                 ScheduledStartTime = inputDto.ScheduledStartTime,
                 ScheduledEndTime = inputDto.ScheduledEndTime,
+                RegistrationStartTime = inputDto.RegistrationStartTime,
+                RegistrationEndTime = inputDto.RegistrationEndTime,
+                Description = inputDto.Description,
+                DescriptionOfTheEnrollmentProcedure = inputDto.DescriptionOfTheEnrollmentProcedure,
+                AreThereBenefits = inputDto.AreThereBenefits,
+                Benefits = inputDto.Benefits,
+                Rating = inputDto.Rating,
+                NumberOfRatings = inputDto.NumberOfRatings,
+                NumberOfSeats = inputDto.NumberOfSeats,
+                NumberOfOccupiedSeats = inputDto.NumberOfOccupiedSeats,
+                OptionsForPeopleWithDisabilities = inputDto.OptionsForPeopleWithDisabilities,
+                DescriptionOfOptionsForPeopleWithDisabilities = inputDto.DescriptionOfOptionsForPeopleWithDisabilities,
+                MinimumAge = inputDto.MinimumAge,
+                MaximumAge = inputDto.MaximumAge,
+                VenueName = inputDto.VenueName,
                 Judges = inputDto.Judges,
             });
 
@@ -115,6 +111,8 @@ public class CompetitiveEventControllerTests
 
         Assert.AreEqual((int)HttpStatusCode.Created, result.StatusCode);
     }
+
+   
 
     [Test]
     public async Task Create_WhenDtoIsNull_ReturnsBadRequest()
@@ -302,9 +300,49 @@ public class CompetitiveEventControllerTests
     private void AssertCompetitiveEventPropertiesAreEqual(CompetitiveEventCreateDto expected, CompetitiveEventDto actual)
     {
         Assert.That(actual, Is.Not.Null, "CompetitiveEventDto should not be null");
-        Assert.AreEqual(expected.Title, actual.Title, "Title mismatch");
-        Assert.AreEqual(expected.ScheduledStartTime, actual.ScheduledStartTime, "ScheduledStartTime mismatch");
-        Assert.AreEqual(expected.ScheduledEndTime, actual.ScheduledEndTime, "ScheduledEndTime mismatch");
+
+        // Get properties that are primitive, string, DateTimeOffset, or decimal types (simple types)
+        var simpleProperties = typeof(CompetitiveEventCreateDto)
+            .GetProperties()
+            .Where(p => (p.PropertyType.IsPrimitive || p.PropertyType == typeof(string) || p.PropertyType == typeof(DateTimeOffset) || p.PropertyType == typeof(decimal))
+            && !p.Name.Contains("Id", StringComparison.OrdinalIgnoreCase)); 
+
+        foreach (var property in simpleProperties)
+        {
+            var expectedValue = property.GetValue(expected);
+            var actualProperty = typeof(CompetitiveEventDto).GetProperty(property.Name);
+
+            if (actualProperty != null)
+            {
+                var actualValue = actualProperty.GetValue(actual);
+                Assert.AreEqual(expectedValue, actualValue, $"Property '{property.Name}' mismatch");
+            }
+            else
+            {
+                Assert.Fail($"Property '{property.Name}' is missing in the target object");
+            }
+        }
+
+        //Assert.AreEqual(expected.Title, actual.Title, "Title mismatch");
+        //Assert.AreEqual(expected.ScheduledStartTime, actual.ScheduledStartTime, "ScheduledStartTime mismatch");
+        //Assert.AreEqual(expected.ScheduledEndTime, actual.ScheduledEndTime, "ScheduledEndTime mismatch");
+        //Assert.AreEqual(expected.RegistrationStartTime, actual.RegistrationStartTime, "RegistrationStartTime mismatch");
+        //Assert.AreEqual(expected.RegistrationEndTime, actual.RegistrationEndTime, "RegistrationEndTime mismatch");
+        //Assert.AreEqual(expected.Description, actual.Description, "Description mismatch");
+        //Assert.AreEqual(expected.DescriptionOfTheEnrollmentProcedure, actual.DescriptionOfTheEnrollmentProcedure, "DescriptionOfTheEnrollmentProcedure mismatch");
+        //Assert.AreEqual(expected.AreThereBenefits, actual.AreThereBenefits, "AreThereBenefits mismatch");
+        //Assert.AreEqual(expected.Benefits, actual.Benefits, "Benefits mismatch");
+        //Assert.AreEqual(expected.NumberOfSeats, actual.NumberOfSeats, "NumberOfSeats mismatch");
+        //Assert.AreEqual(expected.NumberOfOccupiedSeats, actual.NumberOfOccupiedSeats, "NumberOfOccupiedSeats mismatch");
+        //Assert.AreEqual(expected.Rating, actual.Rating, "Rating mismatch");
+        //Assert.AreEqual(expected.MinimumAge, actual.MinimumAge, "MinimumAge mismatch");
+        //Assert.AreEqual(expected.MaximumAge, actual.MaximumAge, "MaximumAge mismatch");
+        //Assert.AreEqual(expected.Rating, actual.Rating, "Rating mismatch");
+        //Assert.AreEqual(expected.NumberOfRatings, actual.NumberOfRatings, "NumberOfRating mismatch");
+        //Assert.AreEqual(expected.VenueName, actual.VenueName, "VenueName mismatch");
+        //Assert.AreEqual(expected.OptionsForPeopleWithDisabilities, actual.OptionsForPeopleWithDisabilities, "OptionsForPeopleWithDisabilities mismatch");
+        //Assert.AreEqual(expected.DescriptionOfOptionsForPeopleWithDisabilities, actual.DescriptionOfOptionsForPeopleWithDisabilities, "DescriptionOfOptionsForPeopleWithDisabilities mismatch");
+
     }
 
     private void AssertJudgesAreEqual(List<JudgeDto> expectedJudges, List<JudgeDto> actualJudges)
@@ -334,6 +372,44 @@ public class CompetitiveEventControllerTests
                 new JudgeDto { IsChiefJudge = true },
                 new JudgeDto { IsChiefJudge = true },
             },
+        };
+    }
+    private static CompetitiveEventCreateDto FakeCompetitiveEventCreateDto()
+    {
+        return new CompetitiveEventCreateDto()
+        {
+            Title = "New Event",
+            ScheduledStartTime = DateTime.UtcNow,
+            ScheduledEndTime = DateTime.UtcNow.AddHours(1),
+            RegistrationStartTime = DateTime.UtcNow,
+            RegistrationEndTime = DateTime.UtcNow.AddHours(1),
+            Description = "Event Description",
+            DescriptionOfTheEnrollmentProcedure = "Event Description Of The Enrollment Procedure",
+            AreThereBenefits = true,
+            Benefits = "Event Benefits",
+            Rating = 1,
+            NumberOfRatings = 1,
+            NumberOfSeats = 100,
+            NumberOfOccupiedSeats = 99,
+            OptionsForPeopleWithDisabilities = true,
+            DescriptionOfOptionsForPeopleWithDisabilities = "Description Of Options For People With Disabilities",
+            MinimumAge = 0,
+            MaximumAge = 70,
+            VenueName = "Venue Name",
+            Judges = new List<JudgeDto>()
+            {
+                new JudgeDto()
+                {
+                    FirstName ="Judge A",
+                    Description = "Description A",
+                    IsChiefJudge = true,
+                },
+                new JudgeDto()
+                {
+                    FirstName ="Judge B",
+                    Description = "Description B"
+                },
+            }
         };
     }
     private IEnumerable<CompetitiveEventDto> FakeCompetitiveEvents()
