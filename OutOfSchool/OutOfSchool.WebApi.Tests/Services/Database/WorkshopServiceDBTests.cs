@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
@@ -49,6 +50,7 @@ public class WorkshopServiceDBTests
     private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<ITagService> tagServiceMock;
     private Mock<IEntityRepository<long, Tag>> tagRepository;
+    private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
 
     [SetUp]
     public async Task SetUp()
@@ -78,6 +80,7 @@ public class WorkshopServiceDBTests
         tagServiceMock = new Mock<ITagService>();
         var searchStringServiceMock = new Mock<ISearchStringService>();
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
+        contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
 
         workshopService =
                 new WorkshopService(
@@ -97,7 +100,8 @@ public class WorkshopServiceDBTests
                     regionAdminServiceMock.Object,
                     codeficatorServiceMock.Object,
                     tagServiceMock.Object,
-                    searchStringServiceMock.Object);
+                    searchStringServiceMock.Object,
+                    contactsServiceMock.Object);
 
         Seed();
     }

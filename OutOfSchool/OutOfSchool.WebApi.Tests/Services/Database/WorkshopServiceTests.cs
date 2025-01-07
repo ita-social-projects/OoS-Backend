@@ -55,6 +55,7 @@ public class WorkshopServiceTests
     private Mock<ITagService> tagServiceMock;
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IEntityRepository<long, Tag>> tagRepository;
+    private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
 
     [SetUp]
     public void SetUp()
@@ -77,6 +78,7 @@ public class WorkshopServiceTests
         tagServiceMock = new Mock<ITagService>();
         searchStringServiceMock = new Mock<ISearchStringService>();
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
+        contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
 
         workshopService =
                 new WorkshopService(
@@ -96,7 +98,8 @@ public class WorkshopServiceTests
                     regionAdminServiceMock.Object,
                     codeficatorServiceMock.Object,
                     tagServiceMock.Object,
-                    searchStringServiceMock.Object);
+                    searchStringServiceMock.Object,
+                    contactsServiceMock.Object);
     }
 
     #region Create

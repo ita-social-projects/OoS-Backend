@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace OutOfSchool.Services.Models;
+namespace OutOfSchool.Services.Models.Configurations;
 
 public class OfficialConfiguration: IEntityTypeConfiguration<Official>
 {

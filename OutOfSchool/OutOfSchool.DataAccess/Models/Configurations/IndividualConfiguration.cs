@@ -7,7 +7,7 @@ internal class IndividualConfiguration : BusinessEntityConfiguration<Individual>
 {
     public override void Configure(EntityTypeBuilder<Individual> entityTypeBuilder)
     {
-        entityTypeBuilder.HasIndex(i => i.Rnokpp).IsUnique();
         base.Configure(entityTypeBuilder);
+        entityTypeBuilder.HasIndex(i => i.Rnokpp).IsUnique();
     }
 }
