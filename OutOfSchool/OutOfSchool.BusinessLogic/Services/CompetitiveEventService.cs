@@ -25,27 +25,27 @@ public class CompetitiveEventService : ICompetitiveEventService
         ILogger<CompetitiveEventService> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper)
-    {
-        this.competitiveEventRepository = competitiveEventRepository ?? throw new ArgumentNullException(nameof(competitiveEventRepository));
-        this.judgeRepository = judgeRepository ?? throw new ArgumentNullException(nameof(judgeRepository));
-        this.descriptionItemRepository = descriptionItemRepository ?? throw new ArgumentException(nameof(descriptionItemRepository));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    }
+        {
+            this.competitiveEventRepository = competitiveEventRepository ?? throw new ArgumentNullException(nameof(competitiveEventRepository));
+            this.judgeRepository = judgeRepository ?? throw new ArgumentNullException(nameof(judgeRepository));
+            this.descriptionItemRepository = descriptionItemRepository ?? throw new ArgumentException(nameof(descriptionItemRepository));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+            this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        }
 
     /// <inheritdoc/>
     public async Task<CompetitiveEventDto?> GetById(Guid id)
     {
-        logger.LogTrace($"Getting CompetitiveEvent by Id started. Looking Id = {id}.");
+        logger.LogDebug("Getting CompetitiveEvent by Id started. Looking Id = {id}.", id);
 
         var competitiveEvent = (await competitiveEventRepository.GetById(id).ConfigureAwait(false));
 
-        string logMessage = competitiveEvent is null
+        var logMessage = competitiveEvent is null
             ? "CompetitiveEvent with Id = {id} doesn't exist in the system."
             : "Successfully got a CompetitiveEvent with Id = {id}.";
 
-        logger.LogTrace(logMessage, id);
+        logger.LogDebug(logMessage, id);
 
         return mapper.Map<CompetitiveEventDto>(competitiveEvent);
     }
@@ -53,30 +53,26 @@ public class CompetitiveEventService : ICompetitiveEventService
     /// <inheritdoc/>
     public async Task<CompetitiveEventDto> Create(CompetitiveEventCreateDto dto)
     {
-        logger.LogTrace("CompetitiveEvent creating was started.");
-
         ArgumentNullException.ThrowIfNull(dto);
 
-        return await competitiveEventRepository.RunInTransaction(async () =>
-        {
-            var competitiveEvent = mapper.Map<CompetitiveEvent>(dto);
+        logger.LogDebug("CompetitiveEvent creating was started.");
 
-            competitiveEvent.Judges = dto.Judges?.Select(dtoJudges => mapper.Map<Judge>(dtoJudges)).ToList();
+        var competitiveEvent = mapper.Map<CompetitiveEvent>(dto);
+       // competitiveEvent.Judges = dto.Judges?.Select(dtoJudges => mapper.Map<Judge>(dtoJudges)).ToList();
 
-            var newCompetitiveEvent = await competitiveEventRepository.Create(competitiveEvent).ConfigureAwait(false);
+        var newCompetitiveEvent = await competitiveEventRepository.RunInTransaction(async () =>
+        await competitiveEventRepository.Create(competitiveEvent).ConfigureAwait(false)
 
-            logger.LogTrace("CompetitiveEvent with Id = {newCompetitiveEventId} created successfully.", newCompetitiveEvent?.Id);
-
-            return mapper.Map<CompetitiveEventDto>(newCompetitiveEvent);
-        }).ConfigureAwait(false);
+        ).ConfigureAwait(false);
+        return mapper.Map<CompetitiveEventDto>(newCompetitiveEvent);
     }
 
     /// <inheritdoc/>
     public async Task<CompetitiveEventDto> Update(CompetitiveEventUpdateDto dto)
     {
-        logger.LogTrace("Updating CompetitiveEvent with Id = {dtoId} started.", dto?.Id);
-
         ArgumentNullException.ThrowIfNull(dto);
+
+        logger.LogDebug("Updating CompetitiveEvent with Id = {dtoId} started.", dto.Id);
 
         var competitiveEvent = await competitiveEventRepository.GetByIdWithDetails(dto.Id, "Judges,CompetitiveEventDescriptionItems").ConfigureAwait(false);
 
@@ -87,23 +83,18 @@ public class CompetitiveEventService : ICompetitiveEventService
             throw new DbUpdateConcurrencyException(message);
         }
 
-        async Task<CompetitiveEvent> UpdateCompetitiveEventLocally()
+        await ChangeJudges(competitiveEvent, dto.Judges ?? new List<JudgeDto>()).ConfigureAwait(false);
+        await ChangeCompetitiveEventDescriptionItems(competitiveEvent, dto.CompetitiveEventDescriptionItems
+            ?? new List<CompetitiveEventDescriptionItemDto>()).ConfigureAwait(false);
+
+        mapper.Map(dto, competitiveEvent);
+
+        var updatedCompetitiveEvent = await competitiveEventRepository.RunInTransaction(async () =>
         {
-            await ChangeJudges(competitiveEvent, dto.Judges ?? new List<JudgeDto>()).ConfigureAwait(false);
-            await ChangeCompetitiveEventDescriptionItems(competitiveEvent,
-                dto.CompetitiveEventDescriptionItems ?? new List<CompetitiveEventDescriptionItemDto>()).ConfigureAwait(false);
+            return await competitiveEventRepository.Update(competitiveEvent).ConfigureAwait(false);
+        }).ConfigureAwait(false);
 
-            mapper.Map(dto, competitiveEvent);
-            competitiveEvent = await competitiveEventRepository.Update(competitiveEvent).ConfigureAwait(false);
-
-            logger.LogTrace("CompetitiveEvent with Id = {competitiveEventId} updated succesfully.", competitiveEvent?.Id);
-
-            return competitiveEvent;
-        }
-
-        var updatedCompetitiveEvent = await competitiveEventRepository
-          .RunInTransaction(UpdateCompetitiveEventLocally)
-          .ConfigureAwait(false);
+        logger.LogDebug("CompetitiveEvent with Id = {competitiveEventId} updated successfully.", updatedCompetitiveEvent.Id);
 
         return mapper.Map<CompetitiveEventDto>(updatedCompetitiveEvent);
     }
@@ -111,7 +102,7 @@ public class CompetitiveEventService : ICompetitiveEventService
     /// <inheritdoc/>
     public async Task Delete(Guid id)
     {
-        logger.LogTrace("Deleting CompetitiveEvent with Id = {id} started.", id);
+        logger.LogDebug("Deleting CompetitiveEvent with Id = {id} started.", id);
 
         var entity = await competitiveEventRepository.GetById(id);
 
@@ -119,7 +110,7 @@ public class CompetitiveEventService : ICompetitiveEventService
         {
             await competitiveEventRepository.Delete(entity).ConfigureAwait(false);
 
-            logger.LogTrace($"CompetitiveEvent with Id = {id} succesfully deleted.");
+            logger.LogDebug("CompetitiveEvent with Id = {id} succesfully deleted.", id);
         }
         catch (Exception ex) // DbUpdateConcurrencyException
         {
@@ -189,7 +180,6 @@ public class CompetitiveEventService : ICompetitiveEventService
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to process judge DTO with ID: {judgeId}", judgeDto.Id);
-
                 throw;
             }
         }

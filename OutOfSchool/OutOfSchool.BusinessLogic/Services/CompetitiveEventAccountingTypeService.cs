@@ -39,18 +39,18 @@ public class CompetitiveEventAccountingTypeService : ICompetitiveEventAccounting
         logger.LogInformation("Getting all CompetitiveEvent Accounting Types, {Localization} localization, started.", localization);
 
         var accountingTypes = await accountingTypeRepository.GetAll().ConfigureAwait(false);
+
+        var logMessage = accountingTypes.Any() ?
+             "All {Count} records were successfully received from the CompetitiveEvent Accounting Types table."
+            : "CompetitiveEvent Accounting Type table is empty.";
+        logger.LogDebug(logMessage, accountingTypes.Count());
+        
         var achievementTypesLocalized = accountingTypes.Select(x =>
             new CompetitiveEventAccountingType
             {
                 Id = x.Id,
                 Title = localization == LocalizationType.En ? x.TitleEn : x.Title,
             });
-
-        string logMessage = accountingTypes.Any() ?
-             "All {Count} records were successfully received from the CompetitiveEvent Accounting Types table."
-            : "CompetitiveEvent Accounting Type table is empty.";
-        logger.LogInformation(logMessage, accountingTypes.Count());
-
         return mapper.Map<List<CompetitiveEventAccountingTypeDto>>(achievementTypesLocalized);
     }
 }

@@ -13,6 +13,7 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
 
     public bool IsDeleted { get; set; }
 
+    [Required(ErrorMessage = "Title is required")]
     [DataType(DataType.Text)]
     [MaxLength(250)]
     [MinLength(1)]

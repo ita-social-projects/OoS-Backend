@@ -75,8 +75,6 @@ public class CompetitiveEventController : ControllerBase
             competitiveEvent);
     }
 
-
-
     /// <summary>
     /// Update info about a CompetitiveEvent in the database.
     /// </summary>

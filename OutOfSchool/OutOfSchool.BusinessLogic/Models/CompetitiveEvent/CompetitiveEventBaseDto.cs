@@ -6,6 +6,7 @@ namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 
 public class CompetitiveEventBaseDto
 {
+    [Required(ErrorMessage = "Title is required")]
     [DataType(DataType.Text)]
     [MaxLength(250)]
     [MinLength(1)]
@@ -21,9 +22,9 @@ public class CompetitiveEventBaseDto
     [EnumDataType(typeof(CompetitiveEventStates), ErrorMessage = Constants.EnumErrorMessage)]
     public CompetitiveEventStates State { get; set; } = CompetitiveEventStates.Draft;
 
-    public DateTimeOffset RegistrationStartTime { get; set; }
+    public DateTimeOffset? RegistrationStartTime { get; set; }
 
-    public DateTimeOffset RegistrationEndTime { get; set; }
+    public DateTimeOffset? RegistrationEndTime { get; set; }
 
     public Guid? ParentId { get; set; }
 
@@ -57,7 +58,7 @@ public class CompetitiveEventBaseDto
     public Guid? OrganizerOfTheEventId { get; set; }
 
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
-    public FormOfLearning PlannedFormatOfClasses { get; set; }
+    public FormOfLearning? PlannedFormatOfClasses { get; set; }
 
     public Guid? VenueId { get; set; }
 
@@ -69,21 +70,17 @@ public class CompetitiveEventBaseDto
 
     public List<JudgeDto> Judges { get; set; }
 
-    public bool AreThereBenefits { get; set; }
+    public bool? AreThereBenefits { get; set; }
 
     [MaxLength(2000)]
     public string Benefits { get; set; }
 
-    public uint Rating { get; set; }
-
-    public uint NumberOfRatings { get; set; }
-
-    public bool OptionsForPeopleWithDisabilities { get; set; }
+    public bool? OptionsForPeopleWithDisabilities { get; set; }
 
     [MaxLength(2000)]
     public string DescriptionOfOptionsForPeopleWithDisabilities { get; set; }
 
-    public long CategoryId { get; set; }
+    public long? CategoryId { get; set; }
 
     [MaxLength(250)]
     public string Subcategory { get; set; }
@@ -92,14 +89,14 @@ public class CompetitiveEventBaseDto
     public int MinimumAge { get; set; }
 
     [Range(0, 120, ErrorMessage = "Max age should be a number from 0 to 120")]
-    public int MaximumAge { get; set; }
+    public int? MaximumAge { get; set; }
 
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
-    public int Price { get; set; } = default;
+    public int? Price { get; set; }
 
-    public bool CompetitiveSelection { get; set; }
+    public bool? CompetitiveSelection { get; set; }
 
-    public uint NumberOfOccupiedSeats { get; set; }
+    public uint? NumberOfOccupiedSeats { get; set; }
 
     public List<Guid> ParticipantsOfTheEvent { get; set; } = new List<Guid>();
 }

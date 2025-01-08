@@ -830,13 +830,17 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Parent, opt => opt.Ignore())
             .ForMember(dest => dest.OrganizerOfTheEvent, opt => opt.Ignore())
             .ForMember(dest => dest.Category, opt => opt.Ignore())
-            .ForMember(dest => dest.Coverage, opt => opt.Ignore());
+            .ForMember(dest => dest.Coverage, opt => opt.Ignore())
+            .ForMember(dest => dest.Rating, opt => opt.Ignore())
+            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
 
         CreateSoftDeletedMap<CompetitiveEventUpdateDto, CompetitiveEvent>()
             .IncludeBase<CompetitiveEventCreateDto, CompetitiveEvent>()
             .ForMember(dest => dest.Judges, opt => opt.Ignore())
             .ForMember(dest => dest.CompetitiveEventDescriptionItems, opt => opt.Ignore())
-            .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore());
+            .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore())
+            .ForMember(dest => dest.Rating, opt => opt.Ignore())
+            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
 
         CreateMap<CompetitiveEventAccountingType, CompetitiveEventAccountingTypeDto>().ReverseMap();
 

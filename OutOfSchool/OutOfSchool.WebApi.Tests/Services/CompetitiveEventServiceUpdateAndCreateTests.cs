@@ -80,10 +80,6 @@ class CompetitiveEventServiceUpdateAndCreateTests
             .Setup(m => m.Map<CompetitiveEvent>(It.IsAny<CompetitiveEventCreateDto>()))
             .Returns(createdEvent);
 
-        mockCompetitiveEventRepository
-            .Setup(r => r.Create(It.IsAny<CompetitiveEvent>()))
-            .ReturnsAsync(createdEvent);
-
         mockMapper
             .Setup(m => m.Map<CompetitiveEventDto>(It.IsAny<CompetitiveEvent>()))
             .Returns(new CompetitiveEventDto
@@ -93,9 +89,10 @@ class CompetitiveEventServiceUpdateAndCreateTests
                 Judges = input.Judges,
             });
 
+        
         mockCompetitiveEventRepository
-            .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEventDto>>>()))
-            .Returns<Func<Task<CompetitiveEventDto>>>(async operation => await operation());
+            .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
+            .ReturnsAsync(createdEvent);// ???
 
         // Act
         var result = await service.Create(input).ConfigureAwait(false);
@@ -110,9 +107,8 @@ class CompetitiveEventServiceUpdateAndCreateTests
         Assert.AreEqual("Judge 2", result.Judges[1].FirstName, "Second judge's name is incorrect.");
 
         mockMapper.Verify(m => m.Map<CompetitiveEvent>(It.IsAny<CompetitiveEventCreateDto>()), Times.Once);
-        mockCompetitiveEventRepository.Verify(r => r.Create(It.IsAny<CompetitiveEvent>()), Times.Once);
         mockMapper.Verify(m => m.Map<CompetitiveEventDto>(It.IsAny<CompetitiveEvent>()), Times.Once);
-        mockCompetitiveEventRepository.Verify(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEventDto>>>()), Times.Once);
+        mockCompetitiveEventRepository.Verify(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()), Times.Once);
     }
 
     [Test]
