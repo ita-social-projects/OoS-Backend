@@ -21,7 +21,7 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
         }
         
         // here we check only top level contacts uniqueness
-        var unique = dto.Contacts.Distinct().ToList();
+        var unique = dto.Contacts.Distinct(new ContactEqualityComparer<ContactsDto>()).ToList();
 
         ValidateDefaultCount(unique);
 
@@ -38,7 +38,7 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
         }
 
         // here we check only top level contacts uniqueness
-        var unique = dto.Contacts.Distinct().ToList();
+        var unique = dto.Contacts.Distinct(new ContactEqualityComparer<ContactsDto>()).ToList();
         
         ValidateDefaultCount(unique);
 
@@ -86,10 +86,10 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
         List<TContactEntity> existingInfo,
         List<TContactDto> newInfo)
         where TContactEntity : class
-        where TContactDto : IContentComparable<TContactEntity>
+        where TContactDto : IContentComparable<TContactEntity>, IEquatable<TContactDto>
     {
         // Within each contact sub entry we leave only unique entries
-        var unique = newInfo.Distinct().ToList();
+        var unique = newInfo.Distinct(new ContactEqualityComparer<TContactDto>()).ToList();
 
         existingInfo.RemoveAll(e => !unique.Any(n =>
             n.ContentEquals(e)
@@ -125,6 +125,22 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
             case 1:
                 // Exactly one is okay, do nothing special
                 break;
+        }
+    }
+    
+    private class ContactEqualityComparer<T> : IEqualityComparer<T>
+    where T : IEquatable<T>
+    {
+        public bool Equals(T x, T y)
+        {
+            if (ReferenceEquals(x, y)) return true;
+            if (x is null || y is null) return false;
+            return x.Equals(y);
+        }
+
+        public int GetHashCode(T obj)
+        {
+            return obj.GetHashCode();
         }
     }
 }
