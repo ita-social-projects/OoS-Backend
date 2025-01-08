@@ -882,17 +882,17 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.PrimaryLanguage, opt => opt.Ignore())
-            .ForMember(dest => dest.Workshop, opt => opt.Ignore())
-            .ForMember(dest => dest.PrimaryLanguageId,
-                opt => opt.MapFrom(src => src.Languages.FirstOrDefault(l => l.IsPrimary).Id))
             .ForMember(dest => dest.Languages,
-                opt => opt.MapFrom(src => src.Languages.Select(l => new Language { Id = l.Id })));
+                opt => opt.Ignore())
+            .ForMember(dest => dest.PrimaryLanguageId,
+                opt => opt.MapFrom(src => src.LanguagesSelection.FirstOrDefault(l => l.IsPrimary).Id));
 
         CreateMap<StudySubject, StudySubjectDto>()
-            .ForMember(dest => dest.LanguageIds,
-                opt => opt.MapFrom(src => src.Languages.Select(x => x.Id)));
+            .ForMember(dest => dest.WorkshopId, opt => opt.Ignore())
+            .ForMember(dest => dest.Languages,
+                opt => opt.MapFrom(src => src.Languages.Select(l => new Language { Id = l.Id, Code = l.Code, Name = l.Name } )));
 
-        CreateMap<Language, LanguageDto>();
+        CreateMap<Language, LanguageDto>().ReverseMap();
     }
 
     public IMappingExpression<TSource, TDestination> CreateSoftDeletedMap<TSource, TDestination>()

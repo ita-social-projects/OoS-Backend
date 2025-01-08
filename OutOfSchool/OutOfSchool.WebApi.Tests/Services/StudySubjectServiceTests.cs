@@ -3,9 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.StudySubjects;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
@@ -27,8 +29,10 @@ public class StudySubjectServiceTests
     private StudySubjectService service;
     private IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository;
     private IEntityRepository<long, Language> languageRepository;
+    private Mock<IProviderService> providerService;
     private Mock<ILogger<StudySubjectService>> logger;
     private IMapper mapper;
+    private Guid providerId;
 
     [SetUp]
     public void SetUp()
@@ -41,15 +45,17 @@ public class StudySubjectServiceTests
 
         studySubjectRepository = new EntityRepositorySoftDeleted<Guid, StudySubject>(context);
         languageRepository = new EntityRepository<long, Language>(context);
+        providerId = Guid.NewGuid();
 
+        providerService = new Mock<IProviderService>();
         logger = new Mock<ILogger<StudySubjectService>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
 
-        service = new StudySubjectService(studySubjectRepository, languageRepository, logger.Object, mapper);
+        service = new StudySubjectService(studySubjectRepository, languageRepository, providerService.Object, logger.Object, mapper);
 
         SeedDatabase();
     }
-
+    
     [Test]
     public async Task GetByFilter_ReturnsAListOfStudySubjects_WhenSearchStringIsEmpty()
     {
@@ -57,15 +63,15 @@ public class StudySubjectServiceTests
         var expected = StudySubjects();
 
         // Act
-        var result = await service.GetByFilter(null);
+        var result = await service.GetByFilter(providerId, null);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.First().Id, Is.EqualTo(expected.First().Id));
-        Assert.That(result.Count(), Is.EqualTo(expected.Count));
-        Assert.IsInstanceOf<IEnumerable<StudySubjectDto>>(result);
+        Assert.That(result.Entities.First().Id, Is.EqualTo(expected.First().Id));
+        Assert.That(result.TotalAmount, Is.EqualTo(expected.Count));
+        Assert.IsInstanceOf<SearchResult<StudySubjectDto>>(result);
     }
-
+    
     [Test]
     public async Task GetByFilter_ReturnsAListOfFilteredStudySubjects_WhenSearchStringIsSpecified()
     {
@@ -74,14 +80,14 @@ public class StudySubjectServiceTests
         var filter = new SearchStringFilter() { SearchString = "test" };
 
         // Act
-        var result = await service.GetByFilter(filter);
+        var result = await service.GetByFilter(providerId, filter);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.First().Id, Is.EqualTo(expected.Id));
-        Assert.IsInstanceOf<IEnumerable<StudySubjectDto>>(result);
+        Assert.That(result.Entities.First().Id, Is.EqualTo(expected.Id));
+        Assert.IsInstanceOf<SearchResult<StudySubjectDto>>(result);
     }
-
+    
     [Test]
     public async Task GetByFilter_ReturnsEmptyList_WhenSearchStringDoesNotMatch()
     {
@@ -89,27 +95,26 @@ public class StudySubjectServiceTests
         var filter = new SearchStringFilter() { SearchString = "nonexistent" };
 
         // Act
-        var result = await service.GetByFilter(filter);
+        var result = await service.GetByFilter(providerId, filter);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result, Is.Empty);
+        Assert.That(result.Entities, Is.Empty);
     }
-
+    
     [Test]
-    public async Task GetById_ThrowsKeyNotFoundException_WhenStudySubjectDoesNotExist()
+    public async Task GetById_ReturnsNull_WhenStudySubjectDoesNotExist()
     {
         // Arrange
         var id = Guid.Empty;
 
         // Act
-        var ex = Assert.ThrowsAsync<KeyNotFoundException>(async () =>
-            await service.GetById(id));
+        var result = await service.GetById(id, providerId);
 
         // Assert
-        Assert.That(ex.Message, Does.Contain("There are no recors in StudySubjects table with such id"));
+        Assert.That(result, Is.Null);
     }
-
+    
     [Test]
     public async Task GetById_ReturnsStudySubject_WhenItExists()
     {
@@ -118,28 +123,27 @@ public class StudySubjectServiceTests
         var expected = StudySubjects().FirstOrDefault(x => x.Id == id);
 
         // Act
-        var result = await service.GetById(id);
+        var result = await service.GetById(id, providerId);
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.EqualTo(expected.Id));
         Assert.IsInstanceOf<StudySubjectDto>(result);
     }
-
+    
     [Test]
-    public async Task Create_ThrowsArgumentException_WhenDtoIsNull()
+    public async Task Create_ReturnsNull_WhenDtoIsNull()
     {
         // Arrange
         StudySubjectCreateUpdateDto dto = null;
 
         // Act
-        var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
-            await service.Create(dto));
+        var result = await service.Create(dto, providerId);
 
         // Assert
-        Assert.That(ex.Message, Does.Contain("Dto is null"));
+        Assert.That(result, Is.Null);
     }
-
+    
     [Test]
     public async Task Create_CreatesStudySubject_WhenDtoIsValid()
     {
@@ -148,120 +152,115 @@ public class StudySubjectServiceTests
         {
             Id = Guid.NewGuid(),
             IsPrimaryLanguageUkrainian = true,
-            Languages = new List<long> { 2 },
+            LanguagesSelection = new List<LanguagesSelection>()
+            {
+                new LanguagesSelection()
+                {
+                    Id = 2,
+                    IsPrimary = true
+                }
+            },
             NameInInstructionLanguage = "ім'я",
             NameInUkrainian = "ім'я",
-            PrimaryLanguageId = 2,
-            WorkshopId = Guid.NewGuid(),
         };
 
         // Act
-        var result = await service.Create(dto);
+        var result = await service.Create(dto, providerId);
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.EqualTo(dto.Id));
-        Assert.IsInstanceOf<StudySubjectCreateUpdateDto>(result);
+        Assert.IsInstanceOf<StudySubjectDto>(result);
     }
 
     [Test]
-    public async Task Create_ThrowsArgumentException_WhenIdsAreInvalid()
-    {
-        // Arrange
-        var dto = new StudySubjectCreateUpdateDto()
-        {
-            Id = Guid.NewGuid(),
-            IsPrimaryLanguageUkrainian = true,
-            Languages = new List<long> { 99 },
-            NameInInstructionLanguage = "ім'я",
-            NameInUkrainian = "ім'я",
-            PrimaryLanguageId = 77,
-            WorkshopId = Guid.NewGuid(),
-        };
-
-        // Act
-        var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
-            await service.Create(dto));
-
-        // Assert
-        Assert.That(ex.Message, Does.Contain("Dto contains non-existing language ids"));
-    }
-
-    [Test]
-    public async Task Update_ThrowsArgumentException_WhenDtoIsNull()
+    public async Task Update_ReturnsResultFailed_WhenDtoIsNull()
     {
         // Arrange
         StudySubjectCreateUpdateDto dto = null;
 
         // Act
-        var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
-            await service.Update(dto));
+        var result = await service.Update(dto, providerId);
 
         // Assert
-        Assert.That(ex.Message, Does.Contain("Dto is null"));
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.OperationResult.Errors.FirstOrDefault().Code, Is.EqualTo("400"));
+        Assert.IsInstanceOf<Result<StudySubjectDto>>(result);
     }
-
+    
     [Test]
-    public async Task Update_ThrowsKeyNotFoundException_WhenStudySubjectWithIdDoesNotExist()
+    public async Task Update_ReturnsResultFailed_WhenStudySubjectWithIdDoesNotExist()
     {
         // Arrange
         var dto = new StudySubjectCreateUpdateDto()
         {
             Id = Guid.Empty,
             IsPrimaryLanguageUkrainian = true,
-            Languages = new List<long> { 2 },
+            LanguagesSelection = new List<LanguagesSelection>()
+            {
+                new LanguagesSelection()
+                {
+                    Id = 2,
+                    IsPrimary = true
+                }
+            },
             NameInInstructionLanguage = "ім'я",
-            NameInUkrainian = "ім'я",
-            PrimaryLanguageId = 2,
-            WorkshopId = Guid.NewGuid(),
+            NameInUkrainian = "ім'я"
         };
 
         // Act
-        var ex = Assert.ThrowsAsync<KeyNotFoundException>(async () =>
-            await service.Update(dto));
+        var result = await service.Update(dto, providerId);
 
         // Assert
-        Assert.That(ex.Message, Does.Contain("There are no recors in StudySubjects table with such id"));
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.OperationResult.Errors.FirstOrDefault().Code, Is.EqualTo("404"));
+        Assert.IsInstanceOf<Result<StudySubjectDto>>(result);
     }
-
+    
     [Test]
-    public async Task Update_ReturnsStudySubject_WhenEntityWasUpdated()
+    public async Task Update_ReturnsResultSuccess_WhenEntityWasUpdated()
     {
         // Arrange
         var dto = new StudySubjectCreateUpdateDto()
         {
             Id = new Guid("eb49a87c-7042-45e9-a76b-79ebd98b6b16"),
             IsPrimaryLanguageUkrainian = true,
-            Languages = new List<long> { 2 },
+            LanguagesSelection = new List<LanguagesSelection>()
+            {
+                new LanguagesSelection()
+                {
+                    Id = 2,
+                    IsPrimary = true
+                }
+            },
             NameInInstructionLanguage = "ім'я",
-            NameInUkrainian = "ім'я",
-            PrimaryLanguageId = 2,
-            WorkshopId = Guid.NewGuid(),
+            NameInUkrainian = "ім'я"
         };
 
         // Act
-        var result = await service.Update(dto);
+        var result = await service.Update(dto, providerId);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Id, Is.EqualTo(dto.Id));
-        Assert.IsInstanceOf<StudySubjectCreateUpdateDto>(result);
+        Assert.That(result.Value.Id, Is.EqualTo(dto.Id));
+        Assert.IsInstanceOf<Result<StudySubjectDto>>(result);
     }
-
+    
     [Test]
-    public async Task Delete_ThrowsKeyNotFoundException_WhenStudySubjectWithIdDoesNotExist()
+    public async Task Delete_ReturnsResutlFailed_WhenStudySubjectWithIdDoesNotExist()
     {
         // Arrange
         var id = Guid.Empty;
 
         // Act
-        var ex = Assert.ThrowsAsync<KeyNotFoundException>(async () =>
-            await service.Delete(id));
+        var result = await service.Delete(id, providerId);
 
         // Assert
-        Assert.That(ex.Message, Does.Contain($"StudySubject with Id = {id} does not exist or it was deleted."));
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.OperationResult.Errors.FirstOrDefault().Code, Is.EqualTo("404"));
+        Assert.IsInstanceOf<Result<StudySubjectDto>>(result);
     }
-
+    
     [Test]
     public async Task Delete_DeletesStudySubject_WhenEntityExists()
     {
@@ -270,7 +269,7 @@ public class StudySubjectServiceTests
         StudySubject result;
 
         // Act
-        await service.Delete(id);
+        await service.Delete(id, providerId);
         using var ctx = new OutOfSchoolDbContext(options);
         {       
             result = await ctx.StudySubjects.FirstOrDefaultAsync(x => x.Id == id);
@@ -280,7 +279,7 @@ public class StudySubjectServiceTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result.IsDeleted, Is.True);
     }
-
+    
     private void SeedDatabase()
     {
         using var ctx = new OutOfSchoolDbContext(options);
@@ -304,8 +303,7 @@ public class StudySubjectServiceTests
                 NameInInstructionLanguage = "тест",
                 NameInUkrainian = "тест",
                 PrimaryLanguageId = 2,
-                IsPrimaryLanguageUkrainian = true,
-                WorkshopId = new Guid("ce9d514c-8017-44f4-a1c0-2d758c64775c")
+                IsPrimaryLanguageUkrainian = true
             },
             new StudySubject()
             {
@@ -313,9 +311,9 @@ public class StudySubjectServiceTests
                 NameInInstructionLanguage = "test",
                 NameInUkrainian = "тест",
                 PrimaryLanguageId = 1,
-                IsPrimaryLanguageUkrainian = false,
-                WorkshopId = new Guid("ce9d514c-8017-44f4-a1c0-2d758c64775c")
+                IsPrimaryLanguageUkrainian = false
             }
         };
     }
+    
 }

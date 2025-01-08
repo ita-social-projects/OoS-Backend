@@ -1,7 +1,7 @@
 ﻿namespace OutOfSchool.BusinessLogic.Models;
 public class LanguageDto
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     /// ISO code of the language

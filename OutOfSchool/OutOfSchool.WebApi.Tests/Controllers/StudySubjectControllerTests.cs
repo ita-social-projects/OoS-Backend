@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.WebApi.Controllers.V1;
 using Moq;
@@ -10,31 +9,24 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using Microsoft.AspNetCore.Http;
-using OutOfSchool.Tests.Common;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Common;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 [TestFixture]
 public class StudySubjectControllerTests
 {
     private StudySubjectController controller;
+    private Guid providerId;
     private Mock<IStudySubjectService> studySubjectService;
-    private Mock<IProviderService> providerService;
-    private Mock<IWorkshopService> workshopService;
-    private Mock<IEmployeeService> employeeService;
 
     [SetUp]
     public void SetUp()
     {
         studySubjectService = new Mock<IStudySubjectService>();
-        providerService = new Mock<IProviderService>();
-        workshopService = new Mock<IWorkshopService>();
-        employeeService = new Mock<IEmployeeService>();
+        providerId = Guid.NewGuid();
 
-        controller = new StudySubjectController(studySubjectService.Object, providerService.Object,
-            workshopService.Object, employeeService.Object);
+        controller = new StudySubjectController(studySubjectService.Object);
     }
 
     #region Get
@@ -43,11 +35,11 @@ public class StudySubjectControllerTests
     public async Task Get_ReturnsNoContent_WhenListIsEmpty()
     {
         // Arrange
-        var emptyList = new List<StudySubjectDto>();
-        studySubjectService.Setup(s => s.GetByFilter(null)).ReturnsAsync(emptyList);
+        var emptySearchResult = new SearchResult<StudySubjectDto>();
+        studySubjectService.Setup(s => s.GetByFilter(providerId ,null)).ReturnsAsync(emptySearchResult);
 
         // Act
-        var result = await controller.Get().ConfigureAwait(false) as NoContentResult;
+        var result = await controller.Get(providerId).ConfigureAwait(false) as NoContentResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -58,28 +50,31 @@ public class StudySubjectControllerTests
     public async Task Get_ReturnsOk_WhenListIsNotEmpty()
     {
         // Arrange
-        var list = new List<StudySubjectDto>()
+        var searchResult = new SearchResult<StudySubjectDto>()
         {
-            FakeStudySubjectDto(),
-            FakeStudySubjectDto(),
-            FakeStudySubjectDto()
+            Entities = new List<StudySubjectDto>
+            {
+                FakeStudySubjectDto(),
+                FakeStudySubjectDto(),
+                FakeStudySubjectDto()
+            },
+            TotalAmount = 3
         };
-        studySubjectService.Setup(s => s.GetByFilter(null)).ReturnsAsync(list);
+        studySubjectService.Setup(s => s.GetByFilter(providerId, null)).ReturnsAsync(searchResult);
 
         // Act
-        var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.Get(providerId).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(200));
 
-        var returnedList = result.Value as IEnumerable<StudySubjectDto>;
+        var returnedList = result.Value as SearchResult<StudySubjectDto>;
         Assert.That(returnedList, Is.Not.Null);
-        Assert.That(returnedList, Is.EqualTo(list));
     }
 
     #endregion
-
+    
     #region GetById
 
     [Test]
@@ -87,10 +82,10 @@ public class StudySubjectControllerTests
     {
         // Arrange
         var dto = FakeStudySubjectDto();
-        studySubjectService.Setup(s => s.GetById(dto.Id)).ReturnsAsync(dto);
+        studySubjectService.Setup(s => s.GetById(dto.Id, providerId)).ReturnsAsync(dto);
 
         // Act
-        var result = await controller.GetById(dto.Id).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.GetById(dto.Id, providerId).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -100,24 +95,25 @@ public class StudySubjectControllerTests
         Assert.That(returnedValue, Is.Not.Null);
         Assert.That(returnedValue, Is.EqualTo(dto));
     }
-
+    
     [Test]
     public async Task GetById_ReturnsBadRequest_WhenNotValid()
     {
         // Arrange
         var id = Guid.NewGuid();
-        studySubjectService.Setup(s => s.GetById(id)).ThrowsAsync(new ArgumentException());
+        StudySubjectDto dto = null;
+        studySubjectService.Setup(s => s.GetById(id, providerId)).ReturnsAsync(dto);
 
         // Act
-        var result = await controller.GetById(id).ConfigureAwait(false) as ObjectResult;
+        var result = await controller.GetById(id, providerId).ConfigureAwait(false) as ObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.StatusCode, Is.EqualTo(400));
+        Assert.That(result.StatusCode, Is.EqualTo(404));
     }
 
     #endregion
-
+    
     #region Create
 
     [Test]
@@ -127,7 +123,7 @@ public class StudySubjectControllerTests
         StudySubjectCreateUpdateDto dto = null;
 
         // Act
-        var result = await controller.Create(dto).ConfigureAwait(false) as BadRequestObjectResult;
+        var result = await controller.Create(dto, providerId).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -135,45 +131,10 @@ public class StudySubjectControllerTests
     }
 
     [Test]
-    public async Task Create_ReturnsNotFound_WhenWorkshopIsNotValid()
-    {
-        // Arrange
-        var dto = FakeStudySubjectCreateUpdateDto();
-        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(false);
-
-        // Act
-        var result = await controller.Create(dto).ConfigureAwait(false) as NotFoundObjectResult;
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.StatusCode, Is.EqualTo(404));
-    }
-
-    [Test]
-    public async Task Create_ReturnsForbidden_WhenProviderIsBlocked()
-    {
-        // Arrange
-        var dto = FakeStudySubjectCreateUpdateDto();
-        var providerId = Guid.NewGuid();
-
-        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetProviderIdForWorkshopById(dto.WorkshopId)).ReturnsAsync(providerId);
-        providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(true);
-
-        // Act
-        var result = await controller.Create(dto).ConfigureAwait(false) as ObjectResult;
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.StatusCode, Is.EqualTo(403));
-    }
-
-    [Test]
     public async Task Create_ReturnsBadRequest_WhenModelStateIsInvalid()
     {
         // Arrange
         var dto = FakeInvalidSubjectCreateUpdateDto();
-        var providerId = Guid.NewGuid();
 
         var validationContext = new ValidationContext(dto);
         var validationResults = new List<ValidationResult>();
@@ -184,38 +145,12 @@ public class StudySubjectControllerTests
             controller.ModelState.AddModelError(validationResult.MemberNames.First(), validationResult.ErrorMessage);
         }
 
-        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetProviderIdForWorkshopById(dto.WorkshopId)).ReturnsAsync(providerId);
-        providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(false);
-
         // Act
-        var result = await controller.Create(dto).ConfigureAwait(false) as BadRequestObjectResult;
+        var result = await controller.Create(dto, providerId).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(400));
-    }
-
-    [Test]
-    public async Task Create_ReturnsForbidden_WhenUserDontHaveRights()
-    {
-        // Arrange
-        var dto = FakeStudySubjectCreateUpdateDto();
-        var providerId = Guid.NewGuid();
-
-        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetProviderIdForWorkshopById(dto.WorkshopId)).ReturnsAsync(providerId);
-        providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(false);
-
-        controller.ControllerContext.HttpContext = new DefaultHttpContext();
-        controller.ControllerContext.HttpContext.SetContextUser(Role.Parent);
-
-        // Act
-        var result = await controller.Create(dto).ConfigureAwait(false) as ObjectResult;
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.StatusCode, Is.EqualTo(403));
     }
 
     [Test]
@@ -223,63 +158,55 @@ public class StudySubjectControllerTests
     {
         // Arrange
         var dto = FakeStudySubjectCreateUpdateDto();
-        var providerId = Guid.NewGuid();
-        var userId = Guid.NewGuid().ToString();
+        var dtoToReturn = FakeStudySubjectDto();
 
-        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetProviderIdForWorkshopById(dto.WorkshopId)).ReturnsAsync(providerId);
-        providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(false);
-
-        controller.ControllerContext.HttpContext = new DefaultHttpContext();
-        controller.ControllerContext.HttpContext.SetContextUser(Role.Provider, userId);
-
-        workshopService.Setup(s => s.GetWorkshopProviderOwnerIdAsync(dto.WorkshopId)).ReturnsAsync(providerId);
-        employeeService.Setup(s => s.CheckUserIsRelatedEmployee(userId, providerId, dto.WorkshopId)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetByUserId(userId, false)).ReturnsAsync(new ProviderDto { Id = providerId });
-        studySubjectService.Setup(s => s.Create(dto)).ReturnsAsync(dto);
+        studySubjectService.Setup(s => s.Create(dto, providerId)).ReturnsAsync(dtoToReturn);
 
         // Act
-        var result = await controller.Create(dto).ConfigureAwait(false) as CreatedAtActionResult;
+        var result = await controller.Create(dto, providerId).ConfigureAwait(false) as CreatedAtActionResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(201));
 
-        var returnedValue = result.Value as StudySubjectCreateUpdateDto;
+        var returnedValue = result.Value as StudySubjectDto;
         Assert.That(returnedValue, Is.Not.Null);
-        Assert.That(returnedValue, Is.EqualTo(dto));
     }
-
+    
     [Test]
     public async Task Create_ReturnsBadRequest_WhenArgumentExceptionWasCatched()
     {
         // Arrange
         var dto = FakeStudySubjectCreateUpdateDto();
-        var providerId = Guid.NewGuid();
-        var userId = Guid.NewGuid().ToString();
 
-        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetProviderIdForWorkshopById(dto.WorkshopId)).ReturnsAsync(providerId);
-        providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(false);
-
-        controller.ControllerContext.HttpContext = new DefaultHttpContext();
-        controller.ControllerContext.HttpContext.SetContextUser(Role.Provider, userId);
-
-        workshopService.Setup(s => s.GetWorkshopProviderOwnerIdAsync(dto.WorkshopId)).ReturnsAsync(providerId);
-        employeeService.Setup(s => s.CheckUserIsRelatedEmployee(userId, providerId, dto.WorkshopId)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetByUserId(userId, false)).ReturnsAsync(new ProviderDto { Id = providerId });
-        studySubjectService.Setup(s => s.Create(dto)).ThrowsAsync(new ArgumentException());
+        studySubjectService.Setup(s => s.Create(dto, providerId)).ThrowsAsync(new ArgumentException());
 
         // Act
-        var result = await controller.Create(dto).ConfigureAwait(false) as BadRequestObjectResult;
+        var result = await controller.Create(dto, providerId).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(400));
     }
 
-    #endregion
+    [Test]
+    public async Task Create_ReturnsForbidden_WhenUnauthorizedAccessExceptionWasCatched()
+    {
+        // Arrange
+        var dto = FakeStudySubjectCreateUpdateDto();
 
+        studySubjectService.Setup(s => s.Create(dto, providerId)).ThrowsAsync(new UnauthorizedAccessException());
+
+        // Act
+        var result = await controller.Create(dto, providerId).ConfigureAwait(false) as ObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(403));
+    }
+
+    #endregion
+    
     #region Update
 
     [Test]
@@ -289,7 +216,7 @@ public class StudySubjectControllerTests
         StudySubjectCreateUpdateDto dto = null;
 
         // Act
-        var result = await controller.Update(dto).ConfigureAwait(false) as BadRequestObjectResult;
+        var result = await controller.Update(dto, providerId).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -297,45 +224,10 @@ public class StudySubjectControllerTests
     }
 
     [Test]
-    public async Task Update_ReturnsNotFound_WhenWorkshopIsNotValid()
-    {
-        // Arrange
-        var dto = FakeStudySubjectCreateUpdateDto();
-        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(false);
-
-        // Act
-        var result = await controller.Update(dto).ConfigureAwait(false) as NotFoundObjectResult;
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.StatusCode, Is.EqualTo(404));
-    }
-
-    [Test]
-    public async Task Update_ReturnsForbidden_WhenProviderIsBlocked()
-    {
-        // Arrange
-        var dto = FakeStudySubjectCreateUpdateDto();
-        var providerId = Guid.NewGuid();
-
-        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetProviderIdForWorkshopById(dto.WorkshopId)).ReturnsAsync(providerId);
-        providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(true);
-
-        // Act
-        var result = await controller.Update(dto).ConfigureAwait(false) as ObjectResult;
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.StatusCode, Is.EqualTo(403));
-    }
-
-    [Test]
     public async Task Update_ReturnsBadRequest_WhenModelStateIsInvalid()
     {
         // Arrange
         var dto = FakeInvalidSubjectCreateUpdateDto();
-        var providerId = Guid.NewGuid();
 
         var validationContext = new ValidationContext(dto);
         var validationResults = new List<ValidationResult>();
@@ -346,12 +238,8 @@ public class StudySubjectControllerTests
             controller.ModelState.AddModelError(validationResult.MemberNames.First(), validationResult.ErrorMessage);
         }
 
-        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetProviderIdForWorkshopById(dto.WorkshopId)).ReturnsAsync(providerId);
-        providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(false);
-
         // Act
-        var result = await controller.Update(dto).ConfigureAwait(false) as BadRequestObjectResult;
+        var result = await controller.Update(dto, providerId).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -359,177 +247,152 @@ public class StudySubjectControllerTests
     }
 
     [Test]
-    public async Task Update_ReturnsForbidden_WhenUserDontHaveRights()
+    public async Task Update_ReturnsOk_WhenEntityUpdated()
     {
         // Arrange
         var dto = FakeStudySubjectCreateUpdateDto();
-        var providerId = Guid.NewGuid();
+        var resultToReturn = Result<StudySubjectDto>.Success(FakeStudySubjectDto());
 
-        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetProviderIdForWorkshopById(dto.WorkshopId)).ReturnsAsync(providerId);
-        providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(false);
-
-        controller.ControllerContext.HttpContext = new DefaultHttpContext();
-        controller.ControllerContext.HttpContext.SetContextUser(Role.Parent);
+        studySubjectService.Setup(s => s.Update(dto, providerId)).ReturnsAsync(resultToReturn);
 
         // Act
-        var result = await controller.Update(dto).ConfigureAwait(false) as ObjectResult;
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.StatusCode, Is.EqualTo(403));
-    }
-
-    [Test]
-    public async Task Update_ReturnsOk_WhenUserHaveRights()
-    {
-        // Arrange
-        var dto = FakeStudySubjectCreateUpdateDto();
-        var providerId = Guid.NewGuid();
-        var userId = Guid.NewGuid().ToString();
-
-        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetProviderIdForWorkshopById(dto.WorkshopId)).ReturnsAsync(providerId);
-        providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(false);
-
-        controller.ControllerContext.HttpContext = new DefaultHttpContext();
-        controller.ControllerContext.HttpContext.SetContextUser(Role.Provider, userId);
-
-        workshopService.Setup(s => s.GetWorkshopProviderOwnerIdAsync(dto.WorkshopId)).ReturnsAsync(providerId);
-        employeeService.Setup(s => s.CheckUserIsRelatedEmployee(userId, providerId, dto.WorkshopId)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetByUserId(userId, false)).ReturnsAsync(new ProviderDto { Id = providerId });
-        studySubjectService.Setup(s => s.Update(dto)).ReturnsAsync(dto);
-
-        // Act
-        var result = await controller.Update(dto).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.Update(dto, providerId).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(200));
     }
 
-    #endregion
+    [Test]
+    public async Task Update_ReturnsNotFound_WhenEntityToUpdateNotFound()
+    {
+        // Arrange
+        var dto = FakeStudySubjectCreateUpdateDto();
+        var resultToReturn = Result<StudySubjectDto>.Failed(new OperationError
+        {
+            Code = "404",
+            Description = $"There are no recors in StudySubjects table with such id"
+        });
 
+        studySubjectService.Setup(s => s.Update(dto, providerId)).ReturnsAsync(resultToReturn);
+
+        // Act
+        var result = await controller.Update(dto, providerId).ConfigureAwait(false) as NotFoundObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(404));
+        
+    }
+
+    [Test]
+    public async Task Update_ReturnsBadRequest_WhenUpdatingFailed()
+    {
+        // Arrange
+        var dto = FakeStudySubjectCreateUpdateDto();
+        var resultToReturn = Result<StudySubjectDto>.Failed(new OperationError
+        {
+            Code = "400",
+            Description = $"Updating failed."
+        });
+
+        studySubjectService.Setup(s => s.Update(dto, providerId)).ReturnsAsync(resultToReturn);
+
+        // Act
+        var result = await controller.Update(dto, providerId).ConfigureAwait(false) as BadRequestObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(400));
+
+    }
+
+    #endregion
+    
     #region Delete
 
     [Test]
-    public async Task Delete_ReturnsBadRequest_WhenArgumentExceptionWasCatchedWhileGettingEntityById()
+    public async Task Delete_ReturnsNotFound_WhenEntityNotFound()
     {
         // Arrange
         var id = Guid.NewGuid();
-        studySubjectService.Setup(s => s.GetById(id)).ThrowsAsync(new ArgumentException());
+        StudySubjectDto dto = null;
+        studySubjectService.Setup(s => s.GetById(id, providerId)).ReturnsAsync(dto);
 
         // Act
-        var result = await controller.Delete(id).ConfigureAwait(false) as BadRequestObjectResult;
+        var result = await controller.Delete(id, providerId).ConfigureAwait(false) as NotFoundObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(404));
+    }
+    
+
+    [Test]
+    public async Task Delete_ReturnsOk_WhenEntityIsDeleted()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var dto = FakeStudySubjectDto();
+        var resultToReturn = Result<StudySubjectDto>.Success(dto);
+
+        studySubjectService.Setup(s => s.GetById(id, providerId)).ReturnsAsync(dto);
+        studySubjectService.Setup(s => s.Delete(id, providerId)).ReturnsAsync(resultToReturn);
+
+        // Act
+        var result = await controller.Delete(id, providerId).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(200));
+    }
+
+    [Test]
+    public async Task Delete_ReturnsNotFound_WhenEntityToDeleteNotFound()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var dto = FakeStudySubjectDto();
+        var resultToReturn = Result<StudySubjectDto>.Failed(new OperationError
+        {
+            Code = "404",
+            Description = $"There are no recors in StudySubjects table with such id"
+        });
+
+        studySubjectService.Setup(s => s.GetById(id, providerId)).ReturnsAsync(dto);
+        studySubjectService.Setup(s => s.Delete(id, providerId)).ReturnsAsync(resultToReturn);
+
+        // Act
+        var result = await controller.Delete(id, providerId).ConfigureAwait(false) as NotFoundObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(404));
+
+    }
+
+    [Test]
+    public async Task Delete_ReturnsBadRequest_WhenDeletingFailed()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var dto = FakeStudySubjectDto();
+        var resultToReturn = Result<StudySubjectDto>.Failed(new OperationError
+        {
+            Code = "400",
+            Description = $"Deleting failed."
+        });
+
+        studySubjectService.Setup(s => s.GetById(id, providerId)).ReturnsAsync(dto);
+        studySubjectService.Setup(s => s.Delete(id, providerId)).ReturnsAsync(resultToReturn);
+
+        // Act
+        var result = await controller.Delete(id, providerId).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(400));
-    }
 
-    [Test]
-    public async Task Delete_ReturnsForbidden_WhenProviderIsBlocked()
-    {
-        // Arrange
-        var id = Guid.NewGuid();
-        var providerId = Guid.NewGuid();
-        var dto = FakeStudySubjectDto();
-
-        studySubjectService.Setup(s => s.GetById(id)).ReturnsAsync(dto);
-        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetProviderIdForWorkshopById(dto.WorkshopId)).ReturnsAsync(providerId);
-        providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(true);
-
-        // Act
-        var result = await controller.Delete(id).ConfigureAwait(false) as ObjectResult;
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.StatusCode, Is.EqualTo(403));
-    }
-
-    [Test]
-    public async Task Delete_ReturnsForbidden_WhenUserDontHaveRights()
-    {
-        // Arrange
-        var id = Guid.NewGuid();
-        var providerId = Guid.NewGuid();
-        var dto = FakeStudySubjectDto();
-
-        studySubjectService.Setup(s => s.GetById(id)).ReturnsAsync(dto);
-        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetProviderIdForWorkshopById(dto.WorkshopId)).ReturnsAsync(providerId);
-        providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(false);
-
-        controller.ControllerContext.HttpContext = new DefaultHttpContext();
-        controller.ControllerContext.HttpContext.SetContextUser(Role.Parent);
-
-        // Act
-        var result = await controller.Delete(id).ConfigureAwait(false) as ObjectResult;
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.StatusCode, Is.EqualTo(403));
-    }
-
-    [Test]
-    public async Task Delete_ReturnsNoContent_WhenEntityIsDeleted()
-    {
-        // Arrange
-        var id = Guid.NewGuid();
-        var providerId = Guid.NewGuid();
-        var userId = Guid.NewGuid().ToString();
-        var dto = FakeStudySubjectDto();
-
-        studySubjectService.Setup(s => s.GetById(id)).ReturnsAsync(dto);
-        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetProviderIdForWorkshopById(dto.WorkshopId)).ReturnsAsync(providerId);
-        providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(false);
-
-        controller.ControllerContext.HttpContext = new DefaultHttpContext();
-        controller.ControllerContext.HttpContext.SetContextUser(Role.Provider, userId);
-
-        workshopService.Setup(s => s.GetWorkshopProviderOwnerIdAsync(dto.WorkshopId)).ReturnsAsync(providerId);
-        employeeService.Setup(s => s.CheckUserIsRelatedEmployee(userId, providerId, dto.WorkshopId)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetByUserId(userId, false)).ReturnsAsync(new ProviderDto { Id = providerId });
-        studySubjectService.Setup(s => s.Delete(id));
-
-        // Act
-        var result = await controller.Delete(id).ConfigureAwait(false) as NoContentResult;
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.StatusCode, Is.EqualTo(204));
-    }
-
-    [Test]
-    public async Task Delete_ReturnsBadRequest_WhenArgumentExceptionWasCatchedWhileDeletingEntity()
-    {
-        // Arrange
-        var id = Guid.NewGuid();
-        var providerId = Guid.NewGuid();
-        var userId = Guid.NewGuid().ToString();
-        var dto = FakeStudySubjectDto();
-
-        studySubjectService.Setup(s => s.GetById(id)).ReturnsAsync(dto);
-        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetProviderIdForWorkshopById(dto.WorkshopId)).ReturnsAsync(providerId);
-        providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(false);
-
-        controller.ControllerContext.HttpContext = new DefaultHttpContext();
-        controller.ControllerContext.HttpContext.SetContextUser(Role.Provider, userId);
-
-        workshopService.Setup(s => s.GetWorkshopProviderOwnerIdAsync(dto.WorkshopId)).ReturnsAsync(providerId);
-        employeeService.Setup(s => s.CheckUserIsRelatedEmployee(userId, providerId, dto.WorkshopId)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetByUserId(userId, false)).ReturnsAsync(new ProviderDto { Id = providerId });
-        studySubjectService.Setup(s => s.Delete(id)).ThrowsAsync(new ArgumentException());
-
-        // Act
-        var result = await controller.Delete(id).ConfigureAwait(false) as BadRequestObjectResult;
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.StatusCode, Is.EqualTo(400));
     }
 
     #endregion
@@ -540,14 +403,27 @@ public class StudySubjectControllerTests
         {
             ActiveFrom = DateOnly.FromDateTime(DateTime.Now),
             ActiveTo = DateOnly.FromDateTime(DateTime.Now),
-            CreatedAt = DateTime.Now,
             Id = Guid.NewGuid(),
             IsPrimaryLanguageUkrainian = true,
-            LanguageIds = new List<long> { 1, 2 },
+            Languages = new List<LanguageDto>
+            {
+                new LanguageDto()
+                {
+                    Id = 1,
+                    Name = "Українська",
+                    Code = "uk"
+
+                },
+                new LanguageDto()
+                {
+                    Id = 2,
+                    Name = "English",
+                    Code = "en"
+                }
+            },
             NameInInstructionLanguage = "тест",
             NameInUkrainian = "тест",
             PrimaryLanguageId = 1,
-            UpdatedAt = DateTime.Now,
             WorkshopId = Guid.NewGuid()
         };
     }
@@ -558,11 +434,21 @@ public class StudySubjectControllerTests
         {
             Id = Guid.NewGuid(),
             IsPrimaryLanguageUkrainian = true,
-            Languages = new List<long> { 1, 2 },
+            LanguagesSelection = new List<LanguagesSelection>
+            {
+                new LanguagesSelection()
+                {
+                    Id = 1,
+                    IsPrimary = false
+                },
+                new LanguagesSelection()
+                {
+                    Id = 2,
+                    IsPrimary = true
+                }
+            },
             NameInInstructionLanguage = "тест",
-            NameInUkrainian = "тест",
-            PrimaryLanguageId = 1,
-            WorkshopId = Guid.NewGuid()
+            NameInUkrainian = "тест"
         };
     }
 
@@ -572,11 +458,21 @@ public class StudySubjectControllerTests
         {
             Id = Guid.NewGuid(),
             IsPrimaryLanguageUkrainian = true,
-            Languages = new List<long> { 1, 2 },
+            LanguagesSelection = new List<LanguagesSelection>
+            {
+                new LanguagesSelection()
+                {
+                    Id = 1,
+                    IsPrimary = false
+                },
+                new LanguagesSelection()
+                {
+                    Id = 2,
+                    IsPrimary = true
+                }
+            },
             NameInInstructionLanguage = null,
-            NameInUkrainian = null,
-            PrimaryLanguageId = 1,
-            WorkshopId = Guid.NewGuid()
+            NameInUkrainian = null
         };
     }
 }

@@ -1,5 +1,4 @@
 ﻿
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -44,12 +43,5 @@ public class StudySubject : BusinessEntity
     [Required(ErrorMessage = "The primary language's ID is required.")]
     public long PrimaryLanguageId { get; set; }
     public virtual Language PrimaryLanguage { get; set; }
-
-    /// <summary>
-    /// Id of the related workshop
-    /// </summary>
-    [Required(ErrorMessage = "The workshop's id is required.")]
-    public Guid WorkshopId{ get; set; }
-    public virtual Workshop Workshop { get; set; }
 }
 

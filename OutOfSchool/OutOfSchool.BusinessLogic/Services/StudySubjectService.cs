@@ -52,7 +52,10 @@ public class StudySubjectService : IStudySubjectService
 
         await CheckIfPrimaryLanguageIdIsCorrect(dto);
 
+
         var studySubject = mapper.Map<StudySubject>(dto);
+        await UpdateEntityLanguages(dto, studySubject);
+
         var newStudySubject = await studySubjectRepository.Create(studySubject).ConfigureAwait(false);
 
         logger.LogDebug("StudySubject with Id = {Id} created successfully.", newStudySubject?.Id);
@@ -191,6 +194,8 @@ public class StudySubjectService : IStudySubjectService
             });
         }
 
+        await UpdateEntityLanguages(dto, studySubject);
+
         mapper.Map(dto, studySubject);
 
         try
@@ -217,9 +222,12 @@ public class StudySubjectService : IStudySubjectService
     {
         if (dto.IsPrimaryLanguageUkrainian)
         {
-            var query = await languageRepository
-                .GetByFilter(x => x.Code.Equals("uk", StringComparison.OrdinalIgnoreCase)).ConfigureAwait(false);
-            var ukrainianLanguage = query.FirstOrDefault();
+            var query = languageRepository
+                .Get(
+                    whereExpression: x => x.Code.Equals("uk", StringComparison.OrdinalIgnoreCase)
+                ).AsNoTracking();
+
+            var ukrainianLanguage = await query.FirstOrDefaultAsync();
 
             if (ukrainianLanguage == null)
             {
@@ -228,18 +236,18 @@ public class StudySubjectService : IStudySubjectService
             }
 
             var ukrainianLanguageId = ukrainianLanguage.Id;
-            var primaryLanguage = dto.Languages.FirstOrDefault(l => l.IsPrimary);
+            var primaryLanguage = dto.LanguagesSelection.FirstOrDefault(l => l.IsPrimary);
 
             if (primaryLanguage == null || ukrainianLanguageId != primaryLanguage.Id)
             {
-                foreach (var language in dto.Languages)
+                foreach (var language in dto.LanguagesSelection)
                 {
                     language.IsPrimary = language.Id == ukrainianLanguage.Id;
                 }
 
-                if (!dto.Languages.Any(l => l.Id == ukrainianLanguageId))
+                if (!dto.LanguagesSelection.Any(l => l.Id == ukrainianLanguageId))
                 {
-                    dto.Languages.Add(new StudySubjectCreateUpdateLanguage
+                    dto.LanguagesSelection.Add(new LanguagesSelection
                     {
                         Id = ukrainianLanguageId,
                         IsPrimary = true
@@ -252,5 +260,16 @@ public class StudySubjectService : IStudySubjectService
                 }
             }
         }
+    }
+
+    private async Task UpdateEntityLanguages(StudySubjectCreateUpdateDto dto, StudySubject studySubject)
+    {
+        var languageIds = dto.LanguagesSelection.Select(x => x.Id).ToHashSet();
+        var languages = await languageRepository.Get(
+            whereExpression: l => languageIds.Contains(l.Id))
+            .ToListAsync();
+        
+        studySubject.Languages = new List<Language>();
+        studySubject.Languages.AddRange(languages);
     }
 }

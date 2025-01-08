@@ -24,24 +24,24 @@ public class StudySubjectCreateUpdateDto : IValidatableObject
     /// Language of instruction (allows multiple selection)
     /// </summary>
     [Required(ErrorMessage = "The language of instruction is required.")]
-    public List<StudySubjectCreateUpdateLanguage> Languages { get; set; }
+    public List<LanguagesSelection> LanguagesSelection { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (Languages == null || !Languages.Any())
+        if (LanguagesSelection == null || !LanguagesSelection.Any())
         {
-            yield return new ValidationResult("Languages cannot be null or empty.", new[] { nameof(Languages) });
+            yield return new ValidationResult("Languages cannot be null or empty.", new[] { nameof(LanguagesSelection) });
         }
         else
         {
-            if (Languages.Count(l => l.IsPrimary) != 1)
-                yield return new ValidationResult("Languages must contain primary language.", new[] { nameof(Languages) });
+            if (LanguagesSelection.Count(l => l.IsPrimary) != 1)
+                yield return new ValidationResult("Languages must contain primary language.", new[] { nameof(LanguagesSelection) });
 
-            if (Languages.Count() != Languages.Distinct().Count())
-                yield return new ValidationResult("Languages cannot contain duplicates.", new[] { nameof(Languages) });
+            if (LanguagesSelection.Count() != LanguagesSelection.Distinct().Count())
+                yield return new ValidationResult("Languages cannot contain duplicates.", new[] { nameof(LanguagesSelection) });
 
-            if (Languages.Any(l => l.Id <= 0))
-                yield return new ValidationResult("Languages cannot contain values smaller than 1.", new[] { nameof(Languages) });
+            if (LanguagesSelection.Any(l => l.Id <= 0))
+                yield return new ValidationResult("Languages cannot contain values smaller than 1.", new[] { nameof(LanguagesSelection) });
         }
     }
 }

@@ -27,9 +27,9 @@ public class StudySubjectController : ControllerBase
 
     /// <summary>
     /// Get filtered list of StudySubjects from the database.
+    /// </summary>
     /// <param name="providerId">Providers' id</param>
     /// <param name="filter">Filter for list of study subjects</param>
-    /// </summary>
     /// <returns>List of StudySubjects.</returns>
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StudySubjectDto>))]

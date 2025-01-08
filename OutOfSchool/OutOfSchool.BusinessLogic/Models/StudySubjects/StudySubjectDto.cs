@@ -5,7 +5,7 @@ public class StudySubjectDto
     public string NameInUkrainian { get; set; }
     public string NameInInstructionLanguage { get; set; }
     public bool IsPrimaryLanguageUkrainian { get; set; }
-    public List<LanguageDto> LanguageIds { get; set; }
+    public List<LanguageDto> Languages { get; set; }
     public long PrimaryLanguageId { get; set; }
     public Guid WorkshopId { get; set; }
     public DateOnly ActiveFrom { get; set; }
