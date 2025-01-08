@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.BusinessLogic.Services;
@@ -14,37 +15,44 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
     public void PrepareNewContacts(TEntity entity, TDto dto)
     {
         // TODO: During transition leave it as optional and if it is empty - do nothing.
-        if (!dto.Contacts.IsNullOrEmpty())
+        if (dto.Contacts.IsNullOrEmpty())
         {
-            ValidateDefaultCount(dto);
+            return;
         }
+        
+        // here we check only top level contacts uniqueness
+        var unique = dto.Contacts.Distinct().ToList();
 
-        entity.Contacts = mapper.Map<List<Contacts>>(dto.Contacts);
+        ValidateDefaultCount(unique);
+
+        entity.Contacts = mapper.Map<List<Contacts>>(unique);
     }
 
     /// <inheritdoc/>
     public void PrepareUpdatedContacts([NotNull] TEntity entity, [NotNull] TDto dto)
     {
-        if (entity.Contacts.IsNullOrEmpty())
-        {
-            ValidateDefaultCount(dto);
-            entity.Contacts = mapper.Map<List<Contacts>>(dto.Contacts);
-            return;
-        }
-
         // TODO: During transition leave it as optional and if it is empty - do nothing.
         if (dto.Contacts.IsNullOrEmpty())
         {
             return;
         }
 
-        ValidateDefaultCount(dto);
+        // here we check only top level contacts uniqueness
+        var unique = dto.Contacts.Distinct().ToList();
+        
+        ValidateDefaultCount(unique);
 
-        entity.Contacts.RemoveAll(e => !dto.Contacts.Any(n =>
+        if (entity.Contacts.IsNullOrEmpty())
+        {
+            entity.Contacts = mapper.Map<List<Contacts>>(unique);
+            return;
+        }
+
+        entity.Contacts.RemoveAll(e => !unique.Any(n =>
             n.ContentEquals(e)
         ));
 
-        foreach (var contactDto in dto.Contacts)
+        foreach (var contactDto in unique)
         {
             var existing = entity.Contacts.FirstOrDefault(e =>
                 contactDto.ContentEquals(e));
@@ -77,13 +85,17 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
     private void UpdateContactsInfo<TContactEntity, TContactDto>(
         List<TContactEntity> existingInfo,
         List<TContactDto> newInfo)
+        where TContactEntity : class
         where TContactDto : IContentComparable<TContactEntity>
     {
-        existingInfo.RemoveAll(e => !newInfo.Any(n =>
+        // Within each contact sub entry we leave only unique entries
+        var unique = newInfo.Distinct().ToList();
+
+        existingInfo.RemoveAll(e => !unique.Any(n =>
             n.ContentEquals(e)
         ));
 
-        foreach (var info in newInfo)
+        foreach (var info in unique)
         {
             var existing = existingInfo.FirstOrDefault(e =>
                 info.ContentEquals(e));
@@ -99,14 +111,14 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
         }
     }
 
-    private static void ValidateDefaultCount(TDto dto)
+    private static void ValidateDefaultCount(List<ContactsDto> contactsDtos)
     {
-        var defaultCount = dto.Contacts.Count(c => c.IsDefault);
+        var defaultCount = contactsDtos.Count(c => c.IsDefault);
         switch (defaultCount)
         {
             case 0:
                 // If no default, set the first contact to default
-                dto.Contacts[0].IsDefault = true;
+                contactsDtos[0].IsDefault = true;
                 break;
             case > 1:
                 throw new InvalidOperationException($"Exactly one Contact must be default, but found {defaultCount}.");
