@@ -67,7 +67,7 @@ public class PositionService : IPositionService
         // Define sorting
         var sortPredicate = SortExpressionBuild(filter);
         
-        int count = await _entityRepositoryBase.Count(predicate).ConfigureAwait(false);
+        int count = await _entityRepositoryBase.Count(whereExpression: predicate).ConfigureAwait(false);
        
         var positions = await _entityRepositoryBase
             .Get(
@@ -146,18 +146,19 @@ public class PositionService : IPositionService
     }
 
     private static Dictionary<Expression<Func<Position, object>>, SortDirection> SortExpressionBuild(
-        PositionsFilter filter)
+    PositionsFilter filter)
     {
         var sortExpression = new Dictionary<Expression<Func<Position, object>>, SortDirection>();
         
-        sortExpression.Add(
-           a => a.FullName,
-           filter.OrderByFullName ? SortDirection.Ascending : SortDirection.Descending
-       );
+        if (filter.OrderByFullName)
+        {
+            sortExpression.Add(a => a.FullName, SortDirection.Ascending);
+        }
 
-        sortExpression.Add(a => a.CreatedAt, filter.OrderByCreatedAt ?
-            SortDirection.Ascending :
-            SortDirection.Descending);
+        if (filter.OrderByCreatedAt)
+        {
+            sortExpression.Add(a => a.CreatedAt, SortDirection.Ascending);
+        }
 
         return sortExpression;
     }
