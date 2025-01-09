@@ -5,7 +5,7 @@ using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 
-public class ContactsDto : IContentComparable<Contacts>, IEquatable<ContactsDto>
+public sealed class ContactsDto : IContentComparable<Contacts>, IEquatable<ContactsDto>
 {
     public string Title { get; set; }
     

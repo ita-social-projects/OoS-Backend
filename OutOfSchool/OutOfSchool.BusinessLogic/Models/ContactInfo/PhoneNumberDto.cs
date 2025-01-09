@@ -5,7 +5,7 @@ using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 
-public class PhoneNumberDto : IContentComparable<PhoneNumber>, IEquatable<PhoneNumberDto>
+public sealed class PhoneNumberDto : IContentComparable<PhoneNumber>, IEquatable<PhoneNumberDto>
 {
     public string Type { get; set; } = null!;
 

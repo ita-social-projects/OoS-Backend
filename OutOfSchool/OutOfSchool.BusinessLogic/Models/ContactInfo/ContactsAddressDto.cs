@@ -5,7 +5,7 @@ using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 
-public class ContactsAddressDto : IContentComparable<ContactsAddress>, IEquatable<ContactsAddressDto>
+public sealed class ContactsAddressDto : IContentComparable<ContactsAddress>, IEquatable<ContactsAddressDto>
 {
     [Required(ErrorMessage = "Street is required")]
     [MaxLength(60)]

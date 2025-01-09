@@ -5,7 +5,7 @@ using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 
-public class SocialNetworkDto : IContentComparable<SocialNetwork>, IEquatable<SocialNetworkDto>
+public sealed class SocialNetworkDto : IContentComparable<SocialNetwork>, IEquatable<SocialNetworkDto>
 {
     [EnumDataType(typeof(SocialNetworkContactType), ErrorMessage = Constants.EnumErrorMessage)]
     public SocialNetworkContactType Type { get; set; }

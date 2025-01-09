@@ -4,7 +4,7 @@ using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 
-public class EmailDto : IContentComparable<Email>, IEquatable<EmailDto>
+public sealed class EmailDto : IContentComparable<Email>, IEquatable<EmailDto>
 {
     public string Type { get; set; } = null!;
 

@@ -128,7 +128,7 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
         }
     }
     
-    private class ContactEqualityComparer<T> : IEqualityComparer<T>
+    private sealed class ContactEqualityComparer<T> : IEqualityComparer<T>
     where T : IEquatable<T>
     {
         public bool Equals(T x, T y)
