@@ -105,6 +105,28 @@ public class ContactsServiceTests
         Assert.IsFalse(entity.Contacts[0].IsDefault && entity.Contacts[1].IsDefault,
             "Only one contact should remain default.");
     }
+    
+    [Test]
+    public void PrepareNewContacts_WhenDtoHasDuplicates_ShouldFilterUnique()
+    {
+        // Arrange
+        var entity = new TestEntity();
+        var dto = new TestDto
+        {
+            Contacts =
+            [
+                new ContactsDto {Title = "Contact1", IsDefault = false},
+                new ContactsDto {Title = "Contact1", IsDefault = false}
+            ]
+        };
+
+        // Act
+        contactsService.PrepareNewContacts(entity, dto);
+
+        // Assert
+        Assert.AreEqual(1, entity.Contacts.Count);
+        Assert.IsTrue(entity.Contacts[0].IsDefault, "First contact should be set to default.");
+    }
 
     [Test]
     public void PrepareUpdatedContacts_WhenEntityHasNoContacts_ShouldMapDto()
@@ -248,66 +270,106 @@ public class ContactsServiceTests
         Assert.AreEqual("NewDto", newlyAdded.Title);
         Assert.IsFalse(newlyAdded.IsDefault);
     }
+
+    [Test]
+    public void PrepareUpdatedContacts_ShouldUpdateSubListsCorrectly()
+    {
+        // Arrange
+        var entity = new TestEntity
+        {
+            Contacts =
+            [
+                new Contacts
+                {
+                    Title = "Contact1",
+                    IsDefault = true,
+                    Address = new ContactsAddress
+                    {
+                        BuildingNumber = "1/A",
+                        Street = "A",
+                        CATOTTGId = 1,
+                    },
+                    Phones =
+                    [
+                        new PhoneNumber {Type = "Mobile", Number = "123-456"},
+                        new PhoneNumber {Type = "Home", Number = "123-789"}
+                    ]
+                }
+            ]
+        };
+
+        var dto = new TestDto
+        {
+            Contacts =
+            [
+                new ContactsDto
+                {
+                    Title = "Contact1",
+                    IsDefault = true,
+                    Address = new ContactsAddressDto
+                    {
+                        BuildingNumber = "1/A",
+                        Street = "A",
+                        CATOTTGId = 1,
+                    },
+                    Phones =
+                    [
+                        new PhoneNumberDto {Type = "Mobile", Number = "123-456"},
+                        new PhoneNumberDto {Type = "Work", Number = "789-123"}
+                    ]
+                }
+            ]
+        };
+
+        contactsService.PrepareUpdatedContacts(entity, dto);
+
+        // Assert
+        var updatedContact = entity.Contacts.First();
+        Assert.AreEqual(2, updatedContact.Phones.Count,
+            "Expected exactly 2 phones after update");
+
+        Assert.IsNotNull(updatedContact.Phones
+                .FirstOrDefault(p => p.Type == "Mobile" && p.Number == "123-456"),
+            "Mobile 123-456 should remain");
+
+        Assert.IsNull(updatedContact.Phones
+                .FirstOrDefault(p => p.Type == "Home" && p.Number == "123-789"),
+            "Home 123-789 should be removed since it's not in the new DTO");
+
+        Assert.IsNotNull(updatedContact.Phones
+                .FirstOrDefault(p => p.Type == "Work" && p.Number == "789-123"),
+            "Work 789-123 should be added since it's new in the DTO");
+    }
     
     [Test]
-public void PrepareUpdatedContacts_ShouldUpdateSubListsCorrectly()
-{
-    // Arrange
-    var entity = new TestEntity
+    public void PrepareUpdatedContacts_WhenDtoHasDuplicates_ShouldFilterUnique()
     {
-        Contacts =
-        [
-            new Contacts
-            {
-                Title = "Contact1",
-                IsDefault = true,
-                Address = new ContactsAddress(),
-                Phones =
-                [
-                    new PhoneNumber {Type = "Mobile", Number = "123-456"},
-                    new PhoneNumber {Type = "Home", Number = "123-789"}
-                ]
-            }
-        ]
-    };
-    
-    var dto = new TestDto
-    {
-        Contacts =
-        [
-            new ContactsDto
-            {
-                Title = "Contact1",
-                IsDefault = true,
-                Address = new ContactsAddressDto(),
-                Phones =
-                [
-                    new PhoneNumberDto {Type = "Mobile", Number = "123-456"},
-                    new PhoneNumberDto {Type = "Work", Number = "789-123"}
-                ]
-            }
-        ]
-    };
+        // Arrange
+        var entity = new TestEntity
+        {
+            Contacts =
+            [
+                new Contacts {Title = "Existing1", IsDefault = true, Address = new ContactsAddress()}
+            ]
+        };
 
-    contactsService.PrepareUpdatedContacts(entity, dto);
+        var dto = new TestDto
+        {
+            Contacts =
+            [
+                new ContactsDto {Title = "Existing1", IsDefault = true, Address = new ContactsAddressDto()},
+                new ContactsDto {Title = "New2", IsDefault = false, Address = new ContactsAddressDto()},
+                new ContactsDto {Title = "New2", IsDefault = false, Address = new ContactsAddressDto()}
+            ]
+        };
+        // Act
+        contactsService.PrepareUpdatedContacts(entity, dto);
 
-    // Assert
-    var updatedContact = entity.Contacts.First();
-    Assert.AreEqual(2, updatedContact.Phones.Count, 
-        "Expected exactly 2 phones after update");
-
-    Assert.IsNotNull(updatedContact.Phones
-        .FirstOrDefault(p => p.Type == "Mobile" && p.Number == "123-456"),
-        "Mobile 123-456 should remain");
-
-    Assert.IsNull(updatedContact.Phones
-        .FirstOrDefault(p => p.Type == "Home" && p.Number == "123-789"),
-        "Home 123-789 should be removed since it's not in the new DTO");
-
-    Assert.IsNotNull(updatedContact.Phones
-        .FirstOrDefault(p => p.Type == "Work" && p.Number == "789-123"),
-        "Work 789-123 should be added since it's new in the DTO");
-}
+        // Assert
+        Assert.AreEqual(2, entity.Contacts.Count);
+        var newlyAdded = entity.Contacts.SingleOrDefault(c => c.Title == "New2");
+        Assert.IsNotNull(newlyAdded, "Newly added contact should not be null.");
+    }
 
     private class TestEntity : BusinessEntity, IHasContacts
     {
