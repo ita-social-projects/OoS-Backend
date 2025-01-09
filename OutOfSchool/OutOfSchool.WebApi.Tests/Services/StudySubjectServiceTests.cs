@@ -174,6 +174,36 @@ public class StudySubjectServiceTests
     }
 
     [Test]
+    public async Task Create_AddsUkrainianLanguageToInvalidEntity_WhenUkrainianMarkedAsPrimaryLanguage()
+    {
+        // Arrange
+        var dto = new StudySubjectCreateUpdateDto()
+        {
+            Id = Guid.NewGuid(),
+            IsPrimaryLanguageUkrainian = true,
+            LanguagesSelection = new List<LanguagesSelection>()
+            {
+                new LanguagesSelection()
+                {
+                    Id = 1,
+                    IsPrimary = true
+                }
+            },
+            NameInInstructionLanguage = "ім'я",
+            NameInUkrainian = "ім'я",
+        };
+
+        // Act
+        var result = await service.Create(dto, providerId).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Id, Is.EqualTo(dto.Id));
+        Assert.That(result.Languages.Any(l => l.Id == 2));
+        Assert.IsInstanceOf<StudySubjectDto>(result);
+    }
+
+    [Test]
     public async Task Update_ReturnsResultFailed_WhenDtoIsNull()
     {
         // Arrange

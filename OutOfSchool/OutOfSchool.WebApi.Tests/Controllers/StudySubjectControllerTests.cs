@@ -205,6 +205,22 @@ public class StudySubjectControllerTests
         Assert.That(result.StatusCode, Is.EqualTo(403));
     }
 
+    [Test]
+    public async Task Create_ReturnsBadRequest_WhenExceptionWasCatched()
+    {
+        // Arrange
+        var dto = FakeStudySubjectCreateUpdateDto();
+
+        studySubjectService.Setup(s => s.Create(dto, providerId)).ThrowsAsync(new Exception());
+
+        // Act
+        var result = await controller.Create(dto, providerId).ConfigureAwait(false) as BadRequestObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(400));
+    }
+
     #endregion
     
     #region Update
@@ -307,8 +323,56 @@ public class StudySubjectControllerTests
 
     }
 
+    [Test]
+    public async Task Update_ReturnsBadRequest_WhenArgumentExceptionWasCatched()
+    {
+        // Arrange
+        var dto = FakeStudySubjectCreateUpdateDto();
+
+        studySubjectService.Setup(s => s.Update(dto, providerId)).ThrowsAsync(new ArgumentException());
+
+        // Act
+        var result = await controller.Update(dto, providerId).ConfigureAwait(false) as BadRequestObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    public async Task Update_ReturnsForbidden_WhenUnauthorizedAccessExceptionWasCatched()
+    {
+        // Arrange
+        var dto = FakeStudySubjectCreateUpdateDto();
+
+        studySubjectService.Setup(s => s.Update(dto, providerId)).ThrowsAsync(new UnauthorizedAccessException());
+
+        // Act
+        var result = await controller.Update(dto, providerId).ConfigureAwait(false) as ObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(403));
+    }
+
+    [Test]
+    public async Task Update_ReturnsBadRequest_WhenExceptionWasCatched()
+    {
+        // Arrange
+        var dto = FakeStudySubjectCreateUpdateDto();
+
+        studySubjectService.Setup(s => s.Update(dto, providerId)).ThrowsAsync(new Exception());
+
+        // Act
+        var result = await controller.Update(dto, providerId).ConfigureAwait(false) as BadRequestObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(400));
+    }
+
     #endregion
-    
+
     #region Delete
 
     [Test]
@@ -393,6 +457,57 @@ public class StudySubjectControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(400));
 
+    }
+
+    [Test]
+    public async Task Delete_ReturnsBadRequest_WhenArgumentExceptionWasCatched()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var dto = FakeStudySubjectCreateUpdateDto();
+
+        studySubjectService.Setup(s => s.GetById(id, providerId)).ThrowsAsync(new ArgumentException());
+
+        // Act
+        var result = await controller.Delete(id, providerId).ConfigureAwait(false) as BadRequestObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    public async Task Delete_ReturnsForbidden_WhenUnauthorizedAccessExceptionWasCatched()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var dto = FakeStudySubjectCreateUpdateDto();
+
+        studySubjectService.Setup(s => s.GetById(id, providerId)).ThrowsAsync(new UnauthorizedAccessException());
+
+        // Act
+        var result = await controller.Delete(id, providerId).ConfigureAwait(false) as ObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(403));
+    }
+
+    [Test]
+    public async Task Delete_ReturnsBadRequest_WhenExceptionWasCatched()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var dto = FakeStudySubjectCreateUpdateDto();
+
+        studySubjectService.Setup(s => s.GetById(id, providerId)).ThrowsAsync(new Exception());
+
+        // Act
+        var result = await controller.Delete(id, providerId).ConfigureAwait(false) as BadRequestObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(400));
     }
 
     #endregion

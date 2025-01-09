@@ -888,9 +888,7 @@ public class MappingProfile : Profile
                 opt => opt.MapFrom(src => src.LanguagesSelection.FirstOrDefault(l => l.IsPrimary).Id));
 
         CreateMap<StudySubject, StudySubjectDto>()
-            .ForMember(dest => dest.WorkshopId, opt => opt.Ignore())
-            .ForMember(dest => dest.Languages,
-                opt => opt.MapFrom(src => src.Languages.Select(l => new Language { Id = l.Id, Code = l.Code, Name = l.Name } )));
+            .ForMember(dest => dest.WorkshopId, opt => opt.Ignore());
 
         CreateMap<Language, LanguageDto>().ReverseMap();
     }
