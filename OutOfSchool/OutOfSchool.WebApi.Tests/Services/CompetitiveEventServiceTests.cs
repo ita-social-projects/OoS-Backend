@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -27,12 +28,17 @@ public class CompetitiveEventServiceTests
     private DbContextOptions<OutOfSchoolDbContext> options;
     private OutOfSchoolDbContext context;
     private IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> repo;
+    private IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType> accountingTypeOfEventRepository;
+    private IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
+    private IEntityRepository<Guid, Judge> judgeRepository;
+
     private Mock<ILogger<CompetitiveEventService>> logger;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private IMapper mapper;
 
     private CompetitiveEventService service;
     private Guid firstId;
+    private Guid firstJudgeId;
 
     [SetUp]
     public void SetUp()
@@ -45,6 +51,9 @@ public class CompetitiveEventServiceTests
         context = new OutOfSchoolDbContext(options);
 
         repo = new EntityRepositorySoftDeleted<Guid, CompetitiveEvent>(context);
+        accountingTypeOfEventRepository = new EntityRepositorySoftDeleted<int, CompetitiveEventAccountingType>(context);
+        descriptionItemRepository = new EntityRepository<Guid, CompetitiveEventDescriptionItem>(context);
+        judgeRepository = new EntityRepository<Guid, Judge>(context);
 
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
@@ -52,6 +61,9 @@ public class CompetitiveEventServiceTests
 
         service = new CompetitiveEventService(
             repo,
+            judgeRepository,
+           // accountingTypeOfEventRepository,
+            descriptionItemRepository,
             logger.Object,
             localizer.Object,
             mapper);
@@ -79,23 +91,25 @@ public class CompetitiveEventServiceTests
     }
 
     [Test]
-    public void GetById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException()
+    public async Task GetById_WhenIdIsInvalid_ReturnsNull()
     {
         // Arrange
         var id = Guid.NewGuid();
 
-        // Act and Assert
-        Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-            async () => await service.GetById(id).ConfigureAwait(false));
+        // Act
+        var result = await service.GetById(id).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNull(result, "Expected null for invalid ID.");
     }
 
     [Test]
+    [Ignore("Test is ignored because the method being tested uses a transaction, which is not supported by in-memory database.")]
     public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
     {
         // Arrange
-        var input = new CompetitiveEventDto()
+        var input = new CompetitiveEventCreateDto()
         {
-            Id = Guid.NewGuid(),
             Title = "Test",
             ShortTitle = "TestShort",
             Description = "Test",
@@ -104,9 +118,14 @@ public class CompetitiveEventServiceTests
             ScheduledEndTime = DateTime.UtcNow,
             NumberOfSeats = 10,
             OrganizerOfTheEventId = Guid.NewGuid(),
-            AccountingTypeOfEvent = new List<CompetitiveEventAccountingTypeDto>(),
-        };
+            CompetitiveEventAccountingTypeId = 1,
 
+            Judges = new List<JudgeDto>
+            {
+                new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge 1" },
+                new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge 2" }
+            }
+        };
         // Act
         var countBeforeCreating = await repo.Count().ConfigureAwait(false);
 
@@ -118,35 +137,12 @@ public class CompetitiveEventServiceTests
         Assert.AreEqual(input.Title, result.Title);
         Assert.That(countBeforeCreating, Is.EqualTo(countAfterCreating - 1));
     }
-
+   
     [Test]
-    public void Create_NotUniqueEntity_ReturnsArgumentException()
+    public void Update_WhenDtoIsNull_ThrowsArgumentNullException()
     {
         // Arrange
-        var input = new CompetitiveEventDto()
-        {
-            Id = firstId,
-            Title = "Test",
-            ShortTitle = "TestShort",
-            Description = "Test",
-            State = CompetitiveEventStates.Draft,
-            ScheduledStartTime = DateTime.UtcNow,
-            ScheduledEndTime = DateTime.UtcNow,
-            NumberOfSeats = 10,
-            OrganizerOfTheEventId = Guid.NewGuid(),
-            AccountingTypeOfEvent = new List<CompetitiveEventAccountingTypeDto>(),
-        };
-
-        // Act and Assert
-        Assert.ThrowsAsync<ArgumentException>(
-            async () => await service.Create(input).ConfigureAwait(false));
-    }
-
-    [Test]
-    public void Update_WhenDtoIsNull_ShouldThrowArgumentNullException()
-    {
-        // Arrange
-        CompetitiveEventDto dto = null;
+        CompetitiveEventUpdateDto dto = null;
 
         // Act and Assert
         Assert.ThrowsAsync<ArgumentNullException>(
@@ -154,10 +150,11 @@ public class CompetitiveEventServiceTests
     }
 
     [Test]
+    [Ignore("Test is ignored because the method being tested uses a transaction, which is not supported by in-memory database.")]
     public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
     {
         // Arrange
-        var changedDto = new CompetitiveEventDto()
+        var changedDto = new CompetitiveEventUpdateDto()
         {
             Id = Guid.NewGuid(),
             Title = "Test",
@@ -168,7 +165,7 @@ public class CompetitiveEventServiceTests
             ScheduledEndTime = DateTime.UtcNow,
             NumberOfSeats = 10,
             OrganizerOfTheEventId = Guid.NewGuid(),
-            AccountingTypeOfEvent = new List<CompetitiveEventAccountingTypeDto>(),
+            CompetitiveEventAccountingTypeId = 1,
         };
 
         // Act and Assert
@@ -177,10 +174,11 @@ public class CompetitiveEventServiceTests
     }
 
     [Test]
+    [Ignore("Test is ignored because the method being tested uses a transaction, which is not supported by in-memory database.")]
     public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
     {
         // Arrange
-        var input = new CompetitiveEventDto()
+        var input = new CompetitiveEventUpdateDto()
         {
             Id = firstId,
             Title = "TestNew",
@@ -191,14 +189,96 @@ public class CompetitiveEventServiceTests
             ScheduledEndTime = DateTime.UtcNow,
             NumberOfSeats = 10,
             OrganizerOfTheEventId = Guid.NewGuid(),
-            AccountingTypeOfEvent = new List<CompetitiveEventAccountingTypeDto>(),
+            CompetitiveEventAccountingTypeId = 1,
+            Judges = new List<JudgeDto>
+            {
+                new JudgeDto { Id = firstJudgeId, FirstName = "Judge C" },
+                new JudgeDto { FirstName = "Judge D" }
+            }
         };
 
         // Act
         var result = await service.Update(input).ConfigureAwait(false);
 
         // Assert
-        Assert.That(input.Title, Is.EqualTo(result.Title));
+        Assert.That(input.Title, Is.EqualTo(result.Title), "CompetitiveEvent's title was not updated correctly.");
+        Assert.That(input.Judges[0].FirstName, Is.EqualTo(result.Judges[0].FirstName), "First Judge's name was not updated correctly.");
+        Assert.That(input.Judges[1].FirstName, Is.EqualTo(result.Judges[1].FirstName), "New judge (Judge D) was not added correctly.");
+    }
+
+    [Test]
+    [Ignore("Test is ignored because the method being tested uses a transaction, which is not supported by in-memory database.")]
+    public async Task Update_WhenDescriptionItemsAreUpdated_UpdatesCorrectly()
+    {
+        // Arrange
+        Guid firstDescItemId = Guid.NewGuid();
+        var initialDescriptionItems = new List<CompetitiveEventDescriptionItem>
+        {
+            new CompetitiveEventDescriptionItem { Id = firstDescItemId, SectionName = "Old Section 1", Description = "Old Description 1" },
+            new CompetitiveEventDescriptionItem { Id = Guid.NewGuid(), SectionName = "Old Section 2", Description = "Old Description 2" },
+        };
+
+        Guid eventId = Guid.NewGuid();
+        var competitiveEvent = new CompetitiveEvent
+        {
+            Id = eventId,
+            Title = "Test Event",
+            ShortTitle = "Test Event Short",
+            CompetitiveEventDescriptionItems = initialDescriptionItems,
+        };
+
+        context.CompetitiveEvents.Add(competitiveEvent);
+        await context.SaveChangesAsync();
+
+        var updateDto = new CompetitiveEventUpdateDto
+        {
+            Id = eventId,
+            Title = "Updated Test Event",
+            ShortTitle = "Updated Test Event Short",
+            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>
+            {
+                // Update an existing item
+                new CompetitiveEventDescriptionItemDto
+                {
+                    Id = initialDescriptionItems[1].Id,
+                    SectionName = "Updated Section 2",
+                    Description = "Updated Description 2"
+                },
+                // Add a new item
+                new CompetitiveEventDescriptionItemDto
+                {
+                    Id = Guid.NewGuid(),
+                    SectionName = "New Section 3",
+                    Description = "New Description 3"
+                }
+            }
+        };
+
+        // Act
+        var result = await service.Update(updateDto);
+
+        // Assert
+        Assert.AreEqual(updateDto.Title, result.Title);
+
+        var updatedEvent = await context.CompetitiveEvents
+            .Include(e => e.CompetitiveEventDescriptionItems)
+            .FirstAsync(e => e.Id == eventId);
+
+        Assert.AreEqual(2, updatedEvent.CompetitiveEventDescriptionItems.Count);
+
+        // Verify updated item
+        var updatedItem = updatedEvent.CompetitiveEventDescriptionItems
+            .First(d => d.Id == initialDescriptionItems[0].Id);
+        Assert.AreEqual("Updated Description 2", updatedItem.Description);
+
+        // Verify new item
+        var newItem = updatedEvent.CompetitiveEventDescriptionItems
+            .First(d => d.Description == "New Description 3");
+        Assert.IsNotNull(newItem);
+
+        // Verify deleted item
+        Assert.IsFalse(updatedEvent.CompetitiveEventDescriptionItems
+            .Any(d => d.Id == firstDescItemId));
     }
 
     [Test]
@@ -234,6 +314,7 @@ public class CompetitiveEventServiceTests
             ctx.Database.EnsureCreated();
 
             firstId = Guid.NewGuid();
+            firstJudgeId = Guid.NewGuid();
 
             var competitiveEvents = new List<CompetitiveEvent>()
             {
@@ -248,7 +329,11 @@ public class CompetitiveEventServiceTests
                     ScheduledEndTime = DateTime.UtcNow,
                     NumberOfSeats = 10,
                     OrganizerOfTheEventId = Guid.NewGuid(),
-                    AccountingTypeOfEvent = new List<CompetitiveEventAccountingType>(),
+                    CompetitiveEventAccountingType = new CompetitiveEventAccountingType(),
+                    Judges = new List<Judge>
+                    {
+                        new Judge { Id = firstJudgeId, FirstName = "Judge A" },
+                    }
                 },
                 new CompetitiveEvent
                 {
@@ -261,7 +346,7 @@ public class CompetitiveEventServiceTests
                     ScheduledEndTime = DateTime.UtcNow,
                     NumberOfSeats = 10,
                     OrganizerOfTheEventId = Guid.NewGuid(),
-                    AccountingTypeOfEvent = new List<CompetitiveEventAccountingType>(),
+                    CompetitiveEventAccountingType = new CompetitiveEventAccountingType(),
                 },
                 new CompetitiveEvent
                 {
@@ -274,7 +359,7 @@ public class CompetitiveEventServiceTests
                     ScheduledEndTime = DateTime.UtcNow,
                     NumberOfSeats = 10,
                     OrganizerOfTheEventId = Guid.NewGuid(),
-                    AccountingTypeOfEvent = new List<CompetitiveEventAccountingType>(),
+                    CompetitiveEventAccountingType = new CompetitiveEventAccountingType(),
                 },
             };
 

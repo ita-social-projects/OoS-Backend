@@ -12,9 +12,4 @@ public class CompetitiveEventAccountingTypeDto
     [MaxLength(250)]
     [MinLength(1)]
     public string Title { get; set; }
-
-    [DataType(DataType.Text)]
-    [MaxLength(250)]
-    [MinLength(1)]
-    public string TitleEn { get; set; }
 }

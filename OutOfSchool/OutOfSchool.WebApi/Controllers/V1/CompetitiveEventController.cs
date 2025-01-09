@@ -18,7 +18,7 @@ public class CompetitiveEventController : ControllerBase
     /// </summary>
     /// <param name="service">Service for CompetitiveEvent model.</param>
     /// <param name="localizer">Localizer.</param>
-    public CompetitiveEventController(ICompetitiveEventService service, IStringLocalizer<SharedResource> localizer)
+    public CompetitiveEventController(ICompetitiveEventService service,/* IUserService userService,*/ IStringLocalizer<SharedResource> localizer)
     {
         this.service = service;
         this.localizer = localizer;
@@ -31,11 +31,17 @@ public class CompetitiveEventController : ControllerBase
     /// <returns>CompetitiveEvent.</returns>
     [HasPermission(Permissions.CompetitiveEventRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompetitiveEventDto))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        return Ok(await service.GetById(id).ConfigureAwait(false));
+        var competitiveEvent = await service.GetById(id).ConfigureAwait(false);
+
+        if (competitiveEvent == null)
+            return NoContent(); // Competitive event with ID {id} not found
+        
+        return Ok(competitiveEvent);
     }
 
     /// <summary>
@@ -51,8 +57,16 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CompetitiveEventDto dto)
+    public async Task<IActionResult> Create([FromBody] CompetitiveEventCreateDto dto)
     {
+        if (dto == null)
+        {
+            return BadRequest("The request body is empty.");
+        }
+        if (!AreJudgesValid(dto.Judges))
+        {
+            return BadRequest("A competitive event can have no more than one chief judge.");
+        }
         var competitiveEvent = await service.Create(dto).ConfigureAwait(false);
 
         return CreatedAtAction(
@@ -72,11 +86,36 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update([FromBody] CompetitiveEventDto dto)
+    public async Task<IActionResult> Update([FromBody] CompetitiveEventUpdateDto dto)
     {
-        return Ok(await service.Update(dto).ConfigureAwait(false));
+        if (dto == null)
+        {
+            return BadRequest("The request body is empty.");
+        }
+
+        dto.Judges ??= new List<JudgeDto>();
+        dto.CompetitiveEventDescriptionItems ??= new List<CompetitiveEventDescriptionItemDto>();
+
+        if (!AreJudgesValid(dto.Judges))
+        {
+            return BadRequest("A competitive event can have no more than one chief judge.");
+        }
+        try
+        {
+            return Ok(await service.Update(dto).ConfigureAwait(false));
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            // For other unexpected exceptions
+            return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred. {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -85,7 +124,7 @@ public class CompetitiveEventController : ControllerBase
     /// <param name="id">CompetitiveEvent id.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.CompetitiveEventRemove)]
-    [Authorize]
+    [Authorize] 
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -93,8 +132,25 @@ public class CompetitiveEventController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
+        var competitiveEvent = await service.GetById(id).ConfigureAwait(false);
+
+        if (competitiveEvent is null)
+        {
+            return NoContent();
+        }
+
         await service.Delete(id).ConfigureAwait(false);
 
         return NoContent();
+    }
+
+    private static bool AreJudgesValid(IEnumerable<JudgeDto> judges)
+    {
+        if (judges != null && judges.Any())
+        {
+            var chiefJudgeCount = judges.Count(j => j.IsChiefJudge);
+            return chiefJudgeCount <= 1;
+        }
+        return true;
     }
 }
