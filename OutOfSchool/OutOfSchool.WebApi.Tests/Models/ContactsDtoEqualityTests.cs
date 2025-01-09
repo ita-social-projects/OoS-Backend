@@ -18,9 +18,10 @@ public class ContactsDtoEqualityTests
         {
             equalsResult = true;
         }
-        else if (left == null || right == null)
+        else if (left == null)
         {
-            equalsResult = false;
+            var typedRight = Convert.ChangeType(right, typeToTest);
+            equalsResult = typedRight.Equals(left);
         }
         else
         {
@@ -91,6 +92,12 @@ public class ContactsDtoEqualityTests
                 new ContactsDto {Title = "B", IsDefault = false, Address = new ContactsAddressDto()},
                 false
             ).SetName("ContactsDto_DifferentObjects");
+            
+            yield return new TestCaseData(typeof(ContactsDto),
+                new ContactsDto {Title = "A", IsDefault = false, Address = new ContactsAddressDto()},
+                null,
+                false
+            ).SetName("ContactsDto_OtherNull");
 
             yield return new TestCaseData(typeof(ContactsAddressDto),
                 new ContactsAddressDto {BuildingNumber = "1/A", CATOTTGId = 1, Street = "A"},
@@ -104,6 +111,12 @@ public class ContactsDtoEqualityTests
                 false
             ).SetName("ContactsAddressDto_DifferentObjects");
             
+            yield return new TestCaseData(typeof(ContactsAddressDto),
+                new ContactsAddressDto {BuildingNumber = "1/A", CATOTTGId = 1, Street = "A"},
+                null,
+                false
+            ).SetName("ContactsAddressDto_OtherNull");
+            
             yield return new TestCaseData(typeof(PhoneNumberDto),
                 new PhoneNumberDto {Type = "A", Number = "123456"},
                 new PhoneNumberDto {Type = "A", Number = "123456"},
@@ -115,6 +128,12 @@ public class ContactsDtoEqualityTests
                 new PhoneNumberDto {Type = "A", Number = "123457"},
                 false
             ).SetName("PhoneNumberDto_DifferentObjects");
+            
+            yield return new TestCaseData(typeof(PhoneNumberDto),
+                new PhoneNumberDto {Type = "A", Number = "123456"},
+                null,
+                false
+            ).SetName("PhoneNumberDto_OtherNull");
             
             yield return new TestCaseData(typeof(EmailDto),
                 new EmailDto {Type = "A", Address = "a@b.com"},
@@ -128,6 +147,12 @@ public class ContactsDtoEqualityTests
                 false
             ).SetName("EmailDto_DifferentObjects");
             
+            yield return new TestCaseData(typeof(EmailDto),
+                new EmailDto {Type = "A", Address = "a@b.com"},
+                null,
+                false
+            ).SetName("EmailDto_OtherNull");
+            
             yield return new TestCaseData(typeof(SocialNetworkDto),
                 new SocialNetworkDto {Type = SocialNetworkContactType.Instagram, Url = "www.instagram.com"},
                 new SocialNetworkDto {Type = SocialNetworkContactType.Instagram, Url = "www.instagram.com"},
@@ -139,6 +164,12 @@ public class ContactsDtoEqualityTests
                 new SocialNetworkDto {Type = SocialNetworkContactType.Facebook, Url = "www.facebook.com"},
                 false
             ).SetName("SocialNetworkDto_DifferentObjects");
+            
+            yield return new TestCaseData(typeof(SocialNetworkDto),
+                new SocialNetworkDto {Type = SocialNetworkContactType.Instagram, Url = "www.instagram.com"},
+                null,
+                false
+            ).SetName("SocialNetworkDto_OtherNull");
         }
     }
 }
