@@ -1175,6 +1175,9 @@ public class ProviderServiceTests
         // Arrange
         var id = Guid.NewGuid();
         var data = (UploadEmployeeRequestDto[])null;
+        providersRepositoryMock.Setup(r => r.Any(It.IsAny<Expression<Func<Provider, bool>>>()))
+            .Returns(Task.FromResult(true))
+            .Verifiable(Times.Once);
 
         // Act & Assert
         Assert.ThrowsAsync<ArgumentNullException>(async () => await providerService.UploadEmployeesForProvider(id, data)
@@ -1187,6 +1190,9 @@ public class ProviderServiceTests
         // Arrange
         var id = Guid.NewGuid();
         var data = new UploadEmployeeRequestDto[0];
+        providersRepositoryMock.Setup(r => r.Any(It.IsAny<Expression<Func<Provider, bool>>>()))
+            .Returns(Task.FromResult(true))
+            .Verifiable(Times.Once);
 
         // Act & Assert
         Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await providerService.UploadEmployeesForProvider(id, data)
@@ -1200,6 +1206,9 @@ public class ProviderServiceTests
         int MaxNumberOfEmployeesToUpload = Constants.MaxNumberOfEmployeesToUpload;
         var id = Guid.NewGuid();
         var data = new UploadEmployeeRequestDto[MaxNumberOfEmployeesToUpload + 1];
+        providersRepositoryMock.Setup(r => r.Any(It.IsAny<Expression<Func<Provider, bool>>>()))
+            .Returns(Task.FromResult(true))
+            .Verifiable(Times.Once);
 
         // Act & Assert
         Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await providerService.UploadEmployeesForProvider(id, data)
@@ -1215,6 +1224,9 @@ public class ProviderServiceTests
         var employee2 = UploadEmployeeDtoGenerator.Generate();
         employee2.Rnokpp = employee1.Rnokpp;
         var data = new UploadEmployeeRequestDto[] { employee1, employee2 };
+        providersRepositoryMock.Setup(r => r.Any(It.IsAny<Expression<Func<Provider, bool>>>()))
+            .Returns(Task.FromResult(true))
+            .Verifiable(Times.Once);
 
         // Act & Assert
         Assert.ThrowsAsync<InvalidOperationException>(async () => await providerService.UploadEmployeesForProvider(id, data)
@@ -1336,6 +1348,11 @@ public class ProviderServiceTests
 
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task>>()))
             .Returns((Func<Task> f) => f.Invoke())
+            .Verifiable(Times.Once)
+            ;
+
+        providersRepositoryMock.Setup(r => r.Any(It.IsAny<Expression<Func<Provider, bool>>>()))
+            .Returns(Task.FromResult(true))
             .Verifiable(Times.Once)
             ;
     }
