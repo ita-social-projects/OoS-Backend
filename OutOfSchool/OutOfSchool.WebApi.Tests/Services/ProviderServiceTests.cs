@@ -1291,6 +1291,39 @@ public class ProviderServiceTests
         result.Should().BeEquivalentTo(expectedResult);
     }
 
+    [Test]
+    public void UploadEmployeesForProvider_WhenProviderDoesNotExist_ShouldThrowUnauthorizedAccessException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var data = new UploadEmployeeRequestDto[2];
+        providersRepositoryMock.Setup(r => r.Any(It.IsAny<Expression<Func<Provider, bool>>>()))
+            .Returns(Task.FromResult(false))
+            .Verifiable(Times.Once);
+
+        // Act & Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await providerService.UploadEmployeesForProvider(id, data)
+                                                                    .ConfigureAwait(false));
+    }
+
+    [Test]
+    public void UploadEmployeesForProvider_WhenUserDoesNotHaveRights_ShouldThrowUnauthorizedAccessException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var data = new UploadEmployeeRequestDto[2];
+        providersRepositoryMock.Setup(r => r.Any(It.IsAny<Expression<Func<Provider, bool>>>()))
+            .Returns(Task.FromResult(true))
+            .Verifiable(Times.Once);
+        currentUserServiceMock.Setup(r => r.UserHasRights(It.IsAny<ProviderRights>()))
+            .ThrowsAsync(new UnauthorizedAccessException("User has no rights to perform operation"))
+            .Verifiable(Times.Once);
+
+        // Act & Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await providerService.UploadEmployeesForProvider(id, data)
+                                                                    .ConfigureAwait(false));
+    }
+
     #endregion
 
     private void SetupUploadEmployeesForProvider(out UploadEmployeeRequestDto[] FakeUploadEmployees,
