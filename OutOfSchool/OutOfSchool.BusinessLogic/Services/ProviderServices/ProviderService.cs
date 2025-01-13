@@ -538,6 +538,15 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
     public async Task<UploadEmployeeResponse> UploadEmployeesForProvider(Guid id, UploadEmployeeRequestDto[] data)
     {
+        var isProviderExists = await Exists(id).ConfigureAwait(false);
+
+        if (!isProviderExists)
+        {
+            throw new UnauthorizedAccessException($"User has no rights to perform operation. Provider with Id = {id} doesn't exist.");
+        }
+
+        await currentUserService.UserHasRights(new ProviderRights(id));
+
         // Check list of Employees for uploading.
         CheckListOfEmployeesForUploading(data);
 

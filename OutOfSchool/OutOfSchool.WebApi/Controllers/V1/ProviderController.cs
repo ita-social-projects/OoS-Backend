@@ -230,8 +230,9 @@ public class ProviderController : ControllerBase
     [HasPermission(Permissions.ProviderEdit)]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut("{id}/employees/upload")]
     public async Task<IActionResult> Upload(Guid id, [FromBody] UploadEmployeeRequestDto[] uploadEployees)
