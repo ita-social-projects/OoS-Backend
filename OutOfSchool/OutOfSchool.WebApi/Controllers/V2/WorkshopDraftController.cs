@@ -40,7 +40,7 @@ public class WorkshopDraftController : ControllerBase
     /// Add new workshop draft to the database.
     /// </summary>
     /// <param name="workshopV2Dto">Entity to add.</param>
-    /// <returns>Created <see cref="WorkshopDraftCreateDto"/>.</returns>
+    /// <returns>Created <see cref="WorkshopDraftResultDto"/>.</returns>
     /// <response code="201">Entity was created and returned with Id.</response>
     /// <response code="400">If the model is invalid, some properties are not set etc.</response>
     /// <response code="401">If the user is not authorized.</response>

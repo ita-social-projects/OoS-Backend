@@ -33,22 +33,6 @@ public class WorkshopDraftMappingProfile : Profile
 
         CreateMap<TeacherDraft, TeacherDraftResponseDto>();
 
-        CreateMap<WorkshopDraftCreateDto, WorkshopDraftContent>();
-        CreateMap<WorkshopDraftCreateDto, WorkshopDraft>()
-            .ForPath(dest => dest.WorkshopDraftContent, opt => opt.MapFrom(src => src))
-            .ForPath(dest => dest.WorkshopDraftContent.TagIds, opt => opt.MapFrom(src => src.TagsIds))
-            .ForMember(dest => dest.Images, opt => opt.Ignore())
-            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
-            .ForMember(dest => dest.Provider, opt => opt.Ignore())
-            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-            .ForMember(dest => dest.ModifiedAt, opt => opt.Ignore())
-            .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-            .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
-            .ForMember(dest => dest.Id, opt => opt.Ignore())
-            .ForMember(dest => dest.DraftStatus, opt => opt.Ignore())
-            .ForMember(dest => dest.Version, opt => opt.Ignore());
-
-
         CreateMap<WorkshopDraftContent, WorkshopDraftResponseDto>()
             .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => string.Join(Constants.MappingSeparator, src.Keywords)));
 

@@ -1,4 +1,4 @@
-﻿using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
+﻿using System.Collections;
 using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.BusinessLogic.Util.CustomValidation;
@@ -19,8 +19,8 @@ public class CollectionValidationAttribute : ValidationAttribute
     }
 
     protected override ValidationResult IsValid(object value, ValidationContext validationContext)
-    {
-        if (value is not IEnumerable<DateTimeRangeDraftDto> collection)
+    {     
+        if (value is not IEnumerable collection)
         {
             return new ValidationResult(ErrorMessage ?? "Invalid type. The property must be a collection.");
         }

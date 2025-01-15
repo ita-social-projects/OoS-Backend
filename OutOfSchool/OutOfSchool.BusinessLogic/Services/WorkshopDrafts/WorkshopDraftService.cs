@@ -86,12 +86,12 @@ public class WorkshopDraftService : IWorkshopDraftService
                 "ArgumentNullException: While executing the method '{MethodName}'," +
                 " the parameter '{ParameterName}' is null.",
                 nameof(Create),
-                nameof(WorkshopDraftCreateDto));
+                nameof(WorkshopV2Dto));
 
             throw new ArgumentNullException(nameof(workshopV2Dto));
         }
 
-        logger.LogInformation("Workshop draft creating was started.");
+        logger.LogDebug("Workshop draft creating was started.");
 
         if (workshopV2Dto.Teachers == null || !workshopV2Dto.Teachers.Any())
         {
@@ -139,7 +139,7 @@ public class WorkshopDraftService : IWorkshopDraftService
         var createdDraftDto = mapper.Map<WorkshopDraftResponseDto>(createdDraftWithAssociatedTeachers);
         createdDraftDto.Tags = mapper.Map<List<TagDto>>(tags);
 
-        logger.LogInformation("WorkshopDraft created successfully.");
+        logger.LogDebug("WorkshopDraft created successfully.");
 
         return new WorkshopDraftResultDto
         {
@@ -159,7 +159,7 @@ public class WorkshopDraftService : IWorkshopDraftService
             throw new ArgumentNullException(nameof(workshopDraftUpdateDto));
         }
 
-        logger.LogInformation("Updating WorkshopDraft started. WorkshopDraft Id = {Id}.", workshopDraftUpdateDto.Id);
+        logger.LogDebug("Updating WorkshopDraft started. WorkshopDraft Id = {Id}.", workshopDraftUpdateDto.Id);
 
         if (workshopDraftUpdateDto.WorkshopV2Dto.Teachers == null || 
             !workshopDraftUpdateDto.WorkshopV2Dto.Teachers.Any())
@@ -226,7 +226,7 @@ public class WorkshopDraftService : IWorkshopDraftService
             }
 
             await workshopDraftRepository.Update(workshopDraft);
-            logger.LogInformation("WorkshopDraft was successfully updated. Draft Id = {DraftId}.", workshopDraftUpdateDto.Id);
+            logger.LogDebug("WorkshopDraft was successfully updated. Draft Id = {DraftId}.", workshopDraftUpdateDto.Id);
 
             return (workshopDraft, coverImageResult, imagesResult, teacherCreateUpdateResult);
         }
@@ -246,7 +246,7 @@ public class WorkshopDraftService : IWorkshopDraftService
     // <inheritdoc/>
     public async Task Delete(Guid id)
     {
-        logger.LogInformation("Deleting WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
+        logger.LogDebug("Deleting WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
         var workshopDraft = await GetWorkshopDraftById(id);
 
@@ -261,13 +261,13 @@ public class WorkshopDraftService : IWorkshopDraftService
         }
 
         await workshopDraftRepository.Delete(workshopDraft);
-        logger.LogInformation("WorkshopDraft was successfully deleted. Draft Id = {DraftId}.", id);
+        logger.LogDebug("WorkshopDraft was successfully deleted. Draft Id = {DraftId}.", id);
     }
 
     // <inheritdoc/>
     public async Task SendForModeration(Guid id)
     {
-        logger.LogInformation("Sending WorkshopDraft for moderation started. WorkshopDraft Id = {Id}.", id);
+        logger.LogDebug("Sending WorkshopDraft for moderation started. WorkshopDraft Id = {Id}.", id);
 
         var workshopDraft = await GetWorkshopDraftById(id);
 
@@ -284,13 +284,15 @@ public class WorkshopDraftService : IWorkshopDraftService
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
 
         await workshopDraftRepository.Update(workshopDraft);
-        logger.LogInformation("Draft was successfully sent for moderation. Draft Id = {DraftId}.", id);        
+        logger.LogDebug("Draft was successfully sent for moderation. Draft Id = {DraftId}.", id);        
     }
 
     // <inheritdoc/>
     public async Task Approve(Guid id)
     {
-        logger.LogInformation("Approving WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
+        //TODO: Check if we can add RunInTransaction later
+
+        logger.LogDebug("Approving WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
                 
         var workshopDraft = await GetWorkshopDraftById(id);
 
@@ -321,13 +323,13 @@ public class WorkshopDraftService : IWorkshopDraftService
 
         await workshopDraftRepository.Delete(workshopDraft);
 
-        logger.LogInformation("Draft was successfully approved and deleted. Draft Id = {DraftId}.", id);   
+        logger.LogDebug("Draft was successfully approved and deleted. Draft Id = {DraftId}.", id);   
     }
 
     // <inheritdoc/>
     public async Task Reject(Guid id, string rejectionMessage)
     {
-        logger.LogInformation("Rejecting WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
+        logger.LogDebug("Rejecting WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
         var workshopDraft = await GetWorkshopDraftById(id);
 
@@ -345,12 +347,12 @@ public class WorkshopDraftService : IWorkshopDraftService
         workshopDraft.RejectionMessage = rejectionMessage;
         
         await workshopDraftRepository.Update(workshopDraft);
-        logger.LogInformation("Draft was successfully rejected. Draft Id = {DraftId}.", id);        
+        logger.LogDebug("Draft was successfully rejected. Draft Id = {DraftId}.", id);        
     }
 
     private async Task<WorkshopDraft> GetWorkshopDraftById(Guid id)
     {
-        logger.LogInformation("Getting WorkshopDraft by Id started. Looking Id = {Id}.", id);
+        logger.LogDebug("Getting WorkshopDraft by Id started. Looking Id = {Id}.", id);
 
         var workshopDraft = await workshopDraftRepository.GetById(id);
 
@@ -361,7 +363,7 @@ public class WorkshopDraftService : IWorkshopDraftService
                 paramName: $"There are no recors in workshopDrafts table with such id - {id}.");
         }
 
-        logger.LogInformation("Got a WorkshopDraft with Id = {Id}.", id);
+        logger.LogDebug("Got a WorkshopDraft with Id = {Id}.", id);
 
         return workshopDraft;
     }

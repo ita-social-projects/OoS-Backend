@@ -10,6 +10,6 @@ public class WorkshopDraftResponseDto : WorkshopDraftBaseDto
     public Guid ProviderId { get; set; }
     public WorkshopDraftStatus DraftStatus { get; set; }
     public List<string> ImagesIds { get; set; }
-    public List<TagDto>  Tags { get; set; }
+    public List<TagDto> Tags { get; set; }
     public AddressDraftDto Address {  get; set; }
 }
