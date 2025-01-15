@@ -15,6 +15,9 @@ using OutOfSchool.BusinessLogic.Models.Notifications;
 using OutOfSchool.BusinessLogic.Models.Position;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.Exported;
+using OutOfSchool.BusinessLogic.Models.Exported.Directions;
+using OutOfSchool.BusinessLogic.Models.Exported.Providers;
+using OutOfSchool.BusinessLogic.Models.Exported.Workshops;
 using OutOfSchool.BusinessLogic.Models.SocialGroup;
 using OutOfSchool.BusinessLogic.Models.StatisticReports;
 using OutOfSchool.BusinessLogic.Models.StudySubjects;
@@ -414,6 +417,11 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
 
+        CreateMap<Direction, DirectionInfoDto>();
+
+        CreateMap<InstitutionHierarchy, SubDirectionsInfoDto>()
+            .ForMember(dest => dest.DirectionIds, opt => opt.MapFrom(src => src.Directions.Select(x => x.Id)));
+        
         CreateSoftDeletedMap<TeacherDTO, Teacher>()
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.WorkshopId, opt => opt.Ignore())

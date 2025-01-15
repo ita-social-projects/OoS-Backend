@@ -4,7 +4,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Common.Validators;
 
-namespace OutOfSchool.BusinessLogic.Models.Exported;
+namespace OutOfSchool.BusinessLogic.Models.Exported.Workshops;
 
 public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
 {

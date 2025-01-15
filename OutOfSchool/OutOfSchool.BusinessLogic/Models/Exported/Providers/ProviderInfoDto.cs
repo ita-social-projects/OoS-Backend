@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.BusinessLogic.Models.Exported;
+namespace OutOfSchool.BusinessLogic.Models.Exported.Providers;
 
 public class ProviderInfoDto : ProviderInfoBaseDto, IExternalRatingInfo
 {
