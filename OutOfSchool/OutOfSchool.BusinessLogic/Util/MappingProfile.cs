@@ -389,9 +389,12 @@ public class MappingProfile : Profile
                 opt => opt.MapFrom(src => src.Keywords.Split(Constants.MappingSeparator, StringSplitOptions.None)))
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
             .ForMember(
-                dest => dest.Directions,
+                dest => dest.DirectionIds,
                 opt => opt.MapFrom(
-                    src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Title)))
+                    src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Id)))
+            .ForMember(dest => dest.SubDirectionId,
+                opt => opt.MapFrom(
+                    src => src.InstitutionHierarchy.Id))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
             .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src => src.Teachers.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.DateTimeRanges,

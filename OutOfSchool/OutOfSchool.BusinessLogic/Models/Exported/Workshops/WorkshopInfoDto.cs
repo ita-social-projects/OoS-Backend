@@ -98,7 +98,9 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
 
     public TeacherInfoDto DefaultTeacher { get; set; }
 
-    public List<string> Directions { get; set; }
+    public List<long> DirectionIds { get; set; }
+    
+    public Guid SubDirectionId { get; set; }
 
     public IEnumerable<string> Keywords { get; set; } = default;
 
