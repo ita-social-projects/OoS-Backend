@@ -543,7 +543,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         if (!isProviderExists)
         {
             logger.LogError("User has no rights to perform operation. Provider with Id = {id} doesn't exist.", id);
-            throw new UnauthorizedAccessException($"User has no rights to perform operation.");
+            throw new UnauthorizedAccessException("User has no rights to perform operation.");
         }
 
         await currentUserService.UserHasRights(new ProviderRights(id));
