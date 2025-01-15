@@ -542,7 +542,8 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
         if (!isProviderExists)
         {
-            throw new UnauthorizedAccessException($"User has no rights to perform operation. Provider with Id = {id} doesn't exist.");
+            logger.LogError("User has no rights to perform operation. Provider with Id = {id} doesn't exist.", id);
+            throw new UnauthorizedAccessException($"User has no rights to perform operation.");
         }
 
         await currentUserService.UserHasRights(new ProviderRights(id));
@@ -1084,7 +1085,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         // Check if the Rnokpp property values ​​are unique?
         if (uploadEmployeesRnokpps.Distinct().Count() != data.Length)
         {
-            var errorMessage = $"The Rnokpp property values are not unique.";
+            var errorMessage = "The Rnokpp property values are not unique.";
             logger.LogError(errorMessage);
             throw new InvalidOperationException(errorMessage);
         }
