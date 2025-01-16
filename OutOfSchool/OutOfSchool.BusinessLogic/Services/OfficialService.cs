@@ -48,7 +48,7 @@ public class OfficialService : IOfficialService
             .Get(
              skip: filter.From,
              take: filter.Size,
-             includeProperties: "Position, Individual",
+             includeProperties: "Position,Individual",
              whereExpression: predicate
             ).AsNoTracking()
             .ToListAsync()
