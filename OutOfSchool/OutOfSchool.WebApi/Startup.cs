@@ -364,6 +364,7 @@ public static class Startup
         services.AddTransient<IPositionService, PositionService>();
         services.AddTransient<IStudySubjectService, StudySubjectService>();
         services.AddTransient<ILanguageService, LanguageService>();
+        services.AddTransient<IOfficialService, OfficialService>();
 
         services.AddTransient<IGRPCCommonService, GRPCCommonService>();
         services.AddTransient<IWorkshopStrategy>(sp =>
