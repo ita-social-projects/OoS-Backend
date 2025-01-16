@@ -26,6 +26,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Images;
+using OutOfSchool.BusinessLogic.Models.Official;
 
 namespace OutOfSchool.BusinessLogic.Util;
 
@@ -924,6 +925,15 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.WorkshopId, opt => opt.Ignore());
 
         CreateMap<Language, LanguageDto>().ReverseMap();
+
+        CreateMap<Official, OfficialDto>()
+            .ForMember(dest => dest.DismissalOrder, opt => opt.MapFrom(src => src.DismissalOrder ?? string.Empty))
+            .ForMember(dest => dest.RecruitmentOrder, opt => opt.MapFrom(src => src.RecruitmentOrder ?? string.Empty))
+            .ForMember(dest => dest.DismissalReason, opt => opt.MapFrom(src => src.DismissalReason ?? string.Empty));
+
+        CreateMap<Position, OfficialPositionDto>();
+
+        CreateMap<Individual, OfficialIndividualDto>();
     }
 
     public IMappingExpression<TSource, TDestination> CreateSoftDeletedMap<TSource, TDestination>()
