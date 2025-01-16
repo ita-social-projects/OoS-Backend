@@ -31,14 +31,14 @@ public class OfficialControllerTests
     [Test]
     public async Task Get_ReturnsNoContent_WhenListIsEmpty()
     {
-        // Assert
+        // Arrange
         var emptyResult = new SearchResult<OfficialDto>();
         service.Setup(s => s.GetByFilter(providerId, null)).ReturnsAsync(emptyResult);
 
         // Act
         var result = await controller.Get(providerId, null).ConfigureAwait(false) as NoContentResult;
 
-        // Arrange
+        // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(204));
     }
@@ -46,7 +46,7 @@ public class OfficialControllerTests
     [Test]
     public async Task Get_ReturnsOk_WhenListIsNotEmpty()
     {
-        // Assert
+        // Arrange
         var searchResult = new SearchResult<OfficialDto>()
         {
             Entities = new List<OfficialDto>
@@ -62,7 +62,7 @@ public class OfficialControllerTests
         // Act
         var result = await controller.Get(providerId, null).ConfigureAwait(false) as OkObjectResult;
 
-        // Arrange
+        // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(200));
 

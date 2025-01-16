@@ -10,7 +10,7 @@ public class OfficialService : IOfficialService
 {
     private readonly IEntityRepositorySoftDeleted<Guid, Official> officialRepository;
     private readonly IProviderService providerService;
-    private readonly ILogger<OfficialDto> logger;
+    private readonly ILogger<OfficialService> logger;
     private readonly IMapper mapper;
 
     /// <summary>
@@ -23,7 +23,7 @@ public class OfficialService : IOfficialService
     public OfficialService(
         IEntityRepositorySoftDeleted<Guid, Official> officialRepository,
         IProviderService providerService,
-        ILogger<OfficialDto> logger,
+        ILogger<OfficialService> logger,
         IMapper mapper
         )
     {
@@ -68,6 +68,11 @@ public class OfficialService : IOfficialService
     private Expression<Func<Official, bool>> BuildPredicate(OfficialFilter filter)
     {
         var predicate = PredicateBuilder.True<Official>();
+
+        if (!string.IsNullOrEmpty(filter.PositionName))
+        {
+            predicate = predicate.And(o => o.Position.FullName.Contains(filter.PositionName));
+        }
 
         if (!string.IsNullOrEmpty(filter.IndividualFirstName))
         {
