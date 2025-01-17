@@ -34,13 +34,13 @@ public class OfficialService : IOfficialService
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<OfficialDto>> GetByFilter(Guid providerId, OfficialFilter filter)
+    public async Task<SearchResult<OfficialDto>> GetByFilter(Guid providerId, SearchStringFilter filter)
     {
         await providerService.HasProviderRights(providerId);
 
         logger.LogDebug("Getting Officials by filter started.");
 
-        filter ??= new OfficialFilter();
+        filter ??= new SearchStringFilter();
         var predicate = BuildPredicate(filter);
         int count = await officialRepository.Count(predicate).ConfigureAwait(false);
 
@@ -65,36 +65,20 @@ public class OfficialService : IOfficialService
         return result;
     }
 
-    private Expression<Func<Official, bool>> BuildPredicate(OfficialFilter filter)
+    private Expression<Func<Official, bool>> BuildPredicate(SearchStringFilter filter)
     {
         var predicate = PredicateBuilder.True<Official>();
 
-        if (!string.IsNullOrEmpty(filter.PositionName))
+        if (!string.IsNullOrEmpty(filter.SearchString))
         {
-            predicate = predicate.And(o => o.Position.FullName.Contains(filter.PositionName));
+            predicate = predicate.And(o => o.Individual.FirstName.Contains(filter.SearchString, StringComparison.OrdinalIgnoreCase)
+                || o.Individual.MiddleName.Contains(filter.SearchString, StringComparison.OrdinalIgnoreCase)
+                || o.Individual.LastName.Contains(filter.SearchString, StringComparison.OrdinalIgnoreCase)
+                || o.Individual.Rnokpp.Contains(filter.SearchString, StringComparison.OrdinalIgnoreCase)
+                || o.Position.FullName.Contains(filter.SearchString, StringComparison.OrdinalIgnoreCase));
         }
 
-        if (!string.IsNullOrEmpty(filter.IndividualFirstName))
-        {
-            predicate = predicate.And(o => o.Individual.FirstName.Contains(filter.IndividualFirstName));
-        }
-
-        if (!string.IsNullOrEmpty(filter.IndividualMiddleName))
-        {
-            predicate = predicate.And(o => o.Individual.MiddleName.Contains(filter.IndividualMiddleName));
-        }
-
-        if (!string.IsNullOrEmpty(filter.IndividualLastName))
-        {
-            predicate = predicate.And(o => o.Individual.LastName.Contains(filter.IndividualLastName));
-        }
-
-        if (!string.IsNullOrEmpty(filter.IndividualRnokpp))
-        {
-            predicate = predicate.And(o => o.Individual.Rnokpp.Contains(filter.IndividualRnokpp));
-        }
-
-        predicate = predicate.And(s => !s.IsDeleted);
+        predicate = predicate.And(o => !o.IsDeleted);
 
         return predicate;
     }

@@ -76,13 +76,9 @@ public class OfficialServiceTests
     {
         // Arrange
         var expected = Officials().FirstOrDefault();
-        var filter = new OfficialFilter()
+        var filter = new SearchStringFilter()
         {
-            IndividualFirstName = "Test",
-            IndividualLastName = "Testov",
-            IndividualMiddleName = "Testovich",
-            IndividualRnokpp = "1234567890",
-            PositionName = "TestPosition1"
+            SearchString = "TestPosition1"
         };
 
         // Act

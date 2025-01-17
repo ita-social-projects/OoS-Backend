@@ -10,5 +10,5 @@ public interface IOfficialService
     /// <param name="providerId">Provider's Id.</param>
     /// <param name="filter">Filter for list of Officials.</param>
     /// <returns>SearchResult that contains a filtered list of Officials and the total amount of officials in the list.</returns>
-    Task<SearchResult<OfficialDto>> GetByFilter(Guid providerId, OfficialFilter filter);
+    Task<SearchResult<OfficialDto>> GetByFilter(Guid providerId, SearchStringFilter filter);
 }

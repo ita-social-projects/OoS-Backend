@@ -37,7 +37,7 @@ public class OfficialController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
-    public async Task<IActionResult> Get(Guid providerId, [FromQuery] OfficialFilter filter = null)
+    public async Task<IActionResult> Get(Guid providerId, [FromQuery] SearchStringFilter filter = null)
     {
         var result = await service.GetByFilter(providerId, filter).ConfigureAwait(false);
 
