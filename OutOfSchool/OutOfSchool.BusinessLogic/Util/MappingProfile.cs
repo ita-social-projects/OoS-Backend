@@ -843,6 +843,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
 
+        CreateMap<CompetitiveEvent, CompetitiveEventViewCardDto>();
+
         CreateMap<CompetitiveEventAccountingType, CompetitiveEventAccountingTypeDto>().ReverseMap();
 
         CreateMap<CompetitiveEventCoverage, CompetitiveEventCoverageDto>().ReverseMap();

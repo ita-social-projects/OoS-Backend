@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -61,9 +62,8 @@ public class CompetitiveEventService : ICompetitiveEventService
        // competitiveEvent.Judges = dto.Judges?.Select(dtoJudges => mapper.Map<Judge>(dtoJudges)).ToList();
 
         var newCompetitiveEvent = await competitiveEventRepository.RunInTransaction(async () =>
-        await competitiveEventRepository.Create(competitiveEvent).ConfigureAwait(false)
-
-        ).ConfigureAwait(false);
+        await competitiveEventRepository.Create(competitiveEvent).ConfigureAwait(false)).ConfigureAwait(false);
+        
         return mapper.Map<CompetitiveEventDto>(newCompetitiveEvent);
     }
 
@@ -120,6 +120,50 @@ public class CompetitiveEventService : ICompetitiveEventService
                 localizer[$"CompetitiveEvent with Id = {id} doesn't exist in the system"]);
         }
     }
+
+    /// <inheritdoc/>
+    public async Task<SearchResult<CompetitiveEventViewCardDto>> GetByProviderId(Guid id, ExcludeIdFilter filter)
+    {
+        logger.LogDebug($"Getting Competitive events by organization started. Looking ProviderId = {id}.");
+
+        filter ??= new ExcludeIdFilter();
+        ValidateExcludedIdFilter(filter);
+
+        var predicate = PredicateBuilder.True<CompetitiveEvent>();
+        predicate = predicate.And(x => x.OrganizerOfTheEventId == id);
+
+        if (filter.ExcludedId is not null)
+        {
+            predicate = predicate.And(x => x.Id != filter.ExcludedId);
+        }
+        var competitiveEventCardsCount = await competitiveEventRepository.Count(
+            whereExpression: predicate).ConfigureAwait(false);
+
+        var competitiveEvents = await competitiveEventRepository.Get(
+            skip: filter.From,
+            take: filter.Size,
+            includeProperties: null,
+            whereExpression: predicate)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        var competitiveEventViewCards = mapper.Map<List<CompetitiveEventViewCardDto>>(competitiveEvents);
+
+        logger.LogDebug(!competitiveEventViewCards.Any()
+          ? $"There aren't CompetitiveEvents for Provider with Id = {id}."
+          : $"From CompetitiveEvents table were successfully received {competitiveEventViewCards.Count()} records.");
+
+        var result = new SearchResult<CompetitiveEventViewCardDto>()
+        {
+            TotalAmount = competitiveEventCardsCount,
+            Entities = competitiveEventViewCards,
+        };
+
+        return result;
+    }
+
+    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) =>
+      ModelValidationHelper.ValidateExcludedIdFilter(filter);
 
     private async Task ChangeJudges(CompetitiveEvent currentCompetitiveEvent, List<JudgeDto> judgeDtoList)
     {

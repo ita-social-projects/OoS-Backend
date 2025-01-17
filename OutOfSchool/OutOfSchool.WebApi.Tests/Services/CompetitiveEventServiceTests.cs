@@ -39,6 +39,7 @@ public class CompetitiveEventServiceTests
     private CompetitiveEventService service;
     private Guid firstId;
     private Guid firstJudgeId;
+    private Guid firstProviderId;
 
     [SetUp]
     public void SetUp()
@@ -62,7 +63,6 @@ public class CompetitiveEventServiceTests
         service = new CompetitiveEventService(
             repo,
             judgeRepository,
-           // accountingTypeOfEventRepository,
             descriptionItemRepository,
             logger.Object,
             localizer.Object,
@@ -306,6 +306,39 @@ public class CompetitiveEventServiceTests
             async () => await service.Delete(id).ConfigureAwait(false));
     }
 
+    [Test]
+    public async Task GetByProviderId_NotValidProviderId_ReturnsEmpty()
+    {
+        // Arrange
+        var expected = new List<CompetitiveEvent>();
+        var invalidProviderId = Guid.NewGuid();
+
+        // Act
+        var result = await service.GetByProviderId(invalidProviderId, null);
+
+        // Assert
+        Assert.That(result.Entities, Is.Empty);
+        Assert.AreEqual(result.TotalAmount, expected.Count);
+    }
+
+    [Test]
+    public async Task GetByProviderId_WhenValidProviderId_ReturnsSearchResult()
+    {
+        // Arrange
+        var expected = CompetitiveEvents().Where(x => x.OrganizerOfTheEventId == firstProviderId);
+
+        // Act
+        var result = await service.GetByProviderId(firstProviderId, null);
+
+        // Assert
+        Assert.IsNotNull(result.Entities);
+        Assert.AreEqual(expected.First().Id, result.Entities.First().Id);
+        Assert.AreEqual(expected.First().Title, result.Entities.First().Title);
+        Assert.AreEqual(expected.First().ShortTitle, result.Entities.First().ShortTitle);
+        Assert.AreEqual(expected.Count(), result.TotalAmount);
+        Assert.IsInstanceOf<IReadOnlyCollection<CompetitiveEventViewCardDto>>(result.Entities);
+    }
+
     private void SeedDatabase()
     {
         using var ctx = new OutOfSchoolDbContext(options);
@@ -315,8 +348,18 @@ public class CompetitiveEventServiceTests
 
             firstId = Guid.NewGuid();
             firstJudgeId = Guid.NewGuid();
+            firstProviderId = Guid.NewGuid();
+            List<CompetitiveEvent> competitiveEvents = CompetitiveEvents();
 
-            var competitiveEvents = new List<CompetitiveEvent>()
+            ctx.CompetitiveEvents.AddRange(competitiveEvents);
+
+            ctx.SaveChanges();
+        }
+    }
+
+    private List<CompetitiveEvent> CompetitiveEvents()
+    {
+        var competitiveEvents = new List<CompetitiveEvent>()
             {
                 new CompetitiveEvent()
                 {
@@ -328,7 +371,7 @@ public class CompetitiveEventServiceTests
                     ScheduledStartTime = DateTime.UtcNow,
                     ScheduledEndTime = DateTime.UtcNow,
                     NumberOfSeats = 10,
-                    OrganizerOfTheEventId = Guid.NewGuid(),
+                    OrganizerOfTheEventId = firstProviderId, // Guid.NewGuid(),
                     CompetitiveEventAccountingType = new CompetitiveEventAccountingType(),
                     Judges = new List<Judge>
                     {
@@ -362,10 +405,6 @@ public class CompetitiveEventServiceTests
                     CompetitiveEventAccountingType = new CompetitiveEventAccountingType(),
                 },
             };
-
-            ctx.CompetitiveEvents.AddRange(competitiveEvents);
-
-            ctx.SaveChanges();
-        }
+        return competitiveEvents;
     }
 }
