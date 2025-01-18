@@ -29,20 +29,11 @@ public class ExternalExportController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Route("providers")]
-    public async Task<IActionResult> GetProvidersByFilter([FromQuery] DateTime updatedAfter, [FromQuery] OffsetFilter offsetFilter)
-    {
-        try
-        {
-            var result = await externalProviderService.GetProviders(updatedAfter, offsetFilter);
+    public async Task<IActionResult> GetProvidersByFilter([FromQuery] DateTime updatedAfter,
+        [FromQuery] OffsetFilter offsetFilter) =>
+        await externalProviderService.GetProviders(updatedAfter, offsetFilter)
+            .ProtectAndMap(this.SearchResultToOkOrNoContent);
 
-            return this.SearchResultToOkOrNoContent(result);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
-    }
-    
     /// <summary>
     /// Get Workshops that match filter's parameters.
     /// </summary>
@@ -54,20 +45,11 @@ public class ExternalExportController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Route("workshops")]
-    public async Task<IActionResult> GetWorkshopsByFilter([FromQuery] DateTime updatedAfter, [FromQuery] OffsetFilter offsetFilter)
-    {
-        try
-        {
-            var result = await externalProviderService.GetWorkshops(updatedAfter, offsetFilter);
+    public async Task<IActionResult> GetWorkshopsByFilter([FromQuery] DateTime updatedAfter,
+        [FromQuery] OffsetFilter offsetFilter) =>
+        await externalProviderService.GetWorkshops(updatedAfter, offsetFilter)
+            .ProtectAndMap(this.SearchResultToOkOrNoContent);
 
-            return this.SearchResultToOkOrNoContent(result);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
-    }
-    
     /// <summary>
     /// Get Directions that match filter's parameters.
     /// </summary>
@@ -78,20 +60,9 @@ public class ExternalExportController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Route("directions")]
-    public async Task<IActionResult> GetDirectionsByFilter([FromQuery] OffsetFilter offsetFilter)
-    {
-        try
-        {
-            var result = await externalProviderService.GetDirections(offsetFilter);
+    public async Task<IActionResult> GetDirectionsByFilter([FromQuery] OffsetFilter offsetFilter) =>
+        await externalProviderService.GetDirections(offsetFilter).ProtectAndMap(this.SearchResultToOkOrNoContent);
 
-            return this.SearchResultToOkOrNoContent(result);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
-    }
-    
     /// <summary>
     /// Get SubDirections that match filter's parameters.
     /// </summary>
@@ -102,17 +73,6 @@ public class ExternalExportController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Route("subdirections")]
-    public async Task<IActionResult> GetSubDirectionsByFilter([FromQuery] OffsetFilter offsetFilter)
-    {
-        try
-        {
-            var result = await externalProviderService.GetSubDirections(offsetFilter);
-
-            return this.SearchResultToOkOrNoContent(result);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
-    }
+    public async Task<IActionResult> GetSubDirectionsByFilter([FromQuery] OffsetFilter offsetFilter) =>
+        await externalProviderService.GetSubDirections(offsetFilter).ProtectAndMap(this.SearchResultToOkOrNoContent);
 }

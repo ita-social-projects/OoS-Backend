@@ -19,6 +19,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -107,74 +108,35 @@ public class ExternalExportSubDirectionsTests
 
     private void SeedSubDirections(IInstitutionHierarchyRepository repository)
     {
-        var fakeInstitutions = new List<Institution>
-        {
-            new()
-            {
-                Id = Guid.Parse("a11164b7-35c8-4ecb-8500-b6c4cac722bd"),
-                Title = "A",
-                NumberOfHierarchyLevels = 2
-            },
-            new()
-            {
-                Id = Guid.Parse("a63588e4-f57f-4075-8927-525113be55d5"),
-                Title = "B",
-                NumberOfHierarchyLevels = 4
-            }
-        };
+        var twoLevelsId = Guid.Parse("a11164b7-35c8-4ecb-8500-b6c4cac722bd");
+        var fourLevelsId = Guid.Parse("a63588e4-f57f-4075-8927-525113be55d5");
+        
+        var fakeInstitutions = InstitutionsGenerator.Generate(2);
+        fakeInstitutions[0].WithLevels(2).WithId(twoLevelsId);
+        fakeInstitutions[1].WithLevels(4).WithId(fourLevelsId);
 
-        var fakeInstitutionHierarchies = new List<InstitutionHierarchy>
-        {
-            new()
-            {
-                Id = Guid.Parse("b7e1322e-7575-48c1-a444-4effb8f4d083"),
-                Title = "A",
-                HierarchyLevel = 2,
-                InstitutionId = fakeInstitutions[0].Id,
-                ParentId = Guid.Parse("dd116229-e0a1-4c9a-aae5-1f6d5878d37f"),
-                Directions = []
-            },
-            new()
-            {
-                Id = Guid.Parse("a042661d-9be8-4bfb-adcd-06cbe91388a0"),
-                Title = "B",
-                HierarchyLevel = 4,
-                InstitutionId = fakeInstitutions[1].Id,
-                Directions = []
-            },
-            new()
-            {
-                Id = Guid.Parse("dd116229-e0a1-4c9a-aae5-1f6d5878d37f"),
-                Title = "C",
-                HierarchyLevel = 1,
-                InstitutionId = fakeInstitutions[0].Id,
-                Directions = []
-            },
-        };
+        List<Guid> hierarchyIds = [
+            Guid.Parse("b7e1322e-7575-48c1-a444-4effb8f4d083"),
+            Guid.Parse("a042661d-9be8-4bfb-adcd-06cbe91388a0"),
+            Guid.Parse("dd116229-e0a1-4c9a-aae5-1f6d5878d37f")
+        ];
+        var fakeInstitutionHierarchies = InstitutionHierarchyGenerator.Generate(3);
+        fakeInstitutionHierarchies[0]
+            .WithId(hierarchyIds[0])
+            .WithParentId(hierarchyIds[2])
+            .WithInstitutionId(fakeInstitutions[0].Id)
+            .WithLevel(2);
+        fakeInstitutionHierarchies[1]
+            .WithId(hierarchyIds[1])
+            .WithInstitutionId(fakeInstitutions[1].Id)
+            .WithLevel(4);
+        fakeInstitutionHierarchies[2]
+            .WithId(hierarchyIds[2])
+            .WithInstitutionId(fakeInstitutions[0].Id)
+            .WithLevel(1);
 
-        var fakeDirections = new List<Direction>
-        {
-            new()
-            {
-                Id = 1,
-                Title = "A",
-            },
-            new()
-            {
-                Id = 2,
-                Title = "B",
-            },
-            new()
-            {
-                Id = 3,
-                Title = "C",
-            },
-            new()
-            {
-                Id = 4,
-                Title = "D",
-            }
-        };
+        var fakeDirections = DirectionsGenerator.Generate(4);
+
         dbContext.Institutions.AddRange(fakeInstitutions);
         dbContext.InstitutionHierarchies.AddRange(fakeInstitutionHierarchies);
         dbContext.Directions.AddRange(fakeDirections);

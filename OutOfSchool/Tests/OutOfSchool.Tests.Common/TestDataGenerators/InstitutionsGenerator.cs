@@ -1,6 +1,7 @@
-﻿using Bogus;
+﻿using System;
+using System.Collections.Generic;
+using Bogus;
 using OutOfSchool.Services.Models.SubordinationStructure;
-using System;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -19,4 +20,18 @@ public static class InstitutionsGenerator
     /// </summary>
     /// <returns><see cref="Institution"/> object with random data.</returns>
     public static Institution Generate() => faker.Generate();
+    
+    public static List<Institution> Generate(int count) => faker.Generate(count);
+
+    public static Institution WithId(this Institution institution, Guid id)
+    {
+        institution.Id = id;
+        return institution;
+    }
+    
+    public static Institution WithLevels(this Institution institution, int levels)
+    {
+        institution.NumberOfHierarchyLevels = levels;
+        return institution;
+    }
 }
