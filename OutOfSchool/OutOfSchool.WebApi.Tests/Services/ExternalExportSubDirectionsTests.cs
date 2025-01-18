@@ -19,6 +19,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -49,7 +50,7 @@ public class ExternalExportSubDirectionsTests
             .EnableSensitiveDataLogging()
             .Options;
 
-        dbContext = new OutOfSchoolDbContext(dbContextOptions);
+        dbContext = new TestOutOfSchoolDbContext(dbContextOptions);
         mockProviderRepository = new Mock<IProviderRepository>();
         mockWorkshopRepository = new Mock<IWorkshopRepository>();
         mockApplicationRepository = new Mock<IApplicationRepository>();

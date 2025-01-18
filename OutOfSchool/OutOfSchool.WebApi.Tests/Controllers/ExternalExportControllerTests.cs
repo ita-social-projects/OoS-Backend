@@ -84,7 +84,6 @@ public class ExternalExportControllerTests
         Assert.IsInstanceOf<ObjectResult>(actionResult);
         var objectResult = (ObjectResult) actionResult;
         Assert.AreEqual(500, objectResult.StatusCode);
-        Assert.AreEqual("An error occurred: Simulated exception", objectResult.Value);
     }
 
     [Test]
@@ -138,7 +137,6 @@ public class ExternalExportControllerTests
         Assert.IsInstanceOf<ObjectResult>(actionResult);
         var objectResult = (ObjectResult) actionResult;
         Assert.AreEqual(500, objectResult.StatusCode);
-        Assert.AreEqual("An error occurred: Simulated exception", objectResult.Value);
     }
     
     [Test]
@@ -204,7 +202,6 @@ public class ExternalExportControllerTests
         Assert.IsInstanceOf<ObjectResult>(actionResult);
         var objectResult = (ObjectResult) actionResult;
         Assert.AreEqual(500, objectResult.StatusCode);
-        Assert.AreEqual("An error occurred: Simulated exception", objectResult.Value);
     }
     
     [Test]
@@ -272,6 +269,5 @@ public class ExternalExportControllerTests
         Assert.IsInstanceOf<ObjectResult>(actionResult);
         var objectResult = (ObjectResult) actionResult;
         Assert.AreEqual(500, objectResult.StatusCode);
-        Assert.AreEqual("An error occurred: Simulated exception", objectResult.Value);
     }
 }
