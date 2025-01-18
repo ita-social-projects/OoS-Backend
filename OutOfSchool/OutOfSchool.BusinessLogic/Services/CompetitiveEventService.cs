@@ -124,7 +124,7 @@ public class CompetitiveEventService : ICompetitiveEventService
     /// <inheritdoc/>
     public async Task<SearchResult<CompetitiveEventViewCardDto>> GetByProviderId(Guid id, ExcludeIdFilter filter)
     {
-        logger.LogDebug($"Getting Competitive events by organization started. Looking ProviderId = {id}.");
+        logger.LogDebug("Getting Competitive events by organization started. Looking ProviderId = {id}.", id);
 
         filter ??= new ExcludeIdFilter();
         ValidateExcludedIdFilter(filter);
@@ -149,9 +149,14 @@ public class CompetitiveEventService : ICompetitiveEventService
 
         var competitiveEventViewCards = mapper.Map<List<CompetitiveEventViewCardDto>>(competitiveEvents);
 
-        logger.LogDebug(!competitiveEventViewCards.Any()
-          ? $"There aren't CompetitiveEvents for Provider with Id = {id}."
-          : $"From CompetitiveEvents table were successfully received {competitiveEventViewCards.Count()} records.");
+        if (competitiveEventViewCards.Any())
+        {
+            logger.LogDebug("From CompetitiveEvents table were successfully received {count} records.", competitiveEventViewCards.Count);
+        }
+        else
+        {
+            logger.LogDebug("There aren't CompetitiveEvents for Provider with Id = {id}.", id);
+        }
 
         var result = new SearchResult<CompetitiveEventViewCardDto>()
         {
