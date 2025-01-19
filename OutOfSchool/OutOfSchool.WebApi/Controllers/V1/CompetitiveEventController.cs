@@ -158,7 +158,8 @@ public class CompetitiveEventController : ControllerBase
     /// <returns>
     /// <see cref="SearchResult{CompetitiveEventViewCardDto}"/>, or no content
     /// </returns>
-    [AllowAnonymous]
+    [HasPermission(Permissions.CompetitiveEventRead)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<CompetitiveEventViewCardDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -170,10 +171,7 @@ public class CompetitiveEventController : ControllerBase
         {
             return BadRequest("Provider id is empty.");
         }
-        if (filter?.ExcludedId == Guid.Empty)
-        {
-            return BadRequest("Excluded provider id is empty.");
-        }
+       
         SearchResult<CompetitiveEventViewCardDto> result = await service.GetByProviderId(id, filter).ConfigureAwait(false);
         return this.SearchResultToOkOrNoContent(result);
 

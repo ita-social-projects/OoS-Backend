@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Util;
@@ -34,7 +35,9 @@ public class CompetitiveEventServiceTests
 
     private Mock<ILogger<CompetitiveEventService>> logger;
     private Mock<IStringLocalizer<SharedResource>> localizer;
+    private Mock<ICurrentUserService> userService;
     private IMapper mapper;
+
 
     private CompetitiveEventService service;
     private Guid firstId;
@@ -59,6 +62,7 @@ public class CompetitiveEventServiceTests
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         logger = new Mock<ILogger<CompetitiveEventService>>();
+        userService = new Mock<ICurrentUserService>();
 
         service = new CompetitiveEventService(
             repo,
@@ -66,7 +70,8 @@ public class CompetitiveEventServiceTests
             descriptionItemRepository,
             logger.Object,
             localizer.Object,
-            mapper);
+            mapper,
+            userService.Object);
 
         SeedDatabase();
     }
@@ -337,6 +342,20 @@ public class CompetitiveEventServiceTests
         Assert.AreEqual(expected.First().ShortTitle, result.Entities.First().ShortTitle);
         Assert.AreEqual(expected.Count(), result.TotalAmount);
         Assert.IsInstanceOf<IReadOnlyCollection<CompetitiveEventViewCardDto>>(result.Entities);
+    }
+
+    [Test]
+    public async Task GetByProviderId_WhenIdIsEmpty_ThrowsArgumentException()
+    {
+        // Arrange
+        var invalidProviderId = Guid.Empty;
+        var filter = new ExcludeIdFilter();
+
+        // Act & Assert
+        var exception = Assert.ThrowsAsync<ArgumentException>(async () =>
+            await service.GetByProviderId(invalidProviderId, filter).ConfigureAwait(false));
+
+        Assert.AreEqual("ProviderId cannot be empty. (Parameter 'id')", exception.Message, "Unexpected exception message.");
     }
 
     private void SeedDatabase()

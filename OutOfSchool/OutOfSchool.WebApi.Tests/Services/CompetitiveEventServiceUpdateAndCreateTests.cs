@@ -25,6 +25,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
     private Mock<ILogger<CompetitiveEventService>> mockLogger;
     private Mock<IStringLocalizer<SharedResource>> mockLocalizer;
     private Mock<IMapper> mockMapper;
+    private Mock<ICurrentUserService> userService;
 
     private CompetitiveEventService service;
 
@@ -37,6 +38,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         mockLogger = new Mock<ILogger<CompetitiveEventService>>();
         mockLocalizer = new Mock<IStringLocalizer<SharedResource>>();
         mockMapper = new Mock<IMapper>();
+        userService = new Mock<ICurrentUserService>();
 
         service = new CompetitiveEventService(
             mockCompetitiveEventRepository.Object,
@@ -44,7 +46,8 @@ class CompetitiveEventServiceUpdateAndCreateTests
             mockDescriptionItemRepository.Object,
             mockLogger.Object,
             mockLocalizer.Object,
-            mockMapper.Object);
+            mockMapper.Object,
+            userService.Object);
     }
 
     [Test]

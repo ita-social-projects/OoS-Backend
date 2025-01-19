@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Base.Api;
 
@@ -12,12 +13,15 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// </summary>
 public class CompetitiveEventService : ICompetitiveEventService
 {
+    private readonly string includingPropertiesForCompetitiveEventViewCard = String.Empty;
+
     private readonly IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> competitiveEventRepository;
     private readonly IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
     private readonly IEntityRepository<Guid, Judge> judgeRepository;
     private readonly ILogger<CompetitiveEventService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
+    private readonly ICurrentUserService currentUserService;
 
     public CompetitiveEventService(
         IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> competitiveEventRepository,
@@ -25,15 +29,18 @@ public class CompetitiveEventService : ICompetitiveEventService
         IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository,
         ILogger<CompetitiveEventService> logger,
         IStringLocalizer<SharedResource> localizer,
-        IMapper mapper)
-        {
-            this.competitiveEventRepository = competitiveEventRepository ?? throw new ArgumentNullException(nameof(competitiveEventRepository));
-            this.judgeRepository = judgeRepository ?? throw new ArgumentNullException(nameof(judgeRepository));
-            this.descriptionItemRepository = descriptionItemRepository ?? throw new ArgumentException(nameof(descriptionItemRepository));
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
-            this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        }
+        IMapper mapper,
+        ICurrentUserService currentUserService)
+    {
+        this.competitiveEventRepository = competitiveEventRepository ?? throw new ArgumentNullException(nameof(competitiveEventRepository));
+        this.judgeRepository = judgeRepository ?? throw new ArgumentNullException(nameof(judgeRepository));
+        this.descriptionItemRepository = descriptionItemRepository ?? throw new ArgumentException(nameof(descriptionItemRepository));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        this.currentUserService = currentUserService;
+
+    }
 
     /// <inheritdoc/>
     public async Task<CompetitiveEventDto?> GetById(Guid id)
@@ -59,11 +66,11 @@ public class CompetitiveEventService : ICompetitiveEventService
         logger.LogDebug("CompetitiveEvent creating was started.");
 
         var competitiveEvent = mapper.Map<CompetitiveEvent>(dto);
-       // competitiveEvent.Judges = dto.Judges?.Select(dtoJudges => mapper.Map<Judge>(dtoJudges)).ToList();
+        // competitiveEvent.Judges = dto.Judges?.Select(dtoJudges => mapper.Map<Judge>(dtoJudges)).ToList();
 
         var newCompetitiveEvent = await competitiveEventRepository.RunInTransaction(async () =>
         await competitiveEventRepository.Create(competitiveEvent).ConfigureAwait(false)).ConfigureAwait(false);
-        
+
         return mapper.Map<CompetitiveEventDto>(newCompetitiveEvent);
     }
 
@@ -124,6 +131,14 @@ public class CompetitiveEventService : ICompetitiveEventService
     /// <inheritdoc/>
     public async Task<SearchResult<CompetitiveEventViewCardDto>> GetByProviderId(Guid id, ExcludeIdFilter filter)
     {
+        if (id == Guid.Empty)
+        {
+            logger.LogWarning("ProviderId is empty. Unable to retrieve competitive events.");
+            throw new ArgumentException("ProviderId cannot be empty.", nameof(id));
+        }
+      
+        await currentUserService.UserHasRights(new ProviderRights(id));
+
         logger.LogDebug("Getting Competitive events by organization started. Looking ProviderId = {id}.", id);
 
         filter ??= new ExcludeIdFilter();
@@ -132,31 +147,25 @@ public class CompetitiveEventService : ICompetitiveEventService
         var predicate = PredicateBuilder.True<CompetitiveEvent>();
         predicate = predicate.And(x => x.OrganizerOfTheEventId == id);
 
-        if (filter.ExcludedId is not null)
+        if (filter.ExcludedId is not null && filter.ExcludedId != Guid.Empty)
         {
             predicate = predicate.And(x => x.Id != filter.ExcludedId);
         }
+
         var competitiveEventCardsCount = await competitiveEventRepository.Count(
             whereExpression: predicate).ConfigureAwait(false);
 
         var competitiveEvents = await competitiveEventRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeProperties: null,
+            includeProperties: includingPropertiesForCompetitiveEventViewCard,
             whereExpression: predicate)
             .ToListAsync()
             .ConfigureAwait(false);
 
         var competitiveEventViewCards = mapper.Map<List<CompetitiveEventViewCardDto>>(competitiveEvents);
 
-        if (competitiveEventViewCards.Any())
-        {
-            logger.LogDebug("From CompetitiveEvents table were successfully received {count} records.", competitiveEventViewCards.Count);
-        }
-        else
-        {
-            logger.LogDebug("There aren't CompetitiveEvents for Provider with Id = {id}.", id);
-        }
+        logger.LogDebug("From CompetitiveEvents table were successfully received {count} records.", competitiveEventViewCards.Count);
 
         var result = new SearchResult<CompetitiveEventViewCardDto>()
         {
